@@ -626,6 +626,13 @@ Utils.addToFrag = function(frag, html) {
   frag.appendChild(U.toHTMLElement(html));
 }
 
+Utils.getUris = function(model) {
+  if (model instanceof Backbone.Collection)
+    return _.map(model.models, function(model) {return model.get('_uri')});
+  else
+    return [model.get('_uri')];
+}
+
 Utils.hasImages = function(models) {
   var m = models[0];
   var meta = m.__proto__.constructor.properties;
@@ -640,4 +647,15 @@ Utils.hasImages = function(models) {
       hasImgs = true;
   }
   return hasImgs;
+}
+
+Utils.deepExtend = function(obj) {
+  _.each(Array.prototype.slice.call(arguments, 1), function(source) {
+    for (var prop in source) {
+      if (obj[prop])
+        U.deepExtend(obj[prop], source[prop]);
+      else
+        obj[prop] = source[prop] || obj[prop];
+    }
+  });
 }

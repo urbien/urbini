@@ -1,77 +1,41 @@
 window.Lablz = window.Lablz || {};
-
-//Lablz.Navigation = Lablz.Navigation || {
-//  hIdx: -1,
-//  history: [],
-//  back: false,
-//  fwd: false,
-//  click: false,
-//  push: function() {
-//    if (this.history[this.hIdx] == window.location.hash) // refresh
-//      return;
-//    else if (!this.clickedBrowserButton()) {
-//      this.hIdx++;
-//      this.history = this.history.slice(0, this.hIdx);
-//      this.history.push(window.location.hash);
-//    }
-//  },
-//  reset: function() {
-//    this.click = this.back = this.fwd = false;
-//  },
-//  clickedBrowserButton: function() {
-//    if (this.history.length == 0 || this.click)
-//      return false;
-//    
-//    this.back = this.history[this.hIdx - 1] == window.location.hash;
-//    this.fwd = this.history[this.hIdx + 1] == window.location.hash;
-//  }
-////  detectBackButton : function() {
-////    var currentFragment = Backbone.history.getFragment();
-////    Lablz.Navigation.back = false; // assume no back detected
-////  
-////    if (!Lablz.Navigation.click && currentFragment == Lablz.Navigation.previousFragment)
-////      Lablz.Navigation.back = true;
-////  
-////    Lablz.Navigation.click = false;  // reset
-////    Lablz.Navigation.previousFragment = currentFragment;
-////  }
-//};
-//
-//$(document).click(function(e) {
-//  Lablz.Navigation.click = true;
-//});
-
 var packages = {};
 
-Lablz.getDefaultErrorHandler = function(errorHandler) {
-  return function(originalModel, err, options) {
-    if (options.sync) {
-      switch (err.code) {
+Lablz.Error = {
+  NOT_FOUND: "Oops! The page you're looking for doesn't exist.",
+  getDefaultErrorHandler: function(errorHandler) {
+    return function(originalModel, err, options) {
+      if (options.sync) {
+        switch (err.code) {
         case 401: 
           console.log('redirecting to user-login');
           window.location.href = Lablz.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
           return;
         case 404:
           console.log('no results');
-          if (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection && originalModel.queryMap.length == 0))
-            app.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
+          if (originalModel && (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection))) // && originalModel.queryMap.length == 0)))
+            app.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
           else
-            $('errMsg').html("Oops! Whatever you were looking for, we couldn't find it");
-            
+            app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
+          
           return;
+        default:
+          app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
+          return;
+        }
       }
-    }
       
-    if (errorHandler)
-      errorHandler.apply(this, arguments);
-  }
-}
+      if (errorHandler)
+        errorHandler.apply(this, arguments);
+    }
+  }    
+};
 
 // START ///////////// Models //////////////// START ///
 packages.Resource = Backbone.Model.extend({
   idAttribute: "_uri",
   initialize: function(options) {
-    _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'updateDB', 'fetch', 'syncFetch', 'asyncFetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'updateDB', 'fetch'); // fixes loss of context for 'this' within methods
     this.on('change', this.updateDB);
     this.on('aroundMe', this.constructor.getAroundMe);
     options._query && (this.urlRoot += "?" + options._query);
@@ -144,27 +108,20 @@ packages.Resource = Backbone.Model.extend({
   isA: function(interfaceName) {
     return Utils.isA(this.constructor, interfaceName);
   },
-  asyncFetch: function(options) {
-    var self = this;
-    setTimeout(function() {
-      self.fetch(options);
-    }, 0);
-    
-    return this;
-  },
-  syncFetch: function(options) {
-    options = options || {};
-    options.sync = true;
-    return this.fetch.call(this, options);
-  },
   fetch: function(options) {
     var self = this;
-    setTimeout(function() {
-      self.fetchModelsForLinkedResources.call(self.constructor);
-    }, 100);
+//    setTimeout(function() {
+//      self.fetchModelsForLinkedResources.call(self.constructor);
+//    }, 100);
     
     options = options || {};
-    options.error = Lablz.getDefaultErrorHandler(options.error);
+    options.error = Lablz.Error.getDefaultErrorHandler(options.error);
+    var success = options.success;
+    options.success = function() {
+      success && success.apply(self, arguments);
+      self.fetchModelsForLinkedResources.call(self.constructor);
+    };
+    
     return Backbone.Model.prototype.fetch.call(this, options);
   }  
 //  ,
@@ -197,18 +154,18 @@ packages.Resource.interfaces = _.clone(packages.Resource.myInterfaces);
 packages.Resource.prototype.fetchModelsForLinkedResources = function() {
   var linkedModels = new Utils.UArray();
   _.forEach(this.properties, function(p) {
-    var r = p.range;
-    if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
-      var name = r.slice(r.lastIndexOf("/") + 1);
-      if (Lablz.shortNameToModel[name])
-        return;
-      
-//        Lablz.requiredModels.linkedModels;
-      linkedModels.push(name);
-    }
+    p.range && linkedModels.push(p.range);
+//    var r = p.range;
+//    if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
+//      var name = r.slice(r.lastIndexOf("/") + 1);
+//      if (Lablz.shortNameToModel[name])
+//        return;
+//      
+//      linkedModels.push(name);
+//    }
   });
   
-  linkedModels = _.filter(Lablz.requiredModels.linkedModels, function(model) {return _.contains(linkedModels, model.shortName)});
+  linkedModels = _.filter(Lablz.requiredModels.linkedModels, function(model) {return _.contains(linkedModels, model.type)});
   if (linkedModels.length) {
     linkedModels = _.uniq(linkedModels);
     Lablz.loadStoredModels(linkedModels);
@@ -230,7 +187,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'syncFetch', 'asyncFetch'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
@@ -247,6 +204,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     console.log("init " + this.shortName + " resourceList");
   },
   getNextPage: function(options) {
+    console.log("fetching next page");
     this.offset += this.perPage;
     this.pager(options);
   },
@@ -307,6 +265,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     
     if (response.data) {
       this.offset = response.metadata.offset;
+      if (this.offset)
+        console.log("received page, offset = " + this.offset);
+      
       this.page = Math.floor(this.offset / this.perPage);
       response = response.data;
     }
@@ -323,22 +284,11 @@ Lablz.ResourceList = Backbone.Collection.extend({
   fetchAll: function(options) { 
     return Backbone.Model.prototype.fetch.call(this, options);
   },
-  asyncFetch: function(options) {
-    var self = this;
-    setTimeout(function() {
-      self.fetch(options);
-    }, 0);
-  },
-  syncFetch: function(options) {
-    options = options || {};
-    options.sync = true;
-    return this.fetch.call(this, options);
-  },
   fetch: function(options) {
     var self = this;
-    setTimeout(function() {
-      self.model.prototype.fetchModelsForLinkedResources.call(self.model);
-    }, 100);
+//    setTimeout(function() {
+//      self.model.prototype.fetchModelsForLinkedResources.call(self.model);
+//    }, 100);
     options = options || {};
     options.add = true;
     this.queryMap = this.queryMap || {};
@@ -346,7 +296,13 @@ Lablz.ResourceList = Backbone.Collection.extend({
       this.queryMap[this.offsetParam] = this.offset;
       
     options.url = this.getUrl();
-    options.error = Lablz.getDefaultErrorHandler(options.error); 
+    options.error = Lablz.Error.getDefaultErrorHandler(options.error);
+    var success = options.success;
+    options.success = function() {
+      success && success.apply(self, arguments);
+      self.model.prototype.fetchModelsForLinkedResources.call(self.model);
+    };
+
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
 
@@ -425,7 +381,8 @@ Backbone.sync = function(method, model, options) {
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
         var longUri = Utils.getLongUri(r._uri, model.type);
-        var saved = model.get(longUri).get(tsProp);
+        var saved = model.get(longUri);
+        saved = saved && saved.get(tsProp);
 //        var saved = $.grep(model.models, function(o) {
 //          return o.id == longUri;
 //        })[0][tsProp];
@@ -452,7 +409,7 @@ Backbone.sync = function(method, model, options) {
         }
         
         Lablz.Events.trigger('refresh', model, modified);
-        Lablz.indexedDB.addItems(toAdd, model.shortName);
+        Lablz.indexedDB.addItems(toAdd, model.type);
       }
     }
   }
@@ -464,17 +421,20 @@ Backbone.sync = function(method, model, options) {
         defErr && defErr(resp.error, status, xhr);
         return;
       }
+
+      var isCol = model instanceof Backbone.Collection;
+      data = isCol ? resp.data : resp.data[0];
+      var modified;
+      if (isCol) {
+        var offset = resp.metadata && resp.metadata.offset || 0;
+        modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
+      }
+      else
+        modified = model.get('_uri');
       
-//      var isCol = model instanceof Backbone.Collection;
-//      var data;
-//      if (resp.error)
-//        data = isCol ? [] : null;
-//      else
-//        data = isCol ? resp.data : resp.data[0];
-      
-      data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
-      defSuccess && defSuccess(resp, status, xhr);
+      Lablz.Events.trigger('refresh', model, modified);
       save && save(data);
+      defSuccess && defSuccess(resp, status, xhr);
     }
   });
     
@@ -568,9 +528,11 @@ Lablz.initModels = function(models) {
   models = models || Lablz.models;
   for (var i = 0; i < models.length; i++) {
     var m = models[i];
-    if (Lablz.shortNameToModel[m.shortName])
-      continue;
-
+//    if (Lablz.shortNameToModel[m.shortName])
+//      continue;
+    if (m.shortName != 'Resource')
+      delete Lablz.shortNameToModel[m.shortName];
+    
     Lablz.initModel(m);
   }
 };
@@ -602,7 +564,7 @@ Lablz.indexedDB.paused = false;
 
 Lablz.indexedDB.onerror = function(e) {
   Lablz.currentUser._reset = true;
-  Lablz.indexedDB.db.close();
+  Lablz.indexedDB.db && Lablz.indexedDB.db.close();
   Lablz.indexedDB.open();
   console.log("db error: " + e);
 };
@@ -611,15 +573,22 @@ Lablz.indexedDB.onabort = function(e) {
   console.log("db abort: " + e);
 };
 
-Lablz.indexedDB.clear = function() {
+Lablz.indexedDB.reset = function() {
   var db = Lablz.indexedDB.db;
   var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
+  var deleted = [];
+  var created = [];
   _.each(db.objectStoreNames, function(name) {            
     db.deleteObjectStore(name);
-    if (_.contains(rModels, name))
+    deleted.push(name);
+    if (_.contains(rModels, name)) {
       db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
+      created.push(name);
+    }
   })
   
+  deleted.length && console.log('1. deleted tables: ' + deleted.join(','));
+  created.length && console.log('1. created tables: ' + created.join(','));
   Lablz.currentUser._reset = false;
 }
 
@@ -647,10 +616,10 @@ Lablz.indexedDB.open = function(options, success, error) {
       alert("A new version of this page is ready. Please reload!");
     };    
 
-    var userChanged = false;
-    if (!db.objectStoreNames.contains('sysinfo')) {
-      userChanged = true;
-    }
+//    var userChanged = false;
+//    if (!db.objectStoreNames.contains('sysinfo')) {
+//      userChanged = true;
+//    }
     
     modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
     Lablz.DB_VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
@@ -662,7 +631,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     }
     
     if (db.setVersion) {
-      console.log("in old setVersion: "+ db.setVersion); // deprecated but needed for Chrome
+      console.log('in old setVersion. User changed: ' + Lablz.currentUser._reset + '. Changed models: ' + (Lablz.changedModels.join(',') || 'none') + ', new models: ' + (Lablz.newModels.join(',') || 'none')); // deprecated but needed for Chrome
       
       // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
       var req = db.setVersion(Lablz.DB_VERSION);
@@ -670,13 +639,15 @@ Lablz.indexedDB.open = function(options, success, error) {
       req.onerror = Lablz.indexedDB.onerror;
       req.onblocked = Lablz.indexedDB.onblocked;
       req.onsuccess = function(e2) {
+        console.log('upgrading db');
         if (Lablz.currentUser._reset)
-          Lablz.indexedDB.clear();
+          Lablz.indexedDB.reset();
         
         if (modelsChanged)
           Lablz.indexedDB.updateStores();
         
         e2.target.transaction.oncomplete = function() {
+          console.log('upgraded db');
           if (success)
             success();
         };
@@ -692,16 +663,21 @@ Lablz.indexedDB.open = function(options, success, error) {
   };
   
   request.onupgradeneeded = function(e) {
-    console.log ("going to upgrade our DB!");
+    console.log ("upgrading db");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (Lablz.currentUser._reset)
-      Lablz.indexedDB.clear();
+    if (Lablz.currentUser._reset) {
+      console.log("clearing db");
+      Lablz.indexedDB.reset();
+    }
     
-    if (modelsChanged)
+    if (modelsChanged) {
+      console.log("updating stores");
       Lablz.indexedDB.updateStores();
+    }
     
     e.target.transaction.oncomplete = function() {
+      console.log ("upgraded db");
       if (success)
         success();
     };
@@ -767,15 +743,40 @@ Lablz.indexedDB.open = function(options, success, error) {
 Lablz.indexedDB.updateStores = function() {
   var db = Lablz.indexedDB.db;
   var models = Utils.union(Lablz.changedModels, Lablz.newModels);
+  models = _.map(models, function(uri) {
+    var sIdx = uri.lastIndexOf("/");
+    return sIdx == -1 ? uri : uri.slice(sIdx + 1);
+  });
+  
   Lablz.changedModels = [];
   Lablz.newModels = [];
+  var deleted = [];
+  var created = [];
   for (var i = 0; i < models.length; i++) {
     var name = models[i];
-    if (db.objectStoreNames.contains(name))
-      db.deleteObjectStore(name);
+    if (db.objectStoreNames.contains(name)) {
+      try {
+        db.deleteObjectStore(name);
+        deleted.push(name);
+      } catch (err) {
+        console.log('2. failed to delete table ' + name + ': ' + err);
+        return;
+      }
+      
+    }
+
+    try {
+      db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
+      created.push(name);
+    } catch (err) {
+      console.log('2. failed to create table ' + name + ': ' + err);
+      return;
+    }
     
-    db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
-  }  
+  }
+  
+  deleted.length && console.log('2. deleted tables: ' + deleted.join(","));
+  created.length && console.log('2. created tables: ' + created.join(","));
 }
 
 //Lablz.indexedDB.addModels = function(models) {
@@ -807,7 +808,7 @@ Lablz.indexedDB.updateStores = function() {
 //  }
 //};
 
-Lablz.indexedDB.addItems = function(items, className) {
+Lablz.indexedDB.addItems = function(items, classUri) {
   if (!items || !items.length)
     return;
   
@@ -815,11 +816,13 @@ Lablz.indexedDB.addItems = function(items, className) {
   if (!db)
     return;
   
+  var className = classUri.slice(classUri.lastIndexOf("/") + 1);
   if (!db.objectStoreNames.contains(className)) {
     db.close();
-    Lablz.newModels.push(className);
+    console.log("2. newModel: " + className);
+    Lablz.newModels.push(classUri);
     Lablz.indexedDB.open(null, function() {
-      Lablz.indexedDB.addItems(items, className);
+      Lablz.indexedDB.addItems(items, classUri);
     });
     
     return;
@@ -838,10 +841,12 @@ Lablz.indexedDB.addItems = function(items, className) {
       console.log("Error adding item to db: ", e);
     };
   });
+  
+  console.log("added some " + className + " to db");
 };
 
-Lablz.indexedDB.addItem = function(item, className) {
-  Lablz.indexedDB.addItems([item instanceof Backbone.Model ? item.toJSON() : item], className || item.shortName);
+Lablz.indexedDB.addItem = function(item, classUri) {
+  Lablz.indexedDB.addItems([item instanceof Backbone.Model ? item.toJSON() : item], classUri || item.constructor.type);
 }
 
 Lablz.indexedDB.deleteItem = function(uri) {
@@ -992,7 +997,7 @@ Lablz.initStoredModels = function(models) {
     if (model.subClassOf != null || model.type.endsWith("#Resource"))
       return true;
     else {
-      Lablz.changedModels.push(model.shortName);
+      Lablz.changedModels.push(model.type);
       return false;
     }
   });
@@ -1007,7 +1012,7 @@ Lablz.initStoredModels = function(models) {
     var sIdx = sUri.lastIndexOf('/');
     var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
     if (!snm[superName]) {
-      unloaded.push(m.shortName);
+      unloaded.push(m.type);
       return;
     }
     
@@ -1030,7 +1035,8 @@ Lablz.loadStoredModels = function(models) {
   var r = models ? {models: models} : Lablz.requiredModels;
   if (!localStorage) {
     _.forEach(r.models, function(model) {
-      Lablz.newModels.push(model.shortName);
+      console.log("1. newModel: " + model.shortName);
+      Lablz.newModels.push(model.type);
     });
     
     return; // TODO: use indexedDB
@@ -1059,7 +1065,7 @@ Lablz.loadStoredModels = function(models) {
       }
     }
     
-    (exists ? Lablz.changedModels : Lablz.newModels).push(uri.slice(uri.lastIndexOf("/") + 1));
+    (exists ? Lablz.changedModels : Lablz.newModels).push(uri);
     return;
   });
   
@@ -1103,23 +1109,31 @@ Lablz.fetchModels = function(models, options) {
         console.log("couldn't fetch models");
 //        alert("Oops! Couldn't initialize awesomeness!");
         if (error)
-          error(status);
+          error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
         
         return;
       }
         
-      var p = packages;
       try {
         eval(jqXHR.responseText);
       } catch (err) {
         console.log("couldn't eval response from server. Requested models: " + modelsCsv);
-        if (error)
-          error();
+        if (error) {
+          try {
+            var jErr = JSON.parse(jqXHR.responseText);
+            error(null, jErr.error, options);
+            return;
+          } catch (err1) {
+            console.log("couldn't parse error response: " + jqXHR.responseText);
+          }
+          
+          error(null, null, options);
+        }
         
         return;
       }
       
-      _.extend(packages, p);
+//      _.extend(packages, p);
       Lablz.initModels();
       if (success)
         success();

@@ -16,6 +16,8 @@ var App = Backbone.Router.extend({
   Paginator: {},
   backClicked: false,
   forceRefresh: false,
+  errMsg: null,
+  info: null,
   initialize: function () {
     this.firstPage = true;
   },
@@ -23,6 +25,11 @@ var App = Backbone.Router.extend({
     this.forceRefresh = options.trigger;
     var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
     this.forceRefresh = false;
+    if (options) {
+      this.errMsg = options.errMsg;
+      this.info = options.info;
+    }
+    
     return ret;
   },
   list: function (oParams) {
@@ -49,9 +56,13 @@ var App = Backbone.Router.extend({
       Lablz.loadStoredModels([type]);
       
       if (!Lablz.shortNameToModel[type]) {
-        Lablz.fetchModels(type, {success: function() {
-          self.list.apply(self, [oParams]);
-        }});
+        Lablz.fetchModels(type, 
+           {success: function() {
+             self.list.apply(self, [oParams]);
+           },
+           error: Lablz.Error.getDefaultErrorHandler(),
+           sync: true}
+        );
         
         return;
       } 
@@ -64,8 +75,8 @@ var App = Backbone.Router.extend({
       c = null;
       
     if (!query && c && this.CollectionViews[type]) {
-      this.Collections[type].asyncFetch({page: page});
       this.changePage(this.CollectionViews[type], {page: page});
+      this.Collections[type].fetch({page: page});
       return this;
     }
     
@@ -81,12 +92,14 @@ var App = Backbone.Router.extend({
       this.CollectionViews[type] = listView;
     }
     
-    list.syncFetch({
+    list.fetch({
       add: true,
+      sync: true,
       success: function() {
         self.changePage(listView);
 //          self.loadExtras(oParams);
-      }
+      },
+      error: Lablz.Error.getDefaultErrorHandler()
     });
     
     return this;
@@ -123,9 +136,13 @@ var App = Backbone.Router.extend({
       Lablz.loadStoredModels([type]);
         
       if (!uri || !Lablz.shortNameToModel[type]) {
-        Lablz.fetchModels(type, {success: function() {
-          self.view.apply(self, [path]);
-        }});
+        Lablz.fetchModels(type, 
+          {success: function() {
+            self.view.apply(self, [path]);
+          },
+          error: Lablz.Error.getDefaultErrorHandler(),
+          sync: true}
+        );
         
         return;
       }
@@ -144,10 +161,10 @@ var App = Backbone.Router.extend({
     var views = edit ? this.EditViews : this.Views;
     var viewPageCl = edit ? Lablz.EditPage : Lablz.ViewPage;
     if (res) {
-      res.asyncFetch();
       this.Models[uri] = res;
       views[uri] = views[uri] || new viewPageCl({model: res});
       this.changePage(this.Views[uri]);
+      res.fetch();
       return this;
     }
     
@@ -172,7 +189,7 @@ var App = Backbone.Router.extend({
 //      self.loadExtras(oParams);
     }
     
-		res.syncFetch({success: success});
+		res.fetch({sync:true, success: success, error: Lablz.Error.getDefaultErrorHandler()});
 		return this;
   },
   
@@ -194,21 +211,33 @@ var App = Backbone.Router.extend({
     
     console.log("painting map");
   },
-  
+  showAlert: function(options) {
+    var msg = options.msg;
+    $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+    if (options.fade)
+      setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));    
+  },
+  checkErr: function() {
+    var q = U.getQueryParams();
+    var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
+    if (msg)
+      this.showAlert({msg: msg, fade: true});
+    
+    this.errMsg = null, this.info = null;
+  },
   changePage: function(view) {
-//    var backBtn = Lablz.Navigation.back;
-//    Lablz.Navigation.reset();
-
-//    console.log("change page: " + view.$el.tagName + view.$el.id);
+    try {
+      return this.changePage1(view);
+    } finally {
+      this.checkErr();
+    }
+  },
+  changePage1: function(view) {
     if (view == this.currentView) {
       console.log("Not replacing view with itself");
       return;
     }
     
-//    if (this.currentView)
-//      this.currentView.close();
-  
-//    $(selector).empty().append(view.render().el);
     view.$el.attr('data-role', 'page');
     if (!view.rendered) {
       view.render();
@@ -265,8 +294,10 @@ Lablz.startApp = function() {
   app = new App();
   Backbone.history.start();
   
-  if (!window.location.hash)
-    app.navigate(_.last(models).shortName, {trigger: true});
+  Lablz.homePage = Lablz.homePage || _.last(models).shortName;
+  if (!window.location.hash) {
+    app.navigate(Lablz.firstPage, {trigger: true});
+  }
 };
 
 $(document).ready(function () {

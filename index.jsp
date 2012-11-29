@@ -15,7 +15,7 @@
   </div>
   
   <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed">
-     <a target="#welcome" class="icon home">Home</a>
+     <a id="homeBtn" target="#" class="icon home">Home</a>
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
   </div>
 </script>  
@@ -29,7 +29,7 @@
   </div>
   
   <div data-role="footer">
-     <a target="#welcome" class="icon home">Home</a>
+     <a id="homeBtn" target="#" class="icon home">Home</a>
      <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
   </div>
 </script>  
