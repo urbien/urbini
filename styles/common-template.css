@@ -1880,9 +1880,19 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 #subscribe .content { display: none; }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px;
-                    /*box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);*/ border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
-.rounded_rect_tbl_bg { background-color: &[PrimaryColor_4];; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; padding: 0px;
+                    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.1); border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
+.rounded_rect_tbl, .rounded_rect_tbl_bg { 
+  background-color: &[PrimaryColor_4];;
+  background-image: rgba(&[PrimaryColor_1_rgb]; ,0.2);
+  background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb]; ,0.2), rgba(&[PrimaryColor_1_rgb]; ,0.2));
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb]; ,0.2)), to(rgba(&[PrimaryColor_1_rgb]; ,0.2)));
+  background-image: -o-linear-gradient(rgba(&[PrimaryColor_1_rgb]; ,0.2), rgba(&[PrimaryColor_1_rgb]; ,0.2));
+  
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];)";
+  
+}
 .submit_btn_container { text-align: center; margin-top: 10px; }
 
 /* the following rules required while item-rows highlighting */
@@ -1955,17 +1965,16 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .field_comment .comment { margin-top: 5px; }
 
 .rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
-  margin: 0px; padding: 2px; min-height: 22px;
+  margin: 0px; padding: 2px; min-height: 24px;
   color: &[PrimaryColor_4_text];;
-  background-color: rgba(&[PrimaryColor_1_rgb]; ,0.2);
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];)";
-  border: 2px solid &[PrimaryColor_1];; 
+  background-color: &[PrimaryColor_4];;
+  border: 1px solid &[PrimaryColor_1];;
+  border-color: &[ToolbarColor]; &[PrimaryColor_1]; &[PrimaryColor_1]; &[ToolbarColor];;  
   -webkit-appearance: none;
   width: 250px;
   height: auto;
   border-radius: 3px;
-  font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
+  font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal;
 }
 .rounded_rect_tbl .pointer input, .mobile_dlg input { text-align: right; }
 
