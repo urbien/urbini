@@ -692,7 +692,7 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
-      var lis = this.$('li').detach();
+      var lis = this.$('li');
       var frag = document.createDocumentFragment();
       
       var hasImgs = U.hasImages(this.model.models);
@@ -707,6 +707,7 @@ Lablz.ResourceListView = Backbone.View.extend({
           frag.appendChild(lis[i]);
       }
       
+      lis.detach();
       this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
       this.$el.listview('refresh');

@@ -14,13 +14,13 @@ Lablz.Error = {
         case 404:
           console.log('no results');
           if (originalModel && (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection))) // && originalModel.queryMap.length == 0)))
-            app.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
+            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
           else
-            app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
+            Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
           
           return;
         default:
-          app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
+          Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
           return;
         }
       }
