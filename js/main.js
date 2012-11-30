@@ -60,7 +60,6 @@ var App = Backbone.Router.extend({
            {success: function() {
              self.list.apply(self, [oParams]);
            },
-           error: Lablz.Error.getDefaultErrorHandler(),
            sync: true}
         );
         
@@ -98,8 +97,7 @@ var App = Backbone.Router.extend({
       success: function() {
         self.changePage(listView);
 //          self.loadExtras(oParams);
-      },
-      error: Lablz.Error.getDefaultErrorHandler()
+      }
     });
     
     return this;
