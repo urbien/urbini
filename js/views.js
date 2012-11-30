@@ -619,7 +619,9 @@ Lablz.ViewPage = Backbone.View.extend({
     console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
     
-    var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
+    var isGeo = (this.model.isA("Locatable") && this.model.get('latitude')) || 
+                (this.model.isA("Shape") && this.model.get('shapeJson'));
+    
     this.buttons = {
         left: [Lablz.BackButton, Lablz.LoginButtons],
         right: isGeo ? [Lablz.AroundMeButton] : null,
