@@ -236,7 +236,7 @@ var App = Backbone.Router.extend({
       return;
     }
     
-    view.$el.attr('data-role', 'page');
+    view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
     if (!view.rendered) {
       view.render();
     }

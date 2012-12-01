@@ -694,22 +694,24 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
-      var lis = this.$('li');
+      var lis = this.$('li').detach();
       var frag = document.createDocumentFragment();
       
-      var hasImgs = U.hasImages(this.model.models);
-      for (var i = 0; i < lis.length; i++) {
-        var m = this.model.models[i];
-        if (_.contains(modified, m.get('_uri'))) {
+      var models = this.model.models;
+      var hasImgs = U.hasImages(models);
+      for (var i = 0; i < models.length; i++) {
+        var m = models[i];
+        var uri = m.get('_uri');
+        if (i >= lis.length || _.contains(modified, uri)) {
           var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
-//              new Lablz.ResourceListItemView({model: m}).render();
           frag.appendChild(liView.render().el);
         }
         else
           frag.appendChild(lis[i]);
-      }
+//          frag.appendChild(U.toHTMLElement(lis[i].innerHTML));
+      }    
       
-      lis.detach();
+//      lis.detach();
       this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
       this.$el.listview('refresh');
