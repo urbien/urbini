@@ -222,3 +222,13 @@ body {
   border: 1px solid #ffba24;
 }
 #buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
+
+.ui-page {
+    -webkit-backface-visibility: hidden; 
+}
+
+.ui-mobile-viewport-transitioning,
+.ui-mobile-viewport-transitioning .ui-page {
+    overflow: visible;
+}
+
