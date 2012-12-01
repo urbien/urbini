@@ -1097,10 +1097,13 @@ Lablz.fetchModels = function(models, options) {
   models = models || Utils.union(Lablz.changedModels, Lablz.newModels);
   var success = options && options.success;
   var error = (options && options.error) || Lablz.Error.getDefaultErrorHandler();
+
+//  if (!error)
+  EndLessPage.onNextPageFetched();
+  
   if (!models.length) {
     if (success)
       success({fetched: 0});
-    
     return;
   }
   
@@ -1139,6 +1142,8 @@ Lablz.fetchModels = function(models, options) {
       Lablz.initModels();
       if (success)
         success();
+
+
       
       setTimeout(Lablz.saveModelsToStorage, 0);
       setTimeout(Lablz.fetchLinkedModels, 0);

@@ -16,7 +16,9 @@
   
   <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed" data-tap-toggle="false">
      <a id="homeBtn" target="#" class="icon home">Home</a>
+     <!-- nextPage button removed after endless page introduction
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
+     --> 
   </div>
 </script>  
 
