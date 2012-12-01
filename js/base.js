@@ -14,13 +14,13 @@ Lablz.Error = {
         case 404:
           console.log('no results');
           if (originalModel && (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection))) // && originalModel.queryMap.length == 0)))
-            app.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
+            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
           else
-            app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
+            Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
           
           return;
         default:
-          app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
+          Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
           return;
         }
       }
@@ -408,7 +408,6 @@ Backbone.sync = function(method, model, options) {
             model.add(new model.model(toAdd[i]));
         }
         
-        Lablz.Events.trigger('refresh', model, modified);
         Lablz.indexedDB.addItems(toAdd, model.type);
       }
     }
@@ -432,9 +431,9 @@ Backbone.sync = function(method, model, options) {
       else
         modified = model.get('_uri');
       
-      Lablz.Events.trigger('refresh', model, modified);
       save && save(data);
       defSuccess && defSuccess(resp, status, xhr);
+      Lablz.Events.trigger('refresh', model, modified);
     }
   });
     
@@ -485,6 +484,8 @@ Backbone.sync = function(method, model, options) {
   
   if (!key || key.indexOf("?") != -1 || !Lablz.indexedDB.getDataAsync(dbReqOptions)) // only fetch from db on regular resource list or propfind, with no filter
     runDefault();
+  else
+    options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
 }
 
 // END ///////////// Backbone sync override //////////////// END ///
@@ -1094,7 +1095,7 @@ Lablz.serverName = (function() {
 Lablz.fetchModels = function(models, options) {
   models = models || Utils.union(Lablz.changedModels, Lablz.newModels);
   var success = options && options.success;
-  var error = options && options.error;
+  var error = (options && options.error) || Lablz.Error.getDefaultErrorHandler();
 
   if (!error)
     EndLessPage.onNextPageFetched();
