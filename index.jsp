@@ -14,7 +14,7 @@
     </div>
   </div>
   
-  <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed">
+  <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed" data-tap-toggle="false">
      <a id="homeBtn" target="#" class="icon home">Home</a>
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
   </div>
@@ -27,8 +27,8 @@
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
     </ul>
   </div>
-  
-  <div data-role="footer">
+
+  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
      <a id="homeBtn" target="#" class="icon home">Home</a>
      <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
   </div>
@@ -176,7 +176,7 @@
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
+  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed" data-tap-toggle="false">
     <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
     <div id="errMsg"></div>
     <h1 id="pageTitle">{{= this.pageTitle }}</h1>

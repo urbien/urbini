@@ -699,7 +699,8 @@ Lablz.ResourceListView = Backbone.View.extend({
       
       var models = this.model.models;
       var hasImgs = U.hasImages(models);
-      for (var i = 0; i < models.length; i++) {
+      var num = Math.min(models.length, this.page * this.model.displayPerPage);
+      for (var i = 0; i < num; i++) {
         var m = models[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
@@ -722,9 +723,16 @@ Lablz.ResourceListView = Backbone.View.extend({
     }
   },
   getNextPage: function() {
+    this.page++;
     this.isLoading = true;
     var self = this;
     var before = this.model.models.length;
+    var requested = this.page * this.model.displayPerPage;
+    if (before > requested) {
+      this.refresh(this.model);
+      return;
+    }
+      
     var after = function() {
       self.isLoading = false;
     };

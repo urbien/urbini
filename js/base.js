@@ -177,7 +177,7 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
 Lablz.ResourceList = Backbone.Collection.extend({
   page: 1,
   perPage: 30,
-  displayPerPage: 15,
+  displayPerPage: 7, // for client-side paging, not used currently
   offset: 0,
   firstPage: 1,
   offsetParam: "$offset",
@@ -399,6 +399,7 @@ Backbone.sync = function(method, model, options) {
       var modified = [];
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
+          toAdd[i]._uri = Utils.getLongUri(toAdd[i]._uri);
           var existing = model.get(toAdd[i]._uri);
           if (existing) {
             existing.set(toAdd[i]);

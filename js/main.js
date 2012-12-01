@@ -237,9 +237,8 @@ var App = Backbone.Router.extend({
     }
     
     view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-    if (!view.rendered) {
+    if (!view.rendered)
       view.render();
-    }
 
     var transition = "slide"; //$.mobile.defaultPageTransition;
     this.currentView = view;
