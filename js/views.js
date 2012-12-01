@@ -530,13 +530,17 @@ Lablz.LoginButtons = Backbone.View.extend({
   }
 });
 
-Lablz.ListPage = Backbone.View.extend({
+Lablz.ListPage = Backbone.View.extend( {
   template: 'resource-list',
-  initialize:function () {
+  initialize: function () {
     _.bindAll(this, 'render', 'tap', 'nextPage', 'click', 'home');
     this.template = _.template(Lablz.Templates.get(this.template));
 //    if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
+
+    // endless page: bind onscroll event handler 
+    var self = this;
+    $(window).on('scroll', function() { EndLessPage.onScroll(self); });
   },
   events: {
     'tap': 'tap',
@@ -550,7 +554,7 @@ Lablz.ListPage = Backbone.View.extend({
   },
   nextPage: function(e) {
     Lablz.Events.trigger('nextPage', this.model);    
-  },
+ },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
@@ -590,6 +594,51 @@ Lablz.ListPage = Backbone.View.extend({
     return this;
   }
 });
+
+var EndLessPage = {
+    skipScrollEvent: false,
+    onScroll: function(view) {
+      var $t = EndLessPage;
+      var $wnd = $(window);
+      if ($t.skipScrollEvent) // wait for a new data portion
+        return;
+
+      var pageContainer = $(".ui-page-active");
+      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+        return;
+     
+     view.nextPage();
+     $t.skipScrollEvent = true;
+    },
+    onNextPageFetched: function () {
+      EndLessPage.skipScrollEvent = false;
+  }
+}
+
+/*
+Lablz.ListPage.prototype.skipScrollEvent = false;
+Lablz.ListPage.prototype.onScroll = function(e) {
+      var $wnd = $(window);
+      if (this.skipScrollEvent)
+        return;
+//      debugger;
+      var pageContainer = $(".ui-page-active"); //$('div[data-role="page"]');
+      
+//      console.log(pageContainer.height() - $wnd.scrollTop() - $wnd.height());
+      
+      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+        return;
+   console.log("call nextPage");
+  //debugger;
+      this.skipScrollEvent = true;
+      this.nextPage(e);
+    } 
+Lablz.ListPage.prototype.onNextPageFetched = function () {
+//      debugger;
+      this.skipScrollEvent = false;
+      console.log("onNextPageFetched")
+    }
+*/
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
