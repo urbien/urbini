@@ -1097,7 +1097,6 @@ Lablz.fetchModels = function(models, options) {
   var success = options && options.success;
   var error = (options && options.error) || Lablz.Error.getDefaultErrorHandler();
 
-//  if (!error)
   EndLessPage.onNextPageFetched();
   
   if (!models.length) {
