@@ -53,7 +53,7 @@ var App = Backbone.Router.extend({
     var force = this.forceRefresh;
     
     if (!Lablz.shortNameToModel[type]) {
-      Lablz.loadStoredModels([type]);
+      Lablz.loadStoredModels({models: [type]});
       
       if (!Lablz.shortNameToModel[type]) {
         Lablz.fetchModels(type, 
@@ -75,7 +75,7 @@ var App = Backbone.Router.extend({
       c = null;
       
     if (!query && c && this.CollectionViews[type]) {
-      this.changePage(this.CollectionViews[type], {page: page});
+      this.changePage(this.CollectionViews[type], {page: new Page(page)});
       this.Collections[type].fetch({page: page});
       return this;
     }
@@ -98,8 +98,7 @@ var App = Backbone.Router.extend({
       success: function() {
         self.changePage(listView);
 //          self.loadExtras(oParams);
-      },
-      error: Lablz.Error.getDefaultErrorHandler()
+      }
     });
     
     return this;
@@ -133,7 +132,7 @@ var App = Backbone.Router.extend({
     var type = Utils.getType(uri);
     uri = Utils.getLongUri(uri, type);
     if (!uri || !Lablz.shortNameToModel[type]) {
-      Lablz.loadStoredModels([type]);
+      Lablz.loadStoredModels({models: [type]});
         
       if (!uri || !Lablz.shortNameToModel[type]) {
         Lablz.fetchModels(type, 
@@ -157,9 +156,9 @@ var App = Backbone.Router.extend({
       res = this.Models[uri] = l && l.get(uri);
     }
     
-    var edit = params['-edit'] == 'y';
-    var views = edit ? this.EditViews : this.Views;
-    var viewPageCl = edit ? Lablz.EditPage : Lablz.ViewPage;
+//    var edit = params['-edit'] == 'y';
+    var views = this.Views; //edit ? this.EditViews : this.Views;
+    var viewPageCl = Lablz.ViewPage; // edit ? Lablz.EditPage : Lablz.ViewPage;
     if (res) {
       this.Models[uri] = res;
       views[uri] = views[uri] || new viewPageCl({model: res});
@@ -189,7 +188,7 @@ var App = Backbone.Router.extend({
 //      self.loadExtras(oParams);
     }
     
-		res.fetch({sync:true, success: success, error: Lablz.Error.getDefaultErrorHandler()});
+		res.fetch({sync:true, success: success});
 		return this;
   },
   
@@ -239,8 +238,9 @@ var App = Backbone.Router.extend({
     }
     
     view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-    if (!view.rendered)
+    if (!view.rendered) {
       view.render();
+    }
 
     var transition = "slide"; //$.mobile.defaultPageTransition;
     this.currentView = view;
@@ -258,10 +258,26 @@ var App = Backbone.Router.extend({
     
     // perform transition
     $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
-    Lablz.Events.trigger('changePage');
+    Lablz.Events.trigger('changePage', view);
     return view;
   }
 });
+
+var Page = function(p) {
+  this.page = p || 0;
+  this.inc = function() {
+    this.page++;
+  };
+  this.dec = function() {
+    this.page--;
+  };
+  this.set = function(p) {
+    this.page = p;
+  };
+  this.get = function() {
+    return this.page;
+  };
+}
 
 function init() {
   var error = function(e) {
@@ -271,6 +287,7 @@ function init() {
   Lablz.Templates.loadTemplates();
   Lablz.checkUser();
   Lablz.loadStoredModels();
+//  setTimeout(function() {Lablz.loadStoredModels({all: true})}, 100);
   if (!Lablz.changedModels.length && !Lablz.newModels.length) {
     Lablz.updateTables(Lablz.startApp, error);
     return;

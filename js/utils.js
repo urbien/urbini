@@ -47,12 +47,13 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
     return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : Lablz.serverName + "/" + Lablz.sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
   }
   else if (uri.indexOf('/') == -1) {
-    // uri is of form Tree?id=32000
+    // uri is of form Tree?id=32000 or just Tree
     type = typeof type == 'undefined' ? U.getTypeUri(uri) : type;
     if (!type)
       return null;
     
-    return U.getLongUri(type + uri.slice(uri.indexOf('?')), type);
+    var qIdx = uri.indexOf('?');
+    return U.getLongUri(type + (qIdx == -1 ? '' : uri.slice(qIdx)), type);
   }
   else if (uri.indexOf('sql') == 0) {
     // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
@@ -398,7 +399,22 @@ Utils.wrap = function(object, method, wrapper) {
 /**
  * Array that stores only unique elements
  */
-Utils.UArray = function() {};
+Utils.UArray = function() {
+//  this.handlers = {};
+//  this.on = function(method, handler) {
+//    this.handlers[method] = this.handlers[method] || [];
+//    this.handlers[method].push(handler);
+//  };
+//  this.removeHandler = function(method, handler) {
+//    return this.handlers[method] && this.handlers[method].remove(handler);
+//  };
+//  this.handler = function(method) { 
+//    if (this.handlers[method] && this.handlers[method].length) {
+//      _.each(this.handlers[method], function(m) {m()});
+//    }
+//  };
+};
+
 Utils.UArray.prototype.length = 0;
 (function() {
   var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
@@ -438,10 +454,14 @@ Utils.union = function(o1, o2) {
 
 Utils.wrap(U.UArray.prototype, 'push',
   function(original, item) {
-    if (_.contains(this, item))
-      return this;
-    else
-      return original(item);
+//    try {
+      if (_.contains(this, item))
+        return this;
+      else
+        return original(item);
+//    } finally {
+//      this.handler('push');
+//    }
   }
 );
 
@@ -620,6 +640,10 @@ Utils.decode = function(str) {
 
 Utils.toHTMLElement = function(html) {
   return $(html)[0];
+}
+
+Utils.getShortName = function(uri) {
+  return uri.slice(uri.lastIndexOf('/') + 1); // if lastIndexOf is -1, return original string
 }
 
 Utils.addToFrag = function(frag, html) {

@@ -200,7 +200,6 @@ Lablz.ResourceImageView = Backbone.View.extend({
     return this;
   },
   render: function(options) {
-    console.log("render resource");
     var type = this.model.type;
     var meta = this.model.__proto__.constructor.properties;
     meta = meta || this.model.properties;
@@ -533,11 +532,10 @@ Lablz.LoginButtons = Backbone.View.extend({
 Lablz.ListPage = Backbone.View.extend( {
   template: 'resource-list',
   initialize: function () {
-    _.bindAll(this, 'render', 'tap', 'nextPage', 'click', 'home');
+    _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
+    Lablz.Events.on('changePage', this.pageChanged);
     this.template = _.template(Lablz.Templates.get(this.template));
-//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
-//      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
-
+    
     // endless page: bind onscroll event handler 
     var self = this;
     $(window).on('scroll', function() { EndLessPage.onScroll(self); });
@@ -545,16 +543,25 @@ Lablz.ListPage = Backbone.View.extend( {
   events: {
     'tap': 'tap',
     'click': 'click',
-    'click #nextPage': 'nextPage',
+    'click #nextPage': 'getNextPage',
     'click #homeBtn': 'home'
+  },
+  pageChanged: function(view) {
+    this.visible = (this == view);
   },
   home: function() {
     app.navigate(Lablz.homePage, {trigger: true, replace: false});
     return this;
   },
-  nextPage: function(e) {
-    Lablz.Events.trigger('nextPage', this.model);    
- },
+  getNextPage: function() {
+    if (!this.visible)
+      return;
+    
+    this.listView && this.listView.getNextPage();
+  },
+//  nextPage: function(e) {
+//    Lablz.Events.trigger('nextPage', this.model);    
+//  },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
@@ -562,7 +569,7 @@ Lablz.ListPage = Backbone.View.extend( {
 
     this.$el.html(this.template(this.model.toJSON()));
     
-    var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
+    var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
     this.buttons = {
       left: [Lablz.BackButton, Lablz.LoginButtons],
       right: isGeo ? [Lablz.MapItButton, Lablz.AroundMeButton] : null
@@ -598,6 +605,9 @@ Lablz.ListPage = Backbone.View.extend( {
 var EndLessPage = {
     skipScrollEvent: false,
     onScroll: function(view) {
+      if (!view.visible)
+        return;
+      
       var $t = EndLessPage;
       var $wnd = $(window);
       if ($t.skipScrollEvent) // wait for a new data portion
@@ -607,12 +617,13 @@ var EndLessPage = {
       if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
         return;
      
-     view.nextPage();
-     $t.skipScrollEvent = true;
+      // order is important, because view.getNextPage() may return immediately if we have some cached rows
+      $t.skipScrollEvent = true; 
+      view.getNextPage();
     },
     onNextPageFetched: function () {
       EndLessPage.skipScrollEvent = false;
-  }
+    }
 }
 
 /*
@@ -668,7 +679,9 @@ Lablz.ViewPage = Backbone.View.extend({
     console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
     
-    var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
+    var isGeo = (this.model.isA("Locatable") && this.model.get('latitude')) || 
+                (this.model.isA("Shape") && this.model.get('shapeJson'));
+    
     this.buttons = {
         left: [Lablz.BackButton, Lablz.LoginButtons],
         right: isGeo ? [Lablz.AroundMeButton] : null,
@@ -723,15 +736,14 @@ Lablz.ViewPage = Backbone.View.extend({
 //});
 
 Lablz.ResourceListView = Backbone.View.extend({
+  displayPerPage: 7, // for client-side paging
   mapView: null,
   mapModel: null,
-  page: 1,
+  page: null,
   changedViews: [],
-  initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'swipe', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
-    Lablz.Events.on('nextPage', this.getNextPage);
+  initialize: function () {
+    _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('refresh', this.refresh);
-    this.model.on('add', this.renderOne, this);
     this.model.on('reset', this.render, this);
     return this;
   },
@@ -746,13 +758,12 @@ Lablz.ResourceListView = Backbone.View.extend({
       
       var models = this.model.models;
       var hasImgs = U.hasImages(models);
-      var num = Math.min(models.length, this.page * this.model.displayPerPage);
+      var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
       for (var i = 0; i < num; i++) {
         var m = models[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
-//              new Lablz.ResourceListItemView({model: m}).render();
           frag.appendChild(liView.render().el);
         }
         else
@@ -767,35 +778,35 @@ Lablz.ResourceListView = Backbone.View.extend({
       //Element has not been initiliazed
       this.$el.listview().listview('refresh');
     }
+    
   },
   getNextPage: function() {
-    this.page++;
-    this.isLoading = true;
-    var self = this;
     var before = this.model.models.length;
-    var requested = this.page * this.model.displayPerPage;
+    
+    // there is nothing to fetch, we've got them all
+    if (before < this.model.perPage)
+      return;
+    
+    this.isLoading = true;
+    var after = function() {
+      self.isLoading = false;
+      EndLessPage.onNextPageFetched();
+    };
+    
+    this.page++;
+    var self = this;
+    var requested = (this.page + 1) * this.displayPerPage;
+    
     if (before > requested) {
       this.refresh(this.model);
+      after();
       return;
     }
       
-    var after = function() {
-      self.isLoading = false;
-    };
-    
     this.model.getNextPage({
       success: after,
       error: after
     });      
-  },
-  checkScroll: function () {
-    var triggerPoint = 100; // 100px from the bottom
-    if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
-      console.log("scroll event");
-      this.getNextPage();
-    }
-    
-    return this;
   },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
