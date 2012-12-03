@@ -535,10 +535,6 @@ Lablz.ListPage = Backbone.View.extend( {
     _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
     Lablz.Events.on('changePage', this.pageChanged);
     this.template = _.template(Lablz.Templates.get(this.template));
-    
-    // endless page: bind onscroll event handler 
-    var self = this;
-    $(window).on('scroll', function() { EndLessPage.onScroll(self); });
   },
   events: {
     'tap': 'tap',
@@ -601,30 +597,6 @@ Lablz.ListPage = Backbone.View.extend( {
     return this;
   }
 });
-
-var EndLessPage = {
-    skipScrollEvent: false,
-    onScroll: function(view) {
-      if (!view.visible)
-        return;
-      
-      var $t = EndLessPage;
-      var $wnd = $(window);
-      if ($t.skipScrollEvent) // wait for a new data portion
-        return;
-
-      var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
-        return;
-     
-      // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      $t.skipScrollEvent = true; 
-      view.getNextPage();
-    },
-    onNextPageFetched: function () {
-      EndLessPage.skipScrollEvent = false;
-    }
-}
 
 /*
 Lablz.ListPage.prototype.skipScrollEvent = false;
@@ -736,15 +708,19 @@ Lablz.ViewPage = Backbone.View.extend({
 //});
 
 Lablz.ResourceListView = Backbone.View.extend({
-  displayPerPage: 7, // for client-side paging
+  displayPerPage: 20, // for client-side paging
   mapView: null,
   mapModel: null,
   page: null,
   changedViews: [],
+	skipScrollEvent: false,
+	
   initialize: function () {
     _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('refresh', this.refresh);
     this.model.on('reset', this.render, this);
+    var self = this;
+		$(window).on('scroll', function() { self.onScroll(self); });
     return this;
   },
   refresh: function(model, modified) {
@@ -790,7 +766,7 @@ Lablz.ResourceListView = Backbone.View.extend({
     this.isLoading = true;
     var after = function() {
       self.isLoading = false;
-      EndLessPage.onNextPageFetched();
+      self.onNextPageFetched();
     };
     
     this.page++;
@@ -869,6 +845,26 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     this.rendered = true;
 		return this;
+  },
+
+  // endless page function
+  onScroll: function(view) {
+    var $wnd = $(window);
+//    console.log(view.skipScrollEvent);
+    if (view.skipScrollEvent) // wait for a new data portion
+      return;
+
+    var pageContainer = $(".ui-page-active");
+    if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+      return;
+   
+//    console.log("CALLING getNextPage");
+    // order is important, because view.getNextPage() may return immediately if we have some cached rows
+    view.skipScrollEvent = true; 
+    view.getNextPage();
+  },
+  onNextPageFetched: function () {
+    this.skipScrollEvent = false;
   }
 });
 
