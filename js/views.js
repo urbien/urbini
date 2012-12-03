@@ -744,10 +744,13 @@ Lablz.ResourceListView = Backbone.View.extend({
       var lis = this.$('li').detach();
       var frag = document.createDocumentFragment();
       
-      var hasImgs = U.hasImages(this.model.models);
-      for (var i = 0; i < lis.length; i++) {
-        var m = this.model.models[i];
-        if (_.contains(modified, m.get('_uri'))) {
+      var models = this.model.models;
+      var hasImgs = U.hasImages(models);
+      var num = Math.min(models.length, this.page * this.model.displayPerPage);
+      for (var i = 0; i < num; i++) {
+        var m = models[i];
+        var uri = m.get('_uri');
+        if (i >= lis.length || _.contains(modified, uri)) {
           var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
 //              new Lablz.ResourceListItemView({model: m}).render();
           frag.appendChild(liView.render().el);
@@ -766,9 +769,16 @@ Lablz.ResourceListView = Backbone.View.extend({
     }
   },
   getNextPage: function() {
+    this.page++;
     this.isLoading = true;
     var self = this;
     var before = this.model.models.length;
+    var requested = this.page * this.model.displayPerPage;
+    if (before > requested) {
+      this.refresh(this.model);
+      return;
+    }
+      
     var after = function() {
       self.isLoading = false;
     };
