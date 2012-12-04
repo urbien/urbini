@@ -1043,8 +1043,13 @@ Lablz.loadStoredModels = function(options) {
     var type;
     if (hash.startsWith('http'))
       type = decodeURIComponent(hash);
-    else if (hash.startsWith('view/http'))
-      type = decodeURIComponent(hash.slice(5).replace("sql/", ""));
+    else if (hash.startsWith('view/http')) {
+      type = decodeURIComponent(hash.slice(5)).replace("sql/", "");
+      
+      qIdx = type.indexOf('?');
+      if (qIdx != -1)
+        type = type.slice(0, qIdx);
+    }
     else
       type = U.getType(hash);
     

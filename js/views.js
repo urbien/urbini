@@ -529,10 +529,6 @@ Lablz.ListPage = Backbone.View.extend( {
     _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
     Lablz.Events.on('changePage', this.pageChanged);
     this.template = _.template(Lablz.Templates.get(this.template));
-    
-    // endless page: bind onscroll event handler 
-    var self = this;
-    $(window).on('scroll', function() { EndLessPage.onScroll(self); });
   },
   events: {
     'tap': 'tap',
@@ -595,30 +591,6 @@ Lablz.ListPage = Backbone.View.extend( {
     return this;
   }
 });
-
-var EndLessPage = {
-    skipScrollEvent: false,
-    onScroll: function(view) {
-      if (!view.visible)
-        return;
-      
-      var $t = EndLessPage;
-      var $wnd = $(window);
-      if ($t.skipScrollEvent) // wait for a new data portion
-        return;
-
-      var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
-        return;
-     
-      // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      $t.skipScrollEvent = true; 
-      view.getNextPage();
-    },
-    onNextPageFetched: function () {
-      EndLessPage.skipScrollEvent = false;
-    }
-}
 
 /*
 Lablz.ListPage.prototype.skipScrollEvent = false;
@@ -730,15 +702,19 @@ Lablz.ViewPage = Backbone.View.extend({
 //});
 
 Lablz.ResourceListView = Backbone.View.extend({
-  displayPerPage: 7, // for client-side paging
+  displayPerPage: 20, // for client-side paging
   mapView: null,
   mapModel: null,
   page: null,
   changedViews: [],
+	skipScrollEvent: false,
+	
   initialize: function () {
     _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('refresh', this.refresh);
     this.model.on('reset', this.render, this);
+    var self = this;
+		$(window).on('scroll', function() { self.onScroll(self); });
     return this;
   },
   refresh: function(model, modified) {
@@ -784,7 +760,7 @@ Lablz.ResourceListView = Backbone.View.extend({
     this.isLoading = true;
     var after = function() {
       self.isLoading = false;
-      EndLessPage.onNextPageFetched();
+      self.onNextPageFetched();
     };
     
     this.page++;
@@ -863,6 +839,26 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     this.rendered = true;
 		return this;
+  },
+
+  // endless page function
+  onScroll: function(view) {
+    var $wnd = $(window);
+//    console.log(view.skipScrollEvent);
+    if (view.skipScrollEvent) // wait for a new data portion
+      return;
+
+    var pageContainer = $(".ui-page-active");
+    if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+      return;
+   
+//    console.log("CALLING getNextPage");
+    // order is important, because view.getNextPage() may return immediately if we have some cached rows
+    view.skipScrollEvent = true; 
+    view.getNextPage();
+  },
+  onNextPageFetched: function () {
+    this.skipScrollEvent = false;
   }
 });
 
@@ -919,13 +915,15 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
     var imgSrc = json['v_imgSrc'];
     if (!imgSrc)
       imgSrc = 'forResource';
+    if (typeof json[imgSrc] == 'undefined')
+      return this;
     var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
-
-    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
-    json['modifiedBy'].value = modBy;
-    
     var tmpl_data = _.extend(json, {rUri: rUri});
 
+    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
+    tmpl_data['modifiedBy'].value = modBy;
+    var isHorizontal = ($(window).height() < $(window).width());
+//    alert(isHorizontal);
     var img = json['resourceMediumImage'];
     if (typeof img != 'undefined') {
       if (img.indexOf('Image/') == 0)
@@ -938,10 +936,12 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
       tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value) + '?m_p=comments&b_p=forum');
 
     var votesFor = tmpl_data['v_showVotesFor'];
-    if (typeof commentsFor != 'undefined'  &&  json[votesFor]) 
+    if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
       tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value) + '?m_p=votes&b_p=votable');
 
-    var vFor = tmpl_data['v_showVotesFor'];
+    var renabFor = tmpl_data['v_showRenabFor'];
+    if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
+      tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value) + '?m_p=nabs&b_p=forResource');
     
     this.$el.html(this.template(tmpl_data));
     return this;

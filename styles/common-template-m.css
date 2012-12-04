@@ -108,18 +108,13 @@ body {
 
 .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
 .nab a {text-decoration: none;}
-/* #resourceList .grid .renab { font-size: bold; color: #757575; text-align: center;} */
-/* #resourceList .grid .renab img { width:16px;height:14px; margin-top: -4px;} */
-/* #resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}*/
-/* #resourceList .nab .action, #div_Activity .nab .action {color: #98c165; font-weight:bold;} */ 
 
 .nab .action {color: #98c165; font-weight:bold; font-size: 8pt;}
 
 .dList {padding-top:10px; background: #f7f5f7;}
 .pList {padding-top:15px;padding-left:15px; background: #f7f5f7;}
 .aList { padding:15px 0px 0px 0px; background: #f7f5f7;}
-#resourceList .nab .pLink {color: #757575;}
-.nab .pLink {color: #757575;}
+.renab, .nab .pLink {color: #757575;}
 /* BOARD CELL
 
 #renabs span.action   {font-weight:bold;font-size:8pt;color:#000066;}
@@ -138,8 +133,6 @@ body {
 
 #comments a, #renabs a {color: #f47414; }
 .nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
-/*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
-/*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
 
 .nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
 .nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
@@ -149,51 +142,7 @@ body {
 
 .anab .nabRL  { display: inline; }
 .anab .nabRL div { padding: 0px 10px 10px 10px;}
-
-.lc img {text-align: center; max-width:14px;}
-
-.lc a, .lc1 a { 
-  border: 0; 
-  cursor: pointer; 
-  font-style: normal;
-  padding: 3px 5px;
-  font-size: 11px;
-  position: relative; 
-  text-align: center;
-  text-decoration: none;
-  color: #757575; 
-  /* vertical margin is the opposite of button's awesomeness */
-  margin-top: 0;
-  margin-bottom: 0;
-  
-  /* not all browser support these, but who cares? */
-
-  text-shadow:1px -2px 5px #ffffff;
-
-  border-radius: 10px; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
-  
-  background-color: #eeeeee;
-  background-image: -moz-linear-gradient(top center, #eeeeee, #ffffff);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeee), to(#ffffff));
-  background-image: -o-linear-gradient(#eeeeee, #ffffff);
-  background-image:  url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  border: 1px solid #eeeeee;
-  
-  /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
-  display: -moz-inline-stack;
-  display: inline-block;
-  vertical-align: middle;
-  *display: inline;
-  position: relative;
-  
-  /* IE luv */
-  zoom: 1;
-  behavior: url(PIE.htc);
-  
-  /*disable text selection (Firefox only)*/
-  -moz-user-select: none;
-}
+.modP tr {vertical-align: top;}
 .lc1 a {
   padding: 5px;
   background-color: #ffba24;
@@ -209,7 +158,78 @@ body {
 .lc1 img {
   max-width: 32px;
 }
+.btn { text-align: center; padding-bottom: 3px; }
 
+@media screen and (orientation: portrait) {
+  .nab {
+    background-color: #0f0;
+  }
+}
+
+@media (max-width: 320px) {
+  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+  .nab .anab .galleryItem_css3 img {max-width: 265px;}
+  .nabBoard {width: 282px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+}
+
+/*
+.ui-page {
+    -webkit-backface-visibility: hidden; 
+}
+
+.ui-mobile-viewport-transitioning,
+.ui-mobile-viewport-transitioning .ui-page {
+    overflow: visible;
+}
+*/
+
+/*
+#buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
+.lc img {text-align: center; max-width:14px;}
+
+.lc a, .lc1 a { 
+  border: 0; 
+  cursor: pointer; 
+  font-style: normal;
+  padding: 3px 5px;
+  font-size: 11px;
+  position: relative; 
+  text-align: center;
+  text-decoration: none;
+  color: #757575; 
+  * vertical margin is the opposite of button's awesomeness *
+  margin-top: 0;
+  margin-bottom: 0;
+  
+  * not all browser support these, but who cares? *
+
+  text-shadow:1px -2px 5px #ffffff;
+
+  border-radius: 10px; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+  
+  background-color: #eeeeee;
+  background-image: -moz-linear-gradient(top center, #eeeeee, #ffffff);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeee), to(#ffffff));
+  background-image: -o-linear-gradient(#eeeeee, #ffffff);
+  background-image:  url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+  border: 1px solid #eeeeee;
+  
+  * cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ *
+  display: -moz-inline-stack;
+  display: inline-block;
+  vertical-align: middle;
+  *display: inline;
+  position: relative;
+  
+  * IE luv *
+  zoom: 1;
+  behavior: url(PIE.htc);
+  
+  *disable text selection (Firefox only)*
+  -moz-user-select: none;
+}
 .lc a:hover, .lc a:focus, .lc1 a:hover, .lc1 a:focus {
   color: #757575; 
   background-color: #ffc416;
@@ -221,14 +241,6 @@ body {
   background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc2NTUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZBNzYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkM0MTYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c2NTUpIiAvPgo8L3N2Zz4=);
   border: 1px solid #ffba24;
 }
-#buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
-
-.ui-page {
-    -webkit-backface-visibility: hidden; 
-}
-
-.ui-mobile-viewport-transitioning,
-.ui-mobile-viewport-transitioning .ui-page {
-    overflow: visible;
-}
-
+*/
+/*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
+/*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
