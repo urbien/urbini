@@ -107,12 +107,10 @@ Lablz.ResourceView = Backbone.View.extend({
           displayedProps[idx++] = p;
           json[p] = Utils.makeProp(prop, json[p]);
           if (!groupNameDisplayed) {
-//            this.$el.append(this.propGroupsDividerTemplate({value: pgName}));
             U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             groupNameDisplayed = true;
           }
 
-//          this.$el.append(this.propRowTemplate(json[p]));
           var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
           if (json[p].name.length + v.length > maxChars)
             U.addToFrag(frag, this.propRowTemplate2(json[p]));
@@ -154,16 +152,12 @@ Lablz.ResourceView = Backbone.View.extend({
           otherLi += this.propRowTemplate2(json[p]);
         else
           otherLi += this.propRowTemplate(json[p]);
-
-//        otherLi += this.propRowTemplate(json[p]);
       }
       else {
         if (json[p].name.length + v.length > maxChars)
           U.addToFrag(frag, this.propRowTemplate2(json[p]));
         else
           U.addToFrag(frag, this.propRowTemplate(json[p]));
-//        U.addToFrag(frag, this.propRowTemplate(json[p]));
-//      this.$el.append(this.propRowTemplate(json[p]));
       }
     }
     

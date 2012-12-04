@@ -168,7 +168,6 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
       
       linkedModels.push(l[i]);
     }
-//    linkedModels = _.filter(Lablz.requiredModels.linkedModels, function(model) {return _.contains(linkedModels, model.type)});
   }
   
   if (linkedModels.length) {
@@ -290,9 +289,6 @@ Lablz.ResourceList = Backbone.Collection.extend({
   },
   fetch: function(options) {
     var self = this;
-//    setTimeout(function() {
-//      self.model.prototype.fetchModelsForLinkedResources.call(self.model);
-//    }, 100);
     options = options || {};
     options.add = true;
     this.queryMap = this.queryMap || {};
@@ -309,26 +305,6 @@ Lablz.ResourceList = Backbone.Collection.extend({
 
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
-
-//  ,
-//  onAdd: function(item) {
-//    if (this.lastFetchOrigin == 'db')
-//      return;
-//    
-//    var timestampProp = this.model.timestamp;
-//    if (!timestampProp)
-//      return;
-//    
-//    var existing = this.where({_uri: item.get('_uri')});
-//    if (!existing || !existing.length)
-//      return;
-//    
-//    var dateModified = item[timestampProp];
-//    if (dateModified && (!this.has(timestampProp) || dateModified > this.get(timestampProp))) {
-//      this.remove(existing);
-//      Lablz.indexedDB.addItem(item);
-//    }
-//  }
 });
 
 Lablz.MapModel = Backbone.Model.extend({
@@ -393,9 +369,6 @@ Backbone.sync = function(method, model, options) {
         var longUri = Utils.getLongUri(r._uri, model.type);
         var saved = model.get(longUri);
         saved = saved && saved.get(tsProp);
-//        var saved = $.grep(model.models, function(o) {
-//          return o.id == longUri;
-//        })[0][tsProp];
         if (typeof saved === "undefined")
           saved = 0;
         var newLastModified = r[tsProp];
@@ -799,35 +772,6 @@ Lablz.indexedDB.updateStores = function() {
   created.length && console.log('2. created tables: ' + created.join(","));
 }
 
-//Lablz.indexedDB.addModels = function(models) {
-//  var mStore = Lablz.indexedDB.modelStoreName;
-////  var snm = Lablz.shortNameToModel;
-//  var db = Lablz.indexedDB.db;
-//  var trans = db.transaction([mStore], "readwrite");
-//  var store = trans.objectStore(mStore);
-//  for (var i = 0; i < models.length; i++) {
-//    addModel(models[i]);
-//  }
-//
-//  function addModel(model) {
-//    var request;
-//    try {
-//      request = store.put(model);
-//    } catch (err) {
-////      db.close();
-//      return;
-//    }
-//    
-//    request.onsuccess = function(e) {
-//      console.log("Added model " + model.displayName + " to db: ", e);
-//    };
-//    
-//    request.onerror = function(e) {
-//      console.log("Error adding model " + model.displayName + " to db: ", e);
-//    };    
-//  }
-//};
-
 Lablz.indexedDB.addItems = function(items, classUri) {
   if (!items || !items.length)
     return;
@@ -852,7 +796,6 @@ Lablz.indexedDB.addItems = function(items, classUri) {
   var store = trans.objectStore(className);
   _.each(items, function(item) {
     var request = store.put(item);
-  
     request.onsuccess = function(e) {
 //      console.log("Added item to db: ", e);
     };
