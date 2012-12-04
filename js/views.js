@@ -921,13 +921,15 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
     var imgSrc = json['v_imgSrc'];
     if (!imgSrc)
       imgSrc = 'forResource';
+    if (typeof json[imgSrc] == 'undefined')
+      return this;
     var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
-
-    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
-    json['modifiedBy'].value = modBy;
-    
     var tmpl_data = _.extend(json, {rUri: rUri});
 
+    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
+    tmpl_data['modifiedBy'].value = modBy;
+    var isHorizontal = ($(window).height() < $(window).width());
+//    alert(isHorizontal);
     var img = json['resourceMediumImage'];
     if (typeof img != 'undefined') {
       if (img.indexOf('Image/') == 0)
@@ -940,10 +942,12 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
       tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value) + '?m_p=comments&b_p=forum');
 
     var votesFor = tmpl_data['v_showVotesFor'];
-    if (typeof commentsFor != 'undefined'  &&  json[votesFor]) 
+    if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
       tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value) + '?m_p=votes&b_p=votable');
 
-    var vFor = tmpl_data['v_showVotesFor'];
+    var renabFor = tmpl_data['v_showRenabFor'];
+    if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
+      tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value) + '?m_p=nabs&b_p=forResource');
     
     this.$el.html(this.template(tmpl_data));
     return this;
