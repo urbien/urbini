@@ -14,7 +14,7 @@
     </div>
   </div>
   
-  <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed" data-tap-toggle="false">
+  <div data-role="footer" class="ui-footer ui-bar-c">
      <a id="homeBtn" target="#" class="icon home">Home</a>
      <!-- nextPage button removed after endless page introduction
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
@@ -30,7 +30,7 @@
     </ul>
   </div>
 
-  <div data-role="footer" data-position="fixed" data-tap-toggle="false">
+  <div data-role="footer">
      <a id="homeBtn" target="#" class="icon home">Home</a>
      <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
   </div>
@@ -178,7 +178,7 @@
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed" data-tap-toggle="false">
+  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner">
     <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
     <div id="errMsg"></div>
     <h1 id="pageTitle">{{= this.pageTitle }}</h1>
@@ -210,7 +210,6 @@
 <script type="text/template" id="loginTemplate">
   <authenticateByFacebook mobile="y" />
 </script>
-
 <script type="text/template" id="masonry-mod-list-item">
   <div class="nab nabBoard masonry-brick" style="cursor: default" id="uri0">
     <div class="anab">
@@ -223,13 +222,13 @@
     <table width="100%" class="modP">
       <tr>
         <td class="urbien" width="1%">
-          <a href="{{= modifiedBy }}">
+          <a href="{{= modifiedBy.value }}">
             <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
           </a>
         </td>
         <td>
           <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
-          <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">Healthy living</a></div>
+          <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
           <br/><br/>&#160;
           <span class="commentListDate">{{= Utils.getFormattedDate(dateModified) }}</span>
         </td>
@@ -238,21 +237,23 @@
     <table width="100%">
       <tr>
       <td colspan="2">
-        <div class="lc">
-          <div id="buttons">
+        <div class="btn">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
-            <a class="lc" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
-              <img src="http://public.urbien.com/icons/comment.png" title="Comment"></img>
-            </a>&#160;&#160;
-          {{ } }}
-            <a class="lc" href="{{= 'mkResource.html?.vote=Like&-changeInplace=y&type=http://www.hudsonfog.com/voc/aspects/tags/Vote&bUri=http://urbien.com/sql%3furi%3d' + encodeURIComponent(v_showCommentsFor) }}"> 
-              <img src="http://public.urbien.com/icons/like.png" title="Like"></img>
-            </a>&#160;&#160;&#160;
-            <a class='renab' href="nabit?-inPage=y&originalImageUrl=http://urbien.com/wf/ThirtyDayTrial/240BAA89D9A398AEC2A359D2BCCEA7A9/thumbnail/app-as-dragon-on-the-data-gold.jpg_featured.jpg&sourceUrl=http://urbien.com/sql/www.hudsonfog.com/voc/commerce/urbien/ThirtyDayTrial%3fid%3d41118">
-              <img src="http://s3.amazonaws.com/public.urbien.com/icons/pin1.png" />Nab
+            <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+              C<!--img src="http://public.urbien.com/icons/comment.png" title="Comment"></img-->
             </a>
+          {{ } }}
+          {{ if (typeof v_showCommentsFor != 'undefined') { }}
+            <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+              L<!-- img src="http://public.urbien.com/icons/like.png" title="Like"></img -->
+            </a>
+          {{ } }}
+          {{ if (typeof v_showRenabFor != 'undefined') { }}
+            <a data-inline="true" data-role="button" data-mini="true" data-icon="pin" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+              <!--img src="http://s3.amazonaws.com/public.urbien.com/icons/pin1.png" / -->Nab
+            </a>
+          {{ } }}
           </div>
-        </div>
       </td>
       </tr>
     </table>
