@@ -159,13 +159,13 @@ body {
   max-width: 32px;
 }
 .btn { text-align: center; padding-bottom: 3px; }
-
+/*
 @media screen and (orientation: portrait) {
   .nab {
     background-color: #0f0;
   }
 }
-
+*/
 @media (max-width: 320px) {
   .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
   .nab .anab .galleryItem_css3 img {max-width: 265px;}
