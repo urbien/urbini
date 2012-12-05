@@ -295,11 +295,16 @@ function init() {
 
   Lablz.fetchModels(null, {success: function() {    
     Lablz.updateTables(Lablz.startApp, error);
-  }});
+  }, sync: true});
 }
 
 //if (typeof jq != 'undefined')
 //  Backbone.setDomLibrary(jq);
+
+_.templateSettings = {
+  evaluate:    /\{\{(.+?)\}\}/g,
+  interpolate: /\{\{=(.+?)\}\}/g
+};
 
 var app;
 Lablz.startApp = function() {

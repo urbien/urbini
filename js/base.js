@@ -112,6 +112,8 @@ packages.Resource = Backbone.Model.extend({
   fetch: function(options) {
     var self = this;
     options = options || {};
+//    options.data = options.data || {};
+//    options.data.lastFetchedOn = this.lastFetchedOn;
     options.error = Lablz.Error.getDefaultErrorHandler(options.error);
     var success = options.success;
     options.success = function() {
@@ -173,7 +175,7 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
   if (linkedModels.length) {
 //    linkedModels = _.uniq(linkedModels);
     Lablz.loadStoredModels({models: linkedModels});
-    Lablz.fetchModels();
+    Lablz.fetchModels(null, {sync: false});
   }
 }
 
@@ -342,13 +344,13 @@ Backbone.defaultSync = Backbone.sync;
 Backbone.sync = function(method, model, options) {
   var now = new Date().getTime();
   var stale = false;
-  var lastFetchedOn = model instanceof Backbone.Model ? model.get('_lastFetchedOn') || (model.collection && model.collection._lastFetchedOn) : model._lastFetchedOn;
-  if (lastFetchedOn && now - lastFetchedOn < 60000)
+  var lastFetchedOn = model instanceof Backbone.Model ? model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn) : model._lastFetchedOn;
+  if (!lastFetchedOn || now - lastFetchedOn > 60000)
     stale = true;
-  
-  if (!stale && options.noDB) {
-    Lablz.defaultSync.apply(this, arguments);
-    return;
+
+  options.headers = options.headers || {};
+  if (stale && lastFetchedOn) {
+    _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
   }
   
   var defSuccess = options.success;
@@ -429,9 +431,9 @@ Backbone.sync = function(method, model, options) {
     return Lablz.defaultSync(method, model, saveOptions);
   }
   
-  if (method !== 'read')
+  if (method !== 'read' || stale || options.noDB)
     return runDefault();
-    
+
   var key, now, timestamp, refresh;
   var success = function(results) {
     // provide data from indexedDB instead of a network call
@@ -450,9 +452,9 @@ Backbone.sync = function(method, model, options) {
         }
         
         if (stale)
-          return;
-        else
           return runDefault();
+        else
+          return;
       }
       
       model.lastFetchOrigin = 'db';
@@ -1128,8 +1130,9 @@ Lablz.serverName = (function() {
 
 Lablz.fetchModels = function(models, options) {
   models = models || Utils.union(Lablz.changedModels, Lablz.newModels);
-  var success = options && options.success;
-  var error = (options && options.error) || Lablz.Error.getDefaultErrorHandler();
+  options = options || {};
+  var success = options.success;
+  var error = options.error || Lablz.Error.getDefaultErrorHandler();
 
   if (models.length) {
     var now = new Date().getTime();
@@ -1161,8 +1164,11 @@ Lablz.fetchModels = function(models, options) {
   }
   
   var modelsCsv = JSON.stringify(models);
-  $.ajax(Lablz.serverName + "/backboneModel?models=" + encodeURIComponent(modelsCsv), {complete: 
-    function(jqXHR, status) {
+  $.ajax({
+    url: Lablz.serverName + "/backboneModel", 
+    type: 'POST',
+    data: {"models": modelsCsv},
+    complete: function(jqXHR, status) {
       if (status != 'success') {
         console.log("couldn't fetch models");
 //        alert("Oops! Couldn't initialize awesomeness!");
