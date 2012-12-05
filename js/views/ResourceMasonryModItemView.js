@@ -7,8 +7,9 @@ define([
   'utils',
   'events',
   'templates',
+  'modelsBase',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates) {
+], function($, Backbone, _, U, Events, Templates, MB) {
   return Backbone.View.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
@@ -37,10 +38,12 @@ define([
         imgSrc = 'forResource';
       if (typeof json[imgSrc] == 'undefined')
         return this;
-      var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
+      
+      var snmHint = {shortNameToModel: MB.shortNameToModel};
+      var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
+      var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value, snmHint));
       tmpl_data['modifiedBy'].value = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
@@ -53,15 +56,15 @@ define([
       }
       var commentsFor = tmpl_data['v_showCommentsFor'];
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value) + '?m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, snmHint) + '?m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value) + '?m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, snmHint) + '?m_p=votes&b_p=votable');
   
       var renabFor = tmpl_data['v_showRenabFor'];
       if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value) + '?m_p=nabs&b_p=forResource');
+        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, snmHint) + '?m_p=nabs&b_p=forResource');
       
       this.$el.html(this.template(tmpl_data));
       return this;

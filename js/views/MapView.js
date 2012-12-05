@@ -5,51 +5,24 @@ define([
   'templates',
   'events',
   'utils',
-  'lib/leaflet',
-  'lib/leaflet.markercluster',
-  'maps',
+  'leaflet',
+  'leafletMarkerCluster',
+  '../maps',
   'jqueryMobile'
 ], function($, Backbone, _, Templates, Events, U, L, LM, Mapper) {
   
-  return Backbone.View.extend({
-  //  template: 'mapTemplate',
+  var MapView = Backbone.View.extend({
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap', 'resetMap');
-      Lablz.Events.on("mapIt", this.toggleMap);
-      Lablz.Events.on("changePage", this.resetMap);
-  //    this.template = _.template(Lablz.Templates.get(this.template));
-      this.ready = false;
-      self = this;
-      
-  //    $.when(
-          // TODO: check if leaflet css has already been loaded
-  //      $.ajax(Lablz.serverName + "/styles/leaflet/" + ($.browser.msie ? "leaflet.ie.css" : "leaflet.css")),
-  //      ((typeof L != 'undefined' && L.Map) || $.ajax(Lablz.serverName + "/leaflet.js")),
-  //      ((typeof L != 'undefined' && L.MarkerClusterGroup) || $.ajax(Lablz.serverName + "/leaflet.markercluster.js")),
-  //      (typeof Lablz.Leaflet != 'undefined' || $.ajax(Lablz.serverName + "/maps.js"))        
-  //    ).then(
-  //      function () {
-          self.ready = true;
-  //      }
-  //    );
+      Events.on("mapIt", this.toggleMap);
+      Events.on("changePage", this.resetMap);
     },
     events: {
       'tap': 'tap',
     },
-    tap: Lablz.Events.defaultTapHandler,
-    click: Lablz.Events.defaultClickHandler,  
+    tap: Events.defaultTapHandler,
+    click: Events.defaultClickHandler,  
     render:function (eventName) {
-      var self = this;
-      if (!this.ready) {
-        setTimeout(
-          function() {
-            this.constructor.prototype.render.call(self, eventName);
-          }
-        , 100);
-        
-        return this;
-      }
-      
       var m = this.model;
       m = m instanceof Backbone.Collection ? m.model : m.constructor;
       if (U.isA(m, "Shape")) {
@@ -63,7 +36,7 @@ define([
         return;
       
       var bbox = metadata.bbox;
-      var center = this.constructor.getCenterLatLon(bbox);
+      var center = MapView.getCenterLatLon(bbox);
       
       var pMap = U.getHashParams();
       var poi = pMap['-item'];
@@ -72,7 +45,7 @@ define([
       if (poi) {
         coords = [pMap.longitude, pMap.latitude];
         center = [coords[1], coords[0]];
-        poi = this.constructor.getBasicGeoJSON('Point', coords);
+        poi = MapView.getBasicGeoJSON('Point', coords);
         if (isMe) {
           poi.properties.name = 'Your location';
           poi.properties.html = '<a href="' + Lablz.pageRoot + '#view/profile">You are here</a>';
@@ -88,7 +61,7 @@ define([
       var map = this.mapper = new Lablz.Leaflet(div);
       map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
   //        , {'load': function() {
-  //      Lablz.Events.trigger('mapReady', self.model);
+  //      Events.trigger('mapReady', self.model);
   //      self.$el.append(frag);
   //      console.log('render map');      
   //    }});
@@ -106,7 +79,7 @@ define([
       frag.appendChild(div);
       map.finish();
       
-      Lablz.Events.trigger('mapReady', self.model);
+      Events.trigger('mapReady', self.model);
       self.$el.append(frag);
       this.hide();
       return this;
@@ -136,7 +109,6 @@ define([
   },
   {
     getMapItemHTML: function(model) {
-      var tpl = Lablz.Templates;
       var m = model;
       var grid = U.getGridCols(m);
     
@@ -165,17 +137,17 @@ define([
           medImg = {value: U.decode(medImg)};
           width && (medImg.width = width);
           height && (medImg.height = height);
-          data.image = _.template(tpl.get("imagePT"))(medImg);
-          return _.template(tpl.get("mapItemTemplate"))(data);
+          data.image = _.template(Templates.get("imagePT"))(medImg);
+          return _.template(Templates.get("mapItemTemplate"))(data);
         }
       }
       
-      return _.template(tpl.get("mapItemTemplate"))(data);
+      return _.template(Templates.get("mapItemTemplate"))(data);
     },
     collectionToGeoJSON: function(model, metadata) {
       var gj = [];
       _.each(model.models, function(m){
-        var mGJ = this.constructor.modelToGeoJSON(m, metadata);
+        var mGJ = MapView.modelToGeoJSON(m, metadata);
         if (mGJ)
           gj.push(mGJ);
       })
@@ -184,7 +156,7 @@ define([
     },
     modelToGeoJSON: function(model, metadata) {
       if (model instanceof Backbone.Collection)
-        return this.constructor.collectionToGeoJSON(model);
+        return MapView.collectionToGeoJSON(model);
       
       var isShape = model.isA("Shape");
       var coords, area;
@@ -204,7 +176,7 @@ define([
       }
       
         
-      var type = this.constructor.getShapeType(coords);
+      var type = MapView.getShapeType(coords);
       if (metadata) {
         var bbox;
         if (isShape)
@@ -223,17 +195,60 @@ define([
           metadata.bbox = bbox; 
       }
       
-      var json = this.constructor.getBasicGeoJSON(type, coords);
+      var json = MapView.getBasicGeoJSON(type, coords);
       json.properties.name = model.constructor.displayName + " " + model.get('davDisplayName');
       if (area)
         json.properties.area = area;
       
-      json.properties.html = this.constructor.getMapItemHTML(model);
+      json.properties.html = MapView.getMapItemHTML(model);
       return json;
     },
     
     getCenterLatLon: function(bbox) {
       return [(bbox[1][0] + bbox[0][0]) / 2, (bbox[1][1] + bbox[0][1]) / 2];
+    },
+    
+    getBasicGeoJSON: function(shapeType, coords) {
+      return {
+        "type": "Feature",
+        "properties": {
+        },
+        "geometry": {
+          "type": shapeType,
+          "coordinates": coords
+        }
+      };
+    },
+    
+    getShapeType: function(rings) {
+      var depth = MapView.getDepth(rings);
+      switch (depth) {
+      case 1:
+        return "Point";
+      case 2:
+        return null;
+      case 3:
+        return "Polygon";
+      case 4:
+        return "MultiPolygon";
+      default:
+        return null;
+      }
+    },
+    
+    getDepth: function(arr) {
+      var depth = 1;
+      for (var i = 0; i < arr.length; i++) {
+        var type = U.getObjectType(arr[i]);
+        if (type === '[object Array]')
+          depth = Math.max(depth, U.getDepth(arr[i]) + 1);
+        else
+          return depth;
+      }
+      
+      return depth;
     }
   });
+  
+  return MapView;
 });

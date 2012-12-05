@@ -3,8 +3,9 @@ define([
   'backbone',
   'underscore',
   'templates',
+  'events',
   'jqueryMobile'
-], function($, Backbone, _, Templates) {
+], function($, Backbone, _, Templates, Events) {
   return Backbone.View.extend({
     template: 'backButtonTemplate',
     events: {
@@ -17,7 +18,7 @@ define([
     },
     back: function(e) {
       e.preventDefault();
-      App.backClicked = true;
+      Events.trigger('back');
       window.history.back();
       return this;
     },

@@ -5,6 +5,7 @@ define([
   'templates',
   'events',
   'utils',
+  'viewsBase',
   'jqueryMobile'
 ], function($, Backbone, _, Templates, Events, U) {
 

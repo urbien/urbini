@@ -1,31 +1,13 @@
-//require.config({
-//  paths: {
-//    jquery: 'lib/jquery',
-//    jqueryMobile: 'lib/jquery-mobile',
-//    jqmConfig: 'lib/jqm-config',
-//    underscore: 'lib/underscore',
-//    backbone: 'lib/backbone'
-//  }
-//
-//});
-//
-//require([
-//  'app'
-//], function(App){
-//  // The "app" dependency is passed in as "App"
-//  App.initialize();
-//});
-
-
 require.config({
-  baseUrl: "/js/",
   paths: {
     jquery: 'lib/jquery',
-    jqmConfig: 'lib/jqm-config',
+    jqmConfig: 'jqm-config',
     jqueryMobile: 'lib/jquery.mobile',
     underscore: 'lib/underscore',
     backbone: 'lib/backbone',
     indexedDBShim: 'lib/IndexedDBShim',
+    leaflet: 'lib/leaflet',
+    leafletMarkerCluster: 'lib/leaflet.markercluster'
 //    templates: '../templates'
   },
   shim: {
@@ -41,7 +23,9 @@ require.config({
       exports: 'Backbone'
     },
     jqmConfig: ['jquery'],
-    jqueryMobile: ['jquery','jqmConfig']
+    jqueryMobile: ['jquery','jqmConfig'],
+    maps: ['leaflet', 'leafletMarkerCluster'],
+    leafletMarkerCluster: ['leaflet']
   }
 });
 

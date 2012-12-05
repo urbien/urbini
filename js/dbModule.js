@@ -5,11 +5,10 @@ define([
   'backbone',
   'underscore',
   'utils',
-  'localStorageModule',
   'modelsBase',
   'error',
   'indexedDBShim'
-], function($, Backbone, _, U, LS, MB, Error) {
+], function($, Backbone, _, U, MB, Error) {
   DB = {};
   DB.db = null;
   DB.VERSION = 1;
@@ -75,7 +74,7 @@ define([
   //      userChanged = true;
   //    }
       
-      modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
+      modelsChanged = !!MB.changedModels.length || !!MB.newModels.length;
       DB.VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
       if (db.version == DB.VERSION) {
         if (success)
@@ -196,14 +195,14 @@ define([
   
   DB.updateStores = function() {
     var db = DB.db;
-    var models = Utils.union(Lablz.changedModels, Lablz.newModels);
+    var models = Utils.union(MB.changedModels, MB.newModels);
     models = _.map(models, function(uri) {
       var sIdx = uri.lastIndexOf("/");
       return sIdx == -1 ? uri : uri.slice(sIdx + 1);
     });
     
-    Lablz.changedModels.length = 0;
-    Lablz.newModels.length = 0;
+    MB.changedModels.length = 0;
+    MB.newModels.length = 0;
     var deleted = [];
     var created = [];
     for (var i = 0; i < models.length; i++) {
@@ -245,7 +244,7 @@ define([
     if (!db.objectStoreNames.contains(className)) {
       db.close();
       console.log("2. newModel: " + className);
-      Lablz.newModels.push(classUri);
+      MB.newModels.push(classUri);
       DB.open(null, function() {
         DB.addItems(items, classUri);
       });
@@ -374,17 +373,17 @@ define([
   DB.updateTables = function(success, error) {
   //  Lablz.checkSysInfo();
   //  Lablz.loadAndUpdateModels();
-    Lablz.indexedDB.paused = true;
-    if (Lablz.indexedDB.db)
-      Lablz.indexedDB.db.close();
+    DB.paused = true;
+    if (DB.db)
+      DB.db.close();
     
     var s = success;
     success = function() {
-      Lablz.indexedDB.paused = false;
+      DB.paused = false;
       if (s) s();
     }
     
-    Lablz.indexedDB.open(null, success, error);
+    DB.open(null, success, error);
   };
 
   return DB;

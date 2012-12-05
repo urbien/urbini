@@ -6,13 +6,11 @@ define([
   'utils',
   'templates',
   'router',
-  'localStorageModule',
   'modelsBase',
-  'dbModule',
   'error',
   'jqueryMobile',
   'jqmConfig'
-], function($, _, Backbone, U, Templates, Router, LS, MB, DB, Error) {
+], function($, _, Backbone, U, Templates, Router, MB, Error) {
   var App = {};
   App.initialize = function() {
     var error = function(e) {
@@ -20,16 +18,16 @@ define([
     };
     
     Templates.loadTemplates();
-    LS.checkUser();
-    LS.loadStoredModels();
-  //  setTimeout(function() {LS.loadStoredModels({all: true})}, 100);
+    MB.checkUser();
+    MB.loadStoredModels();
+  //  setTimeout(function() {MB.loadStoredModels({all: true})}, 100);
     if (!MB.changedModels.length && !MB.newModels.length) {
-      DB.updateTables(App.startApp, error);
+      MB.updateTables(App.startApp, error);
       return;
     }
   
     MB.fetchModels(null, {success: function() {    
-      DB.updateTables(App.startApp, error);
+      MB.updateTables(App.startApp, error);
     }, sync: true});
   }
   
@@ -44,14 +42,14 @@ define([
     
     App.homePage = Lablz.homePage || _.last(models).shortName;
     if (!window.location.hash) {
-      Router.navigate(App.homePage, {trigger: true});
+      App.router.navigate(App.homePage, {trigger: true});
     }
   };
   
-  $(document).ready(function () {
-    console.log('document ready: ' + documentReadyCount++);
-    init();      
-  });
+//  $(document).ready(function () {
+//    console.log('document ready: ' + documentReadyCount++);
+//    init();      
+//  });
   
   return App;
 });

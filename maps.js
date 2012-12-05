@@ -1,3 +1,9 @@
+//define([
+//  'leaflet', 'leaflet.markercluster'
+//], function(L) {
+//
+//  var M = Mapper = {};
+  
 golden_ratio_conjugate = 0.618033988749895;
 function generateColors(total, seed) {
   'use strict';
@@ -1210,3 +1216,5 @@ function merge(one, two) {
   
   return obj;
 }
+
+//});

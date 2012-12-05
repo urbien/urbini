@@ -5,12 +5,16 @@ define([
   'jquery',
   'underscore',
   'backbone',
+  'utils',
+  'events',
+  'modelsBase',
+  'error',
   'models/Resource',
   'collections/ResourceList',
   'views/ListPage',
   'views/ViewPage',
-  'localStorageModule'
-], function($, _, Backbone, Resource, ResourceList, ListPage, ViewPage, LS) {
+  'jqueryMobile',
+], function($, _, Backbone, U, Events, MB, Error, Resource, ResourceList, ListPage, ViewPage) {
   return Backbone.Router.extend({
     routes:{
         ":type":"list",
@@ -30,6 +34,10 @@ define([
     info: null,
     initialize: function () {
       this.firstPage = true;
+      var self = this;
+      Events.on('back', function() {
+        self.backClicked = true;
+      });
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
@@ -63,14 +71,14 @@ define([
       var force = this.forceRefresh;
       
       if (!MB.shortNameToModel[type]) {
-        LS.loadStoredModels({models: [type]});
+        MB.loadStoredModels({models: [type]});
         
         if (!MB.shortNameToModel[type]) {
-          LS.fetchModels(type, 
+          MB.fetchModels(type, 
              {success: function() {
                self.list.apply(self, [oParams]);
              },
-             error: Lablz.Error.getDefaultErrorHandler(),
+             error: Error.getDefaultErrorHandler(),
              sync: true}
           );
           
@@ -78,24 +86,22 @@ define([
         } 
       }
       
-  //    Lablz.Navigation.push();
-  //    Lablz.Navigation.detectBackButton();
       var c = this.Collections[type];
       if (c && !c.loaded)
         c = null;
         
       if (!query && c && this.CollectionViews[type]) {
-        this.changePage(this.CollectionViews[type], {page: new Page(page)});
+        this.changePage(this.CollectionViews[type], {page: page});
         this.Collections[type].fetch({page: page});
         return this;
       }
       
-      var model = Lablz.shortNameToModel[type];
+      var model = MB.shortNameToModel[type];
       if (!model)
         return this;
       
-      var list = new Lablz.ResourceList(null, {model: model, _query: query});    
-      var listView = new Lablz.ListPage({model: list});
+      var list = new ResourceList(null, {model: model, _query: query});    
+      var listView = new ListPage({model: list});
       
       if (!query) {
         this.Collections[type] = list;
@@ -107,7 +113,8 @@ define([
         sync: true,
         success: function() {
           self.changePage(listView);
-  //          self.loadExtras(oParams);
+          MB.fetchModelsForLinkedResources(list.model);
+//          self.loadExtras(oParams);
         }
       });
       
@@ -115,7 +122,7 @@ define([
     },
   
     view: function (path) {
-      var params = Utils.getHashParams();
+      var params = U.getHashParams();
       var qIdx = path.indexOf("?");
       var uri, query;
       if (qIdx == -1) {
@@ -139,17 +146,17 @@ define([
       }
       
       var self = this;
-      var type = Utils.getType(uri);
-      uri = Utils.getLongUri(uri, type);
-      if (!uri || !Lablz.shortNameToModel[type]) {
-        Lablz.loadStoredModels({models: [type]});
+      var type = U.getType(uri);
+      uri = U.getLongUri(uri, {type: type, shortNameToModel: MB.shortNameToModel});
+      if (!uri || !MB.shortNameToModel[type]) {
+        MB.loadStoredModels({models: [type]});
           
-        if (!uri || !Lablz.shortNameToModel[type]) {
-          Lablz.fetchModels(type, 
+        if (!uri || !MB.shortNameToModel[type]) {
+          MB.fetchModels(type, 
             {success: function() {
               self.view.apply(self, [path]);
             },
-            error: Lablz.Error.getDefaultErrorHandler(),
+            error: Error.getDefaultErrorHandler(),
             sync: true}
           );
           
@@ -168,12 +175,15 @@ define([
       
   //    var edit = params['-edit'] == 'y';
       var views = this.Views; //edit ? this.EditViews : this.Views;
-      var viewPageCl = Lablz.ViewPage; // edit ? Lablz.EditPage : Lablz.ViewPage;
+      var viewPageCl = ViewPage; // edit ? Lablz.EditPage : Lablz.ViewPage;
       if (res) {
         this.Models[uri] = res;
         views[uri] = views[uri] || new viewPageCl({model: res});
         this.changePage(this.Views[uri]);
-        res.fetch();
+        res.fetch({
+          success: function() {MB.fetchModelsForLinkedResources(res)}
+        });
+        
         return this;
       }
       
@@ -186,7 +196,7 @@ define([
         }
       }
   
-      var typeCl = Lablz.shortNameToModel[type];
+      var typeCl = MB.shortNameToModel[type];
       if (!typeCl)
         return this;
       
@@ -195,6 +205,7 @@ define([
       var paintMap;
       var success = function(data) {
         self.changePage(view);
+        success: MB.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
       
@@ -261,14 +272,14 @@ define([
       
       // hot to transition
       var isReverse = false;
-      if (App.backClicked == true) {
-        App.backClicked = false;
+      if (this.backClicked == true) {
+        this.backClicked = false;
         isReverse = true;
       }
       
       // perform transition
       $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
-      Lablz.Events.trigger('changePage', view);
+      Events.trigger('changePage', view);
       return view;
     }
   });

@@ -42,7 +42,6 @@
   <backboneInitInfo />
   <!--script src="js/views.js"></script>   
   <script src="js/main.js"></script-->   
-  <script data-main="js/loader" src="lib/require.js"></script>
      
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">
@@ -50,5 +49,6 @@
 
 <!-- JavaScript -->
 
+<script data-main="js/loader" src="lib/require.js"></script>
 </body>
 </html>

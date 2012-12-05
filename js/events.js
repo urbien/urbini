@@ -15,7 +15,7 @@ define([
     
     event.preventDefault();
     var href = $el.prop('href');
-    App.router.navigate(href.slice(href.indexOf('#') + 1), true);
+    Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
   };
 
   Events.defaultClickHandler = function(e) {
@@ -28,7 +28,7 @@ define([
   
     event.preventDefault();
     var href = $el.prop('href');
-    App.router.navigate(href.slice(href.indexOf('#') + 1), true);
+    Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
   };
   
   return Events;

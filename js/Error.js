@@ -16,11 +16,11 @@ define([
             if (originalModel && (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection))) // && originalModel.queryMap.length == 0)))
               Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
             else
-              Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
+              Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Error.NOT_FOUND});
             
             return;
           default:
-            Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
+            Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Error.NOT_FOUND});
             return;
           }
         }

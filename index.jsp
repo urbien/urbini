@@ -65,7 +65,7 @@
 </script>
 
 <script type="text/template" id="datePT">
-    <span>{{= Utils.getFormattedDate(value) }}</span>
+    <span>{{= Lablz.U.getFormattedDate(value) }}</span>
 </script>
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
@@ -96,11 +96,11 @@
 </script>
 
 <script type="text/template" id="durationPT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Utils.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Utils.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
@@ -230,7 +230,7 @@
           <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
           <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
           <br/><br/>&#160;
-          <span class="commentListDate">{{= Utils.getFormattedDate(dateModified) }}</span>
+          <span class="commentListDate">{{= Lablz.U.getFormattedDate(dateModified) }}</span>
         </td>
       </tr>
     </table>

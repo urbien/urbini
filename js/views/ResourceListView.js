@@ -10,7 +10,7 @@ define([
   'jqueryMobile'
 ], function($, Backbone, _, U, Events, Templates, ResourceMasonryModItemView, ResourceListItemView) {
   return Backbone.View.extend({
-    displayPerPage: 20, // for client-side paging
+    displayPerPage: 7, // for client-side paging
     mapView: null,
     page: null,
     changedViews: [],
@@ -25,36 +25,39 @@ define([
       return this;
     },
     refresh: function(model, modified) {
-      if (model != this.model)
+      if (model && model != this.model)
         return this;
   
-      if (this.$el.hasClass('ui-listview')) {
-        //Element is already initialized
-        var lis = this.$('li').detach();
-        var frag = document.createDocumentFragment();
-        
-        var models = this.model.models;
-        var hasImgs = U.hasImages(models);
-        var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
-        for (var i = 0; i < num; i++) {
-          var m = models[i];
-          var uri = m.get('_uri');
-          if (i >= lis.length || _.contains(modified, uri)) {
-            var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
-            frag.appendChild(liView.render().el);
-          }
-          else
-            frag.appendChild(lis[i]);
+//      if (this.$el.hasClass('ui-listview')) {
+      //Element is already initialized
+      var lis = this.$('li').detach();
+      var frag = document.createDocumentFragment();
+      
+      var models = this.model.models;
+      var hasImgs = U.hasImages(models);
+      var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
+      for (var i = 0; i < num; i++) {
+        var m = models[i];
+        var uri = m.get('_uri');
+        if (i >= lis.length || _.contains(modified, uri)) {
+          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
+          frag.appendChild(liView.render().el);
         }
-        
-        this.$el.html(frag);
-  //      this.renderMany(this.model.models.slice(0, lis.length));
-        this.$el.listview('refresh');
-      } 
-      else {
-        //Element has not been initiliazed
-        this.$el.listview().listview('refresh');
+        else
+          frag.appendChild(lis[i]);
       }
+      
+      this.$el.html(frag);
+//      this.renderMany(this.model.models.slice(0, lis.length));
+      if (this.initializedListView)
+        this.$el.listview('refresh');
+      else
+        this.initializedListView = true;
+//      else {
+//        //Element has not been initiliazed
+//        this.$el.listview().listview('refresh');
+//        this.initializedListView = true;
+//      }
       
     },
     getNextPage: function() {
@@ -141,7 +144,8 @@ define([
     render: function(e) {
       console.log("render listView");
       this.numDisplayed = 0;
-      this.renderMany(this.model.models);
+//      this.renderMany(this.model.models);
+      this.refresh();
   //    e && this.refresh(e);
   
       this.rendered = true;
@@ -171,3 +175,4 @@ define([
       this.skipScrollEvent = false;
     }
   });
+});

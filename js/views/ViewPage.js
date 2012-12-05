@@ -7,13 +7,14 @@ define([
   'utils',
   'events',
   'templates',
+  'views/Header',
   'views/BackButton',
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/ResourceView',
   'views/ResourceImageView',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates, BackButton, LoginButtons, AroundMeButton, Header, ResourceView, ResourceImageView) {
+], function($, Backbone, _, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
@@ -28,12 +29,12 @@ define([
       'click #homeBtn': 'home'
     },
     home: function() {
-      app.navigate(Lablz.homePage, {trigger: true, replace: false});
+      Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: false});
       return this;
     },
     edit: function(e) {
       e.preventDefault();
-      app.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
     tap: Events.defaultTapHandler,

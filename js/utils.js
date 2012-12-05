@@ -1,4 +1,7 @@
-define(function() {
+define([
+  'underscore',
+  'templates'
+], function(_, Templates) {
 /**
  * for functions that have a parameter "base," base should have serverName, sqlUri, shortNameToModel. If base is not passed in, window.Lablz will be used 
  **/
@@ -10,24 +13,79 @@ define(function() {
   };
   
   String.prototype.trim = function(){
-    return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""))
-  }
+    return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
+  };
   
   String.prototype.startsWith = function(str) {
-    return (this.match("^"+str)==str)
-  }
+    return (this.match("^"+str)==str);
+  };
   
   String.prototype.toCamelCase = function(str) {
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
       return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
     }).replace(/\s+/g, '');
-  }
+  };
   
   String.prototype.endsWith = function(str) {
-    return (this.match(str+"$")==str)
-  }
+    return (this.match(str+"$")==str);
+  };
   
   var U = {
+    makeProp: function(prop, val) {
+      var cc = prop.colorCoding;
+      if (cc) {
+        cc = U.getColorCoding(cc, val);
+        if (cc) {
+          if (cc.startsWith("icons"))
+            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+          else
+            val = "<span style='color:" + cc + "'>" + val + "</span>";
+        }
+      }
+      
+      var propTemplate = Templates.getPropTemplate(prop);
+      val = val.displayName ? val : {value: val};
+      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    },
+    
+    makePropEdit: function(prop, val) {
+      var propTemplate = Templates.getPropTemplate(prop, true);
+      val = val.displayName ? val : {value: val};
+      val.shortName = prop.displayName.toCamelCase();
+      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    },
+    
+    isPropVisible: function(res, prop) {
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
+        return false;
+      
+      var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+      if (userRole == 'admin')
+        return true;
+      
+      var ar = prop.allowRoles;
+      if (ar) {
+        if (userRole == 'guest')
+          return false;
+        
+        var roles = ar.split(",");
+        for (var i = 0; i < roles.length; i++) {
+          var r = roles[i].trim();
+          if (r == 'admin')
+            return false;
+          else if (r == 'siteOwner')
+            return userRole == 'siteOwner';
+          else {
+            // TODO: implement this
+            
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    },
+    
     getFirstUppercaseCharIdx: function(str) {
     	for (var i = 0; i < str.length; i++) {
     		var c = str.charAt(i);
@@ -63,10 +121,12 @@ define(function() {
       return keys;
     },
     
-    getLongUri: function(uri, type, primaryKeys, base) {
-      var serverName = (base && base.serverName) || (Lablz && Lablz.serverName);
-      var sqlUri = (base && base.sqlUri) || (Lablz && Lablz.sqlUri);
-      var snm = (base && base.shortNameToModel) || (Lablz && Lablz.shortNameToModel);
+    getLongUri: function(uri, hint) {
+      var type = hint && hint.type;
+      var pk = hint && hint.primaryKeys;
+      var snm = hint && hint.shortNameToModel;
+      var serverName = Lablz.serverName;
+      var sqlUri = Lablz.sqlUri;
       if (uri.indexOf('http') == 0) {
         // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
         if (uri.indexOf('?') == -1) // type uri
@@ -75,17 +135,17 @@ define(function() {
         if (uri.indexOf(serverName + "/" + sqlUri) == 0)
           return uri;
         
-        type = typeof type == 'undefined' ? U.getTypeUri(uri) : type;
+        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
         return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : serverName + "/" + sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
       }
       else if (uri.indexOf('/') == -1) {
         // uri is of form Tree?id=32000 or just Tree
-        type = typeof type == 'undefined' ? U.getTypeUri(uri) : type;
+        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
         if (!type)
           return null;
         
         var qIdx = uri.indexOf('?');
-        return U.getLongUri(type + (qIdx == -1 ? '' : uri.slice(qIdx)), type);
+        return U.getLongUri(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
       }
       else if (uri.indexOf('sql') == 0) {
         // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
@@ -94,17 +154,18 @@ define(function() {
       else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
         // uri is of form Tree/32000
         var typeName = U.getType(uri);
-        type = U.getTypeUri(typeName);
+        type = U.getTypeUri(typeName, hint);
         if (!type)
           return null;
         
         var sIdx = uri.indexOf("/");
         var longUri = uri.slice(0, sIdx) + "?";
-        var model = snm[typeName];
-        if (!model)
-          return uri;
-        
-        var primaryKeys = U.getPrimaryKeys(model);
+        var primaryKeys = hint.primaryKeys || U.getPrimaryKeys(snm && snm[typeName]);
+//        var model = snm[typeName];
+//        if (!model)
+//          return uri;
+//        
+//        var primaryKeys = U.getPrimaryKeys(model);
         if (!primaryKeys  ||  primaryKeys.length == 0)
           longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
         else {
@@ -117,7 +178,7 @@ define(function() {
           }      
         }
         
-        return U.getLongUri(longUri, type);
+        return U.getLongUri(longUri, {type: type});
       }
       else 
         return uri;
@@ -127,9 +188,8 @@ define(function() {
       return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test( email );
     },
     
-    getTypeUri: function(typeName, base) {
-      base = base || Lablz;
-      return base.shortNameToModel[typeName] && base.shortNameToModel[typeName].type;
+    getTypeUri: function(typeName, hint) {
+      return hint.type || hint.shortNameToModel[typeName] && hint.shortNameToModel[typeName].type;
     },
     
     getType: function(uri) {
@@ -178,7 +238,7 @@ define(function() {
       return 'packages.' + path;
     },
     
-    addPackage: function(path) {
+    addPackage: function(packages, path) {
       path = path.split(/\./);
       var current = packages;
       path = path[0] == 'packages' ? path.slice(1) : path;
@@ -195,37 +255,8 @@ define(function() {
       return current;
     },
     
-    getShapeType: function(rings) {
-      var depth = U.getDepth(rings);
-      switch (depth) {
-      case 1:
-        return "Point";
-      case 2:
-        return null;
-      case 3:
-        return "Polygon";
-      case 4:
-        return "MultiPolygon";
-      default:
-        return null;
-      }
-    },
-    
     getObjectType: function(o) {
       return Object.prototype.toString.call(o);
-    },
-    
-    getDepth: function(arr) {
-      var depth = 1;
-      for (var i = 0; i < arr.length; i++) {
-        var type = U.getObjectType(arr[i]);
-        if (type === '[object Array]')
-          depth = Math.max(depth, U.getDepth(arr[i]) + 1);
-        else
-          return depth;
-      }
-      
-      return depth;
     },
     
     getColorCoding: function(cc, val) {
@@ -380,22 +411,10 @@ define(function() {
       var map = {};
       _.each(str.split(delimiter || "&"), function(nv) {
         nv = nv.split("=");
-        map[nv[0]] = U.decode(nv[1]);
+        map[U.decode(nv[0])] = U.decode(nv[1]);
       });
       
       return map;
-    },
-    
-    getBasicGeoJSON: function(shapeType, coords) {
-      return {
-        "type": "Feature",
-        "properties": {
-        },
-        "geometry": {
-          "type": shapeType,
-          "coordinates": coords
-        }
-      };
     },
     
     getPropertiesWith: function(list, annotation) {
@@ -494,6 +513,13 @@ define(function() {
             obj[prop] = source[prop] || obj[prop];
         }
       });
+    },
+    /**
+     * given obj and path x.y.z, will return obj.x.y.z; 
+     */
+    leaf: function(obj, path) {
+      var dIdx = path.indexOf('.');
+      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + 1));
     }
     
   //,
@@ -504,7 +530,7 @@ define(function() {
   ////  var d = (time && new Date(time)) || new Date();
   ////  return d.getTime() + d.getTimezoneOffset() * 60000;
   //}
-
+    
   };
   
   U.UArray.prototype.length = 0;
@@ -544,6 +570,6 @@ define(function() {
     }
   );
 
+  Lablz.U = U;
   return U;
-
 });

@@ -23,7 +23,7 @@ define([
     toggleAroundMe : function() {
       this.active = !this.active;
       if (!this.active) {
-        app.navigate(this.model.shortName, {trigger: true});
+        Backbone.history.navigate(this.model.shortName, {trigger: true});
         return this;
       }
       
@@ -63,7 +63,7 @@ define([
         timestamp: new Date().getTime()
       };
       
-      app.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+      Backbone.history.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
       return this;
     }
   },

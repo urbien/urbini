@@ -4,6 +4,7 @@ define([
   'backbone',
   'underscore',
   'utils',
+//  'modelsBase',
   'error',
   'models/Resource',
   'jqueryMobile'
@@ -24,7 +25,7 @@ define([
       this.model = options.model || models[0].model;
       this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
-      this.on('aroundMe', this.model.getAroundMe);
+//      this.on('aroundMe', this.model.getAroundMe);
       this.type = this.model.type;
       this.shortName = this.model.shortName || this.model.shortName;
       this.displayName = this.model.displayName;
@@ -130,7 +131,7 @@ define([
       var success = options.success;
       options.success = function() {
         success && success.apply(self, arguments);
-        self.model.prototype.fetchModelsForLinkedResources.call(self.model);
+//        MB.fetchModelsForLinkedResources.call(self.model);
       };
   
       return Backbone.Collection.prototype.fetch.call(this, options);
