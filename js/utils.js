@@ -134,6 +134,22 @@ Utils.isA = function(model, interfaceName) {
   return _.contains(model.interfaces, interfaceName);
 }
 
+Utils.isAssignableFrom = function(model, className) {
+  if (U.isA(model, className))
+    return true;
+  var type2Model = Lablz.typeToModel;
+  var m = model;
+  while (true) {
+    var subClassOf = m.subClassOf;
+    if (m.shortName == className  ||  m.type == className)
+      return true;
+    if (m.subClassOf == 'Resource') 
+      return false;
+    m = type2Model[subClassOf];
+  }
+  return false;
+}
+
 Utils.getPackagePath = function(type) {
   if (type == 'Resource' || type.endsWith('#Resource'))
     return 'packages';
