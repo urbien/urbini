@@ -578,9 +578,7 @@ Lablz.ListPage = Backbone.View.extend( {
       el: $('#headerDiv', this.el)
     }).render();
 
-    var type = this.model.type;
-    var cmpStr = '/changeHistory/Modification';
-    var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+    var isModification = Utils.isAssignableFrom(this.model.models[0].constructor, 'Modification');
     var containerTag = isModification ? '#nabs_grid' : 'ul';
     this.listView = new Lablz.ResourceListView({el: $(containerTag, this.el), model: this.model});
     this.listView.render();
@@ -727,26 +725,45 @@ Lablz.ResourceListView = Backbone.View.extend({
     if (model != this.model)
       return this;
 
+    var models = this.model.models;
+    var isModification = Utils.isAssignableFrom(models[0].constructor, 'Modification');
+
     if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
-      var lis = this.$('li').detach();
-      var frag = document.createDocumentFragment();
-      
-      var models = this.model.models;
+      var lis = isModification ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
       var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
-      for (var i = 0; i < num; i++) {
+      var i = 0;
+      var nextPage = false;
+      var frag;
+      if (typeof modified == 'undefined') {
+        i = lis.length;
+        nextPage = true;
+      }
+      else
+        frag = document.createDocumentFragment();
+      for (; i < num; i++) {
         var m = models[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
-          var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
-          frag.appendChild(liView.render().el);
+          var liView;
+          if (isModification) 
+            liView = new Lablz.ResourceMasonryModItemView({model:m});
+          else
+            liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
+//            $('.ui-listview li:eq(' + i + ')').remove();
+          if (nextPage)  
+            this.$el.append(liView.render().el);
+          else
+            frag.appendChild(liView.render().el);
         }
-        else
+        else if (!nextPage)
           frag.appendChild(lis[i]);
       }
-      
-      this.$el.html(frag);
+      if (!nextPage) {
+        lis.detach();
+        this.$el.html(frag);
+      }
 //      this.renderMany(this.model.models.slice(0, lis.length));
       this.$el.listview('refresh');
     } 
@@ -796,9 +813,8 @@ Lablz.ResourceListView = Backbone.View.extend({
     var meta = model.__proto__.constructor.properties;
     meta = meta || model.properties;
 
-    var type = this.model.type;
-    var cmpStr = '/changeHistory/Modification';
-    var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+    var isModification = Utils.isAssignableFrom(this.model.constructor, 'Modification');
+
     var liView;
     if (isModification) 
       liView = new Lablz.ResourceMasonryModItemView({model:model});
@@ -817,9 +833,7 @@ Lablz.ResourceListView = Backbone.View.extend({
 
       var hasImgs = U.hasImages(models); 
 
-      var type = this.model.type;
-      var cmpStr = '/changeHistory/Modification';
-      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+      var isModification = Utils.isAssignableFrom(models[0].constructor, 'Modification');
 
       var frag = document.createDocumentFragment();
       _.forEach(models, function(model) {
@@ -896,6 +910,7 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 });
 
 Lablz.ResourceMasonryModItemView = Backbone.View.extend({
+  className: 'nab nabBoard masonry-brick',
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     this.template = _.template(Lablz.Templates.get('masonry-mod-list-item'));
