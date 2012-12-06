@@ -1,31 +1,3 @@
-// Events //
-Lablz.Events = _.extend({}, Backbone.Events);
-Lablz.Events.defaultTapHandler = function(e) {
-//  console.log("got tap event");
-  var event = e.originalEvent;
-  var el = event.target;
-  var $el = $(el);
-  if ($el.prop('tagName') != 'A')
-    return true;
-  
-  event.preventDefault();
-  var href = $el.prop('href');
-  app.navigate(href.slice(href.indexOf('#') + 1), true);
-}
-
-Lablz.Events.defaultClickHandler = function(e) {
-//  console.log("got click event");
-  var event = e.originalEvent;
-  var el = event.target;
-  var $el = $(el);
-  if ($el.prop('tagName') != 'A')
-    return true;
-
-  event.preventDefault();
-  var href = $el.prop('href');
-  app.navigate(href.slice(href.indexOf('#') + 1), true);
-}
-
 // Views
 Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
@@ -537,7 +509,8 @@ Lablz.ListPage = Backbone.View.extend( {
     'click #homeBtn': 'home'
   },
   pageChanged: function(view) {
-    this.visible = (this == view);
+    this.visible = (this == view || this.listView == view);
+    this.listView.visible = this.visible;
   },
   home: function() {
     app.navigate(Lablz.homePage, {trigger: true, replace: false});
@@ -702,7 +675,6 @@ Lablz.ViewPage = Backbone.View.extend({
 Lablz.ResourceListView = Backbone.View.extend({
   displayPerPage: 20, // for client-side paging
   mapView: null,
-  mapModel: null,
   page: null,
   changedViews: [],
 	skipScrollEvent: false,
@@ -857,6 +829,9 @@ Lablz.ResourceListView = Backbone.View.extend({
 
   // endless page function
   onScroll: function(view) {
+    if (!view.visible)
+      return;
+    
     var $wnd = $(window);
 //    console.log(view.skipScrollEvent);
     if (view.skipScrollEvent) // wait for a new data portion
@@ -1152,3 +1127,58 @@ Lablz.Header = Backbone.View.extend({
     return this;
   }
 });
+
+makeProp = function(prop, val) {
+  var cc = prop.colorCoding;
+  if (cc) {
+    cc = U.getColorCoding(cc, val);
+    if (cc) {
+      if (cc.startsWith("icons"))
+        val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+      else
+        val = "<span style='color:" + cc + "'>" + val + "</span>";
+    }
+  }
+  
+  var propTemplate = Lablz.Templates.getPropTemplate(prop);
+  val = val.displayName ? val : {value: val};
+  return {name: prop.label || prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+}
+
+makePropEdit = function(prop, val) {
+  var propTemplate = Lablz.Templates.getPropTemplate(prop, true);
+  val = val.displayName ? val : {value: val};
+  val.shortName = prop.displayName.toCamelCase();
+  return {name: prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+}
+
+isPropVisible = function(res, prop) {
+  if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
+    return false;
+  
+  var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+  if (userRole == 'admin')
+    return true;
+  
+  var ar = prop.allowRoles;
+  if (ar) {
+    if (userRole == 'guest')
+      return false;
+    
+    var roles = ar.split(",");
+    for (var i = 0; i < roles.length; i++) {
+      var r = roles[i].trim();
+      if (r == 'admin')
+        return false;
+      else if (r == 'siteOwner')
+        return userRole == 'siteOwner';
+      else {
+        // TODO: implement this
+        
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}
