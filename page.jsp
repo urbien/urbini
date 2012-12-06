@@ -27,7 +27,7 @@
       <include name="include/commonFooter" alt="include/commonFooter.jsp" />
       <chatAutoStart/>
     </div>
-    <mapMaker />
+    <!--mapMaker /-->
   </div><!-- abc -->
   </div><!-- wrapper -->
 
