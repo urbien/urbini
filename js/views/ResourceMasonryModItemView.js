@@ -2,14 +2,14 @@
 
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'events',
   'templates',
   'modelsBase',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates, MB) {
+], function($, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods

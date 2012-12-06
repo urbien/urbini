@@ -1,15 +1,15 @@
 // needs Lablz.serverName
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'error',
   'events',
   'models/Resource',
   'collections/ResourceList',
   'indexedDBShim'
-], function($, Backbone, _, U, Error, Events, Resource, ResourceList) {
+], function($, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {

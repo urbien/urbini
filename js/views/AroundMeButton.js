@@ -1,9 +1,9 @@
 define([
-  'backbone',
   'underscore',
+  'backbone',
   'templates',
   'views/ToggleButton'
-], function(Backbone, _, Templates, ToggleButton) {
+], function(_, Backbone, Templates, ToggleButton) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',

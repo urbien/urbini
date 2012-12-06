@@ -1,7 +1,7 @@
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'templates',
   'events',
   'utils',
@@ -9,13 +9,46 @@ define([
   'leafletMarkerCluster',
   '../maps',
   'jqueryMobile'
-], function($, Backbone, _, Templates, Events, U, L, LM, Mapper) {
+], function($, _, Backbone, Templates, Events, U, L, LM, Mapper) {
   
   var MapView = Backbone.View.extend({
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap', 'resetMap');
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
+      appendCSS = function(data) {
+        $("<style></style>").appendTo("head").html(data);
+      };
+
+      var head = document.getElementsByTagName('head')[0];
+      var csses = this.csses = {'leaflet.css': false, 'MarkerCluster.Default.css': false};
+      _.forEach(csses, function(val, name) {
+        var link = document.createElement('link');
+        link.type = "text/css";
+        link.rel = "stylesheet"
+        link.href = 'styles/leaflet/' + name;
+        var loaded = function() {
+          csses[name] = true;
+        };
+        
+        // 1
+        link.onload = loaded;
+        
+        // 2
+        if (link.addEventListener)
+          link.addEventListener('load', loaded, false);
+        
+        // 3
+        link.onreadystatechange = function() {
+          var state = link.readyState;
+          if (state === 'loaded' || state === 'complete') {
+            link.onreadystatechange = null;
+            loaded();
+          }
+        }
+        
+        head.appendChild(link);
+      });
     },
     events: {
       'tap': 'tap',
@@ -23,6 +56,17 @@ define([
     tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render:function (eventName) {
+      var self = this;
+      if (!_.all(_.values(this.csses))) {
+        setTimeout(
+          function() {
+            MapView.prototype.render.call(self, eventName);
+          }
+        , 100);
+        
+        return this;
+      }
+      
       var m = this.model;
       m = m instanceof Backbone.Collection ? m.model : m.constructor;
       if (U.isA(m, "Shape")) {
@@ -61,26 +105,26 @@ define([
       var map = this.mapper = new Lablz.Leaflet(div);
       map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
   //        , {'load': function() {
-  //      Events.trigger('mapReady', self.model);
-  //      self.$el.append(frag);
+  //      Events.trigger('mapReady', this.model);
+  //      this.$el.append(frag);
   //      console.log('render map');      
   //    }});
   
       var clusterStyle = {singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false};
       var style = {doCluster: true, highlight: true, zoom: false};
-      var name = self.model.shortName;
+      var name = this.model.shortName;
       map.addGeoJsonPoints({name: gj}, null, clusterStyle, null, style);
       map.addSizeButton(this.$el[0]);
       map.addReZoomButton(bbox);
-      var dName = self.model.displayName;
+      var dName = this.model.displayName;
       dName = dName.endsWith('s') ? dName : dName + 's';
       var basicInfo = map.addBasicMapInfo(dName);
       var frag = document.createDocumentFragment();
       frag.appendChild(div);
       map.finish();
       
-      Events.trigger('mapReady', self.model);
-      self.$el.append(frag);
+      Events.trigger('mapReady', this.model);
+      this.$el.append(frag);
       this.hide();
       return this;
     },

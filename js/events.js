@@ -1,9 +1,8 @@
 define([
   'jquery',
   'underscore',
-  'backbone',
-  'app'
-], function($, _, Backbone, App) {
+  'backbone'
+], function($, _, Backbone) {
   var Events = _.extend({}, Backbone.Events);
   Events.defaultTapHandler = function(e) {
   //  console.log("got tap event");

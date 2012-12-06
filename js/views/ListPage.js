@@ -2,20 +2,20 @@
 
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'events',
   'templates',
   'views/ResourceListView',
-  'views/MapView',
+//  'views/MapView',
   'views/Header',
   'views/BackButton',
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/MapItButton',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates, ResourceListView, MapView, Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+], function($, _, Backbone, U, Events, Templates, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
   return Backbone.View.extend( {
     template: 'resource-list',
     initialize: function () {
@@ -73,9 +73,11 @@ define([
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
       if (isGeo) {
-        this.mapView = new MapView({model: this.model, el: this.$('#mapHolder', this.el)});
         var self = this;
-        setTimeout(self.mapView.render, 100);
+        require(['views/MapView'], function(MapView) {
+          self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});          
+          self.mapView.render();
+        });        
       }
       
       if (!this.$el.parentNode) 

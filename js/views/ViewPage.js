@@ -2,8 +2,8 @@
 
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'events',
   'templates',
@@ -14,7 +14,7 @@ define([
   'views/ResourceView',
   'views/ResourceImageView',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
+], function($, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');

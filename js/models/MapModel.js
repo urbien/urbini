@@ -3,12 +3,12 @@
 // needs Lablz.apiUrl, Lablz.requiredModels
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'error',
   'jqueryMobile'
-], function($, Backbone, _, U, Error) {
+], function($, _, Backbone, U, Error) {
   return Backbone.Model.extend({
     initialize: function(options) {
       _.bindAll(this, 'parse', 'url', 'fetch'); // fixes loss of context for 'this' within methods

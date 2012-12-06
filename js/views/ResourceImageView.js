@@ -1,12 +1,12 @@
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'templates',
   'events',
   'jqueryMobile'
-], function($, Backbone, _, U, Templates, Events) {
+], function($, _, Backbone, U, Templates, Events) {
   
   return Backbone.View.extend({
     initialize: function(options) {

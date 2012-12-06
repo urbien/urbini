@@ -1,11 +1,11 @@
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'templates',
   'events',
   'jqueryMobile'
-], function($, Backbone, _, Templates, Events) {
+], function($, _, Backbone, Templates, Events) {
   return Backbone.View.extend({
     btnId: null,
     initialize: function(options) {

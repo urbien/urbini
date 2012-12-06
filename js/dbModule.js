@@ -2,13 +2,13 @@
 
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'modelsBase',
   'error',
   'indexedDBShim'
-], function($, Backbone, _, U, MB, Error) {
+], function($, _, Backbone, U, MB, Error) {
   DB = {};
   DB.db = null;
   DB.VERSION = 1;

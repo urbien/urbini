@@ -1,23 +1,22 @@
 define([
   'jquery',
-  'backbone',
   'underscore',
+  'backbone',
   'utils',
   'events',
   'templates',
   'views/ResourceMasonryModItemView',
   'views/ResourceListItemView',
   'jqueryMobile'
-], function($, Backbone, _, U, Events, Templates, ResourceMasonryModItemView, ResourceListItemView) {
+], function($, _, Backbone, U, Events, Templates, ResourceMasonryModItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
-    mapView: null,
     page: null,
     changedViews: [],
     skipScrollEvent: false,
     
     initialize: function () {
-      _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', /*'renderMany', 'renderOne',*/ 'refresh', 'changed'); // fixes loss of context for 'this' within methods
       Events.on('refresh', this.refresh);
       this.model.on('reset', this.render, this);
       var self = this;
@@ -96,51 +95,51 @@ define([
     changed: function(view) {
       this.changedViews.push(view);
     },
-    renderOne: function(model) {
-      var meta = model.__proto__.constructor.properties;
-      meta = meta || model.properties;
-  
-      var type = this.model.type;
-      var cmpStr = '/changeHistory/Modification';
-      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var liView;
-      if (isModification) 
-        liView = new ResourceMasonryModItemView({model:model});
-      else {
-        var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
-        liView = hasImgs ? new ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
-      }
-      this.$el.append(liView.render().el);
-      return this;
-    },
-    renderMany: function(models) {
-      if (models instanceof Backbone.Model) // one model
-        this.renderOne(models);
-      else {
-        var self = this;
-  
-        var hasImgs = U.hasImages(models); 
-  
-        var type = this.model.type;
-        var cmpStr = '/changeHistory/Modification';
-        var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-  
-        var frag = document.createDocumentFragment();
-        _.forEach(models, function(model) {
-          var liView;
-          if (isModification) 
-            liView = new ResourceMasonryModItemView({model:model});
-          else
-            liView = hasImgs ? new ResourceListItemView({model:model, hasImages: 'y'}) : new ResourceListItemView({model:model});
-          var s = liView.render().el;
-          frag.appendChild(s);
-        });
-        
-        this.$el.append(frag);
-      }
-      
-      return this;
-    },
+//    renderOne: function(model) {
+//      var meta = model.__proto__.constructor.properties;
+//      meta = meta || model.properties;
+//  
+//      var type = this.model.type;
+//      var cmpStr = '/changeHistory/Modification';
+//      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+//      var liView;
+//      if (isModification) 
+//        liView = new ResourceMasonryModItemView({model:model});
+//      else {
+//        var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
+//        liView = hasImgs ? new ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+//      }
+//      this.$el.append(liView.render().el);
+//      return this;
+//    },
+//    renderMany: function(models) {
+//      if (models instanceof Backbone.Model) // one model
+//        this.renderOne(models);
+//      else {
+//        var self = this;
+//  
+//        var hasImgs = U.hasImages(models); 
+//  
+//        var type = this.model.type;
+//        var cmpStr = '/changeHistory/Modification';
+//        var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+//  
+//        var frag = document.createDocumentFragment();
+//        _.forEach(models, function(model) {
+//          var liView;
+//          if (isModification) 
+//            liView = new ResourceMasonryModItemView({model:model});
+//          else
+//            liView = hasImgs ? new ResourceListItemView({model:model, hasImages: 'y'}) : new ResourceListItemView({model:model});
+//          var s = liView.render().el;
+//          frag.appendChild(s);
+//        });
+//        
+//        this.$el.append(frag);
+//      }
+//      
+//      return this;
+//    },
     render: function(e) {
       console.log("render listView");
       this.numDisplayed = 0;
