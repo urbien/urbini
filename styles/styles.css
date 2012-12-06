@@ -32,5 +32,15 @@
 .ui-icon-live {
   background-image: url(/icons/windows-live-mid.png);
 }
-
+.ui-body-c .ui-link:visited {
+  color: #757575;
+}
+.ui-icon {
+   background: none; 
+ }
+ .ui-btn { margin-right: 2px; margin-left: 2px;}
 .ui-content .ui-listview-inset { margin: 0; }
+.ui-icon-pin {
+  background-image: url("http://public.urbien.com/icons/pin1.png");
+  background-size: 18px 18px;
+}

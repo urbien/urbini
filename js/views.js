@@ -1,36 +1,9 @@
-// Events //
-Lablz.Events = _.extend({}, Backbone.Events);
-Lablz.Events.defaultTapHandler = function(e) {
-//  console.log("got tap event");
-  var event = e.originalEvent;
-  var el = event.target;
-  var $el = $(el);
-  if ($el.prop('tagName') != 'A')
-    return true;
-  
-  event.preventDefault();
-  var href = $el.prop('href');
-  app.navigate(href.slice(href.indexOf('#') + 1), true);
-}
-
-Lablz.Events.defaultClickHandler = function(e) {
-//  console.log("got click event");
-  var event = e.originalEvent;
-  var el = event.target;
-  var $el = $(el);
-  if ($el.prop('tagName') != 'A')
-    return true;
-
-  event.preventDefault();
-  var href = $el.prop('href');
-  app.navigate(href.slice(href.indexOf('#') + 1), true);
-}
-
 // Views
 Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
+    this.propRowTemplate2 = _.template(Lablz.Templates.get('propRowTemplate2'));
     this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
     this.model.on('change', this.refresh, this);
 //    Lablz.Events.on('refresh', this.refresh);
@@ -78,6 +51,7 @@ Lablz.ResourceView = Backbone.View.extend({
     var displayedProps = [];
     var idx = 0;
     var groupNameDisplayed;
+    var maxChars = 30;
     if (propGroups) {
       for (var i=0; i < propGroups.length; i++) {
         var grMeta = propGroups[i];
@@ -105,13 +79,15 @@ Lablz.ResourceView = Backbone.View.extend({
           displayedProps[idx++] = p;
           json[p] = Utils.makeProp(prop, json[p]);
           if (!groupNameDisplayed) {
-//            this.$el.append(this.propGroupsDividerTemplate({value: pgName}));
             U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             groupNameDisplayed = true;
           }
 
-//          this.$el.append(this.propRowTemplate(json[p]));
-          U.addToFrag(frag, this.propRowTemplate(json[p]));
+          var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+          if (json[p].name.length + v.length > maxChars)
+            U.addToFrag(frag, this.propRowTemplate2(json[p]));
+          else
+            U.addToFrag(frag, this.propRowTemplate(json[p]));
         }
       }
     }
@@ -142,11 +118,19 @@ Lablz.ResourceView = Backbone.View.extend({
       }
       
       json[p] = Utils.makeProp(prop, json[p]);
-      if (otherLi)
-        otherLi += this.propRowTemplate(json[p]);
-      else
-        U.addToFrag(frag, this.propRowTemplate(json[p]));
-//      this.$el.append(this.propRowTemplate(json[p]));
+      var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+      if (otherLi) {
+        if (json[p].name.length + v.length > maxChars)
+          otherLi += this.propRowTemplate2(json[p]);
+        else
+          otherLi += this.propRowTemplate(json[p]);
+      }
+      else {
+        if (json[p].name.length + v.length > maxChars)
+          U.addToFrag(frag, this.propRowTemplate2(json[p]));
+        else
+          U.addToFrag(frag, this.propRowTemplate(json[p]));
+      }
     }
     
     otherLi && U.addToFrag(frag, otherLi);
@@ -182,7 +166,6 @@ Lablz.ResourceImageView = Backbone.View.extend({
     return this;
   },
   render: function(options) {
-    console.log("render resource");
     var type = this.model.type;
     var meta = this.model.__proto__.constructor.properties;
     meta = meta || this.model.properties;
@@ -204,13 +187,13 @@ Lablz.ResourceImageView = Backbone.View.extend({
     var frag = document.createDocumentFragment();
     var isHorizontal = ($(window).height() < $(window).width());
 
-    if (propVal.indexOf('Image') == 0)
+    if (propVal.indexOf('Image/') == 0)
       propVal = propVal.slice(6);
 //          var iTemplate = _.template(Lablz.Templates.get('imagePT'));
 //          li += '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
 
-    var maxW = $(window).width();
-    var maxH = $(window).height();
+    var maxW = $(window).width() - 3;
+    var maxH = $(window).height() - 50;
     var oWidth = json['originalWidth'];
     var oHeight = json['originalHeight'];
     var w;
@@ -226,16 +209,11 @@ Lablz.ResourceImageView = Backbone.View.extend({
       var ratio = maxH / oHeight;
       w = w * ratio;
     }
-    if (w > maxW - 30)  // padding: 15px
-      w = maxW - 30;
+//    if (w > maxW - 30)  // padding: 15px
+//      w = maxW - 30;
     var iTemplate = "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "'>";
-    var li = '<div';
-//    if (w == maxW) 
-//      li += ' style="margin-left: -15px;"';
+    var li = '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
     
-    li += '>';
-    li += '<a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
-
     U.addToFrag(frag, li);
     this.$el.html(frag);
     return this;
@@ -517,29 +495,44 @@ Lablz.LoginButtons = Backbone.View.extend({
   }
 });
 
-Lablz.ListPage = Backbone.View.extend({
+Lablz.ListPage = Backbone.View.extend( {
   template: 'resource-list',
-  initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'nextPage', 'click');
+  initialize: function () {
+    _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
+    Lablz.Events.on('changePage', this.pageChanged);
     this.template = _.template(Lablz.Templates.get(this.template));
-//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
-//      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
   },
   events: {
     'tap': 'tap',
     'click': 'click',
-    'click #nextPage': 'nextPage',
+    'click #nextPage': 'getNextPage',
+    'click #homeBtn': 'home'
   },
-  nextPage: function(e) {
-    Lablz.Events.trigger('nextPage', this.model);    
+  pageChanged: function(view) {
+    this.visible = (this == view || this.listView == view);
+    this.listView.visible = this.visible;
   },
+  home: function() {
+    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    return this;
+  },
+  getNextPage: function() {
+    if (!this.visible)
+      return;
+    
+    this.listView && this.listView.getNextPage();
+  },
+//  nextPage: function(e) {
+//    Lablz.Events.trigger('nextPage', this.model);    
+//  },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render listPage");
-        
+
     this.$el.html(this.template(this.model.toJSON()));
-    var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
+    
+    var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
     this.buttons = {
       left: [Lablz.BackButton, Lablz.LoginButtons],
       right: isGeo ? [Lablz.MapItButton, Lablz.AroundMeButton] : null
@@ -551,8 +544,10 @@ Lablz.ListPage = Backbone.View.extend({
       buttons: this.buttons,
       el: $('#headerDiv', this.el)
     }).render();
-    
-    this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
+
+    var isModification = Utils.isAssignableFrom(this.model.models[0].constructor, 'Modification');
+    var containerTag = isModification ? '#nabs_grid' : 'ul';
+    this.listView = new Lablz.ResourceListView({el: $(containerTag, this.el), model: this.model});
     this.listView.render();
     if (isGeo) {
       this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
@@ -568,9 +563,34 @@ Lablz.ListPage = Backbone.View.extend({
   }
 });
 
+/*
+Lablz.ListPage.prototype.skipScrollEvent = false;
+Lablz.ListPage.prototype.onScroll = function(e) {
+      var $wnd = $(window);
+      if (this.skipScrollEvent)
+        return;
+//      debugger;
+      var pageContainer = $(".ui-page-active"); //$('div[data-role="page"]');
+      
+//      console.log(pageContainer.height() - $wnd.scrollTop() - $wnd.height());
+      
+      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+        return;
+   console.log("call nextPage");
+  //debugger;
+      this.skipScrollEvent = true;
+      this.nextPage(e);
+    } 
+Lablz.ListPage.prototype.onNextPageFetched = function () {
+//      debugger;
+      this.skipScrollEvent = false;
+      console.log("onNextPageFetched")
+    }
+*/
+
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'tap', 'click', 'edit');
+    _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
 //    this.model.on('change', this.render, this);
     this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.on("mapReady", this.showMapButton);
@@ -579,6 +599,11 @@ Lablz.ViewPage = Backbone.View.extend({
     'click #edit': 'edit',
     'tap': 'tap',
     'click': 'click',
+    'click #homeBtn': 'home'
+  },
+  home: function() {
+    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    return this;
   },
   edit: function(e) {
     e.preventDefault();
@@ -591,7 +616,9 @@ Lablz.ViewPage = Backbone.View.extend({
     console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
     
-    var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
+    var isGeo = (this.model.isA("Locatable") && this.model.get('latitude')) || 
+                (this.model.isA("Shape") && this.model.get('shapeJson'));
+    
     this.buttons = {
         left: [Lablz.BackButton, Lablz.LoginButtons],
         right: isGeo ? [Lablz.AroundMeButton] : null,
@@ -646,68 +673,99 @@ Lablz.ViewPage = Backbone.View.extend({
 //});
 
 Lablz.ResourceListView = Backbone.View.extend({
+  displayPerPage: 20, // for client-side paging
   mapView: null,
-  mapModel: null,
-  page: 1,
+  page: null,
   changedViews: [],
-  initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'swipe', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
-    Lablz.Events.on('nextPage', this.getNextPage);
+	skipScrollEvent: false,
+	
+  initialize: function () {
+    _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('refresh', this.refresh);
-    this.model.on('add', this.renderOne, this);
     this.model.on('reset', this.render, this);
+    var self = this;
+		$(window).on('scroll', function() { self.onScroll(self); });
     return this;
   },
   refresh: function(model, modified) {
     if (model != this.model)
       return this;
-    
+
+    var models = this.model.models;
+    var isModification = Utils.isAssignableFrom(models[0].constructor, 'Modification');
+
     if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
-      var lis = this.$('li').detach();
-      var frag = document.createDocumentFragment();
-      
-      var hasImgs = U.hasImages(this.model.models);
-      for (var i = 0; i < lis.length; i++) {
-        var m = this.model.models[i];
-        if (_.contains(modified, m.get('_uri'))) {
-          var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
-//              new Lablz.ResourceListItemView({model: m}).render();
-          frag.appendChild(liView.render().el);
+      var lis = isModification ? this.$('.nab') : this.$('li');
+      var hasImgs = U.hasImages(models);
+      var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
+      var i = 0;
+      var nextPage = false;
+      var frag;
+      if (typeof modified == 'undefined') {
+        i = lis.length;
+        nextPage = true;
+      }
+      else
+        frag = document.createDocumentFragment();
+      for (; i < num; i++) {
+        var m = models[i];
+        var uri = m.get('_uri');
+        if (i >= lis.length || _.contains(modified, uri)) {
+          var liView;
+          if (isModification) 
+            liView = new Lablz.ResourceMasonryModItemView({model:m});
+          else
+            liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
+//            $('.ui-listview li:eq(' + i + ')').remove();
+          if (nextPage)  
+            this.$el.append(liView.render().el);
+          else
+            frag.appendChild(liView.render().el);
         }
-        else
+        else if (!nextPage)
           frag.appendChild(lis[i]);
       }
-      
-      this.$el.html(frag);
+      if (!nextPage) {
+        lis.detach();
+        this.$el.html(frag);
+      }
 //      this.renderMany(this.model.models.slice(0, lis.length));
       this.$el.listview('refresh');
-    } else {
+    } 
+    else {
       //Element has not been initiliazed
       this.$el.listview().listview('refresh');
     }
+    
   },
   getNextPage: function() {
-    this.isLoading = true;
-    var self = this;
     var before = this.model.models.length;
+    
+    // there is nothing to fetch, we've got them all
+    if (before < this.model.perPage)
+      return;
+    
+    this.isLoading = true;
     var after = function() {
       self.isLoading = false;
+      self.onNextPageFetched();
     };
     
+    this.page++;
+    var self = this;
+    var requested = (this.page + 1) * this.displayPerPage;
+    
+    if (before > requested) {
+      this.refresh(this.model);
+      after();
+      return;
+    }
+      
     this.model.getNextPage({
       success: after,
       error: after
     });      
-  },
-  checkScroll: function () {
-    var triggerPoint = 100; // 100px from the bottom
-    if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
-      console.log("scroll event");
-      this.getNextPage();
-    }
-    
-    return this;
   },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
@@ -721,8 +779,15 @@ Lablz.ResourceListView = Backbone.View.extend({
     var meta = model.__proto__.constructor.properties;
     meta = meta || model.properties;
 
-    var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
-    var liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+    var isModification = Utils.isAssignableFrom(this.model.constructor, 'Modification');
+
+    var liView;
+    if (isModification) 
+      liView = new Lablz.ResourceMasonryModItemView({model:model});
+    else {
+      var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
+      liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+    }
     this.$el.append(liView.render().el);
     return this;
   },
@@ -734,10 +799,17 @@ Lablz.ResourceListView = Backbone.View.extend({
 
       var hasImgs = U.hasImages(models); 
 
+      var isModification = Utils.isAssignableFrom(models[0].constructor, 'Modification');
+
       var frag = document.createDocumentFragment();
       _.forEach(models, function(model) {
-        var liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
-        frag.appendChild(liView.render().el);
+        var liView;
+        if (isModification) 
+          liView = new Lablz.ResourceMasonryModItemView({model:model});
+        else
+          liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+        var s = liView.render().el;
+        frag.appendChild(s);
       });
       
       this.$el.append(frag);
@@ -753,6 +825,29 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     this.rendered = true;
 		return this;
+  },
+
+  // endless page function
+  onScroll: function(view) {
+    if (!view.visible)
+      return;
+    
+    var $wnd = $(window);
+//    console.log(view.skipScrollEvent);
+    if (view.skipScrollEvent) // wait for a new data portion
+      return;
+
+    var pageContainer = $(".ui-page-active");
+    if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+      return;
+   
+//    console.log("CALLING getNextPage");
+    // order is important, because view.getNextPage() may return immediately if we have some cached rows
+    view.skipScrollEvent = true; 
+    view.getNextPage();
+  },
+  onNextPageFetched: function () {
+    this.skipScrollEvent = false;
   }
 });
 
@@ -779,6 +874,66 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   click: Lablz.Events.defaultClickHandler,  
   render: function(event) {
     this.$el.html(this.template(this.model.toJSON()));
+    return this;
+  }
+});
+
+Lablz.ResourceMasonryModItemView = Backbone.View.extend({
+  className: 'nab nabBoard masonry-brick',
+  initialize: function(options) {
+    _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
+    this.template = _.template(Lablz.Templates.get('masonry-mod-list-item'));
+    
+    // resourceListView will call render on this element
+//    this.model.on('change', this.render, this);
+    this.parentView = options && options.parentView;
+    return this;
+  },
+  events: {
+    'tap': 'tap',
+    'click': 'click'
+  },
+  tap: Lablz.Events.defaultTapHandler,
+  click: Lablz.Events.defaultClickHandler,  
+  render: function(event) {
+    var meta = this.model.__proto__.constructor.properties;
+    meta = meta || this.model.properties;
+    if (!meta)
+      return this;
+    
+    var json = this.model.toJSON();
+    var imgSrc = json['v_imgSrc'];
+    if (!imgSrc)
+      imgSrc = 'forResource';
+    if (typeof json[imgSrc] == 'undefined')
+      return this;
+    var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
+    var tmpl_data = _.extend(json, {rUri: rUri});
+
+    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
+    tmpl_data['modifiedBy'].value = modBy;
+    var isHorizontal = ($(window).height() < $(window).width());
+//    alert(isHorizontal);
+    var img = json['resourceMediumImage'];
+    if (typeof img != 'undefined') {
+      if (img.indexOf('Image/') == 0)
+        img = img.slice(6);
+      tmpl_data['resourceMediumImage'] = img;
+//      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
+    }
+    var commentsFor = tmpl_data['v_showCommentsFor'];
+    if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
+      tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value) + '?m_p=comments&b_p=forum');
+
+    var votesFor = tmpl_data['v_showVotesFor'];
+    if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
+      tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value) + '?m_p=votes&b_p=votable');
+
+    var renabFor = tmpl_data['v_showRenabFor'];
+    if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
+      tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value) + '?m_p=nabs&b_p=forResource');
+    
+    this.$el.html(this.template(tmpl_data));
     return this;
   }
 });
@@ -972,3 +1127,58 @@ Lablz.Header = Backbone.View.extend({
     return this;
   }
 });
+
+makeProp = function(prop, val) {
+  var cc = prop.colorCoding;
+  if (cc) {
+    cc = U.getColorCoding(cc, val);
+    if (cc) {
+      if (cc.startsWith("icons"))
+        val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+      else
+        val = "<span style='color:" + cc + "'>" + val + "</span>";
+    }
+  }
+  
+  var propTemplate = Lablz.Templates.getPropTemplate(prop);
+  val = val.displayName ? val : {value: val};
+  return {name: prop.label || prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+}
+
+makePropEdit = function(prop, val) {
+  var propTemplate = Lablz.Templates.getPropTemplate(prop, true);
+  val = val.displayName ? val : {value: val};
+  val.shortName = prop.displayName.toCamelCase();
+  return {name: prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+}
+
+isPropVisible = function(res, prop) {
+  if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
+    return false;
+  
+  var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+  if (userRole == 'admin')
+    return true;
+  
+  var ar = prop.allowRoles;
+  if (ar) {
+    if (userRole == 'guest')
+      return false;
+    
+    var roles = ar.split(",");
+    for (var i = 0; i < roles.length; i++) {
+      var r = roles[i].trim();
+      if (r == 'admin')
+        return false;
+      else if (r == 'siteOwner')
+        return userRole == 'siteOwner';
+      else {
+        // TODO: implement this
+        
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}
