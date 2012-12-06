@@ -19,6 +19,6 @@
 <!-- JavaScript -->
 
 <script data-main="js/loader" src="lib/require.js"></script>
-<script src="lib/xrayquire.js"></script>
+<!--script src="lib/xrayquire.js"></script-->
 </body>
 </html>
