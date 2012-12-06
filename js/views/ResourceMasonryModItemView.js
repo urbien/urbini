@@ -11,6 +11,7 @@ define([
   'jqueryMobile'
 ], function($, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
+    className: 'nab nabBoard masonry-brick',
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
       this.template = _.template(Templates.get('masonry-mod-list-item'));

@@ -29,24 +29,50 @@ define([
   
 //      if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
-      var lis = this.$('li').detach();
-      var frag = document.createDocumentFragment();
+      var lis = isModification ? this.$('.nab') : this.$('li');
+//      var lis = this.$('li').detach();
+//      var frag = document.createDocumentFragment();
       
       var models = this.model.models;
       var hasImgs = U.hasImages(models);
       var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
-      for (var i = 0; i < num; i++) {
+      
+      var i = 0;
+      var nextPage = false;
+      var frag;
+      if (typeof modified == 'undefined') {
+        i = lis.length;
+        nextPage = true;
+      }
+      else
+        frag = document.createDocumentFragment();
+      
+      for (; i < num; i++) {
         var m = models[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
-          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
-          frag.appendChild(liView.render().el);
+//          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
+          var liView;
+          if (isModification) 
+            liView = new Lablz.ResourceMasonryModItemView({model:m});
+          else
+            liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
+//            $('.ui-listview li:eq(' + i + ')').remove();
+          if (nextPage)  
+            this.$el.append(liView.render().el);
+          else
+            frag.appendChild(liView.render().el);
         }
-        else
+        else if (!nextPage)
           frag.appendChild(lis[i]);
       }
+
+      if (!nextPage) {
+        lis.detach();
+        this.$el.html(frag);
+      }
       
-      this.$el.html(frag);
+//      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
       if (this.initializedListView)
         this.$el.listview('refresh');

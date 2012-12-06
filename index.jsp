@@ -211,7 +211,6 @@
   <authenticateByFacebook mobile="y" />
 </script>
 <script type="text/template" id="masonry-mod-list-item">
-  <div class="nab nabBoard masonry-brick" style="cursor: default" id="uri0">
     <div class="anab">
       <div class="galleryItem_css3">
         <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -257,7 +256,6 @@
       </td>
       </tr>
     </table>
-  </div>
 </script>
 
 </div>

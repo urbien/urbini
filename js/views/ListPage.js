@@ -68,7 +68,8 @@ define([
   
       var type = this.model.type;
       var cmpStr = '/changeHistory/Modification';
-      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+      var isModification = U.isAssignableFrom(this.model.models[0].constructor, 'Modification');
+//      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isModification ? '#nabs_grid' : 'ul';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
