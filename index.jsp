@@ -211,53 +211,51 @@
   <authenticateByFacebook mobile="y" />
 </script>
 <script type="text/template" id="masonry-mod-list-item">
-  <div class="nab nabBoard masonry-brick" style="cursor: default" id="uri0">
-    <div class="anab">
-      <div class="galleryItem_css3">
-        <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-          <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
-        </a>
-      </div>
+  <div class="anab">
+    <div class="galleryItem_css3">
+      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+      </a>
     </div>
-    <table width="100%" class="modP">
-      <tr>
-        <td class="urbien" width="1%">
-          <a href="{{= modifiedBy.value }}">
-            <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
-          </a>
-        </td>
-        <td>
-          <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
-          <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
-          <br/><br/>&#160;
-          <span class="commentListDate">{{= Utils.getFormattedDate(dateModified) }}</span>
-        </td>
-      </tr>
-    </table>
-    <table width="100%">
-      <tr>
-      <td colspan="2">
-        <div class="btn">
-          {{ if (typeof v_showCommentsFor != 'undefined') { }}
-            <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
-              C<!--img src="http://public.urbien.com/icons/comment.png" title="Comment"></img-->
-            </a>
-          {{ } }}
-          {{ if (typeof v_showCommentsFor != 'undefined') { }}
-            <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
-              L<!-- img src="http://public.urbien.com/icons/like.png" title="Like"></img -->
-            </a>
-          {{ } }}
-          {{ if (typeof v_showRenabFor != 'undefined') { }}
-            <a data-inline="true" data-role="button" data-mini="true" data-icon="pin" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-              <!--img src="http://s3.amazonaws.com/public.urbien.com/icons/pin1.png" / -->Nab
-            </a>
-          {{ } }}
-          </div>
-      </td>
-      </tr>
-    </table>
   </div>
+  <table width="100%" class="modP">
+    <tr>
+      <td class="urbien" width="1%">
+        <a href="{{= modifiedBy.value }}">
+          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
+        </a>
+      </td>
+      <td>
+        <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
+        <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
+        <br/><br/>&#160;
+        <span class="commentListDate">{{= Utils.getFormattedDate(dateModified) }}</span>
+      </td>
+    </tr>
+  </table>
+  <table width="100%">
+    <tr>
+    <td colspan="2">
+      <div class="btn">
+        {{ if (typeof v_showCommentsFor != 'undefined') { }}
+          <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+            C<!--img src="http://public.urbien.com/icons/comment.png" title="Comment"></img-->
+          </a>
+        {{ } }}
+        {{ if (typeof v_showCommentsFor != 'undefined') { }}
+          <a data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+            L<!-- img src="http://public.urbien.com/icons/like.png" title="Like"></img -->
+          </a>
+        {{ } }}
+        {{ if (typeof v_showRenabFor != 'undefined') { }}
+          <a data-inline="true" data-role="button" data-mini="true" data-icon="pin" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+            <!--img src="http://s3.amazonaws.com/public.urbien.com/icons/pin1.png" / -->Nab
+          </a>
+        {{ } }}
+        </div>
+    </td>
+    </tr>
+  </table>
 </script>
 
 </div>
