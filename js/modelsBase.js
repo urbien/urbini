@@ -831,7 +831,7 @@ define([
       var request = store.get(uri);
       request.onsuccess = function(e) {
         if (options.success) {
-          if (e.target.results.value)
+          if (e.target.result && e.target.result.value)
             options.sync = false;
             
           options.success(e.target.result)
