@@ -183,8 +183,8 @@ define([
       
       if (!key || (model instanceof Backbone.Collection && key.indexOf("?") != -1) || !MBI.getDataAsync(dbReqOptions)) // only fetch from db on regular resource list or propfind, with no filter
         runDefault();
-      else
-        options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
+//      else
+//        options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
     };
 
     this.models = new U.UArray();
@@ -830,8 +830,12 @@ define([
       var store = trans.objectStore(name);
       var request = store.get(uri);
       request.onsuccess = function(e) {
-        if (options.success)
+        if (options.success) {
+          if (e.target.results.value)
+            options.sync = false;
+            
           options.success(e.target.result)
+        }
       };
       
       request.onerror = function(e) {
@@ -878,8 +882,12 @@ define([
           }
         }
         
-        if (success)
+        if (success) {
+          if (results.length)
+            options.sync = false;
+
           success(results);
+        }
       };
     
       cursorRequest.onerror = function (e) {
