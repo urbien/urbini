@@ -42,11 +42,14 @@ define([
       var i = 0;
       var nextPage = false;
       var frag;
-      if (typeof modified == 'undefined') {
+      if (typeof modified == 'undefined'  ||  modified.length == 0) {
         i = lis.length;
-        nextPage = true;
+        if (i == num)
+          return this;
+        if (i > 0)
+          nextPage = true;
       }
-      else
+      if (!nextPage)
         frag = document.createDocumentFragment();
       
       for (; i < num; i++) {
@@ -190,7 +193,7 @@ define([
         return;
   
       var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+      if (pageContainer.height() >= $wnd.scrollTop() + $wnd.height())
         return;
      
   //    console.log("CALLING getNextPage");
