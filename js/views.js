@@ -678,7 +678,7 @@ Lablz.ResourceListView = Backbone.View.extend({
   page: null,
   changedViews: [],
 	skipScrollEvent: false,
-	
+	timerId: null, // helps to prevent loading indicator in case of fetching from DB
   initialize: function () {
     _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('refresh', this.refresh);
@@ -813,6 +813,10 @@ Lablz.ResourceListView = Backbone.View.extend({
       });
       
       this.$el.append(frag);
+			
+//     if (isModification)
+//      $(function(){$('#nabs_grid').masonry({itemSelector: '.nab'});});
+			
     }
     
     return this;
@@ -829,9 +833,6 @@ Lablz.ResourceListView = Backbone.View.extend({
 
   // endless page function
   onScroll: function(view) {
-    if (!view.visible)
-      return;
-    
     var $wnd = $(window);
 //    console.log(view.skipScrollEvent);
     if (view.skipScrollEvent) // wait for a new data portion
@@ -841,12 +842,15 @@ Lablz.ResourceListView = Backbone.View.extend({
     if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
       return;
    
-//    console.log("CALLING getNextPage");
     // order is important, because view.getNextPage() may return immediately if we have some cached rows
     view.skipScrollEvent = true; 
+		// show loading indicator only if process runs more than 50 ms
+		view.timerId = setTimeout(function(){ $.mobile.loading('show'); }, 50);
     view.getNextPage();
   },
   onNextPageFetched: function () {
+		$.mobile.loading( 'hide' );
+		clearTimeout(this.timerId);
     this.skipScrollEvent = false;
   }
 });

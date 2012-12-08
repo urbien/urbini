@@ -36,7 +36,7 @@
   color: #757575;
 }
 .ui-icon {
-   background: none; 
+ /*  background: none; */ 
  }
  .ui-btn { margin-right: 2px; margin-left: 2px;}
 .ui-content .ui-listview-inset { margin: 0; }

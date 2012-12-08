@@ -32,7 +32,7 @@ define([
     },
     pageChanged: function(view) {
       this.visible = (this == view || this.listView == view);
-      this.listView.visible = this.visible;
+      this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
       app.navigate(Lablz.homePage, {trigger: true, replace: false});
