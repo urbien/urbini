@@ -1,3 +1,4 @@
+define(['jquery'], function($) {
   $(document).bind("mobileinit", function () {
       console.log('mobileinit');
       $.mobile.ajaxEnabled = false;
@@ -13,3 +14,4 @@
 //          $(event.currentTarget).remove();
 //      });
   });
+});

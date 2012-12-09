@@ -1,16 +1,18 @@
 define(
 [
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!utils',
-  'cache!templates',
-  'cache!router',
-  'cache!modelsBase',
-  'cache!error',
-  'cache!jqueryMobile',
-  'cache!jqmConfig'
-], function($, _, Backbone, U, Templates, Router, MB, Error) {
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils', 
+  'cache!templates', 
+  'cache!error', 
+  'cache!events',
+  'cache!indexedDBShim', 
+  'cache!modelsBase', 
+  'cache!router' 
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Templates, Error, Events, __idbShim__, MB, Router) {
   var App = {};
   App.initialize = function() {
     var error = function(e) {

@@ -66,18 +66,42 @@ define(function () {
     },
 
     load: function (name, req, load, config) {
+      console.log('cache!' + name);
+      var now = new Date().getTime();
       var cached, url = req.toUrl(name); // TODO: prepend location.pathname?
       var type = url.slice(0, url.indexOf('/'));
-      if (Lablz.modules[type] && Lablz.modules[type][name]) { 
-        load.fromText(name, Lablz.modules[type][name]);
-      }
-      else if (hasLocalStorage) { // in build context, this will be false, too
-        cached = localStorage.getItem(url);
-        if (cached !== null) {
-          load.fromText(name, cached);
-        } else {
+      var justLoaded = Lablz.modules[type] && Lablz.modules[type][name];
+      if (justLoaded || hasLocalStorage) {
+        if (justLoaded) {
+          cached = Lablz.modules[type][name];
+          setTimeout(function() {
+            localStorage.setItem(url, JSON.stringify({modified: now, text: cached}));
+          }) 
+        }
+        else if (hasLocalStorage) { // in build context, this will be false, too
+          cached = localStorage.getItem(url);
+          cached = cached && JSON.parse(cached).text;
+        }
+
+        var haveCached = cached !== null;
+        if (haveCached) {
+          try {
+            console.log('cache! eval\'ing ' + name);
+            load.fromText(name, cached);
+          } catch (err) {
+            haveCached = false;
+          }
+        } 
+        
+        if (!haveCached) {
           cache.get(url, function (content) {
-            load.fromText(name, content);
+            console.log('cache! fetched, eval\'ing ' + name);
+            try {
+              load.fromText(name, content);
+            } catch (err) {
+              console.log('cache! failed to load ' + name + ' from text');
+              return;
+            }
 
             // can't just fall through here, as we
             // will already have returned at this time.
@@ -86,9 +110,10 @@ define(function () {
             });
 
             try { // need to wrap this to catch potential QUOTA_EXCEEDED
-              localStorage.setItem(url, content);
+              localStorage.setItem(url, JSON.stringify({modified: now, text: content}));
             } catch(e) {}
           });
+          
           // need to return here to prevent a second
           // request being sent over the network.
           return;
@@ -96,6 +121,7 @@ define(function () {
       }
       req([name], function (content) {
         load(content);
+        console.log('cache! loaded ' + name + ', content is null: ' + (content == null));
       });
     }
   };

@@ -1,12 +1,13 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!utils',
-  'cache!error',
-  'cache!models/Resource',
-  'cache!jqueryMobile'
-], function($, _, Backbone, U, Error, Resource) {
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils', 
+  'cache!error', 
+  'cache!models/Resource' 
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error, Resource) {
   return Backbone.Collection.extend({
     page: 0,
     perPage: 30,

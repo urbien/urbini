@@ -1,15 +1,16 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig',
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
   'cache!templates',
-  'cache!events',
+  'cache!events', 
   'cache!utils',
-  'leaflet',
-  'leafletMarkerCluster',
-  '../maps',
-  'cache!jqueryMobile'
-], function($, _, Backbone, Templates, Events, U, L, LM, Mapper) {
+//  'leaflet',
+//  'leafletMarkerCluster',
+  '../maps'
+], function($, __jqm__, __jqmConfig__, _, Backbone, Templates, Events, U) {
   
   var MapView = Backbone.View.extend({
     initialize: function (options) {

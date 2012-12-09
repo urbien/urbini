@@ -1,12 +1,13 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig',
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
   'cache!utils',
   'cache!templates',
-  'cache!events',
-  'cache!jqueryMobile'
-], function($, _, Backbone, U, Templates, Events) {
+  'cache!events' 
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Templates, Events) {
   
   return Backbone.View.extend({
     initialize: function(options) {

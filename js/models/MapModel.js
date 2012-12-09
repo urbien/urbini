@@ -1,11 +1,12 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'cache!jqueryMobile', 
+  'underscore', 
+  'cache!backbone', 
   'cache!utils',
-  'cache!error',
-  'cache!jqueryMobile'
-], function($, _, Backbone, U, Error) {
+  'cache!error'
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error) {
   return Backbone.Model.extend({
     initialize: function(options) {
       _.bindAll(this, 'parse', 'url', 'fetch'); // fixes loss of context for 'this' within methods

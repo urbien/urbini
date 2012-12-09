@@ -1,6 +1,6 @@
 define([
-  'cache!underscore',
-  'cache!templates'
+  'cache!underscore', 
+  'cache!templates' 
 ], function(_, Templates) {
 /**
  * for functions that have a parameter "base," base should have serverName, sqlUri, shortNameToModel. If base is not passed in, window.Lablz will be used 
@@ -516,9 +516,13 @@ define([
     /**
      * given obj and path x.y.z, will return obj.x.y.z; 
      */
-    leaf: function(obj, path) {
-      var dIdx = path.indexOf('.');
-      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + 1));
+    leaf: function(obj, path, separator) {
+      if (typeof obj == 'undefined' || !obj)
+        return null; 
+     
+      separator = separator || '.';
+      var dIdx = path.indexOf(separator);
+      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
     
     isAssignableFrom: function(model, className, type2Model) {

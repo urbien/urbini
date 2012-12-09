@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="lib/jqm-icon-pack-2.1.2-fa.css" />
   <link rel="stylesheet" href="styles/styles.css"></link>
   <link rel="stylesheet" href="styles/common-template-m.css"></link>
-  <script src="js/lib/underscore.min.js"></script>
   <backboneInitInfo />
      
 </head>

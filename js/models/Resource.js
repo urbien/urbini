@@ -1,11 +1,13 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
   'cache!utils',
   'cache!error'
-], function($, _, Backbone, U, Error) {
-  Resource = Backbone.Model.extend({
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error) {
+  var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
       _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch'); // fixes loss of context for 'this' within methods

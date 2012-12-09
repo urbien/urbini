@@ -1,13 +1,24 @@
 //var Lablz = Lablz || {files: [], modules: {}, Utils: {}};
-Array.prototype.remove = function(from, to) {
-  var rest = this.slice((to || from) + 1 || this.length);
-  this.length = from < 0 ? this.length + from : from;
-  return this.push.apply(this, rest);
-};  
+//Array.prototype.remove = function(from, to) {
+//  var rest = this.slice((to || from) + 1 || this.length);
+//  this.length = from < 0 ? this.length + from : from;
+//  return this.push.apply(this, rest);
+//};  
 
-Lablz.getModuleKey = function(type, name) {
-  return [type, name].join('/'); 
-}
+Lablz.getModuleKey = function(fileName) {
+  var ext = fileName.slice(fileName.lastIndexOf('.') + 1);
+  return [ext, fileName].join('/'); 
+};
+
+Lablz.Utils = Lablz.Utils || {};
+Lablz.Utils.leaf = function(obj, path, separator) {
+  if (typeof obj == 'undefined' || !obj)
+    return null;
+  
+  separator = separator || '.';
+  var dIdx = path.indexOf(separator);
+  return dIdx == -1 ? obj[path] : Lablz.Utils.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+};
 
 require.config({
   paths: {
@@ -35,9 +46,9 @@ require.config({
       exports: 'Backbone'
     },
     jqmConfig: ['jquery'],
-    jqueryMobile: ['jquery','jqmConfig'],
-    maps: ['leaflet', 'leafletMarkerCluster'],
-    leafletMarkerCluster: ['leaflet']
+    jqueryMobile: ['jquery', 'jqmConfig'],
+    leafletMarkerCluster: ['leaflet'],
+    maps: ['underscore', 'leaflet', 'leafletMarkerCluster']
   }
 });
 
@@ -50,39 +61,43 @@ require([
       'views/ResourceMasonryModItemView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 
       'modelsBase', 'router', 'app'], css: ['lib/jquery.mobile', 'lib/jquery.mobile.theme', 'lib/jquery.mobile.structure', 'styles', 'common-template-m']};
                                                  
-     // useless at the moment
-//      var hash = window.location.hash;
-//      var bundle;
-//      if (hash && hash.startsWith('#view/'))
-//        bundle = viewBundle;
-//      else
-//        bundle = listBundle;
-    
-//    Lablz.Utils.leaf = function(obj, path) {
-//      var dIdx = path.indexOf('.');
-//      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + 1));
-//    };
-
-    if (localStorage) {
-      for (var type in bundle) {
-        var b = bundle[type];
+    var leaf = Lablz.Utils.leaf;
+    var pruned = [];
+    if (localStorage && localStorage.length) {
+      for (var ext in bundle) {
+        Lablz.modules[ext] = {};
+        var b = bundle[ext];
         for (var i = 0; i < b.length; i++) {
           var name = b[i];
-          var saved = localStorage.getItem(Lablz.getModuleKey(type, name));
+          var fileName = name + '.' + ext;
+          var key = Lablz.getModuleKey(fileName);
+          var saved = localStorage.getItem(key);
           if (saved) {
+            try {
+              saved = JSON.parse(saved);
+            } catch (err) {
+              localStorage.removeItem(key);
+              continue;
+            }
+            
             var dateSaved = saved.modified;
-            var modified = leaf(Lablz.files[type], name, '/').modified;
+            var modified = leaf(Lablz.files[ext], fileName, '/').modified;
             if (modified <= dateSaved) {
-              b.remove(name);
-              Lablz.modules[type][name] = saved;
+              Lablz.modules[ext][fileName] = saved.text;
+              continue;
             }
           }
+          
+          pruned.push(name);
         }
+        
+        bundle[ext] = pruned;
+        pruned = [];
       }
     }
     
-    for (var type in bundle) {
-      bundle[type] = bundle[type].join(',');
+    for (var ext in bundle) {
+      bundle[ext] = bundle[ext].join(',');
     }
     
     $.ajax({
@@ -98,27 +113,19 @@ require([
           }
           
           if (resp && !resp.error) {
-            for (var type in resp) {
-              Lablz.modules[type] = {};
-              for (var name in resp[type]) {
-                Lablz.modules[type][name] = resp[type][name];
+            for (var ext in resp) {
+              Lablz.modules[ext] = {};
+              for (var name in resp[ext]) {
+                Lablz.modules[ext][name] = resp[ext][name];
               }
             }
           }
         }
         
         require([
-         'cache!app'
+         'cache!app' 
         ], function(App) {
             App.initialize();
-            setTimeout(function() {
-              var now = new Date().getTime();
-              for (var type in Lablz.modules) {
-                for (var name in Lablz.modules[type]) {
-                  localStorage.setItem(Lablz.getModuleKey(type, name), Lablz.modules[type][name]);
-                }
-              }
-            }, 100);
         });
       }
     });

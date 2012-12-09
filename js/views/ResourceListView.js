@@ -1,15 +1,16 @@
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig',
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
   'cache!utils',
-  'cache!events',
+  'cache!events', 
   'cache!modelsBase',
   'cache!templates',
-  'cache!views/ResourceMasonryModItemView',
-  'cache!views/ResourceListItemView',
-  'cache!jqueryMobile'
-], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceListItemView) {
+  'cache!views/ResourceMasonryModItemView', 
+  'cache!views/ResourceListItemView' 
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
     page: null,

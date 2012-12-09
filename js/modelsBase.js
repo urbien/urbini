@@ -1,15 +1,17 @@
 // needs Lablz.serverName
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!utils',
-  'cache!error',
-  'cache!events',
-  'cache!models/Resource',
-  'cache!collections/ResourceList',
-  'indexedDBShim'
-], function($, _, Backbone, U, Error, Events, Resource, ResourceList) {
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils', 
+  'cache!error', 
+  'cache!events', 
+  'cache!models/Resource', 
+  'cache!collections/ResourceList', 
+  'cache!indexedDBShim'
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -37,7 +39,8 @@ define([
     
     Backbone.sync = function(method, model, options) {
       var now = new Date().getTime();
-      var stale = false;
+      var isCol = model instanceof Backbone.Collection;
+      var stale = isCol && model.models.length < model.perPage;
       var stalest = now;
       if (options && options.startAfter) {
         var q = U.getQueryParams(options.url);
@@ -49,7 +52,7 @@ define([
         }
       }
       
-      var lastFetchedOn = model instanceof Backbone.Model ? model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn) : model._lastFetchedOn;
+      var lastFetchedOn = !isCol ? model._lastFetchedOn : model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn);
       lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
       if (!lastFetchedOn || now - lastFetchedOn > 60000)
         stale = true;
@@ -62,7 +65,7 @@ define([
       var defSuccess = options.success;
       var defErr = options.error;
       var save;
-      if (model instanceof Backbone.Collection) {
+      if (isCol) {
         save = function(results) {
           // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
           // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed

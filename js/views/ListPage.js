@@ -1,22 +1,22 @@
 // needs Lablz.homePage
 
 define([
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
+  'cache!jquery', 
+  'cache!jqmConfig', 
+  'jqueryMobile' 
+  'cache!underscore', 
+  'cache!backbone', 
   'cache!utils',
-  'cache!events',
+  'cache!events', 
   'cache!templates',
   'cache!modelsBase',
-  'cache!views/ResourceListView',
-//  'cache!views/MapView',
-  'cache!views/Header',
-  'cache!views/BackButton',
-  'cache!views/LoginButtons',
-  'cache!views/AroundMeButton',
-  'cache!views/MapItButton',
-  'cache!jqueryMobile'
-], function($, _, Backbone, U, Events, Templates, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+  'cache!views/ResourceListView', 
+  'cache!views/Header', 
+  'cache!views/BackButton', 
+  'cache!views/LoginButtons', 
+  'cache!views/AroundMeButton', 
+  'cache!views/MapItButton' 
+], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, Templates, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
   return Backbone.View.extend( {
     template: 'resource-list',
     initialize: function () {
