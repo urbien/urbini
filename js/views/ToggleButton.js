@@ -1,10 +1,10 @@
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'templates',
-  'events',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!templates',
+  'cache!events',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, Templates, Events) {
   return Backbone.View.extend({
     btnId: null,

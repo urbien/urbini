@@ -2,18 +2,18 @@
 
 // Filename: router.js
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'modelsBase',
-  'error',
-  'models/Resource',
-  'collections/ResourceList',
-  'views/ListPage',
-  'views/ViewPage',
-  'jqueryMobile',
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!events',
+  'cache!modelsBase',
+  'cache!error',
+  'cache!models/Resource',
+  'cache!collections/ResourceList',
+  'cache!views/ListPage',
+  'cache!views/ViewPage',
+  'cache!jqueryMobile',
 ], function($, _, Backbone, U, Events, MB, Error, Resource, ResourceList, ListPage, ViewPage) {
   return Backbone.Router.extend({
     routes:{

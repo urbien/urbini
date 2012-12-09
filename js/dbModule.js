@@ -1,12 +1,12 @@
 // needs Lablz.currentUser, Lablz.requiredModels
 
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'modelsBase',
-  'error',
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!modelsBase',
+  'cache!error',
   'indexedDBShim'
 ], function($, _, Backbone, U, MB, Error) {
   DB = {};

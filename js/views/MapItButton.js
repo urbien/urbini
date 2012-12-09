@@ -1,9 +1,9 @@
 define([
-  'underscore',
-  'backbone',
-  'templates',
-  'events',
-  'views/ToggleButton'
+  'cache!underscore',
+  'cache!backbone',
+  'cache!templates',
+  'cache!events',
+  'cache!views/ToggleButton'
 ], function(_, Backbone, Templates, Events, ToggleButton) {
   return ToggleButton.extend({
     btnId: 'mapIt',

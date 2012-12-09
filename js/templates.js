@@ -1,14 +1,14 @@
 define([
-  'jquery',
-  'underscore'
+  'cache!jquery',
+  'cache!underscore'
 ], function($, _) {
-    // Hash of preloaded templates for the app
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
   };
   
   return {
+    // Hash of preloaded templates for the app
     templates: {},
     propTemplates: {
       "string": "stringPT",

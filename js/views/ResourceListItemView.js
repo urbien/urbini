@@ -1,10 +1,10 @@
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'events',
-  'templates',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!events',
+  'cache!templates',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, Events, Templates) {
   return Backbone.View.extend({
     tagName:"li",

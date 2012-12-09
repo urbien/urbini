@@ -1,13 +1,10 @@
-// NOT CURRENTLY USED 
-
-// needs Lablz.apiUrl, Lablz.requiredModels
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'error',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!error',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, U, Error) {
   return Backbone.Model.extend({
     initialize: function(options) {

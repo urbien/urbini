@@ -1,15 +1,15 @@
-// needs Lablz.requiredModels
-define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'templates',
-  'router',
-  'modelsBase',
-  'error',
-  'jqueryMobile',
-  'jqmConfig'
+define(
+[
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!templates',
+  'cache!router',
+  'cache!modelsBase',
+  'cache!error',
+  'cache!jqueryMobile',
+  'cache!jqmConfig'
 ], function($, _, Backbone, U, Templates, Router, MB, Error) {
   var App = {};
   App.initialize = function() {
@@ -40,16 +40,11 @@ define([
     App.router = new Router();
     Backbone.history.start();
     
-    App.homePage = Lablz.homePage || _.last(models).shortName;
+    App.homePage = Lablz.homePage = _.last(models).shortName;
     if (!window.location.hash) {
       App.router.navigate(App.homePage, {trigger: true});
     }
   };
-  
-//  $(document).ready(function () {
-//    console.log('document ready: ' + documentReadyCount++);
-//    init();      
-//  });
   
   return App;
 });

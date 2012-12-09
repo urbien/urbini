@@ -1,13 +1,13 @@
 // needs Lablz.serverName
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'error',
-  'events',
-  'models/Resource',
-  'collections/ResourceList',
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!error',
+  'cache!events',
+  'cache!models/Resource',
+  'cache!collections/ResourceList',
   'indexedDBShim'
 ], function($, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
@@ -439,6 +439,9 @@ define([
         var pkgPath = U.getPackagePath(m.type);
         var sPath = U.getPackagePath(sUri);
         var pkg = U.addPackage(MBI.packages, pkgPath);
+        if (snm[m.shortName])
+          delete snm[m.shortName];
+          
         var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
     //    var model = eval(pkgPath + '.' + m.shortName + " = " + (sPath ? sPath + '.' : '') + superName + '.extend({},' + m + ');');
         MBI.initModel(model);

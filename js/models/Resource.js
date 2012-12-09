@@ -1,11 +1,9 @@
-// needs Lablz.apiUrl, Lablz.requiredModels
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-//  'modelsBase',
-  'error'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!error'
 ], function($, _, Backbone, U, Error) {
   Resource = Backbone.Model.extend({
     idAttribute: "_uri",

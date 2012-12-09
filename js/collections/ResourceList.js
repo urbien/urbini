@@ -1,13 +1,11 @@
-// needs Lablz.apiUrl, Lablz.requiredModels
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-//  'modelsBase',
-  'error',
-  'models/Resource',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!error',
+  'cache!models/Resource',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, U, Error, Resource) {
   return Backbone.Collection.extend({
     page: 0,

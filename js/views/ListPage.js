@@ -1,21 +1,21 @@
 // needs Lablz.homePage
 
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'templates',
-  'modelsBase',
-  'views/ResourceListView',
-//  'views/MapView',
-  'views/Header',
-  'views/BackButton',
-  'views/LoginButtons',
-  'views/AroundMeButton',
-  'views/MapItButton',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!events',
+  'cache!templates',
+  'cache!modelsBase',
+  'cache!views/ResourceListView',
+//  'cache!views/MapView',
+  'cache!views/Header',
+  'cache!views/BackButton',
+  'cache!views/LoginButtons',
+  'cache!views/AroundMeButton',
+  'cache!views/MapItButton',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, U, Events, Templates, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
   return Backbone.View.extend( {
     template: 'resource-list',
@@ -76,7 +76,7 @@ define([
       this.listView.render();
       if (isGeo) {
         var self = this;
-        require(['views/MapView'], function(MapView) {
+        require(['cache!views/MapView'], function(MapView) {
           self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});          
           self.mapView.render();
         });        

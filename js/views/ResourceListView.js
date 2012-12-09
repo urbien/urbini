@@ -1,14 +1,14 @@
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'modelsBase',
-  'templates',
-  'views/ResourceMasonryModItemView',
-  'views/ResourceListItemView',
-  'jqueryMobile'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
+  'cache!utils',
+  'cache!events',
+  'cache!modelsBase',
+  'cache!templates',
+  'cache!views/ResourceMasonryModItemView',
+  'cache!views/ResourceListItemView',
+  'cache!jqueryMobile'
 ], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
@@ -49,8 +49,11 @@ define([
         if (i > 0)
           nextPage = true;
       }
-      if (!nextPage)
+      
+      if (!nextPage) {
+        lis = lis.detach();
         frag = document.createDocumentFragment();
+      }
       
       for (; i < num; i++) {
         var m = models[i];
@@ -73,7 +76,6 @@ define([
       }
 
       if (!nextPage) {
-        lis.detach();
         this.$el.html(frag);
       }
       

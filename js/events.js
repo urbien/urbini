@@ -1,7 +1,7 @@
 define([
-  'jquery',
-  'underscore',
-  'backbone'
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone'
 ], function($, _, Backbone) {
   var Events = _.extend({}, Backbone.Events);
   Events.defaultTapHandler = function(e) {
