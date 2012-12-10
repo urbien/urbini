@@ -65,15 +65,20 @@ define(function () {
       xhr.send(null);
     },
 
+    prependUrl: function(content, url) {
+      return content.indexOf('// @sourceURL') == 0 ? content : '// @sourceURL = ' + url + '\r\n' + content;
+    },
+    
     load: function (name, req, load, config) {
       console.log('cache!' + name);
       var now = new Date().getTime();
-      var cached, url = req.toUrl(name); // TODO: prepend location.pathname?
+      var cached, url = req.toUrl(name);
       var type = url.slice(0, url.indexOf('/'));
-      var justLoaded = Lablz.modules[type] && Lablz.modules[type][name];
-      if (justLoaded || hasLocalStorage) {
-        if (justLoaded) {
-          cached = Lablz.modules[type][name];
+      var inMemory = Lablz.modules[type] && Lablz.modules[type][url];
+      var loadedCached = false;
+      if (inMemory || hasLocalStorage) {
+        if (inMemory) {
+          cached = Lablz.modules[type][url];
           setTimeout(function() {
             localStorage.setItem(url, JSON.stringify({modified: now, text: cached}));
           }) 
@@ -83,46 +88,24 @@ define(function () {
           cached = cached && JSON.parse(cached).text;
         }
 
-        var haveCached = cached !== null;
-        if (haveCached) {
+        var loadedCached = cached !== null;
+        if (loadedCached) {
+          cached = cache.prependUrl(cached, url);
           try {
             console.log('cache! eval\'ing ' + name);
             load.fromText(name, cached);
           } catch (err) {
-            haveCached = false;
+            loadedCached = false;
           }
         } 
-        
-        if (!haveCached) {
-          cache.get(url, function (content) {
-            console.log('cache! fetched, eval\'ing ' + name);
-            try {
-              load.fromText(name, content);
-            } catch (err) {
-              console.log('cache! failed to load ' + name + ' from text');
-              return;
-            }
-
-            // can't just fall through here, as we
-            // will already have returned at this time.
-            req([name], function (content) {
-              load(content);
-            });
-
-            try { // need to wrap this to catch potential QUOTA_EXCEEDED
-              localStorage.setItem(url, JSON.stringify({modified: now, text: content}));
-            } catch(e) {}
-          });
-          
-          // need to return here to prevent a second
-          // request being sent over the network.
-          return;
-        }
       }
-      req([name], function (content) {
-        load(content);
-        console.log('cache! loaded ' + name + ', content is null: ' + (content == null));
-      });
+      
+      if (!loadedCached) {
+        req([name], function (content) {
+          load(content);
+          console.log('cache! loaded ' + name + ', content is null: ' + (content == null));
+        });
+      }
     }
   };
 

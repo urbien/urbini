@@ -1,7 +1,6 @@
 define([
   'cache!jquery', 
-  'cache!jqmConfig',
-  'cache!jqueryMobile',
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
@@ -9,8 +8,8 @@ define([
   'cache!utils',
 //  'leaflet',
 //  'leafletMarkerCluster',
-  '../maps'
-], function($, __jqm__, __jqmConfig__, _, Backbone, Templates, Events, U) {
+  'maps'
+], function($, __jqm__, _, Backbone, Templates, Events, U, Mapper) {
   
   var MapView = Backbone.View.extend({
     initialize: function (options) {
@@ -103,7 +102,7 @@ define([
       div.className = 'map';
       div.id = 'map';
   
-      var map = this.mapper = new Lablz.Leaflet(div);
+      var map = this.mapper = new Mapper(div);
       map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
   //        , {'load': function() {
   //      Events.trigger('mapReady', this.model);

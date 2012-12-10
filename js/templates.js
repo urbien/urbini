@@ -1,9 +1,8 @@
 define([
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore' 
-], function($, __jqm__, __jqmConfig__, _) {
+], function($, __jqm__, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g

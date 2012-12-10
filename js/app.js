@@ -1,18 +1,41 @@
 define(
 [
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
-  'cache!utils', 
   'cache!templates', 
+  'cache!utils', 
   'cache!error', 
   'cache!events',
   'cache!indexedDBShim', 
   'cache!modelsBase', 
-  'cache!router' 
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Templates, Error, Events, __idbShim__, MB, Router) {
+  'cache!router'
+], function($, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {
+  $(document).bind("mobileinit", function () {
+    console.log('mobileinit');
+    $.mobile.ajaxEnabled = false;
+    $.mobile.linkBindingEnabled = false;
+    $.mobile.hashListeningEnabled = false;
+    $.mobile.pushStateEnabled = false;
+    $.support.touchOverflow = true;
+    $.mobile.touchOverflowEnabled = true;
+    $.mobile.loadingMessageTextVisible = true;
+    
+    // Remove page from DOM when it's being replaced
+//    $('div[data-role="page"]').live('pagehide', function (event, ui) {
+//        $(event.currentTarget).remove();
+//    });
+  });
+  
+  Backbone.View.prototype.close = function(){
+    this.remove();
+    this.unbind();
+    if (this.onClose){
+      this.onClose();
+    }
+  };  
+  
   var App = {};
   App.initialize = function() {
     var error = function(e) {

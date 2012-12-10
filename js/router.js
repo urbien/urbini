@@ -3,8 +3,7 @@
 // Filename: router.js
 define([
   'cache!jquery', 
-  'cache!jqmConfig',
-  'cache!jqueryMobile',
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
@@ -15,7 +14,7 @@ define([
   'cache!modelsBase', 
   'cache!views/ListPage', 
   'cache!views/ViewPage' 
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, Error, Resource, ResourceList, MB, ListPage, ViewPage) {
+], function($, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB, ListPage, ViewPage) {
   return Backbone.Router.extend({
     routes:{
         ":type":"list",

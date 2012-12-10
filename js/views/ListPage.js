@@ -2,13 +2,12 @@
 
 define([
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'jqueryMobile' 
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
-  'cache!utils',
-  'cache!events', 
   'cache!templates',
+  'cache!events', 
+  'cache!utils',
   'cache!modelsBase',
   'cache!views/ResourceListView', 
   'cache!views/Header', 
@@ -16,8 +15,8 @@ define([
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton' 
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, Templates, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
-  return Backbone.View.extend( {
+], function($, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+  return Backbone.View.extend({
     template: 'resource-list',
     initialize: function () {
       _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
@@ -79,7 +78,7 @@ define([
         require(['cache!views/MapView'], function(MapView) {
           self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});          
           self.mapView.render();
-        });        
+        });
       }
       
       if (!this.$el.parentNode) 

@@ -2,8 +2,7 @@
 
 define([
   'cache!jquery', 
-  'cache!jqmConfig',
-  'cache!jqueryMobile',
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
@@ -15,7 +14,7 @@ define([
   'cache!views/AroundMeButton', 
   'cache!views/ResourceView', 
   'cache!views/ResourceImageView' 
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
+], function($, __jqm__, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');

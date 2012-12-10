@@ -1,12 +1,11 @@
 define([
   'cache!jquery', 
-  'cache!jqmConfig',
-  'cache!jqueryMobile',
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
   'cache!events' 
-], function($, __jqm__, __jqmConfig__, _, Backbone, Templates, Events) {
+], function($, __jqm__, _, Backbone, Templates, Events) {
   return Backbone.View.extend({
     btnId: null,
     initialize: function(options) {

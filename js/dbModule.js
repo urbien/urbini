@@ -2,15 +2,14 @@
 
 define([
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!error',
   'cache!indexedDBShim'
   'cache!utils',
   'cache!modelsBase',
-], function($, __jqm__, __jqmConfig__, _, Backbone, Error, __idbShim__, U, MB) {
+], function($, __jqm__, _, Backbone, Error, __idbShim__, U, MB) {
   DB = {};
   DB.db = null;
   DB.VERSION = 1;

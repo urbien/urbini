@@ -1,8 +1,7 @@
 // needs Lablz.serverName
 define([
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
@@ -11,7 +10,7 @@ define([
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
   'cache!indexedDBShim'
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error, Events, Resource, ResourceList) {
+], function($, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -40,26 +39,29 @@ define([
     Backbone.sync = function(method, model, options) {
       var now = new Date().getTime();
       var isCol = model instanceof Backbone.Collection;
-      var stale = isCol && model.models.length < model.perPage;
-      var stalest = now;
-      if (options && options.startAfter) {
-        var q = U.getQueryParams(options.url);
-        var offset = q['$offset'];
-        for (var i = offset; i < model.models.length; i++) {
-          var m = model.models[i];
-          if (m._lastFetchedOn)
-            stalest = Math.min(stalest, m._lastFetchedOn);
+      var forceFetch = isCol && model.models.length < model.perPage;
+      var stale = false;
+      if (!forceFetch) {
+        var stalest = now;
+        if (options && options.startAfter) {
+          var q = U.getQueryParams(options.url);
+          var offset = q['$offset'];
+          for (var i = offset; i < model.models.length; i++) {
+            var m = model.models[i];
+            if (m._lastFetchedOn)
+              stalest = Math.min(stalest, m._lastFetchedOn);
+          }
         }
-      }
-      
-      var lastFetchedOn = !isCol ? model._lastFetchedOn : model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn);
-      lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
-      if (!lastFetchedOn || now - lastFetchedOn > 60000)
-        stale = true;
-
-      options.headers = options.headers || {};
-      if (stale && lastFetchedOn) {
-        _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
+        
+        var lastFetchedOn = !isCol ? model._lastFetchedOn : model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn);
+        lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
+        if (!lastFetchedOn || now - lastFetchedOn > 60000)
+          stale = true;
+  
+        options.headers = options.headers || {};
+        if (stale && lastFetchedOn) {
+          _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
+        }
       }
       
       var defSuccess = options.success;
@@ -112,6 +114,9 @@ define([
 
       var saveOptions = _.extend(_.clone(options), {
         success: function(resp, status, xhr) {
+          if (xhr.status == 304)
+            return;
+            
           if (resp.error) {
             console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
             defErr && defErr(resp.error, status, xhr);

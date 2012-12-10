@@ -1,5 +1,5 @@
 define([
-  'underscore', 
+  'cache!underscore', 
   'cache!backbone' 
 ], function(_, Backbone) {
   return {

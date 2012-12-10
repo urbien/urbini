@@ -1,13 +1,12 @@
 define([
   'cache!jquery',
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
   'cache!utils',
   'cache!events', 
-], function($, __jqm__, __jqmConfig__, _, Backbone, Templates, Events, U) {
+], function($, __jqm__, _, Backbone, Templates, Events, U) {
   
   return Backbone.View.extend({
     template: 'headerTemplate',

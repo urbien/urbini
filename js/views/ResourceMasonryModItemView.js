@@ -2,15 +2,14 @@
 
 define([
   'cache!jquery', 
-  'cache!jqmConfig',
-  'cache!jqueryMobile',
+  'jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
   'cache!events', 
   'cache!templates',
   'cache!modelsBase'
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Events, Templates, MB) {
+], function($, __jqm__, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
     initialize: function(options) {

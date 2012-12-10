@@ -1,12 +1,11 @@
 define([
   'cache!jquery', 
-  'cache!jqmConfig', 
-  'cache!jqueryMobile', 
+  'jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
   'cache!error'
-], function($, __jqm__, __jqmConfig__, _, Backbone, U, Error) {
+], function($, __jqm__, _, Backbone, U, Error) {
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
