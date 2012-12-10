@@ -1,15 +1,4 @@
 html { height: 100%; }
-body {
-  font-size: 100%;
-  font-family: Tahoma, Lucida Grande, Verdana, Arial, Helvetica, sans-serif;
-
-  padding: 0;
-  margin: 0;
-  background-color: &[BodyBackgroundColor];;
-  color: &[Color];;
-  height: 100%;
-}
-
 /* Gallery */
 .galleryItem, .galleryItem_css3 {
   border-width: 0px;
@@ -142,6 +131,9 @@ body {
 
 .anab .nabRL  { display: inline; }
 .anab .nabRL div { padding: 0px 10px 10px 10px;}
+
+.anab .nabRL .btn span {padding-right: 0; }
+
 .modP tr {vertical-align: top;}
 .lc1 a {
   padding: 5px;
@@ -159,6 +151,10 @@ body {
   max-width: 32px;
 }
 .btn { text-align: center; padding-bottom: 3px; }
+.commentListDate {
+  color: #999999;
+  font-size: 11px;
+}
 /*
 @media screen and (orientation: portrait) {
   .nab {
@@ -173,74 +169,3 @@ body {
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
 }
 
-/*
-.ui-page {
-    -webkit-backface-visibility: hidden; 
-}
-
-.ui-mobile-viewport-transitioning,
-.ui-mobile-viewport-transitioning .ui-page {
-    overflow: visible;
-}
-*/
-
-/*
-#buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
-.lc img {text-align: center; max-width:14px;}
-
-.lc a, .lc1 a { 
-  border: 0; 
-  cursor: pointer; 
-  font-style: normal;
-  padding: 3px 5px;
-  font-size: 11px;
-  position: relative; 
-  text-align: center;
-  text-decoration: none;
-  color: #757575; 
-  * vertical margin is the opposite of button's awesomeness *
-  margin-top: 0;
-  margin-bottom: 0;
-  
-  * not all browser support these, but who cares? *
-
-  text-shadow:1px -2px 5px #ffffff;
-
-  border-radius: 10px; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
-  
-  background-color: #eeeeee;
-  background-image: -moz-linear-gradient(top center, #eeeeee, #ffffff);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeee), to(#ffffff));
-  background-image: -o-linear-gradient(#eeeeee, #ffffff);
-  background-image:  url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-  border: 1px solid #eeeeee;
-  
-  * cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ *
-  display: -moz-inline-stack;
-  display: inline-block;
-  vertical-align: middle;
-  *display: inline;
-  position: relative;
-  
-  * IE luv *
-  zoom: 1;
-  behavior: url(PIE.htc);
-  
-  *disable text selection (Firefox only)*
-  -moz-user-select: none;
-}
-.lc a:hover, .lc a:focus, .lc1 a:hover, .lc1 a:focus {
-  color: #757575; 
-  background-color: #ffc416;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5); /* reset box-shadow for WebKit */
-  background-image: -moz-linear-gradient(top center, #fffa76, #ffc416);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fffa76), to(#ffc416));
-  background-image: -o-linear-gradient(#fffa76, #ffc416);
-  background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc2NTUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZBNzYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkM0MTYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c2NTUpIiAvPgo8L3N2Zz4=);
-  border: 1px solid #ffba24;
-}
-*/
-/*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
-/*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
