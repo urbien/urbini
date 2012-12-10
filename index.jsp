@@ -222,7 +222,7 @@
     <tr>
       <td class="urbien" width="1%">
         <a href="{{= modifiedBy.value }}">
-          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
+          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
         </a>
       </td>
       <td>
