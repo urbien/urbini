@@ -222,7 +222,7 @@
     <tr>
       <td class="urbien" width="1%">
         <a href="{{= modifiedBy.value }}">
-          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
+          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
         </a>
       </td>
       <td>
@@ -246,14 +246,44 @@
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-            Nab
+          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+            <!--Nab-->
           </a>
         {{ } }}
         </div>
     </td>
     </tr>
   </table>
+</script>
+
+<script type="text/template" id="masonry-list-item">
+  <div class="anab">
+    <div class="galleryItem_css3">
+      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+      </a>
+    </div>
+  <div class="nabRL">
+    <div>
+      <!-- a href="{{= rUri }}" class="pLink">{{= davDisplayName }}</a><br/ -->
+  {{= gridCols }}
+    </div>
+    <div class="btn">
+        {{ if (typeof v_showCommentsFor != 'undefined') { }}
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+          </a>
+        {{ } }}
+        {{ if (typeof v_showVotesFor != 'undefined') { }}
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+          </a>
+        {{ } }}
+        {{ if (typeof v_showRenabFor != 'undefined') { }}
+          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+          </a>
+        {{ } }}
+     </div>
+  </div>     
+</div>
 </script>
 
 </div>

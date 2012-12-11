@@ -1,15 +1,18 @@
 // needs Lablz.pageRoot
 
 define([
-  'cache!jquery', 
-  'cache!jqueryMobile',
-  'cache!underscore', 
-  'cache!backbone', 
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
   'cache!utils',
-  'cache!events', 
+  'cache!events',
   'cache!templates',
-  'cache!modelsBase'
-], function($, __jqm__, _, Backbone, U, Events, Templates, MB) {
+  'cache!modelsBase',
+  'cache!jqueryMobile',
+  'cache!jquery.masonry.min.js',
+  'cache!jquery.imagesloaded.min.js' // in case if inages do not have height declaration
+                                     // then need to align "bricks after their downloading 
+], function($, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
     initialize: function(options) {
@@ -18,6 +21,7 @@ define([
       
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
+      
       this.parentView = options && options.parentView;
       return this;
     },
@@ -26,7 +30,7 @@ define([
       'click': 'click'
     },
     tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: Events.defaultClickHandler,
     render: function(event) {
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;
@@ -55,19 +59,23 @@ define([
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
+      
       var commentsFor = tmpl_data['v_showCommentsFor'];
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, snmHint) + '?m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, snmHint) + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, snmHint) + '?m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, snmHint) + '&m_p=votes&b_p=votable');
   
       var renabFor = tmpl_data['v_showRenabFor'];
-      if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, snmHint) + '?m_p=nabs&b_p=forResource');
-      
-      this.$el.html(this.template(tmpl_data));
+      if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
+        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, snmHint) + '&m_p=nabs&b_p=forResource');
+      try {
+        this.$el.html(this.template(tmpl_data));
+      } catch (err) {
+        console.log('2. failed to delete table ' + name + ': ' + err);
+      }
       return this;
     }
   });

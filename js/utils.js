@@ -285,6 +285,7 @@ define([
       cols = cols && cols.split(',');
       var resourceLink;
       var rows = {};
+      var i = 0;
       if (cols) {
         _.each(cols, function (col) {
           col = col.trim();
@@ -295,6 +296,8 @@ define([
           
           var nameVal = U.makeProp(prop, val);
           rows[nameVal.name] = {value: nameVal.value};
+          rows[nameVal.name].idx = i++;
+          rows[nameVal.name].propertyName = col;
           if (prop.resourceLink)
             rows[nameVal.name].resourceLink = true;
     //        resourceLink = nameVal.value;

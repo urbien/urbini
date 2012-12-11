@@ -1,15 +1,16 @@
 define([
-  'cache!jquery', 
-  'cache!jqueryMobile',
-  'cache!underscore', 
-  'cache!backbone', 
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
   'cache!utils',
-  'cache!events', 
+  'cache!events',
   'cache!modelsBase',
   'cache!templates',
-//  'cache!views/ResourceMasonryModItemView', 
-  'cache!views/ResourceListItemView' 
-], function($, __jqm__, _, Backbone, U, Events, MB, Templates, /*ResourceMasonryModItemView,*/ ResourceListItemView) {
+  'cache!jqueryMobile,'
+  'cache!views/ResourceMasonryModItemView',
+  'cache!views/ResourceMasonryItemView',
+  'cache!views/ResourceListItemView'
+], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceMasonryItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
     page: null,
@@ -21,10 +22,20 @@ define([
       Events.on('refresh', this.refresh);
       this.model.on('reset', this.render, this);
       var self = this;
-      $(window).on('scroll', function() { self.onScroll(self); });      
-      this.isModification = U.isAssignableFrom(this.model.model, 'Modification', MB.typeToModel);
+      $(window).on('scroll', function() { self.onScroll(self); });
+      Events.on('changePage', function() { self.pageChanged(); });
       return this;
     },
+    
+    // initial masonry alignment
+    pageChanged: function(view) {
+      var self = this;
+      this.$wall = $('#nabs_grid');
+      if (this.$wall != null)
+        this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
+      // note: use this.$wall.masonry(); if images have defined height
+    },
+    
     refresh: function(model, modified) {
       if (this.isModification && !this.ResourceMasonryModItemView) {
         var self = this;
@@ -45,18 +56,26 @@ define([
 //      var frag = document.createDocumentFragment();
       
       var models = this.model.models;
-      var lis = this.isModification ? this.$('.nab') : this.$('li');
+      var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
+      var meta = models[0].__proto__.constructor.properties;
+      meta = meta || models[0].properties;
+
+      var viewMode = models[0].constructor['viewMode'];
+      var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
+      var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
+      var curNum = lis.length;
       var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
       
       var i = 0;
       var nextPage = false;
       var frag;
       if (typeof modified == 'undefined'  ||  modified.length == 0) {
-        i = lis.length;
-        if (i == num)
+        i = curNum;
+        if (curNum == num)
           return this;
-        if (i > 0)
+        if (curNum > 0)
           nextPage = true;
       }
       
@@ -71,8 +90,10 @@ define([
         if (i >= lis.length || _.contains(modified, uri)) {
 //          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
           var liView;
-          if (this.isModification)
-            liView = new this.ResourceMasonryModItemView({model:m}); // loaded via requireJS
+          if (isModification) 
+            liView = new ResourceMasonryModItemView({model:m});
+          else if (isMasonry)
+            liView = new ResourceMasonryItemView({model:m});
           else
             liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
 //            $('.ui-listview li:eq(' + i + ')').remove();
@@ -91,8 +112,12 @@ define([
       
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
-      if (this.initializedListView)
-        this.$el.listview('refresh');
+      if (this.initializedListView) {
+        if (isModification  ||  isMasonry)
+          this.$el.trigger('create');
+        else
+          this.$el.listview('refresh');
+      }
       else
         this.initializedListView = true;
 //      else {
@@ -117,6 +142,7 @@ define([
       
       this.page++;
       var self = this;
+      
       var requested = (this.page + 1) * this.displayPerPage;
       
       if (before > requested) {
