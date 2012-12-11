@@ -2,25 +2,25 @@
 
 // Filename: router.js
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'modelsBase',
-  'error',
-  'models/Resource',
-  'collections/ResourceList',
-  'views/ListPage',
-  'views/ViewPage',
-  'jqueryMobile',
-], function($, _, Backbone, U, Events, MB, Error, Resource, ResourceList, ListPage, ViewPage) {
+  'cache!jquery', 
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils', 
+  'cache!events', 
+  'cache!error', 
+  'cache!models/Resource', 
+  'cache!collections/ResourceList', 
+  'cache!modelsBase'
+//  , 
+//  'cache!views/ListPage', 
+//  'cache!views/ViewPage' 
+], function($, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
+  var ListPage, ViewPage;
   return Backbone.Router.extend({
     routes:{
-        ":type":"list",
-        "view/*path":"view"
-  //      "edit/*path":"edit",
-  //      "map/*type":"map"
+      ":type":"list",
+      "view/*path":"view"
     },
     CollectionViews: {},
     Views: {},
@@ -50,7 +50,18 @@ define([
       
       return ret;
     },
+    
     list: function (oParams) {
+      if (!ListPage) {
+        var self = this;
+        require(['cache!views/ListPage'], function(LP) {
+          ListPage = LP;
+          self.list(oParams);
+        })
+        
+        return;
+      }
+      
       var params = oParams.split("?");
       var type = decodeURIComponent(params[0]);
       var self = this;
@@ -122,6 +133,16 @@ define([
     },
   
     view: function (path) {
+      if (!ViewPage) {
+        var self = this;
+        require(['cache!views/ViewPage'], function(VP) {
+          ViewPage = VP;
+          self.view(path);
+        })
+        
+        return;
+      }
+
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
       var uri, query;

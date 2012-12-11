@@ -3277,5 +3277,12 @@
         accuracy: e.coords.accuracy
       })
     }
-  })
+  });
+  
+  if (typeof define === 'function' && define.amd) {
+    define('leaflet', function() {
+      return e.L;
+    });
+  }
+
 })(this);

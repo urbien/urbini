@@ -1,17 +1,11 @@
 define([
-  'underscore',
-  'templates'
+  'cache!underscore', 
+  'cache!templates' 
 ], function(_, Templates) {
 /**
  * for functions that have a parameter "base," base should have serverName, sqlUri, shortNameToModel. If base is not passed in, window.Lablz will be used 
  **/
 
-  Array.prototype.remove = function(from, to) {
-    var rest = this.slice((to || from) + 1 || this.length);
-    this.length = from < 0 ? this.length + from : from;
-    return this.push.apply(this, rest);
-  };
-  
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
   };
@@ -232,9 +226,14 @@ define([
         return 'packages';
       
       var start = "http://www.";
-      var path = type.substring(start.length, type.lastIndexOf("/"));
+      var path = type.startsWith(start) ? type.slice(start.length, type.lastIndexOf("/")) : !type.startsWith('hudsonfog') ? 'hudsonfog/voc/' + type : type;
       path = path.replace(".com", "");
       path = path.replace(/\//g, '.');
+      var lastDIdx = path.lastIndexOf('.');
+      var c = path.charAt(lastDIdx + 1);
+      if (c == c.toUpperCase())
+        path = path.slice(0, lastDIdx);
+        
       return 'packages.' + path;
     },
     
@@ -517,9 +516,13 @@ define([
     /**
      * given obj and path x.y.z, will return obj.x.y.z; 
      */
-    leaf: function(obj, path) {
-      var dIdx = path.indexOf('.');
-      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + 1));
+    leaf: function(obj, path, separator) {
+      if (typeof obj == 'undefined' || !obj)
+        return null; 
+     
+      separator = separator || '.';
+      var dIdx = path.indexOf(separator);
+      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
     
     isAssignableFrom: function(model, className, type2Model) {
@@ -529,6 +532,9 @@ define([
       var m = model;
       while (true) {
         var subClassOf = m.subClassOf;
+        if (!subClassOf.startsWith(Lablz.DEFAULT_VOC_BASE))
+          subClassOf = Lablz.DEFAULT_VOC_BASE + subClassOf;
+        
         if (m.shortName == className  ||  m.type == className)
           return true;
         if (m.subClassOf == 'Resource')

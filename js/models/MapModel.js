@@ -1,14 +1,11 @@
-// NOT CURRENTLY USED 
-
-// needs Lablz.apiUrl, Lablz.requiredModels
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'error',
-  'jqueryMobile'
-], function($, _, Backbone, U, Error) {
+  'cache!jquery', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils',
+  'cache!error'
+], function($, __jqm__, _, Backbone, U, Error) {
   return Backbone.Model.extend({
     initialize: function(options) {
       _.bindAll(this, 'parse', 'url', 'fetch'); // fixes loss of context for 'this' within methods

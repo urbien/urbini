@@ -1,16 +1,24 @@
-// needs Lablz.requiredModels
-define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'templates',
-  'router',
-  'modelsBase',
-  'error',
-  'jqueryMobile',
-  'jqmConfig'
-], function($, _, Backbone, U, Templates, Router, MB, Error) {
+define('app', [
+  'cache!jquery', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!templates', 
+  'cache!utils', 
+  'cache!error', 
+  'cache!events',
+  'cache!indexedDBShim', 
+  'cache!modelsBase', 
+  'cache!router'
+], function($, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {  
+  Backbone.View.prototype.close = function() {
+    this.remove();
+    this.unbind();
+    if (this.onClose){
+      this.onClose();
+    }
+  };  
+  
   var App = {};
   App.initialize = function() {
     var error = function(e) {
@@ -40,16 +48,11 @@ define([
     App.router = new Router();
     Backbone.history.start();
     
-    App.homePage = Lablz.homePage || _.last(models).shortName;
+    App.homePage = Lablz.homePage = _.last(models).shortName;
     if (!window.location.hash) {
       App.router.navigate(App.homePage, {trigger: true});
     }
   };
-  
-//  $(document).ready(function () {
-//    console.log('document ready: ' + documentReadyCount++);
-//    init();      
-//  });
   
   return App;
 });

@@ -1,15 +1,15 @@
 // needs Lablz.pageRoot
 
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'templates',
-  'modelsBase',
-  'jqueryMobile'
-], function($, _, Backbone, U, Events, Templates, MB) {
+  'cache!jquery', 
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils',
+  'cache!events', 
+  'cache!templates',
+  'cache!modelsBase'
+], function($, __jqm__, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
     initialize: function(options) {

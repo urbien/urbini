@@ -1,20 +1,20 @@
 // needs Lablz.homePage
 
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'events',
-  'templates',
-  'views/Header',
-  'views/BackButton',
-  'views/LoginButtons',
-  'views/AroundMeButton',
-  'views/ResourceView',
-  'views/ResourceImageView',
-  'jqueryMobile'
-], function($, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
+  'cache!jquery', 
+  'cache!jqueryMobile',
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils',
+  'cache!events', 
+  'cache!templates',
+  'cache!views/Header', 
+  'cache!views/BackButton', 
+  'cache!views/LoginButtons', 
+  'cache!views/AroundMeButton', 
+  'cache!views/ResourceView', 
+  'cache!views/ResourceImageView' 
+], function($, __jqm__, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');

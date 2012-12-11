@@ -1,15 +1,16 @@
 // needs Lablz.serverName
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'error',
-  'events',
-  'models/Resource',
-  'collections/ResourceList',
-  'indexedDBShim'
-], function($, _, Backbone, U, Error, Events, Resource, ResourceList) {
+  'cache!jquery', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils', 
+  'cache!error', 
+  'cache!events', 
+  'cache!models/Resource', 
+  'cache!collections/ResourceList', 
+  'cache!indexedDBShim'
+], function($, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -37,32 +38,36 @@ define([
     
     Backbone.sync = function(method, model, options) {
       var now = new Date().getTime();
+      var isCol = model instanceof Backbone.Collection;
+      var forceFetch = isCol && model.models.length < model.perPage;
       var stale = false;
-      var stalest = now;
-      if (options && options.startAfter) {
-        var q = U.getQueryParams(options.url);
-        var offset = q['$offset'];
-        for (var i = offset; i < model.models.length; i++) {
-          var m = model.models[i];
-          if (m._lastFetchedOn)
-            stalest = Math.min(stalest, m._lastFetchedOn);
+      if (!forceFetch) {
+        var stalest = now;
+        if (options && options.startAfter) {
+          var q = U.getQueryParams(options.url);
+          var offset = q['$offset'];
+          for (var i = offset; i < model.models.length; i++) {
+            var m = model.models[i];
+            if (m._lastFetchedOn)
+              stalest = Math.min(stalest, m._lastFetchedOn);
+          }
         }
-      }
-      
-      var lastFetchedOn = model instanceof Backbone.Model ? model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn) : model._lastFetchedOn;
-      lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
-      if (!lastFetchedOn || now - lastFetchedOn > 60000)
-        stale = true;
-
-      options.headers = options.headers || {};
-      if (stale && lastFetchedOn) {
-        _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
+        
+        var lastFetchedOn = !isCol ? model._lastFetchedOn : model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn);
+        lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
+        if (!lastFetchedOn || now - lastFetchedOn > 60000)
+          stale = true;
+  
+        options.headers = options.headers || {};
+        if (stale && lastFetchedOn) {
+          _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
+        }
       }
       
       var defSuccess = options.success;
       var defErr = options.error;
       var save;
-      if (model instanceof Backbone.Collection) {
+      if (isCol) {
         save = function(results) {
           // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
           // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
@@ -109,6 +114,9 @@ define([
 
       var saveOptions = _.extend(_.clone(options), {
         success: function(resp, status, xhr) {
+          if (xhr.status == 304)
+            return;
+            
           if (resp.error) {
             console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
             defErr && defErr(resp.error, status, xhr);
@@ -439,6 +447,9 @@ define([
         var pkgPath = U.getPackagePath(m.type);
         var sPath = U.getPackagePath(sUri);
         var pkg = U.addPackage(MBI.packages, pkgPath);
+        if (snm[m.shortName])
+          delete snm[m.shortName];
+          
         var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
     //    var model = eval(pkgPath + '.' + m.shortName + " = " + (sPath ? sPath + '.' : '') + superName + '.extend({},' + m + ');');
         MBI.initModel(model);

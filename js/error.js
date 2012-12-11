@@ -1,6 +1,7 @@
 define([
-  'backbone'
-], function(Backbone) {
+  'cache!underscore', 
+  'cache!backbone' 
+], function(_, Backbone) {
   return {
     NOT_FOUND: "Oops! The page you're looking for doesn't exist.",
     getDefaultErrorHandler: function(errorHandler) {

@@ -1,11 +1,11 @@
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-  'templates',
-  'jqueryMobile'
-], function($, _, Backbone, U, Templates) {
+  'cache!jquery', 
+  'cache!jqueryMobile',
+  'underscore', 
+  'cache!backbone', 
+  'cache!utils',
+  'cache!templates'
+], function($, __jqm__, _, Backbone, U, Templates) {
   return Backbone.View.extend({
     template: 'loginTemplate',
     initialize: function(options) {

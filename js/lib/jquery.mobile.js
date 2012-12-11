@@ -7679,7 +7679,7 @@ $.widget( "mobile.slider", $.mobile.widget, {
 				self.userModified = self.beforeStart !== control[0].selectedIndex;
 				return false;
 			}
-		}
+		};
 
 		this._on( $( document ), { "vmousemove": this._preventDocumentDrag });
 

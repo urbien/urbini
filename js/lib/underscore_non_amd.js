@@ -1218,12 +1218,4 @@
 
   });
 
-  // AMD define happens at the end for compatibility with AMD loaders
-  // that don't enforce next-turn semantics on modules.
-  if (typeof define === 'function' && define.amd) {
-    define('underscore', function() {
-      return _;
-    });
-  }
-
 }).call(this);

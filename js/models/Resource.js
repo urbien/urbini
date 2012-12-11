@@ -1,13 +1,12 @@
-// needs Lablz.apiUrl, Lablz.requiredModels
 define([
-  'jquery',
-  'underscore',
-  'backbone',
-  'utils',
-//  'modelsBase',
-  'error'
-], function($, _, Backbone, U, Error) {
-  Resource = Backbone.Model.extend({
+  'cache!jquery', 
+  'cache!jqueryMobile', 
+  'cache!underscore', 
+  'cache!backbone', 
+  'cache!utils',
+  'cache!error'
+], function($, __jqm__, _, Backbone, U, Error) {
+  var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
       _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch'); // fixes loss of context for 'this' within methods

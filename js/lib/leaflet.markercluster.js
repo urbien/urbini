@@ -4,6 +4,7 @@
  https://github.com/danzel/Leaflet.markercluster
 */
 
+define(['cache!leaflet'], function(L) {
 (function (window, undefined) {
 
 
@@ -1738,3 +1739,4 @@ L.MarkerClusterGroup.include({
 
 
 }(this));
+});

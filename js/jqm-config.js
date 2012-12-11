@@ -1,5 +1,6 @@
 // see: http://jquerymobile.com/test/docs/pages/backbone-require.html
-$(document).bind("mobileinit", function () {
+define(['jquery', 'cache!jqueryMobile'], function($) {
+  $(document).bind("mobileinit", function () {
       console.log('mobileinit');
       $.mobile.ajaxEnabled = false;
       $.mobile.linkBindingEnabled = false;
@@ -14,3 +15,4 @@ $(document).bind("mobileinit", function () {
 //          $(event.currentTarget).remove();
 //      });
   });
+});
