@@ -22,8 +22,19 @@ define([
       this.model.on('reset', this.render, this);
       var self = this;
       $(window).on('scroll', function() { self.onScroll(self); });
+      Events.on('changePage', function() { self.pageChanged(); });
       return this;
     },
+    
+    // initial masonry alignment
+    pageChanged: function(view) {
+      var self = this;
+      this.$wall = $('#nabs_grid');
+      if (this.$wall != null)
+        this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
+      // note: use this.$wall.masonry(); if images have defined height
+    },
+    
     refresh: function(model, modified) {
       if (model && model != this.model)
         return this;

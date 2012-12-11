@@ -8,7 +8,10 @@ define([
   'events',
   'templates',
   'modelsBase',
-  'jqueryMobile'
+  'jqueryMobile',
+  'jquery.masonry.min.js',
+  'jquery.imagesloaded.min.js' // in case if inages do not have height declaration
+                               // then need to align "bricks after their downloading 
 ], function($, _, Backbone, U, Events, Templates, MB) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
@@ -18,6 +21,7 @@ define([
       
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
+      
       this.parentView = options && options.parentView;
       return this;
     },
@@ -26,7 +30,7 @@ define([
       'click': 'click'
     },
     tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: Events.defaultClickHandler,
     render: function(event) {
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;
