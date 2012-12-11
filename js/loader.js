@@ -1,10 +1,20 @@
-Lablz.getModuleKey = function(fileName) {
-  var ext = fileName.slice(fileName.lastIndexOf('.') + 1);
-  return [ext, fileName].join('/'); 
-};
-
 Lablz.Utils = Lablz.Utils || {};
+Lablz.Utils.getCanonicalPath = function(path, separator) {
+  separator = separator || '/';
+  var parts = path.split(separator);
+  var stack = [];
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i] == '..')
+      stack.pop();
+    else
+      stack.push(parts[i]);
+  }
+  
+  return stack.join(separator);
+}
+
 Lablz.Utils.leaf = function(obj, path, separator) {
+  path = Lablz.Utils.getCanonicalPath(path);
   if (typeof obj == 'undefined' || !obj)
     return null;
   
@@ -13,50 +23,67 @@ Lablz.Utils.leaf = function(obj, path, separator) {
   return dIdx == -1 ? obj[path] : Lablz.Utils.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
 };
 
-Lablz.loadBundle = function(pre, callback) {
-  var leaf = Lablz.Utils.leaf;
-  var pruned = [];
-  if (localStorage && localStorage.length) {
-    for (var ext in pre) {
-      Lablz.modules[ext] = {};
-      var b = pre[ext];
-      for (var i = 0; i < b.length; i++) {
-        var name = b[i];
-        var fileName = name + '.' + ext;
-        var key = Lablz.getModuleKey(fileName);
-        var saved = localStorage.getItem(key);
-        if (saved) {
-          try {
-            saved = JSON.parse(saved);
-          } catch (err) {
-            localStorage.removeItem(key);
-            continue;
-          }
-          
-          var dateSaved = saved.modified;
-          var modified = leaf(Lablz.files[ext], fileName, '/').modified;
-          if (modified <= dateSaved) {
-            Lablz.modules[ext][key] = saved.text;
-            continue;
-          }
-        }
-        
-        pruned.push(name);
-      }
+Lablz.pruneBundle = function(bundle) {
+  var modules = [];
+  for (var type in bundle) {
+    for (var i = 0; i < bundle[type].length; i++) {
+      var name = bundle[type][i];
+      var ext = name.match(/\.[a-zA-Z]+$/g);
+      if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
+        name += '.js';
       
-      pre[ext] = pruned;
-      pruned = [];
+      modules.push(Lablz.Utils.getCanonicalPath(require.toUrl(name)));
     }
   }
   
-  for (var ext in pre) {
-    pre[ext] = pre[ext].join(',');
+  if (!localStorage || !localStorage.length)
+    return modules;
+  
+  var leaf = Lablz.Utils.leaf;
+  var pruned = [];
+  for (var i = 0; i < modules.length; i++) {
+    var url = modules[i];
+    var saved = localStorage.getItem(url);
+    if (saved) {
+      try {
+        saved = JSON.parse(saved);
+      } catch (err) {
+        pruned.push(url);
+        localStorage.removeItem(url);
+        continue;
+      }
+      
+      var dateSaved = saved.modified;
+      var modified = leaf(Lablz.files, url, '/').modified;
+      if (modified <= dateSaved) {
+        Lablz.modules[url] = saved.text;
+        continue;
+      }
+      else
+        localStorage.removeItem(url);
+    }
+    
+    pruned.push(url);
+  }
+
+  return pruned;
+}
+
+Lablz.loadBundle = function(bundle, callback) {
+  var pruned = Lablz.pruneBundle(bundle);
+  if (!pruned.length) {
+    console.log("everything was cached, ")
+    if (callback) 
+      callback();
+    
+    return;
+    
   }
   
   $.ajax({
     url: Lablz.serverName + "/backboneFiles", 
     type: 'POST',
-    data: pre,
+    data: {modules: pruned.join(',')},
     complete: function(jqXHR, status) {
       if (status == 'success') {
         var resp;
@@ -65,19 +92,30 @@ Lablz.loadBundle = function(pre, callback) {
         } catch (err) {
         }
         
-        if (resp && !resp.error) {
-          for (var ext in resp) {
-            Lablz.modules[ext] = Lablz.modules[ext] || {};
-            for (var name in resp[ext]) {
-              Lablz.modules[ext][name] = resp[ext][name];
+        if (resp && !resp.error && resp.modules) {
+          for (var i = 0; i < resp.modules.length; i++) {
+            var m = resp.modules[i];
+            for (var name in m) {
+              var minIdx = name.indexOf('.min.js');
+              Lablz.modules[minIdx == -1 ? name : name.slice(0, minIdx) + '.js'] = m[name];
+              break;
             }
           }
         }
       }
       
-      callback && callback();
+      if (localStorage) {
+        setTimeout(function() {
+          var now = new Date().getTime();
+          for (var url in Lablz.modules) {
+            localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: Lablz.modules[url]}));
+          }
+        }, 100);
+      }
+      
+      if (callback) callback();
     }
-  }); 
+  });
 }
 
 require.config({
@@ -94,7 +132,9 @@ require.config({
   },
   shim: {
     leafletMarkerCluster: ['leaflet']
-  }
+  },
+  cache: Lablz.modules,
+  expirationDates: Lablz.files
 });
 
 require([
@@ -117,25 +157,57 @@ require([
   //                });
     });
 
-    var bundle = listBundle = viewBundle = baseBundle = {
+    var baseBundle = {
       pre: {
+      // Javascript
         js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
-           'views/ResourceView', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-           /*'views/ResourceMasonryModItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'], 
-        css: ['lib/jquery.mobile', 'lib/jquery.mobile.theme', 'lib/jquery.mobile.structure', 'styles', 'common-template-m']
+         'views/ResourceView', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
+         /*'views/ResourceMasonryModItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
+        // CSS
+        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css']
       },
       post: {
+        // Javascript
         js: ['views/ResourceMasonryModItemView'],
-        css: []
-      },
+        // CSS
+        css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
+      }
     };
-               
-    var pre = bundle.pre;
-    Lablz.loadBundle(pre, function() {
-      require([
-       'cache!app' 
-      ], function(App) {          
-          App.initialize();
+    
+    var viewBundle = [
+      'cache!views/Header', 
+      'cache!views/BackButton', 
+      'cache!views/LoginButtons', 
+      'cache!views/AroundMeButton', 
+      'cache!views/ResourceView', 
+      'cache!views/ResourceImageView', 
+      'cache!views/ViewPage' 
+    ];
+
+    var listBundle = [
+      'cache!views/ResourceListItemView', 
+      'cache!views/ResourceListView', 
+      'cache!views/Header', 
+      'cache!views/BackButton', 
+      'cache!views/LoginButtons', 
+      'cache!views/AroundMeButton', 
+      'cache!views/MapItButton', 
+      'cache!views/ListPage' 
+    ];
+
+    Lablz.loadBundle(baseBundle.pre, function() {
+      var css = baseBundle.pre.css.slice();
+      for (var i = 0; i < css.length; i++) {
+        css[i] = 'cache!' + css[i];
+      }
+      
+      require(['cache!app'].concat(css), function(App) {
+        App.initialize();
+        setTimeout(function() {
+          Lablz.loadBundle(baseBundle.post, function() {
+            console.log('loaded post bundle');
+          });
+        }, 100);
       });
     });
   });

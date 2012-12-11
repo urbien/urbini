@@ -1,7 +1,6 @@
-define(
-[
+define('app', [
   'cache!jquery', 
-  'jqueryMobile', 
+  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates', 
@@ -11,24 +10,8 @@ define(
   'cache!indexedDBShim', 
   'cache!modelsBase', 
   'cache!router'
-], function($, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {
-  $(document).bind("mobileinit", function () {
-    console.log('mobileinit');
-    $.mobile.ajaxEnabled = false;
-    $.mobile.linkBindingEnabled = false;
-    $.mobile.hashListeningEnabled = false;
-    $.mobile.pushStateEnabled = false;
-    $.support.touchOverflow = true;
-    $.mobile.touchOverflowEnabled = true;
-    $.mobile.loadingMessageTextVisible = true;
-    
-    // Remove page from DOM when it's being replaced
-//    $('div[data-role="page"]').live('pagehide', function (event, ui) {
-//        $(event.currentTarget).remove();
-//    });
-  });
-  
-  Backbone.View.prototype.close = function(){
+], function($, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {  
+  Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
     if (this.onClose){

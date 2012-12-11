@@ -1,7 +1,7 @@
 // needs Lablz.serverName
 define([
   'cache!jquery', 
-  'jqueryMobile', 
+  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 

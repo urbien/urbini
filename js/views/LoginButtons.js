@@ -1,6 +1,6 @@
 define([
   'cache!jquery', 
-  'jqueryMobile',
+  'cache!jqueryMobile',
   'underscore', 
   'cache!backbone', 
   'cache!utils',

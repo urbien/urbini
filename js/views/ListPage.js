@@ -2,7 +2,7 @@
 
 define([
   'cache!jquery', 
-  'jqueryMobile',
+  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
@@ -10,12 +10,14 @@ define([
   'cache!utils',
   'cache!modelsBase',
   'cache!views/ResourceListView', 
+//  'cache!views/MapView',
   'cache!views/Header', 
   'cache!views/BackButton', 
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
-  'cache!views/MapItButton' 
+  'cache!views/MapItButton'
 ], function($, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+  var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
     initialize: function () {
@@ -75,8 +77,9 @@ define([
       this.listView.render();
       if (isGeo) {
         var self = this;
-        require(['cache!views/MapView'], function(MapView) {
-          self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});          
+        require(['cache!views/MapView'], function(MV) {
+          MapView = MV;
+          self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});
           self.mapView.render();
         });
       }

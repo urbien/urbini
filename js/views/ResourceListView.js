@@ -1,6 +1,6 @@
 define([
   'cache!jquery', 
-  'jqueryMobile',
+  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
@@ -23,9 +23,6 @@ define([
       var self = this;
       $(window).on('scroll', function() { self.onScroll(self); });      
       this.isModification = U.isAssignableFrom(this.model.model, 'Modification', MB.typeToModel);
-//      if (this.isModification)
-//        require(['cache!views/ResourceMasonryModItemView'], function(R) {self.ResourceMasonryModItemView = R});
-      
       return this;
     },
     refresh: function(model, modified) {
@@ -38,7 +35,6 @@ define([
         
         return this;
       }
-
       
       if (model && model != this.model)
         return this;
@@ -75,8 +71,8 @@ define([
         if (i >= lis.length || _.contains(modified, uri)) {
 //          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
           var liView;
-          if (this.isModification) 
-            liView = new this.ResourceMasonryModItemView({model:m});
+          if (this.isModification)
+            liView = new this.ResourceMasonryModItemView({model:m}); // loaded via requireJS
           else
             liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
 //            $('.ui-listview li:eq(' + i + ')').remove();
@@ -164,7 +160,7 @@ define([
         return;
   
       var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() >= $wnd.scrollTop() + $wnd.height())
+      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
         return;
      
   //    console.log("CALLING getNextPage");

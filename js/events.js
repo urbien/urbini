@@ -1,6 +1,6 @@
 define([
   'cache!jquery', 
-  'jqueryMobile', 
+  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone' 
 ], function($, __jqm__, _, Backbone) {

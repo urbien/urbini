@@ -3281,7 +3281,7 @@
   
   if (typeof define === 'function' && define.amd) {
     define('leaflet', function() {
-      return L;
+      return e.L;
     });
   }
 

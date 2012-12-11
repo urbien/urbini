@@ -1,4 +1,4 @@
-define(['jquery', 'jqueryMobile'], function($) {
+define(['jquery', 'cache!jqueryMobile'], function($) {
   $(document).bind("mobileinit", function () {
       console.log('mobileinit');
       $.mobile.ajaxEnabled = false;

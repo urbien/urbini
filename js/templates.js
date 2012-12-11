@@ -1,6 +1,6 @@
 define([
   'cache!jquery', 
-  'jqueryMobile', 
+  'cache!jqueryMobile', 
   'cache!underscore' 
 ], function($, __jqm__, _) {
   _.templateSettings = {
