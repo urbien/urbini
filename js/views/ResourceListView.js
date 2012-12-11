@@ -7,9 +7,10 @@ define([
   'modelsBase',
   'templates',
   'views/ResourceMasonryModItemView',
+  'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
   'jqueryMobile'
-], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceListItemView) {
+], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceMasonryItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
     page: null,
@@ -46,18 +47,25 @@ define([
       
       var models = this.model.models;
       var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
-      var lis = isModification ? this.$('.nab') : this.$('li');
+      var meta = models[0].__proto__.constructor.properties;
+      meta = meta || models[0].properties;
+
+      var viewMode = models[0].constructor['viewMode'];
+      var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
+      var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
+      var curNum = lis.length;
       var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
       
       var i = 0;
       var nextPage = false;
       var frag;
       if (typeof modified == 'undefined'  ||  modified.length == 0) {
-        i = lis.length;
-        if (i == num)
+        i = curNum;
+        if (curNum == num)
           return this;
-        if (i > 0)
+        if (curNum > 0)
           nextPage = true;
       }
       if (!nextPage)
@@ -71,6 +79,8 @@ define([
           var liView;
           if (isModification) 
             liView = new ResourceMasonryModItemView({model:m});
+          else if (isMasonry)
+            liView = new ResourceMasonryItemView({model:m});
           else
             liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
 //            $('.ui-listview li:eq(' + i + ')').remove();
@@ -90,8 +100,12 @@ define([
       
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
-      if (this.initializedListView)
-        this.$el.listview('refresh');
+      if (this.initializedListView) {
+        if (isModification  ||  isMasonry)
+          this.$el.trigger('create');
+        else
+          this.$el.listview('refresh');
+      }
       else
         this.initializedListView = true;
 //      else {
@@ -116,6 +130,7 @@ define([
       
       this.page++;
       var self = this;
+      
       var requested = (this.page + 1) * this.displayPerPage;
       
       if (before > requested) {
@@ -204,7 +219,7 @@ define([
         return;
   
       var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() >= $wnd.scrollTop() + $wnd.height())
+      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
         return;
      
   //    console.log("CALLING getNextPage");

@@ -69,9 +69,18 @@ define([
   
       var type = this.model.type;
       var cmpStr = '/changeHistory/Modification';
-      var isModification = U.isAssignableFrom(this.model.models[0].constructor, 'Modification', MB.typeToModel);
+      
+      var models = this.model.models;
+      var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
+
+      var meta = models[0].__proto__.constructor.properties;
+      meta = meta || models[0].properties;
+
+      var viewMode = models[0].constructor['viewMode'];
+      var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
+      var isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification ? '#nabs_grid' : 'ul';
+      var containerTag = isModification || isMasonry ? '#nabs_grid' : 'ul';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
       if (isGeo) {

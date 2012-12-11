@@ -59,19 +59,23 @@ define([
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
+      
       var commentsFor = tmpl_data['v_showCommentsFor'];
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, snmHint) + '?m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, snmHint) + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, snmHint) + '?m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, snmHint) + '&m_p=votes&b_p=votable');
   
       var renabFor = tmpl_data['v_showRenabFor'];
-      if (typeof votesFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, snmHint) + '?m_p=nabs&b_p=forResource');
-      
-      this.$el.html(this.template(tmpl_data));
+      if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
+        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, snmHint) + '&m_p=nabs&b_p=forResource');
+      try {
+        this.$el.html(this.template(tmpl_data));
+      } catch (err) {
+        console.log('2. failed to delete table ' + name + ': ' + err);
+      }
       return this;
     }
   });

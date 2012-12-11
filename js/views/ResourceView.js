@@ -143,7 +143,10 @@ define([
         }
       }
       
-      otherLi && U.addToFrag(frag, otherLi);
+      if (otherLi) {
+        otherLi += "</ul></li>";
+        U.addToFrag(frag, otherLi);
+      }
   //    if (displayedProps.length  &&  groupNameDisplayed)
   //      this.$el.append("</ul></li>");
       
@@ -151,7 +154,6 @@ define([
   //    this.$el.html(html);
       if (!options || options.setHTML)
         this.$el.html(frag);
-      
       var self = this;
   
       this.rendered = true;
