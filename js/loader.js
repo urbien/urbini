@@ -128,10 +128,14 @@ require.config({
     backbone: 'lib/backbone',
     indexedDBShim: 'lib/IndexedDBShim',
     leaflet: 'lib/leaflet',
-    leafletMarkerCluster: 'lib/leaflet.markercluster'
+    leafletMarkerCluster: 'lib/leaflet.markercluster',
+    jqueryImagesloaded: 'lib/jquery.imagesloaded',
+    jqueryMasonry: 'lib/jquery.masonry'
   },
   shim: {
     leafletMarkerCluster: ['leaflet']
+    jqueryMasonry: ['jquery']
+    jqueryImagesloaded: ['jquery']
   },
   cache: Lablz.modules,
   expirationDates: Lablz.files
@@ -160,7 +164,7 @@ require([
     var baseBundle = {
       pre: {
       // Javascript
-        js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+        js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
          'views/ResourceView', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
         // CSS
