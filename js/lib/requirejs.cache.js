@@ -75,7 +75,7 @@ define(function () {
     },
   
     prependUrl: function(content, url) {
-      return '// @sourceURL=' + url + '\r\n' + content;
+      return content + '\r\n//@ sourceURL=' + url;
     },
     
     prepForStorage: function(text) {
@@ -112,14 +112,16 @@ define(function () {
         }
         else if (hasLocalStorage) { // in build context, this will be false, too
           cached = localStorage.getItem(url);
-          cached = cached && JSON.parse(cached);
-          var fileInfo = cache.leaf(config.expirationDates, url, '/');
-          var modified = fileInfo && fileInfo.modified;
-          if (modified && modified <= cached.modified)
-            cached = cached.text;
-          else {
-            localStorage.removeItem(url);
-            cached = null;
+          if (cached) {
+            cached = JSON.parse(cached);
+            var fileInfo = cache.leaf(config.expirationDates, url, '/');
+            var modified = fileInfo && fileInfo.modified;
+            if (modified && modified <= cached.modified)
+              cached = cached.text;
+            else {
+              localStorage.removeItem(url);
+              cached = null;
+            }
           }
         }
 
