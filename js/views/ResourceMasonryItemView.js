@@ -8,7 +8,9 @@ define([
   'cache!events',
   'cache!templates',
   'cache!modelsBase',
-  'cache!jqueryMobile'
+  'cache!jqueryMobile',
+  'cache!jqueryMasonry',
+  'cache!jqueryImagesloaded'
 ], function($, _, Backbone, U, Events, Templates, MB, __jqm__) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
