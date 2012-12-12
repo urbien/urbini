@@ -130,9 +130,10 @@ require.config({
     leaflet: 'lib/leaflet',
     leafletMarkerCluster: 'lib/leaflet.markercluster'
   },
-  shim: {
-    leafletMarkerCluster: ['leaflet']
-  },
+//  shim: {
+//    jqueryMobile: ['jquery'],
+//    leafletMarkerCluster: ['leaflet']
+//  },
   cache: Lablz.modules,
   expirationDates: Lablz.files
 });
@@ -168,7 +169,7 @@ require([
       },
       post: {
         // Javascript
-        js: ['views/ResourceMasonryModItemView', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps'],
+        js: ['views/ResourceMasonryItemView', 'leaflet', 'leafletMarkerCluster', 'maps'],
         // CSS
         css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }
