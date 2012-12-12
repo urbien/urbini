@@ -6,11 +6,10 @@ define([
   'cache!events',
   'cache!modelsBase',
   'cache!templates',
-  'cache!jqueryMobile,'
-  'cache!views/ResourceMasonryModItemView',
+  'cache!jqueryMobile',
   'cache!views/ResourceMasonryItemView',
   'cache!views/ResourceListItemView'
-], function($, _, Backbone, U, Events, MB, Templates, ResourceMasonryModItemView, ResourceMasonryItemView, ResourceListItemView) {
+], function($, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
     page: null,
@@ -37,10 +36,10 @@ define([
     },
     
     refresh: function(model, modified) {
-      if (this.isModification && !this.ResourceMasonryModItemView) {
+      if (this.isModification && !this.ResourceMasonryItemView) {
         var self = this;
-        require(['cache!views/ResourceMasonryModItemView'], function(R) {
-          self.ResourceMasonryModItemView = R;
+        require(['cache!views/ResourceMasonryItemView'], function(R) {
+          self.ResourceMasonryItemView = R;
           self.refresh(model, modified);
         });
         
@@ -88,15 +87,11 @@ define([
         var m = models[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
-//          var liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
           var liView;
-          if (isModification) 
-            liView = new ResourceMasonryModItemView({model:m});
-          else if (isMasonry)
+          if (isModification  ||  isMasonry) 
             liView = new ResourceMasonryItemView({model:m});
           else
             liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
-//            $('.ui-listview li:eq(' + i + ')').remove();
           if (nextPage)  
             this.$el.append(liView.render().el);
           else
