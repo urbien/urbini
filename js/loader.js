@@ -133,8 +133,8 @@ require.config({
     jqueryMasonry: 'lib/jquery.masonry'
   },
   shim: {
-    leafletMarkerCluster: ['leaflet']
-    jqueryMasonry: ['jquery']
+    leafletMarkerCluster: ['leaflet'],
+    jqueryMasonry: ['jquery'],
     jqueryImagesloaded: ['jquery']
   },
   cache: Lablz.modules,
