@@ -1,20 +1,21 @@
 // needs Lablz.homePage
 
 define([
-  'cache!jquery', 
-  'cache!jqueryMobile',
-  'cache!underscore', 
-  'cache!backbone', 
+  'cache!jquery',
+  'cache!underscore',
+  'cache!backbone',
   'cache!utils',
-  'cache!events', 
+  'cache!events',
   'cache!templates',
-  'cache!views/Header', 
-  'cache!views/BackButton', 
-  'cache!views/LoginButtons', 
-  'cache!views/AroundMeButton', 
-  'cache!views/ResourceView', 
-  'cache!views/ResourceImageView' 
-], function($, __jqm__, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView) {
+  'cache!views/Header',
+  'cache!views/BackButton',
+  'cache!views/LoginButtons',
+  'cache!views/AroundMeButton',
+  'cache!views/ResourceView',
+  'cache!views/ResourceImageView',
+  'cache!views/ControlPanel',
+  'cache!jqueryMobile'
+], function($, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
@@ -64,6 +65,10 @@ define([
       this.imageView.render();
       this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
       this.view.render();
+      
+      this.view = new ControlPanel({model: this.model});
+      this.view.render();
+      
       this.rendered = true;
       if (!this.$el.parentNode) 
         $('body').append(this.$el);

@@ -32,8 +32,9 @@ define([
       }
       
       if (this.$el.hasClass('ui-listview')) {
-        this.$('li').detach();
+        var lis = this.$('li').detach();
         this.render();
+        this.$el.trigger('create');
         this.$el.listview('refresh');
       }
       else
