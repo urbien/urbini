@@ -168,7 +168,7 @@ require([
       },
       post: {
         // Javascript
-        js: ['views/ResourceMasonryModItemView', 'lib/leaflet', 'lib/leaflet.markercluster'],
+        js: ['views/ResourceMasonryModItemView', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps'],
         // CSS
         css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }
