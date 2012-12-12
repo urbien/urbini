@@ -68,9 +68,6 @@ define([
         el: $('#headerDiv', this.el)
       }).render();
   
-      var type = this.model.type;
-      var cmpStr = '/changeHistory/Modification';
-      
       var models = this.model.models;
       var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
 
