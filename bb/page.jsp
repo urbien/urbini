@@ -9,6 +9,7 @@
   <link rel="stylesheet" type="text/css" href="styles/leaflet/MarkerCluster.Default.css" /-->
   
   <backboneInitInfo />
+  <script data-main="js/loader" src="js/lib/require.js"></script>
      
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">
@@ -16,7 +17,6 @@
 
 <!-- JavaScript -->
 
-<script data-main="js/loader" src="js/lib/require.js"></script>
 <!--script src="lib/xrayquire.js"></script-->
 </body>
 </html>
