@@ -10,8 +10,6 @@ define([
   return Backbone.View.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
-      this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
-      this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.model.on('change', this.refresh, this);
   //    Lablz.Events.on('refresh', this.refresh);
@@ -64,10 +62,11 @@ define([
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
             var prop = meta[p];
-            if (!_.has(json, p) || !_.contains(backlinks, prop)) //  || _.contains(gridCols, p))
+            if ((displayedProps  &&  _.contains(displayedProps, p)) || 
+                !_.contains(backlinks, prop))
               continue;
-            
-            if (!prop) {
+
+            if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
               delete json[p];
               continue;
             }
@@ -81,10 +80,17 @@ define([
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
-  
-            var v = json[p].value;
-            var n = meta[p].davDisplayName;
-            U.addToFrag(frag, this.propRowTemplate(json[p]));
+            var n = meta[p].displayName;
+            if (!_.has(json, p)) {
+              var s = '<li><span>' + n + '</span></li>';              
+              U.addToFrag(frag, s);
+            }
+            else {
+              var v = json[p].value;
+              var cnt = json[p].count;
+              var s = '<li><a href="' + Lablz.pageRoot + '#' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
+              U.addToFrag(frag, s);
+            }
           }
         }
       }
@@ -92,10 +98,11 @@ define([
       groupNameDisplayed = false;
       for (var p in json) {
         var prop = meta[p];
-        if (!_.has(json, p) || !_.contains(backlinks, prop))
+        if ((displayedProps  &&  _.contains(displayedProps, p)) || 
+            !_.contains(backlinks, prop))
           continue;
-        
-        if (!prop) {
+
+        if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
           delete json[p];
           continue;
         }
@@ -104,9 +111,17 @@ define([
           continue;
   
 //        json[p] = U.makeProp(prop, json[p]);
-        var v = json[p].value;
-        var n = meta[p].davDisplayName;
-        U.addToFrag(frag, this.propRowTemplate(json[p]));
+        var n = meta[p].displayName;
+        if (!_.has(json, p)) {
+          var s = '<li><span>' + n + '</span></li>';              
+          U.addToFrag(frag, s);
+        }
+        else {
+          var v = json[p].value;
+          var cnt = json[p].count;
+          var s = '<li><a href="' + Lablz.pageRoot + '#/' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
+          U.addToFrag(frag, s);
+        }
       }
       
       if (!options || options.setHTML)

@@ -66,7 +66,7 @@ define([
       this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
       this.view.render();
       
-      this.view = new ControlPanel({model: this.model});
+      this.view = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
       this.view.render();
       
       this.rendered = true;

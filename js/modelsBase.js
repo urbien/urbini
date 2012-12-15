@@ -462,9 +462,8 @@ define([
     //  var ttm = MBI.typeToModel;
       if (Lablz.currentUser._reset)
         return;
-      
       var r = options && options.models ? {models: options.models} : Lablz.requiredModels;
-      var hash = window.location.hash && window.location.hash.slice(1);
+      var hash =  options  &&  options.backlink ? options.models[0] : window.location.hash && window.location.hash.slice(1);
 //      var willLoadCurrentModel = false;
       if (hash) {
         var qIdx = hash.indexOf('?');
