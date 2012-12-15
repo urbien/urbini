@@ -18,9 +18,13 @@ define([
 ], function($, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage;
   return Backbone.Router.extend({
+//    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
+//    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
+//    "view/*path"      : "view"  // e.g. app/ichangeme#view/<resourceUri>
     routes:{
-      ":type":"list",
-      "view/*path":"view"
+      ":type"           : "list", 
+      "view/*path"      : "view",  
+      ":type/:backlink" : "list" 
     },
     CollectionViews: {},
     Views: {},
@@ -51,20 +55,68 @@ define([
       return ret;
     },
     
-    list: function (oParams) {
+    list: function (oParams, backlink) {
       if (!ListPage) {
         var self = this;
         require(['cache!views/ListPage'], function(LP) {
           ListPage = LP;
-          self.list(oParams);
+          self.list(oParams, backlink);
         })
         
         return;
       }
       
+      var self = this;
       var params = oParams.split("?");
       var type = decodeURIComponent(params[0]);
-      var self = this;
+      if (backlink) {
+        type = U.getType(type);
+        
+        var m = this.isModelLoaded(self, type, oParams, backlink);
+        if (!m)
+          return;
+//        var m = MB.shortNameToModel[type];
+//        if (!m) {
+//          MB.loadStoredModels({models: [type]});
+//          
+//          if (!MB.shortNameToModel[type]) {
+//            MB.fetchModels(type, 
+//               {success: function() {
+//                 self.list.apply(self, [oParams, backlink]);
+//               },
+//               error: Error.getDefaultErrorHandler(),
+//               sync: true}
+//            );
+//            
+//            return;
+//          } 
+//        }
+        var meta = m.properties;
+        var bltype = meta[backlink].range;
+        bltype = U.getType(bltype);
+        
+        if (!this.isModelLoaded(self, bltype, oParams, backlink))
+          return;
+//        var m = MB.shortNameToModel[bltype];
+//        if (!m) {
+//          MB.loadStoredModels({models: [bltype]});
+//          
+//          if (!MB.shortNameToModel[bltype]) {
+//            MB.fetchModels(bltype, 
+//               {success: function() {
+//                 self.list.apply(self, [oParams, backlink]);
+//               },
+//               error: Error.getDefaultErrorHandler(),
+//               sync: true}
+//            );
+//            
+//            return;
+//          } 
+//        }
+////        var m1 = MB.shortNameToModel[pType];
+////        if (!m1)
+////          m1 = m1;
+      }
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
         var q = query.split("&");
@@ -81,47 +133,60 @@ define([
       var page = this.page = this.page || 1;
       var force = this.forceRefresh;
       
-      if (!MB.shortNameToModel[type]) {
-        MB.loadStoredModels({models: [type]});
+      if (!this.isModelLoaded(self, type, oParams, backlink))
+        return;
+//      if (!MB.shortNameToModel[type]) {
+//        MB.loadStoredModels({models: [type]});
+//        
+//        if (!MB.shortNameToModel[type]) {
+//          MB.fetchModels(type, 
+//             {success: function() {
+//               self.list.apply(self, [oParams, backlink]);
+//             },
+//             error: Error.getDefaultErrorHandler(),
+//             sync: true}
+//          );
+//          
+//          return;
+//        } 
+//      }
+      if (backlink) {
         
-        if (!MB.shortNameToModel[type]) {
-          MB.fetchModels(type, 
-             {success: function() {
-               self.list.apply(self, [oParams]);
-             },
-             error: Error.getDefaultErrorHandler(),
-             sync: true}
-          );
-          
-          return;
-        } 
       }
       
-      var c = this.Collections[type];
+      
+      var t = backlink ? bltype : type;  
+      var c = this.Collections[t];
       if (c && !c.loaded)
         c = null;
-        
-      if (!query && c && this.CollectionViews[type]) {
-        this.changePage(this.CollectionViews[type], {page: page});
-        this.Collections[type].fetch({page: page});
+      
+      if (!query && c && this.CollectionViews[t]) {
+        this.changePage(this.CollectionViews[t], {page: page});
+        if (!backlink)
+          this.Collections[t].fetch({page: page});
+        else
+          this.Collections[t].fetch({page: page, _backlink: backlink, _rType: type, _rUri: oParams});
         return this;
       }
       
-      var model = MB.shortNameToModel[type];
+      
+      var model = MB.shortNameToModel[t];
       if (!model)
         return this;
       
-      var list = new ResourceList(null, {model: model, _query: query});    
+      var list = new ResourceList(null, {model: model, _query: query, _backlink: backlink, _rType: type, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
       if (!query) {
-        this.Collections[type] = list;
-        this.CollectionViews[type] = listView;
+        this.Collections[t] = list;
+        this.CollectionViews[t] = listView;
       }
       
       list.fetch({
         add: true,
         sync: true,
+        _backlink: backlink,
+        _rUri: oParams,
         success: function() {
           self.changePage(listView);
           MB.fetchModelsForLinkedResources(list.model);
@@ -251,6 +316,28 @@ define([
         return;
       
       console.log("painting map");
+    },
+    isModelLoaded: function(self, type, oParams, backlink) {
+      var m = MB.shortNameToModel[type];
+      if (m)
+        return m;
+      if (backlink)
+        MB.loadStoredModels({models: [type], backlink: backlink});
+      else
+        MB.loadStoredModels({models: [type]});
+      m = MB.shortNameToModel[type];
+      if (m)
+        return m;
+
+      MB.fetchModels(type, { 
+         success: function() {
+           self.list.apply(self, [oParams, backlink]);
+         },
+         error: Error.getDefaultErrorHandler(),
+         sync: true
+      });
+      
+      return null;
     },
     showAlert: function(options) {
       var msg = options.msg;
