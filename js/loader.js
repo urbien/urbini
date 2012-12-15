@@ -1,146 +1,165 @@
-Lablz.Utils = Lablz.Utils || {};
-Lablz.Utils.getCanonicalPath = function(path, separator) {
-  separator = separator || '/';
-  var parts = path.split(separator);
-  var stack = [];
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i] == '..')
-      stack.pop();
-    else
-      stack.push(parts[i]);
+define('globals', ['config'], function(C) {
+  var G = Globals = {
+    sqlUri: 'sql'
+  };  
+  
+  for (var name in C) {
+    G[name] = C[name];
   }
-  
-  return stack.join(separator);
-}
 
-Lablz.Utils.leaf = function(obj, path, separator) {
-  path = Lablz.Utils.getCanonicalPath(path);
-  if (typeof obj == 'undefined' || !obj)
-    return null;
+  G.serverName = (function() {     
+    var s = document.getElementsByTagName('base')[0].href;
+    return s.match("/$") ? s.slice(0, s.length - 1) : s;
+  })();
   
-  separator = separator || '.';
-  var dIdx = path.indexOf(separator);
-  return dIdx == -1 ? obj[path] : Lablz.Utils.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-};
+  G.apiUrl = G.serverName + '/api/v1/';
 
-Lablz.pruneBundle = function(bundle) {
-  var modules = [];
-  for (var type in bundle) {
-    for (var i = 0; i < bundle[type].length; i++) {
-      var name = bundle[type][i];
-      var ext = name.match(/\.[a-zA-Z]+$/g);
-      if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
-        name += '.js';
-      
-      modules.push(Lablz.Utils.getCanonicalPath(require.toUrl(name)));
-    }
-  }
-  
-  if (!localStorage || !localStorage.length)
-    return modules;
-  
-  var leaf = Lablz.Utils.leaf;
-  var pruned = [];
-  for (var i = 0; i < modules.length; i++) {
-    var url = modules[i];
-    var saved = localStorage.getItem(url);
-    if (saved) {
-      try {
-        saved = JSON.parse(saved);
-      } catch (err) {
-        pruned.push(url);
-        localStorage.removeItem(url);
-        continue;
-      }
-      
-      var dateSaved = saved.modified;
-      var modified = leaf(Lablz.files, url, '/').modified;
-      if (modified <= dateSaved) {
-        Lablz.modules[url] = saved.text;
-        continue;
-      }
+  G.getCanonicalPath = function(path, separator) {
+    separator = separator || '/';
+    var parts = path.split(separator);
+    var stack = [];
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] == '..')
+        stack.pop();
       else
-        localStorage.removeItem(url);
+        stack.push(parts[i]);
     }
     
-    pruned.push(url);
-  }
+    return stack.join(separator);
+  };
 
-  return pruned;
-}
+  G.leaf = function(obj, path, separator) {
+    path = G.getCanonicalPath(path);
+    if (typeof obj == 'undefined' || !obj)
+      return null;
+    
+    separator = separator || '.';
+    var dIdx = path.indexOf(separator);
+    return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+  };
 
-Lablz.loadBundle = function(bundle, callback) {
-  var pruned = Lablz.pruneBundle(bundle);
-  if (!pruned.length) {
-    console.log("everything was cached, ")
-    if (callback) 
-      callback();
+  G.pruneBundle = function(bundle) {
+    var modules = [];
+    for (var type in bundle) {
+      for (var i = 0; i < bundle[type].length; i++) {
+        var name = bundle[type][i];
+        var ext = name.match(/\.[a-zA-Z]+$/g);
+        if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
+          name += '.js';
+        
+        modules.push(G.getCanonicalPath(require.toUrl(name)));
+      }
+    }
     
-    return;
+    if (!localStorage || !localStorage.length)
+      return modules;
     
-  }
-  
-  $.ajax({
-    url: Lablz.serverName + "/backboneFiles", 
-    type: 'POST',
-    data: {modules: pruned.join(',')},
-    complete: function(jqXHR, status) {
-      if (status == 'success') {
-        var resp;
+    var leaf = G.leaf;
+    var pruned = [];
+    for (var i = 0; i < modules.length; i++) {
+      var url = modules[i];
+      var saved = localStorage.getItem(url);
+      if (saved) {
         try {
-          resp = JSON.parse(jqXHR.responseText);
+          saved = JSON.parse(saved);
         } catch (err) {
+          pruned.push(url);
+          localStorage.removeItem(url);
+          continue;
         }
         
-        if (resp && !resp.error && resp.modules) {
-          for (var i = 0; i < resp.modules.length; i++) {
-            var m = resp.modules[i];
-            for (var name in m) {
-              var minIdx = name.indexOf('.min.js');
-              Lablz.modules[minIdx == -1 ? name : name.slice(0, minIdx) + '.js'] = m[name];
-              break;
+        var dateSaved = saved.modified;
+        var modified = leaf(G.files, url, '/').modified;
+        if (modified <= dateSaved) {
+          G.modules[url] = saved.text;
+          continue;
+        }
+        else
+          localStorage.removeItem(url);
+      }
+      
+      pruned.push(url);
+    }
+  
+    return pruned;
+  }
+  
+  G.loadBundle = function(bundle, callback) {
+    var pruned = G.pruneBundle(bundle);
+    if (!pruned.length) {
+      console.log("for bundle " + JSON.stringify(bundle) + ", everything was cached");
+      if (callback) 
+        callback();
+      
+      return;
+      
+    }
+    
+    $.ajax({
+      url: G.serverName + "/backboneFiles", 
+      type: 'POST',
+      data: {modules: pruned.join(',')},
+      complete: function(jqXHR, status) {
+        if (status == 'success') {
+          var resp;
+          try {
+            resp = JSON.parse(jqXHR.responseText);
+          } catch (err) {
+          }
+          
+          if (resp && !resp.error && resp.modules) {
+            for (var i = 0; i < resp.modules.length; i++) {
+              var m = resp.modules[i];
+              for (var name in m) {
+                var minIdx = name.indexOf('.min.js');
+                G.modules[minIdx == -1 ? name : name.slice(0, minIdx) + '.js'] = m[name];
+                break;
+              }
             }
           }
         }
+        
+        if (localStorage) {
+          setTimeout(function() {
+            var now = new Date().getTime();
+            for (var url in G.modules) {
+              localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
+            }
+          }, 100);
+        }
+        
+        if (callback) callback();
       }
-      
-      if (localStorage) {
-        setTimeout(function() {
-          var now = new Date().getTime();
-          for (var url in Lablz.modules) {
-            localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: Lablz.modules[url]}));
-          }
-        }, 100);
-      }
-      
-      if (callback) callback();
-    }
-  });
-}
+    });
+  }
 
-require.config({
-  paths: {
-    cache: 'lib/requirejs.cache',
-    jquery: 'lib/jquery',
-    jqmConfig: 'jqm-config',
-    jqueryMobile: 'lib/jquery.mobile',
-    underscore: 'lib/underscore',
-    backbone: 'lib/backbone',
-    indexedDBShim: 'lib/IndexedDBShim',
-    leaflet: 'lib/leaflet',
-    leafletMarkerCluster: 'lib/leaflet.markercluster'
-  },
-//  shim: {
-//    jqueryMobile: ['jquery'],
-//    leafletMarkerCluster: ['leaflet']
-//  },
-  cache: Lablz.modules,
-  expirationDates: Lablz.files
+  require.config({
+    paths: {
+      cache: 'lib/requirejs.cache',
+      jquery: 'lib/jquery',
+      jqmConfig: 'jqm-config',
+      jqueryMobile: 'lib/jquery.mobile',
+      underscore: 'lib/underscore',
+      backbone: 'lib/backbone',
+      indexedDBShim: 'lib/IndexedDBShim',
+      leaflet: 'lib/leaflet',
+      leafletMarkerCluster: 'lib/leaflet.markercluster'
+    },
+    shim: {
+//      jqueryMobile: ['jquery'],
+      leafletMarkerCluster: ['leaflet']
+    },
+    cache: G.modules,
+    expirationDates: G.files
+  });
+
+  return Globals;
 });
 
 require([
+  'globals',
   'cache!jquery'
-], function($) {
+], function(G, $) {
   $(function() {
     $(document).bind("mobileinit", function () {
       console.log('mobileinit');
@@ -153,11 +172,11 @@ require([
       $.mobile.loadingMessageTextVisible = true;
         
         // Remove page from DOM when it's being replaced
-  //                $('div[data-role="page"]').live('pagehide', function (event, ui) {
-  //                    $(event.currentTarget).remove();
-  //                });
+  //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
+  //      $(event.currentTarget).remove();
+  //         });
     });
-
+       
     var baseBundle = {
       pre: {
       // Javascript
@@ -184,7 +203,7 @@ require([
       'cache!views/ResourceImageView', 
       'cache!views/ViewPage' 
     ];
-
+       
     var listBundle = [
       'cache!views/ResourceListItemView', 
       'cache!views/ResourceListView', 
@@ -195,8 +214,8 @@ require([
       'cache!views/MapItButton', 
       'cache!views/ListPage' 
     ];
-
-    Lablz.loadBundle(baseBundle.pre, function() {
+       
+    G.loadBundle(baseBundle.pre, function() {
       var css = baseBundle.pre.css.slice();
       for (var i = 0; i < css.length; i++) {
         css[i] = 'cache!' + css[i];
@@ -205,11 +224,12 @@ require([
       require(['cache!app'].concat(css), function(App) {
         App.initialize();
         setTimeout(function() {
-          Lablz.loadBundle(baseBundle.post, function() {
-            console.log('loaded post bundle');
+          G.loadBundle(baseBundle.post, function() {
+     console.log('loaded post bundle');
           });
         }, 100);
       });
     });
   });
 });
+

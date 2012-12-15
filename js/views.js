@@ -1,12 +1,12 @@
 // Views
-Lablz.ResourceView = Backbone.View.extend({
+G.ResourceView = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
-    this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
-    this.propRowTemplate2 = _.template(Lablz.Templates.get('propRowTemplate2'));
-    this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
+    this.propRowTemplate = _.template(G.Templates.get('propRowTemplate'));
+    this.propRowTemplate2 = _.template(G.Templates.get('propRowTemplate2'));
+    this.propGroupsDividerTemplate = _.template(G.Templates.get('propGroupsDividerTemplate'));
     this.model.on('change', this.refresh, this);
-//    Lablz.Events.on('refresh', this.refresh);
+//    G.Events.on('refresh', this.refresh);
     return this;
   },
   events: {
@@ -30,8 +30,8 @@ Lablz.ResourceView = Backbone.View.extend({
     else
       this.$el.listview().listview('refresh');
   },
-  tap: Lablz.Events.defaultTapHandler,  
-  click: Lablz.Events.defaultClickHandler,
+  tap: G.Events.defaultTapHandler,  
+  click: G.Events.defaultClickHandler,
   render: function(options) {
     console.log("render resource");
     var type = this.model.type;
@@ -150,7 +150,7 @@ Lablz.ResourceView = Backbone.View.extend({
 });
 
 
-Lablz.ResourceImageView = Backbone.View.extend({
+G.ResourceImageView = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap', 'click'); // fixes loss of context for 'this' within methods
     return this;
@@ -159,8 +159,8 @@ Lablz.ResourceImageView = Backbone.View.extend({
     'click': 'click',
     'tap': 'tap',
   },
-  tap: Lablz.Events.defaultTapHandler,  
-  click: Lablz.Events.defaultClickHandler,
+  tap: G.Events.defaultTapHandler,  
+  click: G.Events.defaultClickHandler,
   refresh: function() {
     console.log("refresh resource");
     return this;
@@ -189,7 +189,7 @@ Lablz.ResourceImageView = Backbone.View.extend({
 
     if (propVal.indexOf('Image/') == 0)
       propVal = propVal.slice(6);
-//          var iTemplate = _.template(Lablz.Templates.get('imagePT'));
+//          var iTemplate = _.template(G.Templates.get('imagePT'));
 //          li += '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
 
     var maxW = $(window).width() - 3;
@@ -221,11 +221,11 @@ Lablz.ResourceImageView = Backbone.View.extend({
 });
 
 
-//Lablz.ResourceEditView = Backbone.View.extend({
+//G.ResourceEditView = Backbone.View.extend({
 //  initialize: function(options) {
 //    _.bindAll(this, 'render', 'tap', 'save', 'cancel'); // fixes loss of context for 'this' within methods
-//    this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
-//    this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
+//    this.propRowTemplate = _.template(G.Templates.get('propRowTemplate'));
+//    this.propGroupsDividerTemplate = _.template(G.Templates.get('propGroupsDividerTemplate'));
 //    this.model.on('change', this.render, this);
 //    return this;
 //  },
@@ -243,8 +243,8 @@ Lablz.ResourceImageView = Backbone.View.extend({
 //    Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')), {trigger: true, replace: true});
 //    return this;    
 //  },
-//  tap: Lablz.Events.defaultTapHandler,  
-//  click: Lablz.Events.defaultClickHandler,  
+//  tap: G.Events.defaultTapHandler,  
+//  click: G.Events.defaultClickHandler,  
 //  render:function (eventName) {
 //    console.log("render resource edit");
 //    var type = this.model.type;
@@ -336,22 +336,22 @@ Lablz.ResourceImageView = Backbone.View.extend({
 //  }
 //});
 
-Lablz.MapView = Backbone.View.extend({
+G.MapView = Backbone.View.extend({
 //  template: 'mapTemplate',
   initialize: function (options) {
     _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap', 'resetMap');
-    Lablz.Events.on("mapIt", this.toggleMap);
-    Lablz.Events.on("changePage", this.resetMap);
-//    this.template = _.template(Lablz.Templates.get(this.template));
+    G.Events.on("mapIt", this.toggleMap);
+    G.Events.on("changePage", this.resetMap);
+//    this.template = _.template(G.Templates.get(this.template));
     this.ready = false;
     self = this;
     
 //    $.when(
         // TODO: check if leaflet css has already been loaded
-//      $.ajax(Lablz.serverName + "/styles/leaflet/" + ($.browser.msie ? "leaflet.ie.css" : "leaflet.css")),
-//      ((typeof L != 'undefined' && L.Map) || $.ajax(Lablz.serverName + "/leaflet.js")),
-//      ((typeof L != 'undefined' && L.MarkerClusterGroup) || $.ajax(Lablz.serverName + "/leaflet.markercluster.js")),
-//      (typeof Lablz.Leaflet != 'undefined' || $.ajax(Lablz.serverName + "/maps.js"))        
+//      $.ajax(G.serverName + "/styles/leaflet/" + ($.browser.msie ? "leaflet.ie.css" : "leaflet.css")),
+//      ((typeof L != 'undefined' && L.Map) || $.ajax(G.serverName + "/leaflet.js")),
+//      ((typeof L != 'undefined' && L.MarkerClusterGroup) || $.ajax(G.serverName + "/leaflet.markercluster.js")),
+//      (typeof G.Leaflet != 'undefined' || $.ajax(G.serverName + "/maps.js"))        
 //    ).then(
 //      function () {
         self.ready = true;
@@ -361,14 +361,14 @@ Lablz.MapView = Backbone.View.extend({
   events: {
     'tap': 'tap',
   },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   render:function (eventName) {
     var self = this;
     if (!this.ready) {
       setTimeout(
         function() {
-          Lablz.MapView.prototype.render.call(self, eventName);
+          G.MapView.prototype.render.call(self, eventName);
         }
       , 100);
       
@@ -400,7 +400,7 @@ Lablz.MapView = Backbone.View.extend({
       poi = Utils.getBasicGeoJSON('Point', coords);
       if (isMe) {
         poi.properties.name = 'Your location';
-        poi.properties.html = '<a href="' + Lablz.pageRoot + '#view/profile">You are here</a>';
+        poi.properties.html = '<a href="' + G.pageRoot + '#view/profile">You are here</a>';
       }
     }
       
@@ -410,10 +410,10 @@ Lablz.MapView = Backbone.View.extend({
     div.className = 'map';
     div.id = 'map';
 
-    var map = this.mapper = new Lablz.Leaflet(div);
-    map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
+    var map = this.mapper = new G.Leaflet(div);
+    map.addMap(G.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
 //        , {'load': function() {
-//      Lablz.Events.trigger('mapReady', self.model);
+//      G.Events.trigger('mapReady', self.model);
 //      self.$el.append(frag);
 //      console.log('render map');      
 //    }});
@@ -431,7 +431,7 @@ Lablz.MapView = Backbone.View.extend({
     frag.appendChild(div);
     map.finish();
     
-    Lablz.Events.trigger('mapReady', self.model);
+    G.Events.trigger('mapReady', self.model);
     self.$el.append(frag);
     this.hide();
     return this;
@@ -460,18 +460,18 @@ Lablz.MapView = Backbone.View.extend({
   }
 });
 
-Lablz.LoginButtons = Backbone.View.extend({
+G.LoginButtons = Backbone.View.extend({
   template: 'loginTemplate',
   initialize: function(options) {
     _.bindAll(this, 'render');
-    this.template = _.template(Lablz.Templates.get(this.template));    
+    this.template = _.template(G.Templates.get(this.template));    
     return this;
   },
   render: function(options) {
     var method = options && options.append ? 'append' : 'html';
     var socials = this.template();
     if (socials.indexOf('data-socialnet') == -1) {
-      this.$el[method](_.template(Lablz.Templates.get('logoutButtonTemplate'))());
+      this.$el[method](_.template(G.Templates.get('logoutButtonTemplate'))());
       return this;
     }
     
@@ -495,12 +495,12 @@ Lablz.LoginButtons = Backbone.View.extend({
   }
 });
 
-Lablz.ListPage = Backbone.View.extend( {
+G.ListPage = Backbone.View.extend( {
   template: 'resource-list',
   initialize: function () {
     _.bindAll(this, 'render', 'tap', 'click', 'home', 'pageChanged');
-    Lablz.Events.on('changePage', this.pageChanged);
-    this.template = _.template(Lablz.Templates.get(this.template));
+    G.Events.on('changePage', this.pageChanged);
+    this.template = _.template(G.Templates.get(this.template));
   },
   events: {
     'tap': 'tap',
@@ -513,7 +513,7 @@ Lablz.ListPage = Backbone.View.extend( {
     this.listView.visible = this.visible;
   },
   home: function() {
-    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    app.navigate(G.homePage, {trigger: true, replace: false});
     return this;
   },
   getNextPage: function() {
@@ -523,10 +523,10 @@ Lablz.ListPage = Backbone.View.extend( {
     this.listView && this.listView.getNextPage();
   },
 //  nextPage: function(e) {
-//    Lablz.Events.trigger('nextPage', this.model);    
+//    G.Events.trigger('nextPage', this.model);    
 //  },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render listPage");
 
@@ -534,11 +534,11 @@ Lablz.ListPage = Backbone.View.extend( {
     
     var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
     this.buttons = {
-      left: [Lablz.BackButton, Lablz.LoginButtons],
-      right: isGeo ? [Lablz.MapItButton, Lablz.AroundMeButton] : null
+      left: [G.BackButton, G.LoginButtons],
+      right: isGeo ? [G.MapItButton, G.AroundMeButton] : null
     };
     
-    this.header = new Lablz.Header({
+    this.header = new G.Header({
       model: this.model, 
       pageTitle: this.model.model.displayName, 
       buttons: this.buttons,
@@ -547,10 +547,10 @@ Lablz.ListPage = Backbone.View.extend( {
 
     var isModification = Utils.isAssignableFrom(this.model.models[0].constructor, 'Modification');
     var containerTag = isModification ? '#nabs_grid' : 'ul';
-    this.listView = new Lablz.ResourceListView({el: $(containerTag, this.el), model: this.model});
+    this.listView = new G.ResourceListView({el: $(containerTag, this.el), model: this.model});
     this.listView.render();
     if (isGeo) {
-      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
+      this.mapView = new G.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
       var self = this;
       setTimeout(self.mapView.render, 100);
     }
@@ -564,8 +564,8 @@ Lablz.ListPage = Backbone.View.extend( {
 });
 
 /*
-Lablz.ListPage.prototype.skipScrollEvent = false;
-Lablz.ListPage.prototype.onScroll = function(e) {
+G.ListPage.prototype.skipScrollEvent = false;
+G.ListPage.prototype.onScroll = function(e) {
       var $wnd = $(window);
       if (this.skipScrollEvent)
         return;
@@ -581,19 +581,19 @@ Lablz.ListPage.prototype.onScroll = function(e) {
       this.skipScrollEvent = true;
       this.nextPage(e);
     } 
-Lablz.ListPage.prototype.onNextPageFetched = function () {
+G.ListPage.prototype.onNextPageFetched = function () {
 //      debugger;
       this.skipScrollEvent = false;
       console.log("onNextPageFetched")
     }
 */
 
-Lablz.ViewPage = Backbone.View.extend({
+G.ViewPage = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
 //    this.model.on('change', this.render, this);
-    this.template = _.template(Lablz.Templates.get('resource'));
-    Lablz.Events.on("mapReady", this.showMapButton);
+    this.template = _.template(G.Templates.get('resource'));
+    G.Events.on("mapReady", this.showMapButton);
   },
   events: {
     'click #edit': 'edit',
@@ -602,7 +602,7 @@ Lablz.ViewPage = Backbone.View.extend({
     'click #homeBtn': 'home'
   },
   home: function() {
-    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    app.navigate(G.homePage, {trigger: true, replace: false});
     return this;
   },
   edit: function(e) {
@@ -610,8 +610,8 @@ Lablz.ViewPage = Backbone.View.extend({
     app.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
     return this;
   },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
@@ -620,11 +620,11 @@ Lablz.ViewPage = Backbone.View.extend({
                 (this.model.isA("Shape") && this.model.get('shapeJson'));
     
     this.buttons = {
-        left: [Lablz.BackButton, Lablz.LoginButtons],
-        right: isGeo ? [Lablz.AroundMeButton] : null,
+        left: [G.BackButton, G.LoginButtons],
+        right: isGeo ? [G.AroundMeButton] : null,
     };
     
-    this.header = new Lablz.Header({
+    this.header = new G.Header({
       model: this.model, 
       pageTitle: this.model.get('davDisplayName'), 
       buttons: this.buttons,
@@ -633,9 +633,9 @@ Lablz.ViewPage = Backbone.View.extend({
     
     this.header.$el.trigger('create');
     
-    this.imageView = new Lablz.ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
+    this.imageView = new G.ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
     this.imageView.render();
-    this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
+    this.view = new G.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
     this.view.render();
     this.rendered = true;
     if (!this.$el.parentNode) 
@@ -646,22 +646,22 @@ Lablz.ViewPage = Backbone.View.extend({
 
 });
 
-//Lablz.EditPage = Backbone.View.extend({
+//G.EditPage = Backbone.View.extend({
 //  initialize: function() {
 //    _.bindAll(this, 'render', 'tap', 'click');
 //    this.model.on('change', this.render, this);
-//    this.template = _.template(Lablz.Templates.get('resourceEdit'));
+//    this.template = _.template(G.Templates.get('resourceEdit'));
 //  },
 //  events: {
 //    'tap': 'tap',
 //    'click': 'click',
 //  },
-//  tap: Lablz.Events.defaultTapHandler,
-//  click: Lablz.Events.defaultClickHandler,  
+//  tap: G.Events.defaultTapHandler,
+//  click: G.Events.defaultClickHandler,  
 //  render:function (eventName) {
 //    console.log("render editPage");
 //    this.$el.html(this.template(this.model.toJSON()));
-//    this.view = new Lablz.ResourceEditView({el: $('ul#resourceEditView', this.el), model: this.model});
+//    this.view = new G.ResourceEditView({el: $('ul#resourceEditView', this.el), model: this.model});
 //    this.view.render();
 //    this.rendered = true;
 //    if (!this.$el.parentNode) 
@@ -672,7 +672,7 @@ Lablz.ViewPage = Backbone.View.extend({
 //
 //});
 
-Lablz.ResourceListView = Backbone.View.extend({
+G.ResourceListView = Backbone.View.extend({
   displayPerPage: 20, // for client-side paging
   mapView: null,
   page: null,
@@ -681,7 +681,7 @@ Lablz.ResourceListView = Backbone.View.extend({
 	timerId: null, // helps to prevent loading indicator in case of fetching from DB
   initialize: function () {
     _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
-    Lablz.Events.on('refresh', this.refresh);
+    G.Events.on('refresh', this.refresh);
     this.model.on('reset', this.render, this);
     var self = this;
 		$(window).on('scroll', function() { self.onScroll(self); });
@@ -714,9 +714,9 @@ Lablz.ResourceListView = Backbone.View.extend({
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (isModification) 
-            liView = new Lablz.ResourceMasonryModItemView({model:m});
+            liView = new G.ResourceMasonryModItemView({model:m});
           else
-            liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
+            liView = hasImgs ? new G.ResourceListItemView({model:m, hasImages: 'y'}) : new G.ResourceListItemView({model:m});
 //            $('.ui-listview li:eq(' + i + ')').remove();
           if (nextPage)  
             this.$el.append(liView.render().el);
@@ -767,8 +767,8 @@ Lablz.ResourceListView = Backbone.View.extend({
       error: after
     });      
   },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   swipe: function(e) {
     console.log("swipe");
   },
@@ -783,10 +783,10 @@ Lablz.ResourceListView = Backbone.View.extend({
 
     var liView;
     if (isModification) 
-      liView = new Lablz.ResourceMasonryModItemView({model:model});
+      liView = new G.ResourceMasonryModItemView({model:model});
     else {
       var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
-      liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+      liView = hasImgs ? new G.ResourceListItemView({model:model, hasImages: 'y'}) : new G.ResourceListItemView({model:model});
     }
     this.$el.append(liView.render().el);
     return this;
@@ -805,9 +805,9 @@ Lablz.ResourceListView = Backbone.View.extend({
       _.forEach(models, function(model) {
         var liView;
         if (isModification) 
-          liView = new Lablz.ResourceMasonryModItemView({model:model});
+          liView = new G.ResourceMasonryModItemView({model:model});
         else
-          liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
+          liView = hasImgs ? new G.ResourceListItemView({model:model, hasImages: 'y'}) : new G.ResourceListItemView({model:model});
         var s = liView.render().el;
         frag.appendChild(s);
       });
@@ -855,15 +855,15 @@ Lablz.ResourceListView = Backbone.View.extend({
   }
 });
 
-Lablz.ResourceListItemView = Backbone.View.extend({
+G.ResourceListItemView = Backbone.View.extend({
   tagName:"li",
   
 	initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     if (options.hasImages)
-		  this.template = _.template(Lablz.Templates.get('listItemTemplate'));
+		  this.template = _.template(G.Templates.get('listItemTemplate'));
     else
-      this.template = _.template(Lablz.Templates.get('listItemTemplateNoImage'));
+      this.template = _.template(G.Templates.get('listItemTemplateNoImage'));
 		
 		// resourceListView will call render on this element
 //    this.model.on('change', this.render, this);
@@ -874,19 +874,19 @@ Lablz.ResourceListItemView = Backbone.View.extend({
     'tap': 'tap',
     'click': 'click'
   },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   render: function(event) {
     this.$el.html(this.template(this.model.toJSON()));
     return this;
   }
 });
 
-Lablz.ResourceMasonryModItemView = Backbone.View.extend({
+G.ResourceMasonryModItemView = Backbone.View.extend({
   className: 'nab nabBoard masonry-brick',
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
-    this.template = _.template(Lablz.Templates.get('masonry-mod-list-item'));
+    this.template = _.template(G.Templates.get('masonry-mod-list-item'));
     
     // resourceListView will call render on this element
 //    this.model.on('change', this.render, this);
@@ -897,8 +897,8 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
     'tap': 'tap',
     'click': 'click'
   },
-  tap: Lablz.Events.defaultTapHandler,
-  click: Lablz.Events.defaultClickHandler,  
+  tap: G.Events.defaultTapHandler,
+  click: G.Events.defaultClickHandler,  
   render: function(event) {
     var meta = this.model.__proto__.constructor.properties;
     meta = meta || this.model.properties;
@@ -911,10 +911,10 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
       imgSrc = 'forResource';
     if (typeof json[imgSrc] == 'undefined')
       return this;
-    var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
+    var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value));
     var tmpl_data = _.extend(json, {rUri: rUri});
 
-    var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
+    var modBy = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value));
     tmpl_data['modifiedBy'].value = modBy;
     var isHorizontal = ($(window).height() < $(window).width());
 //    alert(isHorizontal);
@@ -942,12 +942,12 @@ Lablz.ResourceMasonryModItemView = Backbone.View.extend({
   }
 });
 
-Lablz.ToggleButton = Backbone.View.extend({
+G.ToggleButton = Backbone.View.extend({
   btnId: null,
   initialize: function(options) {
     _.bindAll(this, 'setStyle', 'resetStyle');
     this.active = (options && options.active) || (this.isActive && this.isActive());
-    Lablz.Events.on("changePage", this.resetStyle);
+    G.Events.on("changePage", this.resetStyle);
   },
   isActive: function() {
     return this.active;
@@ -979,7 +979,7 @@ Lablz.ToggleButton = Backbone.View.extend({
   }
 });
 
-Lablz.MapItButton = Lablz.ToggleButton.extend({
+G.MapItButton = G.ToggleButton.extend({
   btnId: 'mapIt',
   template: 'mapItButtonTemplate',
   events: {
@@ -989,19 +989,19 @@ Lablz.MapItButton = Lablz.ToggleButton.extend({
     this.constructor.__super__.initialize.apply(this, arguments);
     
     _.bindAll(this, 'render', 'mapIt');
-    this.template = _.template(Lablz.Templates.get(this.template));
+    this.template = _.template(G.Templates.get(this.template));
     return this;
   },
   mapIt: function(e) {
     this.active = !this.active;
-    Lablz.Events.trigger('mapIt', {active: this.active});
+    G.Events.trigger('mapIt', {active: this.active});
     this.resetStyle();
     return this;
   }
 });
 
 
-Lablz.AroundMeButton = Lablz.ToggleButton.extend({
+G.AroundMeButton = G.ToggleButton.extend({
   btnId: 'aroundMe',
   template: 'aroundMeButtonTemplate',
   events: {
@@ -1011,7 +1011,7 @@ Lablz.AroundMeButton = Lablz.ToggleButton.extend({
     this.constructor.__super__.initialize.apply(this, arguments);
     
     _.bindAll(this, 'render', 'toggleAroundMe');
-    this.template = _.template(Lablz.Templates.get(this.template));        
+    this.template = _.template(G.Templates.get(this.template));        
     return this;
   },
   isActive: function() {
@@ -1043,11 +1043,11 @@ Lablz.AroundMeButton = Lablz.ToggleButton.extend({
         return self.fetchAroundPosition(position.coords);
       },
       function(error) {
-        var lastLocTime = Lablz.userLocation.timestamp;
+        var lastLocTime = G.userLocation.timestamp;
         if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
-          self.fetchAroundPosition(Lablz.userLocation.location);
+          self.fetchAroundPosition(G.userLocation.location);
         else
-          Lablz.locationError(error);
+          G.locationError(error);
       }
     );
     
@@ -1055,7 +1055,7 @@ Lablz.AroundMeButton = Lablz.ToggleButton.extend({
   },
   fetchAroundPosition : function(coords, item) {
     var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
-    Lablz.userLocation = {
+    G.userLocation = {
       location: coords,
       timestamp: new Date().getTime()
     };
@@ -1065,14 +1065,14 @@ Lablz.AroundMeButton = Lablz.ToggleButton.extend({
   }
 });
 
-Lablz.BackButton = Backbone.View.extend({
+G.BackButton = Backbone.View.extend({
   template: 'backButtonTemplate',
   events: {
     'click #back': 'back'
   },
   initialize: function(options) {
     _.bindAll(this, 'render', 'back');
-    this.template = _.template(Lablz.Templates.get(this.template));
+    this.template = _.template(G.Templates.get(this.template));
     return this;
   },
   back: function(e) {
@@ -1094,12 +1094,12 @@ Lablz.BackButton = Backbone.View.extend({
   }
 });
 
-Lablz.Header = Backbone.View.extend({
+G.Header = Backbone.View.extend({
   template: 'headerTemplate',
   initialize: function(options) {
     _.bindAll(this, 'render', 'makeWidget', 'makeWidgets');
     _.extend(this, options);
-    this.template = _.template(Lablz.Templates.get(this.template));
+    this.template = _.template(G.Templates.get(this.template));
     return this;
   },
   makeWidget: function(options) {
@@ -1144,23 +1144,23 @@ makeProp = function(prop, val) {
     }
   }
   
-  var propTemplate = Lablz.Templates.getPropTemplate(prop);
+  var propTemplate = G.Templates.getPropTemplate(prop);
   val = val.displayName ? val : {value: val};
-  return {name: prop.label || prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+  return {name: prop.label || prop.displayName, value: _.template(G.Templates.get(propTemplate))(val)};
 }
 
 makePropEdit = function(prop, val) {
-  var propTemplate = Lablz.Templates.getPropTemplate(prop, true);
+  var propTemplate = G.Templates.getPropTemplate(prop, true);
   val = val.displayName ? val : {value: val};
   val.shortName = prop.displayName.toCamelCase();
-  return {name: prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+  return {name: prop.displayName, value: _.template(G.Templates.get(propTemplate))(val)};
 }
 
 isPropVisible = function(res, prop) {
   if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
     return false;
   
-  var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+  var userRole = G.currentUser ? G.currentUser.role || 'contact' : 'guest';
   if (userRole == 'admin')
     return true;
   

@@ -1,6 +1,5 @@
-// needs Lablz.homePage
-
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -16,7 +15,7 @@ define([
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton'
-], function($, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
   var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
@@ -36,7 +35,7 @@ define([
       this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
-      app.navigate(Lablz.homePage, {trigger: true, replace: false});
+      app.navigate(G.homePage, {trigger: true, replace: false});
       return this;
     },
     getNextPage: function() {

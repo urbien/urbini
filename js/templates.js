@@ -1,14 +1,16 @@
 define([
+  'globals',
+  'utils',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore' 
-], function($, __jqm__, _) {
+], function(G, U, $, __jqm__, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
   };
   
-  return {
+  var Templates = {
     // Hash of preloaded templates for the app
     templates: {},
     propTemplates: {
@@ -66,6 +68,32 @@ define([
       var t = edit ? this.propEditTemplates : this.propTemplates;
       var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
       return (prop[f] && t[prop[f]]) || t[prop.range] || (edit ? t.string : t.resource);
+    },
+    
+    makeProp: function(prop, val) {
+      var cc = prop.colorCoding;
+      if (cc) {
+        cc = U.getColorCoding(cc, val);
+        if (cc) {
+          if (cc.startsWith("icons"))
+            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+          else
+            val = "<span style='color:" + cc + "'>" + val + "</span>";
+        }
+      }
+      
+      var propTemplate = Templates.getPropTemplate(prop);
+      val = val.displayName ? val : {value: val};
+      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    },
+    
+    makePropEdit: function(prop, val) {
+      var propTemplate = Templates.getPropTemplate(prop, true);
+      val = val.displayName ? val : {value: val};
+      val.shortName = prop.displayName.toCamelCase();
+      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
     }
   };
+  
+  return Templates;
 });

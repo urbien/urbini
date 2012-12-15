@@ -1,6 +1,7 @@
 define('app', [
+  'globals',
   'cache!jquery', 
-  'cache!jqueryMobile', 
+  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates', 
@@ -10,7 +11,7 @@ define('app', [
   'cache!indexedDBShim', 
   'cache!modelsBase', 
   'cache!router'
-], function($, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {  
+], function(G, $, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -44,11 +45,11 @@ define('app', [
       return;
     
     App.started = true;
-    var models = Lablz.requiredModels.models;
+    var models = G.requiredModels.models;
     App.router = new Router();
     Backbone.history.start();
     
-    App.homePage = Lablz.homePage = _.last(models).shortName;
+    App.homePage = G.homePage = _.last(models).shortName;
     if (!window.location.hash) {
       App.router.navigate(App.homePage, {trigger: true});
     }

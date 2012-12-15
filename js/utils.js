@@ -1,10 +1,8 @@
 define([
-  'cache!underscore', 
-  'cache!templates' 
-], function(_, Templates) {
-/**
- * for functions that have a parameter "base," base should have serverName, sqlUri, shortNameToModel. If base is not passed in, window.Lablz will be used 
- **/
+  'globals',
+  'cache!underscore',
+  'cache!templates'
+], function(G, _, T) {
 
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
@@ -24,36 +22,12 @@ define([
     return (this.match(str+"$")==str);
   };
   
-  var U = {
-    makeProp: function(prop, val) {
-      var cc = prop.colorCoding;
-      if (cc) {
-        cc = U.getColorCoding(cc, val);
-        if (cc) {
-          if (cc.startsWith("icons"))
-            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
-          else
-            val = "<span style='color:" + cc + "'>" + val + "</span>";
-        }
-      }
-      
-      var propTemplate = Templates.getPropTemplate(prop);
-      val = val.displayName ? val : {value: val};
-      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
-    },
-    
-    makePropEdit: function(prop, val) {
-      var propTemplate = Templates.getPropTemplate(prop, true);
-      val = val.displayName ? val : {value: val};
-      val.shortName = prop.displayName.toCamelCase();
-      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
-    },
-    
+  var U = {    
     isPropVisible: function(res, prop) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
         return false;
       
-      var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+      var userRole = G.currentUser ? G.currentUser.role || 'contact' : 'guest';
       if (userRole == 'admin')
         return true;
       
@@ -119,8 +93,8 @@ define([
       var type = hint && hint.type;
       var pk = hint && hint.primaryKeys;
       var snm = hint && hint.shortNameToModel;
-      var serverName = Lablz.serverName;
-      var sqlUri = Lablz.sqlUri;
+      var serverName = G.serverName;
+      var sqlUri = G.sqlUri;
       if (uri.indexOf('http') == 0) {
         // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
         if (uri.indexOf('?') == -1) // type uri
@@ -294,7 +268,7 @@ define([
           if (!val)
             return;
           
-          var nameVal = U.makeProp(prop, val);
+          var nameVal = T.makeProp(prop, val);
           rows[nameVal.name] = {value: nameVal.value};
           rows[nameVal.name].idx = i++;
           rows[nameVal.name].propertyName = col;
@@ -531,12 +505,12 @@ define([
     isAssignableFrom: function(model, className, type2Model) {
       if (U.isA(model, className))
         return true;
-//      var type2Model = Lablz.typeToModel;
+//      var type2Model = G.typeToModel;
       var m = model;
       while (true) {
         var subClassOf = m.subClassOf;
-        if (!subClassOf.startsWith(Lablz.DEFAULT_VOC_BASE))
-          subClassOf = Lablz.DEFAULT_VOC_BASE + subClassOf;
+        if (!subClassOf.startsWith(G.DEFAULT_VOC_BASE))
+          subClassOf = G.DEFAULT_VOC_BASE + subClassOf;
         
         if (m.shortName == className  ||  m.type == className)
           return true;
@@ -545,7 +519,7 @@ define([
         m = type2Model[subClassOf];
       }
       return false;
-    }
+    },
 
   //,
   //  getGMTDate: function(time) {
@@ -594,7 +568,7 @@ define([
   //    }
     }
   );
-
-  Lablz.U = U;
+  
+  G.U = U;
   return U;
 });

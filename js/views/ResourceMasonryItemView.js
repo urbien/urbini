@@ -1,6 +1,5 @@
-// needs Lablz.pageRoot
-
 define([
+  'globals',
   'cache!jquery',
   'cache!underscore',
   'cache!backbone',
@@ -9,7 +8,7 @@ define([
   'cache!templates',
   'cache!modelsBase',
   'cache!jqueryMobile'
-], function($, _, Backbone, U, Events, Templates, MB, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, MB, __jqm__) {
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
     initialize: function(options) {
@@ -49,7 +48,7 @@ define([
       var grid = U.getGridCols(m);
 
       var rUri = m.get('_uri');
-      var resourceUri = Lablz.pageRoot + '#view/' + encodeURIComponent(rUri);
+      var resourceUri = G.pageRoot + '#view/' + encodeURIComponent(rUri);
       var gridCols = '';
       var resourceLink;
       var i = 0;
@@ -75,7 +74,7 @@ define([
 
       
       var snmHint = {shortNameToModel: MB.shortNameToModel};
-//      var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
       
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
@@ -133,10 +132,10 @@ define([
         return this;
       
       var snmHint = {shortNameToModel: MB.shortNameToModel};
-      var rUri = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
+      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = Lablz.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value, snmHint));
+      var modBy = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value, snmHint));
       tmpl_data['modifiedBy'].value = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);

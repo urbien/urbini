@@ -1,7 +1,5 @@
-// needs Lablz.currentUser
-
-// Filename: router.js
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -15,7 +13,7 @@ define([
 //  , 
 //  'cache!views/ListPage', 
 //  'cache!views/ViewPage' 
-], function($, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
+], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage;
   return Backbone.Router.extend({
     routes:{
@@ -158,10 +156,10 @@ define([
       uri = decodeURIComponent(uri);
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (Lablz.currentUser)
-          this.view(encodeURIComponent(Lablz.currentUser._uri) + "?" + p);
+        if (G.currentUser)
+          this.view(encodeURIComponent(G.currentUser._uri) + "?" + p);
         else
-          window.location.replace(Lablz.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p);
+          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p);
         
         return;
       }
@@ -196,7 +194,7 @@ define([
       
   //    var edit = params['-edit'] == 'y';
       var views = this.Views; //edit ? this.EditViews : this.Views;
-      var viewPageCl = ViewPage; // edit ? Lablz.EditPage : Lablz.ViewPage;
+      var viewPageCl = ViewPage; // edit ? G.EditPage : G.ViewPage;
       if (res) {
         this.Models[uri] = res;
         views[uri] = views[uri] || new viewPageCl({model: res});

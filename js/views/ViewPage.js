@@ -1,6 +1,5 @@
-// needs Lablz.homePage
-
 define([
+  'globals',
   'cache!jquery',
   'cache!underscore',
   'cache!backbone',
@@ -15,7 +14,7 @@ define([
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel',
   'cache!jqueryMobile'
-], function($, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
   return Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
@@ -30,7 +29,7 @@ define([
       'click #homeBtn': 'home'
     },
     home: function() {
-      Backbone.history.navigate(Lablz.homePage, {trigger: true, replace: false});
+      Backbone.history.navigate(G.homePage, {trigger: true, replace: false});
       return this;
     },
     edit: function(e) {

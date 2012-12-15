@@ -1,9 +1,10 @@
 define([
+  'globals',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
   'cache!views/ToggleButton' 
-], function(_, Backbone, Templates, ToggleButton) {
+], function(G, _, Backbone, Templates, ToggleButton) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',
@@ -46,9 +47,9 @@ define([
           return self.fetchAroundPosition(position.coords);
         },
         function(error) {
-          var lastLocTime = Lablz.userLocation.timestamp;
+          var lastLocTime = G.userLocation.timestamp;
           if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
-            self.fetchAroundPosition(Lablz.userLocation.location);
+            self.fetchAroundPosition(G.userLocation.location);
           else
             this.constructor.locationError(error);
         }
@@ -58,7 +59,7 @@ define([
     },
     fetchAroundPosition : function(coords, item) {
       var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
-      Lablz.userLocation = {
+      G.userLocation = {
         location: coords,
         timestamp: new Date().getTime()
       };

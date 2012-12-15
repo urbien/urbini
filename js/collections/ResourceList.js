@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore', 
@@ -6,7 +7,7 @@ define([
   'cache!utils', 
   'cache!error', 
   'cache!models/Resource' 
-], function($, __jqm__, _, Backbone, U, Error, Resource) {
+], function(G, $, __jqm__, _, Backbone, U, Error, Resource) {
   return Backbone.Collection.extend({
     page: 0,
     perPage: 30,
@@ -27,7 +28,7 @@ define([
       this.type = this.model.type;
       this.shortName = this.model.shortName || this.model.shortName;
       this.displayName = this.model.displayName;
-      this.baseUrl = Lablz.apiUrl + this.shortName;
+      this.baseUrl = G.apiUrl + this.shortName;
       this.url = this.baseUrl;
       this.parseQuery(options._query);
       this.queryMap[this.limitParam] = this.perPage;

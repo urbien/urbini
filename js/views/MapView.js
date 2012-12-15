@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -7,7 +8,7 @@ define([
   'cache!events', 
   'cache!utils',
   'cache!maps'
-], function($, __jqm__, _, Backbone, Templates, Events, U, Mapper) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Mapper) {
   var MapView = Backbone.View.extend({
     css: [
       'leaflet.css', 
@@ -65,7 +66,7 @@ define([
         poi = MapView.getBasicGeoJSON('Point', coords);
         if (isMe) {
           poi.properties.name = 'Your location';
-          poi.properties.html = '<a href="' + Lablz.pageRoot + '#view/profile">You are here</a>';
+          poi.properties.html = '<a href="' + G.pageRoot + '#view/profile">You are here</a>';
         }
       }
         
@@ -76,7 +77,7 @@ define([
       div.id = 'map';
   
       var map = this.mapper = new Mapper(div);
-      map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
+      map.addMap(G.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
   //        , {'load': function() {
   //      Events.trigger('mapReady', this.model);
   //      this.$el.append(frag);

@@ -8,8 +8,8 @@
   <!--link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="styles/leaflet/MarkerCluster.Default.css" /-->
   
-  <backboneInitInfo />
   <script data-main="js/loader" src="js/lib/require.js"></script>
+  <backboneInitInfo />
      
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">

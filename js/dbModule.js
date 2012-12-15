@@ -1,6 +1,5 @@
-// needs Lablz.currentUser, Lablz.requiredModels
-
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore', 
@@ -9,7 +8,7 @@ define([
   'cache!indexedDBShim'
   'cache!utils',
   'cache!modelsBase',
-], function($, __jqm__, _, Backbone, Error, __idbShim__, U, MB) {
+], function(G, $, __jqm__, _, Backbone, Error, __idbShim__, U, MB) {
   DB = {};
   DB.db = null;
   DB.VERSION = 1;
@@ -17,7 +16,7 @@ define([
   DB.paused = false;
   
   DB.onerror = function(e) {
-    Lablz.currentUser._reset = true;
+    G.currentUser._reset = true;
     DB.db && DB.db.close();
     DB.open();
     console.log("db error: " + e);
@@ -29,7 +28,7 @@ define([
   
   DB.reset = function() {
     var db = DB.db;
-    var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
+    var rModels = G.requiredModels && _.map(G.requiredModels.models, function(model) {return model.shortName}) || [];
     var deleted = [];
     var created = [];
     _.each(db.objectStoreNames, function(name) {            
@@ -43,7 +42,7 @@ define([
     
     deleted.length && console.log('1. deleted tables: ' + deleted.join(','));
     created.length && console.log('1. created tables: ' + created.join(','));
-    Lablz.currentUser._reset = false;
+    G.currentUser._reset = false;
   }
   
   DB.onblocked = function(e) {
@@ -76,7 +75,7 @@ define([
   //    }
       
       modelsChanged = !!MB.changedModels.length || !!MB.newModels.length;
-      DB.VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+      DB.VERSION = G.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
       if (db.version == DB.VERSION) {
         if (success)
           success();
@@ -85,7 +84,7 @@ define([
       }
       
       if (db.setVersion) {
-        console.log('in old setVersion. User changed: ' + Lablz.currentUser._reset + '. Changed models: ' + (Lablz.changedModels.join(',') || 'none') + ', new models: ' + (Lablz.newModels.join(',') || 'none')); // deprecated but needed for Chrome
+        console.log('in old setVersion. User changed: ' + G.currentUser._reset + '. Changed models: ' + (G.changedModels.join(',') || 'none') + ', new models: ' + (G.newModels.join(',') || 'none')); // deprecated but needed for Chrome
         
         // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
         var req = db.setVersion(DB.VERSION);
@@ -94,7 +93,7 @@ define([
         req.onblocked = DB.onblocked;
         req.onsuccess = function(e2) {
           console.log('upgrading db');
-          if (Lablz.currentUser._reset)
+          if (G.currentUser._reset)
             DB.reset();
           
           if (modelsChanged)
@@ -120,7 +119,7 @@ define([
       console.log ("upgrading db");
       DB.db = e.target.result;
       var db = DB.db;
-      if (Lablz.currentUser._reset) {
+      if (G.currentUser._reset) {
         console.log("clearing db");
         DB.reset();
       }
@@ -372,8 +371,8 @@ define([
   };
 
   DB.updateTables = function(success, error) {
-  //  Lablz.checkSysInfo();
-  //  Lablz.loadAndUpdateModels();
+  //  G.checkSysInfo();
+  //  G.loadAndUpdateModels();
     DB.paused = true;
     if (DB.db)
       DB.db.close();

@@ -1,11 +1,12 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
   'cache!error'
-], function($, __jqm__, _, Backbone, U, Error) {
+], function(G, $, __jqm__, _, Backbone, U, Error) {
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
@@ -15,7 +16,7 @@ define([
       options._query && (this.urlRoot += "?" + options._query);
     },
     url: function() {
-      return Lablz.apiUrl + this.constructor.shortName + "?_uri=" + encodeURIComponent(this.get('_uri'));
+      return G.apiUrl + this.constructor.shortName + "?_uri=" + encodeURIComponent(this.get('_uri'));
     },
     getKey: function() {
       return this.get('_uri');

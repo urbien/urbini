@@ -1,5 +1,5 @@
-// needs Lablz.serverName
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore', 
@@ -10,7 +10,7 @@ define([
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
   'cache!indexedDBShim'
-], function($, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -239,7 +239,7 @@ define([
       
       var modelsCsv = JSON.stringify(models);
       $.ajax({
-        url: Lablz.serverName + "/backboneModel", 
+        url: G.serverName + "/backboneModel", 
         type: 'POST',
         data: {"models": modelsCsv},
         complete: function(jqXHR, status) {
@@ -283,7 +283,7 @@ define([
     };
 
     this.fetchLinkedModels = function() {
-      var linked = Lablz.requiredModels.linkedModels;
+      var linked = G.requiredModels.linkedModels;
       if (!linked)
         return;
       
@@ -353,15 +353,15 @@ define([
         return; // TODO: use indexedDB
       
       var p = localStorage.getItem(MBI.contactKey);
-      var c = Lablz.currentUser;
+      var c = G.currentUser;
       if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
         // no need to clear localStorage, it's only used to store models, which can be shared
         if (c) {
           localStorage.setItem(MBI.contactKey, JSON.stringify(c));
-          Lablz.currentUser._reset = true;
+          G.currentUser._reset = true;
         }
         else
-          Lablz.currentUser = {_reset: true};
+          G.currentUser = {_reset: true};
         
         MBI.newModels = _.filter(_.keys(MBI.shortNameToModel), function(name) {return name != 'Resource'});
         return;
@@ -460,10 +460,10 @@ define([
     
     this.loadStoredModels = function(options) {
     //  var ttm = MBI.typeToModel;
-      if (Lablz.currentUser._reset)
+      if (G.currentUser._reset)
         return;
       
-      var r = options && options.models ? {models: options.models} : Lablz.requiredModels;
+      var r = options && options.models ? {models: options.models} : G.requiredModels;
       var hash = window.location.hash && window.location.hash.slice(1);
 //      var willLoadCurrentModel = false;
       if (hash) {
@@ -484,7 +484,7 @@ define([
         else
           type = U.getType(hash);
         
-        type = type.startsWith(Lablz.serverName) ? 'http://' + type.slice(Lablz.serverName.length + 1) : type;
+        type = type.startsWith(G.serverName) ? 'http://' + type.slice(G.serverName.length + 1) : type;
         
         if (type && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length)
           r.models.push(type); // && willLoadCurrentModel = true;
@@ -509,7 +509,7 @@ define([
     //    }
     //  }
     //  else {
-      var baseDate = r.lastModified || Lablz.requiredModels.lastModified;
+      var baseDate = r.lastModified || G.requiredModels.lastModified;
       _.each(r.models, function(model) {
         var uri = model.type || model;
         if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel})))
@@ -549,7 +549,7 @@ define([
     this.paused = false;
     
     this.onerror = function(e) {
-      Lablz.currentUser._reset = true;
+      G.currentUser._reset = true;
       MBI.db && MBI.db.close();
       MBI.open();
       console.log("db error: " + e);
@@ -561,7 +561,7 @@ define([
     
     this.reset = function() {
       var db = MBI.db;
-      var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
+      var rModels = G.requiredModels && _.map(G.requiredModels.models, function(model) {return model.shortName}) || [];
       var deleted = [];
       var created = [];
       _.each(db.objectStoreNames, function(name) {            
@@ -575,7 +575,7 @@ define([
       
       deleted.length && console.log('1. deleted tables: ' + deleted.join(','));
       created.length && console.log('1. created tables: ' + created.join(','));
-      Lablz.currentUser._reset = false;
+      G.currentUser._reset = false;
     }
     
     this.onblocked = function(e) {
@@ -608,7 +608,7 @@ define([
     //    }
         
         modelsChanged = !!MBI.changedModels.length || !!MBI.newModels.length;
-        MBI.VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+        MBI.VERSION = G.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == MBI.VERSION) {
           if (success)
             success();
@@ -617,7 +617,7 @@ define([
         }
         
         if (db.setVersion) {
-          console.log('in old setVersion. User changed: ' + Lablz.currentUser._reset + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
+          console.log('in old setVersion. User changed: ' + G.currentUser._reset + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
           
           // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
           var req = db.setVersion(MBI.VERSION);
@@ -626,7 +626,7 @@ define([
           req.onblocked = MBI.onblocked;
           req.onsuccess = function(e2) {
             console.log('upgrading db');
-            if (Lablz.currentUser._reset)
+            if (G.currentUser._reset)
               MBI.reset();
             
             if (modelsChanged)
@@ -652,7 +652,7 @@ define([
         console.log ("upgrading db");
         MBI.db = e.target.result;
         var db = MBI.db;
-        if (Lablz.currentUser._reset) {
+        if (G.currentUser._reset) {
           console.log("clearing db");
           MBI.reset();
         }
@@ -935,7 +935,7 @@ define([
       });
       
       var linkedModels = [];
-      var l = Lablz.requiredModels.linkedModels;
+      var l = G.requiredModels.linkedModels;
       for (var i = 0; i < l.length; i++) {
         // to preserve order
         if (_.contains(tmp, l[i].type)) {
