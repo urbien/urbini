@@ -28,6 +28,9 @@
     <div id="resourceImage"></div><br/>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
     </ul>
+    <br/>
+    <ul data-role="listview" data-theme="c" id="cpView" class="action-list" data-inset="true">
+    </ul>
   </div>
 
   <div data-role="footer">

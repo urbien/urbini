@@ -17,24 +17,14 @@ define([
     skipScrollEvent: false,
     
     initialize: function () {
-      _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', /*'renderMany', 'renderOne',*/ 'refresh', 'changed'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', /*'renderMany', 'renderOne',*/ 'refresh', 'changed', 'onScroll', 'pageChanged', 'alignNewBricks'); // fixes loss of context for 'this' within methods
       Events.on('refresh', this.refresh);
       this.model.on('reset', this.render, this);
-      var self = this;
-      $(window).on('scroll', function() { self.onScroll(self); });
-      Events.on('changePage', function() { self.pageChanged(); });
+      $(window).on('scroll', this.onScroll);
+      Events.on('changePage', this.pageChanged);
+      this.$el.on('create', this.alignNewBricks);
       return this;
     },
-    
-    // initial masonry alignment
-    pageChanged: function(view) {
-      var self = this;
-      this.$wall = $('#nabs_grid');
-      if (this.$wall != null)
-        this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
-      // note: use this.$wall.masonry(); if images have defined height
-    },
-    
     refresh: function(model, modified) {
       if (this.isModification && !this.ResourceMasonryItemView) {
         var self = this;
@@ -77,7 +67,7 @@ define([
         if (curNum > 0)
           nextPage = true;
       }
-      
+
       if (!nextPage) {
         lis = lis.detach();
         frag = document.createDocumentFragment();
@@ -107,6 +97,7 @@ define([
       
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
+      
       if (this.initializedListView) {
         if (isModification  ||  isMasonry)
           this.$el.trigger('create');
@@ -171,26 +162,44 @@ define([
     },
   
     // endless page function
-    onScroll: function(view) {
-      if (!view.visible)
+    onScroll: function() {
+      if (!this.visible)
         return;
       
       var $wnd = $(window);
-  //    console.log(view.skipScrollEvent);
-      if (view.skipScrollEvent) // wait for a new data portion
+      if (this.skipScrollEvent) // wait for a new data portion
         return;
   
       var pageContainer = $(".ui-page-active");
       if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
         return;
      
-  //    console.log("CALLING getNextPage");
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      view.skipScrollEvent = true; 
-      view.getNextPage();
+      this.skipScrollEvent = true; 
+      this.getNextPage();
     },
     onNextPageFetched: function () {
       this.skipScrollEvent = false;
+    },
+    // initial masonry alignment
+    pageChanged: function() {
+      var self = this;
+      this.$wall = $('#nabs_grid');
+      if (this.$wall != null)
+        this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
+      // note: use this.$wall.masonry(); if images have defined height
+    },
+    // masonry alignment on nex data portion downloading
+    alignNewBricks: function() {
+      if (this.$wall == null)
+        return;
+      // filter unaligned "bricks" which do not have calculated, absolute position 
+      $bricks = $(this.$wall[0].childNodes).filter(function(idx, node) {
+                  return (node.style.position != "absolute"  );
+                });
+
+      var self = this;
+      this.$wall.imagesLoaded( function(){ self.$wall.masonry( 'appended', $bricks ); });
     }
   });
 });

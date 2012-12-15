@@ -144,10 +144,13 @@ define('globals', ['config'], function(C) {
       indexedDBShim: 'lib/IndexedDBShim',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster'
+      jqueryImagesloaded: 'lib/jquery.imagesloaded',
+      jqueryMasonry: 'lib/jquery.masonry'
     },
     shim: {
-//      jqueryMobile: ['jquery'],
-      leafletMarkerCluster: ['leaflet']
+      leafletMarkerCluster: ['leaflet'],
+      jqueryMasonry: ['jquery'],
+      jqueryImagesloaded: ['jquery']
     },
     cache: G.modules,
     expirationDates: G.files
@@ -180,8 +183,8 @@ require([
     var baseBundle = {
       pre: {
       // Javascript
-        js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
-         'views/ResourceView', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
+        js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+         'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
         // CSS
         css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css']

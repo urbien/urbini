@@ -462,9 +462,9 @@ define([
     //  var ttm = MBI.typeToModel;
       if (G.currentUser._reset)
         return;
-      
+
       var r = options && options.models ? {models: options.models} : G.requiredModels;
-      var hash = window.location.hash && window.location.hash.slice(1);
+      var hash =  options  &&  options.backlink ? options.models[0] : window.location.hash && window.location.hash.slice(1);
 //      var willLoadCurrentModel = false;
       if (hash) {
         var qIdx = hash.indexOf('?');

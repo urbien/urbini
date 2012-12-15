@@ -28,8 +28,13 @@ define([
       this.type = this.model.type;
       this.shortName = this.model.shortName || this.model.shortName;
       this.displayName = this.model.displayName;
-      this.baseUrl = G.apiUrl + this.shortName;
-      this.url = this.baseUrl;
+//      this.baseUrl = G.apiUrl + this.shortName;
+//      this.url = this.baseUrl;
+      this.backlink = options._backlink;
+      this.baseUrl = this.backlink ? G.apiUrl + options._rType : G.apiUrl + this.shortName;
+      this.rUri = options._rUri;
+      this.url = this.backlink ? this.getUrl() : this.baseUrl;
+
       this.parseQuery(options._query);
       this.queryMap[this.limitParam] = this.perPage;
       
@@ -61,7 +66,21 @@ define([
       this.pager();
     },
     getUrl: function() {
-      return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
+      if (!this.backlink)  
+        return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
+      var uri = decodeURIComponent(this.rUri);
+//      var type = U.getType(uri);
+      // HACK
+      var s = uri.split("?");
+      if (s.length == 1)
+        return this.baseUrl + this.rUri + "/" + this.backlink + (this.queryMap ? "?" + $.param(this.queryMap) : '');
+      s = s[1].split("&");
+      var pKeys = '';
+      for (var i=0; i<s.length; i++) {
+        pKeys += '/';
+        pKeys += s[i].split("=")[1];
+      }
+      return this.baseUrl + pKeys + "/" + this.backlink + (this.queryMap ? "?" + $.param(this.queryMap) : '');
     },
     parseQuery: function(query) {
       if (!query)
@@ -124,8 +143,9 @@ define([
       this.queryMap = this.queryMap || {};
       if (this.offset)
         this.queryMap[this.offsetParam] = this.offset;
-        
-      options.url = this.getUrl();
+      this.backlink = options._backlink;
+      this.rUri = options._rUri;
+      options.url = this.backlink ? this.url : this.getUrl();
       options.error = Error.getDefaultErrorHandler(options.error);
       var success = options.success;
       options.success = function() {

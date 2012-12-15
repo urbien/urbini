@@ -86,6 +86,7 @@ define(function () {
       var cached,
           url = cache.getCanonicalPath(req.toUrl(name));
       
+      // TODO: unhack
       if (name == 'jqueryMobile') {
         req([name], function(content) {
 //        cache.get(url, function(content) {
