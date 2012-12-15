@@ -1,10 +1,9 @@
 define([
   'globals',
-  'utils',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore' 
-], function(G, U, $, __jqm__, _) {
+], function(G, $, __jqm__, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -55,7 +54,7 @@ define([
     loadTemplates: function() {
       var elts = $('script[type="text/template"]');
       for (var i = 0; i < elts.length; i++) {
-        this.templates[elts[i].id] = elts[i].innerHTML;
+        Templates.templates[elts[i].id] = elts[i].innerHTML;
       }
     },
  
@@ -65,33 +64,9 @@ define([
     },
     
     getPropTemplate: function(prop, edit) {
-      var t = edit ? this.propEditTemplates : this.propTemplates;
+      var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
       var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
       return (prop[f] && t[prop[f]]) || t[prop.range] || (edit ? t.string : t.resource);
-    },
-    
-    makeProp: function(prop, val) {
-      var cc = prop.colorCoding;
-      if (cc) {
-        cc = U.getColorCoding(cc, val);
-        if (cc) {
-          if (cc.startsWith("icons"))
-            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
-          else
-            val = "<span style='color:" + cc + "'>" + val + "</span>";
-        }
-      }
-      
-      var propTemplate = Templates.getPropTemplate(prop);
-      val = val.displayName ? val : {value: val};
-      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
-    },
-    
-    makePropEdit: function(prop, val) {
-      var propTemplate = Templates.getPropTemplate(prop, true);
-      val = val.displayName ? val : {value: val};
-      val.shortName = prop.displayName.toCamelCase();
-      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
     }
   };
   

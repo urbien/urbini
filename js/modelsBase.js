@@ -283,7 +283,7 @@ define([
     };
 
     this.fetchLinkedModels = function() {
-      var linked = G.requiredModels.linkedModels;
+      var linked = G.linkedModels;
       if (!linked)
         return;
       
@@ -463,7 +463,7 @@ define([
       if (G.currentUser._reset)
         return;
 
-      var r = options && options.models ? {models: options.models} : G.requiredModels;
+      var r = options && options.models ? {models: options.models} : {models: G.models};
       var hash =  options  &&  options.backlink ? options.models[0] : window.location.hash && window.location.hash.slice(1);
 //      var willLoadCurrentModel = false;
       if (hash) {
@@ -509,7 +509,7 @@ define([
     //    }
     //  }
     //  else {
-      var baseDate = r.lastModified || G.requiredModels.lastModified;
+      var baseDate = r.lastModified || G.lastModified;
       _.each(r.models, function(model) {
         var uri = model.type || model;
         if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel})))
@@ -561,7 +561,7 @@ define([
     
     this.reset = function() {
       var db = MBI.db;
-      var rModels = G.requiredModels && _.map(G.requiredModels.models, function(model) {return model.shortName}) || [];
+      var rModels = G.models && _.map(G.models, function(model) {return model.shortName}) || [];
       var deleted = [];
       var created = [];
       _.each(db.objectStoreNames, function(name) {            
@@ -935,7 +935,7 @@ define([
       });
       
       var linkedModels = [];
-      var l = G.requiredModels.linkedModels;
+      var l = G.linkedModels;
       for (var i = 0; i < l.length; i++) {
         // to preserve order
         if (_.contains(tmp, l[i].type)) {

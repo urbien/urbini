@@ -2,7 +2,7 @@ define([
   'globals',
   'cache!underscore',
   'cache!templates'
-], function(G, _, T) {
+], function(G, _, Templates) {
 
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
@@ -268,7 +268,7 @@ define([
           if (!val)
             return;
           
-          var nameVal = T.makeProp(prop, val);
+          var nameVal = U.makeProp(prop, val);
           rows[nameVal.name] = {value: nameVal.value};
           rows[nameVal.name].idx = i++;
           rows[nameVal.name].propertyName = col;
@@ -520,6 +520,30 @@ define([
       }
       return false;
     },
+
+    makeProp: function(prop, val) {
+      var cc = prop.colorCoding;
+      if (cc) {
+        cc = U.getColorCoding(cc, val);
+        if (cc) {
+          if (cc.startsWith("icons"))
+            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+          else
+            val = "<span style='color:" + cc + "'>" + val + "</span>";
+        }
+      }
+      
+      var propTemplate = Templates.getPropTemplate(prop);
+      val = val.displayName ? val : {value: val};
+      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    },
+    
+    makePropEdit: function(prop, val) {
+      var propTemplate = U.getPropTemplate(prop, true);
+      val = val.displayName ? val : {value: val};
+      val.shortName = prop.displayName.toCamelCase();
+      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    }
 
   //,
   //  getGMTDate: function(time) {

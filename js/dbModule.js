@@ -28,7 +28,7 @@ define([
   
   DB.reset = function() {
     var db = DB.db;
-    var rModels = G.requiredModels && _.map(G.requiredModels.models, function(model) {return model.shortName}) || [];
+    var rModels = G.models && _.map(G.models, function(model) {return model.shortName}) || [];
     var deleted = [];
     var created = [];
     _.each(db.objectStoreNames, function(name) {            

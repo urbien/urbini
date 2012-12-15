@@ -1,6 +1,7 @@
 define('globals', ['config'], function(C) {
   var G = Globals = {
-    sqlUri: 'sql'
+    sqlUri: 'sql',
+    modules: {}
   };  
   
   for (var name in C) {
@@ -143,7 +144,7 @@ define('globals', ['config'], function(C) {
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
       leaflet: 'lib/leaflet',
-      leafletMarkerCluster: 'lib/leaflet.markercluster'
+      leafletMarkerCluster: 'lib/leaflet.markercluster',
       jqueryImagesloaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry'
     },

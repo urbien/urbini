@@ -45,11 +45,11 @@ define('app', [
       return;
     
     App.started = true;
-    var models = G.requiredModels.models;
+    var models = G.models;
     App.router = new Router();
     Backbone.history.start();
     
-    App.homePage = G.homePage = _.last(models).shortName;
+    App.homePage = G.homePage = G.homePage || _.last(models).shortName;
     if (!window.location.hash) {
       App.router.navigate(App.homePage, {trigger: true});
     }

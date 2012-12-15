@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -6,7 +7,7 @@ define([
   'cache!templates',
   'cache!events', 
   'cache!utils'
-], function($, __jqm__, _, Backbone, Templates, Events, U) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
   return Backbone.View.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
@@ -88,7 +89,7 @@ define([
             else {
               var v = json[p].value;
               var cnt = json[p].count;
-              var s = '<li><a href="' + Lablz.pageRoot + '#' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
+              var s = '<li><a href="' + G.pageRoot + '#' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
               U.addToFrag(frag, s);
             }
           }
@@ -119,7 +120,7 @@ define([
         else {
           var v = json[p].value;
           var cnt = json[p].count;
-          var s = '<li><a href="' + Lablz.pageRoot + '#/' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
+          var s = '<li><a href="' + G.pageRoot + '#/' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
           U.addToFrag(frag, s);
         }
       }

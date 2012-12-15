@@ -87,7 +87,7 @@ define([
               continue;
   
             displayedProps[idx++] = p;
-            json[p] = Templates.makeProp(prop, json[p]);
+            json[p] = U.makeProp(prop, json[p]);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -127,7 +127,7 @@ define([
           groupNameDisplayed = true;
         }
         
-        json[p] = Templates.makeProp(prop, json[p]);
+        json[p] = U.makeProp(prop, json[p]);
         var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
         if (otherLi) {
           if (json[p].name.length + v.length > maxChars)
