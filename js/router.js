@@ -14,7 +14,7 @@ define([
 //  'cache!views/ListPage', 
 //  'cache!views/ViewPage' 
 ], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
-  var ListPage, ViewPage;
+  var ListPage, ViewPage, MenuPage;
   return Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
@@ -22,9 +22,11 @@ define([
     routes:{
       ":type"           : "list", 
       "view/*path"      : "view",  
+      "menu/*path"      : "menu", 
       ":type/:backlink" : "list" 
     },
     CollectionViews: {},
+    MenuViews: {},
     Views: {},
     EditViews: {},
     Models: {},
@@ -53,12 +55,13 @@ define([
       return ret;
     },
     
-    list: function (oParams, backlink) {
+    list: function(oParams, backlink) {
       if (!ListPage) {
+        var args = arguments;
         var self = this;
         require(['cache!views/ListPage'], function(LP) {
           ListPage = LP;
-          self.list(oParams, backlink);
+          self.list.apply(self, args);
         })
         
         return;
@@ -159,6 +162,7 @@ define([
         c = null;
       
       if (!query && c && this.CollectionViews[t]) {
+        this.currentModel = c;
         this.changePage(this.CollectionViews[t], {page: page});
         if (!backlink)
           this.Collections[t].fetch({page: page});
@@ -172,7 +176,7 @@ define([
       if (!model)
         return this;
       
-      var list = new ResourceList(null, {model: model, _query: query, _backlink: backlink, _rType: type, _rUri: oParams });    
+      var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _backlink: backlink, _rType: type, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
       if (!query) {
@@ -194,13 +198,33 @@ define([
       
       return this;
     },
-  
+
+    menu: function() {
+      if (!MenuPage) {
+        var args = arguments;
+        var self = this;
+        require(['cache!views/MenuPage'], function(MP) {
+          MenuPage = MP;
+          self.menu.apply(self, args);
+        })
+        
+        return;
+      }
+      
+      var menuPage = this.MenuViews[this.currentModel];
+      if (!menuPage)
+        menuPage = this.MenuViews[this.currentModel] = new MenuPage({model: this.currentModel});
+      
+      this.changePage(menuPage);
+    },
+    
     view: function (path) {
       if (!ViewPage) {
+        var args = arguments;
         var self = this;
         require(['cache!views/ViewPage'], function(VP) {
           ViewPage = VP;
-          self.view(path);
+          self.view.apply(self, args);
         })
         
         return;
@@ -221,7 +245,7 @@ define([
       uri = decodeURIComponent(uri);
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (G.currentUser)
+        if (!G.currentUser.guest)
           this.view(encodeURIComponent(G.currentUser._uri) + "?" + p);
         else
           window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p);
@@ -231,7 +255,7 @@ define([
       
       var self = this;
       var type = U.getType(uri);
-      uri = U.getLongUri(uri, {type: type, shortNameToModel: MB.shortNameToModel});
+      uri = U.getLongUri(uri, {shortNameToModel: MB.shortNameToModel});
       if (!uri || !MB.shortNameToModel[type]) {
         MB.loadStoredModels({models: [type]});
           
@@ -261,6 +285,7 @@ define([
       var views = this.Views; //edit ? this.EditViews : this.Views;
       var viewPageCl = ViewPage; // edit ? G.EditPage : G.ViewPage;
       if (res) {
+        this.currentModel = res;
         this.Models[uri] = res;
         views[uri] = views[uri] || new viewPageCl({model: res});
         this.changePage(this.Views[uri]);
@@ -274,6 +299,7 @@ define([
       if (this.Collections[type]) {
         var res = this.Models[uri] = this.Collections[type].get(uri);
         if (res) {
+          this.currentModel = res;
           views[uri] = new viewPageCl({model: res});
           this.changePage(this.Views[uri]);
           return this;
@@ -284,7 +310,7 @@ define([
       if (!typeCl)
         return this;
       
-      var res = this.Models[uri] = new typeCl({_uri: uri, _query: query});
+      var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var view = views[uri] = new viewPageCl({model: res});
       var paintMap;
       var success = function(data) {
@@ -297,24 +323,25 @@ define([
       return this;
     },
     
-    loadExtras: function(params) {
-      if (params.length == 0)
-        return;
-      
-      paramToVal = {};
-      params = _.each(params.slice(1), 
-        function(nameVal) {
-          nameVal = nameVal.split("=");
-          paramToVal[nameVal[0]] = nameVal[1];
-        }
-      );
-      
-      params = paramToVal;
-      if (params["-map"] != 'y')
-        return;
-      
-      console.log("painting map");
-    },
+//    loadExtras: function(params) {
+//      if (params.length == 0)
+//        return;
+//      
+//      paramToVal = {};
+//      params = _.each(params.slice(1), 
+//        function(nameVal) {
+//          nameVal = nameVal.split("=");
+//          paramToVal[nameVal[0]] = nameVal[1];
+//        }
+//      );
+//      
+//      params = paramToVal;
+//      if (params["-map"] != 'y')
+//        return;
+//      
+//      console.log("painting map");
+//    },
+    
     isModelLoaded: function(self, type, oParams, backlink) {
       var m = MB.shortNameToModel[type];
       if (m)
@@ -382,9 +409,9 @@ define([
         this.backClicked = false;
         isReverse = true;
       }
-      
+            
       // perform transition
-      $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
+      $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});
       Events.trigger('changePage', view);
       return view;
     }

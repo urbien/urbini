@@ -14,6 +14,7 @@ define([
 //      this.on('change', this.updateDB);
 //      this.on('aroundMe', this.constructor.getAroundMe);
       options._query && (this.urlRoot += "?" + options._query);
+//      this.sync = this.constructor.sync;
     },
     url: function() {
       return G.apiUrl + this.constructor.shortName + "?_uri=" + encodeURIComponent(this.get('_uri'));

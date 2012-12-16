@@ -27,7 +27,7 @@ define([
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
         return false;
       
-      var userRole = G.currentUser ? G.currentUser.role || 'contact' : 'guest';
+      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
       if (userRole == 'admin')
         return true;
       
@@ -72,10 +72,6 @@ define([
       }
       
       return keys;
-    //  return _.filter(model.properties, 
-    //      function(prop) {
-    //        prop.annotations && _.contains(prop.annotations, '@k');
-    //      });
     },
     
     getCloneOf: function(meta, cloneOf) {
@@ -108,7 +104,7 @@ define([
       }
       else if (uri.indexOf('/') == -1) {
         // uri is of form Tree?id=32000 or just Tree
-        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
+        type = !type || type.indexOf('/') == -1 ? U.getTypeUri(uri, hint) : type;
         if (!type)
           return null;
         
@@ -123,12 +119,12 @@ define([
         // uri is of form Tree/32000
         var typeName = U.getType(uri);
         type = U.getTypeUri(typeName, hint);
-        if (!type)
+        if (!type || type == typeName)
           return null;
         
         var sIdx = uri.indexOf("/");
         var longUri = uri.slice(0, sIdx) + "?";
-        var primaryKeys = hint.primaryKeys || U.getPrimaryKeys(snm && snm[typeName]);
+        var primaryKeys = hint.primaryKeys || (snm && snm[typeName] && U.getPrimaryKeys([typeName]));
 //        var model = snm[typeName];
 //        if (!model)
 //          return uri;
@@ -374,9 +370,10 @@ define([
         return {};
       
       var chopIdx = h.indexOf('?');
-      chopIdx = chopIdx == -1 ? 1 : chopIdx + 1;
+      if (chopIdx == -1)
+        return {};
         
-      return h ? U.getParamMap(h.slice(chopIdx)) : {};
+      return h ? U.getParamMap(h.slice(chopIdx + 1)) : {};
     },
     
     getParamMap: function(str, delimiter) {
@@ -543,6 +540,22 @@ define([
       val = val.displayName ? val : {value: val};
       val.shortName = prop.displayName.toCamelCase();
       return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    },
+    
+//    /**
+//     * build view/list/etc. hash for model, defaults to homePage if model is null
+//     */
+//    buildHash: function(model) {
+//      return model instanceof Backbone.Model ? 'view/' + encodeURIComponent(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
+//    },
+    
+    getMobileUrl: function(url) {
+      var params = U.getQueryParams(url);
+      if (url.startsWith('v.html'))
+        return 'view/' + encodeURIComponent(params.uri);
+      
+      var type = params.type;
+      return type.slice(type.lastIndexOf('/') + 1);
     }
 
   //,

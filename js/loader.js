@@ -1,7 +1,11 @@
 define('globals', ['config'], function(C) {
   var G = Globals = {
     sqlUri: 'sql',
-    modules: {}
+    modules: {},
+    id: 0,
+    nextId: function() {
+      return this.id++;
+    }
   };  
   
   for (var name in C) {
@@ -192,7 +196,7 @@ require([
       },
       post: {
         // Javascript
-        js: ['views/ResourceMasonryItemView', 'leaflet', 'leafletMarkerCluster', 'maps'],
+        js: ['views/ResourceMasonryItemView', 'views/MenuPage', 'views/EditButton', 'leaflet', 'leafletMarkerCluster', 'maps'],
         // CSS
         css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }

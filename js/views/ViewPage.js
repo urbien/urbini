@@ -58,20 +58,31 @@ define([
         el: $('#headerDiv', this.el)
       }).render();
       
-      this.header.$el.trigger('create');
-      
+      this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
       this.imageView.render();
       this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
       this.view.render();
+      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
+      this.cp.render();
       
-      this.view = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
-      this.view.render();
+      this.$el.live('swipeleft swiperight', function(event) {
+        console.log(event.type);
+        var hash = window.location.hash.slice(1);
+        if (event.type == "swipeleft") {
+          // open backlinks
+        }
+        if (event.type == "swiperight") {
+          // open menu
+          Backbone.history.navigate('menu/' + encodeURIComponent(hash.slice(5)), {trigger: true, replace: false});
+        }
+      });
       
-      this.rendered = true;
+
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
+      this.rendered = true;
       return this;
     }
   });

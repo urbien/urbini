@@ -39,6 +39,18 @@
   </div>
 </script>  
 
+<script type="text/template" id="menu">
+  <div id="headerDiv" data-theme="a"></div>
+  <div id="menuHolder" data-role="content" data-theme="a">
+    <ul data-role="listview" data-theme="a" id="menuItems" class="action-list" data-inset="true">
+    </ul>
+  </div>
+  
+  <div data-role="footer">
+     <a id="homeBtn" target="#" class="icon home">Home</a>
+  </div>
+</script>  
+
 <script type="text/template" id="stringPT">
   <span>{{= value }}</span>
 </script>
@@ -131,11 +143,15 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href = "{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href = "{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+</script>
+
+<script type="text/template" id="menuItemTemplate">
+  <li><a id="{{= typeof id === 'undefined' ? Globals.nextId() : id}}" href="{{= Globals.pageRoot + '#' + encodeURIComponent(pageUrl) }}"><h3>{{= title }}</h3></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate">

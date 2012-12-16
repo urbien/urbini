@@ -37,6 +37,7 @@ define([
 
       this.parseQuery(options._query);
       this.queryMap[this.limitParam] = this.perPage;
+//      this.sync = this.constructor.sync;
       
       console.log("init " + this.shortName + " resourceList");
     },
@@ -114,7 +115,8 @@ define([
     parse: function(response) {
       if (!response || response.error)
         return [];
-      
+
+      var metadata = response.metadata;
       if (response.data) {
         this.offset = response.metadata.offset;
         if (this.offset)
@@ -122,6 +124,13 @@ define([
         
         this.page = Math.floor(this.offset / this.perPage);
         response = response.data;
+      }
+      
+      var editMojo = metadata && metadata.edit;
+      if (editMojo) {
+        _.each(response, function(m) {
+          m.edit = editMojo;
+        });
       }
       
       this.loaded = true;

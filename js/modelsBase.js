@@ -354,14 +354,14 @@ define([
       
       var p = localStorage.getItem(MBI.contactKey);
       var c = G.currentUser;
-      if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
+      if (p && !c.guest && JSON.parse(p)._uri != c._uri) {
         // no need to clear localStorage, it's only used to store models, which can be shared
-        if (c) {
+        if (c.guest)
+          G.currentUser = {_reset: true, guest: true};
+        else {
           localStorage.setItem(MBI.contactKey, JSON.stringify(c));
           G.currentUser._reset = true;
         }
-        else
-          G.currentUser = {_reset: true};
         
         MBI.newModels = _.filter(_.keys(MBI.shortNameToModel), function(name) {return name != 'Resource'});
         return;
@@ -484,8 +484,7 @@ define([
         else
           type = U.getType(hash);
         
-        type = type.startsWith(G.serverName) ? 'http://' + type.slice(G.serverName.length + 1) : type;
-        
+        type = type && type.startsWith(G.serverName) ? 'http://' + type.slice(G.serverName.length + 1) : type;
         if (type && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length)
           r.models.push(type); // && willLoadCurrentModel = true;
       }

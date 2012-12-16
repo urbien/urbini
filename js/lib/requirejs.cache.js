@@ -109,7 +109,6 @@ define(function () {
       if (inMemory || hasLocalStorage) {
         if (inMemory) {
           cached = mCache[url];
-          cache.save(url, cached, 100);
         }
         else if (hasLocalStorage) { // in build context, this will be false, too
           cached = localStorage.getItem(url);

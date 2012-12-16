@@ -89,6 +89,17 @@ define([
         });
       }
       
+      this.$el.live('swipeleft swiperight', function(event) {
+        console.log(event.type);
+        var hash = window.location.hash.slice(1);
+        if (event.type == "swipeleft") {
+        }
+        if (event.type == "swiperight") {
+          // open menu
+          Backbone.history.navigate('menu/' + encodeURIComponent(hash), {trigger: true, replace: false});
+        }
+      });
+
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
