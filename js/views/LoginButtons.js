@@ -8,11 +8,17 @@ define([
 ], function($, __jqm__, _, Backbone, U, Templates) {
   return Backbone.View.extend({
     template: 'loginTemplate',
+    
+    events: {
+      'click #login-popup_btn': 'showPopup'
+    },
+    
     initialize: function(options) {
       _.bindAll(this, 'render');
       this.template = _.template(Templates.get(this.template));    
       return this;
     },
+
     render: function(options) {
       var method = options && options.append ? 'append' : 'html';
       var socials = this.template();
@@ -38,6 +44,11 @@ define([
       });
       
       return this;
-    }
+    },
+    
+    showPopup: function() {
+      $('#login-popup').popup("open");
+    },
+
   });
 });

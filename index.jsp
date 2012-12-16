@@ -227,8 +227,13 @@
 </script-->
 
 <script type="text/template" id="loginTemplate">
-  <authenticateByFacebook mobile="y" />
+  <a id="login-popup_btn" data-role="button" data-icon="signin" data-rel="popup">login</a>
+  <div data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content" id="login-popup">
+    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
+    <authenticateByFacebook mobile="y" />
+  </div>
 </script>
+
 <script type="text/template" id="masonry-mod-list-item">
   <div class="anab">
     <div class="galleryItem_css3">
