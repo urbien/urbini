@@ -159,7 +159,7 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a></li>
+   <li><a href="{{= Globals.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoValue">
