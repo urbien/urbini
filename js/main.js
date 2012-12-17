@@ -242,7 +242,7 @@ var App = Backbone.Router.extend({
       view.render();
     }
 
-    var transition = "slide"; //$.mobile.defaultPageTransition;
+    var transition = "none"; //$.mobile.defaultPageTransition;
     this.currentView = view;
     if (this.firstPage) {
       transition = 'none';
@@ -280,10 +280,11 @@ var Page = function(p) {
 }
 
 function init() {
+  $.mobile.buttonMarkup.hoverDelay = 25;
+  $.mobile.defaultHomeScroll = 0;
   var error = function(e) {
     console.log("failed to init app, not starting: " + e);
   };
-  
   Lablz.Templates.loadTemplates();
   Lablz.checkUser();
   Lablz.loadStoredModels();
@@ -325,6 +326,11 @@ $(document).ready(function () {
   console.log('document ready: ' + documentReadyCount++);
   init();      
 });
+/*
+window.addEventListener('load', function() {
+  new FastClick(document.body);
+}, false);
+*/
 
 //    $.mobile.pushStateEnabled = false;
 //});

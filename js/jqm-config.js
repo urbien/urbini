@@ -9,7 +9,7 @@ define(['jquery', 'cache!jqueryMobile'], function($) {
       $.support.touchOverflow = true;
       $.mobile.touchOverflowEnabled = true;
       $.mobile.loadingMessageTextVisible = true;
-      
+      $.mobile.buttonMarkup.hoverDelay = 25;
       // Remove page from DOM when it's being replaced
 //      $('div[data-role="page"]').live('pagehide', function (event, ui) {
 //          $(event.currentTarget).remove();

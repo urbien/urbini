@@ -158,6 +158,14 @@
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
+<script type="text/template" id="cpTemplate">
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a></li>
+</script>
+
+<script type="text/template" id="cpTemplateNoValue">
+   <li>{{= name }}</li>
+</script>
+
 <script type="text/template" id="propRowTemplate2">
    <li>{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
 </script>

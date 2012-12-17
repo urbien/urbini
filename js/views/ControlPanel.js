@@ -12,8 +12,10 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
+      this.cpTemplate = _.template(Templates.get('cpTemplate'));
+      this.cpTemplateNoValue = _.template(Templates.get('cpTemplateNoValue'));
       this.model.on('change', this.refresh, this);
-  //    Lablz.Events.on('refresh', this.refresh);
+  //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
     events: {
@@ -82,15 +84,15 @@ define([
               groupNameDisplayed = true;
             }
             var n = meta[p].displayName;
-            if (!_.has(json, p)) {
-              var s = '<li><span>' + n + '</span></li>';              
-              U.addToFrag(frag, s);
-            }
+            if (!_.has(json, p)) 
+              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
             else {
               var v = json[p].value;
               var cnt = json[p].count;
-              var s = '<li><a href="' + G.pageRoot + '#' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
-              U.addToFrag(frag, s);
+              if (typeof cnt == 'undefined'  ||  !cnt)
+                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+              else
+                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
             }
           }
         }
@@ -113,15 +115,15 @@ define([
   
 //        json[p] = U.makeProp(prop, json[p]);
         var n = meta[p].displayName;
-        if (!_.has(json, p)) {
-          var s = '<li><span>' + n + '</span></li>';              
-          U.addToFrag(frag, s);
-        }
+        if (!_.has(json, p)) 
+          U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
         else {
           var v = json[p].value;
           var cnt = json[p].count;
-          var s = '<li><a href="' + G.pageRoot + '#/' + encodeURIComponent(this.model.get('_uri')) + '/' + p + '">' + '<span>' + n + '</span><span style="float: right">' + cnt + '</span></a></li>'; 
-          U.addToFrag(frag, s);
+          if (typeof cnt == 'undefined'  ||  !cnt)
+            U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+          else
+            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
         }
       }
       
