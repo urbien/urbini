@@ -196,7 +196,7 @@ require([
       },
       post: {
         // Javascript
-        js: ['views/ResourceMasonryItemView', 'views/MenuPage', 'views/EditButton', 'leaflet', 'leafletMarkerCluster', 'maps'],
+        js: ['views/ResourceMasonryItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
         // CSS
         css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }
