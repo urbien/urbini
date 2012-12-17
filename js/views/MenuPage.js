@@ -56,14 +56,14 @@ define([
       if (G.tabs) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
-          t.pageUrl = U.getMobileUrl(t.pageUrl);
+          t.mobileUrl = U.getMobileUrl(t.pageUrl);
           U.addToFrag(frag, self.menuItemTemplate(t));
         });
       }
       
       this.buildActionsMenu(frag);
       U.addToFrag(frag, self.groupHeaderTemplate({value: 'Profile'}));
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Take me to me', pageUrl: 'profile'}));
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Take me to me', mobileUrl: 'profile'}));
 
       ul.append(frag);
       
@@ -87,7 +87,7 @@ define([
       else
         this.buildActionsMenuForRes(frag);
       
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Subscribe', pageUrl: '', id: 'subscribe'}));
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Subscribe', mobileUrl: '', id: 'subscribe'}));
     },
     
     buildActionsMenuForList: function(frag) {
@@ -95,16 +95,16 @@ define([
       var cMojo = m.classMojoMultiplier;
       var user = G.currentUser;
       if (!user.guest && typeof cMojo !== 'undefined' && user.totalMojo > cMojo)
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Add', pageUrl: 'make/' + encodeURIComponent(m.shortName), id: 'add'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Add', mobileUrl: 'make/' + encodeURIComponent(m.shortName), id: 'add'}));
     },
     
     buildActionsMenuForRes: function(frag) {
       var m = this.model;
       var user = G.currentUser;
       if (!user.guest && m.edit && user.totalMojo > m.edit) {
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Add', pageUrl: 'make/' + encodeURIComponent(m.constructor.shortName), id: 'add'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', pageUrl: 'edit/' + encodeURIComponent(m.get('_uri')), id: 'edit'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Delete', pageUrl: '', id: 'delete'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Add', mobileUrl: 'make/' + encodeURIComponent(m.constructor.shortName), id: 'add'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + encodeURIComponent(m.get('_uri')), id: 'edit'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Delete', mobileUrl: '', id: 'delete'}));
       }
     },
     

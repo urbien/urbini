@@ -211,9 +211,11 @@ define([
         return;
       }
       
-      var menuPage = this.MenuViews[this.currentModel];
+      var c = this.currentModel;
+      var id = c.id || c.url;
+      var menuPage = this.MenuViews[id];
       if (!menuPage)
-        menuPage = this.MenuViews[this.currentModel] = new MenuPage({model: this.currentModel});
+        menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
       
       this.changePage(menuPage);
     },
