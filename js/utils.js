@@ -551,35 +551,35 @@ define([
     
     apiParamMap: {'-asc': '$asc', '$order': '$order', '-limit': '$limit'},
     getMobileUrl: function(url) {
-      var params = U.getQueryParams(url);
+      var orgParams = U.getQueryParams(url);
       if (url.startsWith('v.html'))
-        return 'view/' + encodeURIComponent(U.getLongUri(params.uri));
+        return 'view/' + encodeURIComponent(U.getLongUri(orgParams.uri));
       
       // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
-      var type = params.type;
-      delete params.type;
-      _.forEach(_.keys(params), function(p) {
+      var type = orgParams.type;
+      var params = {};
+      _.forEach(_.keys(orgParams), function(p) {
         if (p.startsWith('-')) {
           var apiParam = U.apiParamMap[p];
-          if (apiParam) {
-            var val = params[p];
+          if (typeof apiParam !== 'undefined') {
+            var val = orgParams[p];
+            if (apiParam == '$limit')
+              val = Math.max(parseInt(val, 10), 50);
+            
             params[apiParam] = val;
           }
         }
         else if (p.startsWith('.')) {
-          var val = params[p];
-          delete params[p];
+          var val = orgParams[p];
           if (typeof val === 'undefined' || val === '')
             return;
           
-          var p1 = p.slice(1); // maybe check if it's a param for that model
-          params[p1] = val;
-        }
-        
-        delete params[p];
+          // TODO: maybe check if it's a param for that model
+          params[p.slice(1)] = val;
+        }        
       });
       
-      return type.slice(type.lastIndexOf('/') + 1) + '?' + $.param(params);
+      return type.slice(type.lastIndexOf('/') + 1) + (_.size(params) ? '?' + $.param(params) : '');
     }
 
   //,

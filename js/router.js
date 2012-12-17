@@ -15,7 +15,7 @@ define([
 //  'cache!views/ViewPage' 
 ], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage, MenuPage;
-  return Backbone.Router.extend({
+  var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
 //    "view/*path"      : "view"  // e.g. app/ichangeme#view/<resourceUri>
@@ -45,13 +45,13 @@ define([
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
-      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-      this.forceRefresh = false;
       if (options) {
         this.errMsg = options.errMsg;
         this.info = options.info;
       }
       
+      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
+      this.forceRefresh = false;
       return ret;
     },
     
@@ -161,9 +161,10 @@ define([
       if (c && !c.loaded)
         c = null;
       
-      if (!query && c && this.CollectionViews[t]) {
+      var cView = this.CollectionViews[t];
+      if (!query && c && cView) {
         this.currentModel = c;
-        this.changePage(this.CollectionViews[t], {page: page});
+        this.changePage(cView, {page: page});
         if (!backlink)
           this.Collections[t].fetch({page: page});
         else
@@ -289,8 +290,8 @@ define([
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
-        views[uri] = views[uri] || new viewPageCl({model: res});
-        this.changePage(this.Views[uri]);
+        var v = views[uri] = views[uri] || new viewPageCl({model: res});
+        this.changePage(v);
         res.fetch({
           success: function() {MB.fetchModelsForLinkedResources(res)}
         });
@@ -302,8 +303,8 @@ define([
         var res = this.Models[uri] = this.Collections[type].get(uri);
         if (res) {
           this.currentModel = res;
-          views[uri] = new viewPageCl({model: res});
-          this.changePage(this.Views[uri]);
+          var v = views[uri] = new viewPageCl({model: res});
+          this.changePage(v);
           return this;
         }
       }
@@ -313,10 +314,10 @@ define([
         return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var view = views[uri] = new viewPageCl({model: res});
+      var v = views[uri] = new viewPageCl({model: res});
       var paintMap;
       var success = function(data) {
-        self.changePage(view);
+        self.changePage(v);
         success: MB.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
@@ -418,4 +419,6 @@ define([
       return view;
     }
   });
+  
+  return Router;
 });

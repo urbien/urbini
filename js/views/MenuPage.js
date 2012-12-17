@@ -19,9 +19,12 @@ define([
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
+      this.router = G.app.router || Backbone.history;
       Events.on("mapReady", this.showMapButton);
     },
+    tabs: {},
     events: {
+      'click': 'click',
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
@@ -29,11 +32,29 @@ define([
     },
     edit: function(e) {
       e.preventDefault();
-      Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      this.router.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
+    click: function(e) {
+      var t = e.target;
+      var text = t.innerHTML;
+      while (t && t.nodeName.toLowerCase() != 'a') {
+        t = t.parentNode;
+      }
+      
+      if (typeof t === 'undefined' || !t)
+        return;
+      
+      if (this.tabs[text]) {
+        var href = t.href.slice(t.href.lastIndexOf('#') + 1)
+        if (this.tabs[text] == href) {
+          e.originalEvent.preventDefault();
+          this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
+          return;
+        }
+      }
+    },
     tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
     render:function (eventName) {
       console.log("render menuPage");
       var self = this;
@@ -56,8 +77,9 @@ define([
       if (G.tabs) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
-          t.mobileUrl = U.getMobileUrl(t.pageUrl);
+          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
           U.addToFrag(frag, self.menuItemTemplate(t));
+          self.tabs[t.title] = t.mobileUrl;
         });
       }
       
@@ -71,10 +93,10 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
-      var m = self.model;
+      var m = this.model;
       this.$el.live('swipeleft', function(event) {
         var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
-        Backbone.history.navigate(newHash, {trigger: true, replace: true});
+        self.router.navigate(newHash, {trigger: true, replace: true});
       });
       
       return this;

@@ -53,7 +53,7 @@ define([
       
       this.header = new Header({
         model: this.model, 
-        pageTitle: this.model.get('davDisplayName'), 
+//        pageTitle: this.pageTitle || this.model.get('davDisplayName'), 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();

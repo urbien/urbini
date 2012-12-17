@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery',
   'cache!jqueryMobile', 
   'cache!underscore', 
@@ -6,7 +7,7 @@ define([
   'cache!templates',
   'cache!utils',
   'cache!events', 
-], function($, __jqm__, _, Backbone, Templates, Events, U) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
   
   return Backbone.View.extend({
     template: 'headerTemplate',
@@ -14,6 +15,18 @@ define([
       _.bindAll(this, 'render', 'makeWidget', 'makeWidgets');
       _.extend(this, options);
       this.template = _.template(Templates.get(this.template));
+      if (typeof this.pageTitle === 'undefined') {
+        var hash = window.location.hash && window.location.hash.slice(1);
+        if (hash && G.tabs) {
+          decHash = decodeURIComponent(hash);
+          var matches = _.filter(G.tabs, function(t) {return t.mobileUrl == hash || decodeURIComponent(t.mobileUrl) == decHash});
+          if (matches.length)
+            this.pageTitle = matches[0].title;
+        }
+        
+        this.pageTitle = this.pageTitle || (this.model instanceof Backbone.Collection && this.model.model.displayName) || this.model.get('davDisplayName');
+      }
+      
       return this;
     },
     makeWidget: function(options) {

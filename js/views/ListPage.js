@@ -14,8 +14,9 @@ define([
   'cache!views/BackButton', 
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
-  'cache!views/MapItButton'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton) {
+  'cache!views/MapItButton',
+  'cache!router'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, Router) {
   var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
@@ -62,7 +63,6 @@ define([
       
       this.header = new Header({
         model: this.model, 
-        pageTitle: this.model.model.displayName, 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();
@@ -96,7 +96,7 @@ define([
         }
         if (event.type == "swiperight") {
           // open menu
-          Backbone.history.navigate('menu/' + encodeURIComponent(hash), {trigger: true, replace: false});
+          (G.app.router || Backbone.history).navigate('menu/' + encodeURIComponent(hash), {trigger: true, replace: false});
         }
       });
 

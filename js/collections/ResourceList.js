@@ -91,17 +91,17 @@ define([
       var qMap = this.queryMap = this.queryMap || {};
       for (var i = 0; i < query.length; i++) {
         var p = query[i].split("=");
-        var name = p[0];
-        var val = p[1];
+        var name = decodeURIComponent(p[0]);
+        var val = decodeURIComponent(p[1]);
         var q = query[i];
         if (q == this.offsetParam) {
-          this.offset = parseInt(value); // offset is special because we need it for lookup in db
+          this.offset = parseInt(val); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
         else if (q.charAt(0) == '-')
           continue;
         else
-          qMap[name] = decodeURIComponent(val);
+          qMap[name] = val;
       }
       
       this.url = this.getUrl();
