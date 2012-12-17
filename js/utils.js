@@ -549,13 +549,37 @@ define([
 //      return model instanceof Backbone.Model ? 'view/' + encodeURIComponent(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
     
+    apiParamMap: {'-asc': '$asc', '$order': '$order', '-limit': '$limit'},
     getMobileUrl: function(url) {
       var params = U.getQueryParams(url);
       if (url.startsWith('v.html'))
-        return 'view/' + encodeURIComponent(params.uri);
+        return 'view/' + encodeURIComponent(U.getLongUri(params.uri));
       
+      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
       var type = params.type;
-      return type.slice(type.lastIndexOf('/') + 1);
+      delete params.type;
+      _.forEach(_.keys(params), function(p) {
+        if (p.startsWith('-')) {
+          var apiParam = U.apiParamMap[p];
+          if (apiParam) {
+            var val = params[p];
+            params[apiParam] = val;
+          }
+        }
+        else if (p.startsWith('.')) {
+          var val = params[p];
+          delete params[p];
+          if (typeof val === 'undefined' || val === '')
+            return;
+          
+          var p1 = p.slice(1); // maybe check if it's a param for that model
+          params[p1] = val;
+        }
+        
+        delete params[p];
+      });
+      
+      return type.slice(type.lastIndexOf('/') + 1) + '?' + $.param(params);
     }
 
   //,
