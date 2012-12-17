@@ -90,7 +90,7 @@ define([
       }
       
       this.$el.live('swipeleft swiperight', function(event) {
-        console.log(event.type);
+//        console.log(event.type);
         var hash = window.location.hash.slice(1);
         if (event.type == "swipeleft") {
         }
