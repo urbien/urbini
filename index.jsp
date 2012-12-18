@@ -12,6 +12,8 @@
     </ul>
     <div id="nabs_grid" class="masonry">
     </div>
+    <table width="100%" id="comments">
+    </table>
   </div>
   
   <div data-role="footer" class="ui-footer ui-bar-c">
@@ -240,6 +242,25 @@
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
     <authenticateByFacebook mobile="y" />
   </div>
+</script>
+
+<script type="text/template" id="comment-item">
+<td width="1%">
+  <a href="{{=Globals.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+    <img src="{{= obj['submitter.thumb'] }}" />
+  </a>
+</td>
+<td class="cl">
+  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+    {{= submitter.displayName }}
+  </a><br/>
+  {{= (typeof description == 'undefined') ? title : description }}
+  <br/><br/>
+  <span class="commentListDate">{{= submitTime.displayName }}</span>
+  <br/>
+  <a data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=' + encodeURIComponent('sql?uri=' + encodeURIComponent(_uri)) }}">
+  </a>
+</td>
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
