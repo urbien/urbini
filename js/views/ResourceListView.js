@@ -26,16 +26,6 @@ define([
       return this;
     },
     refresh: function(model, modified) {
-      if (this.isModification && !this.ResourceMasonryItemView) {
-        var self = this;
-        require(['cache!views/ResourceMasonryItemView'], function(R) {
-          self.ResourceMasonryItemView = R;
-          self.refresh(model, modified);
-        });
-        
-        return this;
-      }
-      
       if (model && model != this.model)
         return this;
   
