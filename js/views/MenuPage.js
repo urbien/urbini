@@ -85,7 +85,7 @@ define([
       
       this.buildActionsMenu(frag);
       U.addToFrag(frag, self.groupHeaderTemplate({value: 'Profile'}));
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Take me to me', mobileUrl: 'profile'}));
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Take me to me', mobileUrl: 'view/profile'}));
 
       ul.append(frag);
       
@@ -123,7 +123,8 @@ define([
     buildActionsMenuForRes: function(frag) {
       var m = this.model;
       var user = G.currentUser;
-      if (!user.guest && m.edit && user.totalMojo > m.edit) {
+      var edit = m.get('edit');
+      if (!user.guest  &&  edit  &&  user.totalMojo > edit) {
         U.addToFrag(frag, this.menuItemTemplate({title: 'Add', mobileUrl: 'make/' + encodeURIComponent(m.constructor.shortName), id: 'add'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + encodeURIComponent(m.get('_uri')), id: 'edit'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Delete', mobileUrl: '', id: 'delete'}));

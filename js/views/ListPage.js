@@ -76,8 +76,9 @@ define([
       var viewMode = models[0].constructor['viewMode'];
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification || isMasonry ? '#nabs_grid' : 'ul';
+      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : 'ul';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
       if (isGeo) {
