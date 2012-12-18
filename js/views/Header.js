@@ -23,9 +23,15 @@ define([
           if (matches.length)
             this.pageTitle = matches[0].title;
         }
-        
-        this.pageTitle = this.pageTitle || (this.model instanceof Backbone.Collection && this.model.model.displayName) || this.model.get('davDisplayName');
+        if (!this.pageTitle) {
+          if (this.model instanceof Backbone.Collection) {
+            this.pageTitle = this.model.plural || this.model.displayName + 's';
+          }
+          else
+            this.pageTitle = this.model.get('davDisplayName');
+        }
       }
+      this.$el.prevObject.attr('data-title', this.pageTitle);
       
       return this;
     },
