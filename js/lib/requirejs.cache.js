@@ -130,7 +130,9 @@ define(function () {
           cached = cache.prependUrl(cached, url);
           try {
             if (isCSS)
-              cache.appendCSS(cached, onLoad);
+              cache.appendCSS(cached, function() {
+                onLoad();
+              });
             else
               onLoad.fromText(cached);
           } catch (err) {
@@ -202,54 +204,7 @@ define(function () {
       separator = separator || '.';
       var dIdx = path.indexOf(separator);
       return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-    }
-    
-//    injectScript: function(content, callback) {
-//      var script = document.createElement('script');
-//      script.type = "text/javascript";
-//      script.src = content;
-//      script.charset = "utf-8";
-//      script.async = true;
-////      var scriptContent = document.createTextNode(content);
-////      script.appendChild(scriptContent);
-////      (document.body || document.getElementsByTagName("head")[0]).appendChild(script);
-//
-////      script.async = true;
-////      callback();
-//      if (callback) {
-//        script.onreadystatechange = script.onload = function() {
-//          var state = script.readyState;
-//          if (!state || /loaded|complete/.test(state)) {
-//            callback();
-//          }
-//        };
-//      }
-//      
-//      document.getElementsByTagName("head")[0].appendChild(script);
-////      setTimeout(callback, 1000);
-//    }
-    
-//    addScript: function(src, text, callback) {
-//      var s = document.createElement('script');
-//      s.type = 'text/javascript';
-//      s.charset = 'utf-8';
-//      if (src)
-//        s.src = src;
-//      if (text)
-//        s.innerHTML = text;
-//      
-//      s.async = true;
-//      s.onreadystatechange = s.onload = function() {
-//        var state = s.readyState;
-//        if (!callback.done && (!state || /loaded|complete/.test(state))) {
-//          callback.done = true;
-//          callback();
-//        }
-//      };
-//
-//      // use body if available. more safe in IE
-//      (document.body || document.getElementsByTagName("head")[0]).appendChild(s);
-//    }
+    }    
   };
 
   return cache;
