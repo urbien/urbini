@@ -36,6 +36,8 @@ define([
     forceRefresh: false,
     errMsg: null,
     info: null,
+    viewsStack: [],
+    urlsStack: [],
     initialize: function () {
       this.firstPage = true;
       var self = this;
@@ -66,7 +68,8 @@ define([
         
         return;
       }
-      
+      if (this.backClicked) {
+      }
       var self = this;
       var params = oParams.split("?");
       var type = decodeURIComponent(params[0]);
@@ -199,7 +202,6 @@ define([
       
       return this;
     },
-
     menu: function() {
       if (!MenuPage) {
         var args = arguments;
@@ -231,6 +233,8 @@ define([
         })
         
         return;
+      }
+      if (this.backClicked) {
       }
 
       var params = U.getHashParams();
@@ -393,14 +397,40 @@ define([
         console.log("Not replacing view with itself");
         return;
       }
-      
-      view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-      if (!view.rendered) {
-        view.render();
+      if (this.backClicked) {
+        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+          this.currentView.clicked = false;
+        this.currentView = this.viewsStack.pop();
+        this.currentUrl = this.urlsStack.pop();
+        view = this.currentView;
       }
-  
-      var transition = "slide"; //$.mobile.defaultPageTransition;
-      this.currentView = view;
+      else {
+        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+          this.currentView.clicked = false;
+        // Check if browser's Back button was clicked
+        else if (!this.clicked  &&  this.viewsStack.length != 0) {
+          var url = this.urlsStack[this.viewsStack.length - 1];
+          if (url == window.location.href) {
+            this.currentView = this.viewsStack.pop();
+            this.currentUrl = this.urlsStack.pop();
+            view = this.currentView;
+            this.backClicked = true;
+          }
+        }
+        if (!this.backClicked) {
+          if (!view.rendered) {
+            view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+            view.render();
+          }
+          var transition = "slide"; //$.mobile.defaultPageTransition;
+          if (this.currentView) {
+            this.viewsStack.push(this.currentView);
+            this.urlsStack.push(this.currentUrl);
+          }
+          this.currentView = view;
+          this.currentUrl = window.location.href
+        }
+      }
       if (this.firstPage) {
         transition = 'none';
         this.firstPage = false;
@@ -416,6 +446,10 @@ define([
       // perform transition
       $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});
       Events.trigger('changePage', view);
+//      if (this.backClicked)
+//        $(window).resize();
+//      if (this.backClicked == true) 
+//        previousView.remove();
       return view;
     }
   });
