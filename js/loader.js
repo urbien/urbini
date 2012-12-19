@@ -494,15 +494,15 @@ require([
         //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
         //      $(event.currentTarget).remove();
         //         });
-          });
+        });
              
-          G.browser = $.browser;
+        G.browser = $.browser;
 
         require(['cache!app'].concat(css), function(App) {
           App.initialize();
           setTimeout(function() {
             G.loadBundle(baseBundle.post, function() {
-       console.log('loaded post bundle');
+              console.log('loaded post bundle');
             });
           }, 100);
         });
