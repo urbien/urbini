@@ -103,6 +103,13 @@ define([
 
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+
+      if (isMasonry) {
+        this.$el.on('pageshow',function(event, ui){
+          $('#nabs_grid').masonry();
+          ////          $(window).resize();
+        });
+      }
       
       this.rendered = true;
       return this;
