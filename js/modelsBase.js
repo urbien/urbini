@@ -38,6 +38,7 @@ define([
     };
     
     Backbone.sync = function(method, model, options) {
+//      debugger;
       var now = new Date().getTime();
       var isCol = model instanceof Backbone.Collection;
       var forceFetch = isCol && model.models.length < model.perPage;

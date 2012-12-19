@@ -13,7 +13,7 @@ define([
   'cache!views/CommentListItemView'
 ], function(G, $, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return Backbone.View.extend({
-    displayPerPage: 7, // for client-side paging
+    displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
     skipScrollEvent: false,

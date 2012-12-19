@@ -17,19 +17,27 @@
  */
 (function () {
 
-var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
-    hasLocalStorage = (function(){
-      var supported = false;
-      try{
-        supported = window && ("localStorage" in window) && ("getItem" in localStorage);
-      }catch(e){}
-      return supported;
-    })();
 
-define('cache', function () {
-  var trace = false;
-  var cache = {
 
+}());
+
+define('globals', ['config'], function(C) {
+  var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
+      hasLocalStorage = (function(){
+        var supported = false;
+        try{
+          supported = window && ("localStorage" in window) && ("getItem" in localStorage);
+        }catch(e){}
+        return supported;
+      })();
+  
+  var G = Globals = {
+    sqlUri: 'sql',
+    modules: {},
+    id: 0,
+    nextId: function() {
+      return this.id++;
+    },
     createXhr: function () {
       //Would love to dump the ActiveX crap in here. Need IE 6 to die first.
       var xhr, i, progId;
@@ -57,7 +65,7 @@ define('cache', function () {
     },
 
     get: function (url, callback, errback) {
-      var xhr = cache.createXhr();
+      var xhr = G.createXhr();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function (evt) {
         var status, err;
@@ -78,165 +86,6 @@ define('cache', function () {
       xhr.send(null);
     },
   
-    prependUrl: function(content, url) {
-      return content + '\r\n//@ sourceURL=' + url;
-    },
-    
-    prepForStorage: function(text) {
-      return JSON.stringify({modified: new Date().getTime(), text: text});
-    },
-        
-    load: function (name, req, onLoad, config) {
-      var cached,
-          url = cache.getCanonicalPath(req.toUrl(name));
-      
-      // TODO: unhack
-      if (name == 'jqueryMobile') {
-        req([name], function(content) {
-          if (trace) console.log('Loading jq: ' + url);
-          onLoad(content);
-          if (trace) console.log('End loading jq: ' + url);
-        });
-        
-        return;
-      }
-      
-      var isText = ext = name.match(/\.[a-zA-Z]+$/g);
-      if (ext)
-        ext = ext[0].slice(1).toLowerCase();
-        
-      var isCSS = ext == 'css';    
-      var now = new Date().getTime();
-      var mCache = config.cache;
-      var inMemory = mCache && mCache[url];
-      var loadedCached = false;
-      if (inMemory || hasLocalStorage) {
-        if (inMemory) {
-          cached = mCache[url];
-        }
-        else if (hasLocalStorage) { // in build context, this will be false, too
-          try {
-            cached = localStorage.getItem(url);
-            cached = cached && JSON.parse(cached);
-          } catch (err) {
-            console.log("failed to parse cached file: " + url);
-            cached = null;
-          }
-          
-          if (cached) {
-            var fileInfo = cache.leaf(config.expirationDates, url, '/');
-            var modified = fileInfo && fileInfo.modified;
-            if (modified && modified <= cached.modified)
-              cached = cached.text;
-            else {
-              localStorage.removeItem(url);
-              cached = null;
-            }
-          }
-        }
-
-        var loadedCached = cached;
-        if (loadedCached) {
-          cached = cache.prependUrl(cached, url);
-          try {
-            if (trace) console.log('Loading from cache: ' + url);
-            if (isCSS) {
-              cache.appendCSS(cached, function() {
-                if (trace) console.log('cache.get: ' + url);
-                onLoad();
-                if (trace) console.log('end cache.get: ' + url);
-              });
-            }
-            else
-              onLoad.fromText(cached);
-            if (trace) console.log('End loading from cache: ' + url);
-          } catch (err) {
-            console.log('failed to load ' + url + ' from cache: ' + err);
-            loadedCached = false;
-          }
-        } 
-      }
-      
-      if (loadedCached)
-        return;
-      
-      /// use 'get' instead of 'req' so we can store to localStorage
-      cache.get(url, function(text) {
-        if (isCSS) {
-          cache.appendCSS(text, function() {
-            cache.save(url, text, 100);
-            if (trace) console.log('cache.get: ' + url);
-            onLoad();
-            if (trace) console.log('end cache.get: ' + url);
-          });
-        } 
-        else {
-          cache.save(url, text, 100);
-          if (trace) console.log('cache.get: ' + url);
-          onLoad.fromText(text);
-          if (trace) console.log('end cache.get: ' + url);
-          url = url;
-        }
-      });
-    },
-    
-    save: function(url, text, delay) {
-      var put = function() {
-        localStorage.setItem(url, cache.prepForStorage(text));      
-      }
-      
-      if (delay)
-        setTimeout(put, delay);
-      else
-        put();
-    },
-    
-    getCanonicalPath: function(path, separator) {
-      separator = separator || '/';
-      var parts = path.split(separator);
-      var stack = [];
-      for (var i = 0; i < parts.length; i++) {
-        if (parts[i] == '..')
-          stack.pop();
-        else
-          stack.push(parts[i]);
-      }
-      
-      return stack.join(separator);
-    },
-    
-    appendCSS: function(text, callback) {
-      var style = document.createElement('style');
-      style.type = 'text/css';
-      style.innerHTML = text;
-      document.getElementsByTagName('head')[0].appendChild(style);
-      callback();
-    },
-    
-    leaf: function(obj, path, separator) {
-      path = cache.getCanonicalPath(path);
-      if (typeof obj == 'undefined' || !obj)
-        return null;
-      
-      separator = separator || '.';
-      var dIdx = path.indexOf(separator);
-      return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-    }    
-  };
-
-  return cache;
-});
-
-}());
-
-define('globals', ['config'], function(C) {
-  var G = Globals = {
-    sqlUri: 'sql',
-    modules: {},
-    id: 0,
-    nextId: function() {
-      return this.id++;
-    },
     trace: {
       error: {
         on: true,
@@ -259,6 +108,7 @@ define('globals', ['config'], function(C) {
         bg: '#555'
       }
     },
+    
     log: function(tag, type, msg) {
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
@@ -269,110 +119,107 @@ define('globals', ['config'], function(C) {
         if (trace.on)
           console.log((css ? '%c ' : '') + t + ' : ' + tag + (msg ? ' : ' + msg : ''), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000000') : '');        
       }
-    }
-  };  
-  
-  for (var name in C) {
-    G[name] = C[name];
-  }
-
-  G.serverName = (function() {     
-    var s = document.getElementsByTagName('base')[0].href;
-    return s.match("/$") ? s.slice(0, s.length - 1) : s;
-  })();
-  
-  G.apiUrl = G.serverName + '/api/v1/';
-
-  G.getCanonicalPath = function(path, separator) {
-    separator = separator || '/';
-    var parts = path.split(separator);
-    var stack = [];
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i] == '..')
-        stack.pop();
-      else
-        stack.push(parts[i]);
-    }
+    },
     
-    return stack.join(separator);
-  };
+    appendCSS: function(text, callback) {
+      var style = document.createElement('style');
+      style.type = 'text/css';
+      style.innerHTML = text;
+      document.getElementsByTagName('head')[0].appendChild(style);
+      callback();
+    },
 
-  G.leaf = function(obj, path, separator) {
-    path = G.getCanonicalPath(path);
-    if (typeof obj == 'undefined' || !obj)
-      return null;
-    
-    separator = separator || '.';
-    var dIdx = path.indexOf(separator);
-    return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-  };
-
-  G.pruneBundle = function(bundle) {
-    var modules = [];
-    for (var type in bundle) {
-      for (var i = 0; i < bundle[type].length; i++) {
-        var name = bundle[type][i];
-        var ext = name.match(/\.[a-zA-Z]+$/g);
-        if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
-          name += '.js';
-        
-        modules.push(G.getCanonicalPath(require.toUrl(name)));
-      }
-    }
-    
-    if (!localStorage || !localStorage.length)
-      return modules;
-    
-    var leaf = G.leaf;
-    var pruned = [];
-    for (var i = 0; i < modules.length; i++) {
-      var url = modules[i];
-      var saved = localStorage.getItem(url);
-      if (saved) {
-        try {
-          saved = JSON.parse(saved);
-        } catch (err) {
-          pruned.push(url);
-          localStorage.removeItem(url);
-          continue;
-        }
-        
-        var dateSaved = saved.modified;
-        var modified = leaf(G.files, url, '/').modified;
-        if (modified <= dateSaved) {
-          G.modules[url] = saved.text;
-          continue;
-        }
+    getCanonicalPath: function(path, separator) {
+      separator = separator || '/';
+      var parts = path.split(separator);
+      var stack = [];
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i] == '..')
+          stack.pop();
         else
-          localStorage.removeItem(url);
+          stack.push(parts[i]);
       }
       
-      pruned.push(url);
-    }
-  
-    return pruned;
-  }
-  
-  G.loadBundle = function(bundle, callback) {
-    var pruned = G.pruneBundle(bundle);
-    if (!pruned.length) {
-      console.log("for bundle " + JSON.stringify(bundle) + ", everything was cached");
-      if (callback) 
-        callback();
+      return stack.join(separator);
+    },
+
+    leaf: function(obj, path, separator) {
+      path = G.getCanonicalPath(path);
+      if (typeof obj == 'undefined' || !obj)
+        return null;
       
-      return;
+      separator = separator || '.';
+      var dIdx = path.indexOf(separator);
+      return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+    },
+
+    pruneBundle: function(bundle) {
+      var modules = [];
+      for (var type in bundle) {
+        for (var i = 0; i < bundle[type].length; i++) {
+          var name = bundle[type][i];
+          var ext = name.match(/\.[a-zA-Z]+$/g);
+          if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
+            name += '.js';
+          
+          modules.push(G.getCanonicalPath(require.toUrl(name)));
+        }
+      }
       
-    }
+      if (!localStorage || !localStorage.length)
+        return modules;
+      
+      var leaf = G.leaf;
+      var pruned = [];
+      for (var i = 0; i < modules.length; i++) {
+        var url = modules[i];
+        var saved = localStorage.getItem(url);
+        if (saved) {
+          try {
+            saved = JSON.parse(saved);
+          } catch (err) {
+            pruned.push(url);
+            localStorage.removeItem(url);
+            continue;
+          }
+          
+          var dateSaved = saved.modified;
+          var modified = leaf(G.files, url, '/').modified;
+          if (modified <= dateSaved) {
+            G.modules[url] = saved.text;
+            continue;
+          }
+          else
+            localStorage.removeItem(url);
+        }
+        
+        pruned.push(url);
+      }
     
-    $.ajax({
-      url: G.serverName + "/backboneFiles", 
-      type: 'POST',
-      data: {modules: pruned.join(',')},
-      complete: function(jqXHR, status) {
-        if (status == 'success') {
+      return pruned;
+    },
+    
+    loadBundle: function(bundle, callback) {
+      var pruned = G.pruneBundle(bundle);
+      if (!pruned.length) {
+        console.log("for bundle " + JSON.stringify(bundle) + ", everything was cached");
+        if (callback) 
+          callback();
+        
+        return;
+        
+      }
+      
+//      $.ajax({
+      G.get(G.serverName + "/backboneFiles?modules=" + pruned.join(','), 
+//        type: 'POST',
+//        data: {modules: pruned.join(',')},
+//        complete: 
+        function(text) {
+//          if (status == 'success') {
           var resp;
           try {
-            resp = JSON.parse(jqXHR.responseText);
+            resp = JSON.parse(text);
           } catch (err) {
           }
           
@@ -386,7 +233,7 @@ define('globals', ['config'], function(C) {
               }
             }
           }
-        }
+//          }
         
         if (localStorage) {
           setTimeout(function() {
@@ -398,9 +245,165 @@ define('globals', ['config'], function(C) {
         }
         
         if (callback) callback();
-      }
-    });
+      });
+    }
+
+  };  
+  
+  define('cache', ['globals'], function (G) {
+    var trace = false;
+    var cache = {
+      prependUrl: function(content, url) {
+        return content + '\r\n//@ sourceURL=' + url;
+      },
+      
+      prepForStorage: function(text) {
+        return JSON.stringify({modified: new Date().getTime(), text: text});
+      },
+          
+      load: function (name, req, onLoad, config) {
+        var cached,
+            url = G.getCanonicalPath(req.toUrl(name));
+        
+        // TODO: unhack
+        if (name == 'jqueryMobile') {
+          req([name], function(content) {
+            if (trace) console.log('Loading jq: ' + url);
+            onLoad(content);
+            if (trace) console.log('End loading jq: ' + url);
+          });
+          
+          return;
+        }
+        
+        var isText = ext = name.match(/\.[a-zA-Z]+$/g);
+        if (ext)
+          ext = ext[0].slice(1).toLowerCase();
+          
+        var isCSS = ext == 'css';    
+        var now = new Date().getTime();
+        var mCache = config.cache;
+        var inMemory = mCache && mCache[url];
+        var loadedCached = false;
+        if (inMemory || hasLocalStorage) {
+          if (inMemory) {
+            cached = mCache[url];
+          }
+          else if (hasLocalStorage) { // in build context, this will be false, too
+            try {
+              cached = localStorage.getItem(url);
+              cached = cached && JSON.parse(cached);
+            } catch (err) {
+              console.log("failed to parse cached file: " + url);
+              cached = null;
+            }
+            
+            if (cached) {
+              var fileInfo = G.leaf(config.expirationDates, url, '/');
+              var modified = fileInfo && fileInfo.modified;
+              if (modified && modified <= cached.modified)
+                cached = cached.text;
+              else {
+                localStorage.removeItem(url);
+                cached = null;
+              }
+            }
+          }
+
+          var loadedCached = cached;
+          if (loadedCached) {
+            cached = cache.prependUrl(cached, url);
+            try {
+              if (trace) console.log('Loading from cache: ' + url);
+              if (isCSS) {
+                G.appendCSS(cached, function() {
+                  if (trace) console.log('cache.get: ' + url);
+                  onLoad();
+                  if (trace) console.log('end cache.get: ' + url);
+                });
+              }
+              else
+                onLoad.fromText(cached);
+              if (trace) console.log('End loading from cache: ' + url);
+            } catch (err) {
+              console.log('failed to load ' + url + ' from cache: ' + err);
+              loadedCached = false;
+            }
+          } 
+        }
+        
+        if (loadedCached)
+          return;
+        
+        /// use 'get' instead of 'req' so we can store to localStorage
+        G.get(url, function(text) {
+          if (isCSS) {
+            G.appendCSS(text, function() {
+              cache.save(url, text, 100);
+              if (trace) console.log('cache.get: ' + url);
+              onLoad();
+              if (trace) console.log('end cache.get: ' + url);
+            });
+          } 
+          else {
+            cache.save(url, text, 100);
+            if (trace) console.log('cache.get: ' + url);
+            onLoad.fromText(text);
+            if (trace) console.log('end cache.get: ' + url);
+            url = url;
+          }
+        });
+      },
+      
+      save: function(url, text, delay) {
+        var put = function() {
+          localStorage.setItem(url, cache.prepForStorage(text));      
+        }
+        
+        if (delay)
+          setTimeout(put, delay);
+        else
+          put();
+      },
+      
+//      getCanonicalPath: function(path, separator) {
+//        separator = separator || '/';
+//        var parts = path.split(separator);
+//        var stack = [];
+//        for (var i = 0; i < parts.length; i++) {
+//          if (parts[i] == '..')
+//            stack.pop();
+//          else
+//            stack.push(parts[i]);
+//        }
+//        
+//        return stack.join(separator);
+//      },      
+//      leaf: function(obj, path, separator) {
+//        path = cache.getCanonicalPath(path);
+//        if (typeof obj == 'undefined' || !obj)
+//          return null;
+//        
+//        separator = separator || '.';
+//        var dIdx = path.indexOf(separator);
+//        return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+//      }    
+    };
+
+    return cache;
+  });
+
+  for (var name in C) {
+    G[name] = C[name];
   }
+
+  G.serverName = (function() {     
+    var s = document.getElementsByTagName('base')[0].href;
+    return s.match("/$") ? s.slice(0, s.length - 1) : s;
+  })();
+  
+  G.apiUrl = G.serverName + '/api/v1/';
+
 
   require.config({
     paths: {
@@ -430,30 +433,11 @@ define('globals', ['config'], function(C) {
 
 require([
   'globals',
-  'cache!jquery'
-], function(G, $) {
-  $(function() {
-    $(document).bind("mobileinit", function () {
-      console.log('mobileinit');
-      $.mobile.ajaxEnabled = false;
-      $.mobile.linkBindingEnabled = false;
-      $.mobile.hashListeningEnabled = false;
-      $.mobile.pushStateEnabled = false;
-      $.support.touchOverflow = true;
-      $.mobile.touchOverflowEnabled = true;
-      $.mobile.loadingMessageTextVisible = true;
-        
-        // Remove page from DOM when it's being replaced
-  //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
-  //      $(event.currentTarget).remove();
-  //         });
-    });
-       
-    G.browser = $.browser;
+], function(G) {
     var baseBundle = {
       pre: {
       // Javascript
-        js: [/*'lib/jquery',*/ 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+        js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
          'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
         // CSS
@@ -463,7 +447,7 @@ require([
         // Javascript
         js: ['views/ResourceMasonryItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
         // CSS
-        css: ['../styles/leaflet/leaflet.css', $.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
+        css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }
     };
     
@@ -494,13 +478,34 @@ require([
         css[i] = 'cache!' + css[i];
       }
       
-      require(['cache!app'].concat(css), function(App) {
-        App.initialize();
-        setTimeout(function() {
-          G.loadBundle(baseBundle.post, function() {
-     console.log('loaded post bundle');
+      require(['cache!jquery', 'cache!jqm-config'], function($) {
+        $(function() {
+          $(document).bind("mobileinit", function () {
+            console.log('mobileinit');
+            $.mobile.ajaxEnabled = false;
+            $.mobile.linkBindingEnabled = false;
+            $.mobile.hashListeningEnabled = false;
+            $.mobile.pushStateEnabled = false;
+            $.support.touchOverflow = true;
+            $.mobile.touchOverflowEnabled = true;
+            $.mobile.loadingMessageTextVisible = true;
+              
+              // Remove page from DOM when it's being replaced
+        //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
+        //      $(event.currentTarget).remove();
+        //         });
           });
-        }, 100);
+             
+          G.browser = $.browser;
+
+        require(['cache!app'].concat(css), function(App) {
+          App.initialize();
+          setTimeout(function() {
+            G.loadBundle(baseBundle.post, function() {
+       console.log('loaded post bundle');
+            });
+          }, 100);
+        });
       });
     });
   });
