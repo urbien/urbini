@@ -38,7 +38,11 @@ define([
       return this;
     },
     tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+//    click: Events.defaultClickHandler,  
+    click: function() {
+      this.clicked = true;
+      return Events.defaultClickHandler();
+    },
     render:function (eventName) {
       console.log("render viewPage");
       this.$el.html(this.template(this.model.toJSON()));
