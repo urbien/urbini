@@ -3,14 +3,18 @@
  *
  * Available via the MIT or new BSD license.
  *
- * Copyright (c) 2011 Jens Arps
+ * Redesigned from cache plugin by Jens Arps by adding preloading, support for css, timestamps and more.
  *
  * The xhr code is taken from the RequireJS text plugin:
  *
- * @license RequireJS text 0.26.0 Copyright (c) 2010-2011, The Dojo Foundation All Rights Reserved.
- * see: http://github.com/jrburke/requirejs for details
  */
-
+/**
+ * Three sources of JS file loading
+ * 1. Listed in loader in baseBundle JS files are first loaded into memory by loader.js.
+ *    When define is called JS files listed in define and prepanded with 'cache!' get moved from memory to cache
+ * 2. Loading from cache: listed in define call JS files that prepanded with 'cache!' will be first attempted to load from cache
+ * 3. From server 
+ */
 (function () {
 
 var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -23,7 +27,7 @@ var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
     })();
 
 define(function () {
-
+  var trace = false;
   var cache = {
 
     createXhr: function () {
@@ -84,14 +88,14 @@ define(function () {
         
     load: function (name, req, onLoad, config) {
       var cached,
-          url = cache.getCanonicalPath(req.toUrl(name));
+      url = cache.getCanonicalPath(req.toUrl(name));
       
       // TODO: unhack
       if (name == 'jqueryMobile') {
         req([name], function(content) {
-//        cache.get(url, function(content) {
+          if (trace) console.log('Loading jq: ' + url);
           onLoad(content);
-//          onLoad.fromText(content);
+          if (trace) console.log('End loading jq: ' + url);
         });
         
         return;
@@ -113,14 +117,22 @@ define(function () {
         else if (hasLocalStorage) { // in build context, this will be false, too
           cached = localStorage.getItem(url);
           if (cached) {
-            cached = JSON.parse(cached);
-            var fileInfo = cache.leaf(config.expirationDates, url, '/');
-            var modified = fileInfo && fileInfo.modified;
-            if (modified && modified <= cached.modified)
-              cached = cached.text;
-            else {
-              localStorage.removeItem(url);
+            try {
+              cached = JSON.parse(cached);
+            } catch (err) {
+              console.log("failed to parse cached file: " + url);
               cached = null;
+            }
+            
+            if (cached) {
+              var fileInfo = cache.leaf(config.expirationDates, url, '/');
+              var modified = fileInfo && fileInfo.modified;
+              if (modified && modified <= cached.modified)
+                cached = cached.text;
+              else {
+                localStorage.removeItem(url);
+                cached = null;
+              }
             }
           }
         }
@@ -129,12 +141,17 @@ define(function () {
         if (loadedCached) {
           cached = cache.prependUrl(cached, url);
           try {
-            if (isCSS)
+            if (trace) console.log('Loading from cache: ' + url);
+            if (isCSS) {
               cache.appendCSS(cached, function() {
+                if (trace) console.log('cache.get: ' + url);
                 onLoad();
+                if (trace) console.log('end cache.get: ' + url);
               });
+            }
             else
               onLoad.fromText(cached);
+            if (trace) console.log('End loading from cache: ' + url);
           } catch (err) {
             console.log('failed to load ' + url + ' from cache: ' + err);
             loadedCached = false;
@@ -150,12 +167,16 @@ define(function () {
         if (isCSS) {
           cache.appendCSS(text, function() {
             cache.save(url, text, 100);
+            if (trace) console.log('cache.get: ' + url);
             onLoad();
+            if (trace) console.log('end cache.get: ' + url);
           });
         } 
         else {
           cache.save(url, text, 100);
+          if (trace) console.log('cache.get: ' + url);
           onLoad.fromText(text);
+          if (trace) console.log('end cache.get: ' + url);
           url = url;
         }
       });
@@ -189,11 +210,9 @@ define(function () {
     appendCSS: function(text, callback) {
       var style = document.createElement('style');
       style.type = 'text/css';
-      if (typeof callback != 'undefined')
-        style.onload = callback;
-      
       style.innerHTML = text;
       document.getElementsByTagName('head')[0].appendChild(style);
+      callback();
     },
     
     leaf: function(obj, path, separator) {

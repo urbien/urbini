@@ -1,0 +1,12 @@
+CACHE MANIFEST
+# 2012-12-18:3:02am
+
+# Explicitly cached 'master entries'.
+CACHE:
+js/lib/require.js
+js/loader.js
+
+# Resources that require the user to be online.
+NETWORK:
+*
+
