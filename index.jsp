@@ -153,7 +153,7 @@
 </script>
 
 <script type="text/template" id="menuItemTemplate">
-  <li><a id="{{= typeof id === 'undefined' ? Globals.nextId() : id}}" href="{{= Globals.pageRoot + '#' + mobileUrl }}"><h3>{{= title }}</h3></a></li>
+  <li><a id="{{= typeof id === 'undefined' ? Globals.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Globals.pageRoot + '#' + mobileUrl : pageUrl }}"><h3>{{= title }}</h3></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate">

@@ -6,8 +6,9 @@ define([
   'cache!backbone' 
 ], function(G, $, __jqm__, _, Backbone) {
   var Events = _.extend({}, Backbone.Events);
+  Events.TAG = 'Events.js';
   Events.defaultTapHandler = function(e) {
-  //  console.log("got tap event");
+    G.log(this.TAG || Events.TAG, 'events', 'tap');
     var event = e.originalEvent;
     var el = event.target;
     var $el = $(el);
@@ -20,7 +21,7 @@ define([
   };
 
   Events.defaultClickHandler = function(e) {
-  //  console.log("got click event");
+    G.log(this.TAG || Events.TAG, 'events', 'tap');
     var event = e.originalEvent;
     var el = event.target;
     var $el = $(el);

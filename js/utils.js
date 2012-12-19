@@ -22,7 +22,8 @@ define([
     return (this.match(str+"$")==str);
   };
   
-  var U = {    
+  var U = {
+    TAG: 'Utils',
     isPropVisible: function(res, prop) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
         return false;
@@ -549,7 +550,8 @@ define([
 //      return model instanceof Backbone.Model ? 'view/' + encodeURIComponent(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
     
-    apiParamMap: {'-asc': '$asc', '$order': '$order', '-limit': '$limit'},
+    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
+    paramsToSkip: ['hideFltr'],
     getMobileUrl: function(url) {
       var orgParams = U.getQueryParams(url);
       if (url.startsWith('v.html'))
@@ -557,27 +559,55 @@ define([
       
       // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
       var type = orgParams.type;
+      delete orgParams.type;
+      var ignoredParams = '';
       var params = {};
       _.forEach(_.keys(orgParams), function(p) {
-        if (p.startsWith('-')) {
-          var apiParam = U.apiParamMap[p];
-          if (typeof apiParam !== 'undefined') {
-            var val = orgParams[p];
-            if (apiParam == '$limit')
-              val = Math.max(parseInt(val, 10), 50);
-            
-            params[apiParam] = val;
-          }
-        }
-        else if (p.startsWith('.')) {
+        if (_.contains(U.paramsToSkip, p))
+          return;
+        
+        var apiParam = U.apiParamMap[p];
+        if (typeof apiParam !== 'undefined') {
+          
           var val = orgParams[p];
-          if (typeof val === 'undefined' || val === '')
+          if (apiParam == '$limit')
+            val = Math.max(parseInt(val, 10), 50);
+          
+          params[apiParam] = val;
+          return;
+        }
+        
+        if (p.startsWith('-')) {
+          ignoredParams += p + ',';
+          return;
+        }
+        
+        var val = orgParams[p];
+        if (typeof val === 'undefined' || val === '')
+          return;
+        
+        var matches = p.match(/^\.?([a-zA-Z_]+)(_select|_To|_From)$/);
+        if (matches && matches.length > 1) {
+          var pType = matches.length >=3 ? matches[2] : null;
+          if (pType) {
+            if (pType == '_From')
+              val = '>=' + val; // to make the query string look like "start=>=today", with <=today encoded of course            
+            else if (pType == '_To')
+              val = '<=' + val; // to make the query string look like "end=<=today", with <=today encoded of course
+          }
+          
+          params[matches[1]] = val;
+        }
+        else {
+          if (!p.match(/^[a-zA-Z]/) || p.endsWith('_verified')) // starts with a letter
             return;
           
-          // TODO: maybe check if it's a param for that model
-          params[p.slice(1)] = val;
-        }        
+          params[p] = val;
+        }
       });
+      
+      if (ignoredParams)
+        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
       
       return type.slice(type.lastIndexOf('/') + 1) + (_.size(params) ? '?' + $.param(params) : '');
     }

@@ -15,6 +15,7 @@ define([
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
       this.cpTemplateNoValue = _.template(Templates.get('cpTemplateNoValue'));
       this.model.on('change', this.refresh, this);
+      this.TAG = 'ControlPanel';
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
@@ -36,7 +37,7 @@ define([
     tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
-      console.log("render CP");
+      G.log(this.TAG, "render");
       var type = this.model.type;
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;

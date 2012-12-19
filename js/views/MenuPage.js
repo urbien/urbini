@@ -14,12 +14,13 @@ define([
 ], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes');
+      _.bindAll(this, 'render', 'tap', 'click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.router = G.app.router || Backbone.history;
+      this.TAG = 'MenuPage';
       Events.on("mapReady", this.showMapButton);
     },
     tabs: {},
@@ -28,7 +29,18 @@ define([
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
-      'click #subscribe': 'subscribe'
+      'click #subscribe': 'subscribe',
+      'swipeleft': 'swipeleft',
+      'swiperight': 'swiperight'
+    },
+    swipeleft: function() {
+//      console.log("swipeleft event");
+      var m = this.model;
+      var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
+      this.router.navigate(newHash, {trigger: true, replace: true});
+    },
+    swiperight: function() {
+//      console.log("swiperight event");
     },
     edit: function(e) {
       e.preventDefault();
@@ -56,7 +68,7 @@ define([
     },
     tap: Events.defaultTapHandler,
     render:function (eventName) {
-      console.log("render menuPage");
+      G.log(this.TAG, "render");
       var self = this;
       this.$el.html(this.template(this.model.toJSON()));      
       this.buttons = {
@@ -84,21 +96,19 @@ define([
       }
       
       this.buildActionsMenu(frag);
-      U.addToFrag(frag, self.groupHeaderTemplate({value: 'Profile'}));
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Take me to me', mobileUrl: 'view/profile'}));
-
+      if (!G.currentUser.guest) {
+        U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: 'j_security_check?j_signout=true&amp;returnUri=' + G.pageRoot}));
+      }
+      
       ul.append(frag);
       
       this.rendered = true;
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
-      var m = this.model;
-      this.$el.live('swipeleft', function(event) {
-        var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
-        self.router.navigate(newHash, {trigger: true, replace: true});
-      });
-      
+      var m = this.model;      
       return this;
     },
     

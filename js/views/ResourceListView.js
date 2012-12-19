@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery',
   'cache!underscore',
   'cache!backbone',
@@ -10,7 +11,7 @@ define([
   'cache!views/ResourceMasonryItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
-], function($, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+], function(G, $, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return Backbone.View.extend({
     displayPerPage: 7, // for client-side paging
     page: null,
@@ -24,6 +25,7 @@ define([
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.pageChanged);
       this.$el.on('create', this.alignNewBricks);
+      this.TAG = 'ResourceListView';
       return this;
     },
     refresh: function(model, modified) {
@@ -145,7 +147,7 @@ define([
       this.changedViews.push(view);
     },
     render: function(e) {
-      console.log("render listView");
+      G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);
       this.refresh();

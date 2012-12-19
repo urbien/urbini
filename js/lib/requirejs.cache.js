@@ -87,8 +87,9 @@ define(function () {
     },
         
     load: function (name, req, onLoad, config) {
+      console.log("in original requirejs.cache");
       var cached,
-      url = cache.getCanonicalPath(req.toUrl(name));
+          url = cache.getCanonicalPath(req.toUrl(name));
       
       // TODO: unhack
       if (name == 'jqueryMobile') {
@@ -115,24 +116,22 @@ define(function () {
           cached = mCache[url];
         }
         else if (hasLocalStorage) { // in build context, this will be false, too
-          cached = localStorage.getItem(url);
+          try {
+            cached = localStorage.getItem(url);
+            cached = cached && JSON.parse(cached);
+          } catch (err) {
+            console.log("failed to parse cached file: " + url);
+            cached = null;
+          }
+          
           if (cached) {
-            try {
-              cached = JSON.parse(cached);
-            } catch (err) {
-              console.log("failed to parse cached file: " + url);
+            var fileInfo = cache.leaf(config.expirationDates, url, '/');
+            var modified = fileInfo && fileInfo.modified;
+            if (modified && modified <= cached.modified)
+              cached = cached.text;
+            else {
+              localStorage.removeItem(url);
               cached = null;
-            }
-            
-            if (cached) {
-              var fileInfo = cache.leaf(config.expirationDates, url, '/');
-              var modified = fileInfo && fileInfo.modified;
-              if (modified && modified <= cached.modified)
-                cached = cached.text;
-              else {
-                localStorage.removeItem(url);
-                cached = null;
-              }
             }
           }
         }
