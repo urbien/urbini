@@ -15,11 +15,6 @@
  * 2. Loading from cache: listed in define call JS files that prepanded with 'cache!' will be first attempted to load from cache
  * 3. From server 
  */
-(function () {
-
-
-
-}());
 
 define('globals', ['config'], function(C) {
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -128,6 +123,13 @@ define('globals', ['config'], function(C) {
       document.getElementsByTagName('head')[0].appendChild(style);
       callback();
     },
+    
+    appendHTML: function(html, element) {
+      var div = document.createElement('div');
+      div.id = G.nextId();
+      div.innerHTML = html;
+      (element || document.getElementsByTagName('body')[0]).appendChild(div);
+    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -159,7 +161,7 @@ define('globals', ['config'], function(C) {
         for (var i = 0; i < bundle[type].length; i++) {
           var name = bundle[type][i];
           var ext = name.match(/\.[a-zA-Z]+$/g);
-          if (!ext || ['.css', '.html', '.js'].indexOf(ext[0]) == -1)
+          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
           
           modules.push(G.getCanonicalPath(require.toUrl(name)));
@@ -169,7 +171,6 @@ define('globals', ['config'], function(C) {
       if (!localStorage || !localStorage.length)
         return modules;
       
-      var leaf = G.leaf;
       var pruned = [];
       for (var i = 0; i < modules.length; i++) {
         var url = modules[i];
@@ -184,7 +185,7 @@ define('globals', ['config'], function(C) {
           }
           
           var dateSaved = saved.modified;
-          var modified = leaf(G.files, url, '/').modified;
+          var modified = G.leaf(G.files, url, '/').modified;
           if (modified <= dateSaved) {
             G.modules[url] = saved.text;
             continue;
@@ -280,7 +281,7 @@ define('globals', ['config'], function(C) {
         if (ext)
           ext = ext[0].slice(1).toLowerCase();
           
-        var isCSS = ext == 'css';    
+        var isCSS = ext == 'css';
         var now = new Date().getTime();
         var mCache = config.cache;
         var inMemory = mCache && mCache[url];
@@ -312,18 +313,30 @@ define('globals', ['config'], function(C) {
 
           var loadedCached = cached;
           if (loadedCached) {
-            cached = cache.prependUrl(cached, url);
+            if (ext == 'css' || ext =='js')
+              cached = cache.prependUrl(cached, url);
+            
             try {
               if (trace) console.log('Loading from cache: ' + url);
-              if (isCSS) {
-                G.appendCSS(cached, function() {
+              switch (ext) {
+                case 'css':
+                  G.appendCSS(cached, function() {
+                    if (trace) console.log('cache.get: ' + url);
+                    onLoad();
+                    if (trace) console.log('end cache.get: ' + url);
+                  });
+                  break;
+                case 'html':
+                case 'jsp':
                   if (trace) console.log('cache.get: ' + url);
-                  onLoad();
+//                  G.appendHTML(cached);
+                  onLoad(cached);
                   if (trace) console.log('end cache.get: ' + url);
-                });
+                  break;
+                default:
+                  onLoad.fromText(cached);
+                  break;
               }
-              else
-                onLoad.fromText(cached);
               if (trace) console.log('End loading from cache: ' + url);
             } catch (err) {
               console.log('failed to load ' + url + ' from cache: ' + err);
@@ -337,21 +350,29 @@ define('globals', ['config'], function(C) {
         
         /// use 'get' instead of 'req' so we can store to localStorage
         G.get(url, function(text) {
-          if (isCSS) {
-            G.appendCSS(text, function() {
+          switch(ext) {
+            case 'css':
+              G.appendCSS(text, function() {
+                cache.save(url, text, 100);
+                if (trace) console.log('cache.get: ' + url);
+                onLoad();
+                if (trace) console.log('end cache.get: ' + url);
+              });
+              break;
+            case 'html':
+            case 'jsp':
+              if (trace) console.log('cache.get: ' + url);
+//              G.appendHTML(text);
+              onLoad(text);
+              if (trace) console.log('end cache.get: ' + url);
+              break;
+            default:
               cache.save(url, text, 100);
               if (trace) console.log('cache.get: ' + url);
-              onLoad();
+              onLoad.fromText(text);
               if (trace) console.log('end cache.get: ' + url);
-            });
+              break;
           } 
-          else {
-            cache.save(url, text, 100);
-            if (trace) console.log('cache.get: ' + url);
-            onLoad.fromText(text);
-            if (trace) console.log('end cache.get: ' + url);
-            url = url;
-          }
         });
       },
       
@@ -441,11 +462,12 @@ require([
          'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
         // CSS
-        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css']
+        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
+        html: ['../templates.jsp']
       },
       post: {
         // Javascript
-        js: ['views/ResourceMasonryItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
+        js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
         // CSS
         css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
       }
