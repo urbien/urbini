@@ -553,7 +553,7 @@ define([
       G.currentUser._reset = true;
       MBI.db && MBI.db.close();
       MBI.open();
-      G.log(MBI.TAG, ['error', 'db'], "db error: " + e);
+      G.log(MBI.TAG, ['error', 'db'], "db error: " + JSON.stringify(e));
     };
     
     this.onabort = function(e) {
