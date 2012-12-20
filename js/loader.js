@@ -101,6 +101,11 @@ define('globals', ['config'], function(C) {
         on: true,
         color: '#baFF00',
         bg: '#555'
+      },
+      cache: {
+        on: true,
+        color: '#CCCCCC',
+        bg: '#555'
       }
     },
     
@@ -252,7 +257,8 @@ define('globals', ['config'], function(C) {
   };  
   
   define('cache', ['globals'], function (G) {
-    var trace = false;
+//    var masterConfig = (module.config && module.config()) || {};
+    var trace = G.trace.cache.on;
     var cache = {
       prependUrl: function(content, url) {
         return content + '\r\n//@ sourceURL=' + url;
@@ -263,6 +269,11 @@ define('globals', ['config'], function(C) {
       },
           
       load: function (name, req, onLoad, config) {
+        if (config.isBuild) {
+          onLoad();
+          return;
+        }
+            
         var cached,
             url = G.getCanonicalPath(req.toUrl(name));
         
@@ -313,8 +324,7 @@ define('globals', ['config'], function(C) {
 
           var loadedCached = cached;
           if (loadedCached) {
-            if (ext == 'css' || ext =='js')
-              cached = cache.prependUrl(cached, url);
+            cached = cache.prependUrl(cached, url);
             
             try {
               if (trace) console.log('Loading from cache: ' + url);
