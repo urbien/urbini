@@ -85,6 +85,8 @@ define([
               continue;
             if (p == 'davDisplayName')
               continue;
+            if (prop['displayNameElm'])
+              continue;
             if (!U.isPropVisible(json, prop))
               continue;
   
@@ -119,6 +121,8 @@ define([
         if (p.charAt(0) == '_')
           continue;
         if (p == 'davDisplayName')
+          continue;
+        if (prop['displayNameElm'])
           continue;
         if (!U.isPropVisible(json, prop))
           continue;
