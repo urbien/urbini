@@ -423,12 +423,12 @@ define([
             view.render();
           }
           var transition = "slide"; //$.mobile.defaultPageTransition;
-          if (this.currentView) {
+          if (this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
             this.viewsStack.push(this.currentView);
             this.urlsStack.push(this.currentUrl);
           }
           this.currentView = view;
-          this.currentUrl = window.location.href
+          this.currentUrl = window.location.href;
         }
       }
       if (this.firstPage) {
