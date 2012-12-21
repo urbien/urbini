@@ -47,13 +47,14 @@ define([
                   (this.model.isA("Shape") && this.model.get('shapeJson'));
       
       this.buttons = {
-          left: [BackButton, LoginButtons],
-          right: isGeo ? [AroundMeButton] : null,
+          left: [BackButton],
+          right: isGeo ? [AroundMeButton] : null, // no need MapItButton?
+          log: [LoginButtons]
       };
       
       this.header = new Header({
         model: this.model, 
-        pageTitle: this.model.get('davDisplayName'), 
+        // pageTitle: this.model.get('davDisplayName'), 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();

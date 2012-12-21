@@ -169,3 +169,16 @@ html { height: 100%; }
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
 }
 
+/* big symbols in the top navbar */
+#headerUl .ui-icon {
+    background: none;
+    box-shadow: none;
+    color: #444444;
+    font-size: 32px;
+    margin-left: -14px;
+}
+
+/* navbar no text - icons only 
+#headerUl .ui-btn { padding: 10px 0px; }
+#headerUl .ui-btn-inner { font-size: 0px; } 
+*/

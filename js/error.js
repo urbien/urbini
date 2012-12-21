@@ -10,8 +10,10 @@ define([
         if (options.sync) {
           switch (err.code) {
           case 401: 
-            console.log('redirecting to user-login');
-            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
+            debugger;
+             console.log('redirecting to user-login');
+             // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
+             Backbone.history.navigate("login/socialnet");
             return;
           case 404:
             console.log('no results');

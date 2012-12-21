@@ -8,8 +8,9 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
-    </ul>
+  <!--
+    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
+  -->
     <div id="nabs_grid" class="masonry">
     </div>
   </div>
@@ -175,17 +176,19 @@
 </script>
 
 <!--script type="text/template" id="viewTemplate">
-	<div>
-		{{ for (var name in props) { }} 
-			{{ if (props.hasOwnProperty(name)) { }}
-				<div class="propRow">{{ name }}: {{ props[name] }}</div>
-			{{ } }}
-		{{ } }}
-	</div>
+  <div>
+    {{ for (var name in props) { }} 
+      {{ if (props.hasOwnProperty(name)) { }}
+        <div class="propRow">{{ name }}: {{ props[name] }}</div>
+      {{ } }}
+    {{ } }}
+  </div>
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
-  <a id="mapIt" target="#" data-role="button" data-icon="map-marker" class="icon next">Map It</a>
+  <li id="mapIt">
+    <a target="#" data-icon="globe">Map It</a>
+  </li>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -193,24 +196,43 @@
 </script>
 
 <script type="text/template" id="backButtonTemplate">
-  <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
+  <li id="back">
+    <a target="#" data-icon="chevron-left" class="back">Back</a>
+  </li>
+</script>
+
+<script type="text/template" id="loginButtonTemplate">
+  <li id="login">   
+    <a target="#" data-icon="signin">Login</a>
+  </li>
+</script>
+
+<script type="text/template" id="loginPopupTemplate">
+  <div  id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <authenticateByFacebook mobile="y" />
+  </div>
 </script>
 
 <script type="text/template" id="logoutButtonTemplate">
-  <a id="logout" data-role="button" data-icon="signout" class="icon next" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>
+  <li id="logout">
+    <a target="#" data-icon="signout" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>
+  </li>
 </script>
 
 <script type="text/template" id="aroundMeButtonTemplate">
-  <a id="aroundMe" target="#" data-role="button" class="icon next">Around Me</a>
+  <li id="aroundMe">
+    <a target="#" data-icon="map-marker">Around Me</a>
+  </li>
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner">
-    <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
-    <div id="errMsg"></div>
-    <h1 id="pageTitle">{{= this.pageTitle }}</h1>
-    <div data-role="controlgroup" data-type="horizontal" id="headerRight" class="ui-btn-right"></div>
+  <div data-role="header" class="ui-header ui-bar-c">
+  <div id="errMsg"></div>
+  <div data-role="navbar" data-iconpos="top">
+    <ul id="headerUl"></ul>
   </div>
+</div>
 </script>
 
 
@@ -233,14 +255,6 @@
 <label for="{{= shortName }}">{{= name }}</label>
 <span><input id="{{= shortName }}" value="{{= value }}" /></span>
 </script-->
-
-<script type="text/template" id="loginTemplate">
-  <a id="login-popup_btn" data-role="button" data-icon="signin" data-rel="popup">login</a>
-  <div data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content" id="login-popup">
-    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
-    <authenticateByFacebook mobile="y" />
-  </div>
-</script>
 
 <script type="text/template" id="masonry-mod-list-item">
   <div class="anab">

@@ -7,27 +7,32 @@ define([
   'cache!templates'
 ], function($, __jqm__, _, Backbone, U, Templates) {
   return Backbone.View.extend({
-    template: 'loginTemplate',
+    template: 'loginButtonTemplate',
+    popupTemplate: 'loginPopupTemplate',
     
     events: {
-      'click #login-popup_btn': 'showPopup'
+      'click #login': 'showPopup'
     },
     
     initialize: function(options) {
       _.bindAll(this, 'render');
-      this.template = _.template(Templates.get(this.template));    
+      this.template = _.template(Templates.get(this.template)); 
+      this.popupTemplate = _.template(Templates.get(this.popupTemplate)); 
       return this;
     },
 
     render: function(options) {
       var method = options && options.append ? 'append' : 'html';
-      var socials = this.template();
-      if (socials.indexOf('data-socialnet') == -1) {
+      var loginBtn = this.template();
+      var popup = this.popupTemplate();
+      if (popup.indexOf('data-socialnet') == -1) {
         this.$el[method](_.template(Templates.get('logoutButtonTemplate'))());
         return this;
       }
+
+      this.$el[method](loginBtn);
+      this.$el.prevObject.append(popup);
       
-      this.$el[method](socials);
       var btns = this.$('a[data-socialNet]');
       _.each(btns, function(a) {
         if (a.href) {
@@ -42,13 +47,18 @@ define([
           }
         }
       });
-      
       return this;
     },
     
     showPopup: function() {
-      $('#login-popup').popup("open");
-    },
+      var $popup = $('.ui-page-active #login_popup');
+      if ($popup.length == 0) {
+        $(document.body).append(this.popupTemplate());
+        $popup = $('#login_popup');
+      }
+      $popup.popup().popup("open");
+      return false; // prevents login button highlighting
+    }
 
   });
 });

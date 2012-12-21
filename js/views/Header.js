@@ -39,9 +39,14 @@ define([
     render: function() {
       this.$el.html(this.template());
       var l = this.buttons.left;
-      l && this.makeWidgets(l, {domEl: 'a', id: '#headerLeft'}); //, css: 'ui-btn-left'});
+      l && this.makeWidgets(l, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-left'});
+     
       var r = this.buttons.right;
-      r && this.makeWidgets(r, {domEl: 'a', id: '#headerRight'}); //, css: 'ui-btn-right'});
+      r && this.makeWidgets(r, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
+      
+      var log = this.buttons.log;
+      log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
+      
       return this;
     }
   });
