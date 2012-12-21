@@ -60,8 +60,8 @@ define([
       this.$el.html(this.template());
       var l = this.buttons.left;
       l && this.makeWidgets(l, {domEl: 'a', id: '#headerLeft'}); //, css: 'ui-btn-left'});
-      var r = this.buttons.right;
-      r && this.makeWidgets(r, {domEl: 'a', id: '#headerRight'}); //, css: 'ui-btn-right'});
+//      var r = this.buttons.right;
+//      r && this.makeWidgets(r, {domEl: 'a', id: '#headerRight'}); //, css: 'ui-btn-right'});
       return this;
     }
   });
