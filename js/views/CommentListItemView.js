@@ -9,7 +9,6 @@ define([
 ], function(G, $, __jqm__, _, Backbone, Events, Templates) {
   return Backbone.View.extend({
     tagName: 'tr',
-    valign: 'top',
     className: 'commentList',
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
