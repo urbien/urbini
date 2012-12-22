@@ -9,11 +9,12 @@ define([
   'cache!utils'
 ], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
   return Backbone.View.extend({
+    tagName: "tr",
     initialize: function(options) {
       _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
-      this.cpTemplateNoValue = _.template(Templates.get('cpTemplateNoValue'));
+      this.cpTemplateNoAdd = _.template(Templates.get('cpTemplateNoAdd'));
       this.model.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
   //    Globals.Events.on('refresh', this.refresh);
@@ -80,20 +81,37 @@ define([
   
             displayedProps[idx++] = p;
 //            json[p] = U.makeProp(prop, json[p]);
-            if (!groupNameDisplayed) {
-              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-              groupNameDisplayed = true;
-            }
             var n = meta[p].displayName;
-            if (!_.has(json, p)) 
-              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+            var isPropEditable = U.isPropEditable(json, prop);
+            
+            var doShow = false;
+            var cnt;
+            if (!_.has(json, p)) { 
+              cnt = count ? count : 0;
+              
+              if (isPropEditable)
+                doShow = true;
+//              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+            }
             else {
               var v = json[p].value;
-              var cnt = json[p].count;
+              cnt = json[p].count;
               if (typeof cnt == 'undefined'  ||  !cnt)
-                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-              else
+                cnt = 0;
+              if (cnt != 0 ||  isPropEditable)
+                doShow = true;
+//                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+//              else
+            }
+            if (doShow) {
+              if (!groupNameDisplayed) {
+                U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+                groupNameDisplayed = true;
+              }
+              if (isPropEditable)
                 U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+              else
+                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
             }
           }
         }
@@ -128,21 +146,30 @@ define([
         if (!U.isPropVisible(json, prop))
           continue;
   
+        var isPropEditable = U.isPropEditable(json, prop);
+        var doShow;
 //        json[p] = U.makeProp(prop, json[p]);
         var n = meta[p].displayName;
-        if (!_.has(json, p)) { 
+        var cnt;
+        if (!_.has(json, p)) {
           if (count == -1)
-            U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-          else
-            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: count, _uri: this.model.get('_uri')}));
+            cnt = 0;
+          if (cnt  || isPropEditable)
+            doShow = true;
         }
         else {
           var v = json[p].value;
-          var cnt = json[p].count;
+          cnt = json[p].count;
           if (typeof cnt == 'undefined'  ||  !cnt)
-            U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-          else 
+            cnt = 0;
+          if (!isPropEditable  ||  cnt)
+            doShow = true;
+        }
+        if (doShow) {
+          if (isPropEditable)
             U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+          else
+            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
         }
       }
       

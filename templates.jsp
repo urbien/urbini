@@ -12,7 +12,7 @@
     </ul>
     <div id="nabs_grid" class="masonry">
     </div>
-    <table width="100%" id="comments">
+    <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
     </table>
   </div>
   
@@ -28,10 +28,11 @@
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content">
     <div id="resourceImage"></div><br/>
-    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
     <br/>
-    <ul data-role="listview" data-theme="c" id="cpView" class="action-list" data-inset="true">
+    <br/>
+    <ul data-role="listview" data-theme="c" id="cpView" class="ui-listview">
     </ul>
   </div>
 
@@ -161,11 +162,15 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
 </script>
 
-<script type="text/template" id="cpTemplateNoValue">
-   <li>{{= name }}</li>
+<script type="text/template" id="cpTemplateNoAddNoValue">
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="blank"></a></li>
+</script>
+
+<script type="text/template" id="cpTemplateNoAdd">
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -187,7 +192,7 @@
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
-  <a id="mapIt" target="#" data-role="button" data-icon="map-marker" class="icon next">Map It</a>
+  <a id="mapIt" target="#" data-role="button" data-icon="map-marker" class="icon next">Map</a>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -207,11 +212,14 @@
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner">
+  <div id="header" data-role="header" class="ui-header ui-bar-d" role="banner">
     <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
     <div id="errMsg"></div>
-    <h1 id="pageTitle">{{= this.pageTitle }}</h1>
-    <div data-role="controlgroup" data-type="horizontal" id="headerRight" class="ui-btn-right"></div>
+    <h1 id="pageTitle"><!-- {{= this.pageTitle }} --></h1>
+    <!--div data-role="controlgroup" data-type="horizontal" id="headerRight" class="ui-btn-right"></div-->
+  </div>
+  <div id="name" align="center" class="ui-bar-c" role="banner">
+    <h3 style="margin: 8px;" id="pageTitle">{{= this.pageTitle }}</h3>
   </div>
 </script>
 
@@ -245,12 +253,12 @@
 </script>
 
 <script type="text/template" id="comment-item">
-<td width="1%">
+<td width="1%" valign="top">
   <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
-<td class="cl">
+<td class="cl" valign="top">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     {{= submitter.displayName }}
   </a><br/>
@@ -340,4 +348,3 @@
 </script>
 
 </div>
-
