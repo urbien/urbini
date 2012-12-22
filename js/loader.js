@@ -277,15 +277,24 @@ require(['globals'], function(G) {
       }
     },
     
-    log: function(tag, type, msg) {
+    log: function(tag, type) {
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
         var t = types[i];
         var trace = G.trace[t] || {on: true};
+        if (!trace.on)
+          continue;
+        
         var b = G.browser;
         var css = b && ((b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24);
-        if (trace.on)
-          console.log((css ? '%c ' : '') + t + ' : ' + tag + (msg ? ' : ' + msg : ''), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000000') : '');        
+        var msg = Array.prototype.slice.call(arguments, 2);
+        var msgStr = '';
+        for (var i = 0; i < msg.length; i++) {
+          msgStr += (typeof msg[i] == 'string' ? msg[i] : JSON.stringify(msg[i]));
+          if (i < msg.length - 1) msgStr += ' ';
+        }
+
+        console.log((css ? '%c ' : '') + t + ' : ' + tag + ' : ' + msgStr, css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
       }
     },
     
@@ -358,13 +367,17 @@ require(['globals'], function(G) {
           }
           
           var dateSaved = saved.modified;
-          var modified = G.leaf(G.files, url, '/').modified;
-          if (modified <= dateSaved) {
+          var info = G.leaf(G.files, url, '/');
+          if (info && info.modified <= dateSaved) {
             G.modules[url] = saved.text;
             continue;
           }
-          else
+          else {
+            if (!info)
+              G.log('init', 'error', 'no info found for file: ' + url);
+              
             localStorage.removeItem(url);
+          }
         }
         
         pruned.push(url);
@@ -376,7 +389,7 @@ require(['globals'], function(G) {
     loadBundle: function(bundle, callback) {
       var pruned = G.pruneBundle(bundle);
       if (!pruned.length) {
-        console.log("for bundle " + JSON.stringify(bundle) + ", everything was cached");
+        G.log('init', 'cache', 'bundle was cached', bundle);
         if (callback) 
           callback();
         
