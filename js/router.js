@@ -46,6 +46,8 @@ define([
       });
     },
     navigate: function(fragment, options) {
+//      this.navigating = true;
+//      this.previousHash = window.location.hash;
       this.forceRefresh = options.trigger;
       if (options) {
         this.errMsg = options.errMsg;
@@ -56,8 +58,30 @@ define([
       this.forceRefresh = false;
       return ret;
     },
-    
+    route: function() {
+//      this.previousHash = window.location.hash;
+      return Backbone.Router.prototype.route.apply(this, arguments);
+    },
+//    navigateDone: function() {
+//      this.navigating = false;
+//      this.backClicked = false;
+//    },
+//    wasBackClicked: function() {
+//      return !this.navigating && !this.firstPage;
+//    },
+//    route: function() {
+//      var async = Backbone.Router.prototype.route.apply(this, arguments);
+//      // Our route functions return true if they performed an asynchronous page change
+//      if (async === true)
+//        this.navigateDone();
+//      
+//      return this;
+//    },
+    /**
+     * return true if page change will be asynchronous, false or undefined otherwise
+     */
     list: function(oParams, backlink) {
+//      this.backClicked = this.wasBackClicked();
       if (!ListPage) {
         var args = arguments;
         var self = this;
@@ -66,7 +90,7 @@ define([
           self.list.apply(self, args);
         })
         
-        return;
+        return true;
       }
       if (this.backClicked) {
       }
@@ -158,35 +182,32 @@ define([
         
       }
       
-      
       var t = backlink ? bltype : type;  
-      var c = this.Collections[t];
+      var key = query ? t + '?' + query : t;
+      var c = this.Collections[key];
       if (c && !c.loaded)
         c = null;
       
-      var cView = this.CollectionViews[t];
-      if (!query && c && cView) {
+      var cView = this.CollectionViews[key];
+      if (c && cView) {
         this.currentModel = c;
         this.changePage(cView, {page: page});
         if (!backlink)
-          this.Collections[t].fetch({page: page});
+          this.Collections[key].fetch({page: page});
         else
-          this.Collections[t].fetch({page: page, _backlink: backlink, _rType: type, _rUri: oParams});
+          this.Collections[key].fetch({page: page, _backlink: backlink, _rType: type, _rUri: oParams});
         return this;
-      }
-      
+      }      
       
       var model = MB.shortNameToModel[t];
       if (!model)
-        return this;
+        return;
       
       var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _backlink: backlink, _rType: type, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
-      if (!query) {
-        this.Collections[t] = list;
-        this.CollectionViews[t] = listView;
-      }
+      this.Collections[key] = list;
+      this.CollectionViews[key] = listView;
       
       list.fetch({
         add: true,
@@ -200,9 +221,13 @@ define([
         }
       });
       
-      return this;
+      return true;
     },
+    /**
+     * return true if page change will be asynchronous, false or undefined otherwise
+     */
     menu: function() {
+//      this.backClicked = this.wasBackClicked();
       if (!MenuPage) {
         var args = arguments;
         var self = this;
@@ -211,7 +236,7 @@ define([
           self.menu.apply(self, args);
         })
         
-        return;
+        return true;
       }
       
       var c = this.currentModel;
@@ -223,7 +248,11 @@ define([
       this.changePage(menuPage);
     },
     
+    /**
+     * return true if page change will be asynchronous, false or undefined otherwise
+     */
     view: function (path) {
+//      this.backClicked = this.wasBackClicked();
       if (!ViewPage) {
         var args = arguments;
         var self = this;
@@ -232,7 +261,7 @@ define([
           self.view.apply(self, args);
         })
         
-        return;
+        return true;
       }
       if (this.backClicked) {
       }
@@ -271,11 +300,10 @@ define([
             {success: function() {
               self.view.apply(self, [path]);
             },
-            error: Error.getDefaultErrorHandler(),
             sync: true}
           );
           
-          return;
+          return true;
         }
       }
       
@@ -300,7 +328,7 @@ define([
           success: function() {MB.fetchModelsForLinkedResources(res)}
         });
         
-        return this;
+        return;
       }
       
       if (this.Collections[type]) {
@@ -309,13 +337,13 @@ define([
           this.currentModel = res;
           var v = views[uri] = new viewPageCl({model: res});
           this.changePage(v);
-          return this;
+          return;
         }
       }
   
       var typeCl = MB.shortNameToModel[type];
       if (!typeCl)
-        return this;
+        return;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl({model: res});
@@ -327,7 +355,7 @@ define([
       }
       
       res.fetch({sync:true, success: success});
-      return this;
+      return true;
     },
     
 //    loadExtras: function(params) {
@@ -365,29 +393,24 @@ define([
          success: function() {
            self.list.apply(self, [oParams, backlink]);
          },
-         error: Error.getDefaultErrorHandler(),
          sync: true
       });
       
       return null;
     },
-    showAlert: function(options) {
-      var msg = options.msg;
-      $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
-      if (options.fade)
-        setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));    
-    },
     checkErr: function() {
       var q = U.getQueryParams();
       var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
       if (msg)
-        this.showAlert({msg: msg, fade: true});
+        Error.errDialog({msg: msg});
       
       this.errMsg = null, this.info = null;
     },
     changePage: function(view) {
       try {
-        return this.changePage1(view);
+        this.changePage1(view);
+//        this.navigateDone();
+        return this;
       } finally {
         this.checkErr();
       }
@@ -397,14 +420,20 @@ define([
         console.log("Not replacing view with itself");
         return;
       }
+      
+      var lostHistory = false;
       if (this.backClicked) {
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
         this.currentView = this.viewsStack.pop();
         this.currentUrl = this.urlsStack.pop();
-        view = this.currentView;
+        if (this.currentView)
+          view = this.currentView;
+        else
+          lostHistory = true;
       }
-      else {
+      
+      if (!this.backClicked || lostHistory) {
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
         // Check if browser's Back button was clicked
@@ -431,6 +460,7 @@ define([
           this.currentUrl = window.location.href;
         }
       }
+      
       if (this.firstPage) {
         transition = 'none';
         this.firstPage = false;

@@ -252,6 +252,13 @@
   </div>
 </script>
 
+<script type="text/template" id="loginPopupTemplate">
+  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <span id="socialContainer"></span>
+  </div>
+</script>
+
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
   <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">

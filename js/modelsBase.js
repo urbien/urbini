@@ -34,31 +34,54 @@ define([
     Backbone.defaultSync = Backbone.sync;
     this.defaultSync = function(method, model, options) {
       model.lastFetchOrigin = 'server';
-      Backbone.defaultSync(method, model, options);
+      if (options.sync)
+        options.timeout = 5000;
+      
+      var err = options.error;
+      var req = Backbone.defaultSync(method, model, options);
+//      req.fail(function(jqXHR, status) {
+//        G.log(MBI.TAG, 'sync', jqXHR, status);
+//        return (err || Error.getDefaultErrorHandler()).apply(this, [model, {type: status}]);
+//      });
+      
+      return req;
     };
     
+    /**
+     * is 3 minutes old
+     */
+    isStale = function(ts, now) {
+      if (!ts) return true;
+      now = now || new Date().getTime();
+      return now - ts > 180000;
+    }
+    
     Backbone.sync = function(method, model, options) {
-//      debugger;
       var now = new Date().getTime();
       var isCol = model instanceof Backbone.Collection;
-      var forceFetch = isCol && model.models.length < model.perPage;
+      var lastFetchedOn = isCol ? model._lastFetchedOn : (model.collection && model.collection._lastFetchedOn) || model.get('_lastFetchedOn');
+      var isFilter = isCol && _.filter(_.keys(model.queryMap), function(p) {return p.charAt(0)!='$'}).length; // if there are model-specific filter parameters to the API
+      var shortPage = isCol && model._lastFetchedOn && !isFilter && model.models.length < model.perPage;
       var stale = false;
-      if (!forceFetch) {
-        var stalest = now;
+      
+      // if it's a short page of a basic RL (no filter), we should fetch just in case there are new resources
+      if (isCol && !shortPage && lastFetchedOn) {
+        var stalest;
         if (options && options.startAfter) {
           var q = U.getQueryParams(options.url);
-          var offset = q['$offset'];
+          var offset = q['$offset'] || 0;
           for (var i = offset; i < model.models.length; i++) {
             var m = model.models[i];
             if (m._lastFetchedOn)
-              stalest = Math.min(stalest, m._lastFetchedOn);
+              stalest = stalest ? Math.min(stalest, m.get('_lastFetchedOn')) : m._lastFetchedOn;
           }
         }
         
-        var lastFetchedOn = !isCol ? model._lastFetchedOn : model._lastFetchedOn || (model.collection && model.collection._lastFetchedOn);
-        lastFetchedOn = lastFetchedOn ? Math.min(stalest, lastFetchedOn) : stalest;
-        if (!lastFetchedOn || now - lastFetchedOn > 60000)
+        lastFetchedOn = lastFetchedOn && stalest ? Math.min(stalest, lastFetchedOn) : lastFetchedOn || stalest;
+        if (!lastFetchedOn || isStale(lastFetchedOn, now))
           stale = true;
+        else if (!options.sync)
+          return;
   
         options.headers = options.headers || {};
         if (stale && lastFetchedOn) {
@@ -79,19 +102,22 @@ define([
           
           var tsProp = model.model.timestamp; // model.model is the collection's model 
           var toAdd = [];
+          var skipped = [];
           for (var i = 0; i < results.length; i++) {
             var r = results[i];
             var longUri = U.getLongUri(r._uri, {type: model.type, shortNameToModel: MBI.shortNameToModel});
             var saved = model.get(longUri);
-            saved = saved && saved.get(tsProp);
-            if (typeof saved === "undefined")
-              saved = 0;
+            var ts = saved && saved.get(tsProp);
+            if (typeof ts === "undefined")
+              ts = 0;
             var newLastModified = r[tsProp];
             if (typeof newLastModified === "undefined") 
               newR = 0;
-            if (!tsProp || !newLastModified || newLastModified > saved) {
+            if (!tsProp || !newLastModified || newLastModified > ts) {
               toAdd.push(r); //new model.model(r));
             }
+            
+            _.extend(r, {'_lastFetchedOn': now});
           }
           
           var modified = [];
@@ -107,10 +133,11 @@ define([
                 model.add(new model.model(toAdd[i]));
             }
             
-            setTimeout(function() {          
-              MBI.addItems(toAdd, model.type);
-            }, 100);
           }
+          
+          setTimeout(function() {          
+            MBI.addItems(results, model.type);
+          }, 100);
         }
       }
 
@@ -125,15 +152,16 @@ define([
             return;
           }
           
-          model._lastFetchedOn = new Date().getTime();
           var isCol = model instanceof Backbone.Collection;      
           data = isCol ? resp.data : resp.data[0];
           var modified;
           if (isCol) {
+            model._lastFetchedOn = now;
             var offset = resp.metadata && resp.metadata.offset || 0;
             modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
           }
           else {
+            model.set({'_lastFetchedOn': now}, {silent: true});            
             modified = model.get('_uri');
           }
           
@@ -142,12 +170,12 @@ define([
           Events.trigger('refresh', model, modified);
         }
       });
-        
+      
       var runDefault = function() {
         return MBI.defaultSync(method, model, saveOptions);
-      }
+      };
       
-      if (method !== 'read' || stale || options.noDB)
+      if (method !== 'read' || options.noDB)
         return runDefault();
 
       var key, now, timestamp, refresh;
@@ -167,10 +195,11 @@ define([
               success(resp, status, xhr);
             }
             
-            if (stale)
+            if (!isFilter && isCol && (resp.length < model.perPage || _.any(resp, function(m) {
+              return isStale(m._lastFetchedOn, now);
+            }))) {
               return runDefault();
-            else
-              return;
+            }
           }
           
           model.lastFetchOrigin = 'db';
@@ -185,14 +214,23 @@ define([
       
       // only override sync if it is a fetch('read') request
       key = this.getKey && this.getKey();
-      var dbReqOptions = {key: key, success: success, error: error};
+      var dbReqOptions = {key: key, success: success, error: error, syncOptions: options};
       if (model instanceof Backbone.Collection) {
         dbReqOptions.startAfter = options.startAfter,
         dbReqOptions.perPage = model.perPage;
       }
       
-      if (!key || (model instanceof Backbone.Collection && key.indexOf("?") != -1) || !MBI.getDataAsync(dbReqOptions)) // only fetch from db on regular resource list or propfind, with no filter
-        runDefault();
+      // only fetch from db on regular resource list or propfind, with no filter
+      var dbHasGoodies;
+      if (!key || isFilter || !(dbHasGoodies = MBI.getDataAsync(dbReqOptions))) {
+        if (G.online)
+          runDefault();
+        else if (!dbHasGoodies) {
+//          runDefault();
+          options.sync && options.error && options.error(model, {type: 'offline'}, options);
+        }
+      }
+      
 //      else
 //        options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
     };
@@ -239,41 +277,62 @@ define([
         return;
       }
       
+      if (!G.online) {
+        if (error)
+          error(null, {type: 'offline'}, options);
+        
+        return;
+      }
+      
       var modelsCsv = JSON.stringify(models);
       $.ajax({
         url: G.serverName + "/backboneModel", 
         type: 'POST',
         data: {"models": modelsCsv},
+        timeout: 5000,
         complete: function(jqXHR, status) {
           if (status != 'success') {
             G.log(MBI.TAG, 'error', "couldn't fetch models");
 //              alert("Oops! Couldn't initialize awesomeness!");
-            if (error)
-              error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
-            
-            return;
+//            if (error)
+//              error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
+            var errArgs = [null, {type: status}, options];
+            return error.apply(this, errArgs);
           }
             
+          var data;
           try {
-            eval(jqXHR.responseText);
+//            eval(jqXHR.responseText);
+            data = JSON.parse(jqXHR.responseText);
           } catch (err) {
-            G.log(MBI.TAG, 'error', "couldn't eval response from server. Requested models: " + modelsCsv);
-            if (error) {
-              try {
-                var jErr = JSON.parse(jqXHR.responseText);
-                error(null, jErr.error, options);
-                return;
-              } catch (err1) {
-                G.log(MBI.TAG, 'error', "couldn't parse error response: " + jqXHR.responseText);
-              }
-              
-              error(null, null, options);
-            }
-            
+            G.log(MBI.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
+            error(null, null, options);            
+            return;
+          }
+          
+          if (data.error) {
+            error(null, data.error, options);
             return;
           }
           
 //            _.extend(packages, p);
+          var mz = data.models;
+          var pkg = data.packages;
+          if (pkg)
+            U.deepExtend(MBI.packages, pkg);
+          
+          for (var i = 0; i < mz.length; i++) {
+            var p = mz[i].path;
+            var lastDot = p.lastIndexOf('.');
+            var path = p.slice(0, lastDot);
+            var name = p.slice(lastDot + 1);
+            var sup = mz[i].sPath;
+            
+            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
+            var m = U.leaf(MBI.packages, path)[name] = U.leaf(MBI.packages, sup).extend(mz[i].p, mz[i].s);
+            MBI.models.push(m);
+          }
+          
           MBI.initModels();
           if (success)
             success();
@@ -306,7 +365,7 @@ define([
         setTimeout(function() {MBI.addItem(res)}, 100);
     };
     
-//    var rInit = Resource.initialize;
+//    varRinde rInit = Resource.initialize;
 //    Resource.initialize = function() {
 //      rInit.apply(this, arguments);
 //      this.on('change', MBI.updateDB);
@@ -402,40 +461,6 @@ define([
       
       var unloaded = [];
       var snm = MBI.shortNameToModel;
-    //  function load(m, superName) {
-    //    var pkgPath = U.getPackagePath(MBI.packages, m.type);
-    //    var sPath = U.getPackagePath(MBI.packages, m.subClassOf);
-    //    var pkg = U.addPackage(MBI.packages, pkgPath);
-    //    var model = pkg[m.shortName] = eval((sPath ? sPath + '.' : '') + superName).extend({}, m);
-    //    MBI.initModel(model);
-    //    return true;
-    //  }
-    //
-    //  function getSuperName(m) {
-    //    var sUri = m.subClassOf;
-    //    var sIdx = sUri.lastIndexOf('/');
-    //    return sIdx == -1 ? sUri : sUri.slice(sIdx + 1);    
-    //  }
-    //  
-    //  function tryLoad(m) {
-    //    var superName = getSuperName(m);
-    //    if (snm[superName]) {
-    //      load(m, superName);
-    //      return true;
-    //    }
-    //    
-    //    var supers = _.filter(filtered, function(model) {return model.type == m.subClassOf});
-    //    if (supers.length && tryLoad(supers[0]))
-    //      return load(m, superName);
-    //    else
-    //      return false;
-    //  }
-    //  
-    //  for (var i = 0; i < filtered.length; i++) {
-    //    var m = filtered[i];
-    //    if (!tryLoad(m))
-    //      unloaded.push(m.type);
-    //  }
       
       _.each(filtered, function(m) {
         var sUri = m.subClassOf;
@@ -503,13 +528,6 @@ define([
       }
       
       var toLoad = [];
-    //  if (options && options.all) {
-    //    for (var key in localStorage) {
-    //      if (key.startsWith('model:') && !MBI.shortNameToModel[key.slice(key.lastIndexOf('/') + 1)])
-    //        toLoad.push(JSON.parse(localStorage.getItem(key)));
-    //    }
-    //  }
-    //  else {
       var baseDate = r.lastModified || G.lastModified;
       _.each(r.models, function(model) {
         var uri = model.type || model;
@@ -535,7 +553,6 @@ define([
         (exists ? MBI.changedModels : MBI.newModels).push(uri);
         return;
       });
-    //  }
       
       if (toLoad.length) {
         var unloaded = MBI.initStoredModels(toLoad);
@@ -603,11 +620,6 @@ define([
           alert("A new version of this page is ready. Please reload!");
         };    
     
-    //    var userChanged = false;
-    //    if (!db.objectStoreNames.contains('sysinfo')) {
-    //      userChanged = true;
-    //    }
-        
         modelsChanged = !!MBI.changedModels.length || !!MBI.newModels.length;
         MBI.VERSION = G.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == MBI.VERSION) {
@@ -677,55 +689,6 @@ define([
         MBI.onerror(e);
       };  
     };
-    
-    //MBI.loadModels = function(success, error) {
-    //  var models = [];
-    //  var db = MBI.db;
-    //  var mStore = MBI.modelStoreName;
-    //  var transaction = db.transaction([mStore], "readonly");
-    //  var store = transaction.objectStore(mStore);
-    //  var cursorRequest = store.openCursor();
-    //  cursorRequest.onsuccess = function(e) {
-    //    var result = e.target.result;
-    //    if (result) {
-    //      models.push(result.value);
-    //      result.continue();
-    //      return;
-    //    }
-    //    else
-    //      success && success();
-    //    
-    ////    if (true) {
-    ////      console.log("got models from db");
-    ////      success && success();
-    ////      return;
-    ////    }
-    ////    
-    ////    for (var i = 0; i < models.length; i++) {
-    ////      var m = models[i];
-    ////      var pkgPath = U.getPackagePath(m.type);
-    ////      U.addPackage(MBI.packages, pkgPath);
-    ////      var superCl = 
-    ////      MBI.shortNameToModel[m.shortName] = Backbone.Model.extend(
-    ////          {
-    ////            initialize: function() { 
-    ////              _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
-    ////              eval('packages.' + pkgPath + '.__super__.initialize.apply(this, arguments)');
-    //////              packages.hudsonfog.voc.commerce.trees.TreeSpecies.__super__.initialize.apply(this, arguments); 
-    ////            } 
-    ////          },
-    ////          m
-    ////      );
-    ////    }
-    //    
-    //  };
-    //
-    //  cursorRequest.onerror = function (e) {
-    //    error && error(e);
-    //    
-    //    MBI.onerror(e);
-    //  }
-    //}
     
     this.updateStores = function() {
       var db = MBI.db;
@@ -844,7 +807,7 @@ define([
       request.onsuccess = function(e) {
         if (options.success) {
           if (e.target.result && e.target.result.value)
-            options.sync = false;
+            options.syncOptions.sync = false;
             
           options.success(e.target.result)
         }
@@ -888,7 +851,7 @@ define([
         var result = e.target.result;
         if (result) {
           results.push(result.value);
-          if (results.length < total) {
+          if (!total || results.length < total) {
             result.continue();
             return;
           }
@@ -896,7 +859,7 @@ define([
         
         if (success) {
           if (results.length)
-            options.sync = false;
+            options.syncOptions.sync = false;
 
           success(results);
         }
@@ -975,7 +938,7 @@ define([
   
   MB.getInstance = function() {
     if (MBI === null)
-      MBI = new MB();
+      Lablz.MBI = MBI = new MB();
     
     return MBI;
   };

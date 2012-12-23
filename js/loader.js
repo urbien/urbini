@@ -18,6 +18,17 @@
 
 require(['globals'], function(G) {
   window.Lablz = G;
+  G.online = !!navigator.onLine;
+  window.addEventListener("offline", function(e) {
+    // we just lost our connection and entered offline mode, disable eternal link
+    G.online = false;
+  }, false);
+
+  window.addEventListener("online", function(e) {
+    // just came back online, enable links
+    G.online = true;
+  }, false);
+  
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
       hasLocalStorage = (function(){
         var supported = false;
@@ -68,6 +79,7 @@ require(['globals'], function(G) {
         var inMemory = mCache && mCache[url];
         var loadedCached = false;
         if (inMemory || hasLocalStorage) {
+          var loadSource = inMemory ? 'memory' : 'LS';
           if (inMemory) {
             cached = mCache[url];
           }
@@ -97,7 +109,7 @@ require(['globals'], function(G) {
             cached = cache.prependUrl(cached, url);
             
             try {
-              G.log(cache.TAG, 'cache', 'Loading from cache: ' + url);
+              G.log(cache.TAG, 'cache', 'Loading from', loadSource, url);
               switch (ext) {
                 case 'css':
                   G.appendCSS(cached, function() {
@@ -117,9 +129,9 @@ require(['globals'], function(G) {
                   onLoad.fromText(cached);
                   break;
               }
-              G.log(cache.TAG, 'cache', 'End loading from cache: ' + url);
+              G.log(cache.TAG, 'cache', 'End loading from', loadSource, url);
             } catch (err) {
-              G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from cache: ' + err);
+              G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
               loadedCached = false;
             }
           } 
@@ -397,13 +409,8 @@ require(['globals'], function(G) {
         
       }
       
-//      $.ajax({
       G.get(G.serverName + "/backboneFiles?modules=" + pruned.join(','), 
-//        type: 'POST',
-//        data: {modules: pruned.join(',')},
-//        complete: 
         function(text) {
-//          if (status == 'success') {
           var resp;
           try {
             resp = JSON.parse(text);
@@ -420,19 +427,18 @@ require(['globals'], function(G) {
               }
             }
           }
-//          }
         
-        if (localStorage) {
-          setTimeout(function() {
-            var now = new Date().getTime();
-            for (var url in G.modules) {
-              localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
-            }
-          }, 100);
-        }
-        
-        if (callback) callback();
-      });
+          if (localStorage) {
+            setTimeout(function() {
+              var now = new Date().getTime();
+              for (var url in G.modules) {
+                localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
+              }
+            }, 100);
+          }
+          
+          if (callback) callback();
+        });
     }
   }; 
   
@@ -440,10 +446,6 @@ require(['globals'], function(G) {
     G[prop] = moreG[prop];
   }
   
-//  for (var name in C) {
-//    G[name] = C[name];
-//  }
-
   G.serverName = (function() {     
     var s = document.getElementsByTagName('base')[0].href;
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
@@ -520,27 +522,8 @@ require(['globals'], function(G) {
        css[i] = 'cache!' + css[i];
      }
      
-     require(['cache!jquery', 'cache!jqm-config'], function($) {
-       $(function() {
-         $(document).bind("mobileinit", function () {
-           console.log('mobileinit');
-           $.mobile.ajaxEnabled = false;
-           $.mobile.linkBindingEnabled = false;
-           $.mobile.hashListeningEnabled = false;
-           $.mobile.pushStateEnabled = false;
-           $.support.touchOverflow = true;
-           $.mobile.touchOverflowEnabled = true;
-           $.mobile.loadingMessageTextVisible = true;
-             
-             // Remove page from DOM when it's being replaced
-       //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
-       //      $(event.currentTarget).remove();
-       //         });
-       });
-            
-       G.browser = $.browser;
-
-       require(['cache!app'].concat(css), function(App) {
+     require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqm, App) {
+         G.browser = $.browser;
          App.initialize();
          setTimeout(function() {
            G.loadBundle(baseBundle.post, function() {
@@ -548,7 +531,5 @@ require(['globals'], function(G) {
            });
          }, 100);
        });
-     });
-   });
   });
 });

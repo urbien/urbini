@@ -85,14 +85,19 @@ define([
       options = options || {};
 //      options.data = options.data || {};
 //      options.data.lastFetchedOn = this.lastFetchedOn;
-      options.error = Error.getDefaultErrorHandler(options.error);
+      options.error = options.error || Error.getDefaultErrorHandler();
       var success = options.success;
       options.success = function() {
         success && success.apply(self, arguments);
 //        self.fetchModelsForLinkedResources.call(self.constructor);
       };
       
-      return Backbone.Model.prototype.fetch.call(this, options);
+//      var jqXHR = Backbone.Model.prototype.fetch.apply(this, arguments);
+//      if (options.sync)
+//        jqXHR.timeout = 5000;
+//      
+//      return jqXHR;
+      return Backbone.Model.prototype.fetch.apply(this, arguments);
     }  
   },
   {
