@@ -53,7 +53,12 @@ define([
     isStale = function(ts, now) {
       if (!ts) return true;
       now = now || new Date().getTime();
-      return now - ts > 180000;
+      var age = now - ts;
+      var stale = age > 180000;
+      if (stale)
+        G.log(MBI.TAG, 'info', 'data is stale at: ' + age + ' millis old');
+      
+      return stale;
     }
     
     Backbone.sync = function(method, model, options) {
