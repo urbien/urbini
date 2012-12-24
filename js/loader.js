@@ -283,7 +283,7 @@ require(['globals'], function(G) {
         bg: '#555'
       },
       cache: {
-        on: true,
+        on: false,
         color: '#CCCCCC',
         bg: '#555'
       }
