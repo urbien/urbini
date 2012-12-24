@@ -185,7 +185,7 @@ define([
       var t = backlink ? bltype : type;  
       var key = query ? t + '?' + query : t;
       var c = this.Collections[key];
-      if (c && !c.loaded)
+      if (c && !c._lastFetchedOn)
         c = null;
       
       var cView = this.CollectionViews[key];
