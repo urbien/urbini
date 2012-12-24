@@ -21,7 +21,8 @@ define([
   };
   
   MB.prototype = {};
-  MB.prototype.initialize = function() {    
+  MB.prototype.initialize = function() {
+    this.TAG = 'Storage';
     this.packages = {'Resource': Resource};
     this.changedModels = new U.UArray();
     this.newModels = new U.UArray();
@@ -37,6 +38,7 @@ define([
     };
     
     Backbone.sync = function(method, model, options) {
+//      debugger;
       var now = new Date().getTime();
       var isCol = model instanceof Backbone.Collection;
       var forceFetch = isCol && model.models.length < model.perPage;
@@ -118,7 +120,7 @@ define([
             return;
             
           if (resp.error) {
-            console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
+            G.log(MBI.TAG, 'error', 'Error in sync: ' + resp.error.code + ', ' + resp.error.details);
             defErr && defErr(resp.error, status, xhr);
             return;
           }
@@ -161,7 +163,7 @@ define([
           var success = options.success;
           options.success = function(resp, status, xhr) {
             if (success) {
-              console.log("got resources from db");
+              G.log(MBI.TAG, 'db', "got resources from db");
               success(resp, status, xhr);
             }
             
@@ -177,7 +179,7 @@ define([
       }
       
       var error = function(e) {
-        if (e) console.log("Error fetching data from db: " + e);
+        if (e) G.log(MBI.TAG, 'error', "Error fetching data from db: " + e);
         runDefault();
       }
       
@@ -244,7 +246,7 @@ define([
         data: {"models": modelsCsv},
         complete: function(jqXHR, status) {
           if (status != 'success') {
-            console.log("couldn't fetch models");
+            G.log(MBI.TAG, 'error', "couldn't fetch models");
 //              alert("Oops! Couldn't initialize awesomeness!");
             if (error)
               error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
@@ -255,14 +257,14 @@ define([
           try {
             eval(jqXHR.responseText);
           } catch (err) {
-            console.log("couldn't eval response from server. Requested models: " + modelsCsv);
+            G.log(MBI.TAG, 'error', "couldn't eval response from server. Requested models: " + modelsCsv);
             if (error) {
               try {
                 var jErr = JSON.parse(jqXHR.responseText);
                 error(null, jErr.error, options);
                 return;
               } catch (err1) {
-                console.log("couldn't parse error response: " + jqXHR.responseText);
+                G.log(MBI.TAG, 'error', "couldn't parse error response: " + jqXHR.responseText);
               }
               
               error(null, null, options);
@@ -492,7 +494,7 @@ define([
       if (!localStorage) {
         if (r) {
           _.forEach(r.models, function(model) {
-            console.log("1. newModel: " + model.shortName);
+            G.log(MBI.TAG, 'db', "1. newModel: " + model.shortName);
             MBI.newModels.push(model.type);
           });
         }
@@ -551,11 +553,11 @@ define([
       G.currentUser._reset = true;
       MBI.db && MBI.db.close();
       MBI.open();
-      console.log("db error: " + e);
+      G.log(MBI.TAG, ['error', 'db'], "db error: " + e);
     };
     
     this.onabort = function(e) {
-      console.log("db abort: " + e);
+      G.log(MBI.TAG, ['error', 'db'], "db abort: " + e);
     };
     
     this.reset = function() {
@@ -572,13 +574,13 @@ define([
         }
       })
       
-      deleted.length && console.log('1. deleted tables: ' + deleted.join(','));
-      created.length && console.log('1. created tables: ' + created.join(','));
+      deleted.length && G.log(MBI.TAG, 'db', '1. deleted tables: ' + deleted.join(','));
+      created.length && G.log(MBI.TAG, 'db', '1. created tables: ' + created.join(','));
       G.currentUser._reset = false;
     }
     
     this.onblocked = function(e) {
-      console.log("db blocked: " + e);
+      G.log(MBI.TAG, ['error', 'db'], "db blocked: " + e);
     };
     
     this.defaultOptions = {keyPath: '_uri'};
@@ -616,7 +618,7 @@ define([
         }
         
         if (db.setVersion) {
-          console.log('in old setVersion. User changed: ' + G.currentUser._reset + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
+          G.log(MBI.TAG, 'db', 'in old setVersion. User changed: ' + G.currentUser._reset + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
           
           // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
           var req = db.setVersion(MBI.VERSION);
@@ -624,7 +626,7 @@ define([
           req.onerror = MBI.onerror;
           req.onblocked = MBI.onblocked;
           req.onsuccess = function(e2) {
-            console.log('upgrading db');
+            G.log(MBI.TAG, 'db', 'upgrading db');
             if (G.currentUser._reset)
               MBI.reset();
             
@@ -632,7 +634,7 @@ define([
               MBI.updateStores();
             
             e2.target.transaction.oncomplete = function() {
-              console.log('upgraded db');
+              G.log(MBI.TAG, 'db', 'upgraded db');
               if (success)
                 success();
             };
@@ -652,17 +654,17 @@ define([
         MBI.db = e.target.result;
         var db = MBI.db;
         if (G.currentUser._reset) {
-          console.log("clearing db");
+          G.log(MBI.TAG, 'db', "clearing db");
           MBI.reset();
         }
         
         if (modelsChanged) {
-          console.log("updating stores");
+          G.log(MBI.TAG, 'db', "updating stores");
           MBI.updateStores();
         }
         
         e.target.transaction.oncomplete = function() {
-          console.log ("upgraded db");
+          G.log(MBI.TAG, 'db', "upgraded db");
           if (success)
             success();
         };
@@ -744,7 +746,7 @@ define([
             db.deleteObjectStore(name);
             deleted.push(name);
           } catch (err) {
-            console.log('2. failed to delete table ' + name + ': ' + err);
+            G.log(MBI.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
             return;
           }
           
@@ -754,14 +756,14 @@ define([
           db.createObjectStore(name, MBI.defaultOptions);
           created.push(name);
         } catch (err) {
-          console.log('2. failed to create table ' + name + ': ' + err);
+          G.log(MBI.TAG, ['error', 'db'], '2. failed to create table ' + name + ': ' + err);
           return;
         }
         
       }
       
-      deleted.length && console.log('2. deleted tables: ' + deleted.join(","));
-      created.length && console.log('2. created tables: ' + created.join(","));
+      deleted.length && G.log(MBI.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
+      created.length && G.log(MBI.TAG, 'db', '2. created tables: ' + created.join(","));
     }
     
     this.addItems = function(items, classUri) {
@@ -775,7 +777,7 @@ define([
       var className = classUri.slice(classUri.lastIndexOf("/") + 1);
       if (!db.objectStoreNames.contains(className)) {
         db.close();
-        console.log("2. newModel: " + className);
+        G.log(this.TAG, "db", "2. newModel: " + className);
         MBI.newModels.push(classUri);
         MBI.open(null, function() {
           MBI.addItems(items, classUri);
@@ -793,11 +795,11 @@ define([
         };
       
         request.onerror = function(e) {
-          console.log("Error adding item to db: ", e);
+          G.log(MBI.TAG, ['error', 'db'], "Error adding item to db: ", e);
         };
       });
       
-      console.log("added some " + className + " to db");
+      G.log(MBI.TAG, 'db', "added some " + className + " to db");
     };
     
     this.addItem = function(item, classUri) {
@@ -817,7 +819,7 @@ define([
       };
     
       request.onerror = function(e) {
-        console.log("Error Deleting: ", e);
+        G.log(MBI.TAG, ['error', 'db'], "Error Deleting: ", e);
       };
     };
     

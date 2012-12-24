@@ -1,9 +1,10 @@
 define([
   'globals',
+  'cache!../templates.jsp',
   'cache!jquery', 
   'cache!jqueryMobile', 
   'cache!underscore' 
-], function(G, $, __jqm__, _) {
+], function(G, HTML, $, __jqm__, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -52,7 +53,7 @@ define([
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
-      var elts = $('script[type="text/template"]');
+      var elts = $('script[type="text/template"]', $(HTML));
       for (var i = 0; i < elts.length; i++) {
         Templates.templates[elts[i].id] = elts[i].innerHTML;
       }

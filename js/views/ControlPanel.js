@@ -15,6 +15,7 @@ define([
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
       this.cpTemplateNoValue = _.template(Templates.get('cpTemplateNoValue'));
       this.model.on('change', this.refresh, this);
+      this.TAG = 'ControlPanel';
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
@@ -36,7 +37,7 @@ define([
     tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
-      console.log("render CP");
+      G.log(this.TAG, "render");
       var type = this.model.type;
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;
@@ -99,15 +100,29 @@ define([
       }
       
       groupNameDisplayed = false;
+      var tmpl_data;
       for (var p in json) {
         var prop = meta[p];
-        if ((displayedProps  &&  _.contains(displayedProps, p)) || 
-            !_.contains(backlinks, prop))
+        if (displayedProps  &&  _.contains(displayedProps, p))  
           continue;
-
-        if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-          delete json[p];
-          continue;
+        var count = -1;
+        if (!_.contains(backlinks, prop)) {
+          if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
+            continue;
+          var pp = p.substring(0, p.length - 5);
+          var pMeta = meta[pp];
+          if (!pMeta  ||  !pMeta.backLink) 
+            continue;
+          count = json[p];
+          p = pp;
+          prop = pMeta;
+          tmpl_data = _.extend(json, {p: {count: count}});
+        }
+        if (count == -1) {
+          if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
+            delete json[p];
+            continue;
+          }
         }
               
         if (!U.isPropVisible(json, prop))
@@ -115,14 +130,18 @@ define([
   
 //        json[p] = U.makeProp(prop, json[p]);
         var n = meta[p].displayName;
-        if (!_.has(json, p)) 
-          U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+        if (!_.has(json, p)) { 
+          if (count == -1)
+            U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+          else
+            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: count, _uri: this.model.get('_uri')}));
+        }
         else {
           var v = json[p].value;
           var cnt = json[p].count;
           if (typeof cnt == 'undefined'  ||  !cnt)
             U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-          else
+          else 
             U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
         }
       }

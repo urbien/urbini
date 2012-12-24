@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -6,7 +7,7 @@ define([
   'cache!templates',
   'cache!events', 
   'cache!utils'
-], function($, __jqm__, _, Backbone, Templates, Events, U) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
 
   return Backbone.View.extend({
     initialize: function(options) {
@@ -15,6 +16,7 @@ define([
       this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.model.on('change', this.refresh, this);
+      this.TAG = 'ResourceView';
   //    Lablz.Events.on('refresh', this.refresh);
       return this;
     },
@@ -43,7 +45,7 @@ define([
     tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
-      console.log("render resource");
+      G.log(this.TAG, "render");
       var type = this.model.type;
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;

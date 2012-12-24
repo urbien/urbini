@@ -44,12 +44,14 @@ define('app', [
     if (App.started)
       return;
     
+    G.app = App;
     App.started = true;
     var models = G.models;
     App.router = new Router();
     Backbone.history.start();
     
-    App.homePage = G.homePage = G.homePage || _.last(models).shortName;
+    _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
+    App.homePage = G.homePage = G.homePage || G.tabs[0].mobileUrl;
     if (!window.location.hash) {
       App.router.navigate(App.homePage, {trigger: true});
     }

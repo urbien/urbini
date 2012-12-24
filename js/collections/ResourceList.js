@@ -9,19 +9,24 @@ define([
   'cache!models/Resource' 
 ], function(G, $, __jqm__, _, Backbone, U, Error, Resource) {
   return Backbone.Collection.extend({
-    page: 0,
-    perPage: 30,
-    offset: 0,
-    firstPage: 0,
-    offsetParam: "$offset",
-    limitParam: "$limit",
-    queryMap: {},
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
       
+      _.extend(this, {
+        page: 0,
+        perPage: 30,
+        offset: 0,
+        firstPage: 0,
+        offsetParam: "$offset",
+        limitParam: "$limit",
+        queryMap: {},
+        model: options.model || models[0].model,
+        backlink: options._backlink,
+        rUri: options._rUri
+      });
+      
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
-      this.model = options.model || models[0].model;
       this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', this.model.getAroundMe);
@@ -30,13 +35,10 @@ define([
       this.displayName = this.model.displayName;
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
-      this.backlink = options._backlink;
       this.baseUrl = this.backlink ? G.apiUrl + options._rType : G.apiUrl + this.shortName;
-      this.rUri = options._rUri;
-      this.url = this.backlink ? this.getUrl() : this.baseUrl;
-
-      this.parseQuery(options._query);
+      this.url = this.backlink ? this.getUrl() : this.baseUrl;      
       this.queryMap[this.limitParam] = this.perPage;
+      this.parseQuery(options._query);
 //      this.sync = this.constructor.sync;
       
       console.log("init " + this.shortName + " resourceList");
@@ -91,17 +93,17 @@ define([
       var qMap = this.queryMap = this.queryMap || {};
       for (var i = 0; i < query.length; i++) {
         var p = query[i].split("=");
-        var name = p[0];
-        var val = p[1];
+        var name = decodeURIComponent(p[0]);
+        var val = decodeURIComponent(p[1]);
         var q = query[i];
         if (q == this.offsetParam) {
-          this.offset = parseInt(value); // offset is special because we need it for lookup in db
+          this.offset = parseInt(val); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
         else if (q.charAt(0) == '-')
           continue;
         else
-          qMap[name] = decodeURIComponent(val);
+          qMap[name] = val;
       }
       
       this.url = this.getUrl();
@@ -162,7 +164,8 @@ define([
 //        MB.fetchModelsForLinkedResources.call(self.model);
       };
   
+//      debugger;
       return Backbone.Collection.prototype.fetch.call(this, options);
     }
-  });
+  }, {});
 });

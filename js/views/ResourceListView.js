@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery',
   'cache!underscore',
   'cache!backbone',
@@ -8,10 +9,11 @@ define([
   'cache!templates',
   'cache!jqueryMobile',
   'cache!views/ResourceMasonryItemView',
-  'cache!views/ResourceListItemView'
-], function($, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView) {
+  'cache!views/ResourceListItemView',
+  'cache!views/CommentListItemView'
+], function(G, $, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return Backbone.View.extend({
-    displayPerPage: 7, // for client-side paging
+    displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
     skipScrollEvent: false,
@@ -23,19 +25,10 @@ define([
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.pageChanged);
       this.$el.on('create', this.alignNewBricks);
+      this.TAG = 'ResourceListView';
       return this;
     },
     refresh: function(model, modified) {
-      if (this.isModification && !this.ResourceMasonryItemView) {
-        var self = this;
-        require(['cache!views/ResourceMasonryItemView'], function(R) {
-          self.ResourceMasonryItemView = R;
-          self.refresh(model, modified);
-        });
-        
-        return this;
-      }
-      
       if (model && model != this.model)
         return this;
   
@@ -52,6 +45,7 @@ define([
       var viewMode = models[0].constructor['viewMode'];
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
       var curNum = lis.length;
@@ -80,6 +74,8 @@ define([
           var liView;
           if (isModification  ||  isMasonry) 
             liView = new ResourceMasonryItemView({model:m});
+          else if (isComment)
+            liView = new CommentListItemView({model:m});
           else
             liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
           if (nextPage)  
@@ -151,7 +147,7 @@ define([
       this.changedViews.push(view);
     },
     render: function(e) {
-      console.log("render listView");
+      G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);
       this.refresh();

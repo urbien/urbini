@@ -15,7 +15,7 @@ define([
 //  'cache!views/ViewPage' 
 ], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage, MenuPage, LoginView;
-  return Backbone.Router.extend({
+  var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
 //    "view/*path"      : "view"  // e.g. app/ichangeme#view/<resourceUri>
@@ -38,6 +38,8 @@ define([
     forceRefresh: false,
     errMsg: null,
     info: null,
+    viewsStack: [],
+    urlsStack: [],
     LoginView: null,
     initialize: function () {
       this.firstPage = true;
@@ -48,13 +50,13 @@ define([
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
-      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-      this.forceRefresh = false;
       if (options) {
         this.errMsg = options.errMsg;
         this.info = options.info;
       }
       
+      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
+      this.forceRefresh = false;
       return ret;
     },
     
@@ -69,7 +71,8 @@ define([
         
         return;
       }
-      
+      if (this.backClicked) {
+      }
       var self = this;
       var params = oParams.split("?");
       var type = decodeURIComponent(params[0]);
@@ -164,9 +167,10 @@ define([
       if (c && !c.loaded)
         c = null;
       
-      if (!query && c && this.CollectionViews[t]) {
+      var cView = this.CollectionViews[t];
+      if (!query && c && cView) {
         this.currentModel = c;
-        this.changePage(this.CollectionViews[t], {page: page});
+        this.changePage(cView, {page: page});
         if (!backlink)
           this.Collections[t].fetch({page: page});
         else
@@ -234,6 +238,8 @@ define([
         
         return;
       }
+      if (this.backClicked) {
+      }
 
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
@@ -292,8 +298,8 @@ define([
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
-        views[uri] = views[uri] || new viewPageCl({model: res});
-        this.changePage(this.Views[uri]);
+        var v = views[uri] = views[uri] || new viewPageCl({model: res});
+        this.changePage(v);
         res.fetch({
           success: function() {MB.fetchModelsForLinkedResources(res)}
         });
@@ -305,8 +311,8 @@ define([
         var res = this.Models[uri] = this.Collections[type].get(uri);
         if (res) {
           this.currentModel = res;
-          views[uri] = new viewPageCl({model: res});
-          this.changePage(this.Views[uri]);
+          var v = views[uri] = new viewPageCl({model: res});
+          this.changePage(v);
           return this;
         }
       }
@@ -316,10 +322,10 @@ define([
         return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var view = views[uri] = new viewPageCl({model: res});
+      var v = views[uri] = new viewPageCl({model: res});
       var paintMap;
       var success = function(data) {
-        self.changePage(view);
+        self.changePage(v);
         success: MB.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
@@ -328,13 +334,7 @@ define([
       return this;
     },
     
-    
-    
-    
-    
-    
     login: function() {
-      debugger;
       console.log("#login page");
       if (!LoginView) {
         var args = arguments;
@@ -427,14 +427,41 @@ define([
         console.log("Not replacing view with itself");
         return;
       }
-      
+      if (this.backClicked) {
+        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+          this.currentView.clicked = false;
+        this.currentView = this.viewsStack.pop();
+        this.currentUrl = this.urlsStack.pop();
+        view = this.currentView;
+      }
+      else {
+        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+          this.currentView.clicked = false;
+        // Check if browser's Back button was clicked
+        else if (!this.clicked  &&  this.viewsStack.length != 0) {
+          var url = this.urlsStack[this.viewsStack.length - 1];
+          if (url == window.location.href) {
+            this.currentView = this.viewsStack.pop();
+            this.currentUrl = this.urlsStack.pop();
+            view = this.currentView;
+            this.backClicked = true;
+          }
+        }
+        if (!this.backClicked) {
+          if (!view.rendered) {
       view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-      if (!view.rendered) {
         view.render();
       }
   
       var transition = "slide"; //$.mobile.defaultPageTransition;
+          if (this.currentView) {
+            this.viewsStack.push(this.currentView);
+            this.urlsStack.push(this.currentUrl);
+          }
       this.currentView = view;
+          this.currentUrl = window.location.href
+        }
+      }
       if (this.firstPage) {
         transition = 'none';
         this.firstPage = false;
@@ -453,7 +480,13 @@ define([
       // perform transition
       $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});
       Events.trigger('changePage', view);
+//      if (this.backClicked)
+//        $(window).resize();
+//      if (this.backClicked == true) 
+//        previousView.remove();
       return view;
     }
   });
+  
+  return Router;
 });
