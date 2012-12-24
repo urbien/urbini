@@ -8,8 +8,9 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
-    </ul>
+    <!--
+    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
+    -->
     <div id="nabs_grid" class="masonry">
     </div>
     <table width="100%" id="comments">
