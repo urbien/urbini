@@ -121,21 +121,21 @@
 </script>
 
 <script type="text/template" id="resourcePT">
-  <span><a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
-<span><a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
   <ul style="list-style-type:none">
-    <li><span><a href="{{= (Globals.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
+    <li><span><a href="{{= (Lablz.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
     {{ _.forEach(rows, function(val, key) { }} 
       <li>{{= key }}: {{= val.value }}</li>
     {{ }); }}
     {{ if (typeof image != 'undefined') { }}
-    <span><a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
+    <span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
     {{ } }}
   </ul>
 </script>
@@ -145,15 +145,15 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="menuItemTemplate">
-  <li><a id="{{= typeof id === 'undefined' ? Globals.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Globals.pageRoot + '#' + mobileUrl : pageUrl }}"><h3>{{= title }}</h3></a></li>
+  <li><a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}"><h3>{{= title }}</h3></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate">
@@ -161,11 +161,15 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Globals.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
 </script>
 
-<script type="text/template" id="cpTemplateNoValue">
-   <li>{{= name }}</li>
+<script type="text/template" id="cpTemplateNoAddNoValue">
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="blank"></a></li>
+</script>
+
+<script type="text/template" id="cpTemplateNoAdd">
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -267,12 +271,12 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%">
-  <a href="{{=Globals.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+  <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
-<td class="cl">
-  <a href="{{= Globals.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+<td class="cl" valign="top">
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     {{= submitter.displayName }}
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
@@ -303,7 +307,7 @@
         <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
         <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
         <br/><br/>&#160;
-        <span class="commentListDate">{{= Globals.U.getFormattedDate(dateModified) }}</span>
+        <span class="commentListDate">{{= Lablz.U.getFormattedDate(dateModified) }}</span>
       </td>
     </tr>
   </table>
