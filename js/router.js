@@ -14,7 +14,7 @@ define([
 //  'cache!views/ListPage', 
 //  'cache!views/ViewPage' 
 ], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
-  var ListPage, ViewPage, MenuPage, LoginView;
+  var ListPage, ViewPage, MenuPage; //, LoginView;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
@@ -24,7 +24,7 @@ define([
       "view/*path"      : "view",  
       "menu/*path"      : "menu", 
       ":type/:backlink" : "list",
-      "login/*path"     : "login" 
+//      "login/*path"     : "login" 
     },
 
     CollectionViews: {},
@@ -40,7 +40,7 @@ define([
     info: null,
     viewsStack: [],
     urlsStack: [],
-    LoginView: null,
+//    LoginView: null,
     initialize: function () {
       this.firstPage = true;
       var self = this;
@@ -161,7 +161,6 @@ define([
         
       }
       
-      
       var t = backlink ? bltype : type;  
       var c = this.Collections[t];
       if (c && !c.loaded)
@@ -176,8 +175,7 @@ define([
         else
           this.Collections[t].fetch({page: page, _backlink: backlink, _rType: type, _rUri: oParams});
         return this;
-      }
-      
+      }      
       
       var model = MB.shortNameToModel[t];
       if (!model)
@@ -205,7 +203,6 @@ define([
       
       return this;
     },
-
     menu: function() {
       if (!MenuPage) {
         var args = arguments;
@@ -331,9 +328,9 @@ define([
       }
       
       res.fetch({sync:true, success: success});
-      return this;
+      return true;
     },
-    
+/*    
     login: function() {
       console.log("#login page");
       if (!LoginView) {
@@ -347,17 +344,9 @@ define([
       }
       if (!this.LoginView)
         this.LoginView = new LoginView();
-    //  this.LoginView.render();
       this.LoginView.showPopup();
-//      var c = this.currentModel;
-//      var id = c.id || c.url;
-//      var menuPage = this.MenuViews[id];
-//      if (!menuPage)
-//        menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
-//      
-//      this.changePage(menuPage);
     },
-
+*/
     
     
 //    loadExtras: function(params) {
@@ -432,7 +421,7 @@ define([
           this.currentView.clicked = false;
         this.currentView = this.viewsStack.pop();
         this.currentUrl = this.urlsStack.pop();
-        view = this.currentView;
+          view = this.currentView;
       }
       else {
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
@@ -473,9 +462,6 @@ define([
         this.backClicked = false;
         isReverse = true;
       }
-
-      // (back button) no need highlighting of navbar item after active page changing
-      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
 
       // perform transition
       $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});

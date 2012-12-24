@@ -135,7 +135,7 @@ define([
         });
       }
       
-      this.loaded = true;
+      this._lastFetchedOn = new Date().getTime();
       return response;
     },
     onReset: function(model) {
@@ -157,7 +157,7 @@ define([
       this.backlink = options._backlink;
       this.rUri = options._rUri;
       options.url = this.backlink ? this.url : this.getUrl();
-      options.error = Error.getDefaultErrorHandler(options.error);
+      options.error = options.error || Error.getDefaultErrorHandler();
       var success = options.success;
       options.success = function() {
         success && success.apply(self, arguments);
@@ -165,7 +165,13 @@ define([
       };
   
 //      debugger;
-      return Backbone.Collection.prototype.fetch.call(this, options);
+//      return Backbone.Collection.prototype.fetch.call(this, options);
+//      var jqXHR = Backbone.Collection.prototype.fetch.apply(this, arguments);
+//      if (options.sync)
+//        jqXHR.timeout = 5000;
+//      
+//      return jqXHR;
+      Backbone.Collection.prototype.fetch.apply(this, arguments);
     }
   }, {});
 });

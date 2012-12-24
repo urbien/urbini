@@ -16,7 +16,19 @@
  * 3. From server 
  */
 
-define('globals', ['config'], function(C) {
+require(['globals'], function(G) {
+  window.Lablz = G;
+  G.online = !!navigator.onLine;
+  window.addEventListener("offline", function(e) {
+    // we just lost our connection and entered offline mode, disable eternal link
+    G.online = false;
+  }, false);
+
+  window.addEventListener("online", function(e) {
+    // just came back online, enable links
+    G.online = true;
+  }, false);
+  
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
       hasLocalStorage = (function(){
         var supported = false;
@@ -25,13 +37,181 @@ define('globals', ['config'], function(C) {
         }catch(e){}
         return supported;
       })();
-  
-  var G = Globals = {
+
+  define('cache', ['module'], function (module) {
+    var masterConfig = (module.config && module.config()) || {};
+    var cache = {
+      TAG: 'cache',
+      prependUrl: function(content, url) {
+        return content + '\r\n//@ sourceURL=' + url;
+      },
+      
+      prepForStorage: function(text) {
+        return JSON.stringify({modified: new Date().getTime(), text: text});
+      },
+          
+      load: function (name, req, onLoad, config) {
+        if (config.isBuild) {
+          onLoad();
+          return;
+        }
+            
+        var cached,
+            url = G.getCanonicalPath(req.toUrl(name));
+        
+        // TODO: unhack
+        if (name == 'jqueryMobile') {
+          req([name], function(content) {
+            G.log(cache.TAG, 'cache', 'Loading jq: ' + url);
+            onLoad(content);
+            G.log(cache.TAG, 'cache', 'End loading jq: ' + url);
+          });
+          
+          return;
+        }
+        
+        var isText = ext = name.match(/\.[a-zA-Z]+$/g);
+        if (ext)
+          ext = ext[0].slice(1).toLowerCase();
+          
+        var now = new Date().getTime();
+        var mCache = config.cache;
+        var inMemory = mCache && mCache[url];
+        var loadedCached = false;
+        if (inMemory || hasLocalStorage) {
+          var loadSource = inMemory ? 'memory' : 'LS';
+          if (inMemory) {
+            cached = mCache[url];
+          }
+          else if (hasLocalStorage) { // in build context, this will be false, too
+            try {
+              cached = localStorage.getItem(url);
+              cached = cached && JSON.parse(cached);
+            } catch (err) {
+              G.log(cache.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
+              cached = null;
+            }
+            
+            if (cached) {
+              var fileInfo = G.leaf(config.expirationDates, url, '/');
+              var modified = fileInfo && fileInfo.modified;
+              if (modified && modified <= cached.modified)
+                cached = cached.text;
+              else {
+                localStorage.removeItem(url);
+                cached = null;
+              }
+            }
+          }
+
+          var loadedCached = cached;
+          if (loadedCached) {
+            cached = cache.prependUrl(cached, url);
+            
+            try {
+              G.log(cache.TAG, 'cache', 'Loading from', loadSource, url);
+              switch (ext) {
+                case 'css':
+                  G.appendCSS(cached, function() {
+                    G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+                    onLoad();
+                    G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+                  });
+                  break;
+                case 'html':
+                case 'jsp':
+                  G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+//                  G.appendHTML(cached);
+                  onLoad(cached);
+                  G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+                  break;
+                default:
+                  onLoad.fromText(cached);
+                  break;
+              }
+              G.log(cache.TAG, 'cache', 'End loading from', loadSource, url);
+            } catch (err) {
+              G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
+              loadedCached = false;
+            }
+          } 
+        }
+        
+        if (loadedCached)
+          return;
+        
+        /// use 'get' instead of 'req' so we can store to localStorage
+        G.get(url, function(text) {
+          switch(ext) {
+            case 'css':
+              G.appendCSS(text, function() {
+                cache.save(url, text, 100);
+                G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+                onLoad();
+                G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+              });
+              break;
+            case 'html':
+            case 'jsp':
+              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+//              G.appendHTML(text);
+              onLoad(text);
+              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+              break;
+            default:
+              cache.save(url, text, 100);
+              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+              onLoad.fromText(text);
+              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+              break;
+          } 
+        });
+      },
+      
+      save: function(url, text, delay) {
+        var put = function() {
+          localStorage.setItem(url, cache.prepForStorage(text));      
+        }
+        
+        if (delay)
+          setTimeout(put, delay);
+        else
+          put();
+      },
+      
+//      getCanonicalPath: function(path, separator) {
+//        separator = separator || '/';
+//        var parts = path.split(separator);
+//        var stack = [];
+//        for (var i = 0; i < parts.length; i++) {
+//          if (parts[i] == '..')
+//            stack.pop();
+//          else
+//            stack.push(parts[i]);
+//        }
+//        
+//        return stack.join(separator);
+//      },      
+//      leaf: function(obj, path, separator) {
+//        path = cache.getCanonicalPath(path);
+//        if (typeof obj == 'undefined' || !obj)
+//          return null;
+//        
+//        separator = separator || '.';
+//        var dIdx = path.indexOf(separator);
+//        return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+//      }    
+    };
+
+    return cache;
+  });
+
+  var moreG = {
     sqlUri: 'sql',
     modules: {},
     id: 0,
     nextId: function() {
-      return this.id++;
+      return G.id++;
     },
     createXhr: function () {
       //Would love to dump the ActiveX crap in here. Need IE 6 to die first.
@@ -103,21 +283,30 @@ define('globals', ['config'], function(C) {
         bg: '#555'
       },
       cache: {
-        on: true,
+        on: false,
         color: '#CCCCCC',
         bg: '#555'
       }
     },
     
-    log: function(tag, type, msg) {
+    log: function(tag, type) {
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
         var t = types[i];
         var trace = G.trace[t] || {on: true};
+        if (!trace.on)
+          continue;
+        
         var b = G.browser;
-        var css = (b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24;
-        if (trace.on)
-          console.log((css ? '%c ' : '') + t + ' : ' + tag + (msg ? ' : ' + msg : ''), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000000') : '');        
+        var css = b && ((b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24);
+        var msg = Array.prototype.slice.call(arguments, 2);
+        var msgStr = '';
+        for (var i = 0; i < msg.length; i++) {
+          msgStr += (typeof msg[i] == 'string' ? msg[i] : JSON.stringify(msg[i]));
+          if (i < msg.length - 1) msgStr += ' ';
+        }
+
+        console.log((css ? '%c ' : '') + t + ' : ' + tag + ' : ' + msgStr, css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
       }
     },
     
@@ -190,13 +379,17 @@ define('globals', ['config'], function(C) {
           }
           
           var dateSaved = saved.modified;
-          var modified = G.leaf(G.files, url, '/').modified;
-          if (modified <= dateSaved) {
+          var info = G.leaf(G.files, url, '/');
+          if (info && info.modified <= dateSaved) {
             G.modules[url] = saved.text;
             continue;
           }
-          else
+          else {
+            if (!info)
+              G.log('init', 'error', 'no info found for file: ' + url);
+              
             localStorage.removeItem(url);
+          }
         }
         
         pruned.push(url);
@@ -208,7 +401,7 @@ define('globals', ['config'], function(C) {
     loadBundle: function(bundle, callback) {
       var pruned = G.pruneBundle(bundle);
       if (!pruned.length) {
-        console.log("for bundle " + JSON.stringify(bundle) + ", everything was cached");
+        G.log('init', 'cache', 'bundle was cached', bundle);
         if (callback) 
           callback();
         
@@ -216,13 +409,8 @@ define('globals', ['config'], function(C) {
         
       }
       
-//      $.ajax({
       G.get(G.serverName + "/backboneFiles?modules=" + pruned.join(','), 
-//        type: 'POST',
-//        data: {modules: pruned.join(',')},
-//        complete: 
         function(text) {
-//          if (status == 'success') {
           var resp;
           try {
             resp = JSON.parse(text);
@@ -239,195 +427,25 @@ define('globals', ['config'], function(C) {
               }
             }
           }
-//          }
         
-        if (localStorage) {
-          setTimeout(function() {
-            var now = new Date().getTime();
-            for (var url in G.modules) {
-              localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
-            }
-          }, 100);
-        }
-        
-        if (callback) callback();
-      });
-    }
-
-  };  
-  
-  define('cache', ['globals'], function (G) {
-//    var masterConfig = (module.config && module.config()) || {};
-    var trace = G.trace.cache.on;
-    var cache = {
-      prependUrl: function(content, url) {
-        return content + '\r\n//@ sourceURL=' + url;
-      },
-      
-      prepForStorage: function(text) {
-        return JSON.stringify({modified: new Date().getTime(), text: text});
-      },
-          
-      load: function (name, req, onLoad, config) {
-        if (config.isBuild) {
-          onLoad();
-          return;
-        }
-            
-        var cached,
-            url = G.getCanonicalPath(req.toUrl(name));
-        
-        // TODO: unhack
-        if (name == 'jqueryMobile') {
-          req([name], function(content) {
-            if (trace) console.log('Loading jq: ' + url);
-            onLoad(content);
-            if (trace) console.log('End loading jq: ' + url);
-          });
-          
-          return;
-        }
-        
-        var isText = ext = name.match(/\.[a-zA-Z]+$/g);
-        if (ext)
-          ext = ext[0].slice(1).toLowerCase();
-          
-        var isCSS = ext == 'css';
-        var now = new Date().getTime();
-        var mCache = config.cache;
-        var inMemory = mCache && mCache[url];
-        var loadedCached = false;
-        if (inMemory || hasLocalStorage) {
-          if (inMemory) {
-            cached = mCache[url];
-          }
-          else if (hasLocalStorage) { // in build context, this will be false, too
-            try {
-              cached = localStorage.getItem(url);
-              cached = cached && JSON.parse(cached);
-            } catch (err) {
-              console.log("failed to parse cached file: " + url);
-              cached = null;
-            }
-            
-            if (cached) {
-              var fileInfo = G.leaf(config.expirationDates, url, '/');
-              var modified = fileInfo && fileInfo.modified;
-              if (modified && modified <= cached.modified)
-                cached = cached.text;
-              else {
-                localStorage.removeItem(url);
-                cached = null;
+          if (localStorage) {
+            setTimeout(function() {
+              var now = new Date().getTime();
+              for (var url in G.modules) {
+                localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
               }
-            }
+            }, 100);
           }
-
-          var loadedCached = cached;
-          if (loadedCached) {
-            cached = cache.prependUrl(cached, url);
-            
-            try {
-              if (trace) console.log('Loading from cache: ' + url);
-              switch (ext) {
-                case 'css':
-                  G.appendCSS(cached, function() {
-                    if (trace) console.log('cache.get: ' + url);
-                    onLoad();
-                    if (trace) console.log('end cache.get: ' + url);
-                  });
-                  break;
-                case 'html':
-                case 'jsp':
-                  if (trace) console.log('cache.get: ' + url);
-//                  G.appendHTML(cached);
-                  onLoad(cached);
-                  if (trace) console.log('end cache.get: ' + url);
-                  break;
-                default:
-                  onLoad.fromText(cached);
-                  break;
-              }
-              if (trace) console.log('End loading from cache: ' + url);
-            } catch (err) {
-              console.log('failed to load ' + url + ' from cache: ' + err);
-              loadedCached = false;
-            }
-          } 
-        }
-        
-        if (loadedCached)
-          return;
-        
-        /// use 'get' instead of 'req' so we can store to localStorage
-        G.get(url, function(text) {
-          switch(ext) {
-            case 'css':
-              G.appendCSS(text, function() {
-                cache.save(url, text, 100);
-                if (trace) console.log('cache.get: ' + url);
-                onLoad();
-                if (trace) console.log('end cache.get: ' + url);
-              });
-              break;
-            case 'html':
-            case 'jsp':
-              if (trace) console.log('cache.get: ' + url);
-//              G.appendHTML(text);
-              onLoad(text);
-              if (trace) console.log('end cache.get: ' + url);
-              break;
-            default:
-              cache.save(url, text, 100);
-              if (trace) console.log('cache.get: ' + url);
-              onLoad.fromText(text);
-              if (trace) console.log('end cache.get: ' + url);
-              break;
-          } 
+          
+          if (callback) callback();
         });
-      },
-      
-      save: function(url, text, delay) {
-        var put = function() {
-          localStorage.setItem(url, cache.prepForStorage(text));      
-        }
-        
-        if (delay)
-          setTimeout(put, delay);
-        else
-          put();
-      },
-      
-//      getCanonicalPath: function(path, separator) {
-//        separator = separator || '/';
-//        var parts = path.split(separator);
-//        var stack = [];
-//        for (var i = 0; i < parts.length; i++) {
-//          if (parts[i] == '..')
-//            stack.pop();
-//          else
-//            stack.push(parts[i]);
-//        }
-//        
-//        return stack.join(separator);
-//      },      
-//      leaf: function(obj, path, separator) {
-//        path = cache.getCanonicalPath(path);
-//        if (typeof obj == 'undefined' || !obj)
-//          return null;
-//        
-//        separator = separator || '.';
-//        var dIdx = path.indexOf(separator);
-//        return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-//      }    
-    };
-
-    return cache;
-  });
-
-  for (var name in C) {
-    G[name] = C[name];
+    }
+  }; 
+  
+  for (var prop in moreG) {
+    G[prop] = moreG[prop];
   }
-
+  
   G.serverName = (function() {     
     var s = document.getElementsByTagName('base')[0].href;
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
@@ -459,87 +477,59 @@ define('globals', ['config'], function(C) {
     expirationDates: G.files
   });
 
-  return Globals;
-});
-
-require([
-  'globals',
-], function(G) {
-    var baseBundle = {
-      pre: {
-      // Javascript
-        js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
-         'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-         /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
-        // CSS
-        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
-        html: ['../templates.jsp']
-      },
-      post: {
-        // Javascript
-        js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
-        // CSS
-        css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
-      }
-    };
-    
-    var viewBundle = [
-      'cache!views/Header', 
-      'cache!views/BackButton', 
-      'cache!views/LoginButtons', 
-      'cache!views/AroundMeButton', 
-      'cache!views/ResourceView', 
-      'cache!views/ResourceImageView', 
-      'cache!views/ViewPage' 
-    ];
-       
-    var listBundle = [
-      'cache!views/ResourceListItemView', 
-      'cache!views/ResourceListView', 
-      'cache!views/Header', 
-      'cache!views/BackButton', 
-      'cache!views/LoginButtons', 
-      'cache!views/AroundMeButton', 
-      'cache!views/MapItButton', 
-      'cache!views/ListPage' 
-    ];
-       
-    G.loadBundle(baseBundle.pre, function() {
-      var css = baseBundle.pre.css.slice();
-      for (var i = 0; i < css.length; i++) {
-        css[i] = 'cache!' + css[i];
-      }
+   var baseBundle = {
+     pre: {
+     // Javascript
+       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+        'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
+        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
+       // CSS
+       css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
+       html: ['../templates.jsp']
+     },
+     post: {
+       // Javascript
+       js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'leaflet', 'leafletMarkerCluster', 'maps'],
+       // CSS
+       css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
+     }
+   };
+   
+   var viewBundle = [
+     'cache!views/Header', 
+     'cache!views/BackButton', 
+     'cache!views/LoginButtons', 
+     'cache!views/AroundMeButton', 
+     'cache!views/ResourceView', 
+     'cache!views/ResourceImageView', 
+     'cache!views/ViewPage' 
+   ];
       
-      require(['cache!jquery', 'cache!jqm-config'], function($) {
-        $(function() {
-          $(document).bind("mobileinit", function () {
-            console.log('mobileinit');
-            $.mobile.ajaxEnabled = false;
-            $.mobile.linkBindingEnabled = false;
-            $.mobile.hashListeningEnabled = false;
-            $.mobile.pushStateEnabled = false;
-            $.support.touchOverflow = true;
-            $.mobile.touchOverflowEnabled = true;
-            $.mobile.loadingMessageTextVisible = true;
-              
-              // Remove page from DOM when it's being replaced
-        //         $('div[data-role="page"]').live('pagehide', function (event, ui) {
-        //      $(event.currentTarget).remove();
-        //         });
-        });
-             
-        G.browser = $.browser;
-
-        require(['cache!app'].concat(css), function(App) {
-          App.initialize();
-          setTimeout(function() {
-            G.loadBundle(baseBundle.post, function() {
-              console.log('loaded post bundle');
-            });
-          }, 100);
-        });
-      });
-    });
+   var listBundle = [
+     'cache!views/ResourceListItemView', 
+     'cache!views/ResourceListView', 
+     'cache!views/Header', 
+     'cache!views/BackButton', 
+     'cache!views/LoginButtons', 
+     'cache!views/AroundMeButton', 
+     'cache!views/MapItButton', 
+     'cache!views/ListPage' 
+   ];
+      
+   G.loadBundle(baseBundle.pre, function() {
+     var css = baseBundle.pre.css.slice();
+     for (var i = 0; i < css.length; i++) {
+       css[i] = 'cache!' + css[i];
+     }
+     
+     require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqm, App) {
+         G.browser = $.browser;
+         App.initialize();
+         setTimeout(function() {
+           G.loadBundle(baseBundle.post, function() {
+             console.log('loaded post bundle');
+           });
+         }, 100);
+       });
   });
 });
-

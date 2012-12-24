@@ -33,28 +33,47 @@ define([
         return true;
       
       var ar = prop.allowRoles;
-      if (ar) {
-        if (userRole == 'guest')
+      return ar ? U.isUserInRole(userRole, ar) : true;
+    },
+
+    isUserInRole: function(userRole, ar) {
+      if (userRole == 'guest')
+        return false;
+      
+      var roles = ar.split(",");
+      for (var i = 0; i < roles.length; i++) {
+        var r = roles[i].trim();
+        if (r == 'admin')
           return false;
-        
-        var roles = ar.split(",");
-        for (var i = 0; i < roles.length; i++) {
-          var r = roles[i].trim();
-          if (r == 'admin')
-            return false;
-          else if (r == 'siteOwner')
-            return userRole == 'siteOwner';
-          else {
-            // TODO: implement this
-            
-            return false;
-          }
+        else if (r == 'siteOwner')
+          return userRole == 'siteOwner';
+        else {
+          // TODO: implement this
+          
+          return false;
         }
       }
-      
       return true;
     },
-    
+    isPropEditable: function(res, prop) {
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
+        return false;
+      
+      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      if (userRole == 'admin')
+        return true;
+      
+      var ar = prop.allowRoles;
+      var isVisible;
+      if (ar) {
+        isUserInRole = U.isUserInRole(userRole, ar);
+        if (!isUserInRole)
+          return false;
+      }
+      ar = prop.allowRolesToEdit;
+      return ar ? U.isUserInRole(userRole, ar) : true;
+    },
+
     getFirstUppercaseCharIdx: function(str) {
     	for (var i = 0; i < str.length; i++) {
     		var c = str.charAt(i);

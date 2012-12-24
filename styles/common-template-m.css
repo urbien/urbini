@@ -155,9 +155,10 @@ html { height: 100%; }
   color: #999999;
   font-size: 11px;
 }
+#comments {padding-top: 12px; padding-bottom: 12px;}
 .commentList {
   background-color: &[PrimaryColor_4];; 
-  border-bottom-color: &[BackgroundColor];; 
+  border-bottom-color: #757575; 
   border-bottom-style: solid; 
   border-bottom-width: 1px; 
   padding-top: 12px; 
@@ -165,13 +166,20 @@ html { height: 100%; }
   font-size: 12px;
   text-align: left;
 }
+.table-stroke tbody td {
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+.cp a {text-decoration: none; font-size: 14px; }
 .commentList .cl { padding-left: 5px; }
 .commentList a { color: #f47414; font-size: 11px; text-decoration: none; font-weight: bold; }
 .commentListDate {
   color: #999999;
   font-size: 11px;
 }
-.commentList img {max-height: 60px;max-width: 50px;}
+.commentList img {
+  max-height: 60px;
+  max-width: 50px;
+}
 /*
 @media screen and (orientation: portrait) {
   .nab {

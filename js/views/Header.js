@@ -66,7 +66,6 @@ define([
       
       var log = this.buttons.log;
       log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
-      
       return this;
     }
   });
