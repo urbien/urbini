@@ -213,13 +213,6 @@
   </li>
 </script>
 
-<script type="text/template" id="loginPopupTemplate">
-  <div  id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
-    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
-    <authenticateByFacebook mobile="y" />
-  </div>
-</script>
-
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
     <a target="#" data-icon="signout" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>

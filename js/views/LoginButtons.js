@@ -8,7 +8,7 @@ define([
 ], function($, __jqm__, _, Backbone, U, Templates) {
   return Backbone.View.extend({
     template: 'loginButtonTemplate',
-    popupTemplate: 'loginPopupTemplate',
+    popupId: '#loginPopup',
     
     events: {
       'click #login': 'showPopup'
@@ -17,14 +17,13 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render');
       this.template = _.template(Templates.get(this.template)); 
-      this.popupTemplate = _.template(Templates.get(this.popupTemplate)); 
       return this;
     },
 
     render: function(options) {
       var method = options && options.append ? 'append' : 'html';
       var loginBtn = this.template();
-      var popup = this.popupTemplate();
+      var popup = $(this.popupId).html();
       if (popup.indexOf('data-socialnet') == -1) {
         this.$el[method](_.template(Templates.get('logoutButtonTemplate'))());
         return this;
