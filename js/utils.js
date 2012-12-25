@@ -679,6 +679,6 @@ define([
     }
   );
   
-  G.U = U;
+  Lablz.U = U;
   return U;
 });

@@ -16,8 +16,8 @@
  * 3. From server 
  */
 
-require(['globals'], function(G) {
-  window.Lablz = G;
+define('globals', function() {
+  var G = Lablz;
   G.online = !!navigator.onLine;
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
@@ -477,7 +477,7 @@ require(['globals'], function(G) {
     expirationDates: G.files
   });
 
-   var baseBundle = {
+   G.baseBundle = {
      pre: {
      // Javascript
        js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
@@ -515,21 +515,30 @@ require(['globals'], function(G) {
      'cache!views/MapItButton', 
      'cache!views/ListPage' 
    ];
-      
-   G.loadBundle(baseBundle.pre, function() {
-     var css = baseBundle.pre.css.slice();
-     for (var i = 0; i < css.length; i++) {
-       css[i] = 'cache!' + css[i];
-     }
-     
-     require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqm, App) {
-         G.browser = $.browser;
-         App.initialize();
-         setTimeout(function() {
-           G.loadBundle(baseBundle.post, function() {
-             console.log('loaded post bundle');
-           });
-         }, 100);
-       });
-  });
+
+   return Lablz;
 });
+
+require(['globals'], function(G) {
+//  if (localStorage) {
+//    G = G;
+//    localStorage.setItem();
+//  }
+  
+  G.loadBundle(G.baseBundle.pre, function() {
+    var css = G.baseBundle.pre.css.slice();
+    for (var i = 0; i < css.length; i++) {
+      css[i] = 'cache!' + css[i];
+    }
+    
+    require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqm, App) {
+      G.browser = $.browser;
+      App.initialize();
+      setTimeout(function() {
+        G.loadBundle(G.baseBundle.post, function() {
+          console.log('loaded post bundle');
+        });
+      }, 100);
+    });
+  });
+})

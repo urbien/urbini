@@ -24,7 +24,7 @@ define([
             console.log('redirecting to user-login');
 //            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
 //            window.history.back();
-            Error.errDialog({msg: Error.login});
+            Error.errDialog({msg: Error.login, delay: 1000});
             return;
           case 404:
             console.log('no results');
@@ -37,7 +37,7 @@ define([
                 errMsg = Error.not_found;
             }
 //              router.navigate(defaultDestination || G.homePage, {trigger: true, replace: true, errMsg: Error.not_found});            
-            Error.errDialog({msg: errMsg});
+            Error.errDialog({msg: errMsg, delay: 1000});
             return;
           default:
             switch (type) {
@@ -45,13 +45,13 @@ define([
               case 'timeout':
 //                Events.trigger('error', err.details ? err : _.extend(err, {details: Error.OFFLINE}));
 //                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Error[G.online ? type : 'offline']});
-                Error.errDialog({msg: err.details || Error[G.online ? type : 'offline']});
+                Error.errDialog({msg: err.details || Error[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
 //                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Error.not_found});
-                Error.errDialog({msg: err.details || Error.not_found});
+                Error.errDialog({msg: err.details || Error.not_found, delay: 1000});
             }
             return;
           }
@@ -63,9 +63,11 @@ define([
     },
     errDialog: function(options) {
       var msg = options.msg;
-      $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
-      if (!options.nofade)
-        setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));    
+      setTimeout(function() {
+        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+        if (!options.nofade)
+          setTimeout($.mobile.hidePageLoadingMsg, Math.min(1500, msg.length * 50));
+      }, options.delay || 0);
     }
   };
   

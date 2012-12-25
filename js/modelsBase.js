@@ -298,16 +298,12 @@ define([
         complete: function(jqXHR, status) {
           if (status != 'success') {
             G.log(MBI.TAG, 'error', "couldn't fetch models");
-//              alert("Oops! Couldn't initialize awesomeness!");
-//            if (error)
-//              error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
             var errArgs = [null, {type: status}, options];
             return error.apply(this, errArgs);
           }
             
           var data;
           try {
-//            eval(jqXHR.responseText);
             data = JSON.parse(jqXHR.responseText);
           } catch (err) {
             G.log(MBI.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);

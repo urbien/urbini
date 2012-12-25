@@ -12,4 +12,5 @@ NETWORK:
 
 FALLBACK:
 / /offline.html
+/mobileBoot/boot.js /js/bootoffline.js
 
