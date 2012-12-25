@@ -181,6 +181,7 @@ define([
     pageChanged: function() {
       var self = this;
       this.$wall = $('#nabs_grid');
+      
       if (this.$wall != null)
         this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
       // note: use this.$wall.masonry(); if images have defined height
@@ -189,6 +190,15 @@ define([
     alignNewBricks: function() {
       if (this.$wall == null)
         return;
+
+      // check if first masonry brick was aligned before,
+      // so possible to append next portion of bricks   
+      var firstBrick = this.$wall[0].childNodes[0];
+      if (firstBrick && firstBrick.style.position != "absolute") {
+        this.pageChanged();
+        return;
+      }
+      
       // filter unaligned "bricks" which do not have calculated, absolute position 
       $bricks = $(this.$wall[0].childNodes).filter(function(idx, node) {
                   return (node.style.position != "absolute"  );
