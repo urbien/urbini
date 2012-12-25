@@ -59,8 +59,8 @@ define([
       this.forceRefresh = false;
       return ret;
     },
-    
-    list: function(oParams, backlink) {
+    list: function(oParams) {
+//      this.backClicked = this.wasBackClicked();
       if (!ListPage) {
         var args = arguments;
         var self = this;
@@ -71,59 +71,9 @@ define([
         
         return;
       }
-      if (this.backClicked) {
-      }
       var self = this;
       var params = oParams.split("?");
       var type = decodeURIComponent(params[0]);
-      if (backlink) {
-        type = U.getType(type);
-        
-        var m = this.isModelLoaded(self, type, oParams, backlink);
-        if (!m)
-          return;
-//        var m = MB.shortNameToModel[type];
-//        if (!m) {
-//          MB.loadStoredModels({models: [type]});
-//          
-//          if (!MB.shortNameToModel[type]) {
-//            MB.fetchModels(type, 
-//               {success: function() {
-//                 self.list.apply(self, [oParams, backlink]);
-//               },
-//               error: Error.getDefaultErrorHandler(),
-//               sync: true}
-//            );
-//            
-//            return;
-//          } 
-//        }
-        var meta = m.properties;
-        var bltype = meta[backlink].range;
-        bltype = U.getType(bltype);
-        
-        if (!this.isModelLoaded(self, bltype, oParams, backlink))
-          return;
-//        var m = MB.shortNameToModel[bltype];
-//        if (!m) {
-//          MB.loadStoredModels({models: [bltype]});
-//          
-//          if (!MB.shortNameToModel[bltype]) {
-//            MB.fetchModels(bltype, 
-//               {success: function() {
-//                 self.list.apply(self, [oParams, backlink]);
-//               },
-//               error: Error.getDefaultErrorHandler(),
-//               sync: true}
-//            );
-//            
-//            return;
-//          } 
-//        }
-////        var m1 = MB.shortNameToModel[pType];
-////        if (!m1)
-////          m1 = m1;
-      }
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
         var q = query.split("&");
@@ -140,40 +90,19 @@ define([
       var page = this.page = this.page || 1;
       var force = this.forceRefresh;
       
-      if (!this.isModelLoaded(self, type, oParams, backlink))
+      if (!this.isModelLoaded(self, type, oParams))
         return;
-//      if (!MB.shortNameToModel[type]) {
-//        MB.loadStoredModels({models: [type]});
-//        
-//        if (!MB.shortNameToModel[type]) {
-//          MB.fetchModels(type, 
-//             {success: function() {
-//               self.list.apply(self, [oParams, backlink]);
-//             },
-//             error: Error.getDefaultErrorHandler(),
-//             sync: true}
-//          );
-//          
-//          return;
-//        } 
-//      }
-      if (backlink) {
-        
-      }
-      
-      var t = backlink ? bltype : type;  
-      var c = this.Collections[t];
-      if (c && !c.loaded)
+      var t = type;  
+      var key = query ? t + '?' + query : t;
+      var c = this.Collections[key];
+      if (c && !c._lastFetchedOn)
         c = null;
       
       var cView = this.CollectionViews[t];
       if (!query && c && cView) {
         this.currentModel = c;
         this.changePage(cView, {page: page});
-        if (!backlink)
-          this.Collections[t].fetch({page: page});
-        else
-          this.Collections[t].fetch({page: page, _backlink: backlink, _rType: type, _rUri: oParams});
+        this.Collections[key].fetch({page: page});
         return this;
       }      
       
@@ -181,7 +110,7 @@ define([
       if (!model)
         return this;
       
-      var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _backlink: backlink, _rType: type, _rUri: oParams });    
+      var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: type, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
       if (!query) {
@@ -192,7 +121,6 @@ define([
       list.fetch({
         add: true,
         sync: true,
-        _backlink: backlink,
         _rUri: oParams,
         success: function() {
           self.changePage(listView);
@@ -368,21 +296,14 @@ define([
 //      console.log("painting map");
 //    },
     
-    isModelLoaded: function(self, type, oParams, backlink) {
+    isModelLoaded: function(self, type, oParams) {
       var m = MB.shortNameToModel[type];
-      if (m)
-        return m;
-      if (backlink)
-        MB.loadStoredModels({models: [type], backlink: backlink});
-      else
-        MB.loadStoredModels({models: [type]});
-      m = MB.shortNameToModel[type];
       if (m)
         return m;
 
       MB.fetchModels(type, { 
          success: function() {
-           self.list.apply(self, [oParams, backlink]);
+           self.list.apply(self, [oParams]);
          },
          error: Error.getDefaultErrorHandler(),
          sync: true
