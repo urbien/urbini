@@ -3,7 +3,8 @@
 <head>
   <base href="serverName" />
   <title>Backbone Cellar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
+  <script src="mobileBoot/boot.js"></script>  
   <!-- script data-main="js/loader" src="js/lib/require.js"></script>
   <backboneInitInfo / -->
   <script src="mobileBoot/boot.js"></script>
@@ -11,7 +12,6 @@
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">
 	<file />
-
 	
 <!--script>
 (function() {

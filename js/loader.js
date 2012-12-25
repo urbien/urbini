@@ -313,7 +313,7 @@ define('globals', function() {
     appendCSS: function(text, callback) {
       var style = document.createElement('style');
       style.type = 'text/css';
-      style.innerHTML = text;
+      style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
       document.getElementsByTagName('head')[0].appendChild(style);
       callback();
     },
