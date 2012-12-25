@@ -1,4 +1,5 @@
 define([
+  'globals',
   'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
@@ -6,7 +7,7 @@ define([
   'cache!utils',
   'cache!templates',
   'cache!events' 
-], function($, __jqm__, _, Backbone, U, Templates, Events) {
+], function(G, $, __jqm__, _, Backbone, U, Templates, Events) {
   
   return Backbone.View.extend({
     initialize: function(options) {
@@ -39,7 +40,8 @@ define([
       if (!props.length) 
         return this;
       var json = this.model.toJSON();
-      var propVal = json[props[0]];
+      var p = props[0];
+      var propVal = json[p];
       if (typeof propVal == 'undefined') 
         return this;
       var frag = document.createDocumentFragment();
@@ -50,15 +52,29 @@ define([
   //          var iTemplate = _.template(Templates.get('imagePT'));
   //          li += '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
-      var maxW = $(window).width() - 3;
+      var maxW = $(window).width(); // - 3;
       var maxH = $(window).height() - 50;
+
+      var metaW = meta[p]['imageWidth'];
+      var metaH = meta[p]['imageHeight'];
+      var metaDim = meta[p]['maxDimension'];
+
       var oWidth = json['originalWidth'];
       var oHeight = json['originalHeight'];
+
       var w;
       var h;
       if (oWidth > maxW) {
-        var ratio = maxW / oWidth;
-        w = maxW;
+        var ratio;
+//        if (metaW  &&  metaW < maxW) {
+//          w = metaW;         
+//          ratio = metaW / oWidth;
+//        }
+//        else {
+          ratio = maxW / oWidth;
+          w = maxW;
+//        }
+        oHeight = oHeight * ratio;
       }
       else if (oWidth != 0) {
         w = oWidth;
@@ -70,8 +86,11 @@ define([
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
       var iTemplate = "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "'>";
-      var li = '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
-      
+      var li;
+
+      var padding = 15 - (maxW - w) / 2;
+      padding = -padding;
+      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;
