@@ -23,7 +23,8 @@ define('app', [
   var App = {};
   App.initialize = function() {
     var error = function(e) {
-      G.log('init', 'error', "failed to init app, not starting", e);
+      G.log('init', 'error', "failed to init app, not starting");
+      throw new Error('failed to load app');
     };
     
     Templates.loadTemplates();

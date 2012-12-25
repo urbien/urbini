@@ -16,5 +16,5 @@
   console.log('loading boot');
   g = JSON.parse(g);
   window.Lablz = g;
-  g.boot(document);
+  new Function("d", g.boot)(document);
 })();
