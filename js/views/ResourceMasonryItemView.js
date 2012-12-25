@@ -40,11 +40,11 @@ define([
       if (!meta)
         return this;
       
-      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
-      if (img == null)
-        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
-      if (img == null)
-        img = U.getCloneOf(meta, 'ImageResource.bigImage')[0];
+//      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
+//      if (img == null)
+//        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
+//      if (img == null)
+      var img = U.getCloneOf(meta, 'ImageResource.bigImage')[0];
       var json = m.toJSON();
       
       var grid = U.getGridCols(m);
