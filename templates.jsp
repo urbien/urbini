@@ -8,12 +8,10 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <!--
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
-    -->
     <div id="nabs_grid" class="masonry">
     </div>
-    <table width="100%" id="comments">
+    <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
     </table>
   </div>
   
@@ -27,12 +25,13 @@
 
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
-  <div id="resourceViewHolder" data-role="content">
+  <div id="resourceViewHolder" data-role="content" style="margin-top: -15px;">
     <div id="resourceImage"></div><br/>
-    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
     <br/>
-    <ul data-role="listview" data-theme="c" id="cpView" class="action-list" data-inset="true">
+    <br/>
+    <ul data-role="listview" data-theme="c" id="cpView" class="ui-listview">
     </ul>
   </div>
 
@@ -83,7 +82,7 @@
 </script>
 
 <script type="text/template" id="datePT">
-    <span>{{= Globals.U.getFormattedDate(value) }}</span>
+    <span>{{= Lablz.U.getFormattedDate(value) }}</span>
 </script>
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
@@ -114,11 +113,11 @@
 </script>
 
 <script type="text/template" id="durationPT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Globals.U.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Globals.U.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
@@ -161,16 +160,20 @@
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
-<script type="text/template" id="cpTemplate">
+<!-- script type="text/template" id="cpTemplate">
    <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
-</script>
-
-<script type="text/template" id="cpTemplateNoAddNoValue">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="blank"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
    <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+</script -->
+
+<script type="text/template" id="cpTemplate">
+   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+</script>
+
+<script type="text/template" id="cpTemplateNoAdd">
+   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -203,13 +206,13 @@
 
 <script type="text/template" id="backButtonTemplate">
   <li id="back">
-    <a target="#" data-icon="chevron-left" class="back">Back</a>
+    <a target="#" data-icon="chevron-left" class="back"></a>
   </li>  
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <li id="login">   
-    <a target="#" data-icon="signin">Login</a>
+    <a target="#" data-icon="signin"></a>
   </li>
 </script>
 
@@ -228,8 +231,11 @@
 <script type="text/template" id="headerTemplate">
   <div data-role="header" class="ui-header ui-bar-c">
     <div id="errMsg"></div>
-    <div data-role="navbar" data-iconpos="top">
-     <ul id="headerUl"></ul>
+    <div data-role="navbar">
+      <ul id="headerUl"></ul>
+    </div>
+    <div id="name" align="center">
+      <h3 style="margin: 8px;" id="pageTitle">{{= this.pageTitle }}</h3>
     </div>
   </div>
 </script>
@@ -264,7 +270,7 @@
 </script>
 
 <script type="text/template" id="comment-item">
-<td width="1%">
+<td width="1%" valign="top">
   <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
@@ -359,4 +365,3 @@
 </script>
 
 </div>
-
