@@ -492,7 +492,7 @@ define([
         return;
 
       var r = options && options.models ? {models: options.models} : {models: G.models};
-      var hash =  options  &&  options.backlink ? options.models[0] : window.location.hash && window.location.hash.slice(1);
+      var hash =  window.location.hash && window.location.hash.slice(1);
 //      var willLoadCurrentModel = false;
       if (hash) {
         var qIdx = hash.indexOf('?');

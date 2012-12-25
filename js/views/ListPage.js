@@ -74,9 +74,9 @@ define([
       
       var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       this.buttons = {
-        left: isGeo ? [BackButton, LoginButtons, MapItButton, AroundMeButton] : [BackButton, LoginButtons],
-//        left: [BackButton, LoginButtons],
-//        right: isGeo ? [MapItButton, AroundMeButton] : null
+        left: [BackButton], // , LoginButtons
+        right: isGeo ? [MapItButton, AroundMeButton] : null,
+        log: [LoginButtons]    
       };
       
       this.header = new Header({
@@ -93,8 +93,8 @@ define([
 
       var viewMode = models[0].constructor['viewMode'];
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isComment = this.isComment = !isModification &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
-      var isMasonry = this.isMasonry = !isList &&  !isComment  && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isMasonry = this.isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : 'ul';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});

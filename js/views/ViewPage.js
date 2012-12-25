@@ -67,8 +67,9 @@ define([
                   (this.model.isA("Shape") && this.model.get('shapeJson'));
       
       this.buttons = {
-          left: isGeo ? [BackButton, LoginButtons, AroundMeButton] : [BackButton, LoginButtons],
-//          right: isGeo ? [AroundMeButton] : null,
+          left: [BackButton],
+          right: isGeo ? [AroundMeButton] : null, // no need MapItButton?
+          log: [LoginButtons]
       };
       
       this.header = new Header({
@@ -83,7 +84,7 @@ define([
       this.imageView.render();
       this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
       this.view.render();
-      this.cp = new ControlPanel({el: $('#cpView', this.el), model: this.model});
+      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
       this.cp.render();
       if (!this.$el.parentNode) 
         $('body').append(this.$el);

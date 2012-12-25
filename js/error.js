@@ -4,7 +4,7 @@ define([
   'cache!underscore', 
   'cache!backbone',
   'cache!jqueryMobile'
-], function(G,  _, Backbone) {
+], function(G, _, Backbone) {
   var Error = {
     not_found: "The page you're looking for is probably in a parallel universe",
     login: "Please login, then we'll show you the top secret information you're looking for",
@@ -21,7 +21,9 @@ define([
           var router = G.app && G.app.router || Backbone.history;
           switch (code) {
           case 401: 
-            console.log('redirecting to user-login');
+             console.log('redirecting to user-login');
+             // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
+//             Backbone.history.navigate("login/socialnet", {trigger: true} );
 //            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
 //            window.history.back();
             Error.errDialog({msg: Error.login, delay: 1000});
@@ -33,7 +35,7 @@ define([
               if (originalModel && (originalModel instanceof Backbone.Model || originalModel instanceof Backbone.Collection)) // && originalModel.queryMap.length == 0)))
                 errMsg = "No results were found for your query";
   //              router.navigate(defaultDestination || originalModel.shortName || originalModel.constructor.shortName, {trigger: true, replace: true, errMsg: "No results were found for your query"});
-              else
+            else
                 errMsg = Error.not_found;
             }
 //              router.navigate(defaultDestination || G.homePage, {trigger: true, replace: true, errMsg: Error.not_found});            

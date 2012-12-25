@@ -81,15 +81,16 @@ define([
   
             displayedProps[idx++] = p;
 //            json[p] = U.makeProp(prop, json[p]);
-            var n = meta[p].displayName;
+            var n = prop.displayName;
+            var range = U.getType(prop.range); 
             var isPropEditable = U.isPropEditable(json, prop);
             
             var doShow = false;
             var cnt;
             if (!_.has(json, p)) { 
-              cnt = count ? count : 0;
+              cnt = count > 0 ? count : 0;
               
-              if (isPropEditable)
+              if (cnt != 0 || isPropEditable)
                 doShow = true;
 //              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
             }
@@ -108,10 +109,16 @@ define([
                 U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
                 groupNameDisplayed = true;
               }
+              var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
+              
               if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
               else
-                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
+//              if (isPropEditable)
+//                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//              else
+//                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
             }
           }
         }
@@ -147,14 +154,13 @@ define([
           continue;
   
         var isPropEditable = U.isPropEditable(json, prop);
-        var doShow;
+        var doShow = false;
 //        json[p] = U.makeProp(prop, json[p]);
-        var n = meta[p].displayName;
+        var n = prop.displayName;
         var cnt;
         if (!_.has(json, p)) {
-          if (count == -1)
-            cnt = 0;
-          if (cnt  || isPropEditable)
+          cnt = count > 0 ? count : 0;
+          if (cnt != 0 || isPropEditable)
             doShow = true;
         }
         else {
@@ -162,14 +168,20 @@ define([
           cnt = json[p].count;
           if (typeof cnt == 'undefined'  ||  !cnt)
             cnt = 0;
-          if (!isPropEditable  ||  cnt)
+          if (isPropEditable  ||  cnt != 0)
             doShow = true;
         }
         if (doShow) {
+//          if (isPropEditable)
+//            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//          else
+//            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+          var range = U.getType(prop.range);
+          var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
           if (isPropEditable)
-            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
           else
-            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+            U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
         }
       }
       

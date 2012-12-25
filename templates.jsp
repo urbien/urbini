@@ -8,8 +8,7 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
-    </ul>
+    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
@@ -26,7 +25,7 @@
 
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
-  <div id="resourceViewHolder" data-role="content">
+  <div id="resourceViewHolder" data-role="content" style="margin-top: -15px;">
     <div id="resourceImage"></div><br/>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
@@ -161,16 +160,20 @@
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
-<script type="text/template" id="cpTemplate">
+<!-- script type="text/template" id="cpTemplate">
    <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
-</script>
-
-<script type="text/template" id="cpTemplateNoAddNoValue">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="blank"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
    <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+</script -->
+
+<script type="text/template" id="cpTemplate">
+   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+</script>
+
+<script type="text/template" id="cpTemplateNoAdd">
+   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -192,7 +195,9 @@
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
-  <a id="mapIt" target="#" data-role="button" data-icon="map-marker" class="icon next">Map</a>
+  <li id="mapIt">
+    <a target="#" data-icon="globe">Map It</a>
+  </li>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -200,26 +205,38 @@
 </script>
 
 <script type="text/template" id="backButtonTemplate">
-  <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
+  <li id="back">
+    <a target="#" data-icon="chevron-left" class="back"></a>
+  </li>  
+</script>
+
+<script type="text/template" id="loginButtonTemplate">
+  <li id="login">   
+    <a target="#" data-icon="signin"></a>
+  </li>
 </script>
 
 <script type="text/template" id="logoutButtonTemplate">
-  <a id="logout" data-role="button" data-icon="signout" class="icon next" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>
+  <li id="logout">
+    <a target="#" data-icon="signout" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>
+  </li>
 </script>
 
 <script type="text/template" id="aroundMeButtonTemplate">
-  <a id="aroundMe" target="#" data-role="button" class="icon next">Around Me</a>
+  <li id="aroundMe">
+    <a target="#" data-icon="map-marker">Around Me</a>
+  </li>
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div id="header" data-role="header" class="ui-header ui-bar-d" role="banner">
-    <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
+  <div data-role="header" class="ui-header ui-bar-c">
     <div id="errMsg"></div>
-    <h1 id="pageTitle"><!-- {{= this.pageTitle }} --></h1>
-    <!--div data-role="controlgroup" data-type="horizontal" id="headerRight" class="ui-btn-right"></div-->
-  </div>
-  <div id="name" align="center" class="ui-bar-c" role="banner">
-    <h3 style="margin: 8px;" id="pageTitle">{{= this.pageTitle }}</h3>
+    <div data-role="navbar">
+      <ul id="headerUl"></ul>
+    </div>
+    <div id="name" align="center">
+      <h3 style="margin: 8px;" id="pageTitle">{{= this.pageTitle }}</h3>
+    </div>
   </div>
 </script>
 
@@ -249,13 +266,6 @@
   <div data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content" id="login-popup">
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-left">Close</a>
     <authenticateByFacebook mobile="y" />
-  </div>
-</script>
-
-<script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
-    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
-    <span id="socialContainer"></span>
   </div>
 </script>
 

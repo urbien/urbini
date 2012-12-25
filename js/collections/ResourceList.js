@@ -22,7 +22,6 @@ define([
         limitParam: "$limit",
         queryMap: {},
         model: options.model || models[0].model,
-        backlink: options._backlink,
         rUri: options._rUri
       });
       
@@ -35,8 +34,8 @@ define([
       this.displayName = this.model.displayName;
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
-      this.baseUrl = this.backlink ? G.apiUrl + options._rType : G.apiUrl + this.shortName;
-      this.url = this.backlink ? this.getUrl() : this.baseUrl;      
+      this.baseUrl = G.apiUrl + this.shortName;
+      this.url = this.baseUrl;      
       this.queryMap[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
 //      this.sync = this.constructor.sync;
@@ -69,21 +68,7 @@ define([
       this.pager();
     },
     getUrl: function() {
-      if (!this.backlink)  
-        return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
-      var uri = decodeURIComponent(this.rUri);
-//      var type = U.getType(uri);
-      // HACK
-      var s = uri.split("?");
-      if (s.length == 1)
-        return this.baseUrl + this.rUri + "/" + this.backlink + (this.queryMap ? "?" + $.param(this.queryMap) : '');
-      s = s[1].split("&");
-      var pKeys = '';
-      for (var i=0; i<s.length; i++) {
-        pKeys += '/';
-        pKeys += s[i].split("=")[1];
-      }
-      return this.baseUrl + pKeys + "/" + this.backlink + (this.queryMap ? "?" + $.param(this.queryMap) : '');
+      return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
     },
     parseQuery: function(query) {
       if (!query)
@@ -154,9 +139,8 @@ define([
       this.queryMap = this.queryMap || {};
       if (this.offset)
         this.queryMap[this.offsetParam] = this.offset;
-      this.backlink = options._backlink;
       this.rUri = options._rUri;
-      options.url = this.backlink ? this.url : this.getUrl();
+      options.url = this.getUrl();
       options.error = options.error || Error.getDefaultErrorHandler();
       var success = options.success;
       options.success = function() {

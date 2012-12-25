@@ -73,7 +73,17 @@ define([
       ar = prop.allowRolesToEdit;
       return ar ? U.isUserInRole(userRole, ar) : true;
     },
-
+    
+//    getSortProps: function(model) {
+//      var meta = this.model.__proto__.constructor.properties;
+//      meta = meta || this.model.properties;
+//      if (!meta)
+//        return null;
+//      
+//      var list = _.toArray(meta);
+//      return U.getPropertiesWith(list, "sortAscending");
+//    },
+//
     getFirstUppercaseCharIdx: function(str) {
     	for (var i = 0; i < str.length; i++) {
     		var c = str.charAt(i);
@@ -199,7 +209,7 @@ define([
     },
     
     getShortUri: function(uri, model) {
-      if (model.properties._shortUri == 'unsupported')
+      if (model.myProperties._shortUri == 'unsupported')
         return uri;
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
