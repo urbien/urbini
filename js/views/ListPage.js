@@ -21,13 +21,12 @@ define([
   return Backbone.View.extend({
     template: 'resource-list',
     initialize: function () {
-      _.bindAll(this, 'render', 'tap', 'click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
+      _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
       this.TAG = "ListPage";
     },
     events: {
-      'tap': 'tap',
       'click': 'click',
       'click #nextPage': 'getNextPage',
       'click #homeBtn': 'home',
@@ -65,7 +64,7 @@ define([
   //  nextPage: function(e) {
   //    Events.trigger('nextPage', this.model);    
   //  },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render:function (eventName) {
       G.log(this.TAG, 'render');  

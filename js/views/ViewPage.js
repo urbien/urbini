@@ -18,7 +18,7 @@ define([
 ], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
   return Backbone.View.extend({
     initialize: function() {
-      _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
+      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('resource'));
       this.TAG = "ViewPage";
@@ -26,7 +26,6 @@ define([
     },
     events: {
       'click #edit': 'edit',
-      'tap': 'tap',
       'click': 'click',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
@@ -50,15 +49,12 @@ define([
       this.router.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
-    tap: function() {
-//      G.log(this.TAG, 'events', 'tap');
-      return Events.defaultTapHandler.apply(this, arguments);
-    },
+//    tap: function() {
+//      G.log(this.TAG, 'events');
+//      return Events.defaultTapHandler.apply(this, arguments);
+//    },
 //    click: Events.defaultClickHandler,  
-    click: function() {
-      this.clicked = true;
-      return Events.defaultClickHandler.apply(this, arguments);
-    },
+    click: Events.defaultClickHandler,
     render:function (eventName) {
       G.log(this.TAG, "render");
       this.$el.html(this.template(this.model.toJSON()));

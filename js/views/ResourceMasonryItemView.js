@@ -14,7 +14,7 @@ define([
   return Backbone.View.extend({
     className: 'nab nabBoard masonry-brick',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.template = _.template(Templates.get('masonry-list-item'));
       this.modTemplate = _.template(Templates.get('masonry-mod-list-item'));
 
@@ -24,10 +24,9 @@ define([
       return this;
     },
     events: {
-      'tap': 'tap',
       'click': 'click'
     },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render: function(event) {
       var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', MB.typeToModel);

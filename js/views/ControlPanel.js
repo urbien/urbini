@@ -11,7 +11,7 @@ define([
   return Backbone.View.extend({
     tagName: "tr",
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','click', 'refresh'); // fixes loss of context for 'this' within methods
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
       this.cpTemplateNoAdd = _.template(Templates.get('cpTemplateNoAdd'));
@@ -21,8 +21,7 @@ define([
       return this;
     },
     events: {
-      'click': 'click',
-      'tap': 'tap',
+      'click': 'click'
     },
     refresh: function() {
       var collection, modified;
@@ -35,7 +34,7 @@ define([
       
       this.$el.trigger('create');
     },
-    tap: Events.defaultTapHandler,  
+//    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");

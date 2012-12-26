@@ -14,7 +14,7 @@ define([
 ], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
+      _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
@@ -67,7 +67,7 @@ define([
         }
       }
     },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     render:function (eventName) {
       G.log(this.TAG, "render");
       var self = this;

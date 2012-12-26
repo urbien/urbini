@@ -11,12 +11,11 @@ define([
   
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','click'); // fixes loss of context for 'this' within methods
       return this;
     },
     events: {
-      'click': 'click',
-      'tap': 'tap',
+      'click': 'click'
     },
     tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
