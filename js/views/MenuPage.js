@@ -14,7 +14,7 @@ define([
 ], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
+      _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
@@ -34,13 +34,14 @@ define([
       'swiperight': 'swiperight'
     },
     swipeleft: function() {
-//      console.log("swipeleft event");
-      var m = this.model;
-      var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
-      this.router.navigate(newHash, {trigger: true, replace: true});
+      G.log(this.TAG, 'events', "swipeleft");
+      window.history.back();
+//      var m = this.model;
+//      var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
+//      this.router.navigate(newHash, {trigger: true, replace: true});
     },
     swiperight: function() {
-//      console.log("swiperight event");
+      G.log(this.TAG, 'events', "swiperight");
     },
     edit: function(e) {
       e.preventDefault();
@@ -66,7 +67,7 @@ define([
         }
       }
     },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     render:function (eventName) {
       G.log(this.TAG, "render");
       var self = this;

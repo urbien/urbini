@@ -17,7 +17,7 @@ define([
     cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap', 'resetMap');
+      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap');
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
       
@@ -30,9 +30,9 @@ define([
       });
     },
     events: {
-      'tap': 'tap',
+      'click': 'click'
     },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this;

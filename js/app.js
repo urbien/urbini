@@ -23,7 +23,8 @@ define('app', [
   var App = {};
   App.initialize = function() {
     var error = function(e) {
-      G.log('init', 'error', "failed to init app, not starting", e);
+      G.log('init', 'error', "failed to init app, not starting");
+      throw new Error('failed to load app');
     };
     
     Templates.loadTemplates();
@@ -47,13 +48,13 @@ define('app', [
     G.app = App;
     App.started = true;
     var models = G.models;
-    App.router = new Router();
+    G.Router = new Router();
     Backbone.history.start();
     
     _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
-    App.homePage = G.homePage = G.homePage || G.tabs[0].mobileUrl;
+    G.homePage = G.homePage || G.tabs[0].mobileUrl;
     if (!window.location.hash) {
-      App.router.navigate(App.homePage, {trigger: true});
+      G.Router.navigate(G.homePage, {trigger: true});
     }
   };
   

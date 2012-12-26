@@ -19,7 +19,7 @@ define([
     skipScrollEvent: false,
     
     initialize: function () {
-      _.bindAll(this, 'render', 'tap', 'swipe', 'getNextPage', /*'renderMany', 'renderOne',*/ 'refresh', 'changed', 'onScroll', 'pageChanged', 'alignNewBricks'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'pageChanged', 'alignNewBricks'); // fixes loss of context for 'this' within methods
       Events.on('refresh', this.refresh);
       this.model.on('reset', this.render, this);
       $(window).on('scroll', this.onScroll);
@@ -100,8 +100,9 @@ define([
         else
           this.$el.listview('refresh');
       }
-      else
+      else {
         this.initializedListView = true;
+      }
 //      else {
 //        //Element has not been initiliazed
 //        this.$el.listview().listview('refresh');
@@ -138,7 +139,7 @@ define([
         error: after
       });      
     },
-    tap: Events.defaultTapHandler,
+//    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     swipe: function(e) {
       console.log("swipe");

@@ -11,7 +11,7 @@ define([
 
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
       this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
       this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
@@ -21,8 +21,7 @@ define([
       return this;
     },
     events: {
-      'click': 'click',
-      'tap': 'tap',
+      'click': 'click'
     },
     refresh: function() {
       var collection, modified;
@@ -42,7 +41,7 @@ define([
       else
         this.$el.listview().listview('refresh');
     },
-    tap: Events.defaultTapHandler,  
+//    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");

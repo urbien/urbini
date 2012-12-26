@@ -148,12 +148,24 @@ define([
 
       var saveOptions = _.extend(_.clone(options), {
         success: function(resp, status, xhr) {
-          if (xhr.status == 304)
-            return;
-            
-          if (resp.error) {
-            G.log(MBI.TAG, 'error', 'Error in sync: ' + resp.error.code + ', ' + resp.error.details);
-            defErr && defErr(resp.error, status, xhr);
+          var code = xhr.status;
+          var err = function() {
+            G.log(MBI.TAG, 'error', code, options.url);
+            defErr && defErr(resp && resp.error || {code: code}, status, xhr);            
+          }
+          
+          switch (code) {
+            case 200:
+              break;
+            case 304:
+              return;
+            default:
+              err();
+              return;
+          }
+          
+          if (resp && resp.error) {
+            err();
             return;
           }
           

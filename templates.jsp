@@ -206,7 +206,13 @@
 
 <script type="text/template" id="backButtonTemplate">
   <li id="back">
-    <a target="#" data-icon="chevron-left" class="back"></a>
+    <a target="#" data-icon="chevron-left" class="back">Back</a>
+  </li>  
+</script>
+
+<script type="text/template" id="menuButtonTemplate">
+  <li id="menuBtn">
+    <a target="#" data-icon="reorder" class="menu">Menu</a>
   </li>  
 </script>
 

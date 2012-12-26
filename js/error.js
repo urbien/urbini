@@ -15,10 +15,9 @@ define([
       return function(originalModel, err, options) {
         var code = err.code || err.status;
         var type = err.type || err.statusText;
-//        var defaultDestination = G.app && G.app.router.previousHash;
+//        var defaultDestination = G.Router.previousHash;
         if (options.sync) {
           window.history.back();
-          var router = G.app && G.app.router || Backbone.history;
           switch (code) {
           case 401: 
              console.log('redirecting to user-login');
@@ -68,7 +67,7 @@ define([
       setTimeout(function() {
         $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
         if (!options.nofade)
-          setTimeout($.mobile.hidePageLoadingMsg, Math.min(1500, msg.length * 50));
+          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
       }, options.delay || 0);
     }
   };
