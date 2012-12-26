@@ -34,13 +34,14 @@ define([
       'swiperight': 'swiperight'
     },
     swipeleft: function() {
-//      console.log("swipeleft event");
-      var m = this.model;
-      var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
-      this.router.navigate(newHash, {trigger: true, replace: true});
+      G.log(this.TAG, 'events', "swipeleft");
+      window.history.back();
+//      var m = this.model;
+//      var newHash = m instanceof Backbone.Model ? 'view/' + encodeURIComponent(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
+//      this.router.navigate(newHash, {trigger: true, replace: true});
     },
     swiperight: function() {
-//      console.log("swiperight event");
+      G.log(this.TAG, 'events', "swiperight");
     },
     edit: function(e) {
       e.preventDefault();

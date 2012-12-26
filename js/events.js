@@ -22,7 +22,7 @@ define([
     
     event.preventDefault();
     var href = $el.prop('href');
-    return (G.app && G.app.router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), true);
+    return G.Router.navigate(href.slice(href.indexOf('#') + 1), true);
   };
 
   Events.defaultClickHandler = function(e) {
@@ -37,7 +37,7 @@ define([
 //  
 //    event.preventDefault();
 //    var href = $el.prop('href');
-//    (G.app && G.app.router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), true);
+//    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), true);
   };
   
   return Events;

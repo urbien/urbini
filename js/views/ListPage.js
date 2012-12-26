@@ -15,8 +15,8 @@ define([
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
-  'cache!router'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, Router) {
+  'cache!views/MenuButton'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
@@ -24,7 +24,6 @@ define([
       _.bindAll(this, 'render', 'tap', 'click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
-      this.router = G.app && G.app.router || Backbone.history;
       this.TAG = "ListPage";
     },
     events: {
@@ -41,7 +40,7 @@ define([
     },
     swiperight: function(e) {
       // open menu
-      this.router.navigate('menu/' + encodeURIComponent(window.location.hash.slice(1)), {trigger: true, replace: false});
+      G.Router.navigate('menu/' + encodeURIComponent(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
@@ -54,7 +53,7 @@ define([
       this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
-      this.router.navigate(G.homePage, {trigger: true, replace: false});
+      G.Router.navigate(G.homePage, {trigger: true, replace: false});
       return this;
     },
     getNextPage: function() {
@@ -74,7 +73,7 @@ define([
       
       var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       this.buttons = {
-        left: [BackButton], // , LoginButtons
+        left: [BackButton, MenuButton], // , LoginButtons
         right: isGeo ? [MapItButton, AroundMeButton] : null,
         log: [LoginButtons]    
       };
@@ -96,7 +95,7 @@ define([
       var isMasonry = this.isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : 'ul';
+      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
       if (isGeo) {

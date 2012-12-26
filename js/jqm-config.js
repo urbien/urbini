@@ -10,7 +10,11 @@ define(['cache!jquery'], function($) {
       $.mobile.touchOverflowEnabled = true;
       $.mobile.loadingMessageTextVisible = true;
       $.mobile.buttonMarkup.hoverDelay = 25;
-      // Remove page from DOM when it's being replaced
+//      $.event.special.swipe.scrollSupressionThreshold (default: 10px) – More than this horizontal displacement, and we will suppress scrolling.
+//      $.event.special.swipe.durationThreshold = 1000;// (default: 1000ms) – More time than this, and it isn't a swipe.
+//      $.event.special.swipe.horizontalDistanceThreshold (default: 30px) – Swipe horizontal displacement must be more than this.
+//      $.event.special.swipe.verticalDistanceThreshold (default: 75px) – Swipe vertical displacement must be less than this.
+// Remove page from DOM when it's being replaced
 //      $('div[data-role="page"]').live('pagehide', function (event, ui) {
 //          $(event.currentTarget).remove();
 //      });
