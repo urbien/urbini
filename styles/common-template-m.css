@@ -207,4 +207,14 @@ html { height: 100%; }
 #headerUl .ui-btn-inner { font-size: 0px; }
 #headerUl .ui-btn { padding: 3px 0px; }
 
-
+/* solution for masonry on back button problem (2 rules)
+.ui-mobile [data-role="page"], .ui-mobile [data-role="dialog"], .ui-page {
+   display: block;
+   z-index: 1;
+   opacity: 0;
+}
+.ui-mobile .ui-page-active {
+  z-index: 10;
+  opacity: 1;
+}
+*/
