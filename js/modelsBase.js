@@ -62,6 +62,7 @@ define([
     }
     
     Backbone.sync = function(method, model, options) {
+      var tsProp = "davGetLastModified";
       var now = new Date().getTime();
       var isCol = model instanceof Backbone.Collection;
       var lastFetchedOn = isCol ? model._lastFetchedOn : (model.collection && model.collection._lastFetchedOn) || model.get('_lastFetchedOn');
@@ -105,7 +106,7 @@ define([
       //    if (!(model instanceof Backbone.Collection))
       //      return;
           
-          var tsProp = model.model.timestamp; // model.model is the collection's model 
+//          var tsProp = model.model.timestamp; // model.model is the collection's model
           var toAdd = [];
           var skipped = [];
           for (var i = 0; i < results.length; i++) {
