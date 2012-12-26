@@ -181,7 +181,7 @@ define([
     // initial masonry alignment
     pageChanged: function() {
       var self = this;
-      this.$wall = $('#nabs_grid');
+      this.$wall = $('div.ui-page-active #nabs_grid');
       
       if (this.$wall != null)
         this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
