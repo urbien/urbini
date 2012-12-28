@@ -487,6 +487,7 @@ if (typeof JSON !== 'object') {
 
 define('globals', function() {
   var G = Lablz;
+  G.localTime = new Date().getTime();
   G.online = !!navigator.onLine;
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
@@ -532,11 +533,24 @@ define('globals', function() {
         return content + '\r\n//@ sourceURL=' + url;
       },
       
-      prepForStorage: function(text) {
-        return JSON.stringify({modified: new Date().getTime(), text: text});
-      },
           
       load: function (name, req, onLoad, config) {
+        G.startedTask("load " + name);
+        var ol = onLoad;
+        var self = this;
+        onLoad = function() {
+          ol.apply(self, arguments);
+          G.finishedTask("load " + name);
+//          G.recordCheckpoint('finished loading ' + name);
+        }
+        
+        var ft = ol.fromText;
+        onLoad.fromText = function() {
+          ft.apply(self, arguments);
+          G.finishedTask("load " + name);
+//          G.recordCheckpoint('finished loading ' + name);
+        }
+        
         if (config.isBuild) {
           onLoad();
           return;
@@ -560,7 +574,6 @@ define('globals', function() {
         if (ext)
           ext = ext[0].slice(1).toLowerCase();
           
-        var now = new Date().getTime();
         var mCache = config.cache;
         var inMemory = mCache && mCache[url];
         var loadedCached = false;
@@ -656,7 +669,7 @@ define('globals', function() {
       
       save: function(url, text, delay) {
         var put = function() {
-          localStorage.setItem(url, cache.prepForStorage(text));      
+          localStorage.setItem(url, G.prepForStorage(text, G.serverTime));      
         }
         
         if (delay)
@@ -692,23 +705,45 @@ define('globals', function() {
     return cache;
   });
 
-  var moreG = {      
-//    rvalidchars = /^[\],:{}\s]*$/,
-//    rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
-//    rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
-//    rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g,
-//    parseJSON: function(data) {
-//      if ( window.JSON && window.JSON.parse ) {
-//        return window.JSON.parse( data );
-//      }
-//
-//      if (G.rvalidchars.test( data.replace( G.rvalidescape, "@" )
-//        .replace( G.rvalidtokens, "]" )
-//        .replace( G.rvalidbraces, "")) ) {
-//  
-//        return ( new Function( "return " + data ) )();
-//      }
-//    },
+  var moreG = {
+    defaultVocPath: 'http://www.hudsonfog.com/voc/',
+    timeOffset: G.localTime - G.serverTime,
+    currentServerTime: function() {
+      return new Date().getTime() - G.timeOffset;
+    },
+    hasLocalStorage: hasLocalStorage,
+    TAG: 'globals',
+    checkpoints: [],
+    tasks: {},
+    recordCheckpoint: function(name) {
+      G.checkpoints.push({name: name, time: new Date()});
+    },
+    startedTask: function(name) {
+      G.tasks[name] = {start: new Date()};
+    },
+    finishedTask: function(name, dontPrint) {
+      G.tasks[name].end = new Date();
+      if (!dontPrint)
+        G.printTask(name);
+    },
+    printCheckpoints: function() {
+      for (var i = 0; i < G.checkpoints.length; i++) {
+        var c = G.checkpoints[i];
+        var time = c.time.getTime();
+        var passed = i ? time - G.checkpoints[i - 1].time.getTime() : 0;
+        G.log(G.TAG, 'checkpoints', c.name, c.time.getTime(), 'time since last checkpoint: ' + passed);
+      }
+    },
+    printTask: function(name) {
+      var t = G.tasks[name];
+      var time = t.end - t.start;
+      G.log(G.TAG, 'tasks', name + ' took ' + time + 'ms');
+    },
+    printTasks: function() {
+      for (var name in G.tasks) {
+        G.printTask(name);
+      }
+    },
     sqlUri: 'sql',
     modules: {},
     id: 0,
@@ -768,6 +803,16 @@ define('globals', function() {
         on: true,
         color: '#FF0000',
         bg: '#333'
+      },
+      checkpoints: {
+        on: true,
+        color: '#FF88FF',
+        bg: '#000'
+      },
+      tasks: {
+        on: true,
+        color: '#88FFFF',
+        bg: '#000'
       },
       db: {
         on: true,
@@ -864,7 +909,7 @@ define('globals', function() {
         }
       }
       
-      if (!localStorage || !localStorage.length)
+      if (!hasLocalStorage)
         return modules;
       
       var pruned = [];
@@ -919,28 +964,33 @@ define('globals', function() {
           } catch (err) {
           }
           
+          var newModules = {};
           if (resp && !resp.error && resp.modules) {
             for (var i = 0; i < resp.modules.length; i++) {
               var m = resp.modules[i];
               for (var name in m) {
                 var minIdx = name.indexOf('.min.js');
-                G.modules[minIdx == -1 ? name : name.slice(0, minIdx) + '.js'] = m[name];
+                var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+                G.modules[mName] = newModules[mName] = m[name];
                 break;
               }
             }
           }
         
-          if (localStorage) {
+          if (hasLocalStorage) {
             setTimeout(function() {
-              var now = new Date().getTime();
-              for (var url in G.modules) {
-                localStorage.setItem(url, JSON.stringify({modified: new Date().getTime(), text: G.modules[url]}));
+              for (var url in newModules) {
+                localStorage.setItem(url, G.prepForStorage(newModules[url], G.serverTime));
               }
             }, 100);
           }
           
           if (callback) callback();
         });
+    },
+    
+    prepForStorage: function(text, date) {
+      return JSON.stringify({modified: date, text: text});
     }
   }; 
   
@@ -953,9 +1003,31 @@ define('globals', function() {
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
   })();
   
+  G.testIDBQ = function(storeName, q) {
+    var query;
+    for (var i = 0; i < q.length; i++) {
+      var val = q[i];
+      var subQuery = Lablz.idbq.Index(val.index)[val.op](val.bound);
+      query = query ? query.and(subQuery) : subQuery;
+    }
+//    var query = q.reduce(function(memo, val) {
+//      return memo.and(Lablz.idbq.Index(val.index)[val.op](val.bound));
+//    });
+    
+    var store = Lablz.MBI.db.transaction([storeName], 'readonly').objectStore(storeName);
+    var request = query.getAll(store);
+    var goals;
+    request.onsuccess = function (event) {
+      goals = request.result;
+      console.log(JSON.stringify(event.target.result));
+    }
+    
+    request.onerror = function (event) {
+      console.log("error: " + JSON.stringify(event));
+    }
+  }
+  
   G.apiUrl = G.serverName + '/api/v1/';
-
-
   require.config({
     paths: {
 //      cache: 'lib/requirejs.cache',
@@ -965,6 +1037,7 @@ define('globals', function() {
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
+      queryIndexedDB: 'lib/queryIndexedDB',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
       jqueryImagesloaded: 'lib/jquery.imagesloaded',
@@ -982,7 +1055,7 @@ define('globals', function() {
    G.baseBundle = {
      pre: {
      // Javascript
-       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
         'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
         /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
        // CSS
@@ -1027,20 +1100,32 @@ require(['globals'], function(G) {
 //    localStorage.setItem();
 //  }
   
+//  G.recordCheckpoint('loading pre-bundle');
+  G.startedTask("loading pre-bundle");
   G.loadBundle(G.baseBundle.pre, function() {
+//    G.recordCheckpoint('loaded pre-bundle');
+    G.finishedTask("loading pre-bundle");
     var css = G.baseBundle.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       css[i] = 'cache!' + css[i];
     }
     
-    require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqm, App) {
+//    G.recordCheckpoint('loading modules');
+    G.startedTask("loading modules");
+    require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqmConfig, App) {
+      G.recordCheckpoint('finished loading modules');
+      G.finishedTask("loading modules");
       G.browser = $.browser;
       App.initialize();
       setTimeout(function() {
+//        G.recordCheckpoint('loading post-bundle');
+        G.startedTask('loading post-bundle');
         G.loadBundle(G.baseBundle.post, function() {
-          console.log('loaded post bundle');
+          G.finishedTask('loading post-bundle');
         });
       }, 100);
+
+      setTimeout(G.printCheckpoints, 5000);
     });
   });
 })
