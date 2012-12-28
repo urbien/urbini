@@ -314,67 +314,95 @@ define([
       
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
-      $.ajax({
-        url: G.serverName + "/backboneModel", 
-        type: 'POST',
-        data: {"models": modelsCsv},
-        timeout: 5000,
-        complete: function(jqXHR, status) {
+      var useWorker = window.Worker && !options.sync;
+      var complete = function() {
+        var responseText;
+        var data;
+        if (useWorker) 
+          // XHR
+          data = arguments[0];
+        else {                                
+          // $.ajax
+          responseText = arguments[0].responseText;
+          var status = arguments[1];
           if (status != 'success') {
             G.log(MBI.TAG, 'error', "couldn't fetch models");
             var errArgs = [null, {type: status}, options];
             return error.apply(this, errArgs);
           }
-            
-          var data;
+          
           try {
-            data = JSON.parse(jqXHR.responseText);
+            data = JSON.parse(responseText);
           } catch (err) {
             G.log(MBI.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
             error(null, null, options);            
             return;
           }
-          
-          if (data.error) {
-            error(null, data.error, options);
-            return;
-          }
-          
-          var mz = data.models;
-          var pkg = data.packages;
-          if (pkg)
-            U.deepExtend(MBI.packages, pkg);
-          
-          G.classUsage = _.union(G.classUsage, data.classUsage);          
-          G.linkedModels = data.linkedModels; //_.union(G.linkedModels, data.linkedModels);
-          
-          var newModels = [];
-          for (var i = 0; i < mz.length; i++) {
-            var p = mz[i].path;
-            var lastDot = p.lastIndexOf('.');
-            var path = p.slice(0, lastDot);
-            var name = p.slice(lastDot + 1);
-            var sup = mz[i].sPath;
-            
-            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-            var m = U.leaf(MBI.packages, path)[name] = U.leaf(MBI.packages, sup).extend(mz[i].p, mz[i].s);
-            U.pushUniq(newModels, m);
-          }
-          
-          for (var i = 0; i < newModels.length; i++) {
-            U.pushUniq(MBI.models, newModels[i]); // preserve order of MBI.models
-          }
-          
-          MBI.initModels();
-          if (success)
-            success();
-          
-          G.finishedTask("ajax models");
-          
-          setTimeout(function() {MBI.saveModelsToStorage(newModels)}, 0);
-          setTimeout(MBI.fetchLinkedModels, 0);
         }
-      });
+        
+        if (data.error) {
+          error(null, data.error, options);
+          return;
+        }
+        
+        var mz = data.models;
+        var pkg = data.packages;
+        if (pkg)
+          U.deepExtend(MBI.packages, pkg);
+        
+        G.classUsage = _.union(G.classUsage, data.classUsage);          
+        G.linkedModels = data.linkedModels; //_.union(G.linkedModels, data.linkedModels);
+        
+        var newModels = [];
+        for (var i = 0; i < mz.length; i++) {
+          var p = mz[i].path;
+          var lastDot = p.lastIndexOf('.');
+          var path = p.slice(0, lastDot);
+          var name = p.slice(lastDot + 1);
+          var sup = mz[i].sPath;
+          
+          // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
+          var m = U.leaf(MBI.packages, path)[name] = U.leaf(MBI.packages, sup).extend(mz[i].p, mz[i].s);
+          U.pushUniq(newModels, m);
+        }
+        
+        for (var i = 0; i < newModels.length; i++) {
+          U.pushUniq(MBI.models, newModels[i]); // preserve order of MBI.models
+        }
+        
+        MBI.initModels();
+        if (success)
+          success();
+        
+        G.finishedTask("ajax models");
+        
+        setTimeout(function() {MBI.saveModelsToStorage(newModels)}, 0);
+        setTimeout(MBI.fetchLinkedModels, 0);
+      };
+      
+      if (useWorker) {
+        var xhr = new Worker(G.serverName + '/js/xhrWorker.js');
+        xhr.onmessage = function(event) {
+          if (typeof event.data === 'string')
+            complete({error: {code: 404}});
+          else
+            complete(event.data);
+        };
+        xhr.onerror = function(err) {
+          console.log(JSON.stringify(err));
+        };
+        
+        xhr.postMessage({type: 'JSON', url: G.modelsUrl + '?models=' + encodeURIComponent(modelsCsv)});
+      }
+      else {
+        $.ajax({
+          url: G.modelsUrl, 
+          type: 'POST',
+          data: {"models": modelsCsv},
+          timeout: 5000,
+          complete: complete
+        });
+      }
     };
 
     this.fetchLinkedModels = function() {
@@ -643,7 +671,7 @@ define([
         }
       }
       
-      r.models = _.filter(r.models, function(m) {return !!m}); // filter out nulls
+      r.models = _.compact(r.models); // filter out nulls
       while (extraModels.length) {
         r.models.push(extraModels.pop());
       }
@@ -1049,43 +1077,57 @@ define([
     };
 
     this.fetchModelsForLinkedResources = function(model) {
-      model = model || model.constructor;
-      var tmp = []; // new U.UArray();
-      _.forEach(model.properties, function(p) {
-        p.range && tmp.push(p.range);
-      });
-      
-      var linkedModels = [];
-      var l = G.linkedModels;
-      for (var i = 0; i < l.length; i++) {
-        // to preserve order
-        if (_.contains(tmp, l[i].type)) {
-          var m = l[i];
-          var j = i;
-          var supers = [];
-          while (j > 0 && l[j].superName == l[--j].shortName) {
-            var idx = linkedModels.indexOf(l[j]);
-            if (idx != -1) {
-              linkedModels.remove(idx, idx);
-            }
-            
-            supers.push(l[j]);
-          }
-          
-          if (supers.length) {
-            var s;
-            while (!!(s = supers.pop())) {
-              linkedModels.push(s);
-            }
-          }
-          
-          linkedModels.push(l[i]);
-        }
+//      model = model.constructor || model;
+      var ctr = model.constructor;
+      var props = {};
+      for (var name in ctr.properties) {
+        if (model.get(name))
+          props[name] = ctr.properties[name];
       }
       
-      if (linkedModels.length) {
+      var knownTypes = _.keys(MBI.typeToModel);
+      var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
+        if (prop.backLink) {
+          var count = model.get(name + 'Count') || model.get(name + '.COUNT()');
+          if (!count)
+            return null;
+        }
+        
+        return prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
+//          return _.contains(G.classUsage, r);
+      })), function(m) {return m && !_.contains(knownTypes, m)}); // no need to reload known types
+      
+//      var linkedModels = [];
+//      var l = G.linkedModels;
+//      for (var i = 0; i < l.length; i++) {
+//        // to preserve order
+//        if (_.contains(tmp, l[i].type)) {
+//          var m = l[i];
+//          var j = i;
+//          var supers = [];
+//          while (j > 0 && l[j].superName == l[--j].shortName) {
+//            var idx = linkedModels.indexOf(l[j]);
+//            if (idx != -1) {
+//              linkedModels.remove(idx, idx);
+//            }
+//            
+//            supers.push(l[j]);
+//          }
+//          
+//          if (supers.length) {
+//            var s;
+//            while (!!(s = supers.pop())) {
+//              linkedModels.push(s);
+//            }
+//          }
+//          
+//          linkedModels.push(l[i]);
+//        }
+//      }
+      
+      if (tmp.length) {
 //        linkedModels = _.uniq(linkedModels);
-        MBI.loadStoredModels({models: linkedModels});
+        MBI.loadStoredModels({models: tmp});
         MBI.fetchModels(null, {sync: false});
       }
     };

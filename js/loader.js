@@ -574,7 +574,7 @@ define('globals', function() {
         if (ext)
           ext = ext[0].slice(1).toLowerCase();
           
-        var mCache = config.cache;
+        var mCache = G.modules;
         var inMemory = mCache && mCache[url];
         var loadedCached = false;
         if (inMemory || hasLocalStorage) {
@@ -592,7 +592,7 @@ define('globals', function() {
             }
             
             if (cached) {
-              var fileInfo = G.leaf(config.expirationDates, url, '/');
+              var fileInfo = G.leaf(G.files, url, '/');
               var modified = fileInfo && fileInfo.modified;
               if (modified && modified <= cached.modified)
                 cached = cached.text;
@@ -705,7 +705,13 @@ define('globals', function() {
     return cache;
   });
 
+  G.serverName = (function() {     
+    var s = document.getElementsByTagName('base')[0].href;
+    return s.match("/$") ? s.slice(0, s.length - 1) : s;
+  })();
+  
   var moreG = {
+    modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
     timeOffset: G.localTime - G.serverTime,
     currentServerTime: function() {
@@ -998,11 +1004,6 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
   
-  G.serverName = (function() {     
-    var s = document.getElementsByTagName('base')[0].href;
-    return s.match("/$") ? s.slice(0, s.length - 1) : s;
-  })();
-  
   G.testIDBQ = function(storeName, q) {
     var query;
     for (var i = 0; i < q.length; i++) {
@@ -1047,9 +1048,7 @@ define('globals', function() {
       leafletMarkerCluster: ['leaflet'],
       jqueryMasonry: ['jquery'],
       jqueryImagesloaded: ['jquery']
-    },
-    cache: G.modules,
-    expirationDates: G.files
+    }
   });
 
    G.baseBundle = {
@@ -1095,30 +1094,20 @@ define('globals', function() {
 });
 
 require(['globals'], function(G) {
-//  if (localStorage) {
-//    G = G;
-//    localStorage.setItem();
-//  }
-  
-//  G.recordCheckpoint('loading pre-bundle');
   G.startedTask("loading pre-bundle");
   G.loadBundle(G.baseBundle.pre, function() {
-//    G.recordCheckpoint('loaded pre-bundle');
     G.finishedTask("loading pre-bundle");
     var css = G.baseBundle.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       css[i] = 'cache!' + css[i];
     }
     
-//    G.recordCheckpoint('loading modules');
     G.startedTask("loading modules");
     require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqmConfig, App) {
-      G.recordCheckpoint('finished loading modules');
       G.finishedTask("loading modules");
       G.browser = $.browser;
       App.initialize();
       setTimeout(function() {
-//        G.recordCheckpoint('loading post-bundle');
         G.startedTask('loading post-bundle');
         G.loadBundle(G.baseBundle.post, function() {
           G.finishedTask('loading post-bundle');
