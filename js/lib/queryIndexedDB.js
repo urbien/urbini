@@ -12,10 +12,10 @@
  *
  */
 
-define(function() {
+define(['cache!indexedDBShim'], function() {
   IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
   IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
-  if (!IDBIndex.prototype.getAllKeys || !IDBIndex.prototype.getAll) {
+  if (!IDBIndex.prototype.getAllKeys || !IDBIndex.prototype.getAll || !IDBObjectStore.prototype.openKeyCursor) {
     IDBIndex.prototype.getAll_ = function(fn, range) {
       // This is the most common use of IDBKeyRange. If more specific uses of
       // cursors are needed then a full wrapper should be created.
@@ -56,6 +56,27 @@ define(function() {
     IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || function(bound) {
       return this.getAll_('openCursor', bound);
     }
+    
+    IDBObjectStore.prototype.openKeyCursor = IDBObjectStore.prototype.openKeyCursor || function(bound) {
+      var req = {};
+      var ocReq = bound ? this.openCursor(bound) : this.openCursor();
+      ocReq.onsuccess = function(event) {
+        var cursor = event.target.result;
+        if (cursor) {
+          toReturn.push(cursor.key);
+          cursor['continue']();
+        }
+        else {
+          req.onsuccess && req.onsuccess.call(self, toReturn);
+        }
+      };
+      
+      ocReq.onerror = function(event) {
+        req.onerror && req.onerror.call(self, event);
+      };
+      
+      return req;
+    }  
   }
   
   function Index(name) {

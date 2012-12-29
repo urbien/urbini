@@ -3,6 +3,9 @@ define([
   'cache!underscore',
   'cache!templates'
 ], function(G, _, Templates) {
+  String.prototype.repeat = function(num) {
+    return new Array(num + 1).join(this);
+  }
 
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));

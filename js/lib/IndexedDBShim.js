@@ -1268,6 +1268,7 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
 		window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
     window.IDBIndex = window.IDBIndex || window.webkitIDBIndex;
     window.IDBRequest = window.IDBRequest || window.webkitIDBRequest;
+    window.IDBObjectStore = window.IDBObjectStore || window.webkitIDBObjectStore;
 		window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	}
 	

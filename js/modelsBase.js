@@ -9,9 +9,9 @@ define([
   'cache!events', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-  'cache!queryIndexedDB',
-  'cache!indexedDBShim'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, idbq) {
+  'cache!indexedDBShim',
+  'cache!queryIndexedDB'
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, __idbShim__, idbq) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -827,9 +827,11 @@ define([
     
       var onsuccess;
       request.onsuccess = onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'open db onsuccess');
         MBI.db = e.target.result;
         var db = MBI.db;
         db.onversionchange = function(event) {
+          G.log(MBI.TAG, 'db', 'closing db - onversionchange');
           db.close();
           alert("A new version of this page is ready. Please reload!");
         };    
@@ -1002,6 +1004,7 @@ define([
       
       var className = classUri.slice(classUri.lastIndexOf("/") + 1);
       if (!db.objectStoreNames.contains(className)) {
+        G.log(MBI.TAG, 'db', 'closing db for upgrade');
         db.close();
         G.log(this.TAG, "db", "2. newModel: " + className);
         U.pushUniq(MBI.newModels, classUri);
@@ -1049,6 +1052,7 @@ define([
       var request = store.delete(uri);
     
       request.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'delete item onsuccess');
     //    MBI.getItems(type);
       };
     
@@ -1081,6 +1085,7 @@ define([
       var store = trans.objectStore(name);
       var request = store.get(uri);
       request.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', "store.get().onsuccess");
         if (options.success) {
           if (e.target.result && e.target.result.value)
             options.syncOptions.sync = false;
@@ -1090,6 +1095,7 @@ define([
       };
       
       request.onerror = function(e) {
+        G.log(MBI.TAG, 'db', "store.get().onerror");
         if (error)
           error(e);
         
@@ -1113,7 +1119,12 @@ define([
       if (!db || !db.objectStoreNames.contains(name))
         return false;
       
+      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
       var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
+      };
+      
       var store = trans.objectStore(name);
     
       var lowerBound;
@@ -1124,11 +1135,12 @@ define([
       var results = [];
       var cursorRequest = lowerBound ? store.openCursor(lowerBound) : store.openCursor();
       cursorRequest.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
         if (result) {
           results.push(result.value);
           if (!total || results.length < total) {
-            result.continue();
+            result['continue']();
             return;
           }
         }
@@ -1142,6 +1154,7 @@ define([
       };
     
       cursorRequest.onerror = function (e) {
+        G.log(MBI.TAG, 'db', 'read via cursor onerror', e);
         if (error)
           error(e);
         
@@ -1155,8 +1168,10 @@ define([
     //  MBI.checkSysInfo();
     //  MBI.loadAndUpdateModels();
       MBI.paused = true;
-      if (MBI.db)
+      if (MBI.db) {
+        G.log(MBI.TAG, 'db', 'closing db');
         MBI.db.close();
+      }
       
       var s = success;
       success = function() {

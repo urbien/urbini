@@ -870,7 +870,14 @@ define('globals', function() {
           if (i < msg.length - 1) msgStr += ' ';
         }
 
-        console.log((css ? '%c ' : '') + t + ' : ' + tag + ' : ' + msgStr + ' : ' + new Date(G.currentServerTime()), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
+        var txt = t + ' : ' + tag + ' : ' + msgStr + ' : ';
+        var d = new Date(G.currentServerTime());
+//      var h = d.getUTCHours();
+//      var m = d.getUTCMinutes();
+//      var s = d.getUTCSeconds();
+//      var ms = d.getUTCMilliseconds();
+//      [h,m,s,ms].join(':')
+        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(" ") + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
       }
     },
     
@@ -1058,7 +1065,8 @@ define('globals', function() {
     shim: {
       leafletMarkerCluster: ['leaflet'],
       jqueryMasonry: ['jquery'],
-      jqueryImagesloaded: ['jquery']
+      jqueryImagesloaded: ['jquery'],
+      queryIndexedDB: ['indexedDBShim']
     }
   });
 
