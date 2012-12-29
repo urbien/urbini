@@ -138,9 +138,8 @@ define([
               newR = 0;
             if (!newLastModified || newLastModified > ts) {
               toAdd.push(r);
-            }
-            
-            r._lastFetchedOn = now;
+            }          
+//            r._lastFetchedOn = now;
           }
           
           var modified = [];
@@ -174,6 +173,14 @@ define([
             defErr && defErr(resp && resp.error || {code: code}, status, xhr);            
           }
           
+          if (isCol)
+            model._lastFetchedOn = now;
+          
+          var ms = isCol ? model.models : [model];
+          _.each(ms, function(m) {
+            m.set({'_lastFetchedOn': now}, {silent: true});
+          });              
+
           switch (code) {
             case 200:
               break;
@@ -192,12 +199,11 @@ define([
           data = isCol ? resp.data : resp.data[0];
           var modified;
           if (isCol) {
-            model._lastFetchedOn = now;
+//            model._lastFetchedOn = now;
             var offset = resp.metadata && resp.metadata.offset || 0;
             modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
           }
           else {
-            model.set({'_lastFetchedOn': now}, {silent: true});            
             modified = model.get('_uri');
           }
           
@@ -225,7 +231,7 @@ define([
         setTimeout(function(){
           model.lastFetchOrigin = 'db';
 //          if (success) {
-            G.log(MBI.TAG, 'db', "got resources from db");
+            G.log(MBI.TAG, 'db', "got resources from db: " + (model.type || model.constructor.type));
             defSuccess(results, 'success', null);
 //          }
           
@@ -283,7 +289,7 @@ define([
         models = _.map(models, function(m) {
           var model = snm[U.getShortName(m)];
           if (model) {
-            var lm = model.lastModified;
+            var lm = model._dateStored ? model._dateStored : model.lastModified;
             if (now - lm < 360000) // consider model stale after 1 hour
               return null;
             
@@ -377,7 +383,7 @@ define([
         G.finishedTask("ajax models");
         
         setTimeout(function() {MBI.saveModelsToStorage(newModels)}, 0);
-        setTimeout(MBI.fetchLinkedModels, 0);
+//        setTimeout(MBI.fetchLinkedModels, 0);
       };
       
       if (useWorker) {
@@ -437,7 +443,7 @@ define([
       if (MBI.shortNameToModel[m.shortName])
         return;
       
-      m.lastModified = new Date().getTime();
+//      m.lastModified = new Date().getTime();
       MBI.shortNameToModel[m.shortName] = m;
       MBI.typeToModel[m.type] = m;
       m.prototype.parse = Resource.prototype.parse;
@@ -499,13 +505,15 @@ define([
       if (!models.length)
         return;
     
-      var now = new Date().getTime();
+      var now = G.currentServerTime();
       _.each(models, function(model) {
+        if (model.type.endsWith('#Resource'))
+          return;
+        
         var modelJson = U.toJSON(model);
-        modelJson._lastModified = now;
+        modelJson._dateStored = now;
         modelJson._super = model.__super__.constructor.type;
-        if (!model.type.endsWith('#Resource'))
-          MBI.storeModel(model, modelJson);
+        MBI.storeModel(model, modelJson);
       });  
     };
     
@@ -636,6 +644,65 @@ define([
         return; // TODO: use indexedDB
       }
 
+//      var inOrder = [];
+//      var uris = [];
+//      for (var i = 0; i < r.models.length; i++) {
+//        var model = r.models[i];
+//        var uri = model.type || model;
+//        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel}))) {
+//          r.models[i] = null;
+//          continue;
+//        }
+//        
+//        if (_.contains(uris, uri))
+//          continue;
+//        
+//        uris.push(uri);
+//        var jm = MBI.getModelFromLS(uri);
+//        if (!jm) {
+//          U.pushUniq(MBI.newModels, uri);
+//          r.models[i] = null;
+//          continue;
+//        }
+//        
+//        jm = JSON.parse(jm);
+////        if (model !== added) {
+////          r.models[i] = typeof model === 'string' ? jm : _.extend(jm, model);
+////          continue;
+////        }
+////        
+////        r.models[i] = null;
+//        inOrder.push(jm);
+//        var sup;
+//        while ((sup = jm.subClassOf) != 'Resource') {
+//          var type = jm.type;
+//          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
+//          var idx = uris.indexOf(sup);
+//          if (idx != -1) {
+//            var s = inOrder[idx];
+//            inOrder[idx] = jm;
+//            inOrder[inOrder.length - 1] = jm;
+//            var u = uris[idx];
+//            uris[idx] = type;
+//            uris[uris.length - 1] = sup;
+//            break;
+//          }
+//          
+//          var m = MBI.getModelFromLS(sup);
+//          if (m) {
+//            jm = JSON.parse(m);
+//            inOrder.push(jm);
+//          }
+//        }        
+//      }
+//      
+//      inOrder.reverse();
+//      
+//      r.models = _.compact(r.models); // filter out nulls
+//      while (extraModels.length) {
+//        r.models.push(extraModels.pop());
+//      }
+      
       var extraModels = [];
       for (var i = 0; i < r.models.length; i++) {
         var model = r.models[i];
@@ -679,20 +746,14 @@ define([
       var toLoad = [];
       var baseDate = r.lastModified || G.lastModified;
       _.each(r.models, function(model) {
-//        var exists = false;
         var d = baseDate || model.lastModified;
         if (d) {
           var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
-//          var stored = localStorage.getItem('model:' + uri);
-//          if (stored) {
-//            exists = true;
-//            stored = JSON.parse(stored);
-            var storedDate = model._lastModified;
+            var storedDate = model._dateStored;
             if (storedDate && storedDate >= date) {
               toLoad.push(model);
               return;
             }
-//          }
         }
         
         U.pushUniq(MBI.changedModels, model.type);
@@ -715,6 +776,7 @@ define([
     
     this.onerror = function(e) {
       G.userChanged = true;
+//      G.recordCheckpoint("closing db due to error");
       MBI.db && MBI.db.close();
       MBI.open();
       G.log(MBI.TAG, ['error', 'db'], "db error: " + JSON.stringify(e));
@@ -754,6 +816,7 @@ define([
     this.defaultOptions = {keyPath: '_uri'};
     this.open = function(options, success, error) {
       var modelsChanged = false;
+      G.log(MBI.TAG, 'db', "opening db");
       var request = indexedDB.open("lablz");
     
       request.onblocked = function(event) {
@@ -777,9 +840,13 @@ define([
           if (success)
             success();
           
+//          G.recordCheckpoint("done prepping db");
+          G.log(MBI.TAG, 'db', "done prepping db");
           return;
         }
         
+//          G.recordCheckpoint("upgrading db");
+        G.log(MBI.TAG, 'db', 'about to upgrade db');
         if (db.setVersion) {
           G.log(MBI.TAG, 'db', 'in old setVersion. User changed: ' + G.userChanged + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
           
@@ -789,20 +856,23 @@ define([
           req.onerror = MBI.onerror;
           req.onblocked = MBI.onblocked;
           req.onsuccess = function(e2) {
-            G.log(MBI.TAG, 'db', 'upgrading db');
+            G.log(MBI.TAG, 'db', 'db.setVersion onsuccess');
             if (G.userChanged)
               MBI.updateStores(reset) && (G.userChanged = false);
             else if (modelsChanged)
               MBI.updateStores();
             
             e2.target.transaction.oncomplete = function() {
-              G.log(MBI.TAG, 'db', 'upgraded db');
+//              G.recordCheckpoint("done upgrading db");
+              G.log(MBI.TAG, 'db', 'db.setVersion transaction.oncomplete');
               if (success)
                 success();
             };
           };      
         }
         else {
+          G.log(MBI.TAG, 'db', 'upgrading db (via onupgradeneeded, using FF are ya?)');
+//          G.recordCheckpoint("upgrading db");
           db.close();
           var subReq = indexedDB.open("lablz", MBI.VERSION);
           subReq.onsuccess = request.onsuccess;
@@ -812,26 +882,28 @@ define([
       };
       
       request.onupgradeneeded = function(e) {
-        console.log ("upgrading db");
+//        G.recordCheckpoint("db, onupgradeneeded callback");
+        G.log(MBI.TAG, 'db', 'onupgradeneeded callback');
         MBI.db = e.target.result;
-        var db = MBI.db;
         if (G.userChanged) {
           G.log(MBI.TAG, 'db', "clearing db");
           MBI.updateStores(reset) && (G.userChanged = false);
         }
         else if (modelsChanged) {
-          G.log(MBI.TAG, 'db', "updating stores");
+          G.log(MBI.TAG, 'db', "updating db stores");
           MBI.updateStores();
         }
         
         e.target.transaction.oncomplete = function() {
-          G.log(MBI.TAG, 'db', "upgraded db");
+//          G.recordCheckpoint("done upgrading db");
+          G.log(MBI.TAG, 'db', "onupgradeneeded transaction.oncomplete");
           if (success)
             success();
         };
       };      
       
       request.onerror = function(e) {
+        G.log(MBI.TAG, 'db', "error opening db");
         if (error)
           error(e);
         
@@ -869,7 +941,9 @@ define([
         if (db.objectStoreNames.contains(name)) {
           if (reset || _.contains(toDel, name)) {
             try {
+              G.log(MBI.TAG, 'db', 'deleting object store: ' + name);
               db.deleteObjectStore(name);
+              G.log(MBI.TAG, 'db', 'deleted object store: ' + name);
               deleted.push(name);
             } catch (err) {
               G.log(MBI.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
@@ -882,7 +956,9 @@ define([
         
 
         try {
+          G.log(MBI.TAG, 'db', 'creating object store: ' + name);
           var store = db.createObjectStore(name, MBI.defaultOptions);
+          G.log(MBI.TAG, 'db', 'created object store: ' + name);
           var m = MBI.shortNameToModel[name];
           if (m) {
             var indices = [];
@@ -890,7 +966,9 @@ define([
             vc = vc ? vc.split(',') : [];
             _.each(vc, function(pName) {
               pName = pName.trim();
+              G.log(MBI.TAG, 'db', 'creating index', pName, 'for store', name);
               store.createIndex(pName, pName, {unique: false});              
+              G.log(MBI.TAG, 'db', 'created index', pName, 'for store', name);
               indices.push(pName);
             });
 
@@ -910,8 +988,8 @@ define([
         
       }
       
-      deleted.length && G.log(MBI.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
-      created.length && G.log(MBI.TAG, 'db', '2. created tables: ' + created.join(","));
+//      deleted.length && G.log(MBI.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
+//      created.length && G.log(MBI.TAG, 'db', '2. created tables: ' + created.join(","));
     }
     
     this.addItems = function(items, classUri) {
@@ -934,7 +1012,14 @@ define([
         return;
       }
       
+      G.log(MBI.TAG, 'db', 'starting readwrite transaction for store', className);
+//      G.recordCheckpoint('starting readwrite transaction for store: ' + className);
       var trans = db.transaction([className], IDBTransaction.READ_WRITE);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readwrite transaction for store', className);
+//        G.recordCheckpoint('finished readwrite transaction for store: ' + className);
+      };
+      
       var store = trans.objectStore(className);
       _.each(items, function(item) {
         var request = store.put(item);
@@ -947,7 +1032,7 @@ define([
         };
       });
       
-      G.log(MBI.TAG, 'db', "added some " + className + " to db");
+//      G.log(MBI.TAG, 'db', "added some " + className + " to db");
     };
     
     this.addItem = function(item, classUri) {
@@ -955,6 +1040,7 @@ define([
     }
     
     this.deleteItem = function(uri) {
+      G.log(MBI.TAG, 'db', 'deleting item', uri);
       var type = U.getType(item._uri);
       var name = U.getClassName(type);
       var db = MBI.db;
@@ -986,7 +1072,12 @@ define([
       if (!db || !db.objectStoreNames.contains(name))
         return false;
       
+      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
       var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
+      };
+      
       var store = trans.objectStore(name);
       var request = store.get(uri);
       request.onsuccess = function(e) {
@@ -1096,38 +1187,60 @@ define([
         return prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
 //          return _.contains(G.classUsage, r);
       })), function(m) {return m && !_.contains(knownTypes, m)}); // no need to reload known types
+
+      var linked = _.filter(linkedModels, function(m) {
+        return _.contains(tmp, l[i].type);
+      });
       
-//      var linkedModels = [];
 //      var l = G.linkedModels;
+//      var need = [];
 //      for (var i = 0; i < l.length; i++) {
-//        // to preserve order
-//        if (_.contains(tmp, l[i].type)) {
-//          var m = l[i];
-//          var j = i;
-//          var supers = [];
-//          while (j > 0 && l[j].superName == l[--j].shortName) {
-//            var idx = linkedModels.indexOf(l[j]);
-//            if (idx != -1) {
-//              linkedModels.remove(idx, idx);
-//            }
-//            
-//            supers.push(l[j]);
-//          }
-//          
-//          if (supers.length) {
-//            var s;
-//            while (!!(s = supers.pop())) {
-//              linkedModels.push(s);
-//            }
-//          }
-//          
-//          linkedModels.push(l[i]);
+//        if (!tmp.length)
+//          break;
+//        
+//        var idx = tmp.indexOf(l[i].type);
+//        if (idx != -1) {
+//          need.push(l[i]);
+//          tmp.remove(idx, idx);
 //        }
 //      }
+//      
+//      need = _.concat(need, tmp); // maybe we were missing some in linkedModels
       
-      if (tmp.length) {
+      var linkedModels = [];
+      var l = G.linkedModels;
+      for (var i = 0; i < l.length; i++) {
+        // to preserve order
+        var idx = tmp.indexOf(l[i].type);
+        if (idx != -1) {
+          tmp.splice(idx, idx + 1);
+          var m = l[i];
+          var j = i;
+          var supers = [];
+          while (j > 0 && l[j].superName == l[--j].shortName) {
+            var idx = linkedModels.indexOf(l[j]);
+            if (idx != -1) {
+              linkedModels.remove(idx, idx);
+            }
+            
+            supers.push(l[j]);
+          }
+          
+          if (supers.length) {
+            var s;
+            while (!!(s = supers.pop())) {
+              linkedModels.push(s);
+            }
+          }
+          
+          linkedModels.push(l[i]);
+        }
+      }
+      
+      linkedModels = _.union(linkedModels, tmp); // maybe we were missing some in linkedModels
+      if (linkedModels.length) {
 //        linkedModels = _.uniq(linkedModels);
-        MBI.loadStoredModels({models: tmp});
+        MBI.loadStoredModels({models: linkedModels});
         MBI.fetchModels(null, {sync: false});
       }
     };

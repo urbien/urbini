@@ -120,7 +120,7 @@ define([
         });
       }
       
-      this._lastFetchedOn = new Date().getTime();
+//      this._lastFetchedOn = G.currentServerTime();
       return response;
     },
     onReset: function(model) {

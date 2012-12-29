@@ -721,8 +721,10 @@ define('globals', function() {
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
-    recordCheckpoint: function(name) {
+    recordCheckpoint: function(name, dontPrint) {
       G.checkpoints.push({name: name, time: new Date()});
+      if (!dontPrint)
+        G.printCheckpoint(G.checkpoints.length - 1);
     },
     startedTask: function(name) {
       G.tasks[name] = {start: new Date()};
@@ -732,12 +734,15 @@ define('globals', function() {
       if (!dontPrint)
         G.printTask(name);
     },
+    printCheckpoint: function(i) {
+      var c = G.checkpoints[i];
+      var time = c.time.getTime();
+      var passed = i ? time - G.checkpoints[i - 1].time.getTime() : 0;
+      G.log(G.TAG, 'checkpoints', c.name, c.time.getTime(), 'time since last checkpoint: ' + passed);
+    },
     printCheckpoints: function() {
       for (var i = 0; i < G.checkpoints.length; i++) {
-        var c = G.checkpoints[i];
-        var time = c.time.getTime();
-        var passed = i ? time - G.checkpoints[i - 1].time.getTime() : 0;
-        G.log(G.TAG, 'checkpoints', c.name, c.time.getTime(), 'time since last checkpoint: ' + passed);
+        G.printCheckpoint(G.checkpoints[i]);
       }
     },
     printTask: function(name) {
@@ -805,48 +810,54 @@ define('globals', function() {
     },
   
     trace: {
-      error: {
-        on: true,
-        color: '#FF0000',
-        bg: '#333'
-      },
-      checkpoints: {
-        on: true,
-        color: '#FF88FF',
-        bg: '#000'
-      },
-      tasks: {
-        on: true,
-        color: '#88FFFF',
-        bg: '#000'
-      },
-      db: {
-        on: true,
-        color: '#FFFFFF',
-        bg: '#000'
-      },
-      render: {
-        on: true,
-        color: '#AA00FF',
-        bg: '#DDD'
-      },
-      events: {
-        on: true,
-        color: '#baFF00',
-        bg: '#555'
-      },
-      cache: {
-        on: false,
-        color: '#CCCCCC',
-        bg: '#555'
+      ON: true,
+      types : {
+        error: {
+          on: true,
+          color: '#FF0000',
+          bg: '#333'
+        },
+        checkpoints: {
+          on: true,
+          color: '#FF88FF',
+          bg: '#000'
+        },
+        tasks: {
+          on: true,
+          color: '#88FFFF',
+          bg: '#000'
+        },
+        db: {
+          on: true,
+          color: '#FFFFFF',
+          bg: '#000'
+        },
+        render: {
+          on: true,
+          color: '#AA00FF',
+          bg: '#DDD'
+        },
+        events: {
+          on: true,
+          color: '#baFF00',
+          bg: '#555'
+        },
+        cache: {
+          on: false,
+          color: '#CCCCCC',
+          bg: '#555'
+        }
       }
     },
     
     log: function(tag, type) {
+      if (!G.trace.ON)
+        return;
+      
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
         var t = types[i];
-        var trace = G.trace[t] || {on: true};
+        var trace = G.trace.types[t] || {on: true};
         if (!trace.on)
           continue;
         
@@ -859,7 +870,7 @@ define('globals', function() {
           if (i < msg.length - 1) msgStr += ' ';
         }
 
-        console.log((css ? '%c ' : '') + t + ' : ' + tag + ' : ' + msgStr, css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
+        console.log((css ? '%c ' : '') + t + ' : ' + tag + ' : ' + msgStr + ' : ' + new Date(G.currentServerTime()), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
       }
     },
     
@@ -1113,8 +1124,6 @@ require(['globals'], function(G) {
           G.finishedTask('loading post-bundle');
         });
       }, 100);
-
-      setTimeout(G.printCheckpoints, 5000);
     });
   });
 })
