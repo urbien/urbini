@@ -43,8 +43,10 @@ define([
     },
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
-      if (this.isMasonry)
-        this.$('#nabs_grid').masonry();
+/*
+*      if (this.isMasonry)
+*        $('#nabs_grid', this.$el).masonry();
+*/
     },
     pageChanged: function(view) {
       G.log(this.TAG, 'events', 'changePage');

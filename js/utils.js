@@ -24,7 +24,11 @@ define([
   String.prototype.endsWith = function(str) {
     return (this.match(str+"$")==str);
   };
-  
+  // extends jQuery to check if selected collection is empty or not
+  $.fn.exist = function(){
+    return this.length > 0 ? this : false;
+  };
+
   var U = {
     TAG: 'Utils',
     isPropVisible: function(res, prop) {

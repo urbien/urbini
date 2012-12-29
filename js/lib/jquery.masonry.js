@@ -485,7 +485,9 @@
     } else {
       this.each(function() {
         var instance = $.data( this, 'masonry' );
-        if ( instance ) {
+        // note: check if bricks are still in masonry
+        // instance.$bricks.parent().length
+        if ( instance && instance.$bricks.parent().length) {
           // apply options & init
           instance.option( options || {} );
           instance._init();
