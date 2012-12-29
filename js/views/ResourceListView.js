@@ -19,12 +19,13 @@ define([
     skipScrollEvent: false,
     
     initialize: function () {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'pageChanged', 'alignNewBricks'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks'); // fixes loss of context for 'this' within methods
       Events.on('refresh', this.refresh);
       this.model.on('reset', this.render, this);
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.pageChanged);
-      this.$el.on('create', this.alignNewBricks);
+      Events.on('changePage', this.alignBricks);
+      this.$el.on('create', this.alignBricks);
+      
       this.TAG = 'ResourceListView';
       return this;
     },
@@ -108,10 +109,12 @@ define([
 //        this.$el.listview().listview('refresh');
 //        this.initializedListView = true;
 //      }
-      
+
     },
     getNextPage: function() {
       var before = this.model.models.length;
+
+      console.log("called getNextPage");
       
       // there is nothing to fetch, we've got them all
       if (before < this.model.perPage)
@@ -178,35 +181,31 @@ define([
     onNextPageFetched: function () {
       this.skipScrollEvent = false;
     },
-    // initial masonry alignment
-    pageChanged: function() {
-      var self = this;
-      this.$wall = $('div.ui-page-active #nabs_grid');
-      
-      if (this.$wall != null)
-        this.$wall.imagesLoaded( function(){ self.$wall.masonry(); });
-      // note: use this.$wall.masonry(); if images have defined height
-    },
-    // masonry alignment on nex data portion downloading
-    alignNewBricks: function() {
-      if (this.$wall == null)
+
+    // masonry bricks alignment
+    alignBricks: function(todo) {
+      // if masonry and bricks have zero dimension then impossible to align them
+      if (!this.$el.hasClass("masonry") || this.$el.width() == 0)
         return;
 
-      // check if first masonry brick was aligned before,
-      // so possible to append next portion of bricks   
-      var firstBrick = this.$wall[0].childNodes[0];
-      if (firstBrick && firstBrick.style.position != "absolute") {
-        this.pageChanged();
+      var self = this;
+      // 1. align masonry if first masonry brick was aligned before  
+      var $firstBrick = this.$el.children().first();
+      if ($firstBrick && $firstBrick.css("position") != "absolute") {
+          this.$el.imagesLoaded( function(){ self.$el.masonry(); });
         return;
       }
       
+      // 2. append to masonry new bricks on next page
       // filter unaligned "bricks" which do not have calculated, absolute position 
-      $bricks = $(this.$wall[0].childNodes).filter(function(idx, node) {
+      $bricks = $(this.$el.children()).filter(function(idx, node) {
                   return (node.style.position != "absolute"  );
                 });
-
-      var self = this;
-      this.$wall.imagesLoaded( function(){ self.$wall.masonry( 'appended', $bricks ); });
+        
+      if ($bricks.length == 0)
+        return; // nothing to align
+      
+      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $bricks ); });
     }
   });
 });
