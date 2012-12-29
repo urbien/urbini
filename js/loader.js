@@ -529,10 +529,34 @@ define('globals', function() {
     var masterConfig = (module.config && module.config()) || {};
     var cache = {
       TAG: 'cache',
-      prependUrl: function(content, url) {
-        return content + '\r\n//@ sourceURL=' + url;
-      },
+//      prependUrl: function(content, url) {
+//        return content + '\r\n//@ sourceURL=' + url;
+//      },
       
+      loadModule: function(text, url, onLoad) {
+//        text = cache.prependUrl(text, url);
+        text = text + '\r\n//@ sourceURL=' + url;
+        var ext = url.match(/\.[a-zA-Z]+$/g);
+        switch (ext[0]) {
+          case '.css':
+            G.appendCSS(text, function() {
+              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+              onLoad();
+              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+            });
+            break;
+          case '.html':
+          case '.jsp':
+            G.log(cache.TAG, 'cache', 'cache.get: ' + url);
+  //          G.appendHTML(text);
+            onLoad(text);
+            G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
+            break;
+          default:
+            onLoad.fromText(text);
+            break;
+        }        
+      },
           
       load: function (name, req, onLoad, config) {
         G.startedTask("load " + name);
@@ -604,30 +628,10 @@ define('globals', function() {
           }
 
           var loadedCached = cached;
-          if (loadedCached) {
-            cached = cache.prependUrl(cached, url);
-            
+          if (loadedCached) {            
             try {
               G.log(cache.TAG, 'cache', 'Loading from', loadSource, url);
-              switch (ext) {
-                case 'css':
-                  G.appendCSS(cached, function() {
-                    G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-                    onLoad();
-                    G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-                  });
-                  break;
-                case 'html':
-                case 'jsp':
-                  G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-//                  G.appendHTML(cached);
-                  onLoad(cached);
-                  G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-                  break;
-                default:
-                  onLoad.fromText(cached);
-                  break;
-              }
+              cache.loadModule(cached, url, onLoad);
               G.log(cache.TAG, 'cache', 'End loading from', loadSource, url);
             } catch (err) {
               G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
@@ -639,32 +643,13 @@ define('globals', function() {
         if (loadedCached)
           return;
         
-        /// use 'get' instead of 'req' so we can store to localStorage
-        G.get(url, function(text) {
-          switch(ext) {
-            case 'css':
-              G.appendCSS(text, function() {
-                cache.save(url, text, 100);
-                G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-                onLoad();
-                G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-              });
-              break;
-            case 'html':
-            case 'jsp':
-              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-//              G.appendHTML(text);
-              onLoad(text);
-              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-              break;
-            default:
-              cache.save(url, text, 100);
-              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-              onLoad.fromText(text);
-              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-              break;
-          } 
-        });
+        /// use 'sendXhr' instead of 'req' so we can store to localStorage
+        G.loadBundle(name, function() {
+          if (G.modules[url])
+            cache.loadModule(G.modules[url], url, onLoad);
+          else
+            G.log(cache.TAG, ['error', 'cache'], 'failed to load module', name);
+        });        
       },
       
       save: function(url, text, delay) {
@@ -787,9 +772,12 @@ define('globals', function() {
       return xhr;
     },
 
-    get: function (url, callback, errback) {
-      var xhr = G.createXhr();
-      xhr.open('GET', url, true);
+    sendXhr: function (options) {
+      var url = options.url;
+      var method = (options.method || 'GET').toUpperCase();      
+      var xhr = G.createXhr();      
+      var params = options.data;
+      xhr.open(method, url, true);
       xhr.onreadystatechange = function (evt) {
         var status, err;
         //Do not explicitly handle errors, those should be
@@ -800,13 +788,25 @@ define('globals', function() {
             //An http 4xx or 5xx error. Signal an error.
             err = new Error(url + ' HTTP status: ' + status);
             err.xhr = xhr;
-            errback(err);
+            options.error && options.error(err);
           } else {
-            callback(xhr.responseText);
+            options.success && options.success(xhr.responseText);
           }
         }
       };
-      xhr.send(null);
+      
+      if (method === 'POST') {
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var tmp = [];
+        for (var name in params) {
+          tmp.push(encodeURIComponent(name) + '=' + encodeURIComponent(params[name]));
+        }
+        
+        if (tmp.length)
+          params = tmp.join('&');
+      }
+      
+      xhr.send(params);
     },
   
     trace: {
@@ -922,9 +922,18 @@ define('globals', function() {
 
     pruneBundle: function(bundle) {
       var modules = [];
+      var bType = Object.prototype.toString.call(bundle);
+      if (bType === '[object String]') {
+        bundle = {def: [bundle]};
+      }
+      else if (Object.prototype.toString.call(bundle) === '[object Array]') {
+        bundle = {def: bundle};
+      }
+      
       for (var type in bundle) {
-        for (var i = 0; i < bundle[type].length; i++) {
-          var name = bundle[type][i];
+        var bt = bundle[type];
+        for (var i = 0; i < bt.length; i++) {
+          var name = bt[i];
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
@@ -980,8 +989,11 @@ define('globals', function() {
         
       }
       
-      G.get(G.serverName + "/backboneFiles?modules=" + pruned.join(','), 
-        function(text) {
+      G.sendXhr({
+        url: G.serverName + "/backboneFiles", 
+        method: 'POST',
+        data: {modules: pruned.join(',')},
+        success: function(text) {
           var resp;
           try {
             resp = JSON.parse(text);
@@ -1010,7 +1022,8 @@ define('globals', function() {
           }
           
           if (callback) callback();
-        });
+        }
+      });
     },
     
     prepForStorage: function(text, date) {

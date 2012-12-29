@@ -145,7 +145,7 @@ define([
           var modified = [];
           if (toAdd.length) {
             for (var i = 0; i < toAdd.length; i++) {
-              toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, {shortNameToModel: MBI.shortNameToModel});
+              toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, MBI);
               var existing = model.get(toAdd[i]._uri);
               if (existing) {
                 existing.set(toAdd[i]);
@@ -273,24 +273,23 @@ define([
     this.changedModels = []; // new U.UArray();
     this.newModels = []; // new U.UArray();
     this.models.push(this.packages.Resource);
-    this.shortNameToModel = {'Resource': this.packages.Resource};
+    this.shortNameToModel = this.snm = {'Resource': this.packages.Resource};
     this.typeToModel = {};
 
     this.fetchModels = function(models, options) {
-      models = models || _.union(MBI.changedModels, MBI.newModels);
+      models = models ? (typeof models === 'string' ? [models] : models) : _.union(MBI.changedModels, MBI.newModels);
       options = options || {};
       var success = options.success;
       var error = options.error || Error.getDefaultErrorHandler();
 
       if (models.length) {
         models = models.join ? models : [models];
-        var snm = MBI.shortNameToModel;
         var now = G.currentServerTime();
         models = _.map(models, function(m) {
-          var model = snm[U.getShortName(m)];
+          var model = MBI.snm[U.getShortName(m)];
           if (model) {
             var lm = model._dateStored ? model._dateStored : model.lastModified;
-            if (now - lm < 360000) // consider model stale after 1 hour
+            if (lm && now - lm < 360000) // consider model stale after 1 hour
               return null;
             
             var info = {uri: m};
@@ -516,6 +515,40 @@ define([
         MBI.storeModel(model, modelJson);
       });  
     };
+
+    this.loadModel = function(modelJson, sUri, superName) {
+      superName = superName || sUri.slice(sUri.lastIndexOf('/') + 1); 
+      var pkgPath = U.getPackagePath(modelJson.type);
+      var sPath = U.getPackagePath(sUri);
+      var pkg = U.addPackage(MBI.packages, pkgPath);
+      var sName = modelJson.shortName;
+      if (MBI.snm[sName])
+        delete MBI.snm[sName];
+      
+      var model = pkg[sName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, modelJson);
+      MBI.initModel(model);
+    };
+    
+    this.getModelChain = function(model) {
+      if (!G.hasLocalStorage)
+        return null;
+      
+      var sup = model.subClassOf;
+      if (!sup)
+        throw new Error('every model except Resource must be a subClassOf of another model');
+      
+      if (sup == 'Resource')
+        return [model];
+        
+      sup = sup.startsWith('http') ? sup : 'http://www.hudsonfog.com/voc/' + sup;
+      var sModel = MBI.getModelFromLS(sup);
+      if (!sModel)
+        return null;
+      
+      sModel = JSON.parse(sModel);
+      var sChain = MBI.getModelChain(sModel);
+      return sChain == null ? null : sChain.concat(model);
+    };
     
     this.initStoredModels = function(models) {
       var filtered = _.filter(models, function(model) {
@@ -531,60 +564,28 @@ define([
         return models;
       
       var unloaded = [];
-      var snm = MBI.shortNameToModel;
-
-//      var loadOne = function(m, superName, sUri) {
-//        var pkgPath = U.getPackagePath(m.type);
-//        var sPath = U.getPackagePath(sUri);
-//        var pkg = U.addPackage(MBI.packages, pkgPath);
-//        if (snm[m.shortName])
-//          delete snm[m.shortName];
-//        
-//        var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
-//        MBI.initModel(model);        
-//      };
-//      
-//      var loadModelChain = function(model) {
-//        if (!G.hasLocalStorage)
-//          return;
-//        
-//        var sup = model.subClassOf;
-//        if (!sup)
-//          return;
-//        
-//        if (sup == 'Resource') {
-//          loadOne(model, sup, sup);
-//          return true;
-//        }
-//          
-//        sup = sup.startsWith('http') ? sup : 'http://www.hudsonfog.com/voc/' + sup;
-//        var sModel = MBI.getModelFromLS(sup);
-//        if (!sModel)
-//          return;
-//        
-//        loadModelChain(JSON.parse(sModel));
-//        loadOne(model, U.getType(sup), sup);
-//      };
-      
       _.each(filtered, function(m) {
         var sUri = m.subClassOf;
         var sIdx = sUri.lastIndexOf('/');
         var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
-        if (!snm[superName]) {
-          unloaded.push(m.type);
-//          loadModelChain(m);
+        if (!MBI.snm[superName]) {
+          if (_.contains(unloaded, m))
+            return;
+          
+          var chain = MBI.getModelChain(m);
+          if (chain) {
+            var fresh = [], stale = [];
+            MBI.filterExpired(null, chain, fresh, stale);
+            if (stale.length)
+              unloaded.push(m);
+          }
+          else
+            unloaded.push(m);
+          
           return;
         }
         
-//        loadOne(m, superName, sUri);
-        var pkgPath = U.getPackagePath(m.type);
-        var sPath = U.getPackagePath(sUri);
-        var pkg = U.addPackage(MBI.packages, pkgPath);
-        if (snm[m.shortName])
-          delete snm[m.shortName];
-        
-        var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
-        MBI.initModel(model);        
+        MBI.loadModel(m, sUri, superName);
       });
       
       
@@ -627,7 +628,7 @@ define([
           type = U.getType(hash);
         
         type = type && type.startsWith(G.serverName) ? 'http://' + type.slice(G.serverName.length + 1) : type;
-        if (type && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length) {
+        if (type && !MBI.typeToModel[type] && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length) {
           r.models.push(type);
           added = type;
         }
@@ -643,130 +644,110 @@ define([
         
         return; // TODO: use indexedDB
       }
-
-//      var inOrder = [];
-//      var uris = [];
-//      for (var i = 0; i < r.models.length; i++) {
-//        var model = r.models[i];
-//        var uri = model.type || model;
-//        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel}))) {
-//          r.models[i] = null;
-//          continue;
-//        }
-//        
-//        if (_.contains(uris, uri))
-//          continue;
-//        
-//        uris.push(uri);
-//        var jm = MBI.getModelFromLS(uri);
-//        if (!jm) {
-//          U.pushUniq(MBI.newModels, uri);
-//          r.models[i] = null;
-//          continue;
-//        }
-//        
-//        jm = JSON.parse(jm);
-////        if (model !== added) {
-////          r.models[i] = typeof model === 'string' ? jm : _.extend(jm, model);
-////          continue;
-////        }
-////        
-////        r.models[i] = null;
-//        inOrder.push(jm);
-//        var sup;
-//        while ((sup = jm.subClassOf) != 'Resource') {
-//          var type = jm.type;
-//          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
-//          var idx = uris.indexOf(sup);
-//          if (idx != -1) {
-//            var s = inOrder[idx];
-//            inOrder[idx] = jm;
-//            inOrder[inOrder.length - 1] = jm;
-//            var u = uris[idx];
-//            uris[idx] = type;
-//            uris[uris.length - 1] = sup;
-//            break;
-//          }
-//          
-//          var m = MBI.getModelFromLS(sup);
-//          if (m) {
-//            jm = JSON.parse(m);
-//            inOrder.push(jm);
-//          }
-//        }        
-//      }
-//      
-//      inOrder.reverse();
-//      
-//      r.models = _.compact(r.models); // filter out nulls
-//      while (extraModels.length) {
-//        r.models.push(extraModels.pop());
-//      }
       
-      var extraModels = [];
+      var extraModels;
+      var types = {};
+      var expanded = [];
       for (var i = 0; i < r.models.length; i++) {
         var model = r.models[i];
         var uri = model.type || model;
-        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel}))) {
-          r.models[i] = null;
-          continue;
-        }
+        if (!uri || !(uri = U.getLongUri(uri, MBI)))
+          continue
         
-        var jm = MBI.getModelFromLS(uri);
-        if (!jm) {
-          U.pushUniq(MBI.newModels, uri);
-          r.models[i] = null;
+        if (types[uri] || MBI.typeToModel[uri])
           continue;
-        }
         
-        jm = JSON.parse(jm);
-        if (model !== added) {
-          r.models[i] = _.extend(jm, model);
-          continue;
-        }
-        
-        r.models[i] = null;
-        var sup;
-        extraModels.push(jm);
-        while ((sup = jm.subClassOf) != 'Resource') {
-          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
-          var m = MBI.getModelFromLS(sup);
-          if (m) {
-            jm = JSON.parse(m);
-            extraModels.push(jm);
+        var jm;
+        if (model._dateStored)
+          jm = model;
+        else {
+          jm = MBI.getModelFromLS(uri);
+          if (!jm) {
+            U.pushUniq(MBI.newModels, uri);
+//            r.models[i] = null;
+            continue;
           }
-        }
-      }
-      
-      r.models = _.compact(r.models); // filter out nulls
-      while (extraModels.length) {
-        r.models.push(extraModels.pop());
-      }
-      
-      var toLoad = [];
-      var baseDate = r.lastModified || G.lastModified;
-      _.each(r.models, function(model) {
-        var d = baseDate || model.lastModified;
-        if (d) {
-          var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
-            var storedDate = model._dateStored;
-            if (storedDate && storedDate >= date) {
-              toLoad.push(model);
-              return;
-            }
+        
+          jm = JSON.parse(jm);
         }
         
-        U.pushUniq(MBI.changedModels, model.type);
-        return;
-      });
+        if (jm) { 
+//          r.models[i] = jm;
+          if (types[jm.subClassOf]) {
+            expanded.push(jm);
+          }
+          else {
+            expanded = expanded.concat(MBI.getModelChain(jm));
+          }
+          
+          types[uri] = true;
+        }
+        
+//        if (model === added) {
+//          if (!_.contains(r.models, jm))
+//            extraModels = MBI.getModelChain(jm);
+//        }
+//        else { 
+//          r.models[i] = _.extend(jm, model);
+//          continue;          
+//        }
+//        r.models[i] = null;
+//        var sup;
+//        extraModels.push(jm);
+//        while ((sup = jm.subClassOf) != 'Resource') {
+//          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
+//          var m = MBI.getModelFromLS(sup);
+//          if (m) {
+//            jm = JSON.parse(m);
+//            extraModels.push(jm);
+//          }
+//        }
+      }
       
-      if (toLoad.length) {
-        var unloaded = MBI.initStoredModels(toLoad);
+      delete types;
+//      var types = [];
+//      var expanded = [];
+//      for (var i = 0; i < r.models; i++) {
+//        
+//      }
+//      
+//      r.models = _.compact(r.models); // filter out nulls
+//      if (extraModels) {
+//        while (extraModels.length) {
+//          r.models.push(extraModels.pop());
+//        }
+//      }
+
+      var stale = []
+      var fresh = [];
+      MBI.filterExpired({lastModified: r.lastModified}, expanded, fresh, stale);
+      _.each(stale, function() {U.pushUniq(MBI.changedModels)});
+      
+      if (fresh.length) {
+        var unloaded = MBI.initStoredModels(fresh);
         _.each(unloaded, function (m) {
           U.pushUniq(MBI.changedModels, m);
         });
       }
     };
+    
+    this.filterExpired = function(info, models, fresh, stale) {
+      var baseDate = (info && info.lastModified) || G.lastModified;
+      _.each(models, function(model) {
+        var d = baseDate || model.lastModified;
+        if (d) {
+          var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
+            var storedDate = model._dateStored;
+            if (storedDate && storedDate >= date) {
+              fresh.push(model);
+              return;
+            }
+        }
+        
+        U.pushUniq(stale, model.type);
+        return;
+      });
+    }
 
     /////////////////////////////////////////// START IndexedDB stuff ///////////////////////////////////////////
     this.db = null;
@@ -835,7 +816,7 @@ define([
           db.close();
           alert("A new version of this page is ready. Please reload!");
         };    
-    
+     
         modelsChanged = !!MBI.changedModels.length || !!MBI.newModels.length;
         MBI.VERSION = G.userChanged || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == MBI.VERSION) {
@@ -1184,29 +1165,30 @@ define([
 
     this.fetchModelsForLinkedResources = function(model) {
 //      model = model.constructor || model;
-      var ctr = model.constructor;
+      var isResource = typeof model !== 'function';
+      var ctr = isResource ? model.constructor : model;
       var props = {};
       for (var name in ctr.properties) {
-        if (model.get(name))
+        if (!isResource || model.get(name))
           props[name] = ctr.properties[name];
       }
       
       var knownTypes = _.keys(MBI.typeToModel);
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
-        if (prop.backLink) {
+        if (isResource && prop.backLink) {
           var count = model.get(name + 'Count') || model.get(name + '.COUNT()');
           if (!count)
             return null;
         }
         
-        return prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
-//          return _.contains(G.classUsage, r);
+        var range = prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
+        return !range ? null : isResource ? range : _.contains(G.classUsage, range) ? range : null;
       })), function(m) {return m && !_.contains(knownTypes, m)}); // no need to reload known types
 
-      var linked = _.filter(linkedModels, function(m) {
-        return _.contains(tmp, l[i].type);
-      });
-      
+//      var linked = _.filter(G.linkedModels, function(m) {
+//        return _.contains(tmp, m.type);
+//      });
+//      
 //      var l = G.linkedModels;
 //      var need = [];
 //      for (var i = 0; i < l.length; i++) {

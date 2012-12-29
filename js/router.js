@@ -211,7 +211,7 @@ define([
       
       var self = this;
       var type = U.getType(uri);
-      uri = U.getLongUri(uri, {shortNameToModel: MB.shortNameToModel});
+      uri = U.getLongUri(uri, MB);
       if (!uri || !MB.shortNameToModel[type]) {
         MB.loadStoredModels({models: [type]});
           
