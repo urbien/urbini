@@ -20,41 +20,42 @@ define('app', [
     }
   };  
   
-  var App = {};
-  App.initialize = function() {
-    var error = function(e) {
-      G.log('init', 'error', "failed to init app, not starting");
-      throw new Error('failed to load app');
-    };
+  var App = {
+    initialize: function() {
+      var error = function(e) {
+        G.log('init', 'error', "failed to init app, not starting");
+        throw new Error('failed to load app');
+      };
+      
+      Templates.loadTemplates();
+      MB.checkUser();
+      MB.loadStoredModels();
+    //  setTimeout(function() {MB.loadStoredModels({all: true})}, 100);
+      if (!MB.changedModels.length && !MB.newModels.length) {
+        MB.updateTables(App.startApp, error);
+        return;
+      }
     
-    Templates.loadTemplates();
-    MB.checkUser();
-    MB.loadStoredModels();
-  //  setTimeout(function() {MB.loadStoredModels({all: true})}, 100);
-    if (!MB.changedModels.length && !MB.newModels.length) {
-      MB.updateTables(App.startApp, error);
-      return;
-    }
-  
-    MB.fetchModels(null, {success: function() {    
-      MB.updateTables(App.startApp, error);
-    }, sync: true});
-  }
-  
-  App.startApp = function() {
-    if (App.started)
-      return;
+      MB.fetchModels(null, {success: function() {    
+        MB.updateTables(App.startApp, error);
+      }, sync: true});
+    },
     
-    G.app = App;
-    App.started = true;
-    var models = G.models;
-    G.Router = new Router();
-    Backbone.history.start();
-    
-    _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
-    G.homePage = G.homePage || G.tabs[0].mobileUrl;
-    if (!window.location.hash) {
-      G.Router.navigate(G.homePage, {trigger: true});
+    startApp: function() {
+      if (App.started)
+        return;
+      
+      G.app = App;
+      App.started = true;
+      var models = G.models;
+      G.Router = new Router();
+      Backbone.history.start();
+      
+      _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
+      G.homePage = G.homePage || G.tabs[0].mobileUrl;
+      if (!window.location.hash) {
+        G.Router.navigate(G.homePage, {trigger: true});
+      }
     }
   };
   

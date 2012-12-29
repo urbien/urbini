@@ -8,7 +8,7 @@ define([
   'cache!error', 
   'cache!models/Resource' 
 ], function(G, $, __jqm__, _, Backbone, U, Error, Resource) {
-  return Backbone.Collection.extend({
+  var ResourceList = Backbone.Collection.extend({
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -120,7 +120,7 @@ define([
         });
       }
       
-      this._lastFetchedOn = new Date().getTime();
+//      this._lastFetchedOn = G.currentServerTime();
       return response;
     },
     onReset: function(model) {
@@ -157,5 +157,9 @@ define([
 //      return jqXHR;
       Backbone.Collection.prototype.fetch.apply(this, arguments);
     }
-  }, {});
+  }, {
+    displayName: 'ResourceList'
+  });
+  
+  return ResourceList;
 });

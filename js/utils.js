@@ -3,6 +3,9 @@ define([
   'cache!underscore',
   'cache!templates'
 ], function(G, _, Templates) {
+  String.prototype.repeat = function(num) {
+    return new Array(num + 1).join(this);
+  }
 
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
@@ -329,44 +332,48 @@ define([
       return staticProps;
     },
     
-    wrap: function(object, method, wrapper) {
-      var fn = object[method];
-      return object[method] = function() {
-        return wrapper.apply(this, [ fn.bind(this) ].concat(Array.prototype.slice.call(arguments)));
-      };
-    },
+//    wrap: function(object, method, wrapper) {
+//      var fn = object[method];
+//      return object[method] = function() {
+//        return wrapper.apply(this, [ fn.bind(this) ].concat(Array.prototype.slice.call(arguments)));
+//      };
+//    },
     
     /**
      * Array that stores only unique elements
      */
-    UArray: function() {
-    //  this.handlers = {};
-    //  this.on = function(method, handler) {
-    //    this.handlers[method] = this.handlers[method] || [];
-    //    this.handlers[method].push(handler);
-    //  };
-    //  this.removeHandler = function(method, handler) {
-    //    return this.handlers[method] && this.handlers[method].remove(handler);
-    //  };
-    //  this.handler = function(method) { 
-    //    if (this.handlers[method] && this.handlers[method].length) {
-    //      _.each(this.handlers[method], function(m) {m()});
-    //    }
-    //  };
-    },
-    
-    union: function(o1, o2) {
-      var type1 = U.getObjectType(o1);
-      var type2 = U.getObjectType(o2);
-        
-      var c = type1.indexOf('Array') == -1 && !(o1 instanceof U.UArray) ? [c] : o1.slice();    
-      if (type2.indexOf('Array') == -1 && !(o2 instanceof U.UArray))
-        return c.push(o2);
-      
-      var self = this;
-      _.each(o2, function(i) {c.push(i);});
-      return c;
-    },   
+//    UArray: function() {
+//    //  this.handlers = {};
+//    //  this.on = function(method, handler) {
+//    //    this.handlers[method] = this.handlers[method] || [];
+//    //    this.handlers[method].push(handler);
+//    //  };
+//    //  this.removeHandler = function(method, handler) {
+//    //    return this.handlers[method] && this.handlers[method].remove(handler);
+//    //  };
+//    //  this.handler = function(method) { 
+//    //    if (this.handlers[method] && this.handlers[method].length) {
+//    //      _.each(this.handlers[method], function(m) {m()});
+//    //    }
+//    //  };
+//    },
+//    
+//    union: function(o1) {
+//      var type1 = U.getObjectType(o1);
+//      var args = Array.prototype.slice.call(arguments, 1);
+//      for (var i = 0; i < args.length; i++) {
+//        var o2 = args[i];
+//        var type2 = U.getObjectType(o2);
+//          
+//        var c = type1.indexOf('Array') == -1 && !(o1 instanceof U.UArray) ? [c] : o1.slice();    
+//        if (type2.indexOf('Array') == -1 && !(o2 instanceof U.UArray))
+//          return c.push(o2);
+//        
+//        var self = this;
+//        _.each(o2, function(i) {c.push(i);});
+//      }
+//      return c;
+//    },   
 
     endsWith: function(string, pattern) {
       var d = string.length - pattern.length;
@@ -643,6 +650,11 @@ define([
         console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
       
       return type.slice(type.lastIndexOf('/') + 1) + (_.size(params) ? '?' + $.param(params) : '');
+    },
+    
+    pushUniq: function(arr, obj) {
+      if (!_.contains(arr, obj))
+        arr.push(obj);
     }
 
   //,
@@ -656,42 +668,42 @@ define([
     
   };
   
-  U.UArray.prototype.length = 0;
-  (function() {
-    var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
-    for (var i = 0; i < methods.length; i++) { 
-      (function(name) {
-        U.UArray.prototype[name] = function() {
-          return Array.prototype[name].apply(this, arguments);
-        };
-      })(methods[i]);
-    }
-  })();
-  
-  U.wrap(U.UArray.prototype, 'concat',
-    function(original, item) {
-      var type = Object.prototype.toString.call(item);
-      if (type.indexOf('Array') == -1)
-        this.push(item);
-      else {
-        var self = this;
-        _.each(item, function(i) {self.push(i);});
-      }
-    }
-  );
-  
-  U.wrap(U.UArray.prototype, 'push',
-    function(original, item) {
-  //    try {
-        if (_.contains(this, item))
-          return this;
-        else
-          return original(item);
-  //    } finally {
-  //      this.handler('push');
-  //    }
-    }
-  );
+//  U.UArray.prototype.length = 0;
+//  (function() {
+//    var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
+//    for (var i = 0; i < methods.length; i++) { 
+//      (function(name) {
+//        U.UArray.prototype[name] = function() {
+//          return Array.prototype[name].apply(this, arguments);
+//        };
+//      })(methods[i]);
+//    }
+//  })();
+//  
+//  U.wrap(U.UArray.prototype, 'concat',
+//    function(original, item) {
+//      var type = Object.prototype.toString.call(item);
+//      if (type.indexOf('Array') == -1)
+//        this.push(item);
+//      else {
+//        var self = this;
+//        _.each(item, function(i) {self.push(i);});
+//      }
+//    }
+//  );
+//  
+//  U.wrap(U.UArray.prototype, 'push',
+//    function(original, item) {
+//  //    try {
+//        if (_.contains(this, item))
+//          return this;
+//        else
+//          return original(item);
+//  //    } finally {
+//  //      this.handler('push');
+//  //    }
+//    }
+//  );
   
   Lablz.U = U;
   return U;

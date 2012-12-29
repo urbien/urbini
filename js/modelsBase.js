@@ -9,8 +9,9 @@ define([
   'cache!events', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-  'cache!indexedDBShim'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
+  'cache!indexedDBShim',
+  'cache!queryIndexedDB'
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, __idbShim__, idbq) {
   var MBI = null; // singleton instance
   
   var MB = ModelsBase = function() {
@@ -22,10 +23,9 @@ define([
   
   MB.prototype = {};
   MB.prototype.initialize = function() {
+    Lablz.idbq = idbq;
     this.TAG = 'Storage';
     this.packages = {'Resource': Resource};
-    this.changedModels = new U.UArray();
-    this.newModels = new U.UArray();
     
     Backbone.Model.prototype._super = function(funcName){
       return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
@@ -36,6 +36,14 @@ define([
       model.lastFetchOrigin = 'server';
       if (options.sync)
         options.timeout = 5000;
+      
+      var tName = 'sync ' + options.url;
+      G.startedTask(tName);
+      var success = options.success;
+      options.success = function() {
+        G.finishedTask(tName);
+        success.apply(this, arguments);
+      }
       
       var err = options.error;
       var req = Backbone.defaultSync(method, model, options);
@@ -52,19 +60,28 @@ define([
      */
     isStale = function(ts, now) {
       if (!ts) return true;
-      now = now || new Date().getTime();
+      now = now || G.currentServerTime();
       var age = now - ts;
       var stale = age > 180000;
       if (stale)
         G.log(MBI.TAG, 'info', 'data is stale at: ' + age + ' millis old');
       
       return stale;
-    }
+    };
     
+    var setLastFetched = function(lastFetchedOn, options) {
+      if (lastFetchedOn) {
+        _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});        
+      }
+    };
+    
+    var tsProp = "davGetLastModified";
     Backbone.sync = function(method, model, options) {
-      var now = new Date().getTime();
+      var now = G.currentServerTime();
       var isCol = model instanceof Backbone.Collection;
       var lastFetchedOn = isCol ? model._lastFetchedOn : (model.collection && model.collection._lastFetchedOn) || model.get('_lastFetchedOn');
+      options.headers = options.headers || {};
+      
       var isFilter = isCol && _.filter(_.keys(model.queryMap), function(p) {return p.charAt(0)!='$'}).length; // if there are model-specific filter parameters to the API
       var shortPage = isCol && model._lastFetchedOn && !isFilter && model.models.length < model.perPage;
       var stale = false;
@@ -87,25 +104,26 @@ define([
           stale = true;
         else if (!options.sync)
           return;
-  
-        options.headers = options.headers || {};
-        if (stale && lastFetchedOn) {
-          _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});
-        }
+      
+        setLastFetched(lastFetchedOn, options);
       }
+      else if (!isCol)
+        setLastFetched(lastFetchedOn, options);
       
       var defSuccess = options.success;
       var defErr = options.error;
       var save;
       if (isCol) {
         save = function(results) {
+          if (!results.length)
+            return false;
+          
           // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
           // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
-          // Alternative is to override Backbone.Collection.reset() method and do some magic there.
+          // An alternative is to override Backbone.Collection.reset() method and do some magic there.
       //    if (!(model instanceof Backbone.Collection))
       //      return;
           
-          var tsProp = model.model.timestamp; // model.model is the collection's model 
           var toAdd = [];
           var skipped = [];
           for (var i = 0; i < results.length; i++) {
@@ -118,11 +136,10 @@ define([
             var newLastModified = r[tsProp];
             if (typeof newLastModified === "undefined") 
               newR = 0;
-            if (!tsProp || !newLastModified || newLastModified > ts) {
-              toAdd.push(r); //new model.model(r));
-            }
-            
-            _.extend(r, {'_lastFetchedOn': now});
+            if (!newLastModified || newLastModified > ts) {
+              toAdd.push(r);
+            }          
+//            r._lastFetchedOn = now;
           }
           
           var modified = [];
@@ -143,6 +160,8 @@ define([
           setTimeout(function() {          
             MBI.addItems(results, model.type);
           }, 100);
+          
+          return !!toAdd.length;
         }
       }
 
@@ -154,6 +173,14 @@ define([
             defErr && defErr(resp && resp.error || {code: code}, status, xhr);            
           }
           
+          if (isCol)
+            model._lastFetchedOn = now;
+          
+          var ms = isCol ? model.models : [model];
+          _.each(ms, function(m) {
+            m.set({'_lastFetchedOn': now}, {silent: true});
+          });              
+
           switch (code) {
             case 200:
               break;
@@ -169,16 +196,14 @@ define([
             return;
           }
           
-          var isCol = model instanceof Backbone.Collection;      
           data = isCol ? resp.data : resp.data[0];
           var modified;
           if (isCol) {
-            model._lastFetchedOn = now;
+//            model._lastFetchedOn = now;
             var offset = resp.metadata && resp.metadata.offset || 0;
             modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
           }
           else {
-            model.set({'_lastFetchedOn': now}, {silent: true});            
             modified = model.get('_uri');
           }
           
@@ -196,42 +221,34 @@ define([
         return runDefault();
 
       var key, now, timestamp, refresh;
-      var success = function(results) {
+      var dbSuccess = function(results) {
         // provide data from indexedDB instead of a network call
         if (!results || (results instanceof Array && !results.length)) {
-          runDefault();
-          return;
+          return runDefault();
         }
 
         // simulate a normal async network call
         setTimeout(function(){
-          var success = options.success;
-          options.success = function(resp, status, xhr) {
-            if (success) {
-              G.log(MBI.TAG, 'db', "got resources from db");
-              success(resp, status, xhr);
-            }
-            
-            if (!isFilter && isCol && (resp.length < model.perPage || _.any(resp, function(m) {
-              return isStale(m._lastFetchedOn, now);
-            }))) {
-              return runDefault();
-            }
-          }
-          
           model.lastFetchOrigin = 'db';
-          options.success(results, 'success', null);
+//          if (success) {
+            G.log(MBI.TAG, 'db', "got resources from db: " + (model.type || model.constructor.type));
+            defSuccess(results, 'success', null);
+//          }
+          
+          if (!isFilter && isCol && (results.length < model.perPage || _.any(results, function(m)  {return isStale(m._lastFetchedOn, now); }))) {
+            return runDefault();
+          }
         }, 0);    
       }
       
-      var error = function(e) {
+      var dbError = function(e) {
         if (e) G.log(MBI.TAG, 'error', "Error fetching data from db: " + e);
         runDefault();
       }
       
       // only override sync if it is a fetch('read') request
       key = this.getKey && this.getKey();
-      var dbReqOptions = {key: key, success: success, error: error, syncOptions: options};
+      var dbReqOptions = {key: key, success: dbSuccess, error: dbError, syncOptions: options};
       if (model instanceof Backbone.Collection) {
         dbReqOptions.startAfter = options.startAfter,
         dbReqOptions.perPage = model.perPage;
@@ -252,27 +269,27 @@ define([
 //        options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
     };
 
-    this.models = new U.UArray();
-    this.changedModels = new U.UArray();
-    this.newModels = new U.UArray();
+    this.models = []; // new U.UArray();
+    this.changedModels = []; // new U.UArray();
+    this.newModels = []; // new U.UArray();
     this.models.push(this.packages.Resource);
     this.shortNameToModel = {'Resource': this.packages.Resource};
     this.typeToModel = {};
 
     this.fetchModels = function(models, options) {
-      models = models || U.union(MBI.changedModels, MBI.newModels);
+      models = models || _.union(MBI.changedModels, MBI.newModels);
       options = options || {};
       var success = options.success;
       var error = options.error || Error.getDefaultErrorHandler();
 
       if (models.length) {
-        var now = new Date().getTime();
         models = models.join ? models : [models];
         var snm = MBI.shortNameToModel;
+        var now = G.currentServerTime();
         models = _.map(models, function(m) {
           var model = snm[U.getShortName(m)];
           if (model) {
-            var lm = model.lastModified;
+            var lm = model._dateStored ? model._dateStored : model.lastModified;
             if (now - lm < 360000) // consider model stale after 1 hour
               return null;
             
@@ -302,58 +319,96 @@ define([
       }
       
       var modelsCsv = JSON.stringify(models);
-      $.ajax({
-        url: G.serverName + "/backboneModel", 
-        type: 'POST',
-        data: {"models": modelsCsv},
-        timeout: 5000,
-        complete: function(jqXHR, status) {
+      G.startedTask("ajax models");
+      var useWorker = window.Worker && !options.sync;
+      var complete = function() {
+        var responseText;
+        var data;
+        if (useWorker) 
+          // XHR
+          data = arguments[0];
+        else {                                
+          // $.ajax
+          responseText = arguments[0].responseText;
+          var status = arguments[1];
           if (status != 'success') {
             G.log(MBI.TAG, 'error', "couldn't fetch models");
             var errArgs = [null, {type: status}, options];
             return error.apply(this, errArgs);
           }
-            
-          var data;
+          
           try {
-            data = JSON.parse(jqXHR.responseText);
+            data = JSON.parse(responseText);
           } catch (err) {
             G.log(MBI.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
             error(null, null, options);            
             return;
           }
-          
-          if (data.error) {
-            error(null, data.error, options);
-            return;
-          }
-          
-//            _.extend(packages, p);
-          var mz = data.models;
-          var pkg = data.packages;
-          if (pkg)
-            U.deepExtend(MBI.packages, pkg);
-          
-          for (var i = 0; i < mz.length; i++) {
-            var p = mz[i].path;
-            var lastDot = p.lastIndexOf('.');
-            var path = p.slice(0, lastDot);
-            var name = p.slice(lastDot + 1);
-            var sup = mz[i].sPath;
-            
-            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-            var m = U.leaf(MBI.packages, path)[name] = U.leaf(MBI.packages, sup).extend(mz[i].p, mz[i].s);
-            MBI.models.push(m);
-          }
-          
-          MBI.initModels();
-          if (success)
-            success();
-          
-          setTimeout(MBI.saveModelsToStorage, 0);
-          setTimeout(MBI.fetchLinkedModels, 0);
         }
-      });
+        
+        if (data.error) {
+          error(null, data.error, options);
+          return;
+        }
+        
+        var mz = data.models;
+        var pkg = data.packages;
+        if (pkg)
+          U.deepExtend(MBI.packages, pkg);
+        
+        G.classUsage = _.union(G.classUsage, data.classUsage);          
+        G.linkedModels = data.linkedModels; //_.union(G.linkedModels, data.linkedModels);
+        
+        var newModels = [];
+        for (var i = 0; i < mz.length; i++) {
+          var p = mz[i].path;
+          var lastDot = p.lastIndexOf('.');
+          var path = p.slice(0, lastDot);
+          var name = p.slice(lastDot + 1);
+          var sup = mz[i].sPath;
+          
+          // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
+          var m = U.leaf(MBI.packages, path)[name] = U.leaf(MBI.packages, sup).extend(mz[i].p, mz[i].s);
+          U.pushUniq(newModels, m);
+        }
+        
+        for (var i = 0; i < newModels.length; i++) {
+          U.pushUniq(MBI.models, newModels[i]); // preserve order of MBI.models
+        }
+        
+        MBI.initModels();
+        if (success)
+          success();
+        
+        G.finishedTask("ajax models");
+        
+        setTimeout(function() {MBI.saveModelsToStorage(newModels)}, 0);
+//        setTimeout(MBI.fetchLinkedModels, 0);
+      };
+      
+      if (useWorker) {
+        var xhr = new Worker(G.serverName + '/js/xhrWorker.js');
+        xhr.onmessage = function(event) {
+          if (typeof event.data === 'string')
+            complete({error: {code: 404}});
+          else
+            complete(event.data);
+        };
+        xhr.onerror = function(err) {
+          console.log(JSON.stringify(err));
+        };
+        
+        xhr.postMessage({type: 'JSON', url: G.modelsUrl + '?models=' + encodeURIComponent(modelsCsv)});
+      }
+      else {
+        $.ajax({
+          url: G.modelsUrl, 
+          type: 'POST',
+          data: {"models": modelsCsv},
+          timeout: 5000,
+          complete: complete
+        });
+      }
     };
 
     this.fetchLinkedModels = function() {
@@ -368,7 +423,7 @@ define([
           return;
         
         MBI.initModels();
-        MBI.saveModelsToStorage();
+        MBI.saveModelsToStorage(MBI.models.slice(numModels));
       }
     };
 
@@ -388,7 +443,7 @@ define([
       if (MBI.shortNameToModel[m.shortName])
         return;
       
-      m.lastModified = new Date().getTime();
+//      m.lastModified = new Date().getTime();
       MBI.shortNameToModel[m.shortName] = m;
       MBI.typeToModel[m.type] = m;
       m.prototype.parse = Resource.prototype.parse;
@@ -434,7 +489,7 @@ define([
           G.currentUser = {_reset: true, guest: true};
         else {
           localStorage.setItem(MBI.contactKey, JSON.stringify(c));
-          G.currentUser._reset = true;
+          G.userChanged = true;
         }
         
         MBI.newModels = _.filter(_.keys(MBI.shortNameToModel), function(name) {return name != 'Resource'});
@@ -442,20 +497,23 @@ define([
       }
     };
     
-    this.saveModelsToStorage = function() {
+    this.saveModelsToStorage = function(models) {
       if (!localStorage)
         return; // TODO: use indexedDB
       
-      if (!MBI.models.length)
+      var models = models || MBI.models;
+      if (!models.length)
         return;
     
-      var now = new Date().getTime();
-      _.each(MBI.models, function(model) {
+      var now = G.currentServerTime();
+      _.each(models, function(model) {
+        if (model.type.endsWith('#Resource'))
+          return;
+        
         var modelJson = U.toJSON(model);
-        modelJson._lastModified = now;
+        modelJson._dateStored = now;
         modelJson._super = model.__super__.constructor.type;
-        if (!model.type.endsWith('#Resource'))
-          localStorage.setItem('model:' + model.type, JSON.stringify(modelJson));
+        MBI.storeModel(model, modelJson);
       });  
     };
     
@@ -464,7 +522,7 @@ define([
         if (model.subClassOf != null || model.type.endsWith("#Resource"))
           return true;
         else {
-          MBI.changedModels.push(model.type);
+          U.pushUniq(MBI.changedModels, model.type);
           return false;
         }
       });
@@ -474,6 +532,39 @@ define([
       
       var unloaded = [];
       var snm = MBI.shortNameToModel;
+
+//      var loadOne = function(m, superName, sUri) {
+//        var pkgPath = U.getPackagePath(m.type);
+//        var sPath = U.getPackagePath(sUri);
+//        var pkg = U.addPackage(MBI.packages, pkgPath);
+//        if (snm[m.shortName])
+//          delete snm[m.shortName];
+//        
+//        var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
+//        MBI.initModel(model);        
+//      };
+//      
+//      var loadModelChain = function(model) {
+//        if (!G.hasLocalStorage)
+//          return;
+//        
+//        var sup = model.subClassOf;
+//        if (!sup)
+//          return;
+//        
+//        if (sup == 'Resource') {
+//          loadOne(model, sup, sup);
+//          return true;
+//        }
+//          
+//        sup = sup.startsWith('http') ? sup : 'http://www.hudsonfog.com/voc/' + sup;
+//        var sModel = MBI.getModelFromLS(sup);
+//        if (!sModel)
+//          return;
+//        
+//        loadModelChain(JSON.parse(sModel));
+//        loadOne(model, U.getType(sup), sup);
+//      };
       
       _.each(filtered, function(m) {
         var sUri = m.subClassOf;
@@ -481,30 +572,41 @@ define([
         var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
         if (!snm[superName]) {
           unloaded.push(m.type);
+//          loadModelChain(m);
           return;
         }
         
+//        loadOne(m, superName, sUri);
         var pkgPath = U.getPackagePath(m.type);
         var sPath = U.getPackagePath(sUri);
         var pkg = U.addPackage(MBI.packages, pkgPath);
         if (snm[m.shortName])
           delete snm[m.shortName];
-          
+        
         var model = pkg[m.shortName] = U.leaf(MBI, (sPath ? sPath + '.' : '') + superName).extend({}, m);
-    //    var model = eval(pkgPath + '.' + m.shortName + " = " + (sPath ? sPath + '.' : '') + superName + '.extend({},' + m + ');');
-        MBI.initModel(model);
+        MBI.initModel(model);        
       });
+      
       
       return unloaded;
     };
     
+    this.getModelFromLS = function(uri) {
+      return localStorage.getItem('model:' + uri);
+    };
+    
+    this.storeModel = function(model, modelJson) {
+      localStorage.setItem('model:' + model.type, JSON.stringify(modelJson));
+    };
+    
     this.loadStoredModels = function(options) {
     //  var ttm = MBI.typeToModel;
-      if (G.currentUser._reset)
+      if (G.userChanged)
         return;
 
-      var r = options && options.models ? {models: options.models} : {models: G.models};
+      var r = options && options.models ? {models: _.clone(options.models)} : {models: _.clone(G.models)};
       var hash =  window.location.hash && window.location.hash.slice(1);
+      var added;
 //      var willLoadCurrentModel = false;
       if (hash) {
         var qIdx = hash.indexOf('?');
@@ -525,51 +627,144 @@ define([
           type = U.getType(hash);
         
         type = type && type.startsWith(G.serverName) ? 'http://' + type.slice(G.serverName.length + 1) : type;
-        if (type && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length)
-          r.models.push(type); // && willLoadCurrentModel = true;
+        if (type && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length) {
+          r.models.push(type);
+          added = type;
+        }
       }
       
-      if (!localStorage) {
+      if (!G.hasLocalStorage) {
         if (r) {
           _.forEach(r.models, function(model) {
             G.log(MBI.TAG, 'db', "1. newModel: " + model.shortName);
-            MBI.newModels.push(model.type);
+            U.pushUniq(MBI.newModels, model.type);
           });
         }
         
         return; // TODO: use indexedDB
       }
+
+//      var inOrder = [];
+//      var uris = [];
+//      for (var i = 0; i < r.models.length; i++) {
+//        var model = r.models[i];
+//        var uri = model.type || model;
+//        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel}))) {
+//          r.models[i] = null;
+//          continue;
+//        }
+//        
+//        if (_.contains(uris, uri))
+//          continue;
+//        
+//        uris.push(uri);
+//        var jm = MBI.getModelFromLS(uri);
+//        if (!jm) {
+//          U.pushUniq(MBI.newModels, uri);
+//          r.models[i] = null;
+//          continue;
+//        }
+//        
+//        jm = JSON.parse(jm);
+////        if (model !== added) {
+////          r.models[i] = typeof model === 'string' ? jm : _.extend(jm, model);
+////          continue;
+////        }
+////        
+////        r.models[i] = null;
+//        inOrder.push(jm);
+//        var sup;
+//        while ((sup = jm.subClassOf) != 'Resource') {
+//          var type = jm.type;
+//          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
+//          var idx = uris.indexOf(sup);
+//          if (idx != -1) {
+//            var s = inOrder[idx];
+//            inOrder[idx] = jm;
+//            inOrder[inOrder.length - 1] = jm;
+//            var u = uris[idx];
+//            uris[idx] = type;
+//            uris[uris.length - 1] = sup;
+//            break;
+//          }
+//          
+//          var m = MBI.getModelFromLS(sup);
+//          if (m) {
+//            jm = JSON.parse(m);
+//            inOrder.push(jm);
+//          }
+//        }        
+//      }
+//      
+//      inOrder.reverse();
+//      
+//      r.models = _.compact(r.models); // filter out nulls
+//      while (extraModels.length) {
+//        r.models.push(extraModels.pop());
+//      }
+      
+      var extraModels = [];
+      for (var i = 0; i < r.models.length; i++) {
+        var model = r.models[i];
+        var uri = model.type || model;
+        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel}))) {
+          r.models[i] = null;
+          continue;
+        }
+        
+        var jm = MBI.getModelFromLS(uri);
+        if (!jm) {
+          U.pushUniq(MBI.newModels, uri);
+          r.models[i] = null;
+          continue;
+        }
+        
+        jm = JSON.parse(jm);
+        if (model !== added) {
+          r.models[i] = _.extend(jm, model);
+          continue;
+        }
+        
+        r.models[i] = null;
+        var sup;
+        extraModels.push(jm);
+        while ((sup = jm.subClassOf) != 'Resource') {
+          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
+          var m = MBI.getModelFromLS(sup);
+          if (m) {
+            jm = JSON.parse(m);
+            extraModels.push(jm);
+          }
+        }
+      }
+      
+      r.models = _.compact(r.models); // filter out nulls
+      while (extraModels.length) {
+        r.models.push(extraModels.pop());
+      }
       
       var toLoad = [];
       var baseDate = r.lastModified || G.lastModified;
       _.each(r.models, function(model) {
-        var uri = model.type || model;
-        if (!uri || !(uri = U.getLongUri(uri, {shortNameToModel: MBI.shortNameToModel})))
-          return;    
-        
-        var exists = false;
         var d = baseDate || model.lastModified;
         if (d) {
           var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
-          var stored = localStorage.getItem('model:' + uri);
-          if (stored) {
-            exists = true;
-            stored = JSON.parse(stored);
-            var storedDate = stored._lastModified;
+            var storedDate = model._dateStored;
             if (storedDate && storedDate >= date) {
-              toLoad.push(stored);
+              toLoad.push(model);
               return;
             }
-          }
         }
         
-        (exists ? MBI.changedModels : MBI.newModels).push(uri);
+        U.pushUniq(MBI.changedModels, model.type);
         return;
       });
       
       if (toLoad.length) {
         var unloaded = MBI.initStoredModels(toLoad);
-        _.each(unloaded, function (m) {MBI.changedModels.push(m)});
+        _.each(unloaded, function (m) {
+          U.pushUniq(MBI.changedModels, m);
+        });
       }
     };
 
@@ -580,7 +775,8 @@ define([
     this.paused = false;
     
     this.onerror = function(e) {
-      G.currentUser._reset = true;
+      G.userChanged = true;
+//      G.recordCheckpoint("closing db due to error");
       MBI.db && MBI.db.close();
       MBI.open();
       G.log(MBI.TAG, ['error', 'db'], "db error: " + JSON.stringify(e));
@@ -590,24 +786,28 @@ define([
       G.log(MBI.TAG, ['error', 'db'], "db abort: " + e);
     };
     
-    this.reset = function() {
-      var db = MBI.db;
-      var rModels = G.models && _.map(G.models, function(model) {return model.shortName}) || [];
-      var deleted = [];
-      var created = [];
-      _.each(db.objectStoreNames, function(name) {            
-        db.deleteObjectStore(name);
-        deleted.push(name);
-        if (_.contains(rModels, name)) {
-          db.createObjectStore(name, MBI.defaultOptions);
-          created.push(name);
-        }
-      })
-      
-      deleted.length && G.log(MBI.TAG, 'db', '1. deleted tables: ' + deleted.join(','));
-      created.length && G.log(MBI.TAG, 'db', '1. created tables: ' + created.join(','));
-      G.currentUser._reset = false;
-    }
+//    this.reset = function() {
+//      var db = MBI.db;
+//      var rModels = _.filter(_.union(G.models, G.linkedModels), function(m) {return _.contains(G.classUsage, m)});
+//      var rModels = _.map(rModels, function(m) {
+//        return (m.type || m.uri).slice(m.type.lastIndexOf('/') + 1)
+//      });
+//      
+//      var deleted = [];
+//      var created = [];
+//      _.each(db.objectStoreNames, function(name) {            
+//        db.deleteObjectStore(name);
+//        deleted.push(name);
+//        if (_.contains(rModels, name)) {
+//          db.createObjectStore(name, MBI.defaultOptions);
+//          created.push(name);
+//        }
+//      })
+//      
+//      deleted.length && G.log(MBI.TAG, 'db', '1. deleted tables: ' + deleted.join(','));
+//      created.length && G.log(MBI.TAG, 'db', '1. created tables: ' + created.join(','));
+//      G.userChanged = false;
+//    }
     
     this.onblocked = function(e) {
       G.log(MBI.TAG, ['error', 'db'], "db blocked: " + e);
@@ -616,6 +816,7 @@ define([
     this.defaultOptions = {keyPath: '_uri'};
     this.open = function(options, success, error) {
       var modelsChanged = false;
+      G.log(MBI.TAG, 'db', "opening db");
       var request = indexedDB.open("lablz");
     
       request.onblocked = function(event) {
@@ -626,24 +827,30 @@ define([
     
       var onsuccess;
       request.onsuccess = onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'open db onsuccess');
         MBI.db = e.target.result;
         var db = MBI.db;
         db.onversionchange = function(event) {
+          G.log(MBI.TAG, 'db', 'closing db - onversionchange');
           db.close();
           alert("A new version of this page is ready. Please reload!");
         };    
     
         modelsChanged = !!MBI.changedModels.length || !!MBI.newModels.length;
-        MBI.VERSION = G.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+        MBI.VERSION = G.userChanged || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == MBI.VERSION) {
           if (success)
             success();
           
+//          G.recordCheckpoint("done prepping db");
+          G.log(MBI.TAG, 'db', "done prepping db");
           return;
         }
         
+//          G.recordCheckpoint("upgrading db");
+        G.log(MBI.TAG, 'db', 'about to upgrade db');
         if (db.setVersion) {
-          G.log(MBI.TAG, 'db', 'in old setVersion. User changed: ' + G.currentUser._reset + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
+          G.log(MBI.TAG, 'db', 'in old setVersion. User changed: ' + G.userChanged + '. Changed models: ' + (MBI.changedModels.join(',') || 'none') + ', new models: ' + (MBI.newModels.join(',') || 'none')); // deprecated but needed for Chrome
           
           // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
           var req = db.setVersion(MBI.VERSION);
@@ -651,21 +858,23 @@ define([
           req.onerror = MBI.onerror;
           req.onblocked = MBI.onblocked;
           req.onsuccess = function(e2) {
-            G.log(MBI.TAG, 'db', 'upgrading db');
-            if (G.currentUser._reset)
-              MBI.reset();
-            
-            if (modelsChanged)
+            G.log(MBI.TAG, 'db', 'db.setVersion onsuccess');
+            if (G.userChanged)
+              MBI.updateStores(reset) && (G.userChanged = false);
+            else if (modelsChanged)
               MBI.updateStores();
             
             e2.target.transaction.oncomplete = function() {
-              G.log(MBI.TAG, 'db', 'upgraded db');
+//              G.recordCheckpoint("done upgrading db");
+              G.log(MBI.TAG, 'db', 'db.setVersion transaction.oncomplete');
               if (success)
                 success();
             };
           };      
         }
         else {
+          G.log(MBI.TAG, 'db', 'upgrading db (via onupgradeneeded, using FF are ya?)');
+//          G.recordCheckpoint("upgrading db");
           db.close();
           var subReq = indexedDB.open("lablz", MBI.VERSION);
           subReq.onsuccess = request.onsuccess;
@@ -675,27 +884,28 @@ define([
       };
       
       request.onupgradeneeded = function(e) {
-        console.log ("upgrading db");
+//        G.recordCheckpoint("db, onupgradeneeded callback");
+        G.log(MBI.TAG, 'db', 'onupgradeneeded callback');
         MBI.db = e.target.result;
-        var db = MBI.db;
-        if (G.currentUser._reset) {
+        if (G.userChanged) {
           G.log(MBI.TAG, 'db', "clearing db");
-          MBI.reset();
+          MBI.updateStores(reset) && (G.userChanged = false);
         }
-        
-        if (modelsChanged) {
-          G.log(MBI.TAG, 'db', "updating stores");
+        else if (modelsChanged) {
+          G.log(MBI.TAG, 'db', "updating db stores");
           MBI.updateStores();
         }
         
         e.target.transaction.oncomplete = function() {
-          G.log(MBI.TAG, 'db', "upgraded db");
+//          G.recordCheckpoint("done upgrading db");
+          G.log(MBI.TAG, 'db', "onupgradeneeded transaction.oncomplete");
           if (success)
             success();
         };
       };      
       
       request.onerror = function(e) {
+        G.log(MBI.TAG, 'db', "error opening db");
         if (error)
           error(e);
         
@@ -703,33 +913,75 @@ define([
       };  
     };
     
-    this.updateStores = function() {
+    this.updateStores = function(reset) {
       var db = MBI.db;
-      var models = U.union(MBI.changedModels, MBI.newModels);
-      models = _.map(models, function(uri) {
-        var sIdx = uri.lastIndexOf("/");
-        return sIdx == -1 ? uri : uri.slice(sIdx + 1);
+      var toDel = _.union(MBI.changedModels, MBI.newModels);
+      var models = _.union(toDel, _.map(G.linkedModels, function(m){return m.type}));
+      if (reset)
+        models = _.union(models, G.models, G.linkedModels);
+
+      models = _.filter(models, function(m) {
+        return _.contains(G.classUsage, m);
       });
+
+      toDel = _.map(toDel, U.getType);
+      models = _.map(models, U.getType);
+//      models = _.map(models, function(uri) {
+//        var sIdx = uri.lastIndexOf("/");
+//        return sIdx == -1 ? uri : uri.slice(sIdx + 1);
+//      });
       
       MBI.changedModels.length = 0;
       MBI.newModels.length = 0;
+      if (!models.length)
+        return;
+      
       var deleted = [];
       var created = [];
       for (var i = 0; i < models.length; i++) {
         var name = models[i];
         if (db.objectStoreNames.contains(name)) {
-          try {
-            db.deleteObjectStore(name);
-            deleted.push(name);
-          } catch (err) {
-            G.log(MBI.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
-            return;
+          if (reset || _.contains(toDel, name)) {
+            try {
+              G.log(MBI.TAG, 'db', 'deleting object store: ' + name);
+              db.deleteObjectStore(name);
+              G.log(MBI.TAG, 'db', 'deleted object store: ' + name);
+              deleted.push(name);
+            } catch (err) {
+              G.log(MBI.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
+              return;
+            }
+          }          
+          else
+            continue;
+        }
+        
+
+        try {
+          G.log(MBI.TAG, 'db', 'creating object store: ' + name);
+          var store = db.createObjectStore(name, MBI.defaultOptions);
+          G.log(MBI.TAG, 'db', 'created object store: ' + name);
+          var m = MBI.shortNameToModel[name];
+          if (m) {
+            var indices = [];
+            var vc = m.viewCols;
+            vc = vc ? vc.split(',') : [];
+            _.each(vc, function(pName) {
+              pName = pName.trim();
+              G.log(MBI.TAG, 'db', 'creating index', pName, 'for store', name);
+              store.createIndex(pName, pName, {unique: false});              
+              G.log(MBI.TAG, 'db', 'created index', pName, 'for store', name);
+              indices.push(pName);
+            });
+
+            // wrong, this is for backlink resources, not the class itself
+//            _.each(m.properties, function(prop, pName) {
+//              if (_.has(prop, 'sortAscending') && !_.contains(indices, pName)) {
+//                store.createIndex(pName, pName, {unique: false});
+//              }
+//            });
           }
           
-        }
-    
-        try {
-          db.createObjectStore(name, MBI.defaultOptions);
           created.push(name);
         } catch (err) {
           G.log(MBI.TAG, ['error', 'db'], '2. failed to create table ' + name + ': ' + err);
@@ -738,8 +990,8 @@ define([
         
       }
       
-      deleted.length && G.log(MBI.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
-      created.length && G.log(MBI.TAG, 'db', '2. created tables: ' + created.join(","));
+//      deleted.length && G.log(MBI.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
+//      created.length && G.log(MBI.TAG, 'db', '2. created tables: ' + created.join(","));
     }
     
     this.addItems = function(items, classUri) {
@@ -752,9 +1004,10 @@ define([
       
       var className = classUri.slice(classUri.lastIndexOf("/") + 1);
       if (!db.objectStoreNames.contains(className)) {
+        G.log(MBI.TAG, 'db', 'closing db for upgrade');
         db.close();
         G.log(this.TAG, "db", "2. newModel: " + className);
-        MBI.newModels.push(classUri);
+        U.pushUniq(MBI.newModels, classUri);
         MBI.open(null, function() {
           MBI.addItems(items, classUri);
         });
@@ -762,7 +1015,14 @@ define([
         return;
       }
       
+      G.log(MBI.TAG, 'db', 'starting readwrite transaction for store', className);
+//      G.recordCheckpoint('starting readwrite transaction for store: ' + className);
       var trans = db.transaction([className], IDBTransaction.READ_WRITE);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readwrite transaction for store', className);
+//        G.recordCheckpoint('finished readwrite transaction for store: ' + className);
+      };
+      
       var store = trans.objectStore(className);
       _.each(items, function(item) {
         var request = store.put(item);
@@ -775,7 +1035,7 @@ define([
         };
       });
       
-      G.log(MBI.TAG, 'db', "added some " + className + " to db");
+//      G.log(MBI.TAG, 'db', "added some " + className + " to db");
     };
     
     this.addItem = function(item, classUri) {
@@ -783,6 +1043,7 @@ define([
     }
     
     this.deleteItem = function(uri) {
+      G.log(MBI.TAG, 'db', 'deleting item', uri);
       var type = U.getType(item._uri);
       var name = U.getClassName(type);
       var db = MBI.db;
@@ -791,6 +1052,7 @@ define([
       var request = store.delete(uri);
     
       request.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'delete item onsuccess');
     //    MBI.getItems(type);
       };
     
@@ -814,10 +1076,16 @@ define([
       if (!db || !db.objectStoreNames.contains(name))
         return false;
       
+      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
       var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
+      };
+      
       var store = trans.objectStore(name);
       var request = store.get(uri);
       request.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', "store.get().onsuccess");
         if (options.success) {
           if (e.target.result && e.target.result.value)
             options.syncOptions.sync = false;
@@ -827,6 +1095,7 @@ define([
       };
       
       request.onerror = function(e) {
+        G.log(MBI.TAG, 'db', "store.get().onerror");
         if (error)
           error(e);
         
@@ -850,7 +1119,12 @@ define([
       if (!db || !db.objectStoreNames.contains(name))
         return false;
       
+      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
       var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      trans.oncomplete = function(e) {
+        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
+      };
+      
       var store = trans.objectStore(name);
     
       var lowerBound;
@@ -861,11 +1135,12 @@ define([
       var results = [];
       var cursorRequest = lowerBound ? store.openCursor(lowerBound) : store.openCursor();
       cursorRequest.onsuccess = function(e) {
+        G.log(MBI.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
         if (result) {
           results.push(result.value);
           if (!total || results.length < total) {
-            result.continue();
+            result['continue']();
             return;
           }
         }
@@ -879,6 +1154,7 @@ define([
       };
     
       cursorRequest.onerror = function (e) {
+        G.log(MBI.TAG, 'db', 'read via cursor onerror', e);
         if (error)
           error(e);
         
@@ -892,8 +1168,10 @@ define([
     //  MBI.checkSysInfo();
     //  MBI.loadAndUpdateModels();
       MBI.paused = true;
-      if (MBI.db)
+      if (MBI.db) {
+        G.log(MBI.TAG, 'db', 'closing db');
         MBI.db.close();
+      }
       
       var s = success;
       success = function() {
@@ -905,17 +1183,52 @@ define([
     };
 
     this.fetchModelsForLinkedResources = function(model) {
-      model = model || model.constructor;
-      var tmp = new U.UArray();
-      _.forEach(model.properties, function(p) {
-        p.range && tmp.push(p.range);
+//      model = model.constructor || model;
+      var ctr = model.constructor;
+      var props = {};
+      for (var name in ctr.properties) {
+        if (model.get(name))
+          props[name] = ctr.properties[name];
+      }
+      
+      var knownTypes = _.keys(MBI.typeToModel);
+      var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
+        if (prop.backLink) {
+          var count = model.get(name + 'Count') || model.get(name + '.COUNT()');
+          if (!count)
+            return null;
+        }
+        
+        return prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
+//          return _.contains(G.classUsage, r);
+      })), function(m) {return m && !_.contains(knownTypes, m)}); // no need to reload known types
+
+      var linked = _.filter(linkedModels, function(m) {
+        return _.contains(tmp, l[i].type);
       });
+      
+//      var l = G.linkedModels;
+//      var need = [];
+//      for (var i = 0; i < l.length; i++) {
+//        if (!tmp.length)
+//          break;
+//        
+//        var idx = tmp.indexOf(l[i].type);
+//        if (idx != -1) {
+//          need.push(l[i]);
+//          tmp.remove(idx, idx);
+//        }
+//      }
+//      
+//      need = _.concat(need, tmp); // maybe we were missing some in linkedModels
       
       var linkedModels = [];
       var l = G.linkedModels;
       for (var i = 0; i < l.length; i++) {
         // to preserve order
-        if (_.contains(tmp, l[i].type)) {
+        var idx = tmp.indexOf(l[i].type);
+        if (idx != -1) {
+          tmp.splice(idx, idx + 1);
           var m = l[i];
           var j = i;
           var supers = [];
@@ -939,6 +1252,7 @@ define([
         }
       }
       
+      linkedModels = _.union(linkedModels, tmp); // maybe we were missing some in linkedModels
       if (linkedModels.length) {
 //        linkedModels = _.uniq(linkedModels);
         MBI.loadStoredModels({models: linkedModels});
@@ -950,8 +1264,9 @@ define([
   }
   
   MB.getInstance = function() {
-    if (MBI === null)
+    if (MBI === null) {
       Lablz.MBI = MBI = new MB();
+    }
     
     return MBI;
   };

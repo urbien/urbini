@@ -63,8 +63,8 @@ define([
                   (this.model.isA("Shape") && this.model.get('shapeJson'));
       
       this.buttons = {
-          left: [BackButton, MenuButton],
-          right: isGeo ? [AroundMeButton] : null, // no need MapItButton?
+          left: [BackButton],
+          right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
       

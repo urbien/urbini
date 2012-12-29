@@ -1253,6 +1253,7 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
 			window.IDBDatabase = idbModules.IDBDatabase;
 			window.IDBTransaction = idbModules.IDBTransaction;
 			window.IDBCursor = idbModules.IDBCursor;
+      window.IDBIndex = idbModules.IDBIndex;
 			window.IDBKeyRange = idbModules.IDBKeyRange;
 		});
 	}
@@ -1265,6 +1266,9 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
 		window.IDBDatabase = window.IDBDatabase || window.webkitIDBDatabase;
 		window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 		window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
+    window.IDBIndex = window.IDBIndex || window.webkitIDBIndex;
+    window.IDBRequest = window.IDBRequest || window.webkitIDBRequest;
+    window.IDBObjectStore = window.IDBObjectStore || window.webkitIDBObjectStore;
 		window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	}
 	

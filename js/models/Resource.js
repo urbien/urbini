@@ -44,7 +44,7 @@ define([
       for (var name in attrs) {
         var validated = this.validateProperty(name, attrs[name]);
         if (validated !== true)
-          return validated instanceof String ? error : "Please enter a valid " + name;
+          return typeof validated === 'string' ? error : "Please enter a valid " + name;
       }
     },
     validateProperty: function(name, value) {

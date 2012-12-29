@@ -74,8 +74,8 @@ define([
       
       var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       this.buttons = {
-        left: [BackButton, MenuButton], // , LoginButtons
-        right: isGeo ? [MapItButton, AroundMeButton] : null,
+        left: [BackButton], // , LoginButtons
+        right: isGeo ? [MapItButton, AroundMeButton, MenuButton] : [MenuButton],
         log: [LoginButtons]    
       };
       
