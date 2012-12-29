@@ -1173,7 +1173,6 @@ define([
           props[name] = ctr.properties[name];
       }
       
-      var knownTypes = _.keys(MBI.typeToModel);
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
         if (isResource && prop.backLink) {
           var count = model.get(name + 'Count') || model.get(name + '.COUNT()');
@@ -1181,54 +1180,36 @@ define([
             return null;
         }
         
-        var range = prop && prop.range && (prop.range.indexOf('/') == -1 ? null : prop.range.startsWith('http') ? prop.range : G.defaultVocPath + prop.range);
+        var range = prop && prop.range;
+        range = range && (range.indexOf('/') == -1 || range.indexOf('/Image') != -1 ? null : range.startsWith('http') ? range : G.defaultVocPath + range);
         return !range ? null : isResource ? range : _.contains(G.classUsage, range) ? range : null;
-      })), function(m) {return m && !_.contains(knownTypes, m)}); // no need to reload known types
+      })), function(m) {return m && !MBI.typeToModel[m]}); // no need to reload known types
 
-//      var linked = _.filter(G.linkedModels, function(m) {
-//        return _.contains(tmp, m.type);
-//      });
-//      
-//      var l = G.linkedModels;
-//      var need = [];
-//      for (var i = 0; i < l.length; i++) {
-//        if (!tmp.length)
-//          break;
-//        
-//        var idx = tmp.indexOf(l[i].type);
-//        if (idx != -1) {
-//          need.push(l[i]);
-//          tmp.remove(idx, idx);
-//        }
-//      }
-//      
-//      need = _.concat(need, tmp); // maybe we were missing some in linkedModels
-      
       var linkedModels = [];
       var l = G.linkedModels;
       for (var i = 0; i < l.length; i++) {
         // to preserve order
         var idx = tmp.indexOf(l[i].type);
         if (idx != -1) {
-          tmp.splice(idx, idx + 1);
-          var m = l[i];
-          var j = i;
-          var supers = [];
-          while (j > 0 && l[j].superName == l[--j].shortName) {
-            var idx = linkedModels.indexOf(l[j]);
-            if (idx != -1) {
-              linkedModels.remove(idx, idx);
-            }
-            
-            supers.push(l[j]);
-          }
-          
-          if (supers.length) {
-            var s;
-            while (!!(s = supers.pop())) {
-              linkedModels.push(s);
-            }
-          }
+//          tmp.splice(idx, idx + 1);
+//          var m = l[i];
+//          var j = i;
+//          var supers = [];
+//          while (j > 0 && l[j].superName == l[--j].shortName) {
+//            var idx = linkedModels.indexOf(l[j]);
+//            if (idx != -1) {
+//              linkedModels.remove(idx, idx);
+//            }
+//            
+//            supers.push(l[j]);
+//          }
+//          
+//          if (supers.length) {
+//            var s;
+//            while (!!(s = supers.pop())) {
+//              linkedModels.push(s);
+//            }
+//          }
           
           linkedModels.push(l[i]);
         }
