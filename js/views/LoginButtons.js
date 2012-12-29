@@ -29,7 +29,6 @@ define([
       var loginBtn = this.template();
       if (!_.size(Lablz.socialNets)) {
         this.$el[method](_.template(Templates.get('logoutButtonTemplate'))());
-        this.setLoggedInStatus();
         return this;
       }
       
