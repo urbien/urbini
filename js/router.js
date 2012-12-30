@@ -114,29 +114,33 @@ define([
       
       if (!this.isModelLoaded(self, type, oParams))
         return;
-      var t = type;  
-      var key = query ? t + '?' + query : t;
-      var c = this.Collections[key];
+      
+//      var t = type;  
+//      var key = query ? t + '?' + query : t;
+      var key = query || type;
+      this.Collections[type] = this.Collections[type] || {};
+      this.CollectionViews[type] = this.CollectionViews[type] || {};
+      var c = this.Collections[type][key];
       if (c && !c._lastFetchedOn)
         c = null;
       
-      var cView = this.CollectionViews[key];
+      var cView = this.CollectionViews[type][key];
       if (c && cView) {
         this.currentModel = c;
         this.changePage(cView, {page: page});
-        this.Collections[key].fetch({page: page});
+        c.fetch({page: page});
         return this;
       }      
       
-      var model = MB.shortNameToModel[t];
+      var model = MB.shortNameToModel[type];
       if (!model)
         return this;
       
       var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: type, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
-      this.Collections[key] = list;
-      this.CollectionViews[key] = listView;
+      this.Collections[type][key] = list;
+      this.CollectionViews[type][key] = listView;
       
       list.fetch({
         add: true,
@@ -231,9 +235,16 @@ define([
       if (res && !res.loaded)
         res = null;
       
+      var collection;
       if (!res) {
-        var l = this.Collections[type];
-        res = this.Models[uri] = l && l.get(uri);
+        var collections = this.Collections[type];
+        if (collections) {
+          var result = this.searchCollections(collections, uri);
+          if (result) {
+            collection = result.collection;
+            res = this.Models[uri] = result.model;
+          }
+        }
       }
       
   //    var edit = params['-edit'] == 'y';
@@ -251,15 +262,15 @@ define([
         return this;
       }
       
-      if (this.Collections[type]) {
-        var res = this.Models[uri] = this.Collections[type].get(uri);
-        if (res) {
-          this.currentModel = res;
-          var v = views[uri] = new viewPageCl({model: res});
-          this.changePage(v);
-          return this;
-        }
-      }
+//      if (this.Collections[type]) {
+//        var res = this.Models[uri] = this.Collections[type].get(uri);
+//        if (res) {
+//          this.currentModel = res;
+//          var v = views[uri] = new viewPageCl({model: res});
+//          this.changePage(v);
+//          return this;
+//        }
+//      }
   
       var typeCl = MB.shortNameToModel[type];
       if (!typeCl)
@@ -276,6 +287,21 @@ define([
       
       res.fetch({sync:true, success: success});
       return true;
+    },
+    
+    /**
+     * search a collection map for a collection with a given model
+     * @return {collection: collection, model: model}, where collection is the first one found containing a model where model.get('_uri') == uri, or null otherwise
+     * @param uri: uri of a model
+     */
+    searchCollections: function(collections, uri) {
+      for (var query in collections) {
+        var m = collections[query].get(uri);
+        if (m) 
+          return {collection: collections[query], model: m};
+      }
+      
+      return null;
     },
 /*    
     login: function() {

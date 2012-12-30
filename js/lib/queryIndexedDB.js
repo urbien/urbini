@@ -13,10 +13,10 @@
  */
 
 define(['cache!indexedDBShim'], function() {
-  IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
-  IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
-  if (!IDBIndex.prototype.getAllKeys || !IDBIndex.prototype.getAll || !IDBObjectStore.prototype.openKeyCursor) {
-    IDBIndex.prototype.getAll_ = function(fn, range) {
+  (function() {
+//    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
+//    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
+    var getAll_ = function(fn, range) {
       // This is the most common use of IDBKeyRange. If more specific uses of
       // cursors are needed then a full wrapper should be created.
       var d = {};
@@ -49,35 +49,54 @@ define(['cache!indexedDBShim'], function() {
       return d;
     };
 
-    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || function(bound) {
-      return this.getAll_('openKeyCursor', bound);
-    }
-    
-    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || function(bound) {
-      return this.getAll_('openCursor', bound);
-    }
-    
-    IDBObjectStore.prototype.openKeyCursor = IDBObjectStore.prototype.openKeyCursor || function(bound) {
-      var req = {};
-      var ocReq = bound ? this.openCursor(bound) : this.openCursor();
-      ocReq.onsuccess = function(event) {
-        var cursor = event.target.result;
-        if (cursor) {
-          toReturn.push(cursor.key);
-          cursor['continue']();
-        }
-        else {
-          req.onsuccess && req.onsuccess.call(self, toReturn);
-        }
-      };
+    var methods = {
+      getAllKeys: function(bound) {
+        return getAll_.call(this, 'openKeyCursor', bound);
+      },
       
-      ocReq.onerror = function(event) {
-        req.onerror && req.onerror.call(self, event);
-      };
+      getAll: function(bound) {
+        return getAll_.call(this, 'openCursor', bound);
+      },
       
-      return req;
-    }  
-  }
+      openKeyCursor: function(bound) {
+        var req = {};
+        var ocReq = bound ? this.openCursor(bound) : this.openCursor();
+        var toReturn = [];
+        ocReq.onsuccess = function(event) {
+          var cursor = event.target.result;
+          if (cursor) {
+            toReturn.push(cursor.primaryKey);
+            cursor['continue']();
+          }
+          else {
+            req.result = toReturn;
+            req.onsuccess && req.onsuccess.call(self, toReturn);
+          }
+        };
+        
+        ocReq.onerror = function(event) {
+          req.onerror && req.onerror.call(self, event);
+        };
+        
+        return req;
+      }
+    };
+
+    var args = arguments;
+    for (var i = 0; i < args.length; i++) {
+      var obj = args[i];
+      for (var m in methods) {
+        if (!obj.prototype[m]) {
+          obj.getAll_ = getAll_;
+          for (var method in methods) {
+            obj.prototype[m] = obj.prototype[m] || obj.prototype['moz' + m] || methods[method];
+          }
+          
+          break;
+        }
+      }
+    }
+  })(IDBIndex, IDBObjectStore);
   
   function Index(name) {
     function queryMaker(op) {
@@ -217,7 +236,7 @@ define(['cache!indexedDBShim'], function() {
   
       // Sadly we need to expose this to make Intersection and Union work :(
       _queryFunc: queryFunc,
-  
+
       and: function and(query2) {
         return Intersection(query, query2);
       },
@@ -244,6 +263,7 @@ define(['cache!indexedDBShim'], function() {
   
       toString: toString
     };
+    
     return query;
   }
   
@@ -284,6 +304,7 @@ define(['cache!indexedDBShim'], function() {
           range = IDBKeyRange.bound(values[0], values[1]);
           break;
       }
+      
       return range;
     }
   
@@ -314,48 +335,52 @@ define(['cache!indexedDBShim'], function() {
   
     var args = arguments;
     function toString() {
-      return "IndexQuery(" + Array.slice(args).toSource().slice(1, -1) + ")";
+      return "IndexQuery(" + Array.prototype.slice.call(args).toSource().slice(1, -1) + ")";
     }
   
     return Query(queryKeys, toString);
+  }
+
+  var SetOps = {Intersection: {name: 'Intersection', op: arrayIntersect}, Union: {name: 'Union', op: arrayUnion}};
+  function SetOperation(setOp) {
+    return function(query1, query2) {
+//      if (!query1.indexed || !query2.indexed)
+      function queryKeys(store, callback) {
+        var firstResult;
+        var finish = function(keys) {
+//          console.log('finished query: ' + (this == query1 ? query1 : query2).toString());
+          if (!firstResult)
+            firstResult = keys;            
+          else 
+            callback(setOp.op(firstResult, keys))
+        }
+    
+        query1._queryFunc(store, finish);
+//        console.log('started query: ' + query1.toString());
+        query2._queryFunc(store, finish);
+//        console.log('started query: ' + query2.toString());
+      }
+  
+      function toString() {
+        return setOp.name + "(" + query1.toString() + ", " + query2.toString() + ")";
+      }
+      
+      return Query(queryKeys, toString);
+    }
   }
   
   /**
    * Create a query object that performs the intersection of two given queries.
    */
   function Intersection(query1, query2) {
-    function queryKeys(store, callback) {
-      query1._queryFunc(store, function (keys1) {
-        query2._queryFunc(store, function (keys2) {
-          callback(arrayIntersect(keys1, keys2));
-        });
-      });
-    }
-  
-    function toString() {
-      return "Intersection(" + query1.toString() + ", " + query2.toString() + ")";
-    }
-  
-    return Query(queryKeys, toString);
+    return SetOperation(SetOps.Intersection)(query1, query2);
   }
   
   /**
    * Create a query object that performs the union of two given queries.
    */
   function Union(query1, query2) {
-    function queryKeys(store, callback) {
-      query1._queryFunc(store, function (keys1) {
-        query2._queryFunc(store, function (keys2) {
-          callback(arrayUnion(keys1, keys2));
-        });
-      });
-    }
-  
-    function toString() {
-      return "Union(" + query1.toString() + ", " + query2.toString() + ")";
-    }
-  
-    return Query(queryKeys, toString);
+    return SetOperation(SetOps.Union)(query1, query2);
   }
   
   

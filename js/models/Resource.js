@@ -23,7 +23,7 @@ define([
       return this.get('_uri');
     },
     parse: function (resp) {
-      if (this.lastFetchOrigin == 'db')
+      if (this.loaded && this.lastFetchOrigin == 'db')
         return resp;
       
       if (!resp || resp.error)

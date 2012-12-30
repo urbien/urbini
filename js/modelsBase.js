@@ -13,7 +13,7 @@ define([
   'cache!queryIndexedDB'
 ], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, __idbShim__, idbq) {
   var MBI = null; // singleton instance
-  
+  var Index = idbq.Index;
   var MB = ModelsBase = function() {
     if (MBI != null)
       throw new Error("Can't instantiate more than one modelsBase module");
@@ -82,16 +82,18 @@ define([
       var lastFetchedOn = isCol ? model._lastFetchedOn : (model.collection && model.collection._lastFetchedOn) || model.get('_lastFetchedOn');
       options.headers = options.headers || {};
       
-      var isFilter = isCol && _.filter(_.keys(model.queryMap), function(p) {return p.charAt(0)!='$'}).length; // if there are model-specific filter parameters to the API
+      var filterPrms = isCol && U.getQueryParams(model); // if there are model-specific filter parameters to the API        
+      var isFilter = filterPrms && _.size(filterPrms);
       var shortPage = isCol && model._lastFetchedOn && !isFilter && model.models.length < model.perPage;
       var stale = false;
       
       // if it's a short page of a basic RL (no filter), we should fetch just in case there are new resources
+      var offset = 0;
       if (isCol && !shortPage && lastFetchedOn) {
         var stalest;
         if (options && options.startAfter) {
           var q = U.getQueryParams(options.url);
-          var offset = q['$offset'] || 0;
+          offset = q['$offset'] || 0;
           for (var i = offset; i < model.models.length; i++) {
             var m = model.models[i];
             if (m._lastFetchedOn)
@@ -227,18 +229,18 @@ define([
           return runDefault();
         }
 
+        options.sync = false;
         // simulate a normal async network call
-        setTimeout(function(){
+//        setTimeout(function() {
           model.lastFetchOrigin = 'db';
-//          if (success) {
-            G.log(MBI.TAG, 'db', "got resources from db: " + (model.type || model.constructor.type));
-            defSuccess(results, 'success', null);
-//          }
+          G.log(MBI.TAG, 'db', "got resources from db: " + (model.type || model.constructor.type));
+          var resp = {data: results, metadata: {offset: offset}};
+          defSuccess(resp, 'success', null);
           
-          if (!isFilter && isCol && (results.length < model.perPage || _.any(results, function(m)  {return isStale(m._lastFetchedOn, now); }))) {
+          if (isCol && (results.length < model.perPage || _.any(results, function(m)  {return isStale(m._lastFetchedOn, now); }))) {
             return runDefault();
           }
-        }, 0);    
+//        }, 0);    
       }
       
       var dbError = function(e) {
@@ -248,25 +250,24 @@ define([
       
       // only override sync if it is a fetch('read') request
       key = this.getKey && this.getKey();
-      var dbReqOptions = {key: key, success: dbSuccess, error: dbError, syncOptions: options};
+      var dbReqOptions = {key: key, success: dbSuccess, error: dbError};
       if (model instanceof Backbone.Collection) {
         dbReqOptions.startAfter = options.startAfter,
         dbReqOptions.perPage = model.perPage;
+        dbReqOptions.filter = isFilter && filterPrms;
       }
+      else
+        dbReqOptions.uri = key;
       
       // only fetch from db on regular resource list or propfind, with no filter
       var dbHasGoodies;
-      if (!key || isFilter || !(dbHasGoodies = MBI.getDataAsync(dbReqOptions))) {
+      if (!key || !(dbHasGoodies = MBI.getItems(dbReqOptions))) {
         if (G.online)
           runDefault();
         else if (!dbHasGoodies) {
-//          runDefault();
           options.sync && options.error && options.error(model, {type: 'offline'}, options);
         }
       }
-      
-//      else
-//        options.sync = false; // meaning if we fail to get resources from the server, we let user see the ones in the db
     };
 
     this.models = []; // new U.UArray();
@@ -721,7 +722,7 @@ define([
       var stale = []
       var fresh = [];
       MBI.filterExpired({lastModified: r.lastModified}, expanded, fresh, stale);
-      _.each(stale, function() {U.pushUniq(MBI.changedModels)});
+      _.each(stale, function(s) {U.pushUniq(MBI.changedModels, s)});
       
       if (fresh.length) {
         var unloaded = MBI.initStoredModels(fresh);
@@ -1042,58 +1043,67 @@ define([
       };
     };
     
-    this.getDataAsync = function(options) {
-      var uri = options.key;
-      var type = U.getType(uri);
-      if (U.endsWith(uri, type))
-        return MBI.getItems(options);
-      else if (type == null) {
-        if (error) error();
-        return false;
-      }
-      
-      var name = U.getClassName(type);
-      var db = MBI.db;
-      if (!db || !db.objectStoreNames.contains(name))
-        return false;
-      
-      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
-      var trans = db.transaction([name], IDBTransaction.READ_ONLY);
-      trans.oncomplete = function(e) {
-        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
-      };
-      
-      var store = trans.objectStore(name);
-      var request = store.get(uri);
-      request.onsuccess = function(e) {
-        G.log(MBI.TAG, 'db', "store.get().onsuccess");
-        if (options.success) {
-          if (e.target.result && e.target.result.value)
-            options.syncOptions.sync = false;
-            
-          options.success(e.target.result)
-        }
-      };
-      
-      request.onerror = function(e) {
-        G.log(MBI.TAG, 'db', "store.get().onerror");
-        if (error)
-          error(e);
-        
-        MBI.onerror(e);
-      }
-      
-      return true;
-    }
+//    this.getDataAsync = function(options) {
+//      var uri = options.key;
+//      var type = U.getType(uri);
+//      if (uri.endsWith(type))
+//        return MBI.getItems(options);
+//      else if (type == null) {
+//        if (error) error();
+//        return false;
+//      }
+//      
+//      var name = U.getClassName(type);
+//      var db = MBI.db;
+//      if (!db || !db.objectStoreNames.contains(name))
+//        return false;
+//      
+//      G.log(MBI.TAG, 'db', 'starting readonly transaction for store', name);
+//      var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+//      trans.oncomplete = function(e) {
+//        G.log(MBI.TAG, 'db', 'finished readonly transaction for store', name);
+//      };
+//      
+//      var store = trans.objectStore(name);
+//      var request = store.get(uri);
+//      request.onsuccess = function(e) {
+//        G.log(MBI.TAG, 'db', "store.get().onsuccess");
+//        if (options.success) {            
+//          options.success(e.target.result)
+//        }
+//      };
+//      
+//      request.onerror = function(e) {
+//        G.log(MBI.TAG, 'db', "store.get().onerror");
+//        if (error)
+//          error(e);
+//        
+//        MBI.onerror(e);
+//      }
+//      
+//      return true;
+//    };
+    
+    this.operatorMap = {
+      '=': 'eq',
+      '!=': 'neq',
+      '<': 'lt',
+      '>': 'gt',
+      '>=': 'gteq',
+      '<=': 'lteq',
+      'IN:': 'oneof'
+    };
     
     this.getItems = function(options) {
       // var todos = document.getElementById("todoItems");
       // todos.innerHTML = "";
-      var type = options.key;
+      var type = U.getType(options.key);
+      var uri = options.uri;
       var success = options.success;
       var error = options.error;
       var startAfter = options.startAfter;
       var total = options.perPage;
+      var filter = options.filter;
     
       var name = U.getClassName(type);
       var db = MBI.db;
@@ -1107,17 +1117,66 @@ define([
       };
       
       var store = trans.objectStore(name);
-    
       var lowerBound;
       if (startAfter)
         lowerBound = IDBKeyRange.lowerBound(startAfter, true);
       
       // Get everything in the store;
       var results = [];
-      var cursorRequest = lowerBound ? store.openCursor(lowerBound) : store.openCursor();
-      cursorRequest.onsuccess = function(e) {
+      var cursorRequest;
+      var query;
+      if (filter) {
+        // check if we have all the props indexed
+        if (!_.all(filter, function(val, name) {return _.contains(store.indexNames, name)}))
+          return false;
+
+        var defOp = 'eq';
+        var query;
+        for (var name in filter) {
+          var op = defOp, val;
+          var opVal = filter[name].match(/^(IN=|[>=<!]{0,2})(.+)$/);
+          switch (opVal.length) {
+            case 2: {
+              val = filter[name];
+              break;
+            }
+            case 3: {
+              if (opVal[1])
+                op = MBI.operatorMap[opVal[1]];
+              
+              val = opVal[2];
+              break;
+            }
+            default: {
+              G.log(MBI.TAG, 'error', 'couldn\'t parse filter', filter);
+              return false;
+            }
+          }
+            
+          if (!op || !val)
+            return false;
+          
+          var subQuery = Index(name)[op].apply(this, op === 'oneof' ? [val] : val.split(','));
+          query = query ? query.and(subQuery) : subQuery;
+        }        
+      }
+      
+      var dbReq;
+      if (filter)
+        dbReq = query.getAll(store);
+      else if (uri)
+        dbReq = store.get(uri);
+      else
+        dbReq = lowerBound ? store.openCursor(lowerBound) : store.openCursor();
+        
+      dbReq.onsuccess = function(e) {
         G.log(MBI.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
+        if (filter)
+          return success(result);
+        else if (uri)
+          return success([result]);
+        
         if (result) {
           results.push(result.value);
           if (!total || results.length < total) {
@@ -1126,20 +1185,13 @@ define([
           }
         }
         
-        if (success) {
-          if (results.length)
-            options.syncOptions.sync = false;
-
-          success(results);
-        }
+        return success && success(results);
       };
     
-      cursorRequest.onerror = function (e) {
+      dbReq.onerror = function (e) {
         G.log(MBI.TAG, 'db', 'read via cursor onerror', e);
-        if (error)
-          error(e);
-        
-        MBI.onerror(e);
+        error && error(e);
+//        MBI.onerror(e);
       }
       
       return true;

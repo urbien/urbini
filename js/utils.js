@@ -3,6 +3,8 @@ define([
   'cache!underscore',
   'cache!templates'
 ], function(G, _, Templates) {
+  var ArrayProto = Array.prototype;
+  var slice = ArrayProto.slice;
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
   }
@@ -335,7 +337,7 @@ define([
 //    wrap: function(object, method, wrapper) {
 //      var fn = object[method];
 //      return object[method] = function() {
-//        return wrapper.apply(this, [ fn.bind(this) ].concat(Array.prototype.slice.call(arguments)));
+//        return wrapper.apply(this, [ fn.bind(this) ].concat(slice.call(arguments)));
 //      };
 //    },
     
@@ -360,7 +362,7 @@ define([
 //    
 //    union: function(o1) {
 //      var type1 = U.getObjectType(o1);
-//      var args = Array.prototype.slice.call(arguments, 1);
+//      var args = slice.call(arguments, 1);
 //      for (var i = 0; i < args.length; i++) {
 //        var o2 = args[i];
 //        var type2 = U.getObjectType(o2);
@@ -401,8 +403,39 @@ define([
       return url.length == 1 ? q : [url[0], q].join('?');
     },
     
-    getQueryParams: function(url) {
-      return U.getParamMap(url || window.location.href);
+    /**
+     * @return if getQueryParams(url), return map of query params, 
+     *         if getQueryParams(url, model), return map of query params that are model properties
+     *         if getQueryParams(queryMap, model), return filtered map of query params that are model properties
+     *         if getQueryParams(collection), return map of query params from collection.queryMap that correspond to collection's model's properties
+     */
+    getQueryParams: function() {
+      var args = arguments;
+      var collection = qMap = url = args.length && args[0];
+      if (!url || typeof url === 'string') {
+        qMap = U.getParamMap(url || window.location.href);
+        return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
+      }
+      
+      var model;
+      if (collection.models) { // if it's a collection
+        qMap = collection.queryMap;
+        model = collection.model;
+      }
+      else {
+        if (args.length > 1)
+          model = typeof args[1] === 'function' ? args[1] : args[1].constructor;
+        else
+          throw new Error('missing parameter "model"');
+      }
+      
+      var filtered = {};
+      for (var p in qMap) {
+        if (model.properties[p])
+          filtered[p] = qMap[p];
+      }
+  
+      return filtered;
     },
     
     getHashParams: function() {
@@ -519,7 +552,7 @@ define([
     },
     
     deepExtend: function(obj) {
-      _.each(Array.prototype.slice.call(arguments, 1), function(source) {
+      _.each(slice.call(arguments, 1), function(source) {
         for (var prop in source) {
           if (obj[prop])
             U.deepExtend(obj[prop], source[prop]);
@@ -656,54 +689,7 @@ define([
       if (!_.contains(arr, obj))
         arr.push(obj);
     }
-
-  //,
-  //  getGMTDate: function(time) {
-  //  var d = time ? new Date(time) : new Date();
-  //  d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds(), d.getUTCMilliseconds()));
-  //  return d;
-  ////  var d = (time && new Date(time)) || new Date();
-  ////  return d.getTime() + d.getTimezoneOffset() * 60000;
-  //}
-    
   };
-  
-//  U.UArray.prototype.length = 0;
-//  (function() {
-//    var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
-//    for (var i = 0; i < methods.length; i++) { 
-//      (function(name) {
-//        U.UArray.prototype[name] = function() {
-//          return Array.prototype[name].apply(this, arguments);
-//        };
-//      })(methods[i]);
-//    }
-//  })();
-//  
-//  U.wrap(U.UArray.prototype, 'concat',
-//    function(original, item) {
-//      var type = Object.prototype.toString.call(item);
-//      if (type.indexOf('Array') == -1)
-//        this.push(item);
-//      else {
-//        var self = this;
-//        _.each(item, function(i) {self.push(i);});
-//      }
-//    }
-//  );
-//  
-//  U.wrap(U.UArray.prototype, 'push',
-//    function(original, item) {
-//  //    try {
-//        if (_.contains(this, item))
-//          return this;
-//        else
-//          return original(item);
-//  //    } finally {
-//  //      this.handler('push');
-//  //    }
-//    }
-//  );
   
   Lablz.U = U;
   return U;
