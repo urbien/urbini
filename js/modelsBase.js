@@ -282,10 +282,12 @@ define([
       var success = options.success;
       var error = options.error || Error.getDefaultErrorHandler();
 
-      if (models.length) {
+      if (models  &&  models.length) {
         models = models.join ? models : [models];
         var now = G.currentServerTime();
         models = _.map(models, function(m) {
+          if (!m)
+            return null;
           var model = MBI.snm[U.getShortName(m)];
           if (model) {
             var lm = model._dateStored ? model._dateStored : model.lastModified;
@@ -814,7 +816,7 @@ define([
         db.onversionchange = function(event) {
           G.log(MBI.TAG, 'db', 'closing db - onversionchange');
           db.close();
-          alert("A new version of this page is ready. Please reload!");
+          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
         };    
      
         modelsChanged = !!MBI.changedModels.length || !!MBI.newModels.length;
@@ -1160,7 +1162,7 @@ define([
         if (s) s();
       }
       
-      MBI.open(null, success, error);
+      $(document).ready(function(){MBI.open(null, success, error)});
     };
 
     this.fetchModelsForLinkedResources = function(model) {
@@ -1223,8 +1225,56 @@ define([
       }
     };
 
+    this.fetchModelsForReferredResources = function(list) {
+      var model = list.model;
+      var models = list.models;
+      var meta = model.properties;
+      
+      var tmp = [];
+
+      var l = _.keys(MBI.typeToModel);
+      var modelsToFetch = [];
+
+      for (var propName in meta) {
+        var p = meta[propName]; 
+//        if (p.backLink) {
+//          var type = G.defaultVocPath + p.range;
+//          if (!_.contains(modelsToFetch, type)  &&  !_.contains(l, type))
+//            modelsToFetch.push(type);
+//        }
+//        else
+          p.range  &&  !p.backLink  &&  p.range.indexOf('/') != -1  &&  p.range.indexOf('/Image') == -1  &&  tmp.push(propName);
+      }
+      if (!tmp.length)
+        return;
+      
+      for (var i=0; i<models.length; i++) {
+        for (var j=0; j<tmp.length; j++) {
+          var o = models[i].get(tmp[j]);
+          var uri = o  &&  o.value;
+          if (!uri)
+            continue;
+          
+          var idx = uri.indexOf("?");
+          var idx0 = uri.indexOf('/' + G.sqlUri + '/');
+          if (idx0 == -1) // could be S3 Image uri
+            continue;
+          var type = 'http://' + uri.substring(idx0 + G.sqlUri.length + 2, idx);
+          if (!_.contains(modelsToFetch, type)  &&  !_.contains(l, type))
+            modelsToFetch.push(type);
+        }  
+      }  
+      
+      
+      if (modelsToFetch.length) {
+//        linkedModels = _.uniq(linkedModels);
+        MBI.loadStoredModels({models: modelsToFetch});
+        MBI.fetchModels(null, {sync: false});
+      }
+    };
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
-  }
+  },
+  
   
   MB.getInstance = function() {
     if (MBI === null) {
