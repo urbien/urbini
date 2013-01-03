@@ -113,8 +113,8 @@ define([
     
     getCloneOf: function(meta, cloneOf) {
       var keys = [];
-        for (var p in meta) {
-        if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'].indexOf(cloneOf) != -1) {
+      for (var p in meta) {
+        if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'] == cloneOf) {
           keys.push(p);
         }
       }
@@ -436,6 +436,15 @@ define([
           return item[annotation] ? item : null;
         });
     },
+    getDisplayNameProps: function(meta) {
+      var keys = [];
+      for (var p in meta) {
+        if (_.has(meta[p], "displayNameElm")) 
+          keys.push(p);
+      }
+      return keys;
+    },
+
     
     /// String prototype extensions
     
