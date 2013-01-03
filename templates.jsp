@@ -9,8 +9,8 @@
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
-    <div id="nabs_grid" class="masonry">
-    </div>
+    <ul id="columns">
+    </ul>
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
     </table>
   </div>
@@ -42,8 +42,8 @@
 
 <script type="text/template" id="menu">
   <div id="headerDiv" data-theme="a"></div>
-  <div id="menuHolder" data-role="content" data-theme="a">
-    <ul data-role="listview" data-theme="a" id="menuItems" class="action-list" data-inset="true">
+  <div id="menuHolder" data-role="content" data-theme="e">
+    <ul data-role="listview" data-theme="e" id="menuItems">
     </ul>
   </div>
   
@@ -145,10 +145,16 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  {{ if (typeof distance != 'undefined') { }}
+    <span class="ui-li-count">{{= distance }}</span>
+  {{ } }}
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+  {{ if (typeof distance != 'undefined') { }}
+    <span class="ui-li-count">{{= distance }}</span>
+  {{ } }}
 </script>
 
 <script type="text/template" id="menuItemTemplate">
@@ -347,7 +353,9 @@
 </script>
 
 <script type="text/template" id="masonry-list-item">
-  <div class="anab">
+  <!--div class="anab" -->
+  <div class="pin1">
+    <!-- p style="display: inline-block;"/ -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
@@ -372,8 +380,9 @@
           </a>
         {{ } }}
      </div>
+  </div>
   </div>     
-</div>
+<!--/div -->
 </script>
 
 </div>
