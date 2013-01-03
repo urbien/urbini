@@ -16,5 +16,8 @@
   console.log('loading boot');
   g = JSON.parse(g);
   window.Lablz = g;
+
+  document.getElementsByTagName('body')[0].appendChild(localStorage.getItem('homePage'));
+
   new Function("d", g.boot)(document);
 })();
