@@ -96,7 +96,7 @@ define([
       var isMasonry = this.isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar';
+      var containerTag = isModification ? '#nabs_grid' :  isMasonry ? '#columns' : (isComment) ? '#comments' : '#sidebar';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
       this.listView.render();
       if (isGeo) {
@@ -111,6 +111,13 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
 
+      if (isMasonry) {
+        var self = this;
+        this.$wall = $('#nabs_grid');
+        this.$wall.imagesLoaded( function() { 
+          self.$wall.masonry(); 
+        });
+      }
 //      if (isMasonry) {
 //        this.$el.on('pageshow',function(event, ui){
 //          $('#nabs_grid').masonry();
