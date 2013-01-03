@@ -98,7 +98,11 @@ html { height: 100%; }
 .nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
 /*#nabs_grid .nab { visibility: hidden; }*/
 .dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
-#nabs_grid .masonry-brick { visibility: visible; }
+
+/* hide "bricks" initially and show them only ones are aligned */ 
+.masonry > li, .masonry > div { visibility: hidden; }
+.masonry .masonry-brick { visibility: visible; }
+
 .nab .modP .urbien { padding-left: 10px; }
 .nab .modP .urbien img {width: 50px;}
 .nab .nabP .urbien { padding-left: 10px; }
