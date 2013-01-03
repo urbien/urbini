@@ -5,13 +5,13 @@ define([
   'cache!backbone',
   'cache!utils',
   'cache!events',
-  'cache!modelsBase',
+  'cache!vocManager',
   'cache!templates',
   'cache!jqueryMobile',
   'cache!views/ResourceMasonryItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
-], function(G, $, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return Backbone.View.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -29,6 +29,7 @@ define([
       this.TAG = 'ResourceListView';
       return this;
     },
+    
     refresh: function(model, modified) {
       if (model && model != this.model)
         return this;
@@ -39,16 +40,37 @@ define([
 //      var frag = document.createDocumentFragment();
       
       var models = this.model.models;
-      var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
-      var meta = models[0].__proto__.constructor.properties;
-      meta = meta || models[0].properties;
+      var vocModel = this.model.model;
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
+//      var meta = models[0].__proto__.constructor.properties;
+//      meta = meta || models[0].properties;
+      var meta = vocModel.properties;
 
-      var viewMode = models[0].constructor['viewMode'];
+      var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
+      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
+//      if (!isComment  &&  !isMasonry  &&  !isList) {
+//        if (U.isA(vocModel, 'Intersection')) {
+//          var href = window.location.href;
+//          var qidx = href.indexOf('?');
+//          var a = U.getCloneOf(meta, 'Intersection.a')[0];
+//          var aprop;
+//          if (qidx == -1) {
+//            aprop = models[0].get(a);
+//          }
+//          else {
+//            var b = U.getCloneOf(meta, 'Intersection.b')[0];
+//            var p = href.substring(qidx + 1).split('=')[0];
+//            var delegateTo = (p == a) ? b : a;
+//            aprop = models[0].get(delegateTo);
+//          }
+//          var type = U.getTypeUri(U.getType(aprop['value']), {type: aprop['value'], shortNameToModel: Voc.shortNameToModel});
+//          isMasonry = U.isA(Voc.typeToModel[type], 'ImageResource');  
+//        }
+//      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
-      var hasImgs = U.hasImages(models);
+      var hasImgs = U.hasImages(this.model);
       var curNum = lis.length;
       var num = Math.min(models.length, (this.model.page + 1) * this.displayPerPage);
       
@@ -94,7 +116,7 @@ define([
       
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
-      
+
       if (this.initializedListView) {
         if (isModification  ||  isMasonry)
           this.$el.trigger('create');
@@ -104,6 +126,9 @@ define([
       else {
         this.initializedListView = true;
       }
+    
+      return this;
+      
 //      else {
 //        //Element has not been initiliazed
 //        this.$el.listview().listview('refresh');
@@ -111,6 +136,7 @@ define([
 //      }
 
     },
+    
     getNextPage: function() {
 //      var before = this.model.models.length;
 //
@@ -148,12 +174,15 @@ define([
     },
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
+
     swipe: function(e) {
       console.log("swipe");
     },
+    
     changed: function(view) {
       this.changedViews.push(view);
     },
+    
     render: function(e) {
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
@@ -182,6 +211,7 @@ define([
       this.skipScrollEvent = true; 
       this.getNextPage();
     },
+    
     onNextPageFetched: function () {
       this.skipScrollEvent = false;
     },

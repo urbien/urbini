@@ -88,19 +88,27 @@ define(['cache!indexedDBShim'], function() {
         if (!obj.prototype[m]) {
           obj.getAll_ = getAll_;
           for (var method in methods) {
-            obj.prototype[m] = obj.prototype[m] || obj.prototype['moz' + m] || methods[method];
+            obj.prototype[method] = obj.prototype[method] || obj.prototype['moz' + method] || methods[method];
           }
           
           break;
         }
       }
     }
+    
+//    // TODO: for now, override native methods, so we can implement limit and offset
+//    for (var i = 0; i < args.length; i++) {
+//      var obj = args[i];
+//      for (var m in methods) {
+//        obj.prototype[m] = methods[m];
+//      }
+//    }
   })(IDBIndex, IDBObjectStore);
   
-  function Index(name, direction) {
+  function Index(name) {
     function queryMaker(op) {
       return function () {
-        return IndexQuery(name, op, direction, arguments);
+        return IndexQuery(name, op, arguments);
       };
     }
     
@@ -116,9 +124,9 @@ define(['cache!indexedDBShim'], function() {
       betweeq: queryMaker("betweeq"),
       oneof:   function oneof() {
         var values = Array.prototype.slice.call(arguments);
-        var query = IndexQuery(name, "eq", direction, [values.shift()]);
+        var query = IndexQuery(name, "eq", [values.shift()]);
         while (values.length) {
-          query = query.or(IndexQuery(name, "eq", direction, [values.shift()]));
+          query = query.or(IndexQuery(name, "eq", [values.shift()]));
         }
         return query;
       }
@@ -201,22 +209,34 @@ define(['cache!indexedDBShim'], function() {
    * This will also kick off the query, build up the result array, and
    * notify the 'success' event.
    */
-  function ResultRequest(store, queryFunc, keyOnly) {
+  function ResultRequest(store, queryFunc, keyOnly, limit, offset) {
     var request = Request();
     queryFunc(store, function (keys) {
       if (keyOnly || !keys.length) {
         notifySuccess(request, keys);
         return;
       }
+      
       var results = [];
+      var i = 0;
       function getNext() {
         var r = store.get(keys.shift());
         r.onsuccess = function onsuccess() {
-          results.push(r.result);
-          if (!keys.length) {
+          if (offset && i++ < offset) {
+            if (!keys.length)
+              notifySuccess(request, results);
+            else
+              getNext();
+              
+            return;
+          }
+          else if (!keys.length || limit && limit == results.length) {
+            results.push(r.result);
             notifySuccess(request, results);
             return;
           }
+          
+          results.push(r.result);
           getNext();
         };
       }
@@ -237,6 +257,10 @@ define(['cache!indexedDBShim'], function() {
       // Sadly we need to expose this to make Intersection and Union work :(
       _queryFunc: queryFunc,
       
+      limit: null,
+      
+      offset: 0,
+      
       and: function and(query2) {
         return Intersection(query, query2);
       },
@@ -254,17 +278,32 @@ define(['cache!indexedDBShim'], function() {
       },
   
       getAll: function getAll(store) {
-        return ResultRequest(store, queryFunc, false);
+        return ResultRequest(store, queryFunc, false, this.limit, this.offset);
       },
   
       getAllKeys: function getAllKeys(store) {
-        return ResultRequest(store, queryFunc, true);
+        return ResultRequest(store, queryFunc, true, this.limit, this.offset);
       },
       
       sort: function(column, reverse) {
-        return Index(column, reverse ? IDBCursor.PREV : IDBCursor.NEXT).all().and(query);
+        return Index(column).all().setDirection(reverse ? IDBCursor.PREV : IDBCursor.NEXT).and(query);
       },
-  
+
+      setDirection: function(direction) {
+        this.direction = direction;
+        return this;
+      },
+
+      setLimit: function(limit) {
+        this.limit = limit;
+        return this;
+      },
+      
+      setOffset: function(offset) {
+        this.offset = offset;
+        return this;        
+      },
+      
       toString: toString
     };
     
@@ -274,9 +313,9 @@ define(['cache!indexedDBShim'], function() {
   /**
    * Create a query object that queries an index.
    */
-  function IndexQuery(indexName, operation, direction, values) {
+  function IndexQuery(indexName, operation, values) {
     var negate = false;
-    direction = direction || IDBCursor.NEXT;
+    var limit, offset, direction = IDBCursor.NEXT;
     var op = operation;
     if (op == "neq") {
       op = "eq";
@@ -287,7 +326,7 @@ define(['cache!indexedDBShim'], function() {
       var range;
       switch (op) {
         case "all":
-          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : null;
+          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : undefined;
           break;
         case "eq":
           range = IDBKeyRange.only(values[0]);
@@ -315,15 +354,46 @@ define(['cache!indexedDBShim'], function() {
       
       return range;
     }
-  
+
     function queryKeys(store, callback) {
+      var limit = query.limit,
+          offset = query.offest,
+          direction = query.direction || direction;
+      
       var index = store.index(indexName);
       var range = makeRange();
+//      if (limit || offset) {
+//        var request = index.openKeyCursor(range, direction);
+//        var results = [];
+//        var i = 0;
+//        request.onsuccess = function onsuccess(ev) {
+//          var cursor = ev.target.result;
+//          if (cursor) {
+//            if (offset && i < offset) {
+//              cursor['continue']();
+//              return;
+//            }
+//            else if (limit && results.length == limit) {
+//              callback(results);
+//              return;
+//            }
+//              
+//            results.push(cursor.primaryKey);
+//            cursor['continue']();
+//          }
+//          else {
+//            callback(results);
+//          }
+//        }
+//        
+//        return;
+//      }
+      
       var request = range ? index.getAllKeys(range, direction) : index.getAllKeys(undefined, direction);
       request.onsuccess = function onsuccess(event) {
         var result = request.result;
         if (!negate) {
-          callback(result);
+          callback(result, limit, offset);
           return;
         }
   
@@ -332,7 +402,7 @@ define(['cache!indexedDBShim'], function() {
         request = index.getAllKeys();
         request.onsuccess = function onsuccess(event) {
           var all = request.result;
-          callback(arraySub(all, result));
+          callback(arraySub(all, result), limit, offset);
         };
       };
       
@@ -346,7 +416,8 @@ define(['cache!indexedDBShim'], function() {
       return "IndexQuery(" + Array.prototype.slice.call(args).toSource().slice(1, -1) + ")";
     }
   
-    return Query(queryKeys, toString);
+    var query = Query(queryKeys, toString);
+    return query;
   }
 
   var SetOps = {Intersection: {name: 'Intersection', op: arrayIntersect}, Union: {name: 'Union', op: arrayUnion}};

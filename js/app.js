@@ -10,7 +10,7 @@ define('app', [
   'cache!events',
   'cache!indexedDBShim', 
   'cache!vocManager',
-  'cache!modelsBase',
+  'cache!resourceManager',
   'cache!router'
 ], function(G, $, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, Voc, MB, Router) {  
   Backbone.View.prototype.close = function() {
@@ -53,9 +53,9 @@ define('app', [
       Backbone.history.start();
       
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
-      G.homePage = G.homePage || G.tabs[0].mobileUrl;
+//      G.homePage = G.homePage || G.tabs[0].mobileUrl;
       if (!window.location.hash) {
-        G.Router.navigate(G.homePage, {trigger: true});
+//        G.Router.navigate(G.homePage, {trigger: true});
       }
     }
   };

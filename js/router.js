@@ -82,7 +82,7 @@ define([
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
-    list: function(oParams, backlink) {
+    list: function(oParams) {
 //      this.backClicked = this.wasBackClicked();
       if (!ListPage) {
         var args = arguments;
@@ -151,6 +151,7 @@ define([
         _rUri: oParams,
         success: function() {
           self.changePage(listView);
+          Voc.fetchModelsForReferredResources(list);
           Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
         }
@@ -345,8 +346,8 @@ define([
 //      console.log("painting map");
 //    },
     
-    isModelLoaded: function(self, type, oParams, backlink) {
-      var m = Voc.vocToModel[type];
+    isModelLoaded: function(self, type, oParams) {
+      var m = Voc.typeToModel[type];
       if (m)
         return m;
 
@@ -395,6 +396,7 @@ define([
           lostHistory = true;
       }
       
+      var transition = "slide";
       if (!this.backClicked || lostHistory) {
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
@@ -410,19 +412,20 @@ define([
         }
         if (!this.backClicked) {
           if (!view.rendered) {
-      view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-        view.render();
-      }
-  
-      var transition = "slide"; //$.mobile.defaultPageTransition;
+            view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+            view.render();
+          }
+      
+//          transition = "slide"; //$.mobile.defaultPageTransition;
           if (this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
             this.viewsStack.push(this.currentView);
             this.urlsStack.push(this.currentUrl);
           }
-      this.currentView = view;
+          this.currentView = view;
           this.currentUrl = window.location.href;
         }
       }
+
       if (this.firstPage) {
         transition = 'none';
         this.firstPage = false;

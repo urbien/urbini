@@ -115,8 +115,8 @@ define([
     
     getCloneOf: function(meta, cloneOf) {
       var keys = [];
-        for (var p in meta) {
-        if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'].indexOf(cloneOf) != -1) {
+      for (var p in meta) {
+        if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'] == cloneOf) {
           keys.push(p);
         }
       }
@@ -478,6 +478,15 @@ define([
           return item[annotation] ? item : null;
         });
     },
+    getDisplayNameProps: function(meta) {
+      var keys = [];
+      for (var p in meta) {
+        if (_.has(meta[p], "displayNameElm")) 
+          keys.push(p);
+      }
+      return keys;
+    },
+
     
     /// String prototype extensions
     
@@ -540,19 +549,34 @@ define([
         return [model.get('_uri')];
     },
     
-    hasImages: function(models) {
-      var m = models[0];
-      var meta = m.__proto__.constructor.properties;
+    isCollection: function(resOrCol) {
+      return typeof resOrCol.models !== 'undefined';
+    },
+    
+    getModel: function(resOrCol) {
+      return U.isCollection(resOrCol) ? resOrCol.model : resOrCol.constructor;
+    },
+    
+    hasImages: function(resOrCol) {
+      var isCol = U.isCollection(resOrCol);
+      var models = isCol ? resOrCol.models : [resOrCol];
+      if (!models.length)
+        return false;
+      
+      var vocModel = U.getModel(resOrCol);
+      var meta = vocModel.properties;
       var cloneOf;
-      var hasImgs = this.isA(m.constructor, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(meta, 'ImageResource.mediumImage')).length != 0;
+      var hasImgs = this.isA(vocModel, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(meta, 'ImageResource.mediumImage')).length != 0;
       if (!hasImgs)
         return false;
+      
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
         var m = models[i];
         if (m.get(cloneOf))
           hasImgs = true;
       }
+      
       return hasImgs;
     },
     

@@ -654,7 +654,7 @@ define('globals', function() {
       
       save: function(url, text, delay) {
         var put = function() {
-          localStorage.setItem(url, G.prepForStorage(text, G.serverTime));      
+          G.localStorage.put(url, G.prepForStorage(text, G.serverTime));      
         }
         
         if (delay)
@@ -696,6 +696,42 @@ define('globals', function() {
   })();
   
   var moreG = {
+    localStorage: {
+      put: function(key, value, force) {
+        if (!G.hasLocalStorage)
+          return false;
+        
+        value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
+        try {
+          localStorage.setItem(key, value);
+        } catch(e) {
+          if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+            // reset to make space
+            var self = this;
+            this.reset(force && function() {self.put(key, value)});
+          } else {
+            G.hasLocalStorage = false;
+            G.log(G.TAG, "Local storage write failure: ", e);
+          }
+        }    
+      },
+      
+      reset: function(after) {
+        debugger;
+        var resetting = this.resetting;
+        this.resetting = true;
+        for (var key in localStorage) {
+          if (key.indexOf('model:') == 0)
+            localStorage.removeItem(key);
+        }
+        
+        if (after) 
+          after();
+        
+        if (!resetting)
+          G.Voc && G.Voc.saveModelsToStorage();
+      }
+    },
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
@@ -979,7 +1015,7 @@ define('globals', function() {
       return pruned;
     },
     
-    loadBundle: function(bundle, callback) {
+    loadBundle: function(bundle, callback, async) {
       var pruned = G.pruneBundle(bundle);
       if (!pruned.length) {
         G.log('init', 'cache', 'bundle was cached', bundle);
@@ -990,41 +1026,68 @@ define('globals', function() {
         
       }
       
-      G.sendXhr({
+      var useWorker = window.Worker && async;
+      var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
         data: {modules: pruned.join(','), minify: G.minify},
-        success: function(text) {
-          var resp;
+      };
+      
+      var complete = function(resp) {
+        if (useWorker) {
+          if (resp.status == 304)
+            callback && callback();
+          else
+            resp = resp.data;
+        }
+        else {
           try {
-            resp = JSON.parse(text);
+            resp = JSON.parse(resp);
           } catch (err) {
           }
-          
-          var newModules = {};
-          if (resp && !resp.error && resp.modules) {
-            for (var i = 0; i < resp.modules.length; i++) {
-              var m = resp.modules[i];
-              for (var name in m) {
-                var minIdx = name.indexOf('.min.js');
-                var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
-                G.modules[mName] = newModules[mName] = m[name];
-                break;
-              }
+        }
+        
+        var newModules = {};
+        if (resp && !resp.error && resp.modules) {
+          for (var i = 0; i < resp.modules.length; i++) {
+            var m = resp.modules[i];
+            for (var name in m) {
+              var minIdx = name.indexOf('.min.js');
+              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+              G.modules[mName] = newModules[mName] = m[name];
+              break;
             }
           }
-        
-          if (hasLocalStorage) {
-            setTimeout(function() {
-              for (var url in newModules) {
-                localStorage.setItem(url, G.prepForStorage(newModules[url], G.serverTime));
-              }
-            }, 100);
-          }
-          
-          if (callback) callback();
         }
-      });
+      
+        if (hasLocalStorage) {
+          setTimeout(function() {
+            for (var url in newModules) {
+              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
+            }
+          }, 100);
+        }
+        
+        if (callback) callback();
+      }
+
+      if (useWorker) {
+        var xhrWorker = new Worker(G.serverName + '/js/xhrWorker.js');
+        xhrWorker.onmessage = function(event) {
+          complete(event.data);
+        };
+        
+        xhrWorker.onerror = function(err) {
+          console.log(JSON.stringify(err));
+        };
+        
+        getBundleReq.type = 'JSON';
+        xhrWorker.postMessage(getBundleReq);  
+      }
+      else {      
+        getBundleReq.success = complete; 
+        G.sendXhr(getBundleReq);
+      }        
     },
     
     prepForStorage: function(text, date) {
@@ -1130,7 +1193,7 @@ define('globals', function() {
      // Javascript
        js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
         'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'modelsBase', 'router', 'app'],
+        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'resourceManager', 'router', 'app'],
        // CSS
        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
        html: ['../templates.jsp']
@@ -1139,7 +1202,7 @@ define('globals', function() {
        // Javascript
        js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/MapView', 'leaflet', 'leafletMarkerCluster', 'maps'],
        // CSS
-       css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
+       css: ['../styles/leaflet.css', '../styles/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
      }
    };
    
@@ -1185,7 +1248,7 @@ require(['globals'], function(G) {
         G.startedTask('loading post-bundle');
         G.loadBundle(G.baseBundle.post, function() {
           G.finishedTask('loading post-bundle');
-        });
+        }, true);
       }, 100);
     });
   });

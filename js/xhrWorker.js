@@ -6,6 +6,17 @@ onmessage = function(event) {
   var status = xhr.status;
   if (status > 399 && status < 600)
     postMessage({error: {code: status}});    
-  else
-    postMessage((type && type.toUpperCase() == 'JSON') ? JSON.parse(xhr.responseText) : xhr.responseText);
+  else {
+    var status = xhr.status;
+    var text = xhr.responseText;
+    var resp = {
+      status: status, 
+      responseText: text
+    };
+    
+    if (type && type.toUpperCase() == 'JSON')
+      resp.data = status == 200 ? JSON.parse(text) : null;
+      
+    postMessage(resp);
+  }
 }

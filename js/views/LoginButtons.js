@@ -12,7 +12,8 @@ define([
     logoutTemplate: 'logoutButtonTemplate',
     popupTemplate: 'loginPopupTemplate',
     events: {
-      'click #login': 'showPopup'
+      'click #login' : 'showPopup',
+      'click #logout': 'showPopup'
     },
     
     initialize: function(options) {

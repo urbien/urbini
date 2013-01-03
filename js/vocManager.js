@@ -16,9 +16,9 @@ define([
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
 
+  Index = idbq.Index;
   var Voc = {
     packages: {Resource: Resource},
-    Index: idbq.Index,
     models: [],
     changedModels: [],
     newModels: [],
@@ -70,20 +70,25 @@ define([
       G.startedTask("ajax models");
       var useWorker = window.Worker && !options.sync;
       var complete = function() {
-        var data;
+        var xhr = arguments[0];
+        if (xhr.status == 304) {
+          success && success({fetched: 0});
+          return;
+        }
+        
         if (useWorker) {
-          // XHR
-          data = arguments[0];
+          // XHR          
+          data = xhr.data;
         }
         else {                                
           // $.ajax
-          var responseText = arguments[0].responseText;
           var status = arguments[1];
           if (status != 'success') {
             G.log(Voc.TAG, 'error', "couldn't fetch models");
             onErr(arguments[0].status);
           }
           
+          var responseText = xhr.responseText;
           try {
             data = JSON.parse(responseText);
           } catch (err) {
@@ -235,7 +240,55 @@ define([
         Voc.fetchModels(null, {sync: false});
       }
     },
-  
+
+    fetchModelsForReferredResources: function(list) {
+      var model = list.model;
+      var models = list.models;
+      var meta = model.properties;
+      
+      var tmp = [];
+
+      var l = _.keys(Voc.typeToModel);
+      var modelsToFetch = [];
+
+      for (var propName in meta) {
+        var p = meta[propName]; 
+//        if (p.backLink) {
+//          var type = G.defaultVocPath + p.range;
+//          if (!_.contains(modelsToFetch, type)  &&  !_.contains(l, type))
+//            modelsToFetch.push(type);
+//        }
+//        else
+          p.range  &&  !p.backLink  &&  p.range.indexOf('/') != -1  &&  p.range.indexOf('/Image') == -1  &&  tmp.push(propName);
+      }
+      if (!tmp.length)
+        return;
+      
+      for (var i=0; i<models.length; i++) {
+        for (var j=0; j<tmp.length; j++) {
+          var o = models[i].get(tmp[j]);
+          var uri = o  &&  o.value;
+          if (!uri)
+            continue;
+          
+          var idx = uri.indexOf("?");
+          var idx0 = uri.indexOf('/' + G.sqlUri + '/');
+          if (idx0 == -1) // could be S3 Image uri
+            continue;
+          var type = 'http://' + uri.substring(idx0 + G.sqlUri.length + 2, idx);
+          if (!_.contains(modelsToFetch, type)  &&  !_.contains(l, type))
+            modelsToFetch.push(type);
+        }  
+      }  
+      
+      
+      if (modelsToFetch.length) {
+//        linkedModels = _.uniq(linkedModels);
+        Voc.loadStoredModels({models: modelsToFetch});
+        Voc.fetchModels(null, {sync: false});
+      }
+    },
+
     initModel: function(m) {
       if (Voc.shortNameToModel[m.shortName])
         return;
@@ -285,7 +338,7 @@ define([
         if (c.guest)
           G.currentUser = {_reset: true, guest: true};
         else {
-          localStorage.setItem(Voc.contactKey, JSON.stringify(c));
+          G.localStorage.put(Voc.contactKey, JSON.stringify(c));
           G.userChanged = true;
         }
         
@@ -395,7 +448,7 @@ define([
     },
     
     storeModel: function(model, modelJson) {
-      localStorage.setItem('model:' + model.type, JSON.stringify(modelJson));
+      G.localStorage.put('model:' + model.type, JSON.stringify(modelJson));
     },
     
     loadStoredModels: function(options) {
@@ -549,5 +602,5 @@ define([
   };
   
   Voc.snm = Voc.shortNameToModel;
-  return Voc;
+  return (Lablz.Voc = Voc);
 });

@@ -13,17 +13,8 @@ define([
   'cache!indexedDBShim',
   'cache!queryIndexedDB'
 ], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, Voc, __idbShim__, idbq) {
-//  var MBI = null; // singleton instance
-//  var Index = idbq.Index;
-//  var MB = ModelsBase = function() {
-//    if (MBI != null)
-//      throw new Error("Can't instantiate more than one modelsBase module");
-//    
-//    this.initialize();
-//  };
-//  
-//  MB.prototype = {};
-//  MB.prototype.initialize = function() {
+  var Index = idbq.Index;
+  var tsProp = 'davGetLastModified';
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, model, options) {
     var now = G.currentServerTime();
@@ -59,7 +50,7 @@ define([
         }
         
         lastFetchedOn = lastFetchedOn && stalest ? Math.min(stalest, lastFetchedOn) : lastFetchedOn || stalest;
-        if (!lastFetchedOn || isStale(lastFetchedOn, now))
+        if (!lastFetchedOn || RM.isStale(lastFetchedOn, now))
           stale = true;
         else if (!options.sync)
           return;
@@ -143,6 +134,9 @@ define([
         switch (code) {
           case 200:
             break;
+          case 204:
+            defSuccess && defSuccess(resp, status, xhr);
+            return;
           case 304:
             var ms = isCol ? model.models.slice(offset, offset + model.perPage) : [model];
             _.each(ms, function(m) {
@@ -169,7 +163,7 @@ define([
         if (isCol) {
 //            model._lastFetchedOn = now;
           var offset1 = resp.metadata && resp.metadata.offset || 0;
-          modified = _.map(model.models.slice(offset1), function(model) {return model.get('_uri')});
+          modified = _.map(data, function(model) {return model._uri});
         }
         else {
           modified = model.get('_uri');
@@ -203,8 +197,8 @@ define([
         var resp = {data: results, metadata: {offset: offset}};
         defSuccess(resp, 'success', null);
         
-//          if (isCol && (results.length < model.perPage || _.any(results, function(m)  {return isStale(m._lastFetchedOn, now); })) {
-        if (isCol && _.any(results, function(m)  {return isStale(m._lastFetchedOn, now); })) {
+//          if (isCol && (results.length < model.perPage || _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now); })) {
+        if (isCol && _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now); })) {
           return runDefault();
         }
 //        }, 0);    
@@ -362,7 +356,7 @@ define([
         db.onversionchange = function(event) {
           G.log(RM.TAG, 'db', 'closing db - onversionchange');
           db.close();
-          alert("A new version of this page is ready. Please reload!");
+          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
         };    
      
         modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
@@ -553,7 +547,15 @@ define([
       
       G.log(RM.TAG, 'db', 'starting readwrite transaction for store', className);
 //      G.recordCheckpoint('starting readwrite transaction for store: ' + className);
-      var trans = db.transaction([className], IDBTransaction.READ_WRITE);
+      var trans;
+      try {
+        trans = db.transaction([className], IDBTransaction.READ_WRITE);
+      } catch (err) {
+        debugger;
+        G.log(RM.TAG, ['error', 'db'], 'failed to start readwrite transaction for store', className, err);
+        return false;
+      }
+
       trans.oncomplete = function(e) {
         G.log(RM.TAG, 'db', 'finished readwrite transaction for store', className);
 //        G.recordCheckpoint('finished readwrite transaction for store: ' + className);
@@ -647,6 +649,76 @@ define([
       '<=': 'lteq',
       'IN:': 'oneof'
     },
+
+    buildDBQuery: function(store, model) {
+      var query, orderBy, filter, modelParams, defOp = 'eq';
+      if (model instanceof Backbone.Model)
+        return false;
+      
+      filter = model.queryMap;
+      if (filter) {
+        orderBy = filter.$orderBy;
+        asc = U.isTrue(filter.$asc);
+      }
+      
+      if (orderBy && !store.indexNames.contains(orderBy))
+        return false;
+
+      modelParams = _.filter(_.keys(filter), function(name) {
+        return name.match(/^[a-zA-Z]+/);
+      });
+      
+      if (!_.all(modelParams, function(name) {return _.contains(store.indexNames, name)}))
+        return false;
+      
+      if (!orderBy && !_.size(modelParams))
+        return false;
+      
+      for (var i in modelParams) {
+        var name = modelParams[i];
+        var op = defOp, val;
+        var opVal = filter[name].match(/^(IN=|[>=<!]{0,2})(.+)$/);
+        switch (opVal.length) {
+          case 2: {
+            val = filter[name];
+            break;
+          }
+          case 3: {
+            if (opVal[1])
+              op = RM.operatorMap[opVal[1]];
+            
+            val = opVal[2];
+            break;
+          }
+          default: {
+            G.log(RM.TAG, 'error', 'couldn\'t parse filter', filter);
+            return false;
+          }
+        }
+          
+        if (!op || !val)
+          return false;
+        
+        val = U.getTypedValue(model, name, val);
+        var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
+        query = query ? query.and(subQuery) : subQuery;
+      }
+      
+      if (orderBy) {
+//        var bound = startAfter ? (orderBy == '_uri' ? startAfter : model.get(startAfter).get(orderBy)) : null;
+        query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+      }
+      
+      if (!_.isUndefined(filter.$offset)) {
+        query.setOffset(filter.$offset);
+      }
+      
+      if (!_.isUndefined(filter.$limit)) {
+        query.setLimit(filter.$limit);
+      }
+      
+      return query;
+    },
     
     getItems: function(options) {
       // var todos = document.getElementById("todoItems");
@@ -667,7 +739,15 @@ define([
         return false;
       
       G.log(RM.TAG, 'db', 'starting readonly transaction for store', name);
-      var trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      var trans;
+      try {
+        trans = db.transaction([name], IDBTransaction.READ_ONLY);
+      } catch (err) {
+        debugger;
+        G.log(RM.TAG, ['error', 'db'], 'failed to start readonly transaction for store', name, err);
+        return false;
+      }
+      
       trans.oncomplete = function(e) {
         G.log(RM.TAG, 'db', 'finished readonly transaction for store', name);
       };
@@ -677,76 +757,28 @@ define([
 //      if (startAfter)
 //        lowerBound = IDBKeyRange.lowerBound(startAfter, true);
       
-      // Get everything in the store;
-      var results = [];
-      var cursorRequest;
-      var query;
-      var orderBy, asc;
-      if (model.queryMap) {
-        orderBy = model.queryMap['$orderBy'];
-        asc = U.isTrue(model.queryMap['$asc']);
+      var query, dbReq, cursorRequest, results = [];
+      if (!uri)
+        query = RM.buildDBQuery(store, model);
+      
+      if (query)
+        dbReq = query.getAll(store);
+      else {
+        if (uri)
+          dbReq = store.get(uri);
+        else
+          dbReq = startAfter ? store.openCursor(IDBKeyRange.lowerBound(startAfter, true)) : store.openCursor();
       }
       
-      if (orderBy && !store.indexNames.contains(orderBy)) {
-        return false;          
-      }
-
-      if (filter) {
-        // check if we have all the props indexed
-        if (filter && !_.all(filter, function(val, name) {return _.contains(store.indexNames, name)}))
-          return false;
-
-        var defOp = 'eq';
-        for (var name in filter) {
-          var op = defOp, val;
-          var opVal = filter[name].match(/^(IN=|[>=<!]{0,2})(.+)$/);
-          switch (opVal.length) {
-            case 2: {
-              val = filter[name];
-              break;
-            }
-            case 3: {
-              if (opVal[1])
-                op = RM.operatorMap[opVal[1]];
-              
-              val = opVal[2];
-              break;
-            }
-            default: {
-              G.log(RM.TAG, 'error', 'couldn\'t parse filter', filter);
-              return false;
-            }
-          }
-            
-          if (!op || !val)
-            return false;
-          
-          val = U.getTypedValue(model, name, val);
-          var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
-          query = query ? query.and(subQuery) : subQuery;
-        }        
-      }
-
-      var dbReq;
-      if (filter || orderBy) {
-        var bound = startAfter ? (orderBy == '_uri' ? startAfter : model.get(startAfter).get(orderBy)) : null;
-        query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all(bound);
-        dbReq = query.getAll(store);
-      }
-      else if (uri)
-        dbReq = store.get(uri);
-      else
-        dbReq = startAfter ? store.openCursor(IDBKeyRange.lowerBound(startAfter, true)) : store.openCursor();
-        
       dbReq.onsuccess = function(e) {
 //        G.log(RM.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
         if (result) {
-          if (filter || orderBy)
+          if (query)
             return success(result);
           else if (uri)
             return success([result]);
-        
+          
           results.push(result.value);
           if (!total || results.length < total) {
             result['continue']();
@@ -762,7 +794,7 @@ define([
         error && error(e);
 //        RM.onerror(e);
       }
-      
+            
       return true;
     },
 
@@ -781,10 +813,12 @@ define([
         if (s) s();
       }
       
-      RM.openDB(null, success, error);
+      $(document).ready(function(){RM.openDB(null, success, error)});
     }
+
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
-  }
+  };
+  
   
 //  MB.getInstance = function() {
 //    if (RM === null) {

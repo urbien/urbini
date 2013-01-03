@@ -7,7 +7,7 @@ define([
   'cache!error',
   'cache!indexedDBShim'
   'cache!utils',
-  'cache!modelsBase',
+  'cache!resourceManager',
 ], function(G, $, __jqm__, _, Backbone, Error, __idbShim__, U, MB) {
   DB = {};
   DB.db = null;
