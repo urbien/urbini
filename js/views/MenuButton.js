@@ -5,8 +5,9 @@ define([
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
+  'cache!utils',
   'cache!events' 
-], function(G, $, __jqm__, _, Backbone, Templates, Events) {
+], function(G, $, __jqm__, _, Backbone, Templates, U, Events) {
   return Backbone.View.extend({
     template: 'menuButtonTemplate',
     events: {
