@@ -11,6 +11,9 @@
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
+    <ul id="columns">
+    </ul>
+    
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
     </table>
   </div>
@@ -145,10 +148,16 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  {{ if (typeof distance != 'undefined') { }}
+    <span class="ui-li-count">{{= distance }}</span>
+  {{ } }}
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+  {{ if (typeof distance != 'undefined') { }}
+    <span class="ui-li-count">{{= distance }}</span>
+  {{ } }}
 </script>
 
 <script type="text/template" id="menuItemTemplate">
@@ -348,7 +357,9 @@
 </script>
 
 <script type="text/template" id="masonry-list-item">
-  <div class="anab">
+  <!--div class="anab" -->
+  <div class="pin1">
+    <!-- p style="display: inline-block;"/ -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
@@ -375,6 +386,7 @@
      </div>
   </div>     
 </div>
+<!--/div -->
 </script>
 
 </div>

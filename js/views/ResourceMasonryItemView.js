@@ -93,34 +93,36 @@ define([
           s = '<a href="' + s + '">' + s + '</a>';
         gridCols += s;
       }
-      var dn = json['davDisplayName'];
-      if (!dn  &&  dnProps) {
-        var first = true;
-        dn = '';
-        for (var p in dnProps) {
-          if (first)
-            first = false;
-          else
-            dn += ' ';
-          if (json[p])
-            dn += json[p];
-        }
-        json['davDisplayName'] = dn;
-      }
-      if (gridCols.length == 0) 
-        gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
-      
-//      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
-      
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
-      tmpl_data['gridCols'] = gridCols;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
+      var dn = json['davDisplayName'];
+      if (!dn  &&  dnProps) {
+        var first = true;
+        dn = '';
+        for (var i=0; i<dnProps.length; i++) {
+          var val = json[dnProps[i]];
+          if (val) {
+            if (first)
+              first = false;
+            else
+              dn += ' ';
+            dn += val;
+          }  
+        }
+        tmpl_data['davDisplayName'] = dn;
+      }
+      if (gridCols.length == 0) 
+        gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
+      
+//      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
+      
+      tmpl_data['gridCols'] = gridCols;
       
       var c = m.constructor;
       tmpl_data['rUri'] = resourceUri;
