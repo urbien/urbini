@@ -217,7 +217,7 @@ define([
     },
 
     // masonry bricks alignment
-    alignBricks: function(todo) {
+    alignBricks: function() {
       // if masonry and bricks have zero dimension then impossible to align them
       if (!this.$el.hasClass("masonry") || this.$el.width() == 0)
         return;
