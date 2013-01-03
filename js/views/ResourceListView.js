@@ -29,6 +29,7 @@ define([
       this.TAG = 'ResourceListView';
       return this;
     },
+    
     refresh: function(model, modified) {
       if (model && model != this.model)
         return this;
@@ -47,6 +48,25 @@ define([
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
       var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
+//      if (!isComment  &&  !isMasonry  &&  !isList) {
+//        if (U.isA(models[0].constructor, 'Intersection')) {
+//          var href = window.location.href;
+//          var qidx = href.indexOf('?');
+//          var a = U.getCloneOf(meta, 'Intersection.a')[0];
+//          var aprop;
+//          if (qidx == -1) {
+//            aprop = models[0].get(a);
+//          }
+//          else {
+//            var b = U.getCloneOf(meta, 'Intersection.b')[0];
+//            var p = href.substring(qidx + 1).split('=')[0];
+//            var delegateTo = (p == a) ? b : a;
+//            aprop = models[0].get(delegateTo);
+//          }
+//          var type = U.getTypeUri(U.getType(aprop['value']), {type: aprop['value'], shortNameToModel: MB.shortNameToModel});
+//          isMasonry = U.isA(MB.typeToModel[type], 'ImageResource');  
+//        }
+//      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
       var curNum = lis.length;
@@ -94,7 +114,7 @@ define([
       
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
-      
+
       if (this.initializedListView) {
         if (isModification  ||  isMasonry)
           this.$el.trigger('create');
@@ -104,6 +124,9 @@ define([
       else {
         this.initializedListView = true;
       }
+    
+      return this;
+      
 //      else {
 //        //Element has not been initiliazed
 //        this.$el.listview().listview('refresh');
@@ -111,6 +134,7 @@ define([
 //      }
 
     },
+    
     getNextPage: function() {
       var before = this.model.models.length;
 
@@ -144,12 +168,15 @@ define([
     },
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
+
     swipe: function(e) {
       console.log("swipe");
     },
+    
     changed: function(view) {
       this.changedViews.push(view);
     },
+    
     render: function(e) {
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
@@ -178,6 +205,7 @@ define([
       this.skipScrollEvent = true; 
       this.getNextPage();
     },
+    
     onNextPageFetched: function () {
       this.skipScrollEvent = false;
     },
