@@ -38,7 +38,7 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-      G.Router.navigate('menu/' + encodeURIComponent(window.location.hash.slice(5)), {trigger: true, replace: false});
+      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(5)), {trigger: true, replace: false});
     },
     home: function() {
       this.router.navigate(G.homePage, {trigger: true, replace: false});
@@ -46,7 +46,7 @@ define([
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      this.router.navigate('view/' + U.encode(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
 //    tap: function() {

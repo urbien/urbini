@@ -50,7 +50,7 @@ define([
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var hasImgs = U.hasImages(models);
       var curNum = lis.length;
-      var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
+      var num = Math.min(models.length, (this.model.page + 1) * this.displayPerPage);
       
       var i = 0;
       var nextPage = false;
@@ -112,30 +112,34 @@ define([
 
     },
     getNextPage: function() {
-      var before = this.model.models.length;
-
-      console.log("called getNextPage");
+//      var before = this.model.models.length;
+//
+//      console.log("called getNextPage");
+//      
+//      // there is nothing to fetch, we've got them all
+//      if (before < this.model.perPage)
+//        return;
       
-      // there is nothing to fetch, we've got them all
-      if (before < this.model.perPage)
-        return;
-      
-      this.isLoading = true;
+      var self = this;
+      var before = this.model.offset;
+      this.loadingNextPage = true;
       var after = function() {
-        self.isLoading = false;
+        if (self.model.offset > before)
+          self.refresh();
+        
+        self.loadingNextPage = false;
         self.onNextPageFetched();
       };
       
-      this.page++;
-      var self = this;
-      
-      var requested = (this.page + 1) * this.displayPerPage;
-      
-      if (before > requested) {
-        this.refresh(this.model);
-        after();
-        return;
-      }
+//      this.page++;
+//      
+//      var requested = (this.page + 1) * this.displayPerPage;
+//      
+//      if (before > requested) {
+//        this.refresh(this.model);
+//        after();
+//        return;
+//      }
         
       this.model.getNextPage({
         success: after,

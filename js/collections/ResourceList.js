@@ -59,7 +59,7 @@ define([
     pager: function(options) {
       this.page = Math.floor(this.offset / this.perPage);
       options = options || {};
-      options.startAfter = _.last(this.models).get('_uri');
+      _.extend(options, {sync: true, startAfter: _.last(this.models).get('_uri')});
       this.fetch(options);
     },
     setPerPage: function(perPage) {

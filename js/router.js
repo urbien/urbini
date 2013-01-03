@@ -9,11 +9,11 @@ define([
   'cache!error', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-  'cache!modelsBase'
+  'cache!vocManager'
 //  , 
 //  'cache!views/ListPage', 
 //  'cache!views/ViewPage' 
-], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, MB /*, ListPage, ViewPage*/) {
+], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage, MenuPage; //, LoginView;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
@@ -59,10 +59,11 @@ define([
       this.forceRefresh = false;
       return ret;
     },
-    route: function() {
-//      this.previousHash = window.location.hash;
+    
+    route: function() {        
       return Backbone.Router.prototype.route.apply(this, arguments);
     },
+    
 //    navigateDone: function() {
 //      this.navigating = false;
 //      this.backClicked = false;
@@ -93,9 +94,11 @@ define([
         
         return true;
       }
+      
       var self = this;
       var params = oParams.split("?");
-      var type = decodeURIComponent(params[0]);
+      var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
+      var className = U.getClassName(typeUri);
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
         var q = query.split("&");
@@ -112,19 +115,19 @@ define([
       var page = this.page = this.page || 1;
       var force = this.forceRefresh;
       
-      if (!this.isModelLoaded(self, type, oParams))
+      if (!this.isModelLoaded(self, typeUri, oParams))
         return;
       
-//      var t = type;  
+//      var t = className;  
 //      var key = query ? t + '?' + query : t;
-      var key = query || type;
-      this.Collections[type] = this.Collections[type] || {};
-      this.CollectionViews[type] = this.CollectionViews[type] || {};
-      var c = this.Collections[type][key];
+      var key = query || typeUri;
+      this.Collections[typeUri] = this.Collections[typeUri] || {};
+      this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
+      var c = this.Collections[typeUri][key];
       if (c && !c._lastFetchedOn)
         c = null;
       
-      var cView = this.CollectionViews[type][key];
+      var cView = this.CollectionViews[typeUri][key];
       if (c && cView) {
         this.currentModel = c;
         this.changePage(cView, {page: page});
@@ -132,15 +135,15 @@ define([
         return this;
       }      
       
-      var model = MB.shortNameToModel[type];
+      var model = Voc.shortNameToModel[className] || Voc.vocToModel[typeUri];
       if (!model)
         return this;
       
-      var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: type, _rUri: oParams });    
+      var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
       var listView = new ListPage({model: list});
       
-      this.Collections[type][key] = list;
-      this.CollectionViews[type][key] = listView;
+      this.Collections[typeUri][key] = list;
+      this.CollectionViews[typeUri][key] = listView;
       
       list.fetch({
         add: true,
@@ -148,7 +151,7 @@ define([
         _rUri: oParams,
         success: function() {
           self.changePage(listView);
-          MB.fetchModelsForLinkedResources(list.model);
+          Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
         }
       });
@@ -206,21 +209,22 @@ define([
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
         if (!G.currentUser.guest)
-          this.view(encodeURIComponent(G.currentUser._uri) + "?" + p);
+          this.view(U.encode(G.currentUser._uri) + "?" + p);
         else
-          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p);
+          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         
         return;
       }
       
       var self = this;
-      var type = U.getType(uri);
-      uri = U.getLongUri(uri, MB);
-      if (!uri || !MB.shortNameToModel[type]) {
-        MB.loadStoredModels({models: [type]});
+      var typeUri = U.getTypeUri(uri);
+      var className = U.getClassName(typeUri);
+      uri = U.getLongUri(uri, Voc);
+      if (!uri || !Voc.shortNameToModel[className]) {
+        Voc.loadStoredModels({models: [className]});
           
-        if (!uri || !MB.shortNameToModel[type]) {
-          MB.fetchModels(type, 
+        if (!uri || !Voc.shortNameToModel[className]) {
+          Voc.fetchModels(typeUri, 
             {success: function() {
               self.view.apply(self, [path]);
             },
@@ -237,7 +241,7 @@ define([
       
       var collection;
       if (!res) {
-        var collections = this.Collections[type];
+        var collections = this.Collections[typeUri];
         if (collections) {
           var result = this.searchCollections(collections, uri);
           if (result) {
@@ -256,14 +260,14 @@ define([
         var v = views[uri] = views[uri] || new viewPageCl({model: res});
         this.changePage(v);
         res.fetch({
-          success: function() {MB.fetchModelsForLinkedResources(res)}
+          success: function() {Voc.fetchModelsForLinkedResources(res)}
         });
         
         return this;
       }
       
-//      if (this.Collections[type]) {
-//        var res = this.Models[uri] = this.Collections[type].get(uri);
+//      if (this.Collections[typeUri]) {
+//        var res = this.Models[uri] = this.Collections[typeUri].get(uri);
 //        if (res) {
 //          this.currentModel = res;
 //          var v = views[uri] = new viewPageCl({model: res});
@@ -272,7 +276,7 @@ define([
 //        }
 //      }
   
-      var typeCl = MB.shortNameToModel[type];
+      var typeCl = Voc.shortNameToModel[className];
       if (!typeCl)
         return this;
       
@@ -281,7 +285,7 @@ define([
       var paintMap;
       var success = function(data) {
         self.changePage(v);
-        success: MB.fetchModelsForLinkedResources(res);
+        success: Voc.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
       
@@ -342,11 +346,11 @@ define([
 //    },
     
     isModelLoaded: function(self, type, oParams, backlink) {
-      var m = MB.shortNameToModel[type];
+      var m = Voc.vocToModel[type];
       if (m)
         return m;
 
-      MB.fetchModels(type, { 
+      Voc.fetchModels(type, { 
          success: function() {
            self.list.apply(self, [oParams]);
          },
@@ -355,6 +359,7 @@ define([
       
       return null;
     },
+    
     checkErr: function() {
       var q = U.getQueryParams();
       var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;

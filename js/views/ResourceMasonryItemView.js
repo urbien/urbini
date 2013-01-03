@@ -49,7 +49,7 @@ define([
       var grid = U.getGridCols(m);
 
       var rUri = m.get('_uri');
-      var resourceUri = G.pageRoot + '#view/' + encodeURIComponent(rUri);
+      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
       var gridCols = '';
       var resourceLink;
       var i = 0;
@@ -74,7 +74,7 @@ define([
       }
 
       
-//      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
       
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
@@ -93,7 +93,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(rUri, MB) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(rUri, MB) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -102,13 +102,13 @@ define([
           votes = U.getCloneOf(meta, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(rUri, MB) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(rUri, MB) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = encodeURIComponent(U.getLongUri(rUri, MB) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri(rUri, MB) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data['v_showRenabFor'] = uri;
       }      
       try {
@@ -131,10 +131,10 @@ define([
       if (typeof json[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), MB);
+      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), MB);
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value, MB));
+      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json['modifiedBy'].value, MB));
       tmpl_data['modifiedBy'].value = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
@@ -148,15 +148,15 @@ define([
       
       var commentsFor = tmpl_data['v_showCommentsFor'];
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, MB) + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor].value, MB) + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, MB) + '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, MB) + '&m_p=votes&b_p=votable');
   
       var renabFor = tmpl_data['v_showRenabFor'];
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, MB) + '&m_p=nabs&b_p=forResource');
+        tmpl_data['v_showRenabFor'] = U.encode(U.getLongUri(json[renabFor].value, MB) + '&m_p=nabs&b_p=forResource');
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {

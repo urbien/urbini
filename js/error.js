@@ -21,9 +21,9 @@ define([
           switch (code) {
           case 401: 
              console.log('redirecting to user-login');
-             // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
+             // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
 //             Backbone.history.navigate("login/socialnet", {trigger: true} );
-//            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
+//            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
 //            window.history.back();
             Error.errDialog({msg: Error.login, delay: 1000});
             return;

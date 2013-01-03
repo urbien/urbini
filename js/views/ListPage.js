@@ -39,7 +39,7 @@ define([
     },
     swiperight: function(e) {
       // open menu
-      G.Router.navigate('menu/' + encodeURIComponent(window.location.hash.slice(1)), {trigger: true, replace: false});
+      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');

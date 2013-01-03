@@ -81,7 +81,7 @@ define([
             displayedProps[idx++] = p;
 //            json[p] = U.makeProp(prop, json[p]);
             var n = prop.displayName;
-            var range = U.getType(prop.range); 
+            var range = U.getClassName(prop.range); 
             var isPropEditable = U.isPropEditable(json, prop);
             
             var doShow = false;
@@ -175,7 +175,7 @@ define([
 //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
 //          else
 //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
-          var range = U.getType(prop.range);
+          var range = U.getClassName(prop.range);
           var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
           if (isPropEditable)
             U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));

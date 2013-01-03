@@ -1,5 +1,4 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
@@ -16,16 +15,16 @@ define(['cache!indexedDBShim'], function() {
   (function() {
 //    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
 //    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
-    var getAll_ = function(fn, range) {
+    var getAll_ = function(fn, range, direction) {
       // This is the most common use of IDBKeyRange. If more specific uses of
       // cursors are needed then a full wrapper should be created.
       var d = {};
       var request;
       try {
         if (range) {
-          request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range));
+          request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range), direction || IDBCursor.NEXT);
         } else {
-          request = this[fn]();
+          request = this[fn](null, direction || IDBCursor.NEXT);
         }
       } catch (err) {
         d.onerror && d.onerror(err);
@@ -50,17 +49,17 @@ define(['cache!indexedDBShim'], function() {
     };
 
     var methods = {
-      getAllKeys: function(bound) {
-        return getAll_.call(this, 'openKeyCursor', bound);
+      getAllKeys: function(bound, direction) {
+        return getAll_.call(this, 'openKeyCursor', bound, direction);
       },
       
-      getAll: function(bound) {
-        return getAll_.call(this, 'openCursor', bound);
+      getAll: function(bound, direction) {
+        return getAll_.call(this, 'openCursor', bound, direction);
       },
       
-      openKeyCursor: function(bound) {
+      openKeyCursor: function(bound, direction) {
         var req = {};
-        var ocReq = bound ? this.openCursor(bound) : this.openCursor();
+        var ocReq = bound ? this.openCursor(bound, direction) : this.openCursor(direction);
         var toReturn = [];
         ocReq.onsuccess = function(event) {
           var cursor = event.target.result;
@@ -98,14 +97,15 @@ define(['cache!indexedDBShim'], function() {
     }
   })(IDBIndex, IDBObjectStore);
   
-  function Index(name) {
+  function Index(name, direction) {
     function queryMaker(op) {
       return function () {
-        return IndexQuery(name, op, arguments);
+        return IndexQuery(name, op, direction, arguments);
       };
     }
     
     return {
+      all:     queryMaker("all"), // for sorting
       eq:      queryMaker("eq"),
       neq:     queryMaker("neq"),
       gt:      queryMaker("gt"),
@@ -116,9 +116,9 @@ define(['cache!indexedDBShim'], function() {
       betweeq: queryMaker("betweeq"),
       oneof:   function oneof() {
         var values = Array.prototype.slice.call(arguments);
-        var query = IndexQuery(name, "eq", [values.shift()]);
+        var query = IndexQuery(name, "eq", direction, [values.shift()]);
         while (values.length) {
-          query = query.or(IndexQuery(name, "eq", [values.shift()]));
+          query = query.or(IndexQuery(name, "eq", direction, [values.shift()]));
         }
         return query;
       }
@@ -236,7 +236,7 @@ define(['cache!indexedDBShim'], function() {
   
       // Sadly we need to expose this to make Intersection and Union work :(
       _queryFunc: queryFunc,
-
+      
       and: function and(query2) {
         return Intersection(query, query2);
       },
@@ -260,6 +260,10 @@ define(['cache!indexedDBShim'], function() {
       getAllKeys: function getAllKeys(store) {
         return ResultRequest(store, queryFunc, true);
       },
+      
+      sort: function(column, reverse) {
+        return Index(column, reverse ? IDBCursor.PREV : IDBCursor.NEXT).all().and(query);
+      },
   
       toString: toString
     };
@@ -270,8 +274,9 @@ define(['cache!indexedDBShim'], function() {
   /**
    * Create a query object that queries an index.
    */
-  function IndexQuery(indexName, operation, values) {
+  function IndexQuery(indexName, operation, direction, values) {
     var negate = false;
+    direction = direction || IDBCursor.NEXT;
     var op = operation;
     if (op == "neq") {
       op = "eq";
@@ -281,6 +286,9 @@ define(['cache!indexedDBShim'], function() {
     function makeRange() {
       var range;
       switch (op) {
+        case "all":
+          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : null;
+          break;
         case "eq":
           range = IDBKeyRange.only(values[0]);
           break;
@@ -311,7 +319,7 @@ define(['cache!indexedDBShim'], function() {
     function queryKeys(store, callback) {
       var index = store.index(indexName);
       var range = makeRange();
-      var request = index.getAllKeys(range);
+      var request = range ? index.getAllKeys(range, direction) : index.getAllKeys(undefined, direction);
       request.onsuccess = function onsuccess(event) {
         var result = request.result;
         if (!negate) {

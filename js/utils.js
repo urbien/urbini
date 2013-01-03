@@ -156,7 +156,7 @@ define([
       }
       else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
         // uri is of form Tree/32000
-        var typeName = U.getType(uri);
+        var typeName = U.getClassName(uri);
         type = U.getTypeUri(typeName, hint);
         if (!type || type == typeName)
           return null;
@@ -170,7 +170,7 @@ define([
 //        
 //        var primaryKeys = U.getPrimaryKeys(model);
         if (!primaryKeys  ||  primaryKeys.length == 0)
-          longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
+          longUri += "id=" + U.encode(uri.slice(sIdx + 1));
         else {
           var vals = uri.slice(sIdx + 1).split('/');
           if (vals.length != primaryKeys.length)
@@ -192,10 +192,19 @@ define([
     },
     
     getTypeUri: function(typeName, hint) {
-      return hint.type || hint.shortNameToModel[typeName] && hint.shortNameToModel[typeName].type;
+      if (typeName.indexOf('/') != -1) {
+        var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
+        if (type.startsWith(G.sqlUrl))
+          type = 'http://' + type.slice(G.sqlUrl.length + 1);
+        
+        var qIdx = type.indexOf('?');
+        return qIdx == -1 ? type : type.slice(0, qIdx);
+      }
+      else
+        return hint.type || hint.shortNameToModel[typeName] && hint.shortNameToModel[typeName].type;
     },
     
-    getType: function(uri) {
+    getClassName: function(uri) {
       var qIdx = uri.indexOf("?");
       if (qIdx != -1) {
         if (uri.indexOf('http://') == 0)
@@ -212,10 +221,10 @@ define([
       return end == -1 ? uri.slice(idx) : uri.slice(idx, idx + end);
     },
     
-    getClassName: function(type) {
-      var sIdx = type.lastIndexOf("/");
-      return sIdx == -1 ? type : type.slice(sIdx + 1);
-    },
+//    getClassName: function(type) {
+//      var sIdx = type.lastIndexOf("/");
+//      return sIdx == -1 ? type : type.slice(sIdx + 1);
+//    },
     
     getShortUri: function(uri, model) {
       if (model.myProperties._shortUri == 'unsupported')
@@ -385,7 +394,7 @@ define([
     //U.toQueryString: function(queryMap) {
     //  var qStr = '';
     //  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
-    //    qStr += key + '=' + encodeURIComponent(val) + '&';
+    //    qStr += key + '=' + U.encode(val) + '&';
     //  });
     //  
     //  return qStr.slice(0, qStr.length - 1);
@@ -393,7 +402,7 @@ define([
     
     replaceParam: function(url, name, value, sort) {
       if (!url)
-        return name + '=' + encodeURIComponent(value);
+        return name + '=' + U.encode(value);
       
       url = url.split('?');
       var qs = url.length > 1 ? url[1] : url[0];
@@ -477,16 +486,16 @@ define([
         return $.param(paramMap);
       
       var keys = [];
-      for (var i in paramMap) {
-        if (paramMap.hasOwnProperty(i)) {
-          keys.push(i);
+      for (var p in paramMap) {
+        if (typeof paramMap[p] !== 'undefined') {
+          keys.push(p);
         }
       }
       
       var qs = '';
       keys.sort();
       for (i = 0; i < keys.length; i++) {
-        keys[i] = keys[i] + '=' + encodeURIComponent(paramMap[keys[i]]);
+        keys[i] = keys[i] + '=' + U.encode(paramMap[keys[i]]);
       }
       
       return keys.join('&');
@@ -510,10 +519,6 @@ define([
         day_diff == 1 && "Yesterday" ||
         day_diff < 7 && day_diff + " days ago" ||
         day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
-    },
-    
-    decode: function(str) {
-      return decodeURIComponent(str).replace(/\+/g, ' ');
     },
     
     toHTMLElement: function(html) {
@@ -620,7 +625,7 @@ define([
 //     * build view/list/etc. hash for model, defaults to homePage if model is null
 //     */
 //    buildHash: function(model) {
-//      return model instanceof Backbone.Model ? 'view/' + encodeURIComponent(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
+//      return model instanceof Backbone.Model ? 'view/' + U.encode(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
     
     apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
@@ -628,10 +633,11 @@ define([
     getMobileUrl: function(url) {
       var orgParams = U.getQueryParams(url);
       if (url.startsWith('v.html'))
-        return 'view/' + encodeURIComponent(U.getLongUri(orgParams.uri));
+        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
       
       // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
       var type = orgParams.type;
+//      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
       delete orgParams.type;
       var ignoredParams = '';
       var params = {};
@@ -641,7 +647,6 @@ define([
         
         var apiParam = U.apiParamMap[p];
         if (typeof apiParam !== 'undefined') {
-          
           var val = orgParams[p];
           if (apiParam == '$limit')
             val = Math.max(parseInt(val, 10), 50);
@@ -682,12 +687,82 @@ define([
       if (ignoredParams)
         console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
       
-      return type.slice(type.lastIndexOf('/') + 1) + (_.size(params) ? '?' + $.param(params) : '');
+      return encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
     },
     
     pushUniq: function(arr, obj) {
       if (!_.contains(arr, obj))
         arr.push(obj);
+    },
+    
+    encode: function(str) {
+      return encodeURIComponent(str);
+    },
+    
+    decode: function(str) {
+      return decodeURIComponent(str).replace(/\+/g, ' ');
+    },
+    
+    primitiveTypes: {uri: 'system/primitiveTypes', floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2'], ints: ['int', 'long', 'Duration']},
+    getTypedValue: function(model, prop, value) {
+      if (model.collection)
+        model = model.constructor;
+      else if (model.models)
+        model = model.model;
+      
+      var p = U.primitiveTypes;
+      var prop = model.properties[prop];
+      var range = prop.range || prop.facet;
+      if (p.floats.indexOf('range') != -1)
+        return parseFloat(value);
+      else if (p.ints.indexOf('range') != -1)
+        return parseInt(value);
+      else if (range.startsWith(p.uri)) {
+        range = range.slice(pt.length + 1);
+        if (p.floats.indexOf(range) != -1)
+          return parseFloat(value);
+        else if (p.ints.indexOf(range) != -1)
+          return parseInt(value);
+        else
+          return value;        
+      }
+      
+      if (range == 'ComplexDate')
+        return parseInt(value);
+      else if (range == 'Money')
+        return parseFloat(value);
+
+//    var hIdx = range.indexOf('#');
+//    if (hIdx != -1) {
+//      range = range.slice(hIdx + 1);
+//      switch (range) {
+//      case 'string':
+//        return value;
+//      case 'int':
+//      case 'long':
+//      case 'date':
+//        return parseInt(value);
+//      case 'float':
+//      case 'double':
+//        return parseFloat(value);
+//      case 'boolean':
+//        return ['true', '1', 'yes'].indexOf(value.toLowerCase()) != -1;
+//      default:
+//        throw new Error('unsupported property range: ' + range);  
+//      }
+//    }
+
+      return value;
+    },
+    
+    isTrue: function(val) {
+      if (_.isUndefined(val) || val == null)
+        return false;
+      
+      if (typeof val === 'string')
+        return ['1', 'true', 'yes'].indexOf(val.toLowerCase()) != -1;
+      else
+        return !!val;
     }
   };
   

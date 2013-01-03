@@ -696,6 +696,7 @@ define('globals', function() {
   })();
   
   var moreG = {
+    sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
     timeOffset: G.localTime - G.serverTime,
@@ -992,7 +993,7 @@ define('globals', function() {
       G.sendXhr({
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
-        data: {modules: pruned.join(',')},
+        data: {modules: pruned.join(','), minify: G.minify},
         success: function(text) {
           var resp;
           try {
@@ -1028,6 +1029,49 @@ define('globals', function() {
     
     prepForStorage: function(text, date) {
       return JSON.stringify({modified: date, text: text});
+    },
+    
+    setCookie: function(name, value, exdays) {
+      var exdate = new Date();
+      exdate.setDate(exdate.getDate() + exdays);
+      var c_value = escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+      document.cookie = name + "=" + c_value;
+    },
+    
+    getCookie: function(name) {
+      var i, x, y, cookies = document.cookie.split(";");
+      for (i = 0;i < cookies.length; i++) {
+        x = cookies[i].substr(0, cookies[i].indexOf("="));
+        y = cookies[i].substr(cookies[i].indexOf("=") + 1);
+        x = x.replace(/^\s+|\s+$/g,"");
+        if (x == name) {
+          return unescape(y);
+        }
+      }
+    },
+
+    testIDBQ: function(storeName, q) {
+      var query;
+      for (var i = 0; i < q.length; i++) {
+        var val = q[i];
+        var subQuery = Lablz.idbq.Index(val.index)[val.op](val.bound);
+        query = query ? query.and(subQuery) : subQuery;
+      }
+//    var query = q.reduce(function(memo, val) {
+//      return memo.and(Lablz.idbq.Index(val.index)[val.op](val.bound));
+//    });
+      
+      var store = Lablz.MBI.db.transaction([storeName], 'readonly').objectStore(storeName);
+      var request = query.getAll(store);
+      var goals;
+      request.onsuccess = function (event) {
+        goals = request.result;
+        console.log(JSON.stringify(event.target.result));
+      }
+      
+      request.onerror = function (event) {
+        console.log("error: " + JSON.stringify(event));
+      }
     }
   }; 
   
@@ -1035,31 +1079,29 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
   
-  G.testIDBQ = function(storeName, q) {
-    var query;
-    for (var i = 0; i < q.length; i++) {
-      var val = q[i];
-      var subQuery = Lablz.idbq.Index(val.index)[val.op](val.bound);
-      query = query ? query.and(subQuery) : subQuery;
-    }
-//    var query = q.reduce(function(memo, val) {
-//      return memo.and(Lablz.idbq.Index(val.index)[val.op](val.bound));
-//    });
-    
-    var store = Lablz.MBI.db.transaction([storeName], 'readonly').objectStore(storeName);
-    var request = query.getAll(store);
-    var goals;
-    request.onsuccess = function (event) {
-      goals = request.result;
-      console.log(JSON.stringify(event.target.result));
-    }
-    
-    request.onerror = function (event) {
-      console.log("error: " + JSON.stringify(event));
+  
+  G.apiUrl = G.serverName + '/api/v1/';
+  
+  // Determine whether we want the server to minify stuff
+  // START minify
+  var hash = window.location.hash;
+  var qIdx = hash.indexOf('?');
+  var set = false;
+  var mCookie = G.serverName + '/cookies/minify';
+  if (qIdx != -1) {    
+    var hParams = hash.slice(qIdx + 1).split('&');
+    for (var i = 0; i < hParams.length; i++) {
+      var p = hParams[i].split('=');
+      if (p[0] == '-min') {
+        G.setCookie(mCookie, p[1], 100000);
+        break;
+      }
     }
   }
   
-  G.apiUrl = G.serverName + '/api/v1/';
+  G.minify = G.getCookie(mCookie) === 'y';
+  // END minify
+  
   require.config({
     paths: {
 //      cache: 'lib/requirejs.cache',
@@ -1088,7 +1130,7 @@ define('globals', function() {
      // Javascript
        js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
         'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'modelsBase', 'router', 'app'],
+        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'modelsBase', 'router', 'app'],
        // CSS
        css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
        html: ['../templates.jsp']
