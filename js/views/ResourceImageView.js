@@ -49,7 +49,7 @@ define([
       if (propVal.indexOf('Image/') == 0)
         propVal = propVal.slice(6);
   //          var iTemplate = _.template(Templates.get('imagePT'));
-  //          li += '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
+  //          li += '<div><a href="#view/' + U.encode(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
       var maxH = $(window).height() - 50;
@@ -89,7 +89,7 @@ define([
 
       var padding = 15 - (maxW - w) / 2;
       padding = -padding;
-      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
+      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;

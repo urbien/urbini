@@ -7,7 +7,7 @@ define([
   'cache!templates',
   'cache!events', 
   'cache!utils',
-  'cache!modelsBase',
+  'cache!vocManager',
   'cache!views/ResourceListView', 
 //  'cache!views/MapView',
   'cache!views/Header', 
@@ -16,7 +16,7 @@ define([
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
   'cache!views/MenuButton'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, MB, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
@@ -39,7 +39,7 @@ define([
     },
     swiperight: function(e) {
       // open menu
-      G.Router.navigate('menu/' + encodeURIComponent(window.location.hash.slice(1)), {trigger: true, replace: false});
+      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
@@ -85,16 +85,18 @@ define([
         el: $('#headerDiv', this.el)
       }).render();
   
+      var vocModel = this.model.model;
       var models = this.model.models;
-      var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
 
-      var meta = models[0].__proto__.constructor.properties;
-      meta = meta || models[0].properties;
+//      var meta = models[0].__proto__.constructor.properties;
+//      meta = meta || models[0].properties;
+      var meta = vocModel.properties;
 
-      var viewMode = models[0].constructor['viewMode'];
+      var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = this.isMasonry = !isList && U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
+      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isModification ? '#nabs_grid' :  isMasonry ? '#columns' : (isComment) ? '#comments' : '#sidebar';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});

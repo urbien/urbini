@@ -9,9 +9,10 @@ define('app', [
   'cache!error', 
   'cache!events',
   'cache!indexedDBShim', 
-  'cache!modelsBase', 
+  'cache!vocManager',
+  'cache!resourceManager',
   'cache!router'
-], function(G, $, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, MB, Router) {  
+], function(G, $, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, Voc, MB, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -28,15 +29,15 @@ define('app', [
       };
       
       Templates.loadTemplates();
-      MB.checkUser();
-      MB.loadStoredModels();
+      Voc.checkUser();
+      Voc.loadStoredModels();
     //  setTimeout(function() {MB.loadStoredModels({all: true})}, 100);
-      if (!MB.changedModels.length && !MB.newModels.length) {
+      if (!Voc.changedModels.length && !Voc.newModels.length) {
         MB.updateTables(App.startApp, error);
         return;
       }
     
-      MB.fetchModels(null, {success: function() {    
+      Voc.fetchModels(null, {success: function() {    
         MB.updateTables(App.startApp, error);
       }, sync: true});
     },
@@ -52,7 +53,7 @@ define('app', [
       Backbone.history.start();
       
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
-      G.homePage = G.homePage || G.tabs[0].mobileUrl;
+//      G.homePage = G.homePage || G.tabs[0].mobileUrl;
       if (!window.location.hash) {
 //        G.Router.navigate(G.homePage, {trigger: true});
       }

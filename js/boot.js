@@ -1,9 +1,11 @@
 window.onload = function () {
-  var div = d.createElement('div');
-  d.getElementById('page').appendChild(div);
-  if (localStorage  &&  localStorage.getItem)
-    localStorage.setItem('homePage', Lablz.homePage);
-  div.innerHTML = Lablz.homePage;
+  if (!window.location.hash) {
+    var div = d.createElement('div');
+    d.getElementById('page').appendChild(div);
+    if (localStorage  &&  localStorage.getItem)
+      localStorage.setItem('homePage', Lablz.homePage);
+    div.innerHTML = Lablz.homePage;
+  }
   
   var s = d.createElement('script'); 
   s.type = 'text/javascript';

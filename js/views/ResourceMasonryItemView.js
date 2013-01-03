@@ -6,11 +6,11 @@ define([
   'cache!utils',
   'cache!events',
   'cache!templates',
-  'cache!modelsBase',
+  'cache!vocManager',
   'cache!jqueryMobile',
   'cache!jqueryMasonry',
   'cache!jqueryImagesloaded'
-], function(G, $, _, Backbone, U, Events, Templates, MB, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, Voc, __jqm__) {
   return Backbone.View.extend({
 //    className: 'nab nabBoard masonry-brick',
     className: 'pin',
@@ -31,14 +31,15 @@ define([
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render: function(event) {
-      var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', MB.typeToModel);
+      var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', Voc.typeToModel);
       if (isModification)
         return this.renderModificationTile();
       if (!U.isA(this.model.constructor, 'Intersection'))  
         return this.renderTile();
+      
       var m = this.model;
-      var meta = m.__proto__.constructor.properties;
-      meta = meta || m.properties;
+      var vocModel = m.constructor;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
@@ -71,7 +72,7 @@ define([
       var grid = U.getGridCols(m);
 
       var rUri = m.get('_uri');
-      var resourceUri = G.pageRoot + '#view/' + encodeURIComponent(rUri);
+      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
       var gridCols = '';
       var resourceLink;
       var i = 0;
@@ -117,10 +118,10 @@ define([
         }
         tmpl_data['davDisplayName'] = dn;
       }
-      if (gridCols.length == 0) 
+      if (!gridCols.length) 
         gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       
-//      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
       
       tmpl_data['gridCols'] = gridCols;
       
@@ -131,7 +132,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(rUri, MB) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -140,22 +141,25 @@ define([
           votes = U.getCloneOf(meta, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(rUri, MB) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = encodeURIComponent(U.getLongUri(rUri, MB) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
-        tmpl_data['v_showRenabFor'] = uri;
-      }      
+        var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        tmpl_data.v_showRenabFor = uri;
+      }
+      
       try {
         this.$el.html(this.template(tmpl_data));
       } catch (err) {
         console.log('2. failed to delete table ' + name + ': ' + err);
       }
+      
       return this;
     },
+    
     renderModificationTile: function(event) {
       var meta = this.model.__proto__.constructor.properties;
       meta = meta || this.model.properties;
@@ -169,10 +173,10 @@ define([
       if (typeof json[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), MB);
+      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), Voc);
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json['modifiedBy'].value, MB));
+      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json['modifiedBy'].value, Voc));
       tmpl_data['modifiedBy'].value = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
@@ -186,15 +190,15 @@ define([
       
       var commentsFor = tmpl_data['v_showCommentsFor'];
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = encodeURIComponent(U.getLongUri(json[commentsFor].value, MB) + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor].value, Voc) + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = encodeURIComponent(U.getLongUri(json[votesFor].value, MB) + '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, Voc) + '&m_p=votes&b_p=votable');
   
       var renabFor = tmpl_data['v_showRenabFor'];
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = encodeURIComponent(U.getLongUri(json[renabFor].value, MB) + '&m_p=nabs&b_p=forResource');
+        tmpl_data['v_showRenabFor'] = U.encode(U.getLongUri(json[renabFor].value, Voc) + '&m_p=nabs&b_p=forResource');
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {

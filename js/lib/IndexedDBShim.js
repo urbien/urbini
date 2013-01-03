@@ -1270,6 +1270,8 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
     window.IDBRequest = window.IDBRequest || window.webkitIDBRequest;
     window.IDBObjectStore = window.IDBObjectStore || window.webkitIDBObjectStore;
 		window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+    window.IDBCursor.PREV = window.IDBCursor.PREV || "prev";
+    window.IDBCursor.NEXT = window.IDBCursor.NEXT || "next";
 	}
 	
 }(window, idbModules));

@@ -5,13 +5,13 @@ define([
   'cache!backbone',
   'cache!utils',
   'cache!events',
-  'cache!modelsBase',
+  'cache!vocManager',
   'cache!templates',
   'cache!jqueryMobile',
   'cache!views/ResourceMasonryItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
-], function(G, $, _, Backbone, U, Events, MB, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return Backbone.View.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -40,16 +40,18 @@ define([
 //      var frag = document.createDocumentFragment();
       
       var models = this.model.models;
-      var isModification = U.isAssignableFrom(models[0].constructor, 'Modification', MB.typeToModel);
-      var meta = models[0].__proto__.constructor.properties;
-      meta = meta || models[0].properties;
+      var vocModel = this.model.model;
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
+//      var meta = models[0].__proto__.constructor.properties;
+//      meta = meta || models[0].properties;
+      var meta = vocModel.properties;
 
-      var viewMode = models[0].constructor['viewMode'];
+      var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = !isList  &&  U.isA(models[0].constructor, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(models[0].constructor, 'Comment', MB.typeToModel);
+      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
-//        if (U.isA(models[0].constructor, 'Intersection')) {
+//        if (U.isA(vocModel, 'Intersection')) {
 //          var href = window.location.href;
 //          var qidx = href.indexOf('?');
 //          var a = U.getCloneOf(meta, 'Intersection.a')[0];
@@ -63,14 +65,14 @@ define([
 //            var delegateTo = (p == a) ? b : a;
 //            aprop = models[0].get(delegateTo);
 //          }
-//          var type = U.getTypeUri(U.getType(aprop['value']), {type: aprop['value'], shortNameToModel: MB.shortNameToModel});
-//          isMasonry = U.isA(MB.typeToModel[type], 'ImageResource');  
+//          var type = U.getTypeUri(U.getType(aprop['value']), {type: aprop['value'], shortNameToModel: Voc.shortNameToModel});
+//          isMasonry = U.isA(Voc.typeToModel[type], 'ImageResource');  
 //        }
 //      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
-      var hasImgs = U.hasImages(models);
+      var hasImgs = U.hasImages(this.model);
       var curNum = lis.length;
-      var num = Math.min(models.length, (this.page + 1) * this.displayPerPage);
+      var num = Math.min(models.length, (this.model.page + 1) * this.displayPerPage);
       
       var i = 0;
       var nextPage = false;
@@ -136,30 +138,34 @@ define([
     },
     
     getNextPage: function() {
-      var before = this.model.models.length;
-
-      console.log("called getNextPage");
+//      var before = this.model.models.length;
+//
+//      console.log("called getNextPage");
+//      
+//      // there is nothing to fetch, we've got them all
+//      if (before < this.model.perPage)
+//        return;
       
-      // there is nothing to fetch, we've got them all
-      if (before < this.model.perPage)
-        return;
-      
-      this.isLoading = true;
+      var self = this;
+      var before = this.model.offset;
+      this.loadingNextPage = true;
       var after = function() {
-        self.isLoading = false;
+        if (self.model.offset > before)
+          self.refresh();
+        
+        self.loadingNextPage = false;
         self.onNextPageFetched();
       };
       
-      this.page++;
-      var self = this;
-      
-      var requested = (this.page + 1) * this.displayPerPage;
-      
-      if (before > requested) {
-        this.refresh(this.model);
-        after();
-        return;
-      }
+//      this.page++;
+//      
+//      var requested = (this.page + 1) * this.displayPerPage;
+//      
+//      if (before > requested) {
+//        this.refresh(this.model);
+//        after();
+//        return;
+//      }
         
       this.model.getNextPage({
         success: after,
@@ -211,7 +217,7 @@ define([
     },
 
     // masonry bricks alignment
-    alignBricks: function(todo) {
+    alignBricks: function() {
       // if masonry and bricks have zero dimension then impossible to align them
       if (!this.$el.hasClass("masonry") || this.$el.width() == 0)
         return;

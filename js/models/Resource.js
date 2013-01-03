@@ -17,13 +17,13 @@ define([
 //      this.sync = this.constructor.sync;
     },
     url: function() {
-      return G.apiUrl + this.constructor.shortName + "?_uri=" + encodeURIComponent(this.get('_uri'));
+      return G.apiUrl + this.constructor.shortName + "?_uri=" + U.encode(this.get('_uri'));
     },
     getKey: function() {
       return this.get('_uri');
     },
     parse: function (resp) {
-      if (this.lastFetchOrigin == 'db')
+      if (this.loaded && this.lastFetchOrigin == 'db')
         return resp;
       
       if (!resp || resp.error)
