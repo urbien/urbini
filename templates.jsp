@@ -228,7 +228,8 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+  <div id="login_popup" style="text-align: center;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+    <h5>Login through Social Networks</h5>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
       <a href="{{= net.url }}"><img src="{{= net.icon }}" /></a>
@@ -244,7 +245,7 @@
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
-    <a target="#" data-icon="signout" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Sign Out</a>
+    <a id="logout" target="#" data-icon="signout">Sign Out</a>
   </li>
 </script>
 
