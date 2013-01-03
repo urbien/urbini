@@ -12,7 +12,9 @@ define([
   'cache!jqueryImagesloaded'
 ], function(G, $, _, Backbone, U, Events, Templates, MB, __jqm__) {
   return Backbone.View.extend({
-    className: 'nab nabBoard masonry-brick',
+//    className: 'nab nabBoard masonry-brick',
+    className: 'pin',
+    tagName: 'li',
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.template = _.template(Templates.get('masonry-list-item'));
@@ -30,7 +32,27 @@ define([
     click: Events.defaultClickHandler,  
     render: function(event) {
       var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', MB.typeToModel);
-      return (isModification) ?  this.renderModificationTile() :  this.renderTile();
+      if (isModification)
+        return this.renderModificationTile();
+      if (!U.isA(this.model.constructor, 'Intersection'))  
+        return this.renderTile();
+      var m = this.model;
+      var meta = m.__proto__.constructor.properties;
+      meta = meta || m.properties;
+      if (!meta)
+        return this;
+      
+      var href = window.location.href;
+      var qidx = href.indexOf('?');
+      var a = U.getCloneOf(meta, 'Intersection.a')[0];
+      if (qidx == -1) {
+        return this.renderTile(a);
+      }
+      var b = U.getCloneOf(meta, 'Intersection.b')[0];
+      var p = href.substring(qidx + 1).split('=')[0];
+      var delegateTo = (p == a) ? b : a
+        
+      return this.renderTile();
     },  
     renderTile: function(event) {
       var m = this.model;
@@ -53,6 +75,8 @@ define([
       var gridCols = '';
       var resourceLink;
       var i = 0;
+      var dnProps = U.getDisplayNameProps(meta);
+
       for (var row in grid) {
         if (i == 0)
           i++;
@@ -69,10 +93,22 @@ define([
           s = '<a href="' + s + '">' + s + '</a>';
         gridCols += s;
       }
-      if (gridCols.length == 0) {
-        gridCols = '<a href="' + resourceUri + '">' + json['davDisplayName'] + '</a>';
+      var dn = json['davDisplayName'];
+      if (!dn  &&  dnProps) {
+        var first = true;
+        dn = '';
+        for (var p in dnProps) {
+          if (first)
+            first = false;
+          else
+            dn += ' ';
+          if (json[p])
+            dn += json[p];
+        }
+        json['davDisplayName'] = dn;
       }
-
+      if (gridCols.length == 0) 
+        gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       
 //      var rUri = G.pageRoot + '#view/' + encodeURIComponent(U.getLongUri(json[imgSrc].value), snmHint);
       
