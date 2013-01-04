@@ -448,7 +448,9 @@ define([
     },
     
     storeModel: function(model, modelJson) {
-      G.localStorage.put('model:' + model.type, JSON.stringify(modelJson));
+      setTimeout(function() {
+        G.localStorage.putAsync('model:' + model.type, JSON.stringify(modelJson));
+      }, 100);
     },
     
     loadStoredModels: function(options) {

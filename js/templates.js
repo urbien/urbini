@@ -19,16 +19,16 @@ define([
       "int": "intPT",
       "float": "intPT",
       "double": "intPT",
-      "http://www.hudsonfog.com/voc/system/primitiveTypes/emailAddress": "emailPT",
-      "http://www.hudsonfog.com/voc/system/primitiveTypes/phone": "telPT",
-      "http://www.hudsonfog.com/voc/system/primitiveTypes/mobilePhone": "telPT",
-      "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPT",
-      "http://www.hudsonfog.com/voc/system/primitiveTypes/Duration": "complexDatePT",
+      "emailAddress": "emailPT",
+      "phone": "telPT",
+      "mobilePhone": "telPT",
+      "Url": "UrlPT",
+      "Duration": "complexDatePT",
       "date": "datePT",
       "resource": "resourcePT",
-      "http://www.hudsonfog.com/voc/model/company/Money": "moneyPT",
-      "http://www.hudsonfog.com/voc/system/fog/ComplexDate": "complexDatePT",
-      "http://www.hudsonfog.com/voc/model/portal/Image": "imagePT"
+      "Money": "moneyPT",
+      "ComplexDate": "complexDatePT",
+      "Image": "imagePT"
     },
 
     propEditTemplates: {
@@ -64,10 +64,11 @@ define([
       return this.templates[name];
     },
     
+    facet: 'http://www.hudsonfog.com/voc/system/fog/Property/facet',
     getPropTemplate: function(prop, edit) {
       var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
-      var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
-      return (prop[f] && t[prop[f]]) || t[prop.range] || (edit ? t.string : t.resource);
+      var facet = this.facet;
+      return (prop[facet] && t[prop[facet]]) || t[prop.range] || (edit ? t.string : t.resource);
     }
   };
   

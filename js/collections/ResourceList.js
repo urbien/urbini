@@ -45,6 +45,7 @@ define([
     getNextPage: function(options) {
       console.log("fetching next page");
       this.offset += this.perPage;
+      this.offset = Math.min(this.offset, this.models.length);
       this.pager(options);
     },
     getPreviousPage: function () {
@@ -100,6 +101,7 @@ define([
       return U.isA(this.model, interfaceName);
     },
     parse: function(response) {
+      this._lastFetchedOn = G.currentServerTime();
       if (!response || response.error)
         return [];
 
@@ -120,7 +122,6 @@ define([
         });
       }
       
-//      this._lastFetchedOn = G.currentServerTime();
       return response;
     },
     onReset: function(model) {

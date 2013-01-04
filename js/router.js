@@ -131,7 +131,8 @@ define([
       if (c && cView) {
         this.currentModel = c;
         this.changePage(cView, {page: page});
-        c.fetch({page: page});
+//        c.fetch({page: page});
+        setTimeout(function() {c.fetch({page: page})}, 100);
         return this;
       }      
       
@@ -260,9 +261,10 @@ define([
         this.Models[uri] = res;
         var v = views[uri] = views[uri] || new viewPageCl({model: res});
         this.changePage(v);
-        res.fetch({
-          success: function() {Voc.fetchModelsForLinkedResources(res)}
-        });
+//        res.fetch({
+//          success: function() {Voc.fetchModelsForLinkedResources(res)}
+//        });
+        setTimeout(res.fetch, 100);
         
         return this;
       }

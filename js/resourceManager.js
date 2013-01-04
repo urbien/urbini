@@ -17,220 +17,219 @@ define([
   var tsProp = 'davGetLastModified';
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, model, options) {
-    var now = G.currentServerTime();
-    var isCol = model instanceof Backbone.Collection;
-    var vocModel = isCol ? model.model : model.constructor;
-    var lastFetchedOn = isCol ? model._lastFetchedOn : (model.collection && model.collection._lastFetchedOn) || model.get('_lastFetchedOn');
-    options.headers = options.headers || {};
-    
-    var filterPrms = isCol && U.getQueryParams(model); // if there are model-specific filter parameters to the API        
-    var isFilter = filterPrms && _.size(filterPrms);
-    var shortPage = isCol && model._lastFetchedOn && !isFilter && model.models.length < model.perPage;
-    var stale = false;
-    
-    // if it's a short page of a basic RL (no filter), we should fetch just in case there are new resources
-    var offset = 0;
-    if (isCol && options && options.startAfter) {
-      var q = U.getQueryParams(options.url);
-      offset = q['$offset'];
-      offset = offset ? parseInt(offset) : 0;
-    }
-    
-    var end = offset + model.perPage;
-    if (isCol) {
-      if (!shortPage && end <= model.models.length && lastFetchedOn) {
-        var stalest;
-        if (offset) {
-          var end = Math.min(offset + model.perPage, model.models.length);
-          for (var i = offset; i < end; i++) {
-            var m = model.models[i];
-            if (m._lastFetchedOn)
-              stalest = stalest ? Math.min(stalest, m.get('_lastFetchedOn')) : m._lastFetchedOn;
-          }
-        }
-        
-        lastFetchedOn = lastFetchedOn && stalest ? Math.min(stalest, lastFetchedOn) : lastFetchedOn || stalest;
-        if (!lastFetchedOn || RM.isStale(lastFetchedOn, now))
-          stale = true;
-        else if (!options.sync)
-          return;
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, 
+    defaultSuccess = options.success, 
+    defaultError = options.error,
+    synchronous = options.sync,
+    now = G.currentServerTime(),
+    isCollection = model instanceof Backbone.Collection,
+    vocModel = isCollection ? model.model : model.constructor;
+
+    /**
+     *  Save new data to DB, and update models currently in memory
+     *  @params results: data to save
+     */
+    save = function(results) {
+      if (!_.size(results))
+        return false;
       
-        RM.setLastFetched(lastFetchedOn, options);
+      // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
+      // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
+      // An alternative is to override Backbone.Collection.reset() method and do some magic there.
+      
+      var toAdd = [];
+      var skipped = [];
+      var now = G.currentServerTime();
+      for (var i = 0; i < results.length; i++) {
+        var r = results[i];
+        r._lastFetchedOn = now;
+        var longUri = U.getLongUri(r._uri, {type: model.type, shortNameToModel: Voc.shortNameToModel});
+        var saved = model.get(longUri);
+        var ts = saved && saved.get(tsProp) || 0;
+        
+        var newLastModified = r[tsProp];
+        if (typeof newLastModified === "undefined") 
+          newR = 0;
+        
+        r._lastFetchedOn = now;
+        if (!newLastModified || newLastModified > ts)
+          toAdd.push(r);
+        else
+          saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
-    }
-    else
-      RM.setLastFetched(lastFetchedOn, options);
-    
-    var defSuccess = options.success;
-    var defErr = options.error;
-    var save;
-    if (isCol) {
-      save = function(results) {
-        if (!results.length)
-          return false;
-        
-        // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
-        // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
-        // An alternative is to override Backbone.Collection.reset() method and do some magic there.
-    //    if (!(model instanceof Backbone.Collection))
-    //      return;
-        
-        var toAdd = [];
-        var skipped = [];
-        var now = G.currentServerTime();
-        for (var i = 0; i < results.length; i++) {
-          var r = results[i];
-          r._lastFetchedOn = now;
-          var longUri = U.getLongUri(r._uri, {type: model.type, shortNameToModel: Voc.shortNameToModel});
-          var saved = model.get(longUri);
-          var ts;
-          if (saved)
-            ts = saved.get(tsProp) || 0;
-          
-          var newLastModified = r[tsProp];
-          if (typeof newLastModified === "undefined") 
-            newR = 0;
-          
-          if (!newLastModified || newLastModified > ts)
-            toAdd.push(r);
-          else
-            saved && saved.set({'_lastFetchedOn': now}, {silent: true});
-        }
-        
-        var modified = [];
-        if (toAdd.length) {
-          for (var i = 0; i < toAdd.length; i++) {
-            toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, Voc);
-            var existing = model.get(toAdd[i]._uri);
-            if (existing) {
-              existing.set(toAdd[i]);
-              modified.push(toAdd[i]._uri);
-            }
-            else
-              model.add(new vocModel(toAdd[i]));
+      
+      var modified = [];
+      if (toAdd.length) {
+        for (var i = 0; i < toAdd.length; i++) {
+          toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, Voc);
+          var existing = model.get(toAdd[i]._uri);
+          if (existing) {
+            existing.set(toAdd[i]);
+            modified.push(toAdd[i]._uri);
           }
-          
+          else {
+            if (isCollection)
+              model.add(new vocModel(toAdd[i]));
+            else
+              model.set(toAdd[i]);
+          }
         }
         
-        setTimeout(function() {          
-          RM.addItems(results);
-        }, 100);
-
-        return !!toAdd.length;
       }
+      
+      RM.addItems(results);    
+      return !!toAdd.length;
     }
-
-    var saveOptions = _.extend(_.clone(options), {
-      success: function(resp, status, xhr) {
-        var code = xhr.status;
-        var err = function() {
-          G.log(RM.TAG, 'error', code, options.url);
-          defErr && defErr(resp && resp.error || {code: code}, status, xhr);            
-        }
-        
-        if (isCol)
-          model._lastFetchedOn = now;
-        
-        switch (code) {
-          case 200:
-            break;
-          case 204:
-            defSuccess && defSuccess(resp, status, xhr);
-            return;
-          case 304:
-            var ms = isCol ? model.models.slice(offset, offset + model.perPage) : [model];
-            _.each(ms, function(m) {
-              m.set({'_lastFetchedOn': now}, {silent: true});
-            });
-            
-            setTimeout(function() {
-              RM.addItems(ms);
-            }, 100);
-
-            return;
-          default:
-            err();
-            return;
-        }
-        
-        if (resp && resp.error) {
+    
+    /**
+     * handle successful fetch from server
+     */
+    options.success = function(resp, status, xhr) {
+      var code = xhr.status;
+      var err = function() {
+        G.log(RM.TAG, 'error', code, options.url);
+        defaultError(resp && resp.error || {code: code}, status, xhr);            
+      }
+      
+      switch (code) {
+        case 200:
+          break;
+        case 204:
+          defaultSuccess(resp, status, xhr);
+          return;
+        case 304:
+          var ms = isCollection ? model.models.slice(start, end) : [model];
+          _.each(ms, function(m) {
+            m.set({'_lastFetchedOn': now}, {silent: true});
+          });
+          
+          RM.addItems(ms);    
+          return;
+        default:
           err();
           return;
-        }
-        
-        data = isCol ? resp.data : resp.data[0];
-        var modified;
-        if (isCol) {
-//            model._lastFetchedOn = now;
-          var offset1 = resp.metadata && resp.metadata.offset || 0;
-          modified = _.map(data, function(model) {return model._uri});
-        }
-        else {
-          modified = model.get('_uri');
-        }
-        
-        save && save(data);
-        defSuccess && defSuccess(resp, status, xhr);
+      }
+      
+      if (resp && resp.error) {
+        err();
+        return;
+      }
+      
+      data = resp.data;
+      var modified;
+      if (isCollection) {
+//        var offset1 = resp.metadata && resp.metadata.offset || 0;
+        modified = _.map(data, function(model) {return model._uri});
+      }
+      else {
+        modified = model.get('_uri');
+      }
+      
+      save(data);
+      defaultSuccess(resp, status, xhr);
+      if (modified && modified.length)
         Events.trigger('refresh', model, modified);
-      }
-    });
+    }
     
-    var runDefault = function() {
-      return RM.defaultSync(method, model, saveOptions);
-    };
+    var fetchFromServer = function(timeout) {
+      var f = function() {
+        RM.defaultSync(method, model, options)
+      };
+      
+      if (timeout)
+        setTimeout(f, timeout);
+      else
+        f();
+    }
+
+    // provide data from indexedDB instead of a network call
+    dbSuccess = function(results) {
+      if (!results.length)
+        return fetchFromServer();
     
-    if (method !== 'read' || options.noDB)
-      return runDefault();
-
-    var key, now, timestamp, refresh;
-    var dbSuccess = function(results) {
-      // provide data from indexedDB instead of a network call
-      if (!results || (results instanceof Array && !results.length)) {
-        return runDefault();
-      }
-
       options.sync = false;
       // simulate a normal async network call
-//        setTimeout(function() {
-        model.lastFetchOrigin = 'db';
-        G.log(RM.TAG, 'db', "got resources from db: " + (model.type || vocModel.type));
-        var resp = {data: results, metadata: {offset: offset}};
-        defSuccess(resp, 'success', null);
-        
-//          if (isCol && (results.length < model.perPage || _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now); })) {
-        if (isCol && _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now); })) {
-          return runDefault();
-        }
-//        }, 0);    
+      model.lastFetchOrigin = 'db';
+      G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
+      var resp = {data: results, metadata: {offset: start}};
+      var numBefore = isCollection ? model.models.length : 1;
+      defaultSuccess(resp, 'success', null);
+      var numAfter = isCollection ? model.models.length : 1;
+      
+      if (isCollection) {
+        if ((numAfter === numBefore) ||                                             // db results are useless
+           _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now);})) // db results are stale
+          fetchFromServer(100);
+      }
     }
-    
-    var dbError = function(e) {
+  
+    dbError = function(e) {
       if (e) G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
-      runDefault();
+      fetchFromServer();
+    }
+
+    if (isCollection) {
+      lastFetchedOn = model._lastFetchedOn;
+      
+//      qMap = U.getQueryParams(options.url);
+      qMap = model.queryMap;
+      filter = U.getQueryParams(model);
+      isFilter = !!filter;
+      if (isCollection && options.startAfter) {
+        start = qMap.$offset; // not a jQuery thing
+        start = start && parseInt(start);
+      }
+
+      numRequested = qMap.$limit ? parseInt(qMap.$limit) : model.perPage;
+      start = start || 0;
+      end = start + numRequested;
+      isUpdate = model.models.length > end;
+      if (isUpdate) {
+        var stalest;
+        for (var i = start; i < end; i++) {
+          var m = model.models[i];
+          var date = m.get('_lastFetchedOn');
+          if (date && (stale = RM.isStale(date, now)))
+            break;
+        }
+      }
+    }
+    else {
+      if (!RM.isStale(model.get('_lastFetchedOn'), now))
+        return;
     }
     
-    // only override sync if it is a fetch('read') request
-    key = this.getKey && this.getKey();
+    var key = this.getKey && this.getKey();
+    if (!key) {
+      if (G.online)
+        fetchFromServer();
+      
+      return;
+    }
+    
     var dbReqOptions = {key: key, success: dbSuccess, error: dbError, model: model};
     if (model instanceof Backbone.Collection) {
       dbReqOptions.startAfter = options.startAfter,
       dbReqOptions.perPage = model.perPage;
-      dbReqOptions.filter = isFilter && filterPrms;
+      dbReqOptions.filter = isFilter && filter;
     }
     else
       dbReqOptions.uri = key;
-    
-    // only fetch from db on regular resource list or propfind, with no filter
-    var dbHasGoodies;
-    if (!key || !(dbHasGoodies = RM.getItems(dbReqOptions))) {
-      if (G.online)
-        runDefault();
-      else if (!dbHasGoodies) {
-        options.sync && options.error && options.error(model, {type: 'offline'}, options);
-      }
-    }
-  };
 
+    var dbHasGoodies = RM.getItems(dbReqOptions);
+    if (!dbHasGoodies) {
+      if (G.online)
+        fetchFromServer();
+      else
+        options.sync && options.error && options.error(model, {type: 'offline'}, options);
+      
+      return;
+    }
+    
+    if (stale)
+      fetchFromServer();
+  };
+  
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
@@ -332,15 +331,42 @@ define([
 //      G.userChanged = false;
 //    }
     
-    onblocked: function(e) {
-      G.log(RM.TAG, ['error', 'db'], "db blocked: " + e);
+    deleteDatabase: function(callback) {
+      G.log(RM.TAG, ['error', 'db'], "db blocked, deleting database");
+//      if (confirm('delete database?'))
+        window.webkitIndexedDB.deleteDatabase(RM.DB_NAME).onsuccess = callback;
     },
     
     defaultOptions: {keyPath: '_uri'},
-    openDB: function(options, success, error) {
-      var modelsChanged = false;
+    getUpgradeFunction: function(state, callback) {
+      return function(e) {
+        G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
+        if (G.userChanged) {
+          G.userChanged = false;
+          RM.updateStores(true);
+        }
+        else if (state.modelsChanged) {
+          state.modelsChanged = false;
+          RM.updateStores();
+        }
+        
+        e.target.transaction.oncomplete = function() {
+  //        G.recordCheckpoint("done upgrading db");
+          G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
+          if (callback)
+            callback();
+        };
+      }
+    },
+    
+    DB_NAME: "lablz",
+    openDB: function(success, error) {
+      var state = {
+        modelsChanged: false
+      };
+      
       G.log(RM.TAG, 'db', "opening db");
-      var request = indexedDB.open("lablz");
+      var request = indexedDB.open(RM.DB_NAME);
     
       request.onblocked = function(event) {
         alert("Please close all other tabs with this site open!");
@@ -349,6 +375,7 @@ define([
       request.onabort = RM.onabort;
     
       var onsuccess;
+      var upgrade = RM.getUpgradeFunction(state, success);
       request.onsuccess = onsuccess = function(e) {
         G.log(RM.TAG, 'db', 'open db onsuccess');
         RM.db = e.target.result;
@@ -356,11 +383,12 @@ define([
         db.onversionchange = function(event) {
           G.log(RM.TAG, 'db', 'closing db - onversionchange');
           db.close();
-          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
+          window.location.reload();
+//          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
         };    
      
-        modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
-        RM.VERSION = G.userChanged || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+        state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
+        RM.VERSION = G.userChanged || state.modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == RM.VERSION) {
           if (success)
             success();
@@ -379,53 +407,46 @@ define([
           var req = db.setVersion(RM.VERSION);
           // onsuccess is the only place we can create Object Stores
           req.onerror = RM.onerror;
-          req.onblocked = RM.onblocked;
-          req.onsuccess = function(e2) {
-            G.log(RM.TAG, 'db', 'db.setVersion onsuccess');
-            if (G.userChanged)
-              RM.updateStores(reset) && (G.userChanged = false);
-            else if (modelsChanged)
-              RM.updateStores();
-            
-            e2.target.transaction.oncomplete = function() {
-//              G.recordCheckpoint("done upgrading db");
-              G.log(RM.TAG, 'db', 'db.setVersion transaction.oncomplete');
-              if (success)
-                success();
-            };
-          };      
+          req.onblocked = function(e) {
+            RM.deleteDatabase(function() {
+              RM.openDB.apply(options, success, error);
+            });
+          };
+          
+          req.onsuccess = upgrade;
         }
         else {
           G.log(RM.TAG, 'db', 'upgrading db (via onupgradeneeded, using FF are ya?)');
 //          G.recordCheckpoint("upgrading db");
           db.close();
-          var subReq = indexedDB.open("lablz", RM.VERSION);
+          var subReq = indexedDB.open(RM.DB_NAME, RM.VERSION);
           subReq.onsuccess = request.onsuccess;
           subReq.onerror = request.onerror;
           subReq.onupgradeneeded = request.onupgradeneeded;
         }
       };
       
-      request.onupgradeneeded = function(e) {
+      request.onupgradeneeded = upgrade;
+//          function(e) {
 //        G.recordCheckpoint("db, onupgradeneeded callback");
-        G.log(RM.TAG, 'db', 'onupgradeneeded callback');
-        RM.db = e.target.result;
-        if (G.userChanged) {
-          G.log(RM.TAG, 'db', "clearing db");
-          RM.updateStores(reset) && (G.userChanged = false);
-        }
-        else if (modelsChanged) {
-          G.log(RM.TAG, 'db', "updating db stores");
-          RM.updateStores();
-        }
-        
-        e.target.transaction.oncomplete = function() {
-//          G.recordCheckpoint("done upgrading db");
-          G.log(RM.TAG, 'db', "onupgradeneeded transaction.oncomplete");
-          if (success)
-            success();
-        };
-      };      
+//        G.log(RM.TAG, 'db', 'onupgradeneeded callback');
+//        RM.db = e.target.result;
+//        if (G.userChanged) {
+//          G.log(RM.TAG, 'db', "clearing db");
+//          RM.updateStores(reset) && (G.userChanged = false);
+//        }
+//        else if (modelsChanged) {
+//          G.log(RM.TAG, 'db', "updating db stores");
+//          RM.updateStores();
+//        }
+//        
+//        e.target.transaction.oncomplete = function() {
+////          G.recordCheckpoint("done upgrading db");
+//          G.log(RM.TAG, 'db', "onupgradeneeded transaction.oncomplete");
+//          if (success)
+//            success();
+//        };
+//      };      
       
       request.onerror = function(e) {
         G.log(RM.TAG, 'db', "error opening db");
@@ -471,6 +492,7 @@ define([
               G.log(RM.TAG, 'db', 'deleted object store: ' + name);
               deleted.push(name);
             } catch (err) {
+              debugger;
               G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
               return;
             }
@@ -507,6 +529,7 @@ define([
           
           created.push(name);
         } catch (err) {
+          debugger;
           G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + name + ': ' + err);
           return;
         }
@@ -517,6 +540,9 @@ define([
 //      created.length && G.log(RM.TAG, 'db', '2. created tables: ' + created.join(","));
     },
     
+    /**
+     * will write to the database asynchronously
+     */
     addItems: function(items, classUri) {
       if (!items || !items.length)
         return;
@@ -525,20 +551,28 @@ define([
       if (!db)
         return;
       
-      var className;
-      if (classUri)
-        className = classUri.slice(classUri.lastIndexOf("/") + 1);
-      else if (items[0] instanceof Backbone.Model)
-        className = items[0].constructor.shortName;
-      else
-        className = U.getClassName(items[0]._uri);
+      var className, vocModel;
+      if (classUri) {
+        vocModel = Voc.typeToModel[classUri];
+      }
+      else {
+        var first = items[0];
+        if (first instanceof Backbone.Model)
+          vocModel = first.constructor;
+        else {
+          className = U.getClassName(first._uri);
+          vocModel = Voc.shortNameToModel[className];
+        }
+      }
       
+      className = vocModel.shortName;
+      classUri = vocModel.type;
       if (!db.objectStoreNames.contains(className)) {
         G.log(RM.TAG, 'db', 'closing db for upgrade');
         db.close();
         G.log(this.TAG, "db", "2. newModel: " + className);
         U.pushUniq(Voc.newModels, classUri);
-        RM.openDB(null, function() {
+        RM.openDB(function() {
           RM.addItems(items, classUri);
         });
         
@@ -572,9 +606,7 @@ define([
           G.log(RM.TAG, ['error', 'db'], "Error adding item to db: ", e);
         };
       });
-      
-//      G.log(RM.TAG, 'db', "added some " + className + " to db");
-    },
+    }.async(100),
     
     addItem: function(item, classUri) {
       RM.addItems([item instanceof Backbone.Model ? item.toJSON() : item], classUri || item.constructor.type);
@@ -598,47 +630,6 @@ define([
         G.log(RM.TAG, ['error', 'db'], "Error Deleting: ", e);
       };
     },
-    
-//    this.getDataAsync = function(options) {
-//      var uri = options.key;
-//      var type = U.getClassName(uri);
-//      if (uri.endsWith(type))
-//        return RM.getItems(options);
-//      else if (type == null) {
-//        if (error) error();
-//        return false;
-//      }
-//      
-//      var name = U.getClassName(type);
-//      var db = RM.db;
-//      if (!db || !db.objectStoreNames.contains(name))
-//        return false;
-//      
-//      G.log(RM.TAG, 'db', 'starting readonly transaction for store', name);
-//      var trans = db.transaction([name], IDBTransaction.READ_ONLY);
-//      trans.oncomplete = function(e) {
-//        G.log(RM.TAG, 'db', 'finished readonly transaction for store', name);
-//      };
-//      
-//      var store = trans.objectStore(name);
-//      var request = store.get(uri);
-//      request.onsuccess = function(e) {
-//        G.log(RM.TAG, 'db', "store.get().onsuccess");
-//        if (options.success) {            
-//          options.success(e.target.result)
-//        }
-//      };
-//      
-//      request.onerror = function(e) {
-//        G.log(RM.TAG, 'db', "store.get().onerror");
-//        if (error)
-//          error(e);
-//        
-//        RM.onerror(e);
-//      }
-//      
-//      return true;
-//    };
     
     operatorMap: {
       '=': 'eq',
@@ -813,7 +804,7 @@ define([
         if (s) s();
       }
       
-      $(document).ready(function(){RM.openDB(null, success, error)});
+      $(document).ready(function(){RM.openDB(success, error)});
     }
 
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////

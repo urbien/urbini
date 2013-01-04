@@ -5,6 +5,8 @@ CACHE MANIFEST
 CACHE:
 js/lib/require.js
 js/loader.js
+js/xhrWorker.js
+js/io.js
 js/lib/jquery.mobile-1.2.0.js
 images/ajax-loader.gif
 lib/images/icons-18-white-pack.png

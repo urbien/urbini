@@ -21,17 +21,17 @@ define([
     initialize: function () {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks'); // fixes loss of context for 'this' within methods
       Events.on('refresh', this.refresh);
-      this.model.on('reset', this.render, this);
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.alignBricks);
       this.$el.on('create', this.alignBricks);
-      
+      this.rl = this.model;
+      this.rl.on('reset', this.render, this);
       this.TAG = 'ResourceListView';
       return this;
     },
     
-    refresh: function(model, modified) {
-      if (model && model != this.model)
+    refresh: function(rl, modified) {
+      if (rl && rl != this.rl)
         return this;
   
 //      if (this.$el.hasClass('ui-listview')) {
@@ -39,11 +39,10 @@ define([
 //      var lis = this.$('li').detach();
 //      var frag = document.createDocumentFragment();
       
-      var models = this.model.models;
-      var vocModel = this.model.model;
+      rl = this.rl;
+      var resources = rl.models;
+      var vocModel = rl.model;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
-//      var meta = models[0].__proto__.constructor.properties;
-//      meta = meta || models[0].properties;
       var meta = vocModel.properties;
 
       var viewMode = vocModel.viewMode;
@@ -70,9 +69,9 @@ define([
 //        }
 //      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
-      var hasImgs = U.hasImages(this.model);
+      var hasImgs = U.hasImages(rl);
       var curNum = lis.length;
-      var num = Math.min(models.length, (this.model.page + 1) * this.displayPerPage);
+      var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
       
       var i = 0;
       var nextPage = false;
@@ -91,7 +90,7 @@ define([
       }
       
       for (; i < num; i++) {
-        var m = models[i];
+        var m = resources[i];
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
@@ -147,31 +146,33 @@ define([
 //        return;
       
       var self = this;
-      var before = this.model.offset;
+      var rl = this.rl;
+      var before = this.rl.models.length;
+//      var before = this.model.offset;
       this.loadingNextPage = true;
       var after = function() {
-        if (self.model.offset > before)
-          self.refresh();
-        
+//        if (rl.offset > before)
+//          self.refresh();
+//        var numHave = self.rl.models.length;
+//        var numShowing = (self.page + 1) * displayPerPage;
         self.loadingNextPage = false;
         self.onNextPageFetched();
       };
       
-//      this.page++;
-//      
-//      var requested = (this.page + 1) * this.displayPerPage;
-//      
-//      if (before > requested) {
-//        this.refresh(this.model);
-//        after();
-//        return;
-//      }
+      this.page++;
+      var requested = (this.page + 1) * this.displayPerPage;
+      if (before >= requested) {
+        this.refresh(this.model);
+        after();
+        return;
+      }
         
       this.model.getNextPage({
         success: after,
         error: after
       });      
     },
+    
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
 

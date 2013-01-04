@@ -257,9 +257,9 @@ define([
     getDepth: function(arr) {
       var depth = 1;
       for (var i = 0; i < arr.length; i++) {
-        var type = U.getObjectType(arr[i]);
-        if (type === '[object Array]')
-          depth = Math.max(depth, U.getDepth(arr[i]) + 1);
+        var sub = arr[i];
+        if (U.isArray(sub))
+          depth = Math.max(depth, U.getDepth(sub) + 1);
         else
           return depth;
       }

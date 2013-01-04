@@ -486,6 +486,20 @@ if (typeof JSON !== 'object') {
 }());
 
 define('globals', function() {
+  /**
+   * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
+   */
+  Function.prototype.async = function(constantTimeout) {
+    var self = this;
+    return function() {
+      var args = arguments;
+      var timeout = constantTimeout || Array.prototype.shift.apply(args);
+      setTimeout(function() {
+        self.apply(self, args);
+      }, timeout);
+    }
+  };
+
   var G = Lablz;
   G.localTime = new Date().getTime();
   G.online = !!navigator.onLine;
@@ -653,14 +667,7 @@ define('globals', function() {
       },
       
       save: function(url, text, delay) {
-        var put = function() {
-          G.localStorage.put(url, G.prepForStorage(text, G.serverTime));      
-        }
-        
-        if (delay)
-          setTimeout(put, delay);
-        else
-          put();
+        G.localStorage.putAsync(delay || 0, url, G.prepForStorage(text, G.serverTime, false));
       },
       
 //      getCanonicalPath: function(path, separator) {
@@ -695,43 +702,51 @@ define('globals', function() {
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
   })();
   
-  var moreG = {
-    localStorage: {
-      put: function(key, value, force) {
-        if (!G.hasLocalStorage)
-          return false;
-        
-        value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
-        try {
-          localStorage.setItem(key, value);
-        } catch(e) {
-          if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
-            // reset to make space
-            var self = this;
-            this.reset(force && function() {self.put(key, value)});
-          } else {
-            G.hasLocalStorage = false;
-            G.log(G.TAG, "Local storage write failure: ", e);
-          }
-        }    
-      },
-      
-      reset: function(after) {
-        debugger;
-        var resetting = this.resetting;
-        this.resetting = true;
-        for (var key in localStorage) {
-          if (key.indexOf('model:') == 0)
-            localStorage.removeItem(key);
+  G.localStorage = {
+    put: function(key, value, force) {
+      if (!G.hasLocalStorage)
+        return false;
+
+      var ls = G.localStorage;
+      value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
+      try {
+        localStorage.setItem(key, value);
+      } catch(e) {
+        if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+          // reset to make space
+          var self = this;
+          this.reset(force && function() {
+            self.put(key, value)
+          });
+        } else {
+          G.hasLocalStorage = false;
+          G.log(G.TAG, "Local storage write failure: ", e);
         }
-        
-        if (after) 
-          after();
-        
-        if (!resetting)
-          G.Voc && G.Voc.saveModelsToStorage();
       }
     },
+    
+    reset: function(after) {
+//      debugger;
+      var resetting = this.resetting;
+      this.resetting = true;
+      for (var key in localStorage) {
+        if (key.indexOf('model:') == 0)
+          localStorage.removeItem(key);
+      }
+      
+      if (after) 
+        after();
+      
+      if (!resetting)
+        G.Voc && G.Voc.saveModelsToStorage();
+    },
+    
+  };
+  
+  G.localStorage.putAsync = G.localStorage.put.async(100);
+  G.localStorage.resetAsync = G.localStorage.reset.async(100);
+    
+  var moreG = {
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
@@ -903,7 +918,7 @@ define('globals', function() {
         var msg = Array.prototype.slice.call(arguments, 2);
         var msgStr = '';
         for (var i = 0; i < msg.length; i++) {
-          msgStr += (typeof msg[i] == 'string' ? msg[i] : JSON.stringify(msg[i]));
+          msgStr += (typeof msg[i] === 'string' ? msg[i] : JSON.stringify(msg[i]));
           if (i < msg.length - 1) msgStr += ' ';
         }
 
@@ -918,6 +933,38 @@ define('globals', function() {
       }
     },
     
+    keys: function(obj) {
+      var keys = [];
+      for (var key in obj) { 
+        if (obj.hasOwnProperty(key)) { 
+          keys[keys.length] = key;
+        }
+      }
+      
+      return keys;
+    },
+    
+    asyncLoop: function(obj, process, timeout, context) {
+      var isArray = obj.length === +obj.length;
+      var keys = isArray ? obj : G.keys(obj);
+      if (!keys.length) 
+        return;
+      
+      context = context || this;
+      timeout = timeout || 100;
+      setTimeout(function helper() {
+        var key = keys.shift();
+        var args = [key];
+        if (!isArray)
+          args.push(obj[key]);
+          
+        process.apply(context, args);
+        if (keys.length) { 
+          setTimeout(helper, timeout);
+        }
+      }, timeout);
+    },
+
     appendCSS: function(text, callback) {
       var style = document.createElement('style');
       style.type = 'text/css';
@@ -938,10 +985,11 @@ define('globals', function() {
       var parts = path.split(separator);
       var stack = [];
       for (var i = 0; i < parts.length; i++) {
-        if (parts[i] == '..')
+        var part = parts[i];
+        if (part == '..')
           stack.pop();
         else
-          stack.push(parts[i]);
+          stack.push(part);
       }
       
       return stack.join(separator);
@@ -1062,9 +1110,12 @@ define('globals', function() {
       
         if (hasLocalStorage) {
           setTimeout(function() {
-            for (var url in newModules) {
-              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
-            }
+            G.asyncLoop(newModules, function(url, module) {
+              G.localStorage.put(url, G.prepForStorage(module, G.serverTime));
+            }, 100, this);
+//            for (var url in newModules) {
+//              G.localStorage.putAsync(100, url, G.prepForStorage(newModules[url], G.serverTime), false, true); // don't force, but do async
+//            }
           }, 100);
         }
         
@@ -1104,8 +1155,9 @@ define('globals', function() {
     getCookie: function(name) {
       var i, x, y, cookies = document.cookie.split(";");
       for (i = 0;i < cookies.length; i++) {
-        x = cookies[i].substr(0, cookies[i].indexOf("="));
-        y = cookies[i].substr(cookies[i].indexOf("=") + 1);
+        var cookie = cookies[i];
+        x = cookie.substr(0, cookie.indexOf("="));
+        y = cookie.substr(cookie.indexOf("=") + 1);
         x = x.replace(/^\s+|\s+$/g,"");
         if (x == name) {
           return unescape(y);

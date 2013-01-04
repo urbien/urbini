@@ -81,7 +81,7 @@ define([
             displayedProps[idx++] = p;
 //            json[p] = U.makeProp(prop, json[p]);
             var n = prop.displayName;
-            var range = U.getClassName(prop.range); 
+            var range = prop.range; 
             var isPropEditable = U.isPropEditable(json, prop);
             
             var doShow = false;

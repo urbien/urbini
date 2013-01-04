@@ -1,10 +1,12 @@
 define([
   'globals',
   'cache!underscore',
+  'cache!backbone',
   'cache!templates'
-], function(G, _, Templates) {
+], function(G, _, Backbone, Templates) {
   var ArrayProto = Array.prototype;
   var slice = ArrayProto.slice;
+  
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
   }
@@ -420,14 +422,13 @@ define([
      */
     getQueryParams: function() {
       var args = arguments;
-      var collection = qMap = url = args.length && args[0];
+      var model = collection = qMap = url = args.length && args[0];
       if (!url || typeof url === 'string') {
         qMap = U.getParamMap(url || window.location.href);
         return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
       }
-      
-      var model;
-      if (collection.models) { // if it's a collection
+
+      if (model instanceof Backbone.Collection) { // if it's a collection
         qMap = collection.queryMap;
         model = collection.model;
       }
@@ -511,14 +512,16 @@ define([
     },
     
     getFormattedDate: function(time) {
-      var date = new Date(parseFloat(time));
+//      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
-      var diff = (((new Date()).getTime() - date.getTime()) / 1000);
+      var now = G.currentServerTime();
+      var diff = ((now - parseFloat(time)) / 1000);
       var day_diff = Math.floor(diff / 86400);
           
-      if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
-        return;
+      if (isNaN(day_diff) || day_diff < 0) // || day_diff >= 31)
+        return null;
           
+      var years;
       return day_diff == 0 && (
         diff < 60 && "just now" ||
         diff < 120 && "a minute ago" ||
@@ -527,7 +530,8 @@ define([
         diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
         day_diff == 1 && "Yesterday" ||
         day_diff < 7 && day_diff + " days ago" ||
-        day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
+        day_diff < 365 && Math.round( day_diff / 7 ) + " weeks ago" || 
+        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
     },
     
     toHTMLElement: function(html) {
@@ -550,7 +554,7 @@ define([
     },
     
     isCollection: function(resOrCol) {
-      return typeof resOrCol.models !== 'undefined';
+      return resOrCol instanceof Backbone.Collection;
     },
     
     getModel: function(resOrCol) {
@@ -787,7 +791,27 @@ define([
         return ['1', 'true', 'yes'].indexOf(val.toLowerCase()) != -1;
       else
         return !!val;
+    },
+    
+    isArray: function(obj) {
+      return U.getObjectType(obj) === '[object Array]';
+    },
+
+    isObject: function(obj) {
+      return U.getObjectType(obj) === '[object Object]';
+    },
+    
+    filterObj: function(obj, func) {
+      var filtered = {};
+      for (var key in obj) {
+        var val = obj[key];
+        if (func(key, val))
+          filtered[key] = val;
+      }
+      
+      return filtered;
     }
+    
   };
   
   Lablz.U = U;
