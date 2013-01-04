@@ -17,6 +17,7 @@ define([
   'cache!jqueryMobile'
 ], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
   return Backbone.View.extend({
+    clicked: false,
     initialize: function() {
       _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
@@ -54,7 +55,11 @@ define([
 //      return Events.defaultTapHandler.apply(this, arguments);
 //    },
 //    click: Events.defaultClickHandler,  
-    click: Events.defaultClickHandler,
+    click: function(e) {
+      clicked = true;
+      Events.defaultClickHandler(e);  
+    },
+
     render:function (eventName) {
       G.log(this.TAG, "render");
       this.$el.html(this.template(this.model.toJSON()));
