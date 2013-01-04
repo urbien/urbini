@@ -212,7 +212,9 @@ define([
         else
           return uri.slice(0, qIdx);
       }
-      
+      var slashIdx = uri.lastIndexOf("/");
+      if (slashIdx != -1)
+        return uri.slice(slashIdx + 1);
       var idx = U.getFirstUppercaseCharIdx(uri);
       if (idx == -1)
         return null;
