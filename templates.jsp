@@ -177,11 +177,11 @@
 </script -->
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + range + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
