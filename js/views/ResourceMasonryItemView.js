@@ -13,8 +13,8 @@ define([
 ], function(G, $, _, Backbone, U, Events, Templates, Voc, __jqm__) {
   return Backbone.View.extend({
 //    className: 'nab nabBoard masonry-brick',
-    className: 'pin',
-    tagName: 'li',
+//    className: 'pin',
+//    tagName: 'li',
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.template = _.template(Templates.get('masonry-list-item'));
@@ -32,7 +32,7 @@ define([
     click: Events.defaultClickHandler,  
     render: function(event) {
       var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', Voc.typeToModel);
-      if (isModification)
+      if (isModification) 
         return this.renderModificationTile();
       if (!U.isA(this.model.constructor, 'Intersection'))  
         return this.renderTile();
@@ -92,6 +92,9 @@ define([
           s = '<a href="' + resourceUri + '">' + json[pName] + '</a>';
         else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1)
           s = '<a href="' + s + '">' + s + '</a>';
+//        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
+//          s += U.getFormattedDate(json[pName]);
+        
         gridCols += s;
       }
       img = json[img];
