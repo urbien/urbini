@@ -136,7 +136,7 @@ define([
         return this;
       }      
       
-      var model = Voc.shortNameToModel[className] || Voc.vocToModel[typeUri];
+      var model = Voc.shortNameToModel[className] || Voc.typeToModel[typeUri];
       if (!model)
         return this;
       
