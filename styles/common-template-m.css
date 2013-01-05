@@ -241,7 +241,7 @@ html { height: 100%; }
     column-count: auto; 
     column-gap: 15px;
     column-fill: auto;
-    column-width: 230px;
+    column-width: 282px;
     list-style-type: none;
 }
 
@@ -252,12 +252,8 @@ html { height: 100%; }
      
    margin: 5px 2px 5px;
    padding: 5px;
-   border: 1px solid #ddd;
-   box-shadow: 0 0px 1px #aaa;
-   background: #FEFEFE;
-   background-image: linear-gradient(45deg, #FFF, #F9F9F9);
    vertical-align: top;
-   min-width: 225px;
+   /* min-width: 225px; */
  }
 
 .pin1 p {
@@ -268,6 +264,12 @@ html { height: 100%; }
 }
 .pin1 {
    display: inline-block;
+   
+   border: 1px solid #ddd;
+   box-shadow: 0 0px 1px #aaa;
+   background: #FEFEFE;
+   background-image: linear-gradient(45deg, #FFF, #F9F9F9);
+   
   -moz-break-before: column;
 /*  -webkit-column-break-before: always; */
    break-before: column;
@@ -285,7 +287,7 @@ html { height: 100%; }
 #columns .pin .nabRL  { display: inline; }
 #columns .pin .nabRL div { padding: 0px 10px 10px 10px;}
 
-#columns .pin  {font-size: 11px; }
+#columns .pin  {font-size: 11px; min-width: 282px;}
 
 #columns .pin .nabRL .btn span {padding-right: 0; }
 
