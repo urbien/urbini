@@ -465,7 +465,12 @@ define([
         models = _.union(models, G.models, G.linkedModels);
 
       models = _.filter(models, function(m) {
-        return _.contains(G.classUsage, m) || Lablz.Router.currentModel && Lablz.Router.currentModel.type == m;
+        if (Lablz.Router)
+          if (Lablz.Router.currentModel)
+            if (Lablz.Router.currentModel.type == m)
+              return true;
+            
+        return _.contains(G.classUsage, m);
       });
 
       toDel = _.map(toDel, U.getClassName);
