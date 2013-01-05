@@ -473,7 +473,7 @@ define([
         var type;
         if (hash.startsWith('http'))
           type = decodeURIComponent(hash);
-        else if (hash.startsWith('view/http')) {
+        else if (hash.startsWith('view/')) {
           type = decodeURIComponent(hash.slice(5)).replace(G.sqlUrl + '/', 'http://');
           
           qIdx = type.indexOf('?');

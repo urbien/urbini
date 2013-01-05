@@ -17,7 +17,7 @@ define([
 //      this.sync = this.constructor.sync;
     },
     url: function() {
-      return G.apiUrl + this.constructor.shortName + "?$blCounts=y&_uri=" + U.encode(this.get('_uri'));
+      return G.apiUrl + this.constructor.shortName + "?$blCounts=y&$minify=y&_uri=" + U.encode(this.get('_uri'));
     },
     getKey: function() {
       return this.get('_uri');

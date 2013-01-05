@@ -34,7 +34,7 @@ define([
       this.displayName = this.model.displayName;
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
-      this.baseUrl = G.apiUrl + this.shortName;
+      this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;      
       this.queryMap[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
@@ -73,7 +73,7 @@ define([
       this.pager();
     },
     getUrl: function() {
-      return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
+      return this.baseUrl + (this.queryMap ? "?$minify=y&" + $.param(this.queryMap) : '');
     },
     parseQuery: function(query) {
       if (!query)
@@ -96,7 +96,7 @@ define([
           qMap[name] = val;
       }
       
-      this.url = this.getUrl();
+      this.url = this.baseUrl + (this.queryMap ? $.param(this.queryMap) : ''); //this.getUrl();
     },
     getKey: function() {
       return this.url;

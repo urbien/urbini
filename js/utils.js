@@ -207,6 +207,8 @@ define([
     },
     
     getClassName: function(uri) {
+      if (uri.startsWith(G.apiUrl))
+        uri = decodeURIComponent(uri.slice(G.apiUrl.length));
       var qIdx = uri.indexOf("?");
       if (qIdx != -1) {
         if (uri.indexOf('http://') == 0)
