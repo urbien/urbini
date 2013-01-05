@@ -9,6 +9,7 @@ define([
   'cache!templates',
   'cache!jqueryMobile',
   'cache!views/ResourceMasonryItemView',
+//  'cache!views/ResourceMasonryModItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
 ], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
@@ -94,8 +95,10 @@ define([
         var uri = m.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
-          if (isModification  ||  isMasonry) 
-            liView = new ResourceMasonryItemView({model:m});
+          if (isMasonry) 
+            liView = new ResourceMasonryItemView({model:m, className: 'pin', tagName: 'li'});
+          else if (isModification)
+            liView = new ResourceMasonryItemView({model:m, className: 'nab nabBoard masonry-brick'});
           else if (isComment)
             liView = new CommentListItemView({model:m});
           else

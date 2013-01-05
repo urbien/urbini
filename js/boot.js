@@ -1,10 +1,10 @@
 window.onload = function () {
   if (!window.location.hash) {
     var div = d.createElement('div');
-    d.getElementById('page').appendChild(div);
     if (localStorage  &&  localStorage.getItem)
       localStorage.setItem('homePage', Lablz.homePage);
     div.innerHTML = Lablz.homePage;
+    d.getElementById('page').appendChild(div);
   }
   
   var s = d.createElement('script'); 

@@ -20,6 +20,7 @@ define([
   var MapView;
   return Backbone.View.extend({
     template: 'resource-list',
+    clicked: false,
     initialize: function () {
       _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
       Events.on('changePage', this.pageChanged);
@@ -67,7 +68,11 @@ define([
   //    Events.trigger('nextPage', this.model);    
   //  },
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: function(e) {
+      clicked = true;
+      Events.defaultClickHandler(e);  
+    },
+    
     render:function (eventName) {
       G.log(this.TAG, 'render');  
       this.$el.html(this.template(this.model.toJSON()));

@@ -9,17 +9,19 @@ define([
   'cache!error', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-  'cache!vocManager'
+  'cache!vocManager',
+  'cache!views/HomePage'
 //  , 
 //  'cache!views/ListPage', 
 //  'cache!views/ViewPage' 
-], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc /*, ListPage, ViewPage*/) {
+], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage /*, ListPage, ViewPage*/) {
   var ListPage, ViewPage, MenuPage; //, LoginView;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
 //    "view/*path"      : "view"  // e.g. app/ichangeme#view/<resourceUri>
     routes:{
+      ""                : "home",
       ":type"           : "list", 
       "view/*path"      : "view",  
       "menu/*path"      : "menu", 
@@ -37,12 +39,14 @@ define([
     backClicked: false,
     forceRefresh: false,
     errMsg: null,
+    homePage: null,
     info: null,
     viewsStack: [],
     urlsStack: [],
 //    LoginView: null,
     initialize: function () {
       this.firstPage = true;
+      homePage = new HomePage({el: $('div#homePage')});
       var self = this;
       Events.on('back', function() {
         self.backClicked = true;
@@ -79,6 +83,31 @@ define([
 //      
 //      return this;
 //    },
+    
+    home: function() {
+      if (this.backClicked) {
+        this.currentView = this.viewsStack.pop();
+        if (!this.currentView) {
+          homePage.render();
+          this.currentView = homePage;
+          var idx = window.location.href.indexOf('#');
+          this.currentUrl = window.location.href.substring(0, idx);
+        }
+        else {
+          this.currentUrl = this.urlsStack.pop();
+//          if (!this.viewsStack.length)
+//            this.currentView = $.mobile.firstPage;
+        }
+        $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      }
+      else {
+        this.currentUrl = window.location.href;
+        homePage.render();
+        this.currentView = homePage;
+//        $.mobile.changePage(this.currentView, {changeHash:false, transition: 'slide', reverse: true});
+      }
+    },
+    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */

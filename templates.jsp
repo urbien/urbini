@@ -220,7 +220,7 @@
 
 <script type="text/template" id="menuButtonTemplate">
   <li id="menuBtn">
-    <a target="#" data-icon="reorder" class="menu">Menu</a>
+    <a target="#" data-icon="reorder">Menu</a>
   </li>  
 </script>
 

@@ -108,7 +108,7 @@ define([
                 U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
                 groupNameDisplayed = true;
               }
-              var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
+              var uri = encodeURIComponent(U.getShortUri(this.model.get('_uri'), this.model.constructor)); 
               
               if (isPropEditable)
                 U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
@@ -175,8 +175,9 @@ define([
 //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
 //          else
 //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
-          var range = U.getClassName(prop.range);
-          var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
+//          var range = U.getClassName(prop.range);
+          var range = prop.range;
+          var uri = encodeURIComponent(U.getShortUri(this.model.get('_uri'), this.model.constructor)); 
           if (isPropEditable)
             U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
           else
