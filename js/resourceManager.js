@@ -17,12 +17,13 @@ define([
   var tsProp = 'davGetLastModified';
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, model, options) {
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, 
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, 
     defaultSuccess = options.success, 
     defaultError = options.error,
     synchronous = options.sync,
     now = G.currentServerTime(),
     isCollection = model instanceof Backbone.Collection,
+    collection = isCollection ? model : model.collection,
     vocModel = isCollection ? model.model : model.constructor;
 
     /**
@@ -98,7 +99,7 @@ define([
           defaultSuccess(resp, status, xhr);
           return;
         case 304:
-          var ms = isCollection ? model.models.slice(start, end) : [model];
+          var ms = isCollection ? collection.models.slice(start, end) : [model];
           _.each(ms, function(m) {
             m.set({'_lastFetchedOn': now}, {silent: true});
           });
@@ -152,14 +153,21 @@ define([
       model.lastFetchOrigin = 'db';
       G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
       var resp = {data: results, metadata: {offset: start}};
-      var numBefore = isCollection ? model.models.length : 1;
-      defaultSuccess(resp, 'success', null);
-      var numAfter = isCollection ? model.models.length : 1;
+      var numBefore = isCollection && collection.models.length;
+      defaultSuccess(resp, 'success', null); // add to / update collection
       
-      if (isCollection) {
-        if ((numAfter === numBefore) ||                                             // db results are useless
-           _.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now);})) // db results are stale
-          fetchFromServer(100);
+      if (!isCollection)
+        return;
+        
+      var numAfter = collection.models.length;
+      if (isUpdate) {
+        if ((shortPage && RM.isStale(collection._lastFetchedOn, now)) ||  // the number of results was less than a page, and last fetch was too long ago  
+        (_.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now);}))) // db results are stale
+          return fetchFromServer(100);
+      }
+      else {
+        if (numAfter === numBefore) // db results are useless
+          return fetchFromServer(100);
       }
     }
   
@@ -183,11 +191,14 @@ define([
       numRequested = qMap.$limit ? parseInt(qMap.$limit) : model.perPage;
       start = start || 0;
       end = start + numRequested;
-      isUpdate = model.models.length > end;
+      numNow = collection.models.length;
+      shortPage = numNow < collection.perPage;
+      isUpdate = numNow > end || shortPage;
       if (isUpdate) {
         var stalest;
-        for (var i = start; i < end; i++) {
-          var m = model.models[i];
+        var currentEnd = Math.min(end, numNow);
+        for (var i = start; i < currentEnd; i++) {
+          var m = collection.models[i];
           var date = m.get('_lastFetchedOn');
           if (date && (stale = RM.isStale(date, now)))
             break;

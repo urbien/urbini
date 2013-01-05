@@ -98,6 +98,9 @@ define([
           }
         }
         
+        if (!data)
+          debugger;
+        
         if (data.error) {
           onErr(data.error.code);
           return;
@@ -193,7 +196,7 @@ define([
       
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
         if (isResource && prop.backLink) {
-          var count = model.get(name + 'Count') || model.get(name + '.COUNT()');
+          var count = model.get(name + 'Count') || model.get(name).count;
           if (!count)
             return null;
         }
