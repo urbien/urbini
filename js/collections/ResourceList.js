@@ -63,7 +63,7 @@ define([
       options.sync = true;
       var length = this.models.length;
       if (length)
-        options.startAfter = this.models[length - 1];
+        options.startAfter = this.models[length - 1].get('_uri');
       
       this.fetch(options);
     },

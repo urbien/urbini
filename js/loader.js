@@ -630,9 +630,8 @@ define('globals', function() {
             }
             
             if (cached) {
-              var fileInfo = G.leaf(G.files, url, '/');
-              var modified = fileInfo && fileInfo.modified;
-              if (modified && modified <= cached.modified)
+              var timestamp = G.files[name];
+              if (timestamp && timestamp <= cached.modified)
                 cached = cached.text;
               else {
                 localStorage.removeItem(url);
@@ -862,6 +861,7 @@ define('globals', function() {
   
     trace: {
       ON: true,
+      DEFAULT: {on: false},
       types : {
         error: {
           on: true,
@@ -869,12 +869,12 @@ define('globals', function() {
           bg: '#333'
         },
         checkpoints: {
-          on: true,
+          on: false,
           color: '#FF88FF',
           bg: '#000'
         },
         tasks: {
-          on: true,
+          on: false,
           color: '#88FFFF',
           bg: '#000'
         },
@@ -884,12 +884,12 @@ define('globals', function() {
           bg: '#000'
         },
         render: {
-          on: true,
+          on: false,
           color: '#AA00FF',
           bg: '#DDD'
         },
         events: {
-          on: true,
+          on: false,
           color: '#baFF00',
           bg: '#555'
         },
@@ -908,7 +908,7 @@ define('globals', function() {
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
         var t = types[i];
-        var trace = G.trace.types[t] || {on: true};
+        var trace = G.trace.types[t] || G.trace.DEFAULT;
         if (!trace.on)
           continue;
         
@@ -1007,8 +1007,11 @@ define('globals', function() {
     pruneBundle: function(bundle) {
       var modules = [];
       var bType = Object.prototype.toString.call(bundle);
-      if (bType === '[object String]') {
-        bundle = {def: [bundle]};
+      var noTS = bType === '[object String]';
+      if (noTS) {
+        var name = bundle;
+        bundle = {def: [{}]};
+        bundle.def[0][name] = G.files[name];
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
         bundle = {def: bundle};
@@ -1017,12 +1020,22 @@ define('globals', function() {
       for (var type in bundle) {
         var bt = bundle[type];
         for (var i = 0; i < bt.length; i++) {
-          var name = bt[i];
+          var info = bt[i];
+          var name;
+          for (var n in info) {
+            name = n;
+            break;
+          }
+          
+          var timestamp = info[name];
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
-          
-          modules.push(G.getCanonicalPath(require.toUrl(name)));
+
+          info = {};
+          var path = G.getCanonicalPath(require.toUrl(name));
+          info[path] = timestamp; // || G.modules(G.bundles, path)[path];
+          modules.push(info);
         }
       }
       
@@ -1031,7 +1044,13 @@ define('globals', function() {
       
       var pruned = [];
       for (var i = 0; i < modules.length; i++) {
-        var url = modules[i];
+        var dmInfo = modules[i];
+        var url;
+        for (var n in dmInfo) {
+          url = n;
+          break;
+        }
+        
         var saved = localStorage.getItem(url);
         if (saved) {
           try {
@@ -1043,8 +1062,8 @@ define('globals', function() {
           }
           
           var dateSaved = saved.modified;
-          var info = G.leaf(G.files, url, '/');
-          if (info && info.modified <= dateSaved) {
+          var dateModified = dmInfo[url];
+          if (dateModified <= dateSaved) {
             G.modules[url] = saved.text;
             continue;
           }
@@ -1187,6 +1206,29 @@ define('globals', function() {
         console.log("error: " + JSON.stringify(event));
       }
     }
+//    ,
+//    flattenObject: function(ob) {
+//      var toReturn = {};
+//      
+//      for (var i in ob) {
+//        if (!ob.hasOwnProperty(i)) 
+//          continue;
+//        
+//        if ((typeof ob[i]) == 'object') {
+//          var flatObject = G.flattenObject(ob[i]);
+//          for (var x in flatObject) {
+//            if (!flatObject.hasOwnProperty(x)) 
+//              continue;
+//            
+//            toReturn[i + '.' + x] = flatObject[x];
+//          }
+//        } else {
+//          toReturn[i] = ob[i];
+//        }
+//      }
+//      
+//      return toReturn;
+//    }
   }; 
   
   for (var prop in moreG) {
@@ -1239,23 +1281,23 @@ define('globals', function() {
     }
   });
 
-   G.baseBundle = {
-     pre: {
-     // Javascript
-       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
-        'views/HomePage', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'resourceManager', 'router', 'app'],
-       // CSS
-       css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
-       html: ['../templates.jsp']
-     },
-     post: {
-       // Javascript
-       js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/MapView', 'leaflet', 'leafletMarkerCluster', 'maps'],
-       // CSS
-       css: ['../styles/leaflet.css', '../styles/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
-     }
-   };
+//   G.baseBundle = {
+//     pre: {
+//     // Javascript
+//       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+//        'views/HomePage', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
+//        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'resourceManager', 'router', 'app'],
+//       // CSS
+//       css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
+//       html: ['../templates.jsp']
+//     },
+//     post: {
+//       // Javascript
+//       js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/MapView', 'leaflet', 'leafletMarkerCluster', 'maps'],
+//       // CSS
+//       css: ['../styles/leaflet.css', '../styles/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
+//     }
+//   };
    
    var viewBundle = [
      'cache!views/Header', 
@@ -1283,11 +1325,31 @@ define('globals', function() {
 
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
-  G.loadBundle(G.baseBundle.pre, function() {
+  G.files = {};
+  for (var when in G.bundles) {
+    var bundle = G.bundles[when];
+    for (var type in bundle) {
+      var bt = bundle[type];
+      for (var i = 0; i < bt.length; i++) {
+        var info = bt[i];
+        for (var prop in info) {
+          var val = info[prop];
+          G.files[prop] = val;
+        }
+      }
+    }
+  }
+  
+//  G.files = G.flattenObject(G.bundles);
+  G.loadBundle(G.bundles.pre, function() {
     G.finishedTask("loading pre-bundle");
-    var css = G.baseBundle.pre.css.slice();
+    var css = G.bundles.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
-      css[i] = 'cache!' + css[i];
+      var cssObj = css[i];
+      for (var name in cssObj) {        
+        css[i] = 'cache!' + name;
+        break;
+      }
     }
     
     G.startedTask("loading modules");
@@ -1297,7 +1359,7 @@ require(['globals'], function(G) {
       App.initialize();
       setTimeout(function() {
         G.startedTask('loading post-bundle');
-        G.loadBundle(G.baseBundle.post, function() {
+        G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');
         }, true);
       }, 100);

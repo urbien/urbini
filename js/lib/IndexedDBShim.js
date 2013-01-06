@@ -1115,8 +1115,6 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
             }
             
             function openDB(oldVersion){
-                console.log("DroidDB = " + (typeof DroidDB === 'undefined' ? 'undefined' : DroidDB));
-                console.log("DroidDB_openDatabase = " + (typeof DroidDB_openDatabase === 'undefined' ? 'undefined' : DroidDB_openDatabase));
                 var db = window.openDatabase(name, 1, name, DEFAULT_DB_SIZE);
                 req.readyState = "done";
                 if (typeof version === "undefined") {

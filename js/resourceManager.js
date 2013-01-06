@@ -393,9 +393,10 @@ define([
         var db = RM.db;
         db.onversionchange = function(event) {
           G.log(RM.TAG, 'db', 'closing db - onversionchange');
+//          alert('version change');
           db.close();
-          window.location.reload();
-//          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
+//          window.location.reload();
+          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
         };    
      
         state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
