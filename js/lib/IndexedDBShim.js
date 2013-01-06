@@ -1251,6 +1251,7 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
 		(window.shimIndexedDB.__useShim = function(){
 			window.indexedDB = idbModules.shimIndexedDB;
 			window.IDBDatabase = idbModules.IDBDatabase;
+      window.IDBObjectStore = idbModules.IDBObjectStore;
 			window.IDBTransaction = idbModules.IDBTransaction;
 			window.IDBCursor = idbModules.IDBCursor;
       window.IDBIndex = idbModules.IDBIndex;
