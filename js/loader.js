@@ -753,6 +753,8 @@ define('globals', function() {
       return new Date().getTime() - G.timeOffset;
     },
     hasLocalStorage: hasLocalStorage,
+    hasWebWorkers: typeof window.Worker !== 'undefined',
+    xhrWorker: G.serverName + '/js/xhrWorker.js',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1092,7 +1094,7 @@ define('globals', function() {
         
       }
       
-      var useWorker = window.Worker && async;
+      var useWorker = G.hasWebWorkers && async;
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
@@ -1141,7 +1143,7 @@ define('globals', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = new Worker(G.serverName + '/js/xhrWorker.js');
+        var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           complete(event.data);
         };

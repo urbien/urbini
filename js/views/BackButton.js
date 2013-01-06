@@ -31,7 +31,18 @@ define([
       else
         this.$el.html(this.template());
       
+//      var noBack = window.history.length <= 1;
+//      var a = this.$('a'), disabled = 'ui-disabled';
+//      if (noBack)
+//        a.addClass(disabled);
+//      else {
+//        if (a.hasClass(disabled))
+//          a.removeClass(disabled);
+//      }
+      
       return this;
     }
+  }, {
+    displayName: 'BackButton'
   });
 });

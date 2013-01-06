@@ -86,12 +86,13 @@ define([
 //      options.data = options.data || {};
 //      options.data.lastFetchedOn = this.lastFetchedOn;
       options.error = options.error || Error.getDefaultErrorHandler();
-      var success = options.success;
-      options.success = function() {
-        success && success.apply(self, arguments);
+      options.url = this.url();
+//      var success = options.success;
+//      options.success = function() {
+//        success && success.apply(self, arguments);
 //        self.fetchModelsForLinkedResources.call(self.constructor);
-      };
-      
+//      };
+//      
 //      var jqXHR = Backbone.Model.prototype.fetch.apply(this, arguments);
 //      if (options.sync)
 //        jqXHR.timeout = 5000;

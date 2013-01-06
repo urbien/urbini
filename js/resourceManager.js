@@ -52,7 +52,6 @@ define([
         if (typeof newLastModified === "undefined") 
           newR = 0;
         
-        r._lastFetchedOn = now;
         if (!newLastModified || newLastModified > ts)
           toAdd.push(r);
         else
@@ -91,6 +90,9 @@ define([
         G.log(RM.TAG, 'error', code, options.url);
         defaultError(resp && resp.error || {code: code}, status, xhr);            
       }
+      
+      if (isCollection)
+        collection._lastFetchedOn = now;
       
       switch (code) {
         case 200:
@@ -134,7 +136,20 @@ define([
     
     var fetchFromServer = function(timeout) {
       var f = function() {
-        RM.defaultSync(method, model, options)
+        if (options.sync || !G.hasWebWorkers)
+          return RM.defaultSync(method, model, options)
+        
+        var xhrWorker = new Worker(G.xhrWorker);
+        xhrWorker.onmessage = function(event) {
+          var xhr = event.data;
+          options.success(xhr.data, 'success', xhr);
+        };
+        
+        xhrWorker.onerror = function(err) {
+          console.log(JSON.stringify(err));
+        };
+        
+        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET'});
       };
       
       if (timeout)
@@ -155,9 +170,14 @@ define([
       var resp = {data: results, metadata: {offset: start}};
       var numBefore = isCollection && collection.models.length;
       defaultSuccess(resp, 'success', null); // add to / update collection
-      
-      if (!isCollection)
+
+      if (!isCollection) {
+        if (RM.isStale(results[0]._lastFetchedOn, now))
+          fetchFromServer(100);
+        
         return;
+      }
+      
         
       var numAfter = collection.models.length;
       if (isUpdate) {
@@ -206,7 +226,7 @@ define([
       }
     }
     else {
-      if (!RM.isStale(model.get('_lastFetchedOn'), now))
+      if (!(stale = RM.isStale(model.get('_lastFetchedOn'), now)))
         return;
     }
     
@@ -237,8 +257,8 @@ define([
       return;
     }
     
-    if (stale)
-      fetchFromServer();
+//    if (stale)
+//      fetchFromServer();
   };
   
   Lablz.idbq = idbq;

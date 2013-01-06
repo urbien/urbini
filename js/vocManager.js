@@ -68,7 +68,7 @@ define([
       
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
-      var useWorker = window.Worker && !options.sync;
+      var useWorker = G.hasWebWorkers && !options.sync;
       var complete = function() {
         var xhr = arguments[0];
         if (xhr.status == 304) {
@@ -146,7 +146,7 @@ define([
       }
       
       if (useWorker) {
-        var xhrWorker = new Worker(G.serverName + '/js/xhrWorker.js');
+        var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           complete(event.data);
         };
