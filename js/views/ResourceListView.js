@@ -219,7 +219,7 @@ define([
     onNextPageFetched: function () {
       var self = this;
       // use timeout to resume to process scrolling events with purpose
-      // to problems with GAP in masonry and endless page missing events 
+      // to solve problems with GAP in masonry and endless page missing events 
       setTimeout( function() { self.skipScrollEvent = false; }, 100);
     },
 
