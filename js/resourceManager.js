@@ -45,7 +45,7 @@ define([
         var r = results[i];
         r._lastFetchedOn = now;
         var longUri = U.getLongUri(r._uri, {type: model.type, shortNameToModel: Voc.shortNameToModel});
-        var saved = model.get(longUri);
+        var saved = isCollection ? model.get(longUri) : model;
         var ts = saved && saved.get(tsProp) || 0;
         
         var newLastModified = r[tsProp];
@@ -77,14 +77,15 @@ define([
         
       }
       
-      RM.addItems(results);    
-      return !!toAdd.length;
+      toAdd.length && RM.addItems(toAdd);    
+      return toAdd;
     }
     
     /**
      * handle successful fetch from server
      */
     options.success = function(resp, status, xhr) {
+      model.lastFetchOrigin = 'server';
       var code = xhr.status;
       var err = function() {
         G.log(RM.TAG, 'error', code, options.url);
@@ -106,7 +107,6 @@ define([
             m.set({'_lastFetchedOn': now}, {silent: true});
           });
           
-          RM.addItems(ms);    
           return;
         default:
           err();
@@ -120,27 +120,31 @@ define([
       
       data = resp.data;
       var modified;
-      if (isCollection) {
-//        var offset1 = resp.metadata && resp.metadata.offset || 0;
-        modified = _.map(data, function(model) {return model._uri});
-      }
-      else {
-        modified = model.get('_uri');
-      }
+//      if (isCollection) {
+////        var offset1 = resp.metadata && resp.metadata.offset || 0;
+//        modified = _.map(data, function(model) {return model._uri});
+//      }
+//      else {
+//        modified = model.get('_uri');
+//      }
       
-      save(data);
+      var saved = save(data);
       defaultSuccess(resp, status, xhr);
-      if (modified && modified.length)
-        Events.trigger('refresh', model, modified);
+      if (saved && saved.length)
+        Events.trigger('refresh', model, _.map(saved, function(s) {return s._uri}));
     }
     
-    var fetchFromServer = function(timeout) {
+    var fetchFromServer = function(timeout, lastFetchedOn) {
+      if (lastFetchedOn && isUpdate) // && !shortPage)
+        RM.setLastFetched(lastFetchedOn, options);
+
       var f = function() {
         if (options.sync || !G.hasWebWorkers)
           return RM.defaultSync(method, model, options)
         
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
+          G.log(Voc.TAG, 'xhr', 'got resources', options.url);
           var xhr = event.data;
           options.success(xhr.data, 'success', xhr);
         };
@@ -149,7 +153,10 @@ define([
           console.log(JSON.stringify(err));
         };
         
-        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET'});
+        if (!options.url)
+          debugger;
+        
+        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
       };
       
       if (timeout)
@@ -172,23 +179,26 @@ define([
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
-        if (RM.isStale(results[0]._lastFetchedOn, now))
-          fetchFromServer(100);
+//        isUpdate = true;
+//        var timestamp = results[0]._lastFetchedOn;
+        var lf = RM.getLastFetched(results, now);
+        if (RM.isStale(lf, now))
+          fetchFromServer(100, lf);
         
         return;
       }
       
-        
       var numAfter = collection.models.length;
-      if (isUpdate) {
-        if ((shortPage && RM.isStale(collection._lastFetchedOn, now)) ||  // the number of results was less than a page, and last fetch was too long ago  
-        (_.any(results, function(m)  {return RM.isStale(m._lastFetchedOn, now);}))) // db results are stale
-          return fetchFromServer(100);
-      }
-      else {
-        if (numAfter === numBefore) // db results are useless
-          return fetchFromServer(100);
-      }
+      if (!isUpdate && numAfter === numBefore) // db results are useless
+        return fetchFromServer(100);
+      
+//      var stalest = _.reduce(results, function(memo, next)  {
+//        return Math.min(memo, next._lastFetchedOn);
+//      }, Infinity);
+      
+      var lf = RM.getLastFetched(results, now);
+      if (RM.isStale(lf, now))
+        return fetchFromServer(100, lf);
     }
   
     dbError = function(e) {
@@ -212,24 +222,37 @@ define([
       start = start || 0;
       end = start + numRequested;
       numNow = collection.models.length;
-      shortPage = numNow < collection.perPage;
+      shortPage = numNow && numNow < collection.perPage;
       isUpdate = numNow > end || shortPage;
       if (isUpdate) {
-        var stalest;
-        var currentEnd = Math.min(end, numNow);
-        for (var i = start; i < currentEnd; i++) {
-          var m = collection.models[i];
-          var date = m.get('_lastFetchedOn');
-          if (date && (stale = RM.isStale(date, now)))
-            break;
-        }
+//        if (shortPage && RM.isStale(collection._lastFetchedOn, now))
+//          return fetchFromServer(100); // if shortPage, don't set If-Modified-Since header
+        
+//        var stalest = _.reduce(collection.models, function(memo, next)  {
+//          var date = next.get('_lastFetchedOn');
+//          return Math.min(memo, date || 0);
+//        }, Infinity);
+        
+        var lf = RM.getLastFetched(collection.models, now);
+        if (RM.isStale(lf, now))
+          return fetchFromServer(100, lf); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
+
+//        var currentEnd = Math.min(end, numNow);
+//        for (var i = start; i < currentEnd; i++) {
+//          var m = collection.models[i];
+//          var date = m.get('_lastFetchedOn');
+//          if (date && (stale = RM.isStale(RM.getLastFetched(date, now))))
+//            break;
+//        }
       }
     }
     else {
-      if (!(stale = RM.isStale(model.get('_lastFetchedOn'), now)))
-        return;
+      var ts = model.get('_lastFetchedOn');
+      isUpdate = typeof ts !== 'undefined';
+      if (RM.isStale(ts, now))
+        return fetchFromServer(100, ts);
     }
-    
+
     var key = this.getKey && this.getKey();
     if (!key) {
       if (G.online)
@@ -256,9 +279,6 @@ define([
       
       return;
     }
-    
-//    if (stale)
-//      fetchFromServer();
   };
   
   Lablz.idbq = idbq;
@@ -291,20 +311,47 @@ define([
     /**
      * is 3 minutes old
      */
+    maxDataAge: 180000,
+    
     isStale: function(ts, now) {
-      if (!ts) return true;
+      return (now || G.currentServerTime()) - ts > RM.maxDataAge;
+    },
+    
+    getLastFetched: function(obj, now) {
       now = now || G.currentServerTime();
-      var age = now - ts;
-      var stale = age > 180000;
-      if (stale)
-        G.log(RM.TAG, 'info', 'data is stale at: ' + age + ' millis old');
+      if (!obj) 
+        return now;
       
-      return stale;
+      var ts;
+      var type = U.getObjectType(obj).toLowerCase();
+      switch (type) {
+        case '[object array]':
+          ts = _.reduce(obj, function(memo, next)  {
+            next = next.get ? next.get('_lastFetchedOn') : next._lastFetchedOn;
+            return Math.min(memo, next || 0);
+          }, Infinity);
+          break;
+        case '[object object]':
+          ts = obj.get ? obj.get('_lastFetchedOn') : obj._lastFetchedOn;
+          break;
+        case '[object number]':
+          ts = obj;
+          break;
+      }
+
+      return ts || 0;
+//      return now - ts;
+//      var staleness = age - RM.maxDataAge;
+//      if (staleness > 0)
+//        G.log(RM.TAG, 'info', 'data is stale at: ' + age + ' millis old');
+//      
+//      return staleness;
     },
   
     setLastFetched: function(lastFetchedOn, options) {
       if (lastFetchedOn) {
-        _.extend(options.headers, {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()});        
+        var ifMod = {"If-Modified-Since": new Date(lastFetchedOn).toUTCString()};
+        options.headers = options.headers ? _.extend(options.headers, ifMod) : ifMod;
       }
     },
   
@@ -327,6 +374,11 @@ define([
     VERSION: 1,
     modelStoreOptions: {keyPath: 'type'},
     dbPaused: false,
+    tableExists: function(name) {
+      var db = RM.db;
+      var names = db && db.objectStoreNames;
+      return names && names.contains(name);
+    },
     onerror: function(e) {
       G.userChanged = true;
 //      G.recordCheckpoint("closing db due to error");
@@ -381,6 +433,7 @@ define([
           RM.updateStores();
         }
         
+        RM.db = e.target.result;
         e.target.transaction.oncomplete = function() {
   //        G.recordCheckpoint("done upgrading db");
           G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
@@ -521,7 +574,7 @@ define([
       var created = [];
       for (var i = 0; i < models.length; i++) {
         var name = models[i];
-        if (db.objectStoreNames.contains(name)) {
+        if (RM.tableExists(name)) {
           if (reset || _.contains(toDel, name)) {
             try {
               G.log(RM.TAG, 'db', 'deleting object store: ' + name);
@@ -604,13 +657,13 @@ define([
       
       className = vocModel.shortName;
       classUri = vocModel.type;
-      if (!db.objectStoreNames.contains(className)) {
+      if (!RM.tableExists(className)) {
         G.log(RM.TAG, 'db', 'closing db for upgrade');
         db.close();
         G.log(this.TAG, "db", "2. newModel: " + className);
         U.pushUniq(Voc.newModels, classUri);
         RM.openDB(function() {
-          RM.addItems(items, classUri);
+          setTimeout(function() {RM.addItems(items, classUri)}, 100);
         });
         
         return;
@@ -668,6 +721,7 @@ define([
       };
     },
     
+    DEFAULT_OPERATOR: '=',
     operatorMap: {
       '=': 'eq',
       '!=': 'neq',
@@ -677,56 +731,61 @@ define([
       '<=': 'lteq',
       'IN:': 'oneof'
     },
+    
+    parseOperatorAndValue: function(str) {
+      var op, val;
+      var opVal = str.match(/^(IN=|[>=<!]{0,2})(.+)$/);
+      switch (opVal.length) {
+        case 2: {
+          val = str;
+          break;
+        }
+        case 3: {
+          if (opVal[1])
+            op = opVal[1]; // = RM.operatorMap[opVal[1]];
+          
+          val = opVal[2];
+          break;
+        }
+        default: {
+          G.log(RM.TAG, 'error', 'couldn\'t parse filter', str);
+          return null;
+        }
+      }
+      
+      return [op || RM.DEFAULT_OPERATOR, val];
+    },
 
-    buildDBQuery: function(store, model) {
-      var query, orderBy, filter, modelParams, defOp = 'eq';
+    buildDBQuery: function(store, model, filter) {
       if (model instanceof Backbone.Model)
         return false;
       
-      filter = model.queryMap;
-      if (filter) {
-        orderBy = filter.$orderBy;
-        asc = U.isTrue(filter.$asc);
+      var query, orderBy, defOp = 'eq',
+          qMap = model.queryMap,
+          filter = filter || U.getQueryParams(model);
+      
+      if (qMap) {
+        orderBy = qMap.$orderBy;
+        asc = U.isTrue(qMap.$asc);
       }
       
       if (orderBy && !store.indexNames.contains(orderBy))
         return false;
 
-      modelParams = _.filter(_.keys(filter), function(name) {
-        return name.match(/^[a-zA-Z]+/);
-      });
-      
-      if (!_.all(modelParams, function(name) {return _.contains(store.indexNames, name)}))
+      if (!_.all(_.keys(filter), function(name) {return _.contains(store.indexNames, name)}))
         return false;
       
-      if (!orderBy && !_.size(modelParams))
+      if (!orderBy && !_.size(filter))
         return false;
       
-      for (var i in modelParams) {
-        var name = modelParams[i];
-        var op = defOp, val;
-        var opVal = filter[name].match(/^(IN=|[>=<!]{0,2})(.+)$/);
-        switch (opVal.length) {
-          case 2: {
-            val = filter[name];
-            break;
-          }
-          case 3: {
-            if (opVal[1])
-              op = RM.operatorMap[opVal[1]];
-            
-            val = opVal[2];
-            break;
-          }
-          default: {
-            G.log(RM.TAG, 'error', 'couldn\'t parse filter', filter);
-            return false;
-          }
-        }
-          
-        if (!op || !val)
+      for (var name in filter) {
+//        var name = modelParams[i];
+        var opVal = RM.parseOperatorAndValue(filter[name]);
+        if (opVal.length != 2)
           return false;
         
+        var op = RM.operatorMap[opVal[0]];
+        var val = opVal[1];
         val = U.getTypedValue(model, name, val);
         var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
         query = query ? query.and(subQuery) : subQuery;
@@ -737,15 +796,46 @@ define([
         query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
       }
       
-      if (!_.isUndefined(filter.$offset)) {
-        query.setOffset(filter.$offset);
+      if (!_.isUndefined(qMap.$offset)) {
+        query.setOffset(qMap.$offset);
       }
       
-      if (!_.isUndefined(filter.$limit)) {
-        query.setLimit(filter.$limit);
+      if (!_.isUndefined(qMap.$limit)) {
+        query.setLimit(qMap.$limit);
       }
       
       return query;
+    },
+    
+    buildValueTesterFunction: function(params, model) {
+      var rules = [];
+      _.each(params, function(value, name) {
+        var opVal = RM.parseOperatorAndValue(value);
+        if (opVal.length != 2)
+          return null;
+        
+        var op = opVal[0];
+        var bound = U.getTypedValue(model, name, opVal[1]);
+        rules.push(function(val) {
+//          try {
+//            return eval(val[name] + op + bound);
+//          } catch (err){
+//            return false;
+//          }
+          
+          // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
+          return true;
+        });
+      });
+      
+      return function(val) {
+        for (var i = 0; i < rules.length; i++) {
+          if (!rules[i](val))
+            return false;
+        }
+        
+        return true;
+      }
     },
     
     getItems: function(options) {
@@ -763,7 +853,7 @@ define([
     
       var name = U.getClassName(type);
       var db = RM.db;
-      if (!db || !db.objectStoreNames.contains(name))
+      if (!RM.tableExists(name))
         return false;
       
       G.log(RM.TAG, 'db', 'starting readonly transaction for store', name);
@@ -785,12 +875,16 @@ define([
 //      if (startAfter)
 //        lowerBound = IDBKeyRange.lowerBound(startAfter, true);
       
-      var query, dbReq, cursorRequest, results = [];
-      if (!uri)
-        query = RM.buildDBQuery(store, model);
+      var query, dbReq, cursorRequest, valueTester, results = [];
+      if (!uri) {
+        query = RM.buildDBQuery(store, model, filter);
+        if (!query)
+          valueTester = RM.buildValueTesterFunction(filter, model);
+      }
       
-      if (query)
+      if (query) {
         dbReq = query.getAll(store);
+      }
       else {
         if (uri)
           dbReq = store.get(uri);
@@ -807,7 +901,13 @@ define([
           else if (uri)
             return success([result]);
           
-          results.push(result.value);
+          var val = result.value;
+          if (valueTester && !valueTester(val)) {
+            result['continue']();
+            return;            
+          }
+          
+          results.push(val);
           if (!total || results.length < total) {
             result['continue']();
             return;

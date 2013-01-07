@@ -127,9 +127,16 @@ define([
     },
     
     getLongUri: function(uri, hint) {
-      var type = hint && hint.type;
-      var pk = hint && hint.primaryKeys;
-      var snm = hint && hint.shortNameToModel;
+      var type, pk, snm;
+      if (hint) {
+        type = hint.type;
+        pk = hint.primaryKeys;
+        snm = hint.shortNameToModel;
+      }
+      
+//      var pattern1 = \Qhttp:\/\/\E?(.*)\Q\/sql\/\E?();
+//      uri.match(\Qhttp:\/\/\E?([^/]+))
+      
       var serverName = G.serverName;
       var sqlUri = G.sqlUri;
       if (uri.indexOf('http') == 0) {
@@ -143,16 +150,19 @@ define([
         type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
         return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : serverName + "/" + sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
       }
-      else if (uri.indexOf('/') == -1) {
+      
+      var sIdx = uri.indexOf('/');
+      var qIdx = uri.indexOf('?');
+      if (sIdx === -1) {
         // uri is of form Tree?id=32000 or just Tree
         type = !type || type.indexOf('/') == -1 ? U.getTypeUri(uri, hint) : type;
         if (!type)
           return null;
         
-        var qIdx = uri.indexOf('?');
         return U.getLongUri(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
       }
-      else if (uri.indexOf('sql') == 0) {
+      
+      if (uri.indexOf('sql') == 0) {
         // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
         return serverName + "/" + uri;
       }
@@ -185,8 +195,10 @@ define([
         
         return U.getLongUri(longUri, {type: type});
       }
-      else 
-        return uri;
+      else {
+        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?...
+        return qIdx === -1 ? G.defaultVocPath + uri : G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+      }
     },
     
     validateEmail: function(email) { 
@@ -436,11 +448,18 @@ define([
         qMap = collection.queryMap;
         model = collection.model;
       }
+      else if (model instanceof Backbone.Model) {
+        return {};
+      }
       else {
         if (args.length > 1)
           model = typeof args[1] === 'function' ? args[1] : args[1].constructor;
-        else
-          throw new Error('missing parameter "model"');
+        else {
+          return U.filterObj(qMap, function(name, val) {
+            return name.match(/^[a-zA-Z]+/);
+          });
+//          throw new Error('missing parameter "model"');
+        }
       }
       
       var filtered = {};
@@ -759,8 +778,18 @@ define([
           return value;        
       }
       
-      if (range == 'ComplexDate')
-        return parseInt(value);
+      if (range == 'ComplexDate' || range ==  'dateTime') {
+        try {
+          var i = parseInt(value);
+          if (isNaN(i))
+            return value;
+          else
+            return i;
+        } catch (err) {
+          // TODO: check if it's valid, like 'today', etc.
+          return value; 
+        }
+      }
       else if (range == 'Money')
         return parseFloat(value);
 

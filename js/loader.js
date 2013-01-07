@@ -745,6 +745,7 @@ define('globals', function() {
   G.localStorage.resetAsync = G.localStorage.reset.async(100);
     
   var moreG = {
+    classMap: G.classMap || {},
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
@@ -1145,11 +1146,12 @@ define('globals', function() {
       if (useWorker) {
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
+          G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
         };
         
         xhrWorker.onerror = function(err) {
-          console.log(JSON.stringify(err));
+          G.log(G.TAG, 'error', JSON.stringify(err));
         };
         
         getBundleReq.type = 'JSON';

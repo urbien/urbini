@@ -26,38 +26,47 @@ define([
     shortNameToModel: {Resource: Resource},
     typeToModel: {},
     fetchModels: function(models, options) {
-      models = models ? (typeof models === 'string' ? [models] : models) : _.union(Voc.changedModels, Voc.newModels);
+      models = models ? (typeof models === 'string' ? [models] : models) : _.union(Voc.changedModels, Voc.newModels);      
       options = options || {};
       var success = options.success;
       var error = options.error || Error.getDefaultErrorHandler();
-  
-      if (models.length) {
-        models = models.join ? models : [models];
-        var now = G.currentServerTime();
-        models = _.map(models, function(m) {
-          var model = Voc.snm[U.getShortName(m)];
-          if (model) {
-            var lm = model._dateStored ? model._dateStored : model.lastModified;
-            if (lm && now - lm < 360000) // consider model stale after 1 hour
-              return null;
-            
-            var info = {uri: m};
-            if (lm)
-              info.lastModified = lm;
-            
-            return info;
-          }
-          else
-            return m;
-        }).filter(function (m) {return m}); // filter out nulls
-      }
       
-      if (!models.length) {
-        if (success)
+      function earlyExit() {
+        if (success && !options.skipSuccessIfUpToDate)
           success({fetched: 0});
         
-        return;
+        return true;
       }
+      
+      if (!models.length)
+        return earlyExit();
+      
+      var c = Voc.currentModel;
+      var urgent = options.sync && models.length > 1 && c && !Voc.typeToModel[c] && c;
+      if (urgent) {
+        urgent = Voc.filterOutStale([urgent]);
+        if (urgent.length) {
+          urgent = urgent[0];
+          options.success = function() {
+            if (success)
+              success();
+            
+            models = _.filter(models, function(m) {
+              return (m.type || m) != urgent;
+            });
+            
+            options.sync = false;
+            options.success = success;
+            setTimeout(function() {Voc.fetchModels(models, options)}, 100);
+          }
+          
+          Voc.fetchModels(urgent, options);
+          return;
+        }
+      }
+      
+      if (!models.length)
+        return earlyExit();
       
       if (!G.online) {
         if (error)
@@ -66,6 +75,7 @@ define([
         return;
       }
       
+      models = Voc.filterOutStale(models);      
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
       var useWorker = G.hasWebWorkers && !options.sync;
@@ -113,6 +123,8 @@ define([
         
         G.classUsage = _.union(G.classUsage, data.classUsage);          
         G.linkedModels = data.linkedModels; //_.union(G.linkedModels, data.linkedModels);
+        if (data.classMap)
+          _.extend(G.classMap, data.classMap)
         
         var newModels = [];
         for (var i = 0; i < mz.length; i++) {
@@ -148,11 +160,12 @@ define([
       if (useWorker) {
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
+          G.log(Voc.TAG, 'xhr', 'got models', modelsCsv);
           complete(event.data);
         };
         
         xhrWorker.onerror = function(err) {
-          console.log(JSON.stringify(err));
+          G.log(Voc.TAG, 'xhr', JSON.stringify(err));
         };
         
         xhrWorker.postMessage({type: 'JSON', url: G.modelsUrl, data: {models: modelsCsv}, method: 'POST'});
@@ -167,22 +180,42 @@ define([
         });
       }
     },
-
-    fetchLinkedModels: function() {
-      var linked = G.linkedModels;
-      if (!linked)
-        return;
-      
-      Voc.loadStoredModels(linked);
-      var numModels = Voc.models.length;
-      var success = function() {
-        if (!(Voc.models.length - numModels))
-          return;
-        
-        Voc.initModels();
-        Voc.saveModelsToStorage(Voc.models.slice(numModels));
-      }
+    
+    filterOutStale: function(models) {
+      var now = G.currentServerTime();
+      return _.filter(_.map(models, function(m) {
+        var model = Voc.snm[U.getShortName(m)];
+        if (model) {
+          var lm = model._dateStored ? model._dateStored : model.lastModified;
+          if (lm && now - lm < 360000) // consider model stale after 1 hour
+            return null;
+          
+          var info = {uri: m};
+          if (lm)
+            info.lastModified = lm;
+          
+          return info;
+        }
+        else
+          return m;
+      }), function (m) {return m}); // filter out nulls
     },
+
+//    fetchLinkedModels: function() {
+//      var linked = G.linkedModels;
+//      if (!linked)
+//        return;
+//      
+//      Voc.loadStoredModels(linked);
+//      var numModels = Voc.models.length;
+//      var success = function() {
+//        if (!(Voc.models.length - numModels))
+//          return;
+//        
+//        Voc.initModels();
+//        Voc.saveModelsToStorage(Voc.models.slice(numModels));
+//      }
+//    },
 
     fetchModelsForLinkedResources: function(model) {
 //    model = model.constructor || model;
@@ -203,8 +236,14 @@ define([
         
         var range = prop && prop.range;
         range = range && (range.indexOf('/') == -1 || range.indexOf('/Image') != -1 ? null : range.startsWith('http') ? range : G.defaultVocPath + range);
+        if (range && G.classMap)
+          range = G.classMap[range] || range;
+        
         return !range ? null : isResource ? range : _.contains(G.classUsage, range) ? range : null;
-      })), function(m) {return m && !Voc.typeToModel[m]}); // no need to reload known types
+      })), function(m) {
+        // no need to reload known types
+        return m && !Voc.typeToModel[m];
+      }); 
   
       var linkedModels = [];
       var l = G.linkedModels;
@@ -212,26 +251,7 @@ define([
         // to preserve order
         var idx = tmp.indexOf(l[i].type);
         if (idx != -1) {
-  //        tmp.splice(idx, idx + 1);
-  //        var m = l[i];
-  //        var j = i;
-  //        var supers = [];
-  //        while (j > 0 && l[j].superName == l[--j].shortName) {
-  //          var idx = linkedModels.indexOf(l[j]);
-  //          if (idx != -1) {
-  //            linkedModels.remove(idx, idx);
-  //          }
-  //          
-  //          supers.push(l[j]);
-  //        }
-  //        
-  //        if (supers.length) {
-  //          var s;
-  //          while (!!(s = supers.pop())) {
-  //            linkedModels.push(s);
-  //          }
-  //        }
-          
+          tmp.splice(idx, idx + 1);
           linkedModels.push(l[i]);
         }
       }
@@ -382,8 +402,11 @@ define([
       var model = pkg[sName] = U.leaf(Voc, (sPath ? sPath + '.' : '') + superName).extend({}, modelJson);
       Voc.initModel(model);
     },
-    
-    getModelChain: function(model) {
+
+    getModelChain: function(model, have) {
+      if (have)
+        have[model.type] = model;
+      
       if (!G.hasLocalStorage)
         return null;
       
@@ -395,17 +418,21 @@ define([
         return [model];
         
       sup = sup.startsWith('http') ? sup : 'http://www.hudsonfog.com/voc/' + sup;
-      var sModel = Voc.getModelFromLS(sup);
+      var savedSModel = have && have[sup];
+      sModel = savedSModel || Voc.getModelFromLS(sup);
       if (!sModel)
         return null;
       
-      sModel = JSON.parse(sModel);
-      var sChain = Voc.getModelChain(sModel);
+      sModel = savedSModel || JSON.parse(sModel);
+      if (!savedSModel && have)
+        have[sup] = sModel;
+      
+      var sChain = Voc.getModelChain(sModel, have);
       return sChain == null ? null : sChain.concat(model);
     },
     
     initStoredModels: function(models) {
-      var filtered = _.filter(models, function(model) {
+      models = _.filter(models, function(model) {
         if (model.subClassOf != null || model.type.endsWith("#Resource"))
           return true;
         else {
@@ -414,19 +441,20 @@ define([
         }
       });
       
-      if (!filtered.length)
+      if (!models.length)
         return models;
       
       var unloaded = [];
-      _.each(filtered, function(m) {
+      for (var i = 0; i < models.length; i++) {
+        var m = models[i];
         var sUri = m.subClassOf;
         var sIdx = sUri.lastIndexOf('/');
         var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
         if (!Voc.snm[superName]) {
           if (_.contains(unloaded, m))
-            return;
+            continue;
           
-          var chain = Voc.getModelChain(m);
+          var chain = Voc.getModelChain(m, null);
           if (chain) {
             var fresh = [], stale = [];
             Voc.filterExpired(null, chain, fresh, stale);
@@ -436,12 +464,11 @@ define([
           else
             unloaded.push(m);
           
-          return;
+          continue;
         }
         
         Voc.loadModel(m, sUri, superName);
-      });
-      
+      }
       
       return unloaded;
     },
@@ -455,44 +482,47 @@ define([
         G.localStorage.putAsync('model:' + model.type, JSON.stringify(modelJson));
       }, 100);
     },
+
+    detectCurrentModel: function() {
+      var hash =  window.location.hash && window.location.hash.slice(1);
+      if (!hash)
+        return;
+      
+      var qIdx = hash.indexOf('?');
+      if (qIdx != -1)
+        hash = hash.slice(0, qIdx);
+      
+      var type;
+      if (hash.startsWith('http'))
+        type = decodeURIComponent(hash);
+      else if (hash.match('^view|menu')) {
+        type = decodeURIComponent(hash.slice(5)).replace(G.sqlUrl + '/', 'http://');
+        
+        qIdx = type.indexOf('?');
+        if (qIdx != -1)
+          type = type.slice(0, qIdx);
+      }
+      else
+        type = decodeURIComponent(hash);
+
+      type = type.startsWith('http://') ? type : G.defaultVocPath + type;
+      Voc.currentModel = type;
+    },
     
     loadStoredModels: function(options) {
-    //  var ttm = Voc.typeToModel;
+      Voc.detectCurrentModel();
       if (G.userChanged)
         return;
 
       var r = options && options.models ? {models: _.clone(options.models)} : {models: _.clone(G.models)};
-      var hash =  window.location.hash && window.location.hash.slice(1);
-      var added;
-//      var willLoadCurrentModel = false;
-      if (hash) {
-        var qIdx = hash.indexOf('?');
-        if (qIdx != -1)
-          hash = hash.slice(0, qIdx);
-        
-        var type;
-        if (hash.startsWith('http'))
-          type = decodeURIComponent(hash);
-        else if (hash.match('^view|menu')) {
-          type = decodeURIComponent(hash.slice(5)).replace(G.sqlUrl + '/', 'http://');
-          
-          qIdx = type.indexOf('?');
-          if (qIdx != -1)
-            type = type.slice(0, qIdx);
-        }
-        else
-          type = decodeURIComponent(hash);
+      var models = r.models;
+      var added = Voc.currentModel;
+      if (added && !Voc.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length)
+        models.push(added);
 
-        type = type.startsWith('http://') ? type : G.defaultVocPath + type;
-        if (type && !Voc.typeToModel[type] && !_.filter(r.models, function(m) {return (m.type || m).endsWith(type)}).length) {
-          r.models.push(type);
-          added = type;
-        }
-      }
-      
       if (!G.hasLocalStorage) {
         if (r) {
-          _.forEach(r.models, function(model) {
+          _.forEach(models, function(model) {
             G.log(Voc.TAG, 'db', "1. newModel: " + model.shortName);
             U.pushUniq(Voc.newModels, model.type);
           });
@@ -502,15 +532,15 @@ define([
       }
       
       var extraModels;
-      var types = {};
+      var typeToJSON = {};
       var expanded = [];
-      for (var i = 0; i < r.models.length; i++) {
-        var model = r.models[i];
+      for (var i = models.length - 1; i > -1; i--) {
+        var model = models[i];
         var uri = model.type || model;
         if (!uri || !(uri = U.getLongUri(uri, Voc)))
           continue
         
-        if (types[uri] || Voc.typeToModel[uri])
+        if (typeToJSON[uri] || Voc.typeToModel[uri])
           continue;
         
         var jm;
@@ -520,7 +550,6 @@ define([
           jm = Voc.getModelFromLS(uri);
           if (!jm) {
             U.pushUniq(Voc.newModels, uri);
-//            r.models[i] = null;
             continue;
           }
         
@@ -528,52 +557,24 @@ define([
         }
         
         if (jm) { 
-//          r.models[i] = jm;
-          if (types[jm.subClassOf]) {
-            expanded.push(jm);
-          }
-          else {
-            expanded = expanded.concat(Voc.getModelChain(jm));
-          }
-          
-          types[uri] = true;
-        }
-        
-//        if (model === added) {
-//          if (!_.contains(r.models, jm))
-//            extraModels = Voc.getModelChain(jm);
-//        }
-//        else { 
-//          r.models[i] = _.extend(jm, model);
-//          continue;          
-//        }
-//        r.models[i] = null;
-//        var sup;
-//        extraModels.push(jm);
-//        while ((sup = jm.subClassOf) != 'Resource') {
-//          sup = sup.startsWith('http') ? sup : G.defaultVocPath + sup;
-//          var m = Voc.getModelFromLS(sup);
-//          if (m) {
-//            jm = JSON.parse(m);
-//            extraModels.push(jm);
+//          if (jm.subClassOf == 'Resource' || typeToJSON[jm.subClassOf]) {
+//            expanded.push(jm);
+//            typeToJSON[jm.subClassOf] = jm;
 //          }
-//        }
+//          else {
+            var chain = Voc.getModelChain(jm, typeToJSON);
+            expanded = expanded.concat(chain);
+//            for (var i = 0; i < expanded; i++) {
+//              if (expanded)
+//            }
+//          }
+//          
+//          typeToJSON[uri] = jm;
+        }
       }
       
-      delete types;
-//      var types = [];
-//      var expanded = [];
-//      for (var i = 0; i < r.models; i++) {
-//        
-//      }
-//      
-//      r.models = _.compact(r.models); // filter out nulls
-//      if (extraModels) {
-//        while (extraModels.length) {
-//          r.models.push(extraModels.pop());
-//        }
-//      }
-
+      delete typeToJSON;
+      
       var stale = []
       var fresh = [];
       Voc.filterExpired({lastModified: r.lastModified}, expanded, fresh, stale);
@@ -590,7 +591,8 @@ define([
     filterExpired: function(info, models, fresh, stale) {
       var baseDate = (info && info.lastModified) || G.lastModified;
       _.each(models, function(model) {
-        var d = baseDate || model.lastModified;
+//        var mInfo = _.filter(G.models, function(m) {return m.type == model.type});
+        var d = baseDate || model.lastModified; //(mInfo.length && mInfo[0].lastModified);
         if (d) {
           var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
             var storedDate = model._dateStored;

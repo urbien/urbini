@@ -144,7 +144,7 @@ define([
       var page = this.page = this.page || 1;
       var force = this.forceRefresh;
       
-      if (!this.isModelLoaded(self, typeUri, oParams))
+      if (!this.isModelLoaded(typeUri, 'list', arguments))
         return;
       
 //      var t = className;  
@@ -236,7 +236,6 @@ define([
         query = path.slice(qIdx + 1);
       }
       
-      uri = decodeURIComponent(uri);
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
         if (!G.currentUser.guest)
@@ -247,29 +246,36 @@ define([
         return;
       }
       
-      var self = this;
-      var typeUri = U.getTypeUri(uri);
+      uri = U.getLongUri(decodeURIComponent(uri), Voc);
+      var typeUri = U.getTypeUri(uri, Voc);
+      if (!this.isModelLoaded(typeUri, 'view', arguments))
+        return;
+      
       var className = U.getClassName(typeUri);
-      uri = U.getLongUri(uri, Voc);
-      if (!uri || !Voc.shortNameToModel[className]) {
-        Voc.loadStoredModels({models: [className]});
-          
-        if (!uri || !Voc.shortNameToModel[className]) {
-          Voc.fetchModels(typeUri, 
-            {success: function() {
-              self.view.apply(self, [path]);
-            },
-            sync: true}
-          );
-          
-          return;
-        }
-      }
+      var typeCl = Voc.shortNameToModel[className] || Voc.typeToModel[typeUri];
+      if (!typeCl)
+        return this;
+
+//      if (!uri || !Voc.shortNameToModel[className]) {
+//        Voc.loadStoredModels({models: [typeUri || className]});
+//          
+//        if (!uri || !Voc.shortNameToModel[className]) {
+//          Voc.fetchModels(typeUri, 
+//            {success: function() {
+//              self.view.apply(self, [path]);
+//            },
+//            sync: true}
+//          );
+//          
+//          return;
+//        }
+//      }
       
       var res = this.Models[uri];
       if (res && !res.loaded)
         res = null;
       
+      var self = this;
       var collection;
       if (!res) {
         var collections = this.Collections[typeUri];
@@ -307,10 +313,10 @@ define([
 //          return this;
 //        }
 //      }
-  
-      var typeCl = Voc.shortNameToModel[className];
-      if (!typeCl)
-        return this;
+//  
+//      var typeCl = Voc.shortNameToModel[className];
+//      if (!typeCl)
+//        return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl({model: res});
@@ -377,19 +383,22 @@ define([
 //      console.log("painting map");
 //    },
     
-    isModelLoaded: function(self, type, oParams) {
+    isModelLoaded: function(type, method, args) {
       var m = Voc.typeToModel[type];
       if (m)
         return m;
 
-      Voc.fetchModels(type, { 
+      var self = this;
+      Voc.loadStoredModels({models: [type]});
+      var allGood = Voc.fetchModels(null, { 
          success: function() {
-           self.list.apply(self, [oParams]);
+           self[method].apply(self, args);
          },
-         sync: true
+         sync: true,
+         skipSuccessIfUpToDate: true
       });
       
-      return null;
+      return allGood;
     },
     
     checkErr: function() {
