@@ -205,7 +205,7 @@ define([
     onScroll: function() {
       if (!this.visible)
         return;
-      
+
       var $wnd = $(window);
       if (this.skipScrollEvent) // wait for a new data portion
         return;
@@ -220,7 +220,10 @@ define([
     },
     
     onNextPageFetched: function () {
-      this.skipScrollEvent = false;
+      var self = this;
+      // use timeout to resume to process scrolling events with purpose
+      // to solve problems with GAP in masonry and endless page missing events 
+      setTimeout( function() { self.skipScrollEvent = false; }, 100);
     },
 
     // masonry bricks alignment
