@@ -17,10 +17,13 @@ define([
 //      this.sync = this.constructor.sync;
     },
     url: function() {
-      return G.apiUrl + this.constructor.shortName + "?$blCounts=y&$minify=y&_uri=" + U.encode(this.get('_uri'));
+      var uri = this.get('_uri');
+      var type = this.constructor.type;
+      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
+      return G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&_uri=" + U.encode(uri);
     },
     getKey: function() {
-      return this.get('_uri');
+      return U.getLongUri(this.get('_uri'));
     },
     parse: function (resp) {
       if (this.loaded && this.lastFetchOrigin == 'db')
@@ -83,22 +86,9 @@ define([
     fetch: function(options) {
       var self = this;
       options = options || {};
-//      options.data = options.data || {};
-//      options.data.lastFetchedOn = this.lastFetchedOn;
       options.error = options.error || Error.getDefaultErrorHandler();
       options.url = this.url();
-//      var success = options.success;
-//      options.success = function() {
-//        success && success.apply(self, arguments);
-//        self.fetchModelsForLinkedResources.call(self.constructor);
-//      };
-//      
-//      var jqXHR = Backbone.Model.prototype.fetch.apply(this, arguments);
-//      if (options.sync)
-//        jqXHR.timeout = 5000;
-//      
-//      return jqXHR;
-      return Backbone.Model.prototype.fetch.apply(this, arguments);
+      return Backbone.Model.prototype.fetch.call(this, options);
     }  
   },
   {

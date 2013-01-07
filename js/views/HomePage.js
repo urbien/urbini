@@ -19,10 +19,13 @@ define([
     
     render: function(options) {
       var item = $('#homePage');
-      if (!item) { 
-        itemS = localStorage  &&  localStorage.getItem  &&  localStorage.getItem('homePage');
-        if (itemS) 
-          $(itemS).css('display:none').attr('data-role', 'page').appendTo('body');
+      if (!item || item.length == 0) { 
+        var itemS = localStorage  &&  localStorage.getItem  &&  localStorage.getItem('homePage');
+        if (itemS) { 
+          $(itemS).css('display:none');
+          $(itemS).appendTo('body');
+//          $(itemS).appendTo('#page');
+        }
       } 
 //      if (this.first)
 //        $.mobile.initializePage();

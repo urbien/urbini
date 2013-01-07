@@ -105,7 +105,9 @@ define([
       return U.isA(this.model, interfaceName);
     },
     parse: function(response) {
-      this._lastFetchedOn = G.currentServerTime();
+      if (this.lastFetchOrigin !== 'db')
+        this._lastFetchedOn = G.currentServerTime();
+      
       if (!response || response.error)
         return [];
 
@@ -147,20 +149,7 @@ define([
       this.rUri = options._rUri;
       options.url = this.getUrl();
       options.error = options.error || Error.getDefaultErrorHandler();
-      var success = options.success;
-      options.success = function() {
-        success && success.apply(self, arguments);
-//        MB.fetchModelsForLinkedResources.call(self.model);
-      };
-  
-//      debugger;
-//      return Backbone.Collection.prototype.fetch.call(this, options);
-//      var jqXHR = Backbone.Collection.prototype.fetch.apply(this, arguments);
-//      if (options.sync)
-//        jqXHR.timeout = 5000;
-//      
-//      return jqXHR;
-      Backbone.Collection.prototype.fetch.apply(this, arguments);
+      Backbone.Collection.prototype.fetch.call(this, options);
     }
   }, {
     displayName: 'ResourceList'
