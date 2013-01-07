@@ -118,8 +118,14 @@ define([
     getCloneOf: function(meta, cloneOf) {
       var keys = [];
       for (var p in meta) {
-        if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'] == cloneOf) {
-          keys.push(p);
+        if (_.has(meta[p], "cloneOf")) {
+          var clones = meta[p].cloneOf.split(",");
+          for (var i=0; i<clones.length; i++) {
+            if (clones[i].replace(' ', '') == cloneOf) { 
+              keys.push(p);
+              break;
+            }
+          }
         }
       }
       
@@ -314,10 +320,11 @@ define([
       return null;
     },
     
-    getGridCols: function(model) {
+    
+    getGridCols: function(model, typeOfCols) {
       var m = model;
       var mConstructor = m.constructor;
-      var cols = mConstructor.gridCols;
+      var cols = typeOfCols ? mConstructor[typeOfCols] : mConstructor.gridCols;
       cols = cols && cols.split(',');
       var resourceLink;
       var rows = {};
@@ -341,9 +348,30 @@ define([
         });
       }  
       
-      return rows;
+      return i == 0 ? null : rows;
     },
     
+    isMasonry: function(vocModel) {
+      var meta = vocModel.properties;
+      var isMasonry = U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      if (!isMasonry  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
+        return true;
+      if (!U.isA(vocModel, 'Intersection')) 
+        return isMasonry;
+      var href = window.location.href;
+      var qidx = href.indexOf('?');
+      var a = U.getCloneOf(meta, 'Intersection.a')[0];
+      if (qidx == -1) {
+        isMasonry = (U.getCloneOf(meta, 'Intersection.aThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.aFeatured')[0]) != null;
+      }
+      else {
+        var b = U.getCloneOf(meta, 'Intersection.b')[0];
+        var p = href.substring(qidx + 1).split('=')[0];
+        var delegateTo = (p == a) ? b : a;
+        isMasonry = (U.getCloneOf(meta, 'Intersection.bThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.bFeatured')[0]) != null;
+      }
+      return isMasonry;
+    },
     /**
      * to be used for model constructors, not instances
      */

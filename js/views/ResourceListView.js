@@ -48,7 +48,11 @@ define([
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isMasonry = !isList  &&  U.isMasonry(vocModel);
+      
+//      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+//      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
+//        isMasonry = true;
       var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
 //        if (U.isA(vocModel, 'Intersection')) {
@@ -58,15 +62,14 @@ define([
 //          var aprop;
 //          if (qidx == -1) {
 //            aprop = models[0].get(a);
+//            isMasonry = (U.getCloneOf(meta, 'Intersection.aThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.aFeatured')[0]) != null;
 //          }
 //          else {
 //            var b = U.getCloneOf(meta, 'Intersection.b')[0];
 //            var p = href.substring(qidx + 1).split('=')[0];
 //            var delegateTo = (p == a) ? b : a;
-//            aprop = models[0].get(delegateTo);
+//            isMasonry = (U.getCloneOf(meta, 'Intersection.bThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.bFeatured')[0]) != null;
 //          }
-//          var type = U.getTypeUri(U.getType(aprop['value']), {type: aprop['value'], shortNameToModel: Voc.shortNameToModel});
-//          isMasonry = U.isA(Voc.typeToModel[type], 'ImageResource');  
 //        }
 //      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
@@ -98,7 +101,7 @@ define([
           if (isMasonry) 
             liView = new ResourceMasonryItemView({model:m, className: 'pin', tagName: 'li'});
           else if (isModification)
-            liView = new ResourceMasonryItemView({model:m, className: 'nab nabBoard masonry-brick'});
+            liView = new ResourceMasonryItemView({model:m, className: 'nab nabBoard'});
           else if (isComment)
             liView = new CommentListItemView({model:m});
           else
@@ -227,23 +230,42 @@ define([
         return;
 
       var self = this;
-      // 1. align masonry if first masonry brick was aligned before  
-      var $firstBrick = this.$el.children().first();
-      if ($firstBrick && $firstBrick.css("position") != "absolute") {
-          this.$el.imagesLoaded( function(){ self.$el.masonry(); });
+      var needToReload = false;
+      // all bricks in masonry
+      var $allBricks = $(this.$el.children());
+      // new, unaligned bricks - items without 'masonry-brick' class
+      var $newBricks = $allBricks.filter(function(idx, node) {
+                  var $next = $(node).next();
+                  var hasClass = $(node).hasClass("masonry-brick");
+                  // if current node does not have "masonry-brick" class but the next note has
+                  // then need to reload/reset bricks
+                  if ($next.exist() &&
+                      !hasClass && 
+                      $next.hasClass("masonry-brick"))
+                    needToReload = true;
+                  
+                  return !hasClass;
+                });
+      
+      // 1. need to reload. happens on content refreshing from server
+      if (needToReload) {
+        this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); });
+        return
+      }
+      
+      //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
+      if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
+        this.$el.imagesLoaded( function(){ self.$el.masonry(); });
         return;
       }
       
-      // 2. append to masonry new bricks on next page
-      // filter unaligned "bricks" which do not have calculated, absolute position 
-      $bricks = $(this.$el.children()).filter(function(idx, node) {
-                  return (node.style.position != "absolute"  );
-                });
-        
-      if ($bricks.length == 0)
+      // 3. nothing to align
+      if ($newBricks.length == 0)
         return; // nothing to align
-      
-      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $bricks ); });
+     
+      // 4. align new bricks, on next page, only
+      // filter unaligned "bricks" which do not have calculated, absolute position 
+      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); });
     }
   });
 });

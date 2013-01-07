@@ -42,7 +42,31 @@ define([
         if (d)
           json['distance'] = distance + ' mi';
       }
-      
+      var grid = U.getGridCols(m);
+      var viewCols = '';
+          
+      if (grid) {
+        for (var row in grid) {
+          if (i == 0)
+            i++;
+          else
+            viewCols += "<br/>";
+          var pName = grid[row].propertyName;
+          var range = meta[pName].range;
+          var s = range.indexOf('/') != -1 ? json[pName].displayName  ||  json[pName] : grid[row].value;
+          var isDate = meta[pName].range == 'date'; 
+          if (!meta[pName].skipLabelInGrid) {
+//            if (isDate)
+//              viewCols += '<div style="display:inline;float:right; top:10px;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+//            else
+              viewCols += '<div style="display:inline"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+          }
+          else
+            viewCols += '<span style="font-weight:normal">' + s + '</span>';
+        }
+      }
+
+
       var dn = ''; //son['davDisplayName'];
 //      if (!dn) { 
       var dnProps = U.getDisplayNameProps(meta);
@@ -54,10 +78,13 @@ define([
               first = false;
             else
               dn += ' ';
-            dn += value;
+            dn += (value.displayName) ? value.displayName : value;
           }
         }
         json['davDisplayName'] = dn;
+        if (!viewCols.length) 
+          viewCols = '<h3>' + dn + '</h3>';
+        json['viewCols'] = viewCols;
 //      }
 
       this.$el.html(this.template(json));

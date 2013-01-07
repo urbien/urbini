@@ -25,6 +25,7 @@ define([
       "Url": "UrlPT",
       "Duration": "complexDatePT",
       "date": "datePT",
+      "dateTime": "datePT",
       "resource": "resourcePT",
       "Money": "moneyPT",
       "ComplexDate": "complexDatePT",
