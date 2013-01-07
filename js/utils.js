@@ -121,7 +121,7 @@ define([
         if (_.has(meta[p], "cloneOf")) {
           var clones = meta[p].cloneOf.split(",");
           for (var i=0; i<clones.length; i++) {
-            if (clones[i] == cloneOf) { 
+            if (clones[i].replace(' ', '') == cloneOf) { 
               keys.push(p);
               break;
             }
