@@ -147,14 +147,18 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
+    {{= viewCols }}
+  </a>
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= distance }}</span>
   {{ } }}
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+    {{= viewCols }}
+  </a>
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= distance }}</span>
   {{ } }}
@@ -168,20 +172,12 @@
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
-<!-- script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
-</script>
-
-<script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(_uri) + '/' + propName }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
-</script -->
-
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
