@@ -25,11 +25,20 @@ define([
         }
         
         if (!this.pageTitle) {
-          if (this.model instanceof Backbone.Collection) {
-            this.pageTitle = this.model.plural || this.model.displayName + 's';
+          if (hash) {
+            var v = hash.split('&');
+            for (var i=0; i<v.length; i++) {
+              var a = v[i].split('=');
+              if (a[0] == '$title')
+                this.pageTitle = a[1];
+            }
           }
-          else
-            this.pageTitle = this.model.get('davDisplayName');
+          if (!this.pageTitle) {
+            if (this.model instanceof Backbone.Collection) 
+              this.pageTitle = this.model.model['pluralName'] || this.model.displayName + 's';
+            else
+              this.pageTitle = this.model.get('davDisplayName');
+          }
         }
       }
       
@@ -57,6 +66,8 @@ define([
       return this;
     },
     render: function() {
+      if (window.location.hash.indexOf("#menu") != -1)
+        return this;
       this.$el.html(this.template());
       var l = this.buttons.left;
       l && this.makeWidgets(l, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-left'});
