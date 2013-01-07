@@ -183,7 +183,7 @@ define([
       try {
         this.$el.html(this.template(tmpl_data));
       } catch (err) {
-        console.log('2. failed to delete table ' + name + ': ' + err);
+        G.log(this.TAG, 'failed to build template for masonry item ' + dn + ': ' + err);
       }
       
       return this;
@@ -390,7 +390,7 @@ define([
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {
-        console.log('2. failed to delete table ' + name + ': ' + err);
+        console.log(this.TAG, 'failed to build masonry item for Modification resource ' + json['resourceDisplayName'] + ': ' + err);
       }
       return this;
     }
