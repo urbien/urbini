@@ -267,5 +267,7 @@ define([
       // filter unaligned "bricks" which do not have calculated, absolute position 
       this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); });
     }
+  }, {
+    displayName: 'EditView'
   });
 });

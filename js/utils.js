@@ -6,6 +6,16 @@ define([
 ], function(G, _, Backbone, Templates) {
   var ArrayProto = Array.prototype;
   var slice = ArrayProto.slice;
+
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
   
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
@@ -19,9 +29,9 @@ define([
     return (this.match("^"+str)==str);
   };
   
-  String.prototype.toCamelCase = function(str) {
+  String.prototype.toCamelCase = function(capitalFirst) {
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
-      return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+      return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
   };
   
@@ -657,6 +667,13 @@ define([
       return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
     
+    getDisplayName: function(prop) {
+      if (prop.label)
+        return prop.label;
+      else
+        return prop.shortName.toCamelCase(true);
+    },
+    
     isAssignableFrom: function(model, className, type2Model) {
       if (U.isA(model, className))
         return true;
@@ -690,14 +707,28 @@ define([
       
       var propTemplate = Templates.getPropTemplate(prop);
       val = val.displayName ? val : {value: val};
-      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+      return {name: prop.label || U.getDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
     makePropEdit: function(prop, val) {
-      var propTemplate = U.getPropTemplate(prop, true);
+      var propTemplate = Templates.getPropTemplate(prop, true);
       val = val.displayName ? val : {value: val};
-      val.shortName = prop.displayName.toCamelCase();
-      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+      if (propTemplate === 'enumPET') {
+        var facet = prop.facet;
+        facet = facet.slice(facet.lastIndexOf('/') + 1);
+        val.options = G.Voc.shortNameToEnum[facet].values;
+      }
+      
+      val.name = U.getDisplayName(prop);
+      val.shortName = prop.shortName;
+      var r = prop.range;
+      if (r.endsWith('emailAddress'))
+        val.type = 'email';
+      else if (r.endsWith('mobilePhone'))
+        val.type = 'tel';
+      
+//      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+      return _.template(Templates.get(propTemplate))(val);
     },
     
 //    /**

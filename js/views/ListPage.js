@@ -138,5 +138,7 @@ define([
       this.rendered = true;
       return this;
     }
+  }, {
+    displayName: 'ListPage'
   });
 });

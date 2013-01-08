@@ -7,7 +7,7 @@
     html: ['../templates.jsp']
   },
   post: {
-    js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/MapView', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps'],
+    js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/EditPage', 'views/EditView', 'views/MapView', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css']
   }
 }

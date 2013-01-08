@@ -6,16 +6,15 @@ define([
   'cache!backbone', 
   'cache!templates',
   'cache!events', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
+  'cache!utils',
+  'cache!vocManager'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc) {
   return Backbone.View.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
-      this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
-      this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.model.on('change', this.refresh, this);
-      this.TAG = 'ResourceView';
+      this.TAG = 'EditView';
   //    Lablz.Events.on('refresh', this.refresh);
       return this;
     },
@@ -44,14 +43,15 @@ define([
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
-      var type = this.model.type;
-      var meta = this.model.__proto__.constructor.properties;
-      meta = meta || this.model.properties;
+      var model = this.model;
+      var type = model.type;
+      var meta = model.constructor.properties;
       if (!meta)
         return this;
       
-      var json = this.model.toJSON();
+      var json = model.toJSON();
       var frag = document.createDocumentFragment();
+      U.addToFrag(frag, '<input type="hidden" name="uri" value="{0}" />'.format(model.get('_uri')));
   
       var list = _.toArray(meta);
       var propGroups = U.getPropertiesWith(list, "propertyGroupList");
@@ -85,21 +85,22 @@ define([
               continue;
             if (prop.displayNameElm)
               continue;
-            if (!U.isPropVisible(json, prop))
+            if (!U.isPropVisible(json, prop) || prop.readOnly)
               continue;
   
             displayedProps[idx++] = p;
-            json[p] = U.makeProp(prop, json[p]);
+            var pHtml = U.makePropEdit(prop, json[p]);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
   
-            var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
-            if (json[p].name.length + v.length > maxChars)
-              U.addToFrag(frag, this.propRowTemplate2(json[p]));
-            else
-              U.addToFrag(frag, this.propRowTemplate(json[p]));
+//            json[p] = json[p].replace(/(<([^>]+)>)/ig, '').trim();
+            U.addToFrag(frag, pHtml);
+//            if (json[p].name.length + v.length > maxChars)
+//              U.addToFrag(frag, this.propRowTemplate2(json[p]));
+//            else
+//              U.addToFrag(frag, this.propRowTemplate(json[p]));
           }
         }
       }
@@ -120,9 +121,9 @@ define([
           continue;
         if (p == 'davDisplayName')
           continue;
-        if (prop['displayNameElm'])
+        if (prop.displayNameElm)
           continue;
-        if (!U.isPropVisible(json, prop))
+        if (!U.isPropVisible(json, prop) || prop.readOnly)
           continue;
   
         if (displayedProps.length  &&  !groupNameDisplayed) {
@@ -131,19 +132,21 @@ define([
           groupNameDisplayed = true;
         }
         
-        json[p] = U.makeProp(prop, json[p]);
-        var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+        var pHtml = U.makePropEdit(prop, json[p]);
+//        var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
         if (otherLi) {
-          if (json[p].name.length + v.length > maxChars)
-            otherLi += this.propRowTemplate2(json[p]);
-          else
-            otherLi += this.propRowTemplate(json[p]);
+//          if (json[p].name.length + v.length > maxChars)
+//            otherLi += this.propRowTemplate2(json[p]);
+//          else
+//            otherLi += this.propRowTemplate(json[p]);
+          otherLi += pHtml;
         }
         else {
-          if (json[p].name.length + v.length > maxChars)
-            U.addToFrag(frag, this.propRowTemplate2(json[p]));
-          else
-            U.addToFrag(frag, this.propRowTemplate(json[p]));
+//          if (json[p].name.length + v.length > maxChars)
+//            U.addToFrag(frag, this.propRowTemplate2(json[p]));
+//          else
+//            U.addToFrag(frag, this.propRowTemplate(json[p]));
+          U.addToFrag(frag, pHtml);
         }
       }
       

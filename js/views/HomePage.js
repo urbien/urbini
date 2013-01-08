@@ -32,5 +32,7 @@ define([
       this.first = false;
       return this;
     }
+  }, {
+    displayName: 'HomePage'
   });
 });

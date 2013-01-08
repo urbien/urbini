@@ -4,7 +4,7 @@
   <base href="serverName" />
   <title>Urbien App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
-  <script src="mobileBoot/boot.js"></script>  
+  <script src="mobileBoot/boot.js"></script>
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">
   <file />

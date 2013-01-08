@@ -101,6 +101,8 @@ define([
       _shortUri: {type: "resource"}
     },
     myInterfaces : {}
+  }, {
+    displayName: 'Resource'
   });
   
   Resource.properties = _.clone(Resource.myProperties);

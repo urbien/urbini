@@ -11,19 +11,18 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
-//  'cache!views/EditButton',  
-  'cache!views/ResourceView',
+  'cache!views/EditView',
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, /*EditButton,*/ ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel, __jqm__) {
   return Backbone.View.extend({
     clicked: false,
     initialize: function() {
       _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
   //    this.model.on('change', this.render, this);
-      this.template = _.template(Templates.get('resource'));
-      this.TAG = "ViewPage";
+      this.template = _.template(Templates.get('resourceEdit'));
+      this.TAG = "EditPage";
       this.router = G.Router || Backbone.History;
       Events.on("mapReady", this.showMapButton);
     },
@@ -44,7 +43,7 @@ define([
       G.Router.navigate('menu/' + U.encode(window.location.hash.slice(5)), {trigger: true, replace: false});
     },
     home: function() {
-//      this.router.navigate(G.homePage, {trigger: true, replace: false});
+//      this.router.navigate('', {trigger: true, replace: false});
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
@@ -87,10 +86,10 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
       this.imageView.render();
-      this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
+      this.view = new EditView({el: $('ul#resourceEditView', this.el), model: this.model});
       this.view.render();
-      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
-      this.cp.render();      
+//      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
+//      this.cp.render();      
 //      this.editBtn = new EditButton({el: $('#edit', this.el), model: this.model});
 //      this.editBtn.render();
       if (!this.$el.parentNode) 
@@ -100,6 +99,6 @@ define([
       return this;
     }
   }, {
-    displayName: 'ViewPage'
+    displayName: 'EditPage'
   });
 });

@@ -25,6 +25,7 @@ define([
     models: [Resource],
     shortNameToModel: {Resource: Resource},
     typeToModel: {},
+    shortNameToEnum: {},
     fetchModels: function(models, options) {
       models = models ? (typeof models === 'string' ? [models] : models) : _.union(Voc.changedModels, Voc.newModels);      
       options = options || {};
@@ -128,15 +129,21 @@ define([
         
         var newModels = [];
         for (var i = 0; i < mz.length; i++) {
-          var p = mz[i].path;
+          var newModelJson = mz[i];
+          var p = newModelJson.path;
           var lastDot = p.lastIndexOf('.');
           var path = p.slice(0, lastDot);
           var name = p.slice(lastDot + 1);
-          var sup = mz[i].sPath;
+          var sup = newModelJson.sPath;
           
           // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-          var m = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(mz[i].p, mz[i].s);
-          U.pushUniq(newModels, m);
+          var newModel;
+          if (newModelJson.s.enumeration)
+            newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
+          else
+            newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
+          
+          U.pushUniq(newModels, newModel);
         }
         
         for (var i = 0; i < newModels.length; i++) {
@@ -317,8 +324,16 @@ define([
         return;
       
   //    m.lastModified = new Date().getTime();
-      Voc.shortNameToModel[m.shortName] = m;
-      Voc.typeToModel[m.type] = m;
+      var sn = m.shortName;
+      if (m.enumeration) {
+        Voc.shortNameToEnum[sn] = m;
+        return;
+      }
+      else {
+        Voc.shortNameToModel[sn] = m;
+        Voc.typeToModel[m.type] = m;
+      }
+      
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
       var superProps = m.__super__.constructor.properties;
@@ -379,6 +394,7 @@ define([
         return;
     
       var now = G.currentServerTime();
+      var enumModels = {};
       _.each(models, function(model) {
         if (model.type.endsWith('#Resource'))
           return;
@@ -386,8 +402,18 @@ define([
         var modelJson = U.toJSON(model);
         modelJson._dateStored = now;
         modelJson._super = model.__super__.constructor.type;
-        Voc.storeModel(model, modelJson);
-      });  
+        if (model.enumeration)
+          enumModels[model.type] = modelJson;
+        else
+          Voc.storeModel(modelJson);
+      });
+      
+      if (_.size(enumModels)) {
+        var enums = Voc.getEnumsFromLS();
+        enums = enums ? JSON.parse(enums) : {};
+        _.extend(enums, enumModels);
+        Voc.storeEnumsInLS(enums);
+      }
     },
 
     loadModel: function(modelJson, sUri, superName) {
@@ -472,14 +498,24 @@ define([
       
       return unloaded;
     },
-    
+
+    getEnumsFromLS: function() {
+      return localStorage.getItem('enumerations');
+    },
+
+    storeEnumsInLS: function(enums) {
+      setTimeout(function() {
+        G.localStorage.putAsync('enumerations', JSON.stringify(enums));
+      }, 100);
+    },
+
     getModelFromLS: function(uri) {
       return localStorage.getItem('model:' + uri);
     },
     
-    storeModel: function(model, modelJson) {
+    storeModel: function(modelJson) {
       setTimeout(function() {
-        G.localStorage.putAsync('model:' + model.type, JSON.stringify(modelJson));
+        G.localStorage.putAsync('model:' + modelJson.type, JSON.stringify(modelJson));
       }, 100);
     },
 
@@ -495,7 +531,7 @@ define([
       var type;
       if (hash.startsWith('http'))
         type = decodeURIComponent(hash);
-      else if (hash.match('^view|menu')) {
+      else if (hash.match('^view|menu|edit')) {
         type = decodeURIComponent(hash.slice(5)).replace(G.sqlUrl + '/', 'http://');
         
         qIdx = type.indexOf('?');
@@ -507,6 +543,17 @@ define([
 
       type = type.startsWith('http://') ? type : G.defaultVocPath + type;
       Voc.currentModel = type;
+    },
+    
+    loadEnums: function() {
+      var enums = Voc.getEnumsFromLS();
+      if (!enums)
+        return;
+      
+      enums = JSON.parse(enums);
+      for (var type in enums) {
+        Voc.initModel(Backbone.Model.extend({}, enums[type]));
+      }
     },
     
     loadStoredModels: function(options) {
@@ -530,6 +577,9 @@ define([
         
         return; // TODO: use indexedDB
       }
+      
+      if (!_.size(Voc.shortNameToEnum))
+        Voc.loadEnums();
       
       var extraModels;
       var typeToJSON = {};

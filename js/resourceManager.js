@@ -574,6 +574,9 @@ define([
       var created = [];
       for (var i = 0; i < models.length; i++) {
         var name = models[i];
+        if (Voc.shortNameToEnum[name])
+          continue;
+        
         if (RM.tableExists(name)) {
           if (reset || _.contains(toDel, name)) {
             try {

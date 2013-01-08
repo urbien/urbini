@@ -19,7 +19,7 @@ define([
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.router = G.app.router || Backbone.history;
+      this.router = G.Router || Backbone.history;
       this.TAG = 'MenuPage';
       Events.on("mapReady", this.showMapButton);
     },
