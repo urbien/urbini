@@ -88,7 +88,6 @@ define([
       var style = {doCluster: true, highlight: true, zoom: false};
       var name = this.model.shortName;
       map.addGeoJsonPoints({name: gj}, null, clusterStyle, null, style);
-      map.addSizeButton(this.$el[0]);
       map.addReZoomButton(bbox);
       var dName = this.model.displayName;
       dName = dName.endsWith('s') ? dName : dName + 's';
