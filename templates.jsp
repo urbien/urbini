@@ -397,7 +397,7 @@
 <script type="text/template" id="enumPET">
   <label for="{{= shortName }}" class="select">{{= name }}</label>
   <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false">
-    <option>{{= typeof value === 'undefined' ? '' : value }}</option>
+    <option>{{= value || '' }}</option>
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
     {{   var pProps = options[o]; }}

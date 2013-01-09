@@ -700,10 +700,7 @@ define([
     },
     
     getDisplayName: function(prop) {
-      if (prop.label)
-        return prop.label;
-      else
-        return prop.shortName.uncamelize(true);
+      return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
     isAssignableFrom: function(model, className, type2Model) {
@@ -738,8 +735,8 @@ define([
       }
       
       var propTemplate = Templates.getPropTemplate(prop);
-      val = val.displayName ? val : {value: val};
-      return {name: prop.label || U.getDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
+      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
+      return {name: U.getDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
     makePropEdit: function(prop, val) {
@@ -751,6 +748,7 @@ define([
         val.options = G.Voc.shortNameToEnum[facet].values;
       }
       
+      val.value = val.value || null;
       val.name = U.getDisplayName(prop);
       val.shortName = prop.shortName;
       var facet = prop.facet;

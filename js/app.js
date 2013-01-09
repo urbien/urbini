@@ -35,8 +35,8 @@ define('app', [
     
     var error = this.validate(attrs, options);
     if (!error) {
-      if (options.success)
-        options.success(this, options);
+      if (options.validated)
+        options.validated(this, options);
       
       return true;
     }

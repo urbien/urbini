@@ -68,7 +68,7 @@ define([
 
       model.lastFetchOrigin = 'edit';
 //      model.on('change', onSuccess, this);
-      model.set(change, {validateAll: false, error: onError, success: onSuccess});
+      model.set(change, {validateAll: false, error: onError, validated: onSuccess});
     },
     cancel: function() {
     },
@@ -218,8 +218,8 @@ define([
           var change = {};
           change[this.name] = this.value === '' ? undefined : this.value;
           model.lastFetchOrigin = 'edit';
-          model.on('change', onSuccess, this);
-          model.set(change, {validateAll: false, error: onError, success: onSuccess});
+//          model.on('change', onSuccess, this);
+          model.set(change, {validateAll: false, error: onError, validated: onSuccess});
         };
         
         jin.focusout(onFocusout);

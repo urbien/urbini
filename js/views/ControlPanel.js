@@ -60,8 +60,8 @@ define([
       if (propGroups) {
         for (var i=0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
-          var pgName = grMeta["displayName"];
-          var props = grMeta["propertyGroupList"].split(",");
+          var pgName = U.getDisplayName(grMeta);
+          var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
@@ -80,7 +80,7 @@ define([
   
             displayedProps[idx++] = p;
 //            json[p] = U.makeProp(prop, json[p]);
-            var n = prop.displayName;
+            var n = U.getDisplayName(prop);
             var range = prop.range; 
             var isPropEditable = U.isPropEditable(json, prop);
             
@@ -155,9 +155,9 @@ define([
         var isPropEditable = U.isPropEditable(json, prop);
         var doShow = false;
 //        json[p] = U.makeProp(prop, json[p]);
-        var n = prop.displayName;
+        var n = U.getDisplayName(prop);
         var cnt;
-        if (!_.has(json, p)) {
+        if (!_.has(json,p)) {
           cnt = count > 0 ? count : 0;
           if (cnt != 0 || isPropEditable)
             doShow = true;
