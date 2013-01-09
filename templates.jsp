@@ -264,13 +264,13 @@
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div><br/>
-  <form data-ajax="false" action="proppatch">
-    <ul data-role="listview" data-theme="c" id="resourceEditView" class="action-list" data-inset="true">
+  <form data-ajax="false" id="editForm" action="proppatch">
+    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <fieldset class="ui-grid-a">
-      <div class="ui-block-a"><button type="submit" data-theme="a">Submit</button></div>
-      <div class="ui-block-b"><button type="submit" data-theme="d">Cancel</button></div>
+      <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
+      <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
     </fieldset>
   </form>
 </div>
@@ -380,59 +380,51 @@
 
 
 <!-- EDIT TEMPLATES -->
-<!--script type="text/template" id="emailPET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}">{{= displayName }}</label>
-    <input type="email" name="{{= shortName }}" value="{{= value }}" />
-  </li>
+<script type="text/template" id="emailPET">
+  <label for="{{= shortName }}">{{= name }}</label>
+  <input type="email" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes.join(' ') }}" {{= rules.join(' ') }} />
+</script>
+
+<script type="text/template" id="editRowTemplate">
+  <li data-role="fieldcontain">{{= value }}</li>
 </script>
 
 <script type="text/template" id="telPET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}">{{= displayName }}</label>
-    <input type="tel" name="{{= shortName }}" value="{{= value }}" />
-  </li>
-</script-->
+  <label for="{{= shortName }}">{{= name }}</label>
+  <input type="tel" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}"  />
+</script>
 
 <script type="text/template" id="enumPET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}" class="select">{{= name }}</label>
-    <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false">
-      <option>{{= typeof value === 'undefined' ? '' : value }}</option>
-      {{ for (var o in options) { }} 
-      {{   if (o === value) continue; }}
-      {{   var props = options[o]; }}
-      <option value="{{= escape(props.displayName) }}">{{= props.label || props.displayName }}</option>
-      {{ } }}
-    </select>
-  </li>
+  <label for="{{= shortName }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false">
+    <option>{{= typeof value === 'undefined' ? '' : value }}</option>
+    {{ for (var o in options) { }} 
+    {{   if (o === value) continue; }}
+    {{   var pProps = options[o]; }}
+    <option value="{{= pProps.displayName }}">{{= pProps.label || pProps.displayName }}</option>
+    {{ } }}
+  </select>
 </script>
 
 <script type="text/template" id="stringPET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}">{{= name }}:</label> 
-    <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : escape(value) }}" />
-  </li>
+  <label for="{{= shortName }}">{{= name }}:</label> 
+  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </script>
 
 <script type="text/template" id="resourcePET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}" class="select">{{= name }}</label>
-    <select name="{{= shortName }}" id="{{= shortName }}">
-      <option value="{{= escape(value) }}">{{= displayName }}</option>
-      <option value="test">Not supported</option>
-    </select>
-  </li>
+  <label for="{{= shortName }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}">
+    <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
+    <option value="test">Not supported</option>
+  </select>
 </script>
 
 <script type="text/template" id="booleanPET">
-  <li data-role="fieldcontain">
-    <label for="{{= shortName }}">{{= name }}</label>
-    <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider">
-      <option>{{= typeof value === 'undefined' ? false : value }}</option>
-      <option>{{= typeof value === 'undefined' ? !value : false }}</option>
-    </select>
-  </li>
+  <label for="{{= shortName }}">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider">
+    <option>{{= typeof value === 'undefined' ? false : value }}</option>
+    <option>{{= typeof value === 'undefined' ? !value : false }}</option>
+  </select>
 </script>
 
 <!-- END EDIT TEMPLATES -->

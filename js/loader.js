@@ -1268,6 +1268,7 @@ define('globals', function() {
       jquery: 'lib/jquery',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.2.0',
+      validator: 'lib/jquery.validate',
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
@@ -1280,6 +1281,7 @@ define('globals', function() {
     shim: {
       leafletMarkerCluster: ['leaflet'],
       jqueryMasonry: ['jquery'],
+      validator: ['jquery'],
       jqueryImagesloaded: ['jquery'],
       queryIndexedDB: ['indexedDBShim']
     }

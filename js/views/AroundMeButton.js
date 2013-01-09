@@ -64,7 +64,7 @@ define([
         timestamp: new Date().getTime()
       };
       
-      Backbone.history.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+      Backbone.history.navigate(encodeURIComponent(model.type) + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
       return this;
     }
   },

@@ -97,6 +97,7 @@ define([
           if (status != 'success') {
             G.log(Voc.TAG, 'error', "couldn't fetch models");
             onErr(arguments[0].status);
+            return;
           }
           
           var responseText = xhr.responseText;
@@ -541,6 +542,9 @@ define([
       else
         type = decodeURIComponent(hash);
 
+      if (type === 'profile')
+        return (G.currentUser.guest ? null : G.currentUser.type._uri);
+            
       type = type.startsWith('http://') ? type : G.defaultVocPath + type;
       Voc.currentModel = type;
     },

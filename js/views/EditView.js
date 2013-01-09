@@ -1,6 +1,7 @@
 define([
   'globals',
   'cache!jquery', 
+//  'cache!validator', 
   'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
@@ -8,18 +9,68 @@ define([
   'cache!events', 
   'cache!utils',
   'cache!vocManager'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc) {
+], function(G, $, /*__jqValidate__,*/ __jqm__, _, Backbone, Templates, Events, U, Voc) {
+  var willShow = function(p, prop, json, role) {          
+    return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(json, prop, role);
+  };
+  
   return Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel'); // fixes loss of context for 'this' within methods
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
+      this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
       this.model.on('change', this.refresh, this);
       this.TAG = 'EditView';
-  //    Lablz.Events.on('refresh', this.refresh);
       return this;
     },
     events: {
+      'submit form': 'submit',
+      'cancel form': 'cancel',
       'click': 'click'
+    },
+    submit: function(e) {
+      e.preventDefault();
+      console.log('form submitted');
+      var onSuccess = function() {
+//        model.off('change', onSuccess);
+        $.ajax({type:'POST', url: 'proppatch', data: form.serialize(), success: function(response) {
+          alert(response);
+        }});
+      };
+      
+      var form = this.$form;
+      var onError = function(model, errors) {
+        for (name in errors) {
+          var err = form.find('input[name="' + name + '"]');
+          var msg = errors[name];
+          if (err.length)
+            err[0].innerText = msg;
+          else {
+            var label = doc.createElement('label');
+            label.innerHTML = msg;
+            label.setAttribute('for', name);
+            label.setAttribute('class', 'error');
+            input.parentNode.insertBefore(label, input.nextSibling);
+          }
+        }
+        
+        alert('There are errors in the form, please review');
+      };
+//
+      var inputs = this.$('input');
+      var change = {}, model = this.model;
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var name = input.name;
+        var val = input.value;
+        change[name] = val;
+      }
+
+      model.lastFetchOrigin = 'edit';
+//      model.on('change', onSuccess, this);
+      model.set(change, {validateAll: false, error: onError, success: onSuccess});
+    },
+    cancel: function() {
     },
     refresh: function() {
       var collection, modified;
@@ -30,16 +81,15 @@ define([
           return this;
       }
       
-      if (this.$el.hasClass('ui-listview')) {
+      if (this.$ul.hasClass('ui-listview')) {
         var lis = this.$('li').detach();
         this.render();
-        this.$el.trigger('create');
-        this.$el.listview('refresh');
+        this.$ul.trigger('create');
+        this.$ul.listview('refresh');
       }
       else
-        this.$el.listview().listview('refresh');
+        this.$ul.listview().listview('refresh');
     },
-//    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
@@ -62,6 +112,9 @@ define([
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
+      var rules = {};
+      var role = U.getUserRole();
+      var userRole = U.getUserRole();
       if (propGroups) {
         for (var i=0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
@@ -71,36 +124,25 @@ define([
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
             var prop = meta[p];
-            if (!_.has(json, p) || _.contains(backlinks, prop)) //  || _.contains(gridCols, p))
+            if (_.contains(backlinks, prop)) //  || _.contains(gridCols, p))
               continue;
             
             if (!prop) {
               delete json[p];
               continue;
             }
-                  
-            if (p.charAt(0) == '_')
-              continue;
-            if (p == 'davDisplayName')
-              continue;
-            if (prop.displayNameElm)
-              continue;
-            if (!U.isPropVisible(json, prop) || prop.readOnly)
+
+            if (!willShow(p, prop, json, userRole))
               continue;
   
             displayedProps[idx++] = p;
-            var pHtml = U.makePropEdit(prop, json[p]);
+            var pHtml = U.makePropEdit(prop, json[p], userRole);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
   
-//            json[p] = json[p].replace(/(<([^>]+)>)/ig, '').trim();
-            U.addToFrag(frag, pHtml);
-//            if (json[p].name.length + v.length > maxChars)
-//              U.addToFrag(frag, this.propRowTemplate2(json[p]));
-//            else
-//              U.addToFrag(frag, this.propRowTemplate(json[p]));
+            U.addToFrag(frag, this.editRowTemplate(pHtml));
           }
         }
       }
@@ -109,7 +151,7 @@ define([
       groupNameDisplayed = false;
       for (var p in json) {
         var prop = meta[p];
-        if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, prop))
+        if ((displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, prop))
           continue;
         
         if (!prop) {
@@ -117,36 +159,21 @@ define([
           continue;
         }
               
-        if (p.charAt(0) == '_')
-          continue;
-        if (p == 'davDisplayName')
-          continue;
-        if (prop.displayNameElm)
-          continue;
-        if (!U.isPropVisible(json, prop) || prop.readOnly)
+        if (!willShow(p, prop, json, userRole))
           continue;
   
         if (displayedProps.length  &&  !groupNameDisplayed) {
           otherLi = '<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">';
-  //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
         
-        var pHtml = U.makePropEdit(prop, json[p]);
-//        var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+        displayedProps[idx++] = p;
+        var pHtml = U.makePropEdit(prop, json[p], userRole);
         if (otherLi) {
-//          if (json[p].name.length + v.length > maxChars)
-//            otherLi += this.propRowTemplate2(json[p]);
-//          else
-//            otherLi += this.propRowTemplate(json[p]);
-          otherLi += pHtml;
+          otherLi += this.editRowTemplate(pHtml);
         }
         else {
-//          if (json[p].name.length + v.length > maxChars)
-//            U.addToFrag(frag, this.propRowTemplate2(json[p]));
-//          else
-//            U.addToFrag(frag, this.propRowTemplate(json[p]));
-          U.addToFrag(frag, pHtml);
+          U.addToFrag(frag, this.editRowTemplate(pHtml));
         }
       }
       
@@ -154,15 +181,50 @@ define([
         otherLi += "</ul></li>";
         U.addToFrag(frag, otherLi);
       }
-  //    if (displayedProps.length  &&  groupNameDisplayed)
-  //      this.$el.append("</ul></li>");
-      
-  //    var j = {"props": json};
-  //    this.$el.html(html);
+
       if (!options || options.setHTML)
-        this.$el.html(frag);
-      var self = this;
-  
+        (this.$ul = this.$('#fieldsList')).html(frag);
+      
+      var doc = document;
+      this.$form = form = this.$('form');
+      var inputs = form.find('input');
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var name = input.name;
+        var jin = $(input);
+        var jparent = jin.parent();
+        var onFocusout = function() {
+          var self = this;
+          var onSuccess = function() {
+//            model.off('change', onSuccess);
+//            jparent.find('label[generated="true"]').remove();
+          };
+          
+          var onError = function(model, errors) {
+            var err = jparent.find('label[generated="true"]');
+            var msg = errors[name];
+            if (err.length)
+              err[0].innerHTML = msg;
+            else {
+              var label = doc.createElement('label');
+              label.innerHTML = msg;
+              label.setAttribute('for', name);
+              label.setAttribute('generated', 'true');
+              label.setAttribute('class', 'error');
+              input.parentNode.insertBefore(label, input.nextSibling);
+            }
+          };
+        
+          var change = {};
+          change[this.name] = this.value === '' ? undefined : this.value;
+          model.lastFetchOrigin = 'edit';
+          model.on('change', onSuccess, this);
+          model.set(change, {validateAll: false, error: onError, success: onSuccess});
+        };
+        
+        jin.focusout(onFocusout);
+      }
+      
       this.rendered = true;
       return this;
     }

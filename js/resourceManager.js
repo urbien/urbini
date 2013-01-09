@@ -179,7 +179,7 @@ define([
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
-//        isUpdate = true;
+        isUpdate = true;
 //        var timestamp = results[0]._lastFetchedOn;
         var lf = RM.getLastFetched(results, now);
         if (RM.isStale(lf, now))

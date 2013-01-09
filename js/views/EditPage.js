@@ -86,7 +86,7 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
       this.imageView.render();
-      this.view = new EditView({el: $('ul#resourceEditView', this.el), model: this.model});
+      this.view = new EditView({el: $('#resourceEditView', this.el), model: this.model});
       this.view.render();
 //      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
 //      this.cp.render();      

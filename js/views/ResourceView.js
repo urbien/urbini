@@ -23,6 +23,9 @@ define([
       'click': 'click'
     },
     refresh: function() {
+      if (this.model.lastFetchOrigin === 'edit')
+        return;
+      
       var collection, modified;
       if (arguments[0] instanceof Backbone.Collection) {
         collection = arguments[0];
@@ -120,7 +123,7 @@ define([
           continue;
         if (p == 'davDisplayName')
           continue;
-        if (prop['displayNameElm'])
+        if (prop.displayNameElm)
           continue;
         if (!U.isPropVisible(json, prop))
           continue;
@@ -164,6 +167,6 @@ define([
       return this;
     }
   }, {
-    displayName: 'EditView'
+    displayName: 'ResourceView'
   });
 });

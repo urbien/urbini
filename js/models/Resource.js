@@ -43,40 +43,64 @@ define([
       this.loaded = true;
       return resp;
     },
+    
     validate: function(attrs) {
+      if (this.lastFetchOrigin !== 'edit')
+        return;
+      
+      var errors = {};
       for (var name in attrs) {
-        var validated = this.validateProperty(name, attrs[name]);
-        if (validated !== true)
-          return typeof validated === 'string' ? error : "Please enter a valid " + name;
+        var error = this.validateProperty(name, attrs[name]);
+        if (error !== true)
+          errors[name] = typeof error === 'string' ? error : "Please enter a valid " + name;
       }
+      
+      if (_.size(errors))
+        return errors;
     },
+    
     validateProperty: function(name, value) {
-      var meta = this.constructor.properties[name];
-      if (!meta)
+      var prop = this.constructor.properties[name];
+      if (!prop)
         return true;
       
-      var type = meta.type;
-      if (type == 'email')
-        return U.validateEmail(value) || false;
-//      else if (type == 'tel')
-//        return U.validateTel(value) || false;
-        
-      // check annotations
-      var anns = meta.annotations;
-      if (!anns)
-        return true;
-      
-      for (var i = 0; i < anns.length; i++) {
-        var error;
-        switch (anns[i]) {
-          case "@r":
-            error = value == null && (name + " is required");
-            break;
-        }
-        
-        if (typeof error != 'undefined')
-          return error;
+      if (value == null || value === '') {
+        if (prop.required)
+          return '<em>'+ name + '</em>' + ' is a required field';
+        else
+          return true;
       }
+      else if (value === this.get(name))
+        return true;
+      
+      if (prop.range === 'enum')
+        return true;
+      
+      var facet = prop.facet;
+      if (facet) {
+        if (facet.endsWith('emailAddress'))
+          return U.validateEmail(value) || 'Please enter a valid email';
+        else if (facet.toLowerCase().endsWith('phone'))
+          return U.validatePhone(value) || 'Please enter a valid phone number';
+      }
+        
+      var cloneOf = prop.cloneOf;
+      if (cloneOf) {
+        if (/^Address1?\.postalCode1?$/.test(cloneOf))
+          return U.validateZip(value) || 'Please enter a valid Postal Code';
+      }
+
+//      for (var name in prop) {
+//        var error;
+//        switch (name) {
+//          case "required":
+//            error = value == null && (name + " is required");
+//            break;
+//        }
+//        
+//        if (typeof error != 'undefined')
+//          return error;
+//      }
       
       return true;
     },

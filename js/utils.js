@@ -29,12 +29,17 @@ define([
     return (this.match("^"+str)==str);
   };
   
-  String.prototype.toCamelCase = function(capitalFirst) {
+  String.prototype.camelize = function(capitalFirst) {
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
       return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
   };
-  
+
+  String.prototype.uncamelize = function(capitalFirst) {
+    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
+    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
+  };
+
   String.prototype.endsWith = function(str) {
     return (this.match(str+"$")==str);
   };
@@ -44,55 +49,73 @@ define([
   };
 
   var U = {
-    TAG: 'Utils',
-    isPropVisible: function(res, prop) {
+    TAG: 'Utils',    
+    isPropVisible: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
         return false;
       
-      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
         return true;
       
       var ar = prop.allowRoles;
-      return ar ? U.isUserInRole(userRole, ar) : true;
+      return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
 
-    isUserInRole: function(userRole, ar) {
+    getUserRole: function() {
+      return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+    },
+    
+    isUserInRole: function(userRole, ar, res) {
       if (userRole == 'guest')
         return false;
       
-      var roles = ar.split(",");
+      var me = G.currentUser._uri;
+      var iAmRes = me === res._uri;
+      var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
         if (r == 'admin')
           return false;
         else if (r == 'siteOwner')
           return userRole == 'siteOwner';
+        else if (r == 'owner')
+          return false; // TODO: implement this
         else {
-          // TODO: implement this
+          if (r === 'self') 
+            return iAmRes;
+          else if (r.endsWith('self')){
+            r = r.split('==');
+            var pName = r[0];
+            return me == res[pName];
+          }
           
+          // TODO: implement this          
           return false;
         }
       }
+      
       return true;
     },
-    isPropEditable: function(res, prop) {
+    
+    isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
         return false;
-      
-      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+
+      userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
         return true;
       
       var ar = prop.allowRoles;
       var isVisible;
       if (ar) {
-        isUserInRole = U.isUserInRole(userRole, ar);
+        isUserInRole = U.isUserInRole(userRole, ar, res);
         if (!isUserInRole)
           return false;
       }
+      
       ar = prop.allowRolesToEdit;
-      return ar ? U.isUserInRole(userRole, ar) : true;
+      return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
     
 //    getSortProps: function(model) {
@@ -215,6 +238,15 @@ define([
         // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?...
         return qIdx === -1 ? G.defaultVocPath + uri : G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
       }
+    },
+
+    phoneRegex: /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/,
+    validatePhone: function(phone) {
+      return U.phoneRegex.test(phone);
+    },
+    
+    validateZip: function(zip) {
+      return /^\d{5}|\d{5}-\d{4}$/.test(zip);
     },
     
     validateEmail: function(email) { 
@@ -671,7 +703,7 @@ define([
       if (prop.label)
         return prop.label;
       else
-        return prop.shortName.toCamelCase(true);
+        return prop.shortName.uncamelize(true);
     },
     
     isAssignableFrom: function(model, className, type2Model) {
@@ -712,7 +744,7 @@ define([
     
     makePropEdit: function(prop, val) {
       var propTemplate = Templates.getPropTemplate(prop, true);
-      val = val.displayName ? val : {value: val};
+      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
       if (propTemplate === 'enumPET') {
         var facet = prop.facet;
         facet = facet.slice(facet.lastIndexOf('/') + 1);
@@ -721,14 +753,22 @@ define([
       
       val.name = U.getDisplayName(prop);
       val.shortName = prop.shortName;
-      var r = prop.range;
-      if (r.endsWith('emailAddress'))
-        val.type = 'email';
-      else if (r.endsWith('mobilePhone'))
-        val.type = 'tel';
+      var facet = prop.facet;
+      if (facet) {
+        if (facet.endsWith('emailAddress'))
+          val.type = 'email';
+        else if (facet.toLowerCase().endsWith('phone'))
+          val.type = 'tel';
+      }
       
-//      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
-      return _.template(Templates.get(propTemplate))(val);
+      var classes = val.classes = [];
+      var rules = val.rules= [];
+      if (prop.required)
+        classes.push('required');
+      if (prop.maxSize)
+        rules.push('maxlength');
+      
+      return {value: _.template(Templates.get(propTemplate))(val)};
     },
     
 //    /**

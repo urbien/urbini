@@ -128,7 +128,7 @@ define([
       
       var self = this;
       var params = oParams.split("?");
-      var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
+      var typeUri = U.getTypeUri(decodeURIComponent(params[0]), Voc);
       var className = U.getClassName(typeUri);
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
@@ -246,8 +246,11 @@ define([
       
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (!G.currentUser.guest)
-          this.view(U.encode(G.currentUser._uri) + "?" + p, Array.prototype.slice.call(arguments, 1));
+        if (!G.currentUser.guest) {
+          var other = Array.prototype.slice.call(arguments, 1);
+          other = other.length ? other : undefined;
+          this.view(U.encode(G.currentUser._uri) + "?" + p, other);
+        }
         else
           window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         
@@ -328,7 +331,7 @@ define([
       var paintMap;
       var success = function(data) {
         self.changePage(v);
-        success: Voc.fetchModelsForLinkedResources(res);
+        Voc.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
       

@@ -78,6 +78,7 @@ define([
   
       var map = this.mapper = new Mapper(div);
       map.addMap(G.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
+      var zoom = map.initialZoom;
   //        , {'load': function() {
   //      Events.trigger('mapReady', this.model);
   //      this.$el.append(frag);
@@ -87,9 +88,12 @@ define([
       var clusterStyle = {singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false};
       var style = {doCluster: true, highlight: true, zoom: false};
       var name = this.model.shortName;
-      map.addGeoJsonPoints({name: gj}, null, clusterStyle, null, style);
-      map.addSizeButton(this.$el[0]);
-      map.addReZoomButton(bbox);
+      var geoJson = {};
+      geoJson[name] = gj;
+      map.addGeoJsonPoints(geoJson, null, clusterStyle, null, style);
+//      map.addSizeButton(this.$el[0]);
+//      map.addReZoomButton({zoom: zoom, center: center});
+      map.addReZoomButton({bounds: bbox})
       var dName = this.model.displayName;
       dName = dName.endsWith('s') ? dName : dName + 's';
       var basicInfo = map.addBasicMapInfo(dName);
@@ -204,10 +208,7 @@ define([
         
         if (metadata.bbox) {
           var b = metadata.bbox;
-          b[0][0] = Math.min(b[0][0], bbox[0][0]);
-          b[0][1] = Math.min(b[0][1], bbox[0][1]);
-          b[1][0] = Math.max(b[1][0], bbox[1][0]);
-          b[1][1] = Math.max(b[1][1], bbox[1][1]);
+          Mapper.adjustBounds(b, coords, isShape ? 'Polygon' : 'Point');
         }
         else
           metadata.bbox = bbox; 
