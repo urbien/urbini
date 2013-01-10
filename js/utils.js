@@ -333,6 +333,8 @@ define([
         _.each(cols, function (col) {
           col = col.trim();
           var prop = mConstructor.properties[col];
+          if (!prop)
+            return;
           var val = m.get(col);
           if (!val) {
             var pGr = prop.propertyGroupList;
