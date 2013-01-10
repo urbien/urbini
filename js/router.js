@@ -93,20 +93,20 @@ define([
           homePage.render();
           this.currentView = homePage;
           var idx = window.location.href.indexOf('#');
-          this.currentUrl = window.location.href.substring(0, idx);
+          this.currentUrl = (idx == -1) ? window.location.href : window.location.href.substring(0, idx);
         }
         else {
           this.currentUrl = this.urlsStack.pop();
 //          if (!this.viewsStack.length)
 //            this.currentView = $.mobile.firstPage;
         }
+        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
       else {
         this.currentUrl = window.location.href;
         homePage.render();
         this.currentView = homePage;
-//        $.mobile.changePage(this.currentView, {changeHash:false, transition: 'slide', reverse: true});
       }
     },
     
@@ -134,7 +134,7 @@ define([
       if (query) {
         var q = query.split("&");
         for (var i = 0; i < q.length; i++) {
-          if (q[i].indexOf("$page") == 0) {
+          if (q[i] == "$page") {
             this.page = parseInt(q[i].split("=")[1]); // page is special because we need it for lookup in db
             q.remove(i);
             query = q.length ? q.join("&") : null;
@@ -449,7 +449,7 @@ define([
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
         // Check if browser's Back button was clicked
-        else if (!this.clicked  &&  this.viewsStack.length != 0) {
+        else if (this.backClicked  &&  this.viewsStack.length != 0) {
           var url = this.urlsStack[this.viewsStack.length - 1];
           if (url == window.location.href) {
             this.currentView = this.viewsStack.pop();
@@ -458,7 +458,7 @@ define([
             this.backClicked = true;
           }
         }
-        if (!this.backClicked) {
+        if (!this.backClicked  ||  lostHistory) {
           if (!view.rendered) {
             view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
             view.render();

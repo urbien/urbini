@@ -1,5 +1,5 @@
 /* overriding jqm rules */
-
+/*
 .ui-mobile [data-role="page"], .ui-mobile [data-role="dialog"], .ui-page {
    display: block;
    visibility: hidden;
@@ -11,7 +11,7 @@
 .ui-page-pre-in {
   opacity: 0;
 }
-
+*/
 /* end overriding jqm rules */
 
 html { height: 100%; }
@@ -207,13 +207,6 @@ html { height: 100%; }
   }
 }
 */
-@media (max-width: 320px) {
-  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
-  .nab .anab .galleryItem_css3 img {max-width: 265px;}
-  .nabBoard {width: 282px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
-  #columns {column-count: 1;}
-}
 
 /* big symbols in the top navbar */
 #headerUl .ui-icon {
@@ -239,21 +232,22 @@ html { height: 100%; }
     -webkit-column-fill: auto;
     -webkit-column-width: 230px;
     column-count: auto; 
-    column-gap: 15px;
+    column-gap: 10px;
     column-fill: auto;
-    column-width: 282px;
+    column-width: 230px;
     list-style-type: none;
+    margin-left: -40px;
 }
 
 .pin { 
   -moz-break-before: column;
 /*  -webkit-column-break-before: always;*/
    break-before: column;
-     
+   font-size: 11px; 
    margin: 5px 2px 5px;
    padding: 5px;
    vertical-align: top;
-   /* min-width: 225px; */
+   min-width: 230x; 
  }
 
 .pin1 p {
@@ -269,7 +263,7 @@ html { height: 100%; }
    box-shadow: 0 0px 1px #aaa;
    background: #FEFEFE;
    background-image: linear-gradient(45deg, #FFF, #F9F9F9);
-   
+   width: 100%;
   -moz-break-before: column;
 /*  -webkit-column-break-before: always; */
    break-before: column;
@@ -279,15 +273,20 @@ html { height: 100%; }
 
 @media all and (min-width: 960px) {
     #columns {
-        column-count: auto;
+      column-count: auto;
     }
+}
+@media (max-width: 320px) {
+  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+  .nab .anab .galleryItem_css3 img {max-width: 265px;}
+  .nabBoard {width: 282px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+  #columns {column-count: 1;}
 }
 
 #columns .pin .nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
 #columns .pin .nabRL  { display: inline; }
 #columns .pin .nabRL div { padding: 0px 10px 10px 10px;}
-
-#columns .pin  {font-size: 11px; min-width: 282px;}
 
 #columns .pin .nabRL .btn span {padding-right: 0; }
 
@@ -296,3 +295,4 @@ html { height: 100%; }
 #columns .pin  a {text-decoration: none; color: #757575; }
 #columns  { box-shadow: none;}
 #columns .pin span { padding-right: 12px; }
+#resourceView { font-size: 16px; }
