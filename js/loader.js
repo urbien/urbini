@@ -713,7 +713,7 @@ define('globals', function() {
       } catch(e) {
         if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
-          this.reset(force && function() {
+          ls.reset(force && function() {
             ls.put(key, value)
           });
         } else {
