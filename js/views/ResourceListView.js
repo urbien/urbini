@@ -162,7 +162,6 @@ define([
 //        var numHave = self.rl.models.length;
 //        var numShowing = (self.page + 1) * displayPerPage;
         self.loadingNextPage = false;
-        self.onNextPageFetched();
       };
       
       this.page++;
@@ -210,20 +209,17 @@ define([
       if (this.skipScrollEvent) // wait for a new data portion
         return;
   
-      var pageContainer = $(".ui-page-active");
-      if (pageContainer.height() > $wnd.scrollTop() + $wnd.height())
+      // get next page when till document bottom less then one screen
+      if ($(document).height() > $wnd.scrollTop() + $wnd.height() * 2)
         return;
-     
+
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
       this.skipScrollEvent = true; 
       this.getNextPage();
     },
     
-    onNextPageFetched: function () {
-      var self = this;
-      // use timeout to resume to process scrolling events with purpose
-      // to solve problems with GAP in masonry and endless page missing events 
-      setTimeout( function() { self.skipScrollEvent = false; }, 100);
+    _resumeScrollEventProcessing: function () {
+      this.skipScrollEvent = false;
     },
 
     // masonry bricks alignment
@@ -252,13 +248,13 @@ define([
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); });
+        this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
         return
       }
       
       //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry(); });
+        this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
         return;
       }
       
@@ -268,7 +264,7 @@ define([
      
       // 4. align new bricks, on next page, only
       // filter unaligned "bricks" which do not have calculated, absolute position 
-      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); });
+      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); self._resumeScrollEventProcessing(); });
     }
   });
 });

@@ -8,6 +8,7 @@ js/loader.js
 js/xhrWorker.js
 js/io.js
 js/lib/jquery.mobile-1.2.0.js
+font/fontawesome-webfont.woff
 images/ajax-loader.gif
 lib/images/icons-18-white-pack.png
 <appImages>

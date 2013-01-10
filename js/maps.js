@@ -220,40 +220,49 @@ define([
         };
       };
     }
-  
+
+// Note: not to show maximize icon in mobile mode    
+/*    
     this.addSizeButton = function(mapDiv) {
       'use strict';
       var btn = L.control({position: 'bottomleft'});
       btn.onAdd = function (mapObj) {
         var bounds = mapObj.getBounds();;
-        var maxImg = "<img src='icons/map-fullscreen.png' />";
-        var minImg = "<img src='icons/map-unfullscreen.png' />";
+        // var maxImg = "<img src='icons/map-fullscreen.png' />";
+        // var minImg = "<img src='icons/map-unfullscreen.png' />";
         var div = L.DomUtil.create('div', 'resize');
-        div.innerHTML = maxImg;
+        // div.innerHTML = maxImg;
+        div.innerHTML = "&#61541";
+        div.className += " leaflet-lablz-control";
         div.onclick = function(e) {
           var maximized = mapDiv.innerHTML.indexOf('map-full') == -1;
           if (maximized) {
             // restore
             mapDiv.style.position = 'relative';
             mapDiv.style.height = "";
+            mapDiv.style.width = "";
             document.body.style.overflow = 'auto';
             var parent = document.getElementById("siteResourceList") || document.getElementById("corePageContent") || document.getElementById("sidebarDiv") || document.getElementById("resourceView");
             parent.insertBefore(mapDiv, parent.firstChild);
-            div.innerHTML = maxImg;
+            // div.innerHTML = maxImg;
+            div.innerHTML = "&#61542";
             mapObj.invalidateSize(true);
             mapObj.fitBounds(bounds);
           }
           else {
             // maximize
-            var scroll = getScrollXY();
-            var wDim = getWindowDimension();
+            var $wnd = jQuery(window);
+            // var scroll = getScrollXY();
+            // var wDim = getWindowDimension();
             mapDiv.style.position = 'absolute';
-            mapDiv.style.top = scroll[1] + "px"; 
-            mapDiv.style.left = scroll[0] + "px"; 
-            mapDiv.style.height = wDim[1] + "px";
+            mapDiv.style.top = $wnd.scrollTop() + "px"; // scroll[1] + "px"; 
+            mapDiv.style.left = $wnd.scrollLeft() + "px"; // scroll[0] + "px"; 
+            mapDiv.style.height = $wnd.height() + "px"; // wDim[1] + "px";
+            mapDiv.style.width = "100%";
             document.body.appendChild(mapDiv);
             document.body.style.overflow = 'hidden';
-            div.innerHTML = minImg;
+            // div.innerHTML = minImg;
+            div.innerHTML = "&#61541";
             mapObj.invalidateSize(true);
           }
         };
@@ -263,13 +272,16 @@ define([
       
       btn.addTo(this.map);  
     };
-  
+*/
+    
     this.addReZoomButton = function(bounds) {
       'use strict';
       var rezoom = L.control({position: 'bottomleft'});
       rezoom.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'rezoom');
-        div.innerHTML = "<img src='icons/homePage.png' />";
+        // div.innerHTML = "<img src='icons/homePage.png' />";
+        div.innerHTML = "&#61461;";
+        div.className = "leaflet-lablz-control";
         div.onclick = function(e) {
           map.fitBounds(bounds);
         };

@@ -119,7 +119,7 @@
 	padding: 5px;
 	background: rgba(0, 0, 0, 0.25);
 	}
-.leaflet-control-zoom a {
+.leaflet-control-zoom a, .leaflet-lablz-control {
 	background-color: rgba(255, 255, 255, 0.75);
 	}
 .leaflet-control-zoom a, .leaflet-control-layers a {
@@ -127,7 +127,7 @@
 	background-repeat: no-repeat;
 	display: block;
 	}
-.leaflet-control-zoom a {
+.leaflet-control-zoom a, .leaflet-lablz-control {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
@@ -141,14 +141,31 @@
 	width: 27px;
 	height: 27px;
 	}
+
+/***************** AWESOME font instead of icons! *****************/
+.leaflet-lablz-control, .leaflet-control-zoom-in:before, .leaflet-control-zoom-out:before {
+    display: inline-block;
+    font-family: FontAwesome !important;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 17px;
+    margin: 1px 0 0 3px;
+}
+
+.leaflet-lablz-control { font-size: 21px; padding: 2px 2px 3px 2px; }
+.leaflet-control-zoom-in:before { content: "\f067"; }
+.leaflet-control-zoom-out:before { content: "\f068"; }
+/*******************************************************************/
+	
 .leaflet-control-zoom-in {
-	background-image: url(/images/leaflet/zoom-in.png);
+	/* background-image: url(/images/leaflet/zoom-in.png); */
 	margin-bottom: 5px;
 	}
+/*
 .leaflet-control-zoom-out {
 	background-image: url(/images/leaflet/zoom-out.png);
 	}
-
+*/
 .leaflet-control-layers {
 	box-shadow: 0 1px 7px #999;
 	background: #f8f8f9;
@@ -344,7 +361,7 @@
 .leaflet-container {
 	background: #ddd;
 	}
-.leaflet-container a {
+.leaflet-container a, .leaflet-lablz-control {
 	color: #0078A8;
 	}
 .leaflet-container a.leaflet-active {
