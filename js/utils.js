@@ -333,10 +333,20 @@ define([
         _.each(cols, function (col) {
           col = col.trim();
           var prop = mConstructor.properties[col];
-          var val = m.get(col);
-          if (!val)
+          if (!prop)
             return;
-          
+          var val = m.get(col);
+          if (!val) {
+            var pGr = prop.propertyGroupList;
+            if (pGr) {
+              var s = prop.label || prop.displayName;
+              var nameVal = {name: s, value: pGr};
+              rows[nameVal.name] = {value : nameVal.value};  
+              rows[nameVal.name].propertyName = col;  
+              rows[nameVal.name].idx = i++;
+            }
+            return;
+          }
           var nameVal = U.makeProp(prop, val);
           rows[nameVal.name] = {value: nameVal.value};
           rows[nameVal.name].idx = i++;
@@ -538,8 +548,57 @@ define([
       }
       return keys;
     },
-
     
+    getDisplayName: function(model, meta) {
+      if (!meta) 
+        meta = model.__proto__.constructor.properties;
+      var dnProps = U.getDisplayNameProps(meta);
+      var dn = '';
+      if (!dnProps  ||  dnProps.length == 0) {
+        var uri = model.get('_uri');
+        var s = uri.split('?');
+        s = decodeURIComponent(uri[1]).split('&');
+        for (var i=0; i<s.length; i++) {
+          if (i)
+            dn += ' ';
+          dn += s[i].split('=')[1]; 
+        }
+        return dn;
+      }
+      var first = true;
+      for (var i=0; i<dnProps.length; i++) {
+        var value = model.get(dnProps[i]);
+        if (value  &&  typeof value != 'undefined') {
+          if (first)
+            first = false;
+          else
+            dn += ' ';
+          dn += (value.displayName) ? value.displayName : value;
+        }
+      }
+      return dn;
+    },
+
+    getTypeTemplate: function(id, model) {
+      var t = G.template;
+      if (!t) 
+        return null;
+      var dataType = model.__proto__.constructor.shortName; 
+      
+      var appTemplates = Templates.get(G.appName);
+      if (!appTemplates) {
+        var elts = $('script[type="text/template"]', $(t));
+        appTemplates = {};
+        for (var i = 0; i < elts.length; i++) 
+          appTemplates[$(elts[i]).attr('data-type') + '-' + elts[i].id] = elts[i].innerHTML;
+
+        Templates.templates[G.appName] = appTemplates;
+      } 
+      
+      var key = model.__proto__.constructor.shortName + '-' + id;
+      var tmpl = appTemplates[key];
+      return (tmpl) ? _.template(tmpl) : null;
+    },
     /// String prototype extensions
     
     getQueryString: function(paramMap, sort) {

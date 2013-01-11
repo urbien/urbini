@@ -5,8 +5,8 @@ define([
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
-  'cache!utils',
   'cache!events', 
+  'cache!utils'
 ], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
   
   return Backbone.View.extend({
@@ -36,8 +36,11 @@ define([
           if (!this.pageTitle) {
             if (this.model instanceof Backbone.Collection) 
               this.pageTitle = this.model.model['pluralName'] || this.model.displayName + 's';
-            else
+            else {
               this.pageTitle = this.model.get('davDisplayName');
+              if (!this.pageTitle) 
+                this.pageTitle = U.getDisplayName(this.model);
+            }
           }
         }
       }
