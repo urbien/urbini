@@ -15,6 +15,9 @@ define([
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
 //    tagName: 'li',
+    
+    IMG_MAX_WIDTH: 205, // value of CSS rule: ".nab .anab .galleryItem_css3 img"
+    
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.template = _.template(Templates.get('masonry-list-item'));
@@ -383,10 +386,21 @@ define([
       var votesFor = tmpl_data['v_showVotesFor'];
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
         tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, Voc) + '&m_p=votes&b_p=votable');
-  
+
       var renabFor = tmpl_data['v_showRenabFor'];
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
         tmpl_data['v_showRenabFor'] = U.encode(U.getLongUri(json[renabFor].value, Voc) + '&m_p=nabs&b_p=forResource');
+      
+      // set size of images included in the items to be able
+      // to start masonry code before images downloading
+      var oWidth  = json["originalWidth"];
+      var oHeight = json["originalHeight"];
+      if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+        var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+        tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
+        tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
+      }
+      
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {

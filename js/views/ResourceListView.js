@@ -245,16 +245,34 @@ define([
                   
                   return !hasClass;
                 });
+
+      // if image(s) has width and height parameters then possible to align masonry
+      // before inner images downloading complete. Detect it through image in 1st 'brick' 
+      var img = $('img', $allBricks[0]);
+      
+      // TODO: restrict size of user thumbnait to be able to call masonry without "imagesLoaded"
+      var hasImgSize = false;
+      // var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
+        if (hasImgSize) {
+          this.$el.masonry( 'reload' );
+          this._resumeScrollEventProcessing();
+        }
+        else  
+          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
         return
       }
       
       //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
+        if (hasImgSize) {
+          this.$el.masonry();
+          this._resumeScrollEventProcessing();
+        }
+        else  
+          this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
         return;
       }
       
@@ -264,7 +282,12 @@ define([
      
       // 4. align new bricks, on next page, only
       // filter unaligned "bricks" which do not have calculated, absolute position 
-      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); self._resumeScrollEventProcessing(); });
+      if (hasImgSize) {
+        this.$el.masonry('appended', $newBricks);
+        this._resumeScrollEventProcessing();
+      }
+      else  
+        this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self._resumeScrollEventProcessing(); });
     }
   });
 });

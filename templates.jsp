@@ -318,7 +318,8 @@
   <div class="anab">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+          width="{{= imgWidth }}" height="{{= imgHeight }}"></img>
       </a>
     </div>
   </div>
