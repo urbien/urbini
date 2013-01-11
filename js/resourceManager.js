@@ -16,15 +16,21 @@ define([
   var Index = idbq.Index;
   var tsProp = 'davGetLastModified';
   Backbone.defaultSync = Backbone.sync;
-  Backbone.sync = function(method, model, options) {
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, 
+  Backbone.sync = function(method, data, options) {
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,
     synchronous = options.sync,
     now = G.currentServerTime(),
-    isCollection = model instanceof Backbone.Collection,
-    collection = isCollection ? model : model.collection,
-    vocModel = isCollection ? model.model : model.constructor;
+    isCollection = data instanceof Backbone.Collection,
+    vocModel = data.vocModel;
+    
+    if (isCollection)
+      collection = data;
+    else {
+      collection = data.collection;
+      resource = data;
+    }
 
     /**
      *  Save new data to DB, and update models currently in memory
@@ -44,8 +50,8 @@ define([
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
         r._lastFetchedOn = now;
-        var longUri = U.getLongUri(r._uri, {type: model.type, shortNameToModel: Voc.shortNameToModel});
-        var saved = isCollection ? model.get(longUri) : model;
+        var longUri = U.getLongUri(r._uri, {type: vocModel.type, shortNameToModel: Voc.shortNameToModel});
+        var saved = isCollection ? collection.get(longUri) : resource;
         var ts = saved && saved.get(tsProp) || 0;
         
         var newLastModified = r[tsProp];
@@ -62,16 +68,16 @@ define([
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, Voc);
-          var existing = model.get(toAdd[i]._uri);
+          var existing = resource || collection.get(toAdd[i]._uri);
           if (existing) {
             existing.set(toAdd[i]);
             modified.push(toAdd[i]._uri);
           }
           else {
             if (isCollection)
-              model.add(new vocModel(toAdd[i]));
+              collection.add(new vocModel(toAdd[i]));
             else
-              model.set(toAdd[i]);
+              resource.set(toAdd[i]);
           }
         }
         
@@ -85,7 +91,7 @@ define([
      * handle successful fetch from server
      */
     options.success = function(resp, status, xhr) {
-      model.lastFetchOrigin = 'server';
+      data.lastFetchOrigin = 'server';
       var code = xhr.status;
       var err = function() {
         G.log(RM.TAG, 'error', code, options.url);
@@ -102,7 +108,7 @@ define([
           defaultSuccess(resp, status, xhr);
           return;
         case 304:
-          var ms = isCollection ? collection.models.slice(start, end) : [model];
+          var ms = isCollection ? collection.resources.slice(start, end) : [data];
           _.each(ms, function(m) {
             m.set({'_lastFetchedOn': now}, {silent: true});
           });
@@ -118,20 +124,20 @@ define([
         return;
       }
       
-      data = resp.data;
+      var newData = resp.data;
       var modified;
 //      if (isCollection) {
 ////        var offset1 = resp.metadata && resp.metadata.offset || 0;
-//        modified = _.map(data, function(model) {return model._uri});
+//        modified = _.map(collection.resources, function(res) {return res.get('_uri')});
 //      }
 //      else {
-//        modified = model.get('_uri');
+//        modified = resource.get('_uri');
 //      }
       
-      var saved = save(data);
+      var saved = save(newData);
       defaultSuccess(resp, status, xhr);
       if (saved && saved.length)
-        Events.trigger('refresh', model, _.map(saved, function(s) {return s._uri}));
+        Events.trigger('refresh', data, _.map(saved, function(s) {return s._uri}));
     }
     
     var fetchFromServer = function(timeout, lastFetchedOn) {
@@ -140,7 +146,7 @@ define([
 
       var f = function() {
         if (options.sync || !G.hasWebWorkers)
-          return RM.defaultSync(method, model, options)
+          return RM.defaultSync(method, data, options)
         
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
@@ -172,10 +178,10 @@ define([
     
       options.sync = false;
       // simulate a normal async network call
-      model.lastFetchOrigin = 'db';
+      data.lastFetchOrigin = 'db';
       G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
       var resp = {data: results, metadata: {offset: start}};
-      var numBefore = isCollection && collection.models.length;
+      var numBefore = isCollection && collection.resources.length;
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
@@ -188,7 +194,7 @@ define([
         return;
       }
       
-      var numAfter = collection.models.length;
+      var numAfter = collection.resources.length;
       if (!isUpdate && numAfter === numBefore) // db results are useless
         return fetchFromServer(100);
       
@@ -207,39 +213,39 @@ define([
     }
 
     if (isCollection) {
-      lastFetchedOn = model._lastFetchedOn;
+      lastFetchedOn = collection._lastFetchedOn;
       
 //      qMap = U.getQueryParams(options.url);
-      qMap = model.queryMap;
-      filter = U.getQueryParams(model);
+      qMap = collection.queryMap;
+      filter = U.getQueryParams(collection);
       isFilter = !!filter;
       if (isCollection && options.startAfter) {
         start = qMap.$offset; // not a jQuery thing
         start = start && parseInt(start);
       }
 
-      numRequested = qMap.$limit ? parseInt(qMap.$limit) : model.perPage;
+      numRequested = qMap.$limit ? parseInt(qMap.$limit) : collection.perPage;
       start = start || 0;
       end = start + numRequested;
-      numNow = collection.models.length;
+      numNow = collection.resources.length;
       shortPage = numNow && numNow < collection.perPage;
       isUpdate = numNow > end || shortPage;
       if (isUpdate) {
 //        if (shortPage && RM.isStale(collection._lastFetchedOn, now))
 //          return fetchFromServer(100); // if shortPage, don't set If-Modified-Since header
         
-//        var stalest = _.reduce(collection.models, function(memo, next)  {
+//        var stalest = _.reduce(collection.resources, function(memo, next)  {
 //          var date = next.get('_lastFetchedOn');
 //          return Math.min(memo, date || 0);
 //        }, Infinity);
         
-        var lf = RM.getLastFetched(collection.models, now);
+        var lf = RM.getLastFetched(collection.resources, now);
         if (RM.isStale(lf, now))
           return fetchFromServer(100, lf); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
 
 //        var currentEnd = Math.min(end, numNow);
 //        for (var i = start; i < currentEnd; i++) {
-//          var m = collection.models[i];
+//          var m = collection.resources[i];
 //          var date = m.get('_lastFetchedOn');
 //          if (date && (stale = RM.isStale(RM.getLastFetched(date, now))))
 //            break;
@@ -247,7 +253,7 @@ define([
       }
     }
     else {
-      var ts = model.get('_lastFetchedOn');
+      var ts = resource.get('_lastFetchedOn');
       isUpdate = typeof ts !== 'undefined';
       if (RM.isStale(ts, now))
         return fetchFromServer(100, ts);
@@ -261,10 +267,10 @@ define([
       return;
     }
     
-    var dbReqOptions = {key: key, success: dbSuccess, error: dbError, model: model};
-    if (model instanceof Backbone.Collection) {
+    var dbReqOptions = {key: key, success: dbSuccess, error: dbError, data: data};
+    if (isCollection) {
       dbReqOptions.startAfter = options.startAfter,
-      dbReqOptions.perPage = model.perPage;
+      dbReqOptions.perPage = collection.perPage;
       dbReqOptions.filter = isFilter && filter;
     }
     else
@@ -275,7 +281,7 @@ define([
       if (G.online)
         fetchFromServer();
       else
-        options.sync && options.error && options.error(model, {type: 'offline'}, options);
+        options.sync && options.error && options.error(data, {type: 'offline'}, options);
       
       return;
     }
@@ -285,8 +291,8 @@ define([
   var ResourceManager = RM = {
     TAG: 'Storage',
     packages: {'Resource': Resource},
-    defaultSync: function(method, model, options) {
-      model.lastFetchOrigin = 'server';
+    defaultSync: function(method, data, options) {
+      data.lastFetchOrigin = 'server';
       if (options.sync)
         options.timeout = 5000;
       
@@ -299,10 +305,10 @@ define([
       }
       
       var err = options.error;
-      var req = Backbone.defaultSync(method, model, options);
+      var req = Backbone.defaultSync(method, data, options);
 //      req.fail(function(jqXHR, status) {
 //        G.log(RM.TAG, 'sync', jqXHR, status);
-//        return (err || Error.getDefaultErrorHandler()).apply(this, [model, {type: status}]);
+//        return (err || Error.getDefaultErrorHandler()).apply(this, [data, {type: status}]);
 //      });
       
       return req;
@@ -759,13 +765,15 @@ define([
       return [op || RM.DEFAULT_OPERATOR, val];
     },
 
-    buildDBQuery: function(store, model, filter) {
-      if (model instanceof Backbone.Model)
+    buildDBQuery: function(store, data, filter) {
+      if (data instanceof Backbone.Model)
         return false;
       
-      var query, orderBy, defOp = 'eq',
-          qMap = model.queryMap,
-          filter = filter || U.getQueryParams(model);
+      var query, orderBy, 
+          defOp = 'eq',
+          collection = data,
+          qMap = collection.queryMap,
+          filter = filter || U.getQueryParams(collection);
       
       if (qMap) {
         orderBy = qMap.$orderBy;
@@ -789,13 +797,13 @@ define([
         
         var op = RM.operatorMap[opVal[0]];
         var val = opVal[1];
-        val = U.getTypedValue(model, name, val);
+        val = U.getTypedValue(collection, name, val);
         var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
         query = query ? query.and(subQuery) : subQuery;
       }
       
       if (orderBy) {
-//        var bound = startAfter ? (orderBy == '_uri' ? startAfter : model.get(startAfter).get(orderBy)) : null;
+//        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
         query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
       }
       
@@ -810,7 +818,7 @@ define([
       return query;
     },
     
-    buildValueTesterFunction: function(params, model) {
+    buildValueTesterFunction: function(params, data) {
       var rules = [];
       _.each(params, function(value, name) {
         var opVal = RM.parseOperatorAndValue(value);
@@ -818,7 +826,7 @@ define([
           return null;
         
         var op = opVal[0];
-        var bound = U.getTypedValue(model, name, opVal[1]);
+        var bound = U.getTypedValue(data, name, opVal[1]);
         rules.push(function(val) {
 //          try {
 //            return eval(val[name] + op + bound);
@@ -851,7 +859,7 @@ define([
       var startAfter = options.startAfter;
       var total = options.perPage;
       var filter = options.filter;
-      var model = options.model;
+      var data = options.data;
 //      var vocModel = model instanceof Backbone.Collection ? model.model : model.constructor;
     
       var name = U.getClassName(type);
@@ -880,9 +888,9 @@ define([
       
       var query, dbReq, cursorRequest, valueTester, results = [];
       if (!uri) {
-        query = RM.buildDBQuery(store, model, filter);
+        query = RM.buildDBQuery(store, data, filter);
         if (!query)
-          valueTester = RM.buildValueTesterFunction(filter, model);
+          valueTester = RM.buildValueTesterFunction(filter, data);
       }
       
       if (query) {

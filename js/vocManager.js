@@ -273,8 +273,8 @@ define([
     },
 
     fetchModelsForReferredResources: function(list) {
-      var model = list.model;
-      var models = list.models;
+      var model = list.vocModel;
+      var resources = list.resources;
       var meta = model.properties;
       
       var tmp = [];
@@ -295,9 +295,9 @@ define([
       if (!tmp.length)
         return;
       
-      for (var i=0; i<models.length; i++) {
+      for (var i=0; i<resources.length; i++) {
         for (var j=0; j<tmp.length; j++) {
-          var o = models[i].get(tmp[j]);
+          var o = resources[i].get(tmp[j]);
           var uri = o  &&  o.value;
           if (!uri)
             continue;
@@ -529,18 +529,21 @@ define([
       if (qIdx != -1)
         hash = hash.slice(0, qIdx);
       
+      hash = decodeURIComponent(hash);
       var type;
-      if (hash.startsWith('http'))
-        type = decodeURIComponent(hash);
-      else if (hash.match('^view|menu|edit')) {
-        type = decodeURIComponent(hash.slice(5)).replace(G.sqlUrl + '/', 'http://');
+      if (hash.match('^view|menu|edit|make')) {
+        var sqlIdx = hash.indexOf(G.sqlUri);
+        if (sqlIdx == -1)
+          type = hash.slice(5);
+        else
+          type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
         
         qIdx = type.indexOf('?');
         if (qIdx != -1)
           type = type.slice(0, qIdx);
       }
       else
-        type = decodeURIComponent(hash);
+        type = hash;
 
       if (type === 'profile')
         return (G.currentUser.guest ? null : G.currentUser.type._uri);

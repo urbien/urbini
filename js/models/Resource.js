@@ -7,13 +7,30 @@ define([
   'cache!utils',
   'cache!error'
 ], function(G, $, __jqm__, _, Backbone, U, Error) {
+  var isNully = function(val) {
+    return _.isUndefined(val) || val === null || val === '';
+  };
+  
+  var willSave = function(res, prop, val) {
+    var prev = res.get(prop);
+    if (isNully(prev))
+      return !isNully(val);
+    else if (prev !== val && prev.toString() !== val)
+      return true;
+    
+    return false;
+  }
+
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set'); // fixes loss of context for 'this' within methods
 //      this.on('change', this.updateDB);
 //      this.on('aroundMe', this.constructor.getAroundMe);
-      options._query && (this.urlRoot += "?" + options._query);
+      if (options && options._query)
+        this.urlRoot += "?" + options._query;
+      
+      this.vocModel = this.constructor;
 //      this.sync = this.constructor.sync;
     },
     url: function() {
@@ -44,12 +61,23 @@ define([
       return resp;
     },
     
-    validate: function(attrs) {
+    set: function(props) {
+      var self = this;
+      props = U.filterObj(props, function(name, val) {
+        return willSave(self, name, val);
+      })
+      
+      return Backbone.Model.prototype.set.apply(this, [props].concat(U.slice.call(arguments, 1)));
+    },
+    
+    validate: function(attrs, options) {
       if (this.lastFetchOrigin !== 'edit')
         return;
       
       var errors = {};
-      for (var name in attrs) {
+      var props = options.validateAll ? this.constructor.properties : attrs;
+      var values = attrs;
+      for (var name in props) {
         var error = this.validateProperty(name, attrs[name]);
         if (error !== true)
           errors[name] = typeof error === 'string' ? error : "Please enter a valid " + name;
@@ -61,12 +89,12 @@ define([
     
     validateProperty: function(name, value) {
       var prop = this.constructor.properties[name];
-      if (!prop)
+      if (!prop || prop.readOnly || prop.backLink || prop.virtual || prop.propertyGroupList)
         return true;
       
       if (value == null || value === '') {
         if (prop.required)
-          return '<em>'+ name + '</em>' + ' is a required field';
+          return U.getPropDisplayName(prop) + ' is a required field';
         else
           return true;
       }

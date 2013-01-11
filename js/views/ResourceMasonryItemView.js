@@ -6,17 +6,19 @@ define([
   'cache!utils',
   'cache!events',
   'cache!templates',
+  'cache!views/BasicView',
   'cache!vocManager',
   'cache!jqueryMobile',
   'cache!jqueryMasonry',
   'cache!jqueryImagesloaded'
-], function(G, $, _, Backbone, U, Events, Templates, Voc, __jqm__) {
-  return Backbone.View.extend({
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Voc, __jqm__) {
+  return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
 //    tagName: 'li',
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get('masonry-list-item'));
       this.modTemplate = _.template(Templates.get('masonry-mod-list-item'));
 
@@ -31,15 +33,15 @@ define([
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render: function(event) {
-      var isModification = U.isAssignableFrom(this.model.constructor, 'Modification', Voc.typeToModel);
+      var vocModel = this.vocModel;
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       if (isModification) 
         return this.renderModificationTile();
-      var m = this.model;
-      var vocModel = m.constructor;
+      var m = this.resource;
       var isReference = U.isA(vocModel, 'Reference'); 
       if (isReference)
         return this.renderReferenceTile();
-      if (!U.isA(this.model.constructor, 'Intersection'))   
+      if (!U.isA(vocModel, 'Intersection'))   
         return this.renderTile();
       
       var meta = vocModel.properties;
@@ -78,9 +80,9 @@ define([
 //      return this.renderTile();
     },  
     renderTile: function(event) {
-      var m = this.model;
-      var meta = m.__proto__.constructor.properties;
-      meta = meta || m.properties;
+      var m = this.resource;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
@@ -154,9 +156,8 @@ define([
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
       
       
-      var c = m.constructor;
       tmpl_data['rUri'] = resourceUri;
-      if (U.isA(c, 'CollaborationPoint')) { 
+      if (U.isA(vocModel, 'CollaborationPoint')) { 
         var comments = U.getCloneOf(meta, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
@@ -164,7 +165,7 @@ define([
           tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
-      if (U.isA(c, 'Votable')) {
+      if (U.isA(vocModel, 'Votable')) {
         var votes = U.getCloneOf(meta, 'Votable.voteUse');
         if (votes.length == 0)
           votes = U.getCloneOf(meta, 'Votable.likes');
@@ -190,9 +191,8 @@ define([
     },
     
     renderReferenceTile: function(event) {
-      var m = this.model;
-      var meta = m.__proto__.constructor.properties;
-      meta = meta || m.properties;
+      var m = this.resource;
+      var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
@@ -267,9 +267,8 @@ define([
       return this;
     },
     renderIntersectionTile: function(delegateTo, cloneOf) {
-      var m = this.model;
-      var meta = m.__proto__.constructor.properties;
-      meta = meta || m.properties;
+      var m = this.resource;
+      var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
@@ -349,12 +348,11 @@ define([
       return this;
     },
     renderModificationTile: function(event) {
-      var meta = this.model.__proto__.constructor.properties;
-      meta = meta || this.model.properties;
+      var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
-      var json = this.model.toJSON();
+      var json = this.resource.toJSON();
       var imgSrc = json['v_imgSrc'];
       if (!imgSrc)
         imgSrc = 'forResource';

@@ -11,9 +11,7 @@ define([
     events: {
       'click #aroundMe': 'toggleAroundMe'
     },
-    initialize: function(options) {
-      this.constructor.__super__.initialize.apply(this, arguments);
-      
+    initialize: function(options) {      
       _.bindAll(this, 'render', 'toggleAroundMe');
       this.template = _.template(Templates.get(this.template));        
       return this;
@@ -23,9 +21,9 @@ define([
     },
     toggleAroundMe : function() {
       this.active = !this.active;
-      var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
+      var vocModel = this.vocModel;
       if (!this.active) {
-        Backbone.history.navigate(model.shortName, {trigger: true});
+        Backbone.history.navigate(vocModel.shortName, {trigger: true});
         return this;
       }
       
@@ -34,7 +32,7 @@ define([
         return this;
       }
         
-      var iFaces = model.interfaces;
+      var iFaces = vocModel.interfaces;
       if (!_.contains(iFaces, 'Locatable'))
         return this;
       
@@ -58,13 +56,12 @@ define([
       return this;
     },
     fetchAroundPosition : function(coords, item) {
-      var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
       G.userLocation = {
         location: coords,
         timestamp: new Date().getTime()
       };
       
-      Backbone.history.navigate(encodeURIComponent(model.type) + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
       return this;
     }
   },

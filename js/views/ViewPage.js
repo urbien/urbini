@@ -6,6 +6,7 @@ define([
   'cache!utils',
   'cache!events',
   'cache!templates',
+  'cache!views/BasicView',
   'cache!views/Header',
   'cache!views/BackButton',
   'cache!views/LoginButtons',
@@ -16,11 +17,12 @@ define([
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, /*EditButton,*/ ResourceView, ResourceImageView, ControlPanel, __jqm__) {
-  return Backbone.View.extend({
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, /*EditButton,*/ ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+  return BasicView.extend({
     clicked: false,
     initialize: function() {
       _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
+      this.constructor.__super__.initialize.apply(this, arguments);
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('resource'));
       this.TAG = "ViewPage";
@@ -41,7 +43,7 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(5)), {trigger: true, replace: false});
+      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
     },
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
@@ -51,7 +53,7 @@ define([
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.model.get('_uri')), {trigger: true, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
       return this;
     },
 //    tap: function() {
@@ -66,10 +68,11 @@ define([
 
     render:function (eventName) {
       G.log(this.TAG, "render");
-      this.$el.html(this.template(this.model.toJSON()));
+      var res = this.resource;
+      this.$el.html(this.template(res.toJSON()));
       
-      var isGeo = (this.model.isA("Locatable") && this.model.get('latitude')) || 
-                  (this.model.isA("Shape") && this.model.get('shapeJson'));
+      var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
+                  (res.isA("Shape") && res.get('shapeJson'));
       
       this.buttons = {
           left: [BackButton],
@@ -78,20 +81,20 @@ define([
       };
       
       this.header = new Header({
-        model: this.model, 
-//        pageTitle: this.pageTitle || this.model.get('davDisplayName'), 
+        model: res, 
+//        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();
       
       this.header.$el.trigger('create');      
-      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
+      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
       this.imageView.render();
-      this.view = new ResourceView({el: $('ul#resourceView', this.el), model: this.model});
+      this.view = new ResourceView({el: $('ul#resourceView', this.el), model: res});
       this.view.render();
-      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: this.model});
+      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
       this.cp.render();      
-//      this.editBtn = new EditButton({el: $('#edit', this.el), model: this.model});
+//      this.editBtn = new EditButton({el: $('#edit', this.el), model: res});
 //      this.editBtn.render();
       if (!this.$el.parentNode) 
         $('body').append(this.$el);

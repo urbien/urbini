@@ -25,6 +25,7 @@ define('app', [
   * http://www.gregfranko.com/Backbone.validateAll.js/
   * Copyright (c) 2012 Greg Franko; Licensed MIT */
   Backbone.Model.prototype._validate = function(attrs, options) {
+    options = options || {};
     if (options.silent || !this.validate) {
       return true;
     }

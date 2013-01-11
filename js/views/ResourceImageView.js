@@ -6,31 +6,29 @@ define([
   'cache!backbone', 
   'cache!utils',
   'cache!templates',
-  'cache!events' 
-], function(G, $, __jqm__, _, Backbone, U, Templates, Events) {
-  
-  return Backbone.View.extend({
+  'cache!events',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, U, Templates, Events, BasicView) {
+  return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click'); // fixes loss of context for 'this' within methods
+      this.constructor.__super__.initialize.apply(this, arguments);
       return this;
     },
     events: {
       'click': 'click'
     },
-    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
     refresh: function() {
       console.log("refresh resource");
       return this;
     },
     render: function(options) {
-      var type = this.model.type;
-      var meta = this.model.__proto__.constructor.properties;
-      meta = meta || this.model.properties;
+      var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
-      if (!U.isA(this.model.constructor, 'ImageResource')) 
+      if (!U.isA(this.vocModel, 'ImageResource')) 
         return this;
   //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var props = U.getCloneOf(meta, 'ImageResource.bigImage');
@@ -38,7 +36,7 @@ define([
         props = U.getCloneOf(meta, 'ImageResource.originalImage');
       if (!props.length) 
         return this;
-      var json = this.model.toJSON();
+      var json = this.resource.toJSON();
       var p = props[0];
       var propVal = json[p];
       if (typeof propVal == 'undefined') 
@@ -49,7 +47,7 @@ define([
       if (propVal.indexOf('Image/') == 0)
         propVal = propVal.slice(6);
   //          var iTemplate = _.template(Templates.get('imagePT'));
-  //          li += '<div><a href="#view/' + U.encode(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
+  //          li += '<div><a href="#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
       var maxH = $(window).height() - 50;
@@ -89,7 +87,7 @@ define([
 
       var padding = 15 - (maxW - w) / 2;
       padding = -padding;
-      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
+      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;

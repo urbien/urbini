@@ -6,16 +6,17 @@ define([
   'cache!backbone', 
   'cache!events', 
   'cache!templates', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Events, Templates, U) {
-  return Backbone.View.extend({
+  'cache!utils',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, Events, Templates, U, BasicView) {
+  return BasicView.extend({
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
-
-      var key = this.model.__proto__.constructor.shortName + '-list-item';
-      this.template = U.getTypeTemplate('list-item', this.model);
+      this.constructor.__super__.initialize.apply(this, arguments);
+      var key = this.vocModel.shortName + '-list-item';
+      this.template = U.getTypeTemplate('list-item', this.resource);
       if (this.template) 
         this.isCommonTemplate = false;
       else {
@@ -35,15 +36,16 @@ define([
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,  
     render: function(event) {
-      var m = this.model;
-      var meta = m.__proto__.constructor.properties;
+      var m = this.resource;
+      var meta = this.vocModel.properties;
       meta = meta || m.properties;
       if (!meta)
         return this;
-      var json = this.model.toJSON();
-      var distance = this.model.get('distance');
+      
+      var json = this.resource.toJSON();
+      var distance = this.resource.get('distance');
       if (typeof distance != 'undefined') {
-        var meta = this.model.__proto__.constructor.properties;
+        var meta = this.vocModel.properties;
         var prop = meta['distance'];
         var d = U.getCloneOf(meta, 'Distance.distance');
         if (d)
@@ -86,7 +88,7 @@ define([
                 continue;
               if (prop1['displayNameElm'])
                 continue;
-              if (!U.isPropVisible(json, prop1))
+              if (!U.isPropVisible(m, prop1))
                 continue;
     
               if (first) {

@@ -7,9 +7,10 @@ define([
   'cache!templates',
   'cache!events', 
   'cache!utils',
-  'cache!maps'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Mapper) {
-  var MapView = Backbone.View.extend({
+  'cache!maps',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Mapper, BasicView) {
+  var MapView = BasicView.extend({
     css: [
       'leaflet.css', 
       'MarkerCluster.Default.css'
@@ -18,6 +19,7 @@ define([
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap');
+      this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
       
@@ -41,15 +43,15 @@ define([
         return this;
       }
       
-      var m = this.model;
-      m = m instanceof Backbone.Collection ? m.model : m.constructor;
-      if (U.isA(m, "Shape")) {
+      var res = this.resource || this.collection;
+      var vocModel = this.vocModel;
+      if (U.isA(vocModel, "Shape")) {
         this.remove();
         return this;
       }
       
       var metadata = {};
-      var gj = this.constructor.collectionToGeoJSON(this.model, metadata);
+      var gj = this.constructor.collectionToGeoJSON(res, metadata);
       if (!gj || !_.size(gj))
         return;
       
@@ -80,28 +82,28 @@ define([
       map.addMap(G.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
       var zoom = map.initialZoom;
   //        , {'load': function() {
-  //      Events.trigger('mapReady', this.model);
+  //      Events.trigger('mapReady', this.resource);
   //      this.$el.append(frag);
   //      console.log('render map');      
   //    }});
   
       var clusterStyle = {singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false};
       var style = {doCluster: true, highlight: true, zoom: false};
-      var name = this.model.shortName;
+      var name = vocModel.shortName;
       var geoJson = {};
       geoJson[name] = gj;
       map.addGeoJsonPoints(geoJson, null, clusterStyle, null, style);
 //      map.addSizeButton(this.$el[0]);
 //      map.addReZoomButton({zoom: zoom, center: center});
       map.addReZoomButton({bounds: bbox})
-      var dName = this.model.displayName;
+      var dName = vocModel.displayName;
       dName = dName.endsWith('s') ? dName : dName + 's';
       var basicInfo = map.addBasicMapInfo(dName);
       var frag = document.createDocumentFragment();
       frag.appendChild(div);
       map.finish();
       
-      Events.trigger('mapReady', this.model);
+      Events.trigger('mapReady', res);
       this.$el.append(frag);
       this.hide();
       return this;
@@ -130,9 +132,8 @@ define([
     }
   },
   {
-    getMapItemHTML: function(model) {
-      var m = model;
-      var grid = U.getGridCols(m);
+    getMapItemHTML: function(res) {
+      var grid = U.getGridCols(res);
     
       var resourceLink;
       for (var row in grid) {
@@ -142,14 +143,14 @@ define([
         }
       }
       
-      resourceLink = resourceLink || m.get('davDisplayName');
-      var data = {resourceLink: resourceLink, uri: m.get('_uri'), rows: grid};
+      resourceLink = resourceLink || res.get('davDisplayName');
+      var data = {resourceLink: resourceLink, uri: res.get('_uri'), rows: grid};
       
-      if (m.isA("ImageResource")) {
-        var medImg = m.get('mediumImage') || m.get('featured');
+      if (res.isA("ImageResource")) {
+        var medImg = res.get('mediumImage') || res.get('featured');
         if (medImg) {
-          var width = m.get('originalWidth');
-          var height = m.get('originalHeight');
+          var width = res.get('originalWidth');
+          var height = res.get('originalHeight');
           if (width && height) {
             var imgOffset = Math.max(width, height) / 205;
             width = Math.round(width / imgOffset);

@@ -8,6 +8,7 @@ define([
   'cache!events', 
   'cache!utils',
   'cache!vocManager',
+  'cache!views/BasicView',
   'cache!views/ResourceListView', 
 //  'cache!views/MapView',
   'cache!views/Header', 
@@ -16,13 +17,14 @@ define([
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
   'cache!views/MenuButton'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
-  return Backbone.View.extend({
+  return BasicView.extend({
     template: 'resource-list',
     clicked: false,
     initialize: function () {
       _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
+      this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
       this.TAG = "ListPage";
@@ -65,7 +67,7 @@ define([
       this.listView && this.listView.getNextPage();
     },
   //  nextPage: function(e) {
-  //    Events.trigger('nextPage', this.model);    
+  //    Events.trigger('nextPage', this.resource);    
   //  },
 //    tap: Events.defaultTapHandler,
     click: function(e) {
@@ -75,9 +77,10 @@ define([
     
     render:function (eventName) {
       G.log(this.TAG, 'render');  
-      this.$el.html(this.template(this.model.toJSON()));
+      var rl = this.collection;
+      this.$el.html(this.template(rl.toJSON()));
       
-      var isGeo = (this.model.isA("Locatable") || this.model.isA("Shape")) && _.filter(this.model.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
+      var isGeo = (rl.isA("Locatable") || rl.isA("Shape")) && _.filter(rl.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       this.buttons = {
         left: [BackButton], // , LoginButtons
         right: isGeo ? [MapItButton, AroundMeButton, MenuButton] : [MenuButton],
@@ -85,13 +88,13 @@ define([
       };
       
       this.header = new Header({
-        model: this.model, 
+        model: rl, 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();
   
-      var vocModel = this.model.model;
-      var models = this.model.models;
+      var vocModel = this.vocModel;
+      var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
 
 //      var meta = models[0].__proto__.constructor.properties;
@@ -107,13 +110,13 @@ define([
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isModification ? '#nabs_grid' :  isMasonry ? '#columns' : (isComment) ? '#comments' : '#sidebar';
-      this.listView = new ResourceListView({el: $(containerTag, this.el), model: this.model});
+      this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl});
       this.listView.render();
       if (isGeo) {
         var self = this;
         require(['cache!views/MapView'], function(MV) {
           MapView = MV;
-          self.mapView = new MapView({model: self.model, el: self.$('#mapHolder', self.el)});
+          self.mapView = new MapView({model: rl, el: self.$('#mapHolder', self.el)});
           self.mapView.render();
         });
       }

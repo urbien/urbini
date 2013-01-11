@@ -12,11 +12,12 @@ define([
   'cache!vocManager',
   'cache!views/HomePage', 
   'cache!views/ListPage', 
-  'cache!views/ViewPage', 
-  'cache!views/EditPage' 
-], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage, EditPage) {
+  'cache!views/ViewPage'
+//  , 
+//  'cache!views/EditPage' 
+], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var MenuPage;
+  var MenuPage, EditPage;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
@@ -27,11 +28,13 @@ define([
       "view/*path"      : "view",  
       "menu/*path"      : "menu", 
       "edit/*path"      : "edit", 
+      "make/*path"      : "make", 
       ":type/:backlink" : "list"
 //      "login/*path"     : "login" 
     },
 
     CollectionViews: {},
+    MkResourceViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -115,16 +118,8 @@ define([
      */
     list: function(oParams) {
 //      this.backClicked = this.wasBackClicked();
-      if (!ListPage) {
-        var args = arguments;
-        var self = this;
-        require(['cache!views/ListPage'], function(LP) {
-          ListPage = LP;
-          self.list.apply(self, args);
-        })
-        
-        return true;
-      }
+      if (!ListPage)
+        return this.loadView('ListPage', this.list, arguments);
       
       var self = this;
       var params = oParams.split("?");
@@ -191,17 +186,10 @@ define([
       
       return this;
     },
+    
     menu: function() {
-      if (!MenuPage) {
-        var args = arguments;
-        var self = this;
-        require(['cache!views/MenuPage'], function(MP) {
-          MenuPage = MP;
-          self.menu.apply(self, args);
-        })
-        
-        return;
-      }
+      if (!MenuPage)
+        return this.loadView('MenuPage', this.menu, arguments);
       
       var c = this.currentModel;
       var id = c.id || c.url;
@@ -211,26 +199,55 @@ define([
       
       this.changePage(menuPage);
     },
+
+    loadView: function(view, caller, args) {
+      var self = this;
+      if (!eval(view)) {
+        require(['cache!views/' + view], function(v) {
+          eval(view + '=v;');
+          caller.apply(self, args);
+        });
+      }
+    },
     
+    make: function(path) {
+      if (!EditPage)
+        return this.loadView('EditPage', this.make, arguments);
+      
+      var parts = path.split('?');
+      var type = decodeURIComponent(parts[0]);
+      if (!type.startsWith('http'))
+        type = G.defaultVocPath + type;
+      
+      if (!this.isModelLoaded(type, 'make', arguments))
+        return;
+      
+      var params = U.getHashParams();
+      var mPage = this.MkResourceViews[type];
+      if (!mPage)
+        mPage = this.MkResourceViews[type] = new EditPage({model: new Voc.typeToModel[type](), action: 'mkresource'});
+      else
+        mPage.resetForm();
+      
+      var props = {action: 'make'};
+      U.copyFrom(params, props, ['backLinkProp', 'backLink', 'on']);
+      mPage.set(props);
+      this.changePage(mPage);
+    },
+
     edit: function(path) {
-      this.view.call(this, path, true);
+      if (!EditPage)
+        return this.loadView('EditPage', this.edit, arguments);
+      else
+        this.view.call(this, path, true);
     },
     
     view: function (path, edit) {
-      var views = this[edit ? 'Views' : 'EditViews']; //edit ? this.EditViews : this.Views;
+      if (!edit && !ViewPage)
+        return this.loadView('ViewPage', this.view, arguments);
+      
+      var views = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? EditPage : ViewPage;
-//      if (!pageCl) {
-//        var args = arguments;
-//        var self = this;
-//        require(['cache!views/' + edit ? 'EditPage' : 'ViewPage'], function(VP) {
-//          ViewPage = VP;
-//          self.view.apply(self, args);
-//        })
-//        
-//        return;
-//      }
-//      if (this.backClicked) {
-//      }
 
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
@@ -247,7 +264,7 @@ define([
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
         if (!G.currentUser.guest) {
-          var other = Array.prototype.slice.call(arguments, 1);
+          var other = U.slice.call(arguments, 1);
           other = other.length ? other : undefined;
           this.view(U.encode(G.currentUser._uri) + "?" + p, other);
         }

@@ -6,13 +6,16 @@ define([
   'cache!backbone', 
   'cache!templates',
   'cache!events', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
-  
-  return Backbone.View.extend({
+  'cache!utils',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, BasicView) {
+  return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', 'makeWidget', 'makeWidgets');
+      this.constructor.__super__.initialize.apply(this, arguments);
+      
+      var res = this.resource || this.collection;
       _.extend(this, options);
       this.template = _.template(Templates.get(this.template));
       if (typeof this.pageTitle === 'undefined') {
@@ -34,12 +37,12 @@ define([
             }
           }
           if (!this.pageTitle) {
-            if (this.model instanceof Backbone.Collection) 
-              this.pageTitle = this.model.model['pluralName'] || this.model.displayName + 's';
+            if (res instanceof Backbone.Collection) 
+              this.pageTitle = this.vocModel['pluralName'] || res.displayName + 's';
             else {
-              this.pageTitle = this.model.get('davDisplayName');
+              this.pageTitle = res.get('davDisplayName');
               if (!this.pageTitle) 
-                this.pageTitle = U.getDisplayName(this.model);
+                this.pageTitle = U.getDisplayName(res);
             }
           }
         }
@@ -55,7 +58,8 @@ define([
         return;
       }
       
-      w = new w({model: this.model, el: this.$(options.id)}).render({append: true});
+      var res = this.resource || this.collection;
+      w = new w({model: res, el: this.$(options.id)}).render({append: true});
       w.$(options.domEl).addClass(options.css);
       w.$el.trigger('create');
       return this;

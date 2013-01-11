@@ -6,29 +6,48 @@ define([
   'cache!backbone', 
   'cache!templates',
   'cache!events', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
-  return Backbone.View.extend({
+  'cache!utils',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, BasicView) {
+  return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'refresh'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','click', 'refresh', 'add'); // fixes loss of context for 'this' within methods
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
       this.cpTemplateNoAdd = _.template(Templates.get('cpTemplateNoAdd'));
-      this.model.on('change', this.refresh, this);
+      this.resource.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
     events: {
+      'click a[data-shortName]': 'add',
       'click': 'click'
+    },
+    add: function(e) {
+      var t = e.target;
+      while (t && t.tagName != 'A') {
+        t = t.parentNode;
+      }
+      
+      if (!t)
+        return;
+      
+      e.preventDefault();
+      var shortName = t.dataset.shortname;
+      var prop = this.vocModel.properties[shortName];
+      var params = {backLinkProp: prop.shortName, backLink: prop.backLink, on: this.resource.get('_uri')};
+      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
+      G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {
       var collection, modified;
       if (arguments[0] instanceof Backbone.Collection) {
         collection = arguments[0];
         modified = arguments[1];
-        if (collection != this.model.collection || !_.contains(modified, this.model.get('_uri')))
+        if (collection != this.resource.collection || !_.contains(modified, this.resource.get('_uri')))
           return this;
       }
       
@@ -38,36 +57,39 @@ define([
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
-      var type = this.model.type;
-      var meta = this.model.__proto__.constructor.properties;
-      meta = meta || this.model.properties;
+      var res = this.resource;
+      var vocModel = this.vocModel;
+      var type = res.type;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
-      var json = this.model.toJSON();
+      var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
-      var list = _.toArray(meta);
-      var propGroups = U.getPropertiesWith(list, "propertyGroupList");
-      var backlinks = U.getPropertiesWith(list, "backLink");
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList");
+      var backlinks = U.getPropertiesWith(meta, "backLink");
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
-      var displayedProps = [];
+      var role = U.getUserRole();
+      var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
       var first;
-      if (propGroups) {
-        for (var i=0; i < propGroups.length; i++) {
-          var grMeta = propGroups[i];
-          var pgName = U.getDisplayName(grMeta);
+      if (_.size(propGroups)) {
+        for (var pgShortName in propGroups) {
+          var grMeta = propGroups[pgShortName];
+          var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
+            if (!/^[a-zA-Z]/.test(p))
+              continue;
+            
             var prop = meta[p];
-            if ((displayedProps  &&  _.contains(displayedProps, p)) || 
-                !_.contains(backlinks, prop))
+            if (displayedProps[p] || !_.has(backlinks, p))
               continue;
 
             if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
@@ -75,14 +97,14 @@ define([
               continue;
             }
                   
-            if (!U.isPropVisible(json, prop))
+            if (!U.isPropVisible(res, prop))
               continue;
   
-            displayedProps[idx++] = p;
+            displayedProps[p] = true;
 //            json[p] = U.makeProp(prop, json[p]);
-            var n = U.getDisplayName(prop);
+            var n = U.getPropDisplayName(prop);
             var range = prop.range; 
-            var isPropEditable = U.isPropEditable(json, prop);
+            var isPropEditable = U.isPropEditable(res, prop, role);
             
             var doShow = false;
             var cnt;
@@ -109,15 +131,15 @@ define([
                 groupNameDisplayed = true;
               }
               
-              var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
+              var uri = U.getShortUri(res.get('_uri'), vocModel); 
               if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
+                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
               else
                 U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
 //              if (isPropEditable)
-//                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //              else
-//                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
             }
           }
         }
@@ -126,11 +148,14 @@ define([
       groupNameDisplayed = false;
       var tmpl_data;
       for (var p in json) {
+        if (!/^[a-zA-Z]/.test(p))
+          continue;
+        
         var prop = meta[p];
-        if (displayedProps  &&  _.contains(displayedProps, p))  
+        if (_.has(displayedProps, p))  
           continue;
         var count = -1;
-        if (!_.contains(backlinks, prop)) {
+        if (!_.has(backlinks, p)) {
           if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
             continue;
           var pp = p.substring(0, p.length - 5);
@@ -149,13 +174,13 @@ define([
           }
         }
               
-        if (!U.isPropVisible(json, prop))
+        if (!U.isPropVisible(res, prop))
           continue;
   
-        var isPropEditable = U.isPropEditable(json, prop);
+        var isPropEditable = U.isPropEditable(res, prop, role);
         var doShow = false;
 //        json[p] = U.makeProp(prop, json[p]);
-        var n = U.getDisplayName(prop);
+        var n = U.getPropDisplayName(prop);
         var cnt;
         if (!_.has(json,p)) {
           cnt = count > 0 ? count : 0;
@@ -172,14 +197,14 @@ define([
         }
         if (doShow) {
 //          if (isPropEditable)
-//            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //          else
-//            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: this.model.get('_uri')}));
+//            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //          var range = U.getClassName(prop.range);
           var range = prop.range;
-          var uri = U.getShortUri(this.model.get('_uri'), this.model.constructor); 
+          var uri = U.getShortUri(res.get('_uri'), vocModel); 
           if (isPropEditable)
-            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
+            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
           else
             U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
         }

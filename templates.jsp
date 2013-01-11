@@ -158,7 +158,7 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
@@ -260,26 +260,6 @@
 </script>
 
 
-<script type="text/template" id="resourceEdit">
-<div id="headerDiv"></div>
-<div id="resourceEditView" data-role="content">
-  <div id="resourceImage"></div><br/>
-  <form data-ajax="false" id="editForm" action="proppatch">
-    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
-    </ul>
-    
-    <fieldset class="ui-grid-a">
-      <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
-      <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
-    </fieldset>
-  </form>
-</div>
-
-<div data-role="footer">
-  <a id="homeBtn" target="#" class="icon home">Home</a>
-</div>
-</script>  
-
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
   <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
@@ -380,23 +360,49 @@
 
 
 <!-- EDIT TEMPLATES -->
+<script type="text/template" id="resourceEdit">
+<div id="headerDiv"></div>
+<div id="resourceEditView" data-role="content">
+  <div id="resourceImage"></div><br/>
+  <form data-ajax="false" id="editForm" action="#">
+    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
+    </ul>
+    
+    <div class="ui-body ui-body-b">
+      <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
+        <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
+      </fieldset>
+    </div>
+  </form>
+</div>
+
+
+<div data-role="footer">
+  <a id="homeBtn" target="#" class="icon home">Home</a>
+</div>
+</script>  
+
+
 <script type="text/template" id="emailPET">
   <label for="{{= shortName }}">{{= name }}</label>
-  <input type="email" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes.join(' ') }}" {{= rules.join(' ') }} />
+  <input type="email" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="editRowTemplate">
-  <li data-role="fieldcontain">{{= value }}</li>
+  <li data-role="fieldcontain">{{= value }}<br />
+  {{= typeof comment === 'undefined' ? '' : '<i>* ' + comment + '</i>' }}
+  </li>
 </script>
 
 <script type="text/template" id="telPET">
   <label for="{{= shortName }}">{{= name }}</label>
-  <input type="tel" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}"  />
+  <input type="tel" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" />
 </script>
 
 <script type="text/template" id="enumPET">
   <label for="{{= shortName }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false">
+  <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false" class="{{= classes }}">
     <option>{{= value || '' }}</option>
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
@@ -408,12 +414,13 @@
 
 <script type="text/template" id="stringPET">
   <label for="{{= shortName }}">{{= name }}:</label> 
-  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" />
+  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
+  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="resourcePET">
   <label for="{{= shortName }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}">
+  <select name="{{= shortName }}" id="{{= shortName }}" class="{{= classes }}">
     <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
     <option value="test">Not supported</option>
   </select>
@@ -421,9 +428,9 @@
 
 <script type="text/template" id="booleanPET">
   <label for="{{= shortName }}">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider">
-    <option>{{= typeof value === 'undefined' ? false : value }}</option>
-    <option>{{= typeof value === 'undefined' ? !value : false }}</option>
+  <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider" class="{{= classes }}">
+    <option>{{= value || false }}</option>
+    <option>{{= !value }}</option>
   </select>
 </script>
 

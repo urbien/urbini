@@ -70,51 +70,61 @@ define([
       if (userRole == 'guest')
         return false;
       
+      var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
-      var iAmRes = me === res._uri;
+      var resUri = res.get('_uri');
+      var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
-        if (r == 'admin')
-          return false;
-        else if (r == 'siteOwner')
-          return userRole == 'siteOwner';
-        else if (r == 'owner')
-          return false; // TODO: implement this
+        if (_.contains(['admin', 'siteOwner'], r)) {
+          if (userRole == r) return true;
+        }
+        else if (r === 'owner') {
+          continue; // TODO: implement this
+        }
         else {
-          if (r === 'self') 
-            return iAmRes;
+          if (r === 'self') { 
+            if (iAmRes) return true;
+          }
           else if (r.endsWith('self')){
             r = r.split('==');
             var pName = r[0];
-            return me == res[pName];
+            var selfUser = res.get(pName);
+            if (me == selfUser) 
+              return true;
+//            if (!resUri) { // is MKRESOURCE
+              var cloneOf = vocModel.properties[pName].cloneOf;
+              if (cloneOf) {
+                cloneOf = cloneOf.split(',');
+                for (var i = 0; i < cloneOf.length; i++) {
+                  if (cloneOf[i] === 'Submission.submittedBy')
+                    return true;
+                }
+              }
+//            }
           }
           
           // TODO: implement this          
-          return false;
         }
       }
       
-      return true;
+      return false;
     },
     
     isPropEditable: function(res, prop, userRole) {
+      var resExists = !!res.get('_uri');
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
+        return false;
+      
+      if (resExists && prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
         return false;
 
       userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
         return true;
       
-      var ar = prop.allowRoles;
-      var isVisible;
-      if (ar) {
-        isUserInRole = U.isUserInRole(userRole, ar, res);
-        if (!isUserInRole)
-          return false;
-      }
-      
-      ar = prop.allowRolesToEdit;
+      var ar = prop.allowRolesToEdit;
       return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
     
@@ -552,11 +562,12 @@ define([
     },
     
     getHashParams: function() {
-      var h = window.location.hash;
-      if (!h) 
+      var h = window.location.href;
+      var hashIdx = h.indexOf('#');
+      if (hashIdx === -1) 
         return {};
       
-      var chopIdx = h.indexOf('?');
+      var chopIdx = h.indexOf('?', hashIdx);
       if (chopIdx == -1)
         return {};
         
@@ -577,11 +588,18 @@ define([
       return map;
     },
     
-    getPropertiesWith: function(list, annotation) {
-      return _.filter(list, function(item) {
-          return item[annotation] ? item : null;
-        });
+//    getPropertiesWith: function(list, annotation) {
+//      return _.filter(list, function(item) {
+//        return item[annotation] ? item : null;
+//      });
+//    },
+    
+    getPropertiesWith: function(props, annotation) {
+      return U.filterObj(props, function(name, value) {
+        return props[name][annotation];
+      });
     },
+    
     getDisplayNameProps: function(meta) {
       var keys = [];
       for (var p in meta) {
@@ -758,7 +776,7 @@ define([
       return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
     
-    getDisplayName: function(prop) {
+    getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
@@ -794,11 +812,11 @@ define([
       }
       
       var propTemplate = Templates.getPropTemplate(prop);
-      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
-      return {name: U.getDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
+      val = typeof val === 'undefined' || val == null ? '' : val.displayName ? val : {value: val}; 
+      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
-    makePropEdit: function(prop, val) {
+    makeEditProp: function(prop, val) {
       var propTemplate = Templates.getPropTemplate(prop, true);
       val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
       if (propTemplate === 'enumPET') {
@@ -808,8 +826,10 @@ define([
       }
       
       val.value = val.value || null;
-      val.name = U.getDisplayName(prop);
+      val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
+      val.prop = prop;
+//      val.comment = prop.comment;
       var facet = prop.facet;
       if (facet) {
         if (facet.endsWith('emailAddress'))
@@ -818,14 +838,33 @@ define([
           val.type = 'tel';
       }
       
-      var classes = val.classes = [];
-      var rules = val.rules= [];
-      if (prop.required)
+      var classes = [];
+      var rules = {};
+      if (prop.required) {
         classes.push('required');
+        rules.required = 'required';
+      }
       if (prop.maxSize)
-        rules.push('maxlength');
+        rules.maxlength = prop.maxSize;
       
-      return {value: _.template(Templates.get(propTemplate))(val)};
+      val.classes = classes.join(' ');
+      val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      
+      return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment};
+    },
+    
+    reduceObj: function(obj, func, memo, context) {
+      var initial = arguments.length > 2;
+      _.each(_.keys(obj), function(name, index, list) {
+        if (!initial) {
+          memo = func(name, obj[name]);
+          initial = true;
+        } else {
+          memo = func.call(context, memo, name, obj[name], index, list);
+        }
+      });
+      
+      return memo;
     },
     
 //    /**
@@ -990,6 +1029,10 @@ define([
       return U.getObjectType(obj) === '[object Object]';
     },
     
+    /**
+     * like _.filter, but func takes in both key and value 
+     * @return obj with keys and values such that for each [key, val] pair, func(key, val) is truthy;
+     */
     filterObj: function(obj, func) {
       var filtered = {};
       for (var key in obj) {
@@ -999,9 +1042,33 @@ define([
       }
       
       return filtered;
-    }
+    },
     
+    copyFrom: function(from, to, props) {
+      _.each(props || from, function(p) {
+        to[p] = from[p];
+      });
+    },
+    
+    /**
+     * @return obj with keys and values remapped by func. 
+     * @param func: takes in key, value, returns [newKey, newValue] or null if you want to remove it from the map 
+     */
+    mapObj: function(obj, func) {
+      var mapped = {};
+      for (var key in obj) {
+        var val = obj[key];
+        var pair = func(key, val);
+        if (pair)
+          mapped[pair[0]] = pair[1];
+      }
+      
+      return mapped;
+    },
+    
+    slice: slice
   };
+  
   
   Lablz.U = U;
   return U;
