@@ -155,14 +155,9 @@ define([
       var rl = this.rl;
       var before = this.rl.models.length;
 //      var before = this.model.offset;
-      this.loadingNextPage = true;
-      var after = function() {
-//        if (rl.offset > before)
-//          self.refresh();
-//        var numHave = self.rl.models.length;
-//        var numShowing = (self.page + 1) * displayPerPage;
-        self.loadingNextPage = false;
-      };
+      
+      var after = function() { $.mobile.loading('hide'); };
+      var error = function() { after(); };
       
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
@@ -171,10 +166,10 @@ define([
         after();
         return;
       }
-        
+      
       this.model.getNextPage({
         success: after,
-        error: after
+        error: error
       });      
     },
     
@@ -208,18 +203,21 @@ define([
       var $wnd = $(window);
       if (this.skipScrollEvent) // wait for a new data portion
         return;
-  
-      // get next page when till document bottom less then one screen
-      if ($(document).height() > $wnd.scrollTop() + $wnd.height() * 2)
+
+      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * 3.5)
         return;
 
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
       this.skipScrollEvent = true; 
-      this.getNextPage();
+      $.mobile.loading('show');
+      var self = this;
+      setTimeout(function() { self.getNextPage(); }, 10);
+      
     },
     
     _resumeScrollEventProcessing: function () {
       this.skipScrollEvent = false;
+      $.mobile.loading('hide');
     },
 
     // masonry bricks alignment
@@ -249,10 +247,7 @@ define([
       // if image(s) has width and height parameters then possible to align masonry
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
       var img = $('img', $allBricks[0]);
-      
-      // TODO: restrict size of user thumbnait to be able to call masonry without "imagesLoaded"
-      var hasImgSize = false;
-      // var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
+      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {

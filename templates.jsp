@@ -319,13 +319,13 @@
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-          width="{{= imgWidth }}" height="{{= imgHeight }}"></img>
+         style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"></img>
       </a>
     </div>
   </div>
   <table width="100%" class="modP">
     <tr>
-      <td class="urbien" width="1%">
+      <td class="urbien" width="55px">
         <a href="{{= modifiedBy.value }}">
           <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
         </a>
