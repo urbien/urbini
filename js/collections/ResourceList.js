@@ -101,7 +101,7 @@ define([
       this.url = this.baseUrl + (this.queryMap ? $.param(this.queryMap) : ''); //this.getUrl();
     },
     getKey: function() {
-      return this.url;
+      return this.vocModel.type;
     },
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
@@ -134,6 +134,7 @@ define([
     },
     onReset: function(model) {
       console.log("resourceList onReset");
+      this.resources = this.models;
     },
     onAdd: function(model) {
   //    console.log("resourceList onAdd");
@@ -144,7 +145,7 @@ define([
     fetch: function(options) {
       var self = this;
       options = options || {};
-      options.add = true;
+      options.update = true;
       this.queryMap = this.queryMap || {};
       if (this.offset)
         this.queryMap[this.offsetParam] = this.offset;

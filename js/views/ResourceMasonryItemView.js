@@ -392,5 +392,7 @@ define([
       }
       return this;
     }
+  }, {
+    displayName: 'ResourceMasonryItemView'
   });
 });

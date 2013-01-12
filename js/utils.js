@@ -117,8 +117,14 @@ define([
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
         return false;
       
-      if (resExists && prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
-        return false;
+      if (resExists) { 
+        if (prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
+          return false;
+      }
+      else {
+        if (prop.avoidDisplayingOnCreate)
+          return false;
+      }
 
       userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
@@ -594,10 +600,12 @@ define([
 //      });
 //    },
     
-    getPropertiesWith: function(props, annotation) {
-      return U.filterObj(props, function(name, value) {
+    getPropertiesWith: function(props, annotation, returnArray) {
+      var filtered = U.filterObj(props, function(name, value) {
         return props[name][annotation];
       });
+      
+      return returnArray ? _.toArray(filtered) : filtered;
     },
     
     getDisplayNameProps: function(meta) {
@@ -609,13 +617,15 @@ define([
       return keys;
     },
     
-    getDisplayName: function(model, meta) {
+    getDisplayName: function(resource, meta) {
+      var vocModel = resource.vocModel;
       if (!meta) 
-        meta = model.__proto__.constructor.properties;
+        meta = vocModel.properties;
+      
       var dnProps = U.getDisplayNameProps(meta);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
-        var uri = model.get('_uri');
+        var uri = resource.get('_uri');
         var s = uri.split('?');
         s = decodeURIComponent(uri[1]).split('&');
         for (var i=0; i<s.length; i++) {
@@ -627,7 +637,7 @@ define([
       }
       var first = true;
       for (var i=0; i<dnProps.length; i++) {
-        var value = model.get(dnProps[i]);
+        var value = resource.get(dnProps[i]);
         if (value  &&  typeof value != 'undefined') {
           if (first)
             first = false;
@@ -636,14 +646,17 @@ define([
           dn += (value.displayName) ? value.displayName : value;
         }
       }
-      return dn;
+      
+      return dn || vocModel.displayName;
     },
 
-    getTypeTemplate: function(id, model) {
+    getTypeTemplate: function(id, resource) {
       var t = G.template;
       if (!t) 
         return null;
-      var dataType = model.__proto__.constructor.shortName; 
+      
+      var vocModel = resource.vocModel;
+      var dataType = vocModel.shortName; 
       
       var appTemplates = Templates.get(G.appName);
       if (!appTemplates) {
@@ -655,7 +668,7 @@ define([
         Templates.templates[G.appName] = appTemplates;
       } 
       
-      var key = model.__proto__.constructor.shortName + '-' + id;
+      var key = dataType + '-' + id;
       var tmpl = appTemplates[key];
       return (tmpl) ? _.template(tmpl) : null;
     },
@@ -716,11 +729,8 @@ define([
       frag.appendChild(U.toHTMLElement(html));
     },
     
-    getUris: function(model) {
-      if (model instanceof Backbone.Collection)
-        return _.map(model.models, function(model) {return model.get('_uri')});
-      else
-        return [model.get('_uri')];
+    getUris: function(data) {
+      return _.map(data instanceof Backbone.Collection ? data.models : [data], function(m) {return m.get('_uri')});
     },
     
     isCollection: function(resOrCol) {
@@ -816,7 +826,7 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
-    makeEditProp: function(prop, val) {
+    makeEditProp: function(prop, val, formId) {
       var propTemplate = Templates.getPropTemplate(prop, true);
       val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
       if (propTemplate === 'enumPET') {
@@ -828,6 +838,7 @@ define([
       val.value = val.value || null;
       val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
+      val.id = (formId || G.nextId()) + '.' + prop.shortName;
       val.prop = prop;
 //      val.comment = prop.comment;
       var facet = prop.facet;

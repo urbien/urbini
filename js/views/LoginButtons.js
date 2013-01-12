@@ -5,19 +5,23 @@ define([
   'underscore', 
   'cache!backbone', 
   'cache!utils',
-  'cache!templates'
-], function(G, $, __jqm__, _, Backbone, U, Templates) {
-  return Backbone.View.extend({
+  'cache!templates',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, U, Templates, BasicView) {
+  return BasicView.extend({
     loginTemplate: 'loginButtonTemplate',
     logoutTemplate: 'logoutButtonTemplate',
     popupTemplate: 'loginPopupTemplate',
     events: {
       'click #login' : 'showPopup',
-      'click #logout': 'showPopup'
+      'click #logout': 'logout'
     },
-    
+    logout: function() {
+      window.location.href = G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot);      
+    },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'showPopup');
+      _.bindAll(this, 'render', 'showPopup', 'logout');
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.popupTemplate = _.template(Templates.get(this.popupTemplate));
       this.loginTemplate = _.template(Templates.get(this.loginTemplate));
       this.logoutTemplate = _.template(Templates.get(this.logoutTemplate));

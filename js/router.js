@@ -223,15 +223,9 @@ define([
         return;
       
       var params = U.getHashParams();
-      var mPage = this.MkResourceViews[type];
-      if (!mPage)
-        mPage = this.MkResourceViews[type] = new EditPage({model: new Voc.typeToModel[type](), action: 'mkresource'});
-      else
-        mPage.resetForm();
-      
-      var props = {action: 'make'};
-      U.copyFrom(params, props, ['backLinkProp', 'backLink', 'on']);
-      mPage.set(props);
+      var mPage = new EditPage({model: new Voc.typeToModel[type](), action: 'make'});
+      this.currentModel = mPage.resource;
+      mPage.set({action: 'make'});
       this.changePage(mPage);
     },
 

@@ -28,7 +28,13 @@ define([
       this.router = G.Router || Backbone.History;
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
+      
+      var params = U.getQueryParams();
+      var bl = {};
+      bl[params.backLink] = params.on;
+      this.resource.set(bl, {silent: true});
       this.originalResource = this.resource.toJSON();
+
       return this;
     },
     events: {
@@ -49,9 +55,10 @@ define([
     fieldError: function(resource, errors) {
       var badInputs = [];
       for (name in errors) {
-        var input = this.$form.find('input[id="{0}"]'.format(name));
+        var input = this.$form.find('input[name="{0}"]'.format(name));
         badInputs.push(input);
-        var err = this.$form.find('label.error[for="{0}"]'.format(name));
+        var id = input[0].id;
+        var err = this.$form.find('label.error[for="{0}"]'.format(id));
         var msg = errors[name];
         if (err.length) {
           err[0].innerText = msg;
@@ -59,7 +66,7 @@ define([
         else {
           var label = document.createElement('label');
           label.innerHTML = msg;
-          label.setAttribute('for', name);
+          label.setAttribute('for', id);
           label.setAttribute('class', 'error');
           input[0].parentNode.insertBefore(label, input.nextSibling);
         }
@@ -70,6 +77,42 @@ define([
           scrollTop: badInputs[0].offset().top - 10
         }, 1000);
       }
+    },
+    getRedirect: function() {
+      var res = this.model;
+      var vocModel = this.vocModel;
+      var redirectAction = vocModel.onCreateRedirectToAction || 'PROPFIND';
+      var redirectTo = vocModel.onCreateRedirectTo;
+      var redirectPath = '';
+      switch (redirectAction) {
+        case 'LIST':
+          if (redirectTo)
+            redirect = vocModel.properties[redirectTo].type._uri; 
+          else 
+            redirect = vocModel.type;
+          
+          break;
+        case 'PROPFIND':
+        case 'PROPPATCH':
+          redirectPath = redirectAction === 'PROPFIND' ? 'view/' : 'edit/';
+          if (!redirectTo || redirectTo === '-$this')
+            redirect = res.get('_uri');
+          else
+            redirect = res.get(redirectTo);
+          
+          break;
+        default:
+          G.log(self.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
+          redirect = vocModel.type;
+          break;
+      }
+      
+      redirect = redirectPath + encodeURIComponent(redirect);            
+      var redirectMsg = vocModel.onCreateRedirectToMessage;
+      if (redirectMsg)
+        redirect += '?-info=' + encodeURIComponent(redirectMsg);
+      
+      return redirect;
     },
     submit: function(e) {
       e.preventDefault();
@@ -87,12 +130,12 @@ define([
           baseParams = {'$returnMade': 'y'};
       
       var onSuccess = function() {
-        var changed = U.filterObj(res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
-        if (!_.size(changed))
+        var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
+        if (this.action === 'edit' && !_.size(props))
           return;
         
-        _.extend(changed, baseParams);
-//        _.extend(changed, {type: vocModel.type, uri: res.get('_uri')});
+        _.extend(props, baseParams);
+//        _.extend(props, {type: vocModel.type, uri: res.get('_uri')});
         var callback = function(xhr, status) {
           inputs.attr('disabled', false);
           if (status !== 'success') {
@@ -136,10 +179,10 @@ define([
 //            alert('The item you\'re editing doesn\'t exist');
           }
 
-          self.router.navigate('view/' + encodeURIComponent(res.get('_uri')), {trigger: true, replace: true, forceRefresh: true});
+          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true});
         }
         
-        $.ajax({type:'POST', url: url, data: $.param(changed), complete: callback});
+        $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
       };
       
       var onError = function(res, errors) {
@@ -164,13 +207,16 @@ define([
         var input = inputs[i];
         var name = input.name;
         var val = input.value || undefined;
-//        if (willSave(res, name, val))
-          props[name] = val;
+        props[name] = val;
       }
 
-      res.lastFetchOrigin = 'edit';
-      res.once('change', onSuccess, this);
-      res.set(props, {validateAll: true, error: onError});
+      if (!_.size(props))
+        onSuccess();
+      else {
+        res.lastFetchOrigin = 'edit';
+        res.once('change', onSuccess, this);
+        res.set(props, {validateAll: true, error: onError});
+      }
     },
     cancel: function(e) {
       e.preventDefault();
@@ -209,17 +255,19 @@ define([
       
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList");
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
+      propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       
+      var formId = G.nextId();
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
       var rules = {};
       var userRole = U.getUserRole();
-      if (_.size(propGroups)) {
-        for (var pgShortName in propGroups) {
-          var grMeta = propGroups[pgShortName];
+      if (propGroups.length) {
+        for (var i = 0; i < propGroups.length; i++) {
+          var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
@@ -238,13 +286,13 @@ define([
             if (!willShow(res, prop, userRole))
               continue;
   
-            var pInfo = U.makeEditProp(prop, json[p], userRole);
+            var pInfo = U.makeEditProp(prop, json[p], formId);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
   
-            U.addToFrag(frag, this.editRowTemplate(pInfo));
+            U.addToFrag(frag, this.eRowTemplate(json[p]));
           }
         }
       }
@@ -266,7 +314,7 @@ define([
           if (!willShow(res, prop, userRole))
             continue;
           
-          var pInfo = U.makeEditProp(prop, json[p], userRole);
+          var pInfo = U.makeEditProp(prop, json[p], formId);
           if (!groupNameDisplayed) {
             U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             groupNameDisplayed = true;
@@ -283,22 +331,33 @@ define([
       this.$form = form = this.$('form');
       var inputs = form.find('input');
       var view = this;
-      for (var i = 0; i < inputs.length; i++) {
-        var input = inputs[i];
-        var name = input.name;
-        var jin = $(input);
+      inputs.each(function(idx, input) {
+//        var input = inputs[i];
+        var i = input;
+        var name = i.name;
+        var jin = $(i);
         var jparent = jin.parent();
+        var validated = function() {
+          jparent.find('label.error').remove();
+//          i.focus();
+        };
+
         var onFocusout = function() {
           var self = this;                  
           var val = this.value;
           var change = {};
           change[this.name] = val;
           res.lastFetchOrigin = 'edit';
-          res.set(change, {validateAll: false, error: view.fieldError});
+          res.set(change, {validateAll: false, error: view.fieldError, validated: validated});
         };
         
         jin.focusout(onFocusout);
-      }
+//        jin.keyup(onFocusout);
+      });
+      
+      form.find('input.required').each(function() {
+        $(this).prev('label').addClass('req');
+      });
       
       this.rendered = true;
       return this;

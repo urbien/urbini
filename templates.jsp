@@ -80,7 +80,7 @@
 </script -->
 
 <script type="text/template" id="booleanPT">
-  <span>{{= value }}</span>
+  <span>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</span>
 </script>
 
 <script type="text/template" id="intPT">
@@ -181,6 +181,10 @@
       {{ } }}
     {{ } }}
   </div>
+</script-->
+
+<!--script type="text/template" id="editButtonTemplate">
+  <a id="edit" target="#" class="icon next ui-btn-right">Edit</a>
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -385,24 +389,24 @@
 
 
 <script type="text/template" id="emailPET">
-  <label for="{{= shortName }}">{{= name }}</label>
-  <input type="email" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+  <label for="{{= id }}">{{= name }}</label>
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="editRowTemplate">
   <li data-role="fieldcontain">{{= value }}<br />
-  {{= typeof comment === 'undefined' ? '' : '<i>* ' + comment + '</i>' }}
+  {{= typeof comment === 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }}
   </li>
 </script>
 
 <script type="text/template" id="telPET">
-  <label for="{{= shortName }}">{{= name }}</label>
-  <input type="tel" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" />
+  <label for="{{= id }}">{{= name }}</label>
+  <input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" />
 </script>
 
 <script type="text/template" id="enumPET">
-  <label for="{{= shortName }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false" class="{{= classes }}">
+  <label for="{{= id }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= id }}" data-native-menu="false" class="{{= classes }}">
     <option>{{= value || '' }}</option>
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
@@ -413,24 +417,24 @@
 </script>
 
 <script type="text/template" id="stringPET">
-  <label for="{{= shortName }}">{{= name }}:</label> 
-  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+  <label for="{{= id }}">{{= name }}</label> 
+  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
+  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="resourcePET">
-  <label for="{{= shortName }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}" class="{{= classes }}">
+  <label for="{{= id }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= id }}" class="{{= classes }}">
     <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
     <option value="test">Not supported</option>
   </select>
 </script>
 
 <script type="text/template" id="booleanPET">
-  <label for="{{= shortName }}">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider" class="{{= classes }}">
-    <option>{{= value || false }}</option>
-    <option>{{= !value }}</option>
+  <label for="{{= id }}">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="{{= classes }}">
+    <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
+    <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
 </script>
 

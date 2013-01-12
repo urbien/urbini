@@ -100,7 +100,7 @@ define([
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: 'j_security_check?j_signout=true&amp;returnUri=' + G.pageRoot}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(G.pageRoot)}));
       }
       
       ul.append(frag);
@@ -154,5 +154,7 @@ define([
     subscribe: function() {
       alert('subscribed...not really though');
     }
+  }, {
+    displayName: 'MenuPage'
   });
 });

@@ -709,6 +709,7 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
+        localStorage.removeItem(key);
         localStorage.setItem(key, value);
       } catch(e) {
         if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {

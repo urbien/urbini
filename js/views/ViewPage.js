@@ -12,16 +12,17 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
-//  'cache!views/EditButton',  
+  'cache!views/EditButton',  
   'cache!views/ResourceView',
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, /*EditButton,*/ ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
   return BasicView.extend({
+    tagName: 'a',
     clicked: false,
     initialize: function() {
-      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
+      _.bindAll(this, 'render', 'click', 'home', 'swipeleft', 'swiperight');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('resource'));
@@ -30,7 +31,7 @@ define([
       Events.on("mapReady", this.showMapButton);
     },
     events: {
-      'click #edit': 'edit',
+//      'click #edit': 'edit',
       'click': 'click',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
@@ -51,11 +52,11 @@ define([
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
-    edit: function(e) {
-      e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
-      return this;
-    },
+//    edit: function(e) {
+//      e.preventDefault();
+//      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
+//      return this;
+//    },
 //    tap: function() {
 //      G.log(this.TAG, 'events');
 //      return Events.defaultTapHandler.apply(this, arguments);
@@ -93,9 +94,13 @@ define([
       this.view = new ResourceView({el: $('ul#resourceView', this.el), model: res});
       this.view.render();
       this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
-      this.cp.render();      
-//      this.editBtn = new EditButton({el: $('#edit', this.el), model: res});
-//      this.editBtn.render();
+      this.cp.render();
+      if (G.currentUser.guest) {
+        this.$('#edit').hide();
+//        this.editBtn = new EditButton({model: res});
+//        this.$('div[data-role="footer"]').append(this.editBtn.render().el);
+      }
+      
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       

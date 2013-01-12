@@ -37,5 +37,7 @@ define([
       this.$el.html(this.template(json));
       return this;
     }
+  }, {
+    displayName: 'CommentListItemView'
   });  
 });

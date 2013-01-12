@@ -33,7 +33,7 @@ define([
     },
     
     refresh: function(rl, modified) {
-      if (rl && rl != this.rl)
+      if (rl && rl != this.collection)
         return this;
   
 //      if (this.$el.hasClass('ui-listview')) {
@@ -157,18 +157,19 @@ define([
       var before = rl.models.length;
 //      var before = this.model.offset;
       this.loadingNextPage = true;
+      this.page++;
+      var requested = (this.page + 1) * this.displayPerPage;
       var after = function() {
-//        if (rl.offset > before)
-//          self.refresh();
-//        var numHave = self.rl.models.length;
-//        var numShowing = (self.page + 1) * displayPerPage;
+//        var numShowing = (self.page + 1) * self.displayPerPage;
+        if (requested <= rl.models.length) {
+          self.refresh();
+        }
+        
         self.loadingNextPage = false;
       };
       
-      this.page++;
-      var requested = (this.page + 1) * this.displayPerPage;
       if (before >= requested) {
-        this.refresh(rl);
+//        this.refresh(rl);
         after();
         return;
       }

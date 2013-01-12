@@ -67,7 +67,8 @@ define([
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList");
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true);
+      propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
@@ -77,9 +78,9 @@ define([
       var groupNameDisplayed;
       var maxChars = 30;
       var first;
-      if (_.size(propGroups)) {
-        for (var pgShortName in propGroups) {
-          var grMeta = propGroups[pgShortName];
+      if (propGroups.length) {
+        for (var i = 0; i < propGroups.length; i++) {
+          var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;

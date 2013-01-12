@@ -29,12 +29,14 @@ define([
         
         if (!this.pageTitle) {
           if (hash) {
-            var v = hash.split('&');
-            for (var i=0; i<v.length; i++) {
-              var a = v[i].split('=');
-              if (a[0] == '$title')
-                this.pageTitle = a[1];
-            }
+            var params = U.getQueryParams(hash);
+            this.pageTitle = params.$title;
+//            var v = hash.split('&');
+//            for (var i=0; i<v.length; i++) {
+//              var a = v[i].split('=');
+//              if (a[0] == '$title')
+//                this.pageTitle = a[1];
+//            }
           }
           if (!this.pageTitle) {
             if (res instanceof Backbone.Collection) 

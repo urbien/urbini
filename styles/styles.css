@@ -1,11 +1,30 @@
-.required:after { content: "*"; }
+#input[required]::before {
+  content: " *";
+  font-weight: bold;
+  color: #f66;
+}
+
+span.comment {
+  #font-style: italic;
+  color: #888;  
+}
+
+label.req::before {
+  content: "* ";
+  font-weight: bold;
+  color: #f66;  
+}
 
 label.missing  {  
   color:#FF0000;  
   font-weight:bold;  
 }  
 
-.ui-field-contain div.ui-slider-switch { width: 9em; }
+.ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
+  display: block;
+}
+
+.ui-field-contain div.ui-slider-switch { width: 9em; position: absolute; right: 0; } // to make Yes/No toggle switch bigger
 .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li-has-thumb { padding-left: 90px; }
 .ui-header .ui-btn-left, .ui-header .ui-btn-right {
   top: 5px;

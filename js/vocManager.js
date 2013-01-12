@@ -17,6 +17,7 @@ define([
   };
 
   Index = idbq.Index;
+  G.classUsage = _.map(G.classUsage, U.getTypeUri);
   var Voc = {
     packages: {Resource: Resource},
     models: [],
@@ -26,6 +27,7 @@ define([
     shortNameToModel: {Resource: Resource},
     typeToModel: {},
     shortNameToEnum: {},
+    typeToEnum: {},
     fetchModels: function(models, options) {
       models = models ? (typeof models === 'string' ? [models] : models) : _.union(Voc.changedModels, Voc.newModels);      
       options = options || {};
@@ -45,7 +47,7 @@ define([
       var c = Voc.currentModel;
       var urgent = options.sync && models.length > 1 && c && !Voc.typeToModel[c] && c;
       if (urgent) {
-        urgent = Voc.filterOutStale([urgent]);
+        urgent = Voc.getStaleModels([urgent]);
         if (urgent.length) {
           urgent = urgent[0];
           options.success = function() {
@@ -76,7 +78,7 @@ define([
         return;
       }
       
-      models = Voc.filterOutStale(models);      
+      models = Voc.getStaleModels(models);      
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
       var useWorker = G.hasWebWorkers && !options.sync;
@@ -123,8 +125,11 @@ define([
         if (pkg)
           U.deepExtend(Voc.packages, pkg);
         
-        G.classUsage = _.union(G.classUsage, data.classUsage);          
-        G.linkedModels = data.linkedModels; //_.union(G.linkedModels, data.linkedModels);
+        G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));          
+        G.linkedModels = _.map(data.linkedModels, function(m) {return _.extend(m, {type: U.getTypeUri(m.type)})}); //_.union(G.linkedModels, data.linkedModels);
+        if (_.uniq(G.linkedModels).length != G.linkedModels.length)
+          debugger;
+        
         if (data.classMap)
           _.extend(G.classMap, data.classMap)
         
@@ -189,7 +194,7 @@ define([
       }
     },
     
-    filterOutStale: function(models) {
+    getStaleModels: function(models) {
       var now = G.currentServerTime();
       return _.filter(_.map(models, function(m) {
         var model = Voc.snm[U.getShortName(m)];
@@ -243,7 +248,7 @@ define([
         }
         
         var range = prop && prop.range;
-        range = range && (range.indexOf('/') == -1 || range.indexOf('/Image') != -1 ? null : range.startsWith('http') ? range : G.defaultVocPath + range);
+        range = range && (range.indexOf('/') == -1 || range.indexOf('/Image') != -1 ? null : U.getTypeUri(range));
         if (range && G.classMap)
           range = G.classMap[range] || range;
         
@@ -324,10 +329,12 @@ define([
       if (Voc.shortNameToModel[m.shortName])
         return;
       
+      m.type = U.getTypeUri(m.type);
   //    m.lastModified = new Date().getTime();
       var sn = m.shortName;
       if (m.enumeration) {
         Voc.shortNameToEnum[sn] = m;
+        Voc.typeToEnum[m.type] = m;
         return;
       }
       else {
@@ -338,7 +345,8 @@ define([
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
       var superProps = m.__super__.constructor.properties;
-      m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
+      var hidden = m.hiddenProperties ? m.hiddenProperties.replace(/\ /g, '').split(',') : [];
+      m.properties = superProps ? _.extend(U.filterObj(superProps, function(name, prop) {return !_.contains(hidden, name)}), m.myProperties) : _.clone(m.myProperties);
       var superInterfaces = m.__super__.constructor.interfaces;
       m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
       m.prototype.initialize = Voc.getInit.apply(m);
@@ -595,7 +603,7 @@ define([
         var model = models[i];
         var uri = model.type || model;
         if (!uri || !(uri = U.getLongUri(uri, Voc)))
-          continue
+          continue;
         
         if (typeToJSON[uri] || Voc.typeToModel[uri])
           continue;
@@ -620,7 +628,10 @@ define([
 //          }
 //          else {
             var chain = Voc.getModelChain(jm, typeToJSON);
-            expanded = expanded.concat(chain);
+            if (chain)
+              expanded = expanded.concat(chain);
+            else
+              Voc.newModels.push(jm.type);
 //            for (var i = 0; i < expanded; i++) {
 //              if (expanded)
 //            }

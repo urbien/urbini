@@ -9,6 +9,11 @@ define([
   'cache!utils',
   'cache!views/BasicView'
 ], function(G, $, __jqm__, _, Backbone, Templates, Events, U, BasicView) {
+  var willShow = function(res, prop, role) {
+    var p = prop.shortName;
+    return p.charAt(0) != '_' && p != 'davDisplayName' && !prop.displayNameElm && U.isPropVisible(res, prop, role);
+  };
+
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
@@ -53,14 +58,16 @@ define([
       var res = this.resource;
       var vocModel = this.vocModel;
       var meta = vocModel.properties;
-      if (!meta)
-        return this;
-      
+      var userRole = U.getUserRole();
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
-//      var list = _.toArray(meta);
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList");
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
+//      propGroups = propGroups.length ? propGroups : U.getPropertiesWith(vocModel.properties, "propertyGRoupsList", true);
+      propGroups = _.sortBy(propGroups, function(pg) {
+        return pg.index;
+      });
+      
       var backlinks = U.getPropertiesWith(meta, "backLink");
 //      var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
@@ -68,33 +75,24 @@ define([
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
-      if (_.size(propGroups)) {
-        for (var pgShortName in propGroups) {
-          var grMeta = propGroups[pgShortName];
+      if (propGroups.length) {
+        for (var i = 0; i < propGroups.length; i++) {
+          var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
-            if (!/^[a-zA-Z]/.test(p))
+            if (!/^[a-zA-Z]/.test(p) || !_.has(json, p) || _.has(backlinks, p))
               continue;
             
             var prop = meta[p];
-            if (!_.has(json, p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
-              continue;
-            
             if (!prop) {
               delete json[p];
               continue;
             }
                   
-            if (p.charAt(0) == '_')
-              continue;
-            if (p == 'davDisplayName')
-              continue;
-            if (prop.displayNameElm)
-              continue;
-            if (!U.isPropVisible(res, prop))
+            if (!willShow(res, prop, userRole))
               continue;
   
             displayedProps[p] = true;
@@ -104,6 +102,7 @@ define([
               groupNameDisplayed = true;
             }
   
+            // remove HTML tags, test length of pure text
             var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
             if (json[p].name.length + v.length > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(json[p]));

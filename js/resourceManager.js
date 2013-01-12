@@ -439,7 +439,7 @@ define([
           RM.updateStores();
         }
         
-        RM.db = e.target.result;
+//        RM.db = e.target.result;
         e.target.transaction.oncomplete = function() {
   //        G.recordCheckpoint("done upgrading db");
           G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
@@ -474,8 +474,9 @@ define([
           G.log(RM.TAG, 'db', 'closing db - onversionchange');
 //          alert('version change');
           db.close();
+          RM.openDB(success, error);
 //          window.location.reload();
-          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
+//          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
         };    
      
         state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
@@ -500,7 +501,7 @@ define([
           req.onerror = RM.onerror;
           req.onblocked = function(e) {
             RM.deleteDatabase(function() {
-              RM.openDB.apply(options, success, error);
+              RM.openDB.apply(success, error);
             });
           };
           
@@ -564,8 +565,19 @@ define([
         return _.contains(G.classUsage, m);
       });
 
-      toDel = _.map(toDel, U.getClassName);
-      models = _.map(models, U.getClassName);
+      if (_.uniq(toDel).length != toDel.length)
+        debugger;
+      if (_.uniq(models).length != models.length)
+        debugger;
+
+//      toDel = _.map(toDel, U.getClassName);
+//      models = _.map(models, U.getClassName);
+//      
+//      if (_.uniq(toDel).length != toDel.length)
+//        debugger;
+//      if (_.uniq(models).length != models.length)
+//        debugger;
+      
 //      models = _.map(models, function(uri) {
 //        var sIdx = uri.lastIndexOf("/");
 //        return sIdx == -1 ? uri : uri.slice(sIdx + 1);
@@ -579,20 +591,20 @@ define([
       var deleted = [];
       var created = [];
       for (var i = 0; i < models.length; i++) {
-        var name = models[i];
-        if (Voc.shortNameToEnum[name])
+        var type = models[i];
+        if (Voc.typeToEnum[type])
           continue;
         
-        if (RM.tableExists(name)) {
-          if (reset || _.contains(toDel, name)) {
+        if (RM.tableExists(type)) {
+          if (reset || _.contains(toDel, type)) {
             try {
-              G.log(RM.TAG, 'db', 'deleting object store: ' + name);
-              db.deleteObjectStore(name);
-              G.log(RM.TAG, 'db', 'deleted object store: ' + name);
-              deleted.push(name);
+              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
+              db.deleteObjectStore(type);
+              G.log(RM.TAG, 'db', 'deleted object store: ' + type);
+              deleted.push(type);
             } catch (err) {
               debugger;
-              G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + name + ': ' + err);
+              G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
               return;
             }
           }          
@@ -602,19 +614,19 @@ define([
         
 
         try {
-          G.log(RM.TAG, 'db', 'creating object store: ' + name);
-          var store = db.createObjectStore(name, RM.defaultOptions);
-          G.log(RM.TAG, 'db', 'created object store: ' + name);
-          var m = Voc.shortNameToModel[name];
+          G.log(RM.TAG, 'db', 'creating object store: ' + type);
+          var store = db.createObjectStore(type, RM.defaultOptions);
+          G.log(RM.TAG, 'db', 'created object store: ' + type);
+          var m = Voc.typeToModel[type];
           if (m) {
             var indices = [];
             var vc = m.viewCols;
             vc = vc ? vc.split(',') : [];
             _.each(vc, function(pName) {
               pName = pName.trim();
-              G.log(RM.TAG, 'db', 'creating index', pName, 'for store', name);
+              G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
               store.createIndex(pName, pName, {unique: false});              
-              G.log(RM.TAG, 'db', 'created index', pName, 'for store', name);
+              G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
               indices.push(pName);
             });
 
@@ -626,10 +638,10 @@ define([
 //            });
           }
           
-          created.push(name);
+          created.push(type);
         } catch (err) {
           debugger;
-          G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + name + ': ' + err);
+          G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
           return;
         }
         
@@ -650,26 +662,13 @@ define([
       if (!db)
         return;
       
-      var className, vocModel;
-      if (classUri) {
-        vocModel = Voc.typeToModel[classUri];
-      }
-      else {
-        var first = items[0];
-        if (first instanceof Backbone.Model)
-          vocModel = first.constructor;
-        else {
-          className = U.getClassName(first._uri);
-          vocModel = Voc.shortNameToModel[className];
-        }
-      }
+      if (!classUri)
+        classUri = U.getTypeUri(items[0].type._uri);
       
-      className = vocModel.shortName;
-      classUri = vocModel.type;
-      if (!RM.tableExists(className)) {
+      if (!RM.tableExists(classUri)) {
         G.log(RM.TAG, 'db', 'closing db for upgrade');
         db.close();
-        G.log(this.TAG, "db", "2. newModel: " + className);
+        G.log(this.TAG, "db", "2. newModel: " + classUri);
         U.pushUniq(Voc.newModels, classUri);
         RM.openDB(function() {
           setTimeout(function() {RM.addItems(items, classUri)}, 100);
@@ -678,23 +677,23 @@ define([
         return;
       }
       
-      G.log(RM.TAG, 'db', 'starting readwrite transaction for store', className);
-//      G.recordCheckpoint('starting readwrite transaction for store: ' + className);
+      G.log(RM.TAG, 'db', 'starting readwrite transaction for store', classUri);
+//      G.recordCheckpoint('starting readwrite transaction for store: ' + classUri);
       var trans;
       try {
-        trans = db.transaction([className], IDBTransaction.READ_WRITE);
+        trans = db.transaction([classUri], IDBTransaction.READ_WRITE);
       } catch (err) {
         debugger;
-        G.log(RM.TAG, ['error', 'db'], 'failed to start readwrite transaction for store', className, err);
+        G.log(RM.TAG, ['error', 'db'], 'failed to start readwrite transaction for store', classUri, err);
         return false;
       }
 
       trans.oncomplete = function(e) {
-        G.log(RM.TAG, 'db', 'finished readwrite transaction for store', className);
-//        G.recordCheckpoint('finished readwrite transaction for store: ' + className);
+        G.log(RM.TAG, 'db', 'finished readwrite transaction for store', classUri);
+//        G.recordCheckpoint('finished readwrite transaction for store: ' + classUri);
       };
       
-      var store = trans.objectStore(className);
+      var store = trans.objectStore(classUri);
       _.each(items, function(item) {
         var request = store.put(item instanceof Backbone.Model ? item.toJSON() : item);
         request.onsuccess = function(e) {
@@ -708,13 +707,17 @@ define([
     }.async(100),
     
     addItem: function(item, classUri) {
-      RM.addItems([item instanceof Backbone.Model ? item.toJSON() : item], classUri || item.constructor.type);
+      var isModel = item instanceof Backbone.Model;
+      classUri = classUri ? classUri : isModel ? item.vocModel.type : U.getTypeUri(item.type._uri);
+      item = isModel ? item.toJSON() : item;
+      RM.addItems([item], classUri);
     },
     
     deleteItem: function(uri) {
       G.log(RM.TAG, 'db', 'deleting item', uri);
-      var type = U.getClassName(item._uri);
-      var name = U.getClassName(type);
+//      var type = U.getClassName(item._uri);
+//      var name = U.getClassName(type);
+      var type = item._uri || item.vocModel.type;
       var db = RM.db;
       var trans = db.transaction([type], IDBTransaction.READ_WRITE);
       var store = trans.objectStore(type);
@@ -852,7 +855,7 @@ define([
     getItems: function(options) {
       // var todos = document.getElementById("todoItems");
       // todos.innerHTML = "";
-      var type = U.getClassName(options.key);
+      var type = U.getTypeUri(options.key);
       var uri = options.uri;
       var success = options.success;
       var error = options.error;
@@ -862,26 +865,26 @@ define([
       var data = options.data;
 //      var vocModel = model instanceof Backbone.Collection ? model.model : model.constructor;
     
-      var name = U.getClassName(type);
+//      var name = U.getClassName(type);
       var db = RM.db;
-      if (!RM.tableExists(name))
+      if (!RM.tableExists(type))
         return false;
       
-      G.log(RM.TAG, 'db', 'starting readonly transaction for store', name);
+      G.log(RM.TAG, 'db', 'starting readonly transaction for store', type);
       var trans;
       try {
-        trans = db.transaction([name], IDBTransaction.READ_ONLY);
+        trans = db.transaction([type], IDBTransaction.READ_ONLY);
       } catch (err) {
         debugger;
-        G.log(RM.TAG, ['error', 'db'], 'failed to start readonly transaction for store', name, err);
+        G.log(RM.TAG, ['error', 'db'], 'failed to start readonly transaction for store', type, err);
         return false;
       }
       
       trans.oncomplete = function(e) {
-        G.log(RM.TAG, 'db', 'finished readonly transaction for store', name);
+        G.log(RM.TAG, 'db', 'finished readonly transaction for store', type);
       };
       
-      var store = trans.objectStore(name);
+      var store = trans.objectStore(type);
 //      var lowerBound;
 //      if (startAfter)
 //        lowerBound = IDBKeyRange.lowerBound(startAfter, true);
