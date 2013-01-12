@@ -167,6 +167,7 @@ define([
         after();
         return;
       }
+
       rl.getNextPage({
         success: after,
         error: error
@@ -208,7 +209,8 @@ define([
         return;
 
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      this.skipScrollEvent = true; 
+      if ($wnd.scrollTop() > 5) // initial next page retriving not by a user 
+        this.skipScrollEvent = true; 
       $.mobile.loading('show');
       var self = this;
       setTimeout(function() { self.getNextPage(); }, 10);
