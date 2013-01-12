@@ -104,9 +104,15 @@ html { height: 100%; }
 .masonry .masonry-brick { visibility: visible; }
 
 .nab .modP .urbien { padding-left: 10px; }
-.nab .modP .urbien img {width: 50px;}
+.nab .modP .urbien img {
+    width: 50px;
+    position: absolute;
+    clip: rect(0px, 50px, 70px, 0px);
+}
 .nab .nabP .urbien { padding-left: 10px; }
 .nab .nabP .urbien img {width: 50px;}
+
+
 
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {max-width: 205px;}
@@ -170,7 +176,7 @@ html { height: 100%; }
 .lc1 img {
   max-width: 32px;
 }
-.btn { text-align: center; padding-bottom: 3px; }
+.btn { text-align: center; padding-bottom: 3px; height: 32px; }
 .commentListDate {
   color: #999999;
   font-size: 11px;

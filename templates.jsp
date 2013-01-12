@@ -216,7 +216,7 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" style="text-align: center;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
     <h5>Login through Social Networks</h5>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
@@ -287,13 +287,14 @@
   <div class="anab">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+         style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"></img>
       </a>
     </div>
   </div>
   <table width="100%" class="modP">
     <tr>
-      <td class="urbien" width="1%">
+      <td class="urbien" width="55px">
         <a href="{{= modifiedBy.value }}">
           <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
         </a>

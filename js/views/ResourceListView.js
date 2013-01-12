@@ -165,18 +165,20 @@ define([
           self.refresh();
         }
         
+        $.mobile.loading('hide');
         self.loadingNextPage = false;
       };
       
+      var error = function() { after(); };      
       if (before >= requested) {
 //        this.refresh(rl);
         after();
         return;
       }
-        
+
       rl.getNextPage({
         success: after,
-        error: after
+        error: error
       });      
     },
     
@@ -210,18 +212,21 @@ define([
       var $wnd = $(window);
       if (this.skipScrollEvent) // wait for a new data portion
         return;
-  
-      // get next page when till document bottom less then one screen
-      if ($(document).height() > $wnd.scrollTop() + $wnd.height() * 2)
+
+      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * 3.5)
         return;
 
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      this.skipScrollEvent = true; 
-      this.getNextPage();
+      if ($wnd.scrollTop() > 5) // initial next page retriving not by a user 
+        this.skipScrollEvent = true; 
+      $.mobile.loading('show');
+      var self = this;
+      setTimeout(function() { self.getNextPage(); }, 10);
     },
     
     _resumeScrollEventProcessing: function () {
       this.skipScrollEvent = false;
+      $.mobile.loading('hide');
     },
 
     // masonry bricks alignment
@@ -247,16 +252,31 @@ define([
                   
                   return !hasClass;
                 });
+
+      // if image(s) has width and height parameters then possible to align masonry
+      // before inner images downloading complete. Detect it through image in 1st 'brick' 
+      var img = $('img', $allBricks[0]);
+      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
+        if (hasImgSize) {
+          this.$el.masonry( 'reload' );
+          this._resumeScrollEventProcessing();
+        }
+        else  
+          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
         return
       }
       
       //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
-        this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
+        if (hasImgSize) {
+          this.$el.masonry();
+          this._resumeScrollEventProcessing();
+        }
+        else  
+          this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
         return;
       }
       
@@ -266,7 +286,12 @@ define([
      
       // 4. align new bricks, on next page, only
       // filter unaligned "bricks" which do not have calculated, absolute position 
-      this.$el.imagesLoaded( function(){ self.$el.masonry( 'appended', $newBricks ); self._resumeScrollEventProcessing(); });
+      if (hasImgSize) {
+        this.$el.masonry('appended', $newBricks);
+        this._resumeScrollEventProcessing();
+      }
+      else  
+        this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self._resumeScrollEventProcessing(); });
     }
   }, {
     displayName: 'EditView'

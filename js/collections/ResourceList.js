@@ -145,7 +145,7 @@ define([
     fetch: function(options) {
       var self = this;
       options = options || {};
-      options.update = true;
+      _.extend(options, {update: true, remove: false});
       this.queryMap = this.queryMap || {};
       if (this.offset)
         this.queryMap[this.offsetParam] = this.offset;
