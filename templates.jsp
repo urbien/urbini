@@ -39,7 +39,7 @@
 
   <div data-role="footer">
      <a id="homeBtn" target="#" class="icon home">Home</a>
-     <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
+     <a id="edit" target="#" class="icon next ui-btn-right">Edit</a>
   </div>
 </script>  
 
@@ -63,36 +63,21 @@
   <a href="mailto:{{= value }}">{{= value }}</a>
 </script>
 
-<script type="text/template" id="emailPET">
-  <span><input class="email" value="{{= value }}" /></span>
-</script>
-
 <script type="text/template" id="UrlPT">
   <a href="{{= value.href }}">{{= value.linkText }}</a>
-</script>
-
-<script type="text/template" id="UrlPET">
-  <span><input value="{{= value.href }}" /></span>
 </script>
 
 <script type="text/template" id="telPT">
   <a href="tel:{{= value }}">{{= value }}</a>
 </script>
 
-<script type="text/template" id="telPET">
-  <span><input class="tel" value="{{= value }}" /></span>
+<script type="text/template" id="datePT">
+  <span>{{= Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
-<script type="text/template" id="datePT">
-    <span>{{= Lablz.U.getFormattedDate(value) }}</span>
-</script>
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
 </script -->
-
-<script type="text/template" id="datePET">
-  <span><input value="{{= new Date(value / 1000) }}" /></span>
-</script>
 
 <script type="text/template" id="booleanPT">
   <span>{{= value }}</span>
@@ -173,7 +158,7 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
@@ -227,7 +212,7 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" style="text-align: center;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
     <h5>Login through Social Networks</h5>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
@@ -274,26 +259,6 @@
   </div>
 </script>
 
-
-<!--script type="text/template" id="resourceEdit">
-<div id="headerDiv"></div>
-<div id="resourceEditView" data-role="content">
-  <form data-ajax="false" action="#">
-    <ul data-role="listview" data-theme="c" id="resourceEditView" class="action-list" data-inset="true"></ul>
-    <button id="save" target="#" class="ui-btn-left">Save</button>
-    <button id="cancel" target="#" class="ui-btn-right">Cancel</button>
-  </form>
-</div>
-
-<div data-role="footer">
-   <a target="#welcome" class="icon home">Home</a>
-</div>
-</script-->  
-
-<!--script type="text/template" id="stringPET">
-<label for="{{= shortName }}">{{= name }}</label>
-<span><input id="{{= shortName }}" value="{{= value }}" /></span>
-</script-->
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
@@ -393,5 +358,83 @@
 </div>
 <!--/div -->
 </script>
+
+
+<!-- EDIT TEMPLATES -->
+<script type="text/template" id="resourceEdit">
+<div id="headerDiv"></div>
+<div id="resourceEditView" data-role="content">
+  <div id="resourceImage"></div><br/>
+  <form data-ajax="false" id="editForm" action="#">
+    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
+    </ul>
+    
+    <div class="ui-body ui-body-b">
+      <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
+        <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
+      </fieldset>
+    </div>
+  </form>
+</div>
+
+
+<div data-role="footer">
+  <a id="homeBtn" target="#" class="icon home">Home</a>
+</div>
+</script>  
+
+
+<script type="text/template" id="emailPET">
+  <label for="{{= shortName }}">{{= name }}</label>
+  <input type="email" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+</script>
+
+<script type="text/template" id="editRowTemplate">
+  <li data-role="fieldcontain">{{= value }}<br />
+  {{= typeof comment === 'undefined' ? '' : '<i>* ' + comment + '</i>' }}
+  </li>
+</script>
+
+<script type="text/template" id="telPET">
+  <label for="{{= shortName }}">{{= name }}</label>
+  <input type="tel" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" />
+</script>
+
+<script type="text/template" id="enumPET">
+  <label for="{{= shortName }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}" data-native-menu="false" class="{{= classes }}">
+    <option>{{= value || '' }}</option>
+    {{ for (var o in options) { }} 
+    {{   if (o === value) continue; }}
+    {{   var pProps = options[o]; }}
+    <option value="{{= pProps.displayName }}">{{= pProps.label || pProps.displayName }}</option>
+    {{ } }}
+  </select>
+</script>
+
+<script type="text/template" id="stringPET">
+  <label for="{{= shortName }}">{{= name }}:</label> 
+  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
+  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= shortName }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+</script>
+
+<script type="text/template" id="resourcePET">
+  <label for="{{= shortName }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}" class="{{= classes }}">
+    <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
+    <option value="test">Not supported</option>
+  </select>
+</script>
+
+<script type="text/template" id="booleanPET">
+  <label for="{{= shortName }}">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= shortName }}" data-role="slider" class="{{= classes }}">
+    <option>{{= value || false }}</option>
+    <option>{{= !value }}</option>
+  </select>
+</script>
+
+<!-- END EDIT TEMPLATES -->
 
 </div>

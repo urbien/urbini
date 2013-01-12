@@ -1,6 +1,38 @@
-define([
-  'cache!underscore', 'cache!leaflet', 'cache!leafletMarkerCluster' //, 'cache!../styles/leaflet/leaflet.css', $.browser.msie ? 'cache!../styles/leaflet/MarkerCluster.Default.ie.css' : 'cache!../styles/leaflet/MarkerCluster.Default.css'
-], function(_, L, $) {
+(function(root, factory) {
+  // Set up Mapper appropriately for the environment.
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['cache!jquery', 'cache!leaflet', 'cache!leafletMarkerCluster'], function($, L) {
+      // Export global even in AMD case in case this script is loaded with
+      // others that may still expect a global Mapper.
+      return (root.Mapper = factory(root, $, L));
+    });
+  } else {
+    if (!window.$) {
+      var callback = function() {
+        root.Mapper = factory(root, $, L);
+      }
+      
+      var s = document.createElement('script');
+      s.setAttribute('src', 'js/lib/jquery.min.js');
+      s.setAttribute('type', 'text/javascript');
+      document.getElementsByTagName('head')[0].appendChild(s);
+      
+      if (s.readyState) { //IE
+        s.onreadystatechange = function () {
+          if (s.readyState == "loaded" || s.readyState == "complete") {
+            s.onreadystatechange = null;
+            callback();
+          }
+        };
+      } else { //Others
+        s.onload = function () {
+          callback();
+        };
+      }
+    }    
+  }
+}(this, function(root, $, L) {
   var M = Mapper = function(mapDivId) {
     this.mapDivId = mapDivId;
     this.defaultStyleId = 22677;
@@ -35,10 +67,10 @@ define([
     };
     
     this.getNextColor = function(seed) {
-      var hsv = M.generateColors(1, seed || (this.color ? this.color[0] : 0.7));
+      var hsv = this.generateColors(1, seed || (this.color ? this.color[0] : 0.7));
       this.color = hsv[0]; 
-      var rgb = M.hsv2rgb(hsv[0][0], hsv[0][1], hsv[0][2]);
-      return M.rgbToHex(rgb[0], rgb[1], rgb[2]);
+      var rgb = this.hsv2rgb(hsv[0][0], hsv[0][1], hsv[0][2]);
+      return this.rgbToHex(rgb[0], rgb[1], rgb[2]);
     };
     
     this.addBasicMapInfo = function(init) {
@@ -283,7 +315,15 @@ define([
         div.innerHTML = "&#61461;";
         div.className = "leaflet-lablz-control";
         div.onclick = function(e) {
-          map.fitBounds(bounds);
+//          map.invalidateSize(true);
+          if (options.bounds)
+            map.fitBounds(options.bounds);
+//          else {
+//            if (options.center)
+//              map.setView(options.center);
+//            if (options.zoom)
+//              map.setZoom(options.zoom);
+//          }          
         };
         
         return div;
@@ -391,8 +431,8 @@ define([
   //
   //      var counter = 0;
   //      for (var name in geoJsonLayers) {
-        var minMax = M.getMinMaxDensityForLayer(name);
-        minMax = typeof minMax == 'undefined' ? M.getMinMaxDensity(geoJsonLayers[name]) : minMax;
+        var minMax = this.getMinMaxDensityForLayer(name);
+        minMax = typeof minMax == 'undefined' ? this.getMinMaxDensity(geoJsonLayers[name]) : minMax;
         if (minMax != null) {
           this.setMinMaxDensity(name, minMax);
           this.currentLayerName = name;
@@ -430,17 +470,17 @@ define([
     };
   
     this.toggleLayerControl = function(on) {
-      if (!M.layerControl)
+      if (!this.layerControl)
         return;
     
-      var base = M.layerControl._baseLayersList;
+      var base = this.layerControl._baseLayersList;
       if (base) {
         for (var i = 0; i < base.childNodes.length; i++) {
           base.childNodes[i].childNodes[0].disabled = !on;
         }
       }
       
-      var overlays = M.layerControl._overlaysList;
+      var overlays = this.layerControl._overlaysList;
       if (overlays) {
         for (var i = 0; i < overlays.childNodes.length; i++) {
           overlays.childNodes[i].childNodes[0].disabled = !on;
@@ -506,7 +546,7 @@ define([
     this.setOnAddRemove = function(name, newLayer, minMax) {
       var self = this;
       newLayer.onAdd = function(mapObj) {      
-        M.currentLayerName = name;
+        self.currentLayerName = name;
         this._map = mapObj;
         this.eachLayer(mapObj.addLayer, mapObj);
         if (typeof minMax != 'undefined') {
@@ -589,11 +629,11 @@ define([
       
     this.toBasicGeoJsonShape = function(shape) {
       var shapeType = shape.shapeType ? (shape.shapeType.toLowerCase() == 'multipolygon' ? 'MultiPolygon' : 'Polygon') : 'Polygon';
-      return {"type" : "Feature", "properties": {"name" : shape["davDisplayName"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
+      return {"type" : "Feature", "properties": {"name" : shape.davDisplayName, "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
     },
   
     this.toBasicGeoJsonPoint = function(point) {
-      return {"type" : "Feature", "properties": {"name" : point["davDisplayName"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
+      return {"type" : "Feature", "properties": {"name" : point.davDisplayName}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
     };
   
     this.getGradientColor = function(range, val) {
@@ -601,7 +641,7 @@ define([
       var percent = (val - range[0]) / r;
       var hue = percent * 0.33;  // go from green to red  (red = 0, green = 0.33, with yellow/orange in between)
   //    var saturation = Math.abs(percent - 0.5)/0.5;   // fade to white as it approaches 50
-      return M.hsv2rgb(hue, 1, 0.99);
+      return this.hsv2rgb(hue, 1, 0.99);
     };
     
     this.getScaledClusterIconCreateFunction = function(options) {
@@ -620,11 +660,11 @@ define([
         custom = true;
         var rgb;
         if (gradient)
-          rgb = gradient.color ? M.hexToRGB(gradient.color) : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
+          rgb = gradient.color ? self.hexToRGB(gradient.color) : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
         else
-          rgb = M.hexToRGB(color || self.getNextColor(Math.random()));
+          rgb = self.hexToRGB(color || self.getNextColor(Math.random()));
         
-        var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + M.getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
+        var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + self.getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
         var zoom = cluster._zoom || 10;
         var width;
         var font;
@@ -676,14 +716,36 @@ define([
         return new L.DivIcon({ html: div + (one ? '' : '<span>' + childCount + '</span>') + '</div>', className: c, iconSize: new L.Point(size, size) });
       }
     };
-  
+
+    extend = function(obj) {
+      var others = Array.prototype.slice.call(arguments, 1);
+      for (var i = 0; i < others.length; i++) {
+        var source = others[i];
+        for (var prop in source) {
+          obj[prop] = source[prop];
+        }
+      }
+
+      return obj;
+    };
+
+    keys = Object.keys || function(obj) {
+      if (obj !== Object(obj)) throw new TypeError('Invalid object');
+      var ks = [];
+      for (var key in obj) 
+        if (obj.hasOwnProperty(key)) 
+          ks[ks.length] = key;
+          
+      return ks;
+    };
+
     this.addGeoJsonPoints = function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
       'use strict';
       if (!markerOptions.disableClusteringAtZoom)
         markerOptions.disableClusteringAtZoom = this.maxZoom;
       
       behaviorOptions = behaviorOptions || {doCluster: false, highlight: false, zoom: false, hexColor: undefined, colorSeed: undefined, icon: undefined};
-      var allOptions = _.extend({}, markerOptions, behaviorOptions);
+      var allOptions = extend({}, markerOptions, behaviorOptions);
       var self = this;
       var style = style ? style : simpleStyle;
       var i = 0;
@@ -713,7 +775,7 @@ define([
         
         markerOptions = markerOptions || {};
   //        if (!hexColor) {
-  //          var colors = M.generateColors(1, behaviorOptions.colorSeed || 0.5);
+  //          var colors = this.generateColors(1, behaviorOptions.colorSeed || 0.5);
   //          colorSeed = colors[0][0];
   //          var color = M.hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
   //          color = M.rgbToHex(color[0], color[1], color[2]);
@@ -725,8 +787,8 @@ define([
         else if (behaviorOptions.hexColor) {
           var c = behaviorOptions.hexColor;
           markerOptions.color = c;
-          var rgb = M.hexToRGB(c);
-          behaviorOptions.colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+          var rgb = this.hexToRGB(c);
+          behaviorOptions.colorSeed = this.rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
           behaviorOptions.hexColor = null;
         }
         
@@ -776,7 +838,7 @@ define([
         if (feature.properties.height)
           markerStyle.minHeight = feature.properties.height;
           
-        if (_.keys(markerStyle).length > 0)
+        if (keys(markerStyle).length > 0)
           marker.bindPopup(feature.properties.html, markerStyle);        
         else
           marker.bindPopup(feature.properties.html);
@@ -805,19 +867,22 @@ define([
       var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + (settings.styleId || this.defaultStyleId) + '/' + '256/{z}/{x}/{y}.png';
       var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
       var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: this.maxZoom, attribution: cloudmadeAttribution});
-      var mapSettings = {center: settings.center, zoom: pointOfInterest ? 10 : 7, maxZoom: this.maxZoom, layers: [cloudmade]};
+      this.initialZoom = pointOfInterest ? 10 : 7;
+      var mapSettings = {center: settings.center, zoom: this.initialZoom, maxZoom: this.maxZoom, layers: [cloudmade]};
   //    if (settings.bounds)
   //      mapSettings.maxBounds = settings.bounds;
         
-      this.map = new L.Map(this.mapDivId || 'map', mapSettings);
   //    if (events) {
   //      for (var e in events) {
   //        this.map.on('load', function(){console.log('hello')});
   //      }
   //    }
         
-      if (!pointOfInterest)
+      if (!pointOfInterest) {
+        this.map = new L.Map(this.mapDivId || 'map', mapSettings);
+        this.fitBounds(settings.bounds);
         return;
+      }
   
       this.pointOfInterest = pointOfInterest;
       if (pointOfInterest.geometry.type == 'Point') {
@@ -831,12 +896,50 @@ define([
       else
         this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);
       
+      mapSettings.center = pointOfInterest.geometry.coords;
+      M.adjustBounds(mapSettings.bounds, center, 'Point');
+      this.map = new L.Map(this.mapDivId || 'map', mapSettings);
       gj.addTo(this.map);
     };
   
+    M.adjustBounds = function(b, item, type) {
+      var bbox = M.getBoundingBox(item, type);
+      b[0][0] = Math.min(b[0][0], bbox[0][0]);
+      b[0][1] = Math.min(b[0][1], bbox[0][1]);
+      b[1][0] = Math.max(b[1][0], bbox[1][0]);
+      b[1][1] = Math.max(b[1][1], bbox[1][1]);
+      return b;
+    };
+    
+    M.getBoundingBox = function(item, type) {
+      var coords = item.geometry ? item.geometry.coords : item;
+      if (!coords.length)
+        return null;
+      
+      switch (type || item.geometry.type) {
+      case 'Point':
+        return coords.concat(coords);
+      case 'Polygon':
+        var bbox = M.getBoundingBox(coords[0], 'Point');
+        for (var i = 1; i < coords.length; i++) {
+          bbox = M.adjustBounds(bbox, coords[i], 'Point');
+        }
+        
+        return bbox;
+      case 'MultiPolygon':
+      case 'Polygon':
+        var bbox = M.getBoundingBox(coords[0], 'Polygon');
+        for (var i = 1; i < coords.length; i++) {
+          bbox = M.adjustBounds(bbox, coords[i], 'Polygon');
+        }
+        
+        return bbox;
+      }
+    };
+    
     this.addLayersControlToMap = function(radioLayers, checkboxLayers, options) {
       if ((!radioLayers && !checkboxLayers) ||
-          (_.keys(radioLayers).length == 1 && !checkboxLayers))
+          (keys(radioLayers).length == 1 && !checkboxLayers))
         return;
       
       options = options || {position: 'topright'};
@@ -844,15 +947,15 @@ define([
     };
   
     this.addShapesLayer = function(name, shapesArr) {
-      M.currentLayerName = name;
-      var newLayer = M.mkShapeLayerGroup(name, shapesArr, undefined, undefined, M.shapeLayers[name]).addTo(M.map);      
-      M.shapeLayers[name] = newLayer;
+      this.currentLayerName = name;
+      var newLayer = this.mkShapeLayerGroup(name, shapesArr, undefined, undefined, this.shapeLayers[name]).addTo(this.map);      
+      this.shapeLayers[name] = newLayer;
     };
   
     this.addDensityLayer = function(name, propsArr, self) {
       var none = !propsArr || propsArr.length == 0;
       self.shapeLayerInfos[name] = propsArr;
-      var minMax = none ? [0, 0] : M.getMinMaxDensityFromPropertiesArray(propsArr);
+      var minMax = none ? [0, 0] : this.getMinMaxDensityFromPropertiesArray(propsArr);
       self.setMinMaxDensity(name, minMax);
       if (self.userAskedFor[name]) {
         self.currentLayerName = name;
@@ -866,7 +969,7 @@ define([
     this.addPointsLayer = function(name, geoJsons, self) {
       var nameToGJ = {};
       nameToGJ[name] = geoJsons;
-      self.addGeoJsonPoints(nameToGJ, name, {disableClusteringAtZoom: self.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: self.getNextColor()});      
+      this.addGeoJsonPoints(nameToGJ, name, {disableClusteringAtZoom: this.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: this.getNextColor()});      
     };
     
     this.fetchLayer = function(name, query, toGeoJson, callback) {
@@ -906,7 +1009,7 @@ define([
         if (typeof callback == 'string')
           callback = self[callback];
         
-        callback(name, propsArr, self);
+        callback.call(self, name, propsArr);
         if (self.userAskedFor)
           self.userAskedFor[name] = null;
         
@@ -951,7 +1054,7 @@ define([
       var hasWidth = typeof width != 'undefined';
       var hasHeight = typeof height != 'undefined';
       var isShort = item._uri.indexOf('http') != 0;
-      var name = type + '<br />' + item["davDisplayName"] + "<br/>";
+      var name = type + '<br />' + item.davDisplayName + "<br/>";
       var html = "<a href='";
       if (isShort)
         html += "v/" + item._uri + (linkToMap ? '?-map=y' : '');
@@ -961,7 +1064,7 @@ define([
       html += "'>" + name;
       
       if (img)
-        html += "<img src='" + M.getImageUrl(img, this.serverName) + "'" + (hasWidth ? " width=\"" + width + "\"" : "") + (hasHeight ? " height=\"" + height + "\"" : "") + " />";
+        html += "<img src='" + this.getImageUrl(img, this.serverName) + "'" + (hasWidth ? " width=\"" + width + "\"" : "") + (hasHeight ? " height=\"" + height + "\"" : "") + " />";
           
       html += "</a>";
       geoJson.properties.html = html;
@@ -1026,7 +1129,7 @@ define([
     
     this.rgbToHex = function(r, g, b) {
       'use strict';
-      return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+      return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
     };
     
     this.getImageUrl = function(imgUri, serverName) {
@@ -1163,7 +1266,7 @@ define([
       else
         d = 255; // dark colors - white font
     
-      return M.rgbToHex(d, d, d);
+      return this.rgbToHex(d, d, d);
     };
 
     this.golden_ratio_conjugate = 0.618033988749895;
@@ -1182,7 +1285,7 @@ define([
       var sum = 0;
       var h = seed || Math.random();
       for (var i = 0; i < total; i++) {
-        h += M.golden_ratio_conjugate;
+        h += this.golden_ratio_conjugate;
         h %= 1;
         var s, v;
         if (i < third) {
@@ -1206,4 +1309,5 @@ define([
   };
   
   return Mapper;
-});
+}));
+//});

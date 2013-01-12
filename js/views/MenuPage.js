@@ -6,20 +6,22 @@ define([
   'cache!utils',
   'cache!events',
   'cache!templates',
+  'cache!views/BasicView',
   'cache!views/Header',
   'cache!views/BackButton',
   'cache!views/LoginButtons',
   'cache!views/ResourceView',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
-  return Backbone.View.extend({
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
+  return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
-  //    this.model.on('change', this.render, this);
+      this.constructor.__super__.initialize.apply(this, arguments);
+  //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('menu'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.router = G.app.router || Backbone.history;
+      this.router = G.Router || Backbone.history;
       this.TAG = 'MenuPage';
       Events.on("mapReady", this.showMapButton);
     },
@@ -36,16 +38,13 @@ define([
     swipeleft: function() {
       G.log(this.TAG, 'events', "swipeleft");
       window.history.back();
-//      var m = this.model;
-//      var newHash = m instanceof Backbone.Model ? 'view/' + U.encode(m.get('_uri')) : m instanceof Backbone.Collection ? m.model.shortName : G.homePage;
-//      this.router.navigate(newHash, {trigger: true, replace: true});
     },
     swiperight: function() {
       G.log(this.TAG, 'events', "swiperight");
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('view/' + U.encode(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
     click: function(e) {
@@ -71,15 +70,16 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var self = this;
-      this.$el.html(this.template(this.model.toJSON()));      
+      var res = this.resource || this.collection;
+      this.$el.html(this.template(res.toJSON()));      
       this.buttons = {
         left: [BackButton, LoginButtons],
         right: []
       };
       
       this.header = new Header({
-        model: this.model, 
-        pageTitle: '', //this.model.get('davDisplayName'), 
+        model: res, 
+        pageTitle: '', //res.get('davDisplayName'), 
         buttons: this.buttons,
         el: $('#headerDiv', this.el)
       }).render();
@@ -109,7 +109,6 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
-      var m = this.model;      
       return this;
     },
     
@@ -124,7 +123,7 @@ define([
     },
     
     buildActionsMenuForList: function(frag) {
-      var m = this.model.model;
+      var m = this.vocModel;
       var cMojo = m.classMojoMultiplier;
       var user = G.currentUser;
       if (!user.guest && typeof cMojo !== 'undefined' && user.totalMojo > cMojo)
@@ -132,7 +131,7 @@ define([
     },
     
     buildActionsMenuForRes: function(frag) {
-      var m = this.model;
+      var m = this.resource;
       var user = G.currentUser;
       var edit = m.get('edit');
       if (!user.guest  &&  edit  &&  user.totalMojo > edit) {

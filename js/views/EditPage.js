@@ -12,22 +12,30 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
-//  'cache!views/EditButton',  
-  'cache!views/ResourceView',
+  'cache!views/EditView',
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, /*EditButton,*/ ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel, __jqm__) {
   return BasicView.extend({
     clicked: false,
-    initialize: function() {
-      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight');
+    initialize: function(options) {
+      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
-  //    this.model.on('change', this.render, this);
-      this.template = _.template(Templates.get('resource'));
-      this.TAG = "ViewPage";
+
+  //    this.resource.on('change', this.render, this);
+      this.template = _.template(Templates.get('resourceEdit'));
+      this.TAG = "EditPage";
       this.router = G.Router || Backbone.History;
+      this.action = options && options.action || 'edit';
       Events.on("mapReady", this.showMapButton);
+    },
+    set: function(params) {
+      _.extend(this, params);
+      if (this.editView)
+        this.editView.set(params);
+      else
+        this.editParams = params;
     },
     events: {
       'click #edit': 'edit',
@@ -35,6 +43,9 @@ define([
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
+    },
+    resetForm: function() {
+      this.editView && this.editView.resetForm();
     },
     swipeleft: function(e) {
       // open backlinks
@@ -46,7 +57,7 @@ define([
       G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
     },
     home: function() {
-//      this.router.navigate(G.homePage, {trigger: true, replace: false});
+//      this.router.navigate('', {trigger: true, replace: false});
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
@@ -90,10 +101,13 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
       this.imageView.render();
-      this.view = new ResourceView({el: $('ul#resourceView', this.el), model: res});
-      this.view.render();
-      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
-      this.cp.render();      
+      this.editView = new EditView({el: $('#resourceEditView', this.el), model: res});
+      if (this.editParams)
+        this.editView.set(this.editParams);
+      
+      this.editView.render();
+//      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
+//      this.cp.render();      
 //      this.editBtn = new EditButton({el: $('#edit', this.el), model: res});
 //      this.editBtn.render();
       if (!this.$el.parentNode) 
@@ -103,6 +117,6 @@ define([
       return this;
     }
   }, {
-    displayName: 'ViewPage'
+    displayName: 'EditPage'
   });
 });

@@ -10,12 +10,14 @@ define([
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
   'cache!vocManager',
-  'cache!views/HomePage'
+  'cache!views/HomePage', 
+  'cache!views/ListPage', 
+  'cache!views/ViewPage'
 //  , 
-//  'cache!views/ListPage', 
-//  'cache!views/ViewPage' 
-], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage /*, ListPage, ViewPage*/) {
-  var ListPage, ViewPage, MenuPage; //, LoginView;
+//  'cache!views/EditPage' 
+], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
+//  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
+  var MenuPage, EditPage;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
@@ -25,11 +27,14 @@ define([
       ":type"           : "list", 
       "view/*path"      : "view",  
       "menu/*path"      : "menu", 
-      ":type/:backlink" : "list",
+      "edit/*path"      : "edit", 
+      "make/*path"      : "make", 
+      ":type/:backlink" : "list"
 //      "login/*path"     : "login" 
     },
 
     CollectionViews: {},
+    MkResourceViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -64,7 +69,7 @@ define([
       return ret;
     },
     
-    route: function() {        
+    route: function() {
       return Backbone.Router.prototype.route.apply(this, arguments);
     },
     
@@ -113,20 +118,12 @@ define([
      */
     list: function(oParams) {
 //      this.backClicked = this.wasBackClicked();
-      if (!ListPage) {
-        var args = arguments;
-        var self = this;
-        require(['cache!views/ListPage'], function(LP) {
-          ListPage = LP;
-          self.list.apply(self, args);
-        })
-        
-        return true;
-      }
+      if (!ListPage)
+        return this.loadView('ListPage', this.list, arguments);
       
       var self = this;
       var params = oParams.split("?");
-      var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
+      var typeUri = U.getTypeUri(decodeURIComponent(params[0]), Voc);
       var className = U.getClassName(typeUri);
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
@@ -189,17 +186,10 @@ define([
       
       return this;
     },
+    
     menu: function() {
-      if (!MenuPage) {
-        var args = arguments;
-        var self = this;
-        require(['cache!views/MenuPage'], function(MP) {
-          MenuPage = MP;
-          self.menu.apply(self, args);
-        })
-        
-        return;
-      }
+      if (!MenuPage)
+        return this.loadView('MenuPage', this.menu, arguments);
       
       var c = this.currentModel;
       var id = c.id || c.url;
@@ -209,20 +199,55 @@ define([
       
       this.changePage(menuPage);
     },
+
+    loadView: function(view, caller, args) {
+      var self = this;
+      if (!eval(view)) {
+        require(['cache!views/' + view], function(v) {
+          eval(view + '=v;');
+          caller.apply(self, args);
+        });
+      }
+    },
     
-    view: function (path) {
-      if (!ViewPage) {
-        var args = arguments;
-        var self = this;
-        require(['cache!views/ViewPage'], function(VP) {
-          ViewPage = VP;
-          self.view.apply(self, args);
-        })
-        
+    make: function(path) {
+      if (!EditPage)
+        return this.loadView('EditPage', this.make, arguments);
+      
+      var parts = path.split('?');
+      var type = decodeURIComponent(parts[0]);
+      if (!type.startsWith('http'))
+        type = G.defaultVocPath + type;
+      
+      if (!this.isModelLoaded(type, 'make', arguments))
         return;
-      }
-      if (this.backClicked) {
-      }
+      
+      var params = U.getHashParams();
+      var mPage = this.MkResourceViews[type];
+      if (!mPage)
+        mPage = this.MkResourceViews[type] = new EditPage({model: new Voc.typeToModel[type](), action: 'mkresource'});
+      else
+        mPage.resetForm();
+      
+      var props = {action: 'make'};
+      U.copyFrom(params, props, ['backLinkProp', 'backLink', 'on']);
+      mPage.set(props);
+      this.changePage(mPage);
+    },
+
+    edit: function(path) {
+      if (!EditPage)
+        return this.loadView('EditPage', this.edit, arguments);
+      else
+        this.view.call(this, path, true);
+    },
+    
+    view: function (path, edit) {
+      if (!edit && !ViewPage)
+        return this.loadView('ViewPage', this.view, arguments);
+      
+      var views = this[edit ? 'EditViews' : 'Views'];
+      var viewPageCl = edit ? EditPage : ViewPage;
 
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
@@ -238,8 +263,11 @@ define([
       
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (!G.currentUser.guest)
-          this.view(U.encode(G.currentUser._uri) + "?" + p);
+        if (!G.currentUser.guest) {
+          var other = U.slice.call(arguments, 1);
+          other = other.length ? other : undefined;
+          this.view(U.encode(G.currentUser._uri) + "?" + p, other);
+        }
         else
           window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         
@@ -288,9 +316,6 @@ define([
         }
       }
       
-  //    var edit = params['-edit'] == 'y';
-      var views = this.Views; //edit ? this.EditViews : this.Views;
-      var viewPageCl = ViewPage; // edit ? G.EditPage : G.ViewPage;
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
@@ -323,7 +348,7 @@ define([
       var paintMap;
       var success = function(data) {
         self.changePage(v);
-        success: Voc.fetchModelsForLinkedResources(res);
+        Voc.fetchModelsForLinkedResources(res);
   //      self.loadExtras(oParams);
       }
       

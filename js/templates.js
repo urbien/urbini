@@ -33,7 +33,11 @@ define([
     },
 
     propEditTemplates: {
-      "string": "stringPET"
+      "string": "stringPET",
+      "enum": "enumPET",
+      "resource": "resourcePET",
+      "boolean": "booleanPET"
+//       ,
 //      "boolean": "booleanPET",
 //      "int": "intPET",
 //      "float": "intPET",
@@ -69,7 +73,7 @@ define([
     getPropTemplate: function(prop, edit) {
       var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
       var facet = this.facet;
-      return (prop[facet] && t[prop[facet]]) || t[prop.range] || (edit ? t.string : t.resource);
+      return (prop[facet] && t[prop[facet]]) || t[prop.range] || (prop.range.indexOf('/') == -1 ? t.string : t.resource);
     }
   };
   

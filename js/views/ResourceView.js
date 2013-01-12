@@ -6,16 +6,17 @@ define([
   'cache!backbone', 
   'cache!templates',
   'cache!events', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
-
-  return Backbone.View.extend({
+  'cache!utils',
+  'cache!views/BasicView'
+], function(G, $, __jqm__, _, Backbone, Templates, Events, U, BasicView) {
+  return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
       this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.model.on('change', this.refresh, this);
+      this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
   //    Lablz.Events.on('refresh', this.refresh);
       return this;
@@ -24,11 +25,15 @@ define([
       'click': 'click'
     },
     refresh: function() {
+      var res = this.resource;
+      if (res.lastFetchOrigin === 'edit')
+        return;
+      
       var collection, modified;
       if (arguments[0] instanceof Backbone.Collection) {
         collection = arguments[0];
         modified = arguments[1];
-        if (collection != this.model.collection || !_.contains(modified, this.model.get('_uri')))
+        if (collection != res.collection || !_.contains(modified, res.get('_uri')))
           return this;
       }
       
@@ -45,34 +50,37 @@ define([
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
-      var type = this.model.type;
-      var meta = this.model.__proto__.constructor.properties;
-      meta = meta || this.model.properties;
+      var res = this.resource;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
-      var json = this.model.toJSON();
+      var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
-      var list = _.toArray(meta);
-      var propGroups = U.getPropertiesWith(list, "propertyGroupList");
-      var backlinks = U.getPropertiesWith(list, "backLink");
-      var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
+//      var list = _.toArray(meta);
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList");
+      var backlinks = U.getPropertiesWith(meta, "backLink");
+//      var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
-      var displayedProps = [];
+      var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
-      if (propGroups) {
-        for (var i=0; i < propGroups.length; i++) {
-          var grMeta = propGroups[i];
-          var pgName = grMeta["displayName"];
-          var props = grMeta["propertyGroupList"].split(",");
+      if (_.size(propGroups)) {
+        for (var pgShortName in propGroups) {
+          var grMeta = propGroups[pgShortName];
+          var pgName = U.getPropDisplayName(grMeta);
+          var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
+            if (!/^[a-zA-Z]/.test(p))
+              continue;
+            
             var prop = meta[p];
-            if (!_.has(json, p) || _.contains(backlinks, prop)) //  || _.contains(gridCols, p))
+            if (!_.has(json, p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
               continue;
             
             if (!prop) {
@@ -84,12 +92,12 @@ define([
               continue;
             if (p == 'davDisplayName')
               continue;
-            if (prop['displayNameElm'])
+            if (prop.displayNameElm)
               continue;
-            if (!U.isPropVisible(json, prop))
+            if (!U.isPropVisible(res, prop))
               continue;
   
-            displayedProps[idx++] = p;
+            displayedProps[p] = true;
             json[p] = U.makeProp(prop, json[p]);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
@@ -107,9 +115,13 @@ define([
       
       var otherLi;
       groupNameDisplayed = false;
+      var numDisplayed = _.size(displayedProps);
       for (var p in json) {
+        if (!/^[a-zA-Z]/.test(p))
+          continue;
+
         var prop = meta[p];
-        if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, prop))
+        if (!_.has(json, p) || displayedProps[p] || _.has(backlinks, p))
           continue;
         
         if (!prop) {
@@ -121,12 +133,12 @@ define([
           continue;
         if (p == 'davDisplayName')
           continue;
-        if (prop['displayNameElm'])
+        if (prop.displayNameElm)
           continue;
-        if (!U.isPropVisible(json, prop))
+        if (!U.isPropVisible(res, prop))
           continue;
   
-        if (displayedProps.length  &&  !groupNameDisplayed) {
+        if (numDisplayed  &&  !groupNameDisplayed) {
           otherLi = '<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
@@ -164,5 +176,7 @@ define([
       this.rendered = true;
       return this;
     }
+  }, {
+    displayName: 'ResourceView'
   });
 });

@@ -1,3 +1,5 @@
+if (typeof JSON === 'undefined' || !JSON.parse || !JSON.stringify)
+  importScripts('lib/json2.js');
 importScripts('io.js');
 onmessage = function(event) {
   var options = event.data;

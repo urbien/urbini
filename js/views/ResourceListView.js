@@ -8,12 +8,13 @@ define([
   'cache!vocManager',
   'cache!templates',
   'cache!jqueryMobile',
+  'cache!views/BasicView',
   'cache!views/ResourceMasonryItemView',
 //  'cache!views/ResourceMasonryModItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
-], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
-  return Backbone.View.extend({
+], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+  return BasicView.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
@@ -21,12 +22,12 @@ define([
     
     initialize: function () {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks'); // fixes loss of context for 'this' within methods
+      this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.alignBricks);
       this.$el.on('create', this.alignBricks);
-      this.rl = this.model;
-      this.rl.on('reset', this.render, this);
+      this.collection.on('reset', this.render, this);
       this.TAG = 'ResourceListView';
       return this;
     },
@@ -40,9 +41,9 @@ define([
 //      var lis = this.$('li').detach();
 //      var frag = document.createDocumentFragment();
       
-      rl = this.rl;
+      rl = this.collection;
       var resources = rl.models;
-      var vocModel = rl.model;
+      var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
 
@@ -94,18 +95,18 @@ define([
       }
       
       for (; i < num; i++) {
-        var m = resources[i];
-        var uri = m.get('_uri');
+        var res = resources[i];
+        var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (isMasonry) 
-            liView = new ResourceMasonryItemView({model:m, className: 'pin', tagName: 'li'});
+            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li'});
           else if (isModification)
-            liView = new ResourceMasonryItemView({model:m, className: 'nab nabBoard'});
+            liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard'});
           else if (isComment)
-            liView = new CommentListItemView({model:m});
+            liView = new CommentListItemView({model:res});
           else
-            liView = hasImgs ? new ResourceListItemView({model:m, hasImages: 'y'}) : new ResourceListItemView({model:m});
+            liView = hasImgs ? new ResourceListItemView({model:res, hasImages: 'y'}) : new ResourceListItemView({model:res});
           if (nextPage)  
             this.$el.append(liView.render().el);
           else
@@ -152,8 +153,8 @@ define([
 //        return;
       
       var self = this;
-      var rl = this.rl;
-      var before = this.rl.models.length;
+      var rl = this.collection;
+      var before = rl.models.length;
 //      var before = this.model.offset;
       
       var after = function() { $.mobile.loading('hide'); };
@@ -162,12 +163,11 @@ define([
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
       if (before >= requested) {
-        this.refresh(this.model);
+        this.refresh(rl);
         after();
         return;
       }
-      
-      this.model.getNextPage({
+      rl.getNextPage({
         success: after,
         error: error
       });      
@@ -212,7 +212,6 @@ define([
       $.mobile.loading('show');
       var self = this;
       setTimeout(function() { self.getNextPage(); }, 10);
-      
     },
     
     _resumeScrollEventProcessing: function () {
@@ -284,5 +283,7 @@ define([
       else  
         this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self._resumeScrollEventProcessing(); });
     }
+  }, {
+    displayName: 'EditView'
   });
 });

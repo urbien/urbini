@@ -4,12 +4,14 @@ define([
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
-  'cache!events' 
-], function($, __jqm__, _, Backbone, Templates, Events) {
-  return Backbone.View.extend({
+  'cache!events',
+  'cache!views/BasicView'
+], function($, __jqm__, _, Backbone, Templates, Events, BasicView) {
+  return BasicView.extend({
     btnId: null,
     initialize: function(options) {
-      _.bindAll(this, 'setStyle', 'resetStyle');
+      _.bindAll(this, 'setStyle', 'resetStyle', 'isActive');
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.active = (options && options.active) || (this.isActive && this.isActive());
       Events.on("changePage", this.resetStyle);
     },

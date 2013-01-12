@@ -6,6 +6,16 @@ define([
 ], function(G, _, Backbone, Templates) {
   var ArrayProto = Array.prototype;
   var slice = ArrayProto.slice;
+
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
   
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
@@ -19,12 +29,17 @@ define([
     return (this.match("^"+str)==str);
   };
   
-  String.prototype.toCamelCase = function(str) {
+  String.prototype.camelize = function(capitalFirst) {
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
-      return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+      return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
   };
-  
+
+  String.prototype.uncamelize = function(capitalFirst) {
+    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
+    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
+  };
+
   String.prototype.endsWith = function(str) {
     return (this.match(str+"$")==str);
   };
@@ -34,55 +49,83 @@ define([
   };
 
   var U = {
-    TAG: 'Utils',
-    isPropVisible: function(res, prop) {
+    TAG: 'Utils',    
+    isPropVisible: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
         return false;
       
-      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
         return true;
       
       var ar = prop.allowRoles;
-      return ar ? U.isUserInRole(userRole, ar) : true;
+      return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
 
-    isUserInRole: function(userRole, ar) {
+    getUserRole: function() {
+      return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+    },
+    
+    isUserInRole: function(userRole, ar, res) {
       if (userRole == 'guest')
         return false;
       
-      var roles = ar.split(",");
+      var vocModel = res && res.constructor;
+      var me = G.currentUser._uri;
+      var resUri = res.get('_uri');
+      var iAmRes = me === resUri;
+      var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
-        if (r == 'admin')
-          return false;
-        else if (r == 'siteOwner')
-          return userRole == 'siteOwner';
+        if (_.contains(['admin', 'siteOwner'], r)) {
+          if (userRole == r) return true;
+        }
+        else if (r === 'owner') {
+          continue; // TODO: implement this
+        }
         else {
-          // TODO: implement this
+          if (r === 'self') { 
+            if (iAmRes) return true;
+          }
+          else if (r.endsWith('self')){
+            r = r.split('==');
+            var pName = r[0];
+            var selfUser = res.get(pName);
+            if (me == selfUser) 
+              return true;
+//            if (!resUri) { // is MKRESOURCE
+              var cloneOf = vocModel.properties[pName].cloneOf;
+              if (cloneOf) {
+                cloneOf = cloneOf.split(',');
+                for (var i = 0; i < cloneOf.length; i++) {
+                  if (cloneOf[i] === 'Submission.submittedBy')
+                    return true;
+                }
+              }
+//            }
+          }
           
-          return false;
+          // TODO: implement this          
         }
       }
-      return true;
+      
+      return false;
     },
-    isPropEditable: function(res, prop) {
+    
+    isPropEditable: function(res, prop, userRole) {
+      var resExists = !!res.get('_uri');
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
         return false;
       
-      var userRole = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      if (resExists && prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
+        return false;
+
+      userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
         return true;
       
-      var ar = prop.allowRoles;
-      var isVisible;
-      if (ar) {
-        isUserInRole = U.isUserInRole(userRole, ar);
-        if (!isUserInRole)
-          return false;
-      }
-      ar = prop.allowRolesToEdit;
-      return ar ? U.isUserInRole(userRole, ar) : true;
+      var ar = prop.allowRolesToEdit;
+      return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
     
 //    getSortProps: function(model) {
@@ -205,6 +248,15 @@ define([
         // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?...
         return qIdx === -1 ? G.defaultVocPath + uri : G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
       }
+    },
+
+    phoneRegex: /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/,
+    validatePhone: function(phone) {
+      return U.phoneRegex.test(phone);
+    },
+    
+    validateZip: function(zip) {
+      return /^\d{5}|\d{5}-\d{4}$/.test(zip);
     },
     
     validateEmail: function(email) { 
@@ -510,11 +562,12 @@ define([
     },
     
     getHashParams: function() {
-      var h = window.location.hash;
-      if (!h) 
+      var h = window.location.href;
+      var hashIdx = h.indexOf('#');
+      if (hashIdx === -1) 
         return {};
       
-      var chopIdx = h.indexOf('?');
+      var chopIdx = h.indexOf('?', hashIdx);
       if (chopIdx == -1)
         return {};
         
@@ -535,11 +588,18 @@ define([
       return map;
     },
     
-    getPropertiesWith: function(list, annotation) {
-      return _.filter(list, function(item) {
-          return item[annotation] ? item : null;
-        });
+//    getPropertiesWith: function(list, annotation) {
+//      return _.filter(list, function(item) {
+//        return item[annotation] ? item : null;
+//      });
+//    },
+    
+    getPropertiesWith: function(props, annotation) {
+      return U.filterObj(props, function(name, value) {
+        return props[name][annotation];
+      });
     },
+    
     getDisplayNameProps: function(meta) {
       var keys = [];
       for (var p in meta) {
@@ -716,6 +776,10 @@ define([
       return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
     
+    getPropDisplayName: function(prop) {
+      return prop.displayName || prop.label || prop.shortName.uncamelize(true);
+    },
+    
     isAssignableFrom: function(model, className, type2Model) {
       if (U.isA(model, className))
         return true;
@@ -748,15 +812,59 @@ define([
       }
       
       var propTemplate = Templates.getPropTemplate(prop);
-      val = val.displayName ? val : {value: val};
-      return {name: prop.label || prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+      val = typeof val === 'undefined' || val == null ? '' : val.displayName ? val : {value: val}; 
+      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
-    makePropEdit: function(prop, val) {
-      var propTemplate = U.getPropTemplate(prop, true);
-      val = val.displayName ? val : {value: val};
-      val.shortName = prop.displayName.toCamelCase();
-      return {name: prop.displayName, value: _.template(Templates.get(propTemplate))(val)};
+    makeEditProp: function(prop, val) {
+      var propTemplate = Templates.getPropTemplate(prop, true);
+      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
+      if (propTemplate === 'enumPET') {
+        var facet = prop.facet;
+        facet = facet.slice(facet.lastIndexOf('/') + 1);
+        val.options = G.Voc.shortNameToEnum[facet].values;
+      }
+      
+      val.value = val.value || null;
+      val.name = U.getPropDisplayName(prop);
+      val.shortName = prop.shortName;
+      val.prop = prop;
+//      val.comment = prop.comment;
+      var facet = prop.facet;
+      if (facet) {
+        if (facet.endsWith('emailAddress'))
+          val.type = 'email';
+        else if (facet.toLowerCase().endsWith('phone'))
+          val.type = 'tel';
+      }
+      
+      var classes = [];
+      var rules = {};
+      if (prop.required) {
+        classes.push('required');
+        rules.required = 'required';
+      }
+      if (prop.maxSize)
+        rules.maxlength = prop.maxSize;
+      
+      val.classes = classes.join(' ');
+      val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      
+      return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment};
+    },
+    
+    reduceObj: function(obj, func, memo, context) {
+      var initial = arguments.length > 2;
+      _.each(_.keys(obj), function(name, index, list) {
+        if (!initial) {
+          memo = func(name, obj[name]);
+          initial = true;
+        } else {
+          memo = func.call(context, memo, name, obj[name], index, list);
+        }
+      });
+      
+      return memo;
     },
     
 //    /**
@@ -921,6 +1029,10 @@ define([
       return U.getObjectType(obj) === '[object Object]';
     },
     
+    /**
+     * like _.filter, but func takes in both key and value 
+     * @return obj with keys and values such that for each [key, val] pair, func(key, val) is truthy;
+     */
     filterObj: function(obj, func) {
       var filtered = {};
       for (var key in obj) {
@@ -930,9 +1042,33 @@ define([
       }
       
       return filtered;
-    }
+    },
     
+    copyFrom: function(from, to, props) {
+      _.each(props || from, function(p) {
+        to[p] = from[p];
+      });
+    },
+    
+    /**
+     * @return obj with keys and values remapped by func. 
+     * @param func: takes in key, value, returns [newKey, newValue] or null if you want to remove it from the map 
+     */
+    mapObj: function(obj, func) {
+      var mapped = {};
+      for (var key in obj) {
+        var val = obj[key];
+        var pair = func(key, val);
+        if (pair)
+          mapped[pair[0]] = pair[1];
+      }
+      
+      return mapped;
+    },
+    
+    slice: slice
   };
+  
   
   Lablz.U = U;
   return U;

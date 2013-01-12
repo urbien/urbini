@@ -25,13 +25,15 @@ define([
         rUri: options._rUri
       });
       
+      this.vocModel = vocModel = this.model;
+      this.resources = this.models;
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
       this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
-//      this.on('aroundMe', this.model.getAroundMe);
-      this.type = this.model.type;
-      this.shortName = this.model.shortName || this.model.shortName;
-      this.displayName = this.model.displayName;
+//      this.on('aroundMe', vocModel.getAroundMe);
+      this.type = vocModel.type;
+      this.shortName = vocModel.shortName || vocModel.shortName;
+      this.displayName = vocModel.displayName;
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
@@ -45,7 +47,7 @@ define([
     getNextPage: function(options) {
       console.log("fetching next page");
       this.offset += this.perPage;
-      this.offset = Math.min(this.offset, this.models.length);
+      this.offset = Math.min(this.offset, this.resources.length);
       this.pager(options);
     },
     getPreviousPage: function () {
@@ -61,9 +63,9 @@ define([
       this.page = Math.floor(this.offset / this.perPage);
       options = options || {};
       options.sync = true;
-      var length = this.models.length;
+      var length = this.resources.length;
       if (length)
-        options.startAfter = this.models[length - 1].get('_uri');
+        options.startAfter = this.resources[length - 1].get('_uri');
       
       this.fetch(options);
     },
@@ -102,7 +104,7 @@ define([
       return this.url;
     },
     isA: function(interfaceName) {
-      return U.isA(this.model, interfaceName);
+      return U.isA(this.vocModel, interfaceName);
     },
     parse: function(response) {
       if (this.lastFetchOrigin !== 'db')
