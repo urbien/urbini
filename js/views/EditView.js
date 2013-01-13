@@ -292,7 +292,7 @@ define([
               groupNameDisplayed = true;
             }
   
-            U.addToFrag(frag, this.eRowTemplate(json[p]));
+            U.addToFrag(frag, this.editRowTemplate(json[p]));
           }
         }
       }
