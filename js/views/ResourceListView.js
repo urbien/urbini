@@ -19,9 +19,8 @@ define([
     page: null,
     changedViews: [],
     skipScrollEvent: false,
-    
-    initialize: function () {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks'); // fixes loss of context for 'this' within methods
+    initialize: function (options) {
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks', 'click', 'setMode'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
@@ -29,9 +28,18 @@ define([
       this.$el.on('create', this.alignBricks);
       this.collection.on('reset', this.render, this);
       this.TAG = 'ResourceListView';
+      this.mode = options.mode || G.LISTMODES.DEFAULT;
       return this;
     },
-    
+    setMode: function(mode) {
+      if (!G.LISTMODES[mode])
+        throw new Error('this view doesn\'t have a mode ' + mode);
+      
+      this.mode = mode;
+    },
+    events: {
+      'click': 'click'
+    },
     refresh: function(rl, modified) {
       if (rl && rl != this.collection)
         return this;
@@ -100,13 +108,13 @@ define([
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (isMasonry) 
-            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li'});
+            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
           else if (isModification)
-            liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard'});
+            liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard', parentView: this});
           else if (isComment)
-            liView = new CommentListItemView({model:res});
+            liView = new CommentListItemView({model:res, parentView: this});
           else
-            liView = hasImgs ? new ResourceListItemView({model:res, hasImages: 'y'}) : new ResourceListItemView({model:res});
+            liView = hasImgs ? new ResourceListItemView({model:res, hasImages: 'y', parentView: this}) : new ResourceListItemView({model:res, parentView: this});
           if (nextPage)  
             this.$el.append(liView.render().el);
           else
@@ -183,8 +191,7 @@ define([
     },
     
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
-
+    click: Events.defaultClickHandler,
     swipe: function(e) {
       console.log("swipe");
     },

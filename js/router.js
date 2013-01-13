@@ -29,6 +29,7 @@ define([
       "menu/*path"      : "menu", 
       "edit/*path"      : "edit", 
       "make/*path"      : "make", 
+      "chooser/*path"   : "choose", 
       ":type/:backlink" : "list"
 //      "login/*path"     : "login" 
     },
@@ -113,10 +114,14 @@ define([
       }
     },
     
+    choose: function(path) {
+      this.list.call(this, path, G.LISTMODES.CHOOSER);
+    },
+    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
-    list: function(oParams) {
+    list: function(oParams, mode) {
 //      this.backClicked = this.wasBackClicked();
       if (!ListPage)
         return this.loadView('ListPage', this.list, arguments);
@@ -156,6 +161,7 @@ define([
       var cView = this.CollectionViews[typeUri][key];
       if (c && cView) {
         this.currentModel = c;
+        cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
 //        c.fetch({page: page});
         setTimeout(function() {c.fetch({page: page})}, 100);
@@ -171,9 +177,10 @@ define([
       
       this.Collections[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
+      listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
-        add: true,
+//        update: true,
         sync: true,
         _rUri: oParams,
         success: function() {
@@ -223,7 +230,15 @@ define([
         return;
       
       var params = U.getHashParams();
-      var mPage = new EditPage({model: new Voc.typeToModel[type](), action: 'make'});
+      var makeId = params.makeId;
+      var mPage = this.MkResourceViews[makeId];
+      if (mPage && !mPage.model.get('_uri')) {
+        // all good, continue making ur mkresource
+      }
+      else {
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId});
+      }
+      
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
       this.changePage(mPage);

@@ -7,14 +7,11 @@ define([
   'cache!utils', 
   'cache!error', 
   'cache!events', 
-  'cache!models/Resource', 
-  'cache!collections/ResourceList',
   'cache!vocManager',
   'cache!indexedDBShim',
   'cache!queryIndexedDB'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, Voc, __idbShim__, idbq) {
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Voc, __idbShim__, idbq) {
   var Index = idbq.Index;
-  var tsProp = 'davGetLastModified';
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
     var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
@@ -31,116 +28,9 @@ define([
       collection = data.collection;
       resource = data;
     }
-
-    /**
-     *  Save new data to DB, and update models currently in memory
-     *  @params results: data to save
-     */
-    save = function(results) {
-      if (!_.size(results))
-        return false;
-      
-      // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
-      // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
-      // An alternative is to override Backbone.Collection.reset() method and do some magic there.
-      
-      var toAdd = [];
-      var skipped = [];
-      var now = G.currentServerTime();
-      for (var i = 0; i < results.length; i++) {
-        var r = results[i];
-        r._lastFetchedOn = now;
-        var longUri = U.getLongUri(r._uri, {type: vocModel.type, shortNameToModel: Voc.shortNameToModel});
-        var saved = isCollection ? collection.get(longUri) : resource;
-        var ts = saved && saved.get(tsProp) || 0;
-        
-        var newLastModified = r[tsProp];
-        if (typeof newLastModified === "undefined") 
-          newR = 0;
-        
-        if (!newLastModified || newLastModified > ts)
-          toAdd.push(r);
-        else
-          saved && saved.set({'_lastFetchedOn': now}, {silent: true});
-      }
-      
-      var modified = [];
-      if (toAdd.length) {
-        for (var i = 0; i < toAdd.length; i++) {
-          toAdd[i]._uri = U.getLongUri(toAdd[i]._uri, Voc);
-          var existing = resource || collection.get(toAdd[i]._uri);
-          if (existing) {
-            existing.set(toAdd[i]);
-            modified.push(toAdd[i]._uri);
-          }
-          else {
-            if (isCollection)
-              collection.add(new vocModel(toAdd[i]));
-            else
-              resource.set(toAdd[i]);
-          }
-        }
-        
-      }
-      
-      toAdd.length && RM.addItems(toAdd);    
-      return toAdd;
-    }
-    
-    /**
-     * handle successful fetch from server
-     */
-    options.success = function(resp, status, xhr) {
-      data.lastFetchOrigin = 'server';
-      var code = xhr.status;
-      var err = function() {
-        G.log(RM.TAG, 'error', code, options.url);
-        defaultError(resp && resp.error || {code: code}, status, xhr);            
-      }
-      
-      if (isCollection)
-        collection._lastFetchedOn = now;
-      
-      switch (code) {
-        case 200:
-          break;
-        case 204:
-          defaultSuccess(resp, status, xhr);
-          return;
-        case 304:
-          var ms = isCollection ? collection.resources.slice(start, end) : [data];
-          _.each(ms, function(m) {
-            m.set({'_lastFetchedOn': now}, {silent: true});
-          });
-          
-          return;
-        default:
-          err();
-          return;
-      }
-      
-      if (resp && resp.error) {
-        err();
-        return;
-      }
-      
-      var newData = resp.data;
-      var modified;
-//      if (isCollection) {
-////        var offset1 = resp.metadata && resp.metadata.offset || 0;
-//        modified = _.map(collection.resources, function(res) {return res.get('_uri')});
-//      }
-//      else {
-//        modified = resource.get('_uri');
-//      }
-      
-      var saved = save(newData);
-      defaultSuccess(resp, status, xhr);
-      if (saved && saved.length)
-        Events.trigger('refresh', data, _.map(saved, function(s) {return s._uri}));
-    }
     
     var fetchFromServer = function(timeout, lastFetchedOn) {
+      data.lastFetchOrigin = 'server';
       if (lastFetchedOn && isUpdate) // && !shortPage)
         RM.setLastFetched(lastFetchedOn, options);
 
@@ -186,7 +76,6 @@ define([
 
       if (!isCollection) {
         isUpdate = true;
-//        var timestamp = results[0]._lastFetchedOn;
         var lf = RM.getLastFetched(results, now);
         if (RM.isStale(lf, now))
           fetchFromServer(100, lf);
@@ -197,10 +86,6 @@ define([
       var numAfter = collection.resources.length;
       if (!isUpdate && numAfter === numBefore) // db results are useless
         return fetchFromServer(100);
-      
-//      var stalest = _.reduce(results, function(memo, next)  {
-//        return Math.min(memo, next._lastFetchedOn);
-//      }, Infinity);
       
       var lf = RM.getLastFetched(results, now);
       if (RM.isStale(lf, now))
@@ -215,48 +100,41 @@ define([
     if (isCollection) {
       lastFetchedOn = collection._lastFetchedOn;
       
-//      qMap = U.getQueryParams(options.url);
       qMap = collection.queryMap;
       filter = U.getQueryParams(collection);
       isFilter = !!filter;
       if (isCollection && options.startAfter) {
         start = qMap.$offset; // not a jQuery thing
-        start = start && parseInt(start);
+        options.start = start = start && parseInt(start);
       }
+      else
+        options.start = start = 0;
 
       numRequested = qMap.$limit ? parseInt(qMap.$limit) : collection.perPage;
       start = start || 0;
-      end = start + numRequested;
+      options.end = end = start + numRequested;
       numNow = collection.resources.length;
-      shortPage = numNow && numNow < collection.perPage;
-      isUpdate = numNow > end || shortPage;
+      shortPage = !!(numNow && numNow < collection.perPage);
+      isUpdate = numNow >= end || shortPage;
       if (isUpdate) {
-//        if (shortPage && RM.isStale(collection._lastFetchedOn, now))
-//          return fetchFromServer(100); // if shortPage, don't set If-Modified-Since header
-        
-//        var stalest = _.reduce(collection.resources, function(memo, next)  {
-//          var date = next.get('_lastFetchedOn');
-//          return Math.min(memo, date || 0);
-//        }, Infinity);
-        
         var lf = RM.getLastFetched(collection.resources, now);
         if (RM.isStale(lf, now))
           return fetchFromServer(100, lf); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
-
-//        var currentEnd = Math.min(end, numNow);
-//        for (var i = start; i < currentEnd; i++) {
-//          var m = collection.resources[i];
-//          var date = m.get('_lastFetchedOn');
-//          if (date && (stale = RM.isStale(RM.getLastFetched(date, now))))
-//            break;
-//        }
+        else if (numNow) {
+          defaultSuccess(null, 'success', {status: 304});
+          return; // no need to fetch from db on update
+        }
       }
     }
     else {
-      var ts = resource.get('_lastFetchedOn');
-      isUpdate = typeof ts !== 'undefined';
-      if (RM.isStale(ts, now))
-        return fetchFromServer(100, ts);
+      isUpdate = resource.loaded;
+      if (isUpdate) {
+        var ts = resource.get('_lastFetchedOn');
+        if (RM.isStale(ts, now))
+          return fetchFromServer(100, ts);
+        else
+          return;
+      }
     }
 
     var key = this.getKey && this.getKey();
@@ -290,9 +168,7 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
-    packages: {'Resource': Resource},
     defaultSync: function(method, data, options) {
-      data.lastFetchOrigin = 'server';
       if (options.sync)
         options.timeout = 5000;
       
@@ -320,7 +196,7 @@ define([
     maxDataAge: 180000,
     
     isStale: function(ts, now) {
-      return (now || G.currentServerTime()) - ts > RM.maxDataAge;
+      return !ts || (now || G.currentServerTime()) - ts > RM.maxDataAge;
     },
     
     getLastFetched: function(obj, now) {
@@ -361,7 +237,6 @@ define([
       }
     },
   
-    tsProp: "davGetLastModified",
     updateDB: function(res) {
 //      var self = this;
       if (res.lastFetchOrigin != 'db' && !res.collection) // if this resource is part of a collection, the collection will update the db in bulk
@@ -518,28 +393,7 @@ define([
         }
       };
       
-      request.onupgradeneeded = upgrade;
-//          function(e) {
-//        G.recordCheckpoint("db, onupgradeneeded callback");
-//        G.log(RM.TAG, 'db', 'onupgradeneeded callback');
-//        RM.db = e.target.result;
-//        if (G.userChanged) {
-//          G.log(RM.TAG, 'db', "clearing db");
-//          RM.updateStores(reset) && (G.userChanged = false);
-//        }
-//        else if (modelsChanged) {
-//          G.log(RM.TAG, 'db', "updating db stores");
-//          RM.updateStores();
-//        }
-//        
-//        e.target.transaction.oncomplete = function() {
-////          G.recordCheckpoint("done upgrading db");
-//          G.log(RM.TAG, 'db', "onupgradeneeded transaction.oncomplete");
-//          if (success)
-//            success();
-//        };
-//      };      
-      
+      request.onupgradeneeded = upgrade;      
       request.onerror = function(e) {
         G.log(RM.TAG, 'db', "error opening db");
         if (error)

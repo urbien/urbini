@@ -14,7 +14,7 @@ define([
     },
     pagebeforechange: function(e) {
 //      if (this.first)
-//        e.preventDefault();
+//        Events.stopEvent(e);
     },
     
     render: function(options) {

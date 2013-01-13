@@ -43,7 +43,7 @@ define([
       G.log(this.TAG, 'events', "swiperight");
     },
     edit: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
       this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },

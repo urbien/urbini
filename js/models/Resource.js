@@ -25,13 +25,10 @@ define([
     idAttribute: "_uri",
     initialize: function(options) {
       _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set'); // fixes loss of context for 'this' within methods
-//      this.on('change', this.updateDB);
-//      this.on('aroundMe', this.constructor.getAroundMe);
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.vocModel = this.constructor;
-//      this.sync = this.constructor.sync;
     },
     url: function() {
       var uri = this.get('_uri');
@@ -66,6 +63,9 @@ define([
       props = U.filterObj(props, function(name, val) {
         return willSave(self, name, val);
       })
+      
+      if (!_.size(props))
+        return;
       
       return Backbone.Model.prototype.set.apply(this, [props].concat(U.slice.call(arguments, 1)));
     },

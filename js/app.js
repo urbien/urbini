@@ -26,7 +26,7 @@ define('app', [
   * Copyright (c) 2012 Greg Franko; Licensed MIT */
   Backbone.Model.prototype._validate = function(attrs, options) {
     options = options || {};
-    if (options.silent || !this.validate) {
+    if (options.silent || options.skipValidation || !this.validate) {
       return true;
     }
     

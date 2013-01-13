@@ -6,14 +6,16 @@ define([
   'cache!backbone', 
   'cache!utils', 
   'cache!error', 
-  'cache!models/Resource' 
-], function(G, $, __jqm__, _, Backbone, U, Error, Resource) {
+  'cache!events',
+  'cache!models/Resource',
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource) {
+  var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
       
-      _.extend(this, {
+      _.extend(this,   {
         page: 0,
         perPage: 30,
         offset: 0,
@@ -144,15 +146,114 @@ define([
     },
     fetch: function(options) {
       var self = this;
-      options = options || {};
-      _.extend(options, {update: true, remove: false});
+      options = _.extend({update: true, remove: false, parse: true}, options);
       this.queryMap = this.queryMap || {};
       if (this.offset)
         this.queryMap[this.offsetParam] = this.offset;
       this.rUri = options._rUri;
       options.url = this.getUrl();
-      options.error = options.error || Error.getDefaultErrorHandler();
-      Backbone.Collection.prototype.fetch.call(this, options);
+      var error = options.error = options.error || Error.getDefaultErrorHandler();
+      var success = options.success || function(resp, status, xhr) {
+        self.update(resp, options);        
+      };
+      
+      options.success = function(resp, status, xhr) {
+        var now = G.currentServerTime();
+        if (self.lastFetchOrigin === 'db') {
+          self.update(resp, options);
+          success(resp, status, xhr);
+          return;
+        }
+        
+        var err = function() {
+          G.log(RM.TAG, 'error', code, options.url);
+          error(resp && resp.error || {code: code}, status, xhr);            
+        }
+        
+        self._lastFetchedOn = now;
+        switch (xhr.status) {
+          case 200:
+            break;
+          case 204:
+            success(resp, status, xhr);
+            return;
+          case 304:
+            var ms = self.resources.slice(options.start, options.end);
+            _.each(ms, function(m) {
+              m.set({'_lastFetchedOn': now}, {silent: true});
+            });
+            
+            return;
+          default:
+            err();
+            return;
+        }
+        
+        if (resp && resp.error) {
+          err();
+          return;
+        }
+        
+        var newData = resp.data;
+        self.update(resp, options);
+        success(resp, status, xhr);
+      }; 
+      
+      return this.sync('read', this, options);
+    },
+    update: function(resources, options) {
+      if (this.lastFetchOrigin === 'db') {
+        var numBefore = this.resources.length;
+        Backbone.Collection.prototype.update.call(this, resources, options);
+        if (this.resources.length > numBefore)
+          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+
+        return;
+      }
+
+      resources = this.parse(resources);
+      if (!_.size(resources))
+        return false;
+      
+      // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
+      // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
+      // An alternative is to override Backbone.Collection.reset() method and do some magic there.
+      
+      var toAdd = [];
+      var skipped = [];
+      var modified = [];
+      var now = G.currentServerTime();
+      for (var i = 0; i < resources.length; i++) {
+        var r = resources[i];
+        r._lastFetchedOn = now;
+        var uri = r._uri;
+        var saved = this.get(uri);
+        var ts = saved && saved.get(tsProp) || 0;
+        
+        var newLastModified = r[tsProp];
+        if (typeof newLastModified === "undefined") 
+          newR = 0;
+        
+        if (!newLastModified || newLastModified > ts) {
+          toAdd.push(r);
+          if (saved) {
+            saved.set(r);
+            modified.push(uri);
+          }
+          else {
+            this.add(new this.vocModel(r));            
+          }
+        }
+        else
+          saved && saved.set({'_lastFetchedOn': now}, {silent: true});
+      }
+      
+      if (toAdd.length) {
+        Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
+        Lablz.ResourceManager.addItems(toAdd); 
+      }
+      
+      return this;
     }
   }, {
     displayName: 'ResourceList'

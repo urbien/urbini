@@ -746,6 +746,7 @@ define('globals', function() {
   G.localStorage.resetAsync = G.localStorage.reset.async(100);
     
   var moreG = {
+    LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  

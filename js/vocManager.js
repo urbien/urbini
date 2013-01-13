@@ -47,7 +47,7 @@ define([
       var c = Voc.currentModel;
       var urgent = options.sync && models.length > 1 && c && !Voc.typeToModel[c] && c;
       if (urgent) {
-        urgent = Voc.getStaleModels([urgent]);
+        urgent = Voc.getModelInfo([urgent]);
         if (urgent.length) {
           urgent = urgent[0];
           options.success = function() {
@@ -78,7 +78,7 @@ define([
         return;
       }
       
-      models = Voc.getStaleModels(models);      
+      models = Voc.getModelInfo(models);      
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
       var useWorker = G.hasWebWorkers && !options.sync;
@@ -194,15 +194,16 @@ define([
       }
     },
     
-    getStaleModels: function(models) {
+    getModelInfo: function(models) {
       var now = G.currentServerTime();
       return _.filter(_.map(models, function(m) {
         var model = Voc.snm[U.getShortName(m)];
         if (model) {
-          var lm = model._dateStored ? model._dateStored : model.lastModified;
-          if (lm && now - lm < 360000) // consider model stale after 1 hour
-            return null;
+          // staleness should have already been detected in loadStoredModels
           
+          var lm = model._dateStored ? model._dateStored : model.lastModified;
+//          if (lm && now - lm < 360000) // consider model stale after 1 hour
+//            return null;          
           var info = {uri: m};
           if (lm)
             info.lastModified = lm;
@@ -214,24 +215,7 @@ define([
       }), function (m) {return m}); // filter out nulls
     },
 
-//    fetchLinkedModels: function() {
-//      var linked = G.linkedModels;
-//      if (!linked)
-//        return;
-//      
-//      Voc.loadStoredModels(linked);
-//      var numModels = Voc.models.length;
-//      var success = function() {
-//        if (!(Voc.models.length - numModels))
-//          return;
-//        
-//        Voc.initModels();
-//        Voc.saveModelsToStorage(Voc.models.slice(numModels));
-//      }
-//    },
-
     fetchModelsForLinkedResources: function(model) {
-//    model = model.constructor || model;
       var isResource = typeof model !== 'function';
       var ctr = isResource ? model.constructor : model;
       var props = {};
@@ -539,10 +523,12 @@ define([
       
       hash = decodeURIComponent(hash);
       var type;
-      if (hash.match('^view|menu|edit|make')) {
+      var route = hash.match('^view|menu|edit|make|chooser');
+      if (route) {
+        route = route[0].length;
         var sqlIdx = hash.indexOf(G.sqlUri);
         if (sqlIdx == -1)
-          type = hash.slice(5);
+          type = hash.slice(route + 1);
         else
           type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
         
@@ -580,7 +566,8 @@ define([
       var models = r.models;
       var added = Voc.currentModel;
       if (added && !Voc.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length)
-        models.push(added);
+        U.pushUniq(Voc.newModels, added); // We can't know whether it's been changed on the server or not, so we have to call to find out 
+//        models.push(added);
 
       if (!G.hasLocalStorage) {
         if (r) {

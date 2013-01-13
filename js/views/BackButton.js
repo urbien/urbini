@@ -17,7 +17,7 @@ define([
       return this;
     },
     back: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
       Events.trigger('back');
       window.history.back();
       return this;
