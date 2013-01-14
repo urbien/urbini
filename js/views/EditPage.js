@@ -63,7 +63,7 @@ define([
       return this;
     },
     edit: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
       this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
       return this;
     },
@@ -101,7 +101,7 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
       this.imageView.render();
-      this.editView = new EditView({el: $('#resourceEditView', this.el), model: res});
+      this.editView = new EditView({el: $('#resourceEditView', this.el), model: res, parentView: this});
       if (this.editParams)
         this.editView.set(this.editParams);
       

@@ -29,6 +29,7 @@ define([
       "menu/*path"      : "menu", 
       "edit/*path"      : "edit", 
       "make/*path"      : "make", 
+      "chooser/*path"   : "choose", 
       ":type/:backlink" : "list"
 //      "login/*path"     : "login" 
     },
@@ -71,6 +72,9 @@ define([
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
+      this.removeFromView = options.removeFromView;
+      this.previousView = this.currentView;
+      this.previousViewsCache = this.viewsCache;
       if (options) {
         this.errMsg = options.errMsg;
         this.info = options.info;
@@ -78,6 +82,7 @@ define([
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       this.forceRefresh = false;
+      this.removeFromView = false;
       return ret;
     },
     
@@ -125,10 +130,14 @@ define([
       }
     },
     
+    choose: function(path) {
+      this.list.call(this, path, G.LISTMODES.CHOOSER);
+    },
+    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
-    list: function(oParams) {
+    list: function(oParams, mode) {
 //      this.backClicked = this.wasBackClicked();
       if (!ListPage)
         return this.loadView('ListPage', this.list, arguments);
@@ -160,7 +169,7 @@ define([
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       this.Collections[typeUri] = this.Collections[typeUri] || {};
-      this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
+      this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       var c = this.Collections[typeUri][key];
       if (c && !c._lastFetchedOn)
         c = null;
@@ -168,6 +177,7 @@ define([
       var cView = this.CollectionViews[typeUri][key];
       if (c && cView) {
         this.currentModel = c;
+        cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
 //        c.fetch({page: page});
         setTimeout(function() {c.fetch({page: page})}, 100);
@@ -183,9 +193,10 @@ define([
       
       this.Collections[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
+      listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
-        add: true,
+//        update: true,
         sync: true,
         _rUri: oParams,
         success: function() {
@@ -205,6 +216,7 @@ define([
       
       var c = this.currentModel;
       var id = c.id || c.url;
+      this.viewsCache = this.MenuViews;
       var menuPage = this.MenuViews[id];
       if (!menuPage)
         menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
@@ -235,7 +247,16 @@ define([
         return;
       
       var params = U.getHashParams();
-      var mPage = new EditPage({model: new Voc.typeToModel[type](), action: 'make'});
+      var makeId = params.makeId;
+      var mPage = this.MkResourceViews[makeId];
+      if (mPage && !mPage.model.get('_uri')) {
+        // all good, continue making ur mkresource
+      }
+      else {
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId});
+      }
+      
+      this.viewsCache = this.MkResourceViews;
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
       this.changePage(mPage);
@@ -252,7 +273,7 @@ define([
       if (!edit && !ViewPage)
         return this.loadView('ViewPage', this.view, arguments);
       
-      var views = this[edit ? 'EditViews' : 'Views'];
+      var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? EditPage : ViewPage;
 
       var params = U.getHashParams();
@@ -447,6 +468,18 @@ define([
         return this;
       } finally {
         this.checkErr();
+        if (this.removeFromView) {
+          this.previousView && this.previousView.remove();
+          var cache = this.previousViewsCache;
+          if (cache) {
+            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
+            if (_.size(c))
+              delete cache[U.getFirstProperty(cache)];
+          }
+          
+          delete this.previousView;
+        }
+          
       }
     },
     changePage1: function(view) {

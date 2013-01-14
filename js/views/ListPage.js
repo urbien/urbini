@@ -22,12 +22,21 @@ define([
   return BasicView.extend({
     template: 'resource-list',
     clicked: false,
-    initialize: function () {
-      _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged');
+    initialize: function(options) {
+      _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
+      this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.TAG = "ListPage";
+    },
+    setMode: function(mode) {
+      if (!G.LISTMODES[mode])
+        throw new Error('this view doesn\'t have a mode ' + mode);
+      
+      this.mode = mode;
+      if (this.listView)
+        this.listView.setMode(mode);
     },
     events: {
       'click': 'click',
@@ -110,7 +119,7 @@ define([
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isModification ? '#nabs_grid' :  isMasonry ? '#columns' : (isComment) ? '#comments' : '#sidebar';
-      this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl});
+      this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl, mode: this.mode});
       this.listView.render();
       if (isGeo) {
         var self = this;

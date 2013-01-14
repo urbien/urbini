@@ -15,7 +15,7 @@ label.req::before {
   color: #f66;  
 }
 
-label.missing  {  
+#label.missing  {  
   color:#FF0000;  
   font-weight:bold;  
 }  
@@ -24,7 +24,7 @@ label.missing  {
   display: block;
 }
 
-.ui-field-contain div.ui-slider-switch { width: 9em; position: absolute; right: 0; } // to make Yes/No toggle switch bigger
+.ui-field-contain div.ui-slider-switch { width: 7em; position: absolute; right: 0; } // to make Yes/No toggle switch bigger
 .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li-has-thumb { padding-left: 90px; }
 .ui-header .ui-btn-left, .ui-header .ui-btn-right {
   top: 5px;

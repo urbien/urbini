@@ -13,7 +13,7 @@ define([
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
-      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
@@ -34,7 +34,13 @@ define([
       'click': 'click'
     },
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: function(e) {
+      var p = this.parentView;
+      if (p && p.mode == G.LISTMODES.CHOOSER) {
+        Events.stopEvent(e);
+        Events.trigger('chooser', this.model);
+      }
+    },
     render: function(event) {
       var m = this.resource;
       var meta = this.vocModel.properties;

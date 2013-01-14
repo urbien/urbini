@@ -35,6 +35,8 @@ define([
     propEditTemplates: {
       "string": "stringPET",
       "enum": "enumPET",
+//      "enum1": "shortEnumPET",
+//      "enum2": "longEnumPET",
       "resource": "resourcePET",
       "boolean": "booleanPET"
 //       ,

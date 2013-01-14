@@ -35,10 +35,10 @@ define([
       if (!t)
         return;
       
-      e.preventDefault();
+      Events.stopEvent(e);
       var shortName = t.dataset.shortname;
       var prop = this.vocModel.properties[shortName];
-      var params = {backLinkProp: prop.shortName, backLink: prop.backLink, on: this.resource.get('_uri')};
+      var params = {backLinkProp: prop.shortName, backLink: prop.backLink, on: this.resource.get('_uri'), makeId: G.nextId()};
       this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },

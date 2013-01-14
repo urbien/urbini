@@ -386,7 +386,7 @@
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
-        <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
+        <div class="ui-block-b"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
       </fieldset>
     </div>
   </form>
@@ -435,10 +435,13 @@
 
 <script type="text/template" id="resourcePET">
   <label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" class="{{= classes }}">
+  <a target="#" name="{{= shortName }}" class="resourceProp">{{= typeof value === 'undefined' ? name : value }}</a>
+
+  <!--label for="{{= id }}" class="select">{{= name }}</label>
+  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp ' + classes }}">
     <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
     <option value="test">Not supported</option>
-  </select>
+  </select-->
 </script>
 
 <script type="text/template" id="booleanPET">

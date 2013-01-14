@@ -20,7 +20,7 @@ define([
       return this;
     },
     edit: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
       var hash = window.location.hash.slice(1);
       (G.Router || Backbone.history).navigate('edit/' + encodeURIComponent(this.resource.get('_uri')), {trigger: true});
       return this;

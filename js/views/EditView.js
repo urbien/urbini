@@ -28,6 +28,7 @@ define([
       this.router = G.Router || Backbone.History;
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
+      this.parentView = options && options.parentView;
       
       var params = U.getQueryParams();
       var bl = {};
@@ -38,15 +39,41 @@ define([
       return this;
     },
     events: {
+      'click .cancel': 'cancel',
       'submit form': 'submit',
-//      'click#cancel': 'cancel',
+      'click .resourceProp': 'chooser',
       'click': 'click'
+    },
+    chooser: function(e) {
+      Events.stopEvent(e);
+      var el = e.target;
+      var prop = e.target.name;
+//      if (!prop)
+//        return;
+      
+      var self = this;
+      var hash = window.location.href;
+      hash = hash.slice(hash.indexOf('#') + 1);
+      function onChoose(res) {
+        G.log(self.TAG, 'testing', res.toJSON());
+        var props = {};
+        props[prop] = res.get('_uri');
+        self.resource.set(props, {skipValidation: true, skipRefresh: true});
+        e.target.innerHTML = res.get('davDisplayName');
+        G.Router.navigate(hash, {trigger:true, replace: true});
+//        G.Router.changePage(self.parentView);
+        // set text
+      }
+      
+      Events.once('chooser', onChoose, this);
+      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(this.vocModel.properties[prop].range)), {trigger: true});
     },
     set: function(params) {
       _.extend(this, params);
     },
     resetResource: function() {
-      this.resource.set(this.originalResource, {skipRefresh: true});      
+      this.resource.clear({silent: true, skipRefresh: true});
+      this.resource.set(this.originalResource, {skipRefresh: true});
     },
     resetForm: function() {
       $('form').clearForm();      
@@ -83,23 +110,35 @@ define([
       var vocModel = this.vocModel;
       var redirectAction = vocModel.onCreateRedirectToAction || 'PROPFIND';
       var redirectTo = vocModel.onCreateRedirectTo;
-      var redirectPath = '';
+      var redirectRoute = '';
+      var redirectPath;
+      var redirectParams = {};
       switch (redirectAction) {
         case 'LIST':
           if (redirectTo)
-            redirect = vocModel.properties[redirectTo].type._uri; 
+            redirectPath = vocModel.properties[redirectTo].type._uri; 
           else 
-            redirect = vocModel.type;
+            redirectPath = vocModel.type;
           
+          redirectPath = encodeURIComponent(redirectPath);
           break;
         case 'PROPFIND':
         case 'PROPPATCH':
           redirectPath = redirectAction === 'PROPFIND' ? 'view/' : 'edit/';
-          if (!redirectTo || redirectTo === '-$this')
-            redirect = res.get('_uri');
-          else
-            redirect = res.get(redirectTo);
+          if (!redirectTo || redirectTo === '-$this') {
+            redirectPath = res.get('_uri');
+          }
+          else {
+            var prop = vocModel.properties[redirectTo];
+            if (prop.backLink) {
+              redirectPath = encodeURIComponent(res.get('_uri'));
+//              redirecPath = 'make/'; //TODO: make this work for uploading images
+            }
+            else
+              redirectPath = encodeURIComponent(res.get(redirectTo));
+          }
           
+          redirectRoute = 'view/';
           break;
         default:
           G.log(self.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
@@ -107,18 +146,14 @@ define([
           break;
       }
       
-      redirect = redirectPath + encodeURIComponent(redirect);            
       var redirectMsg = vocModel.onCreateRedirectToMessage;
       if (redirectMsg)
-        redirect += '?-info=' + encodeURIComponent(redirectMsg);
+        redirectParams['-info='] = redirectMsg;
       
-      return redirect;
+      return redirectRoute + encodeURIComponent(redirectPath) + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
     },
     submit: function(e) {
-      e.preventDefault();
-      if (e.originalEvent.explicitOriginalTarget.id === 'cancel') 
-        return this.cancel.apply(this, arguments);
-      
+      Events.stopEvent(e);
       var inputs = this.$form.find('input');;
       inputs.attr('disabled', true);
       var self = this,
@@ -129,10 +164,17 @@ define([
           vocModel = this.vocModel,
           baseParams = {'$returnMade': 'y'};
       
+      var succeeded = false;
       var onSuccess = function() {
+        if (succeeded)
+          return;
+        
+        succeeded = true;
         var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
         if (this.action === 'edit' && !_.size(props))
           return;
+        
+        // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         
         _.extend(props, baseParams);
 //        _.extend(props, {type: vocModel.type, uri: res.get('_uri')});
@@ -153,7 +195,7 @@ define([
             try {
               json = JSON.parse(xhr.responseText);
               if (json.error) {
-                self.resetResource();
+//                self.resetResource();
                 switch (json.error.code) {
                 case 401:
                   Error.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
@@ -179,13 +221,13 @@ define([
 //            alert('The item you\'re editing doesn\'t exist');
           }
 
-          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true});
+          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         }
         
         $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
       };
       
-      var onError = function(res, errors) {
+      var onError = function(errors) {
         res.off('change', onSuccess, self);
         self.fieldError.apply(self, arguments);
         inputs.attr('disabled', false);
@@ -201,27 +243,16 @@ define([
           break;
       }
       
-//      var inputs = this.$('input');
-      var props = {};
-      for (var i = 0; i < inputs.length; i++) { // skip first (uri)
-        var input = inputs[i];
-        var name = input.name;
-        var val = input.value || undefined;
-        props[name] = val;
-      }
-
-      if (!_.size(props))
+      res.lastFetchOrigin = 'edit';
+      var errors = res.validate(res.attributes, {validateAll: true, skipRefresh: true});
+      if (typeof errors === 'undefined')
         onSuccess();
-      else {
-        res.lastFetchOrigin = 'edit';
-        res.once('change', onSuccess, this);
-        res.set(props, {validateAll: true, error: onError});
-      }
+      else
+        onError(errors);
     },
     cancel: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
       window.history.back();
-//      this.router.navigate(window.location.hash.replace('#edit/', 'view/'), {trigger: true, replace: false});
     },
     refresh: function(data, options) {
       if (options && options.skipRefresh)
@@ -244,6 +275,7 @@ define([
       else
         this.$ul.listview().listview('refresh');
     },
+    
     click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
@@ -292,7 +324,7 @@ define([
               groupNameDisplayed = true;
             }
   
-            U.addToFrag(frag, this.editRowTemplate(json[p]));
+            U.addToFrag(frag, this.editRowTemplate(pInfo));
           }
         }
       }
@@ -348,7 +380,7 @@ define([
           var change = {};
           change[this.name] = val;
           res.lastFetchOrigin = 'edit';
-          res.set(change, {validateAll: false, error: view.fieldError, validated: validated});
+          res.set(change, {validateAll: false, error: view.fieldError, validated: validated, skipRefresh: true});
         };
         
         jin.focusout(onFocusout);
