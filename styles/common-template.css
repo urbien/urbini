@@ -806,14 +806,17 @@ tr.keywordsearch  {background-color: #e7ebf0; color: #000000}
 td.keywordsearch  {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none}
 
 .checkbox { padding: 0px; margin: 0px; }
-td.commenteven {background-color: #f8f4ef; color: darkblue; padding-right:5px;}
+td.commenteven, {background-color: #f8f4ef; color: darkblue; padding-right:5px;}
+
+div.app {background-color: #f8f4ef; color:; margin-top: -5px;  padding: 15px; font-size: 18px; background: lightyellow; border: 2px solid #ffba24;}
+
 td.commentodd  {background-color: #e7ebf0; color: #000000}
 
 tr.commenteven {background-color: #f8f4ef; color: darkblue}
 tr.commentodd  {background-color: #e7ebf0; color: #000000}
 
 table.commentodd {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
-tabe.commenteven {border:solid #808080 1px; background-color: &[SecondaryColorB_4];; color: darkblue}
+table.commenteven {border:solid #808080 1px; background-color: &[SecondaryColorB_4];; color: darkblue}
 
 Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 Table.comments1 {background-color: #f8f4ef; color: #000000}
@@ -2512,10 +2515,11 @@ td #corePageContent { min-height: 600px;}
 #nabs_grid .nab { visibility: hidden; }
 .dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
 #nabs_grid .masonry-brick { visibility: visible; }
+.modP tr {vertical-align: top;}
 .nab .modP .urbien { padding-left: 10px; }
 .nab .modP .urbien img {width: 50px;}
 .nab .nabP .urbien { padding-left: 10px; }
-.nab .nabP .urbien img {width: 50px;}
+/*#resourceList #siteResourceList#nabs_grid .nab .nabP .urbien img {width: 50px;}*/
 
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {max-width: 205px;}
