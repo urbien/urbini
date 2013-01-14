@@ -39,6 +39,7 @@ define([
       return this;
     },
     events: {
+      'click .cancel': 'cancel',
       'submit form': 'submit',
       'click .resourceProp': 'chooser',
       'click': 'click'
@@ -153,9 +154,6 @@ define([
     },
     submit: function(e) {
       Events.stopEvent(e);
-      if (e.originalEvent.explicitOriginalTarget.id === 'cancel') 
-        return this.cancel.apply(this, arguments);
-      
       var inputs = this.$form.find('input');;
       inputs.attr('disabled', true);
       var self = this,

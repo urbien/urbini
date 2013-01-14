@@ -54,7 +54,7 @@ define([
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: false});
       return this;
     },
 //    tap: function() {
