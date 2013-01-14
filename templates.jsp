@@ -376,7 +376,7 @@
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
-        <div class="ui-block-b"><button type="submit" id="cancel" data-theme="d">Cancel</button></div>
+        <div class="ui-block-b"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
       </fieldset>
     </div>
   </form>
