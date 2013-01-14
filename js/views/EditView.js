@@ -46,7 +46,10 @@ define([
     chooser: function(e) {
       Events.stopEvent(e);
       var el = e.target;
-      var prop = e.target.dataset['shortname'];
+      var prop = e.target.name;
+//      if (!prop)
+//        return;
+      
       var self = this;
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
@@ -226,7 +229,7 @@ define([
         $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
       };
       
-      var onError = function(res, errors) {
+      var onError = function(errors) {
         res.off('change', onSuccess, self);
         self.fieldError.apply(self, arguments);
         inputs.attr('disabled', false);
@@ -242,28 +245,12 @@ define([
           break;
       }
       
-//      var props = {};
-//      for (var i = 0; i < inputs.length; i++) { // skip first (uri)
-//        var input = inputs[i];
-//        var name = input.name;
-//        var val = input.value || undefined;
-//        if (typeof val === 'undefined' && typeof res.get(name) === 'undefined')
-//          continue;
-//        
-//        props[name] = val;
-//      }
-//
-//      if (!_.size(props))
-//        onSuccess();
-//      else {
-        res.lastFetchOrigin = 'edit';
-//        this.resetResource();
-//        res.once('change', onSuccess, this);
-        var allGood = res.validate(res.attributes, {validateAll: true, error: onError, skipRefresh: true});
-        if (typeof allGood === 'undefined')
-          onSuccess();
-          
-//      }
+      res.lastFetchOrigin = 'edit';
+      var errors = res.validate(res.attributes, {validateAll: true, skipRefresh: true});
+      if (typeof errors === 'undefined')
+        onSuccess();
+      else
+        onError(errors);
     },
     cancel: function(e) {
       Events.stopEvent(e);

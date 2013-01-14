@@ -424,7 +424,8 @@
 </script>
 
 <script type="text/template" id="resourcePET">
-  <label for="{{= id }}" class="select">{{= name }}</label><a target="#" data-shortName="{{= shortName }}" class="resourceProp">{{= typeof value === 'undefined' ? name : value }}</a>
+  <label for="{{= id }}" class="select">{{= name }}</label>
+  <a target="#" name="{{= shortName }}" class="resourceProp">{{= typeof value === 'undefined' ? name : value }}</a>
 
   <!--label for="{{= id }}" class="select">{{= name }}</label>
   <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp ' + classes }}">
