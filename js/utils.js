@@ -625,7 +625,9 @@ define([
       var dnProps = U.getDisplayNameProps(meta);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
-        var uri = resource.get('_uri');
+        var uri = model.get('_uri');
+        if (!uri)
+          return vocModel.displayName;
         var s = uri.split('?');
         s = decodeURIComponent(uri[1]).split('&');
         for (var i=0; i<s.length; i++) {
@@ -704,17 +706,42 @@ define([
       if (isNaN(day_diff) || day_diff < 0) // || day_diff >= 31)
         return null;
           
-      var years;
-      return day_diff == 0 && (
-        diff < 60 && "just now" ||
-        diff < 120 && "a minute ago" ||
-        diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
-        diff < 7200 && "an hour ago" ||
-        diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
-        day_diff == 1 && "Yesterday" ||
-        day_diff < 7 && day_diff + " days ago" ||
-        day_diff < 365 && Math.round( day_diff / 7 ) + " weeks ago" || 
-        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
+      if (day_diff == 0) {
+        return (diff < 60 && "just now" ||
+                diff < 120 && "a minute ago" ||
+                diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+                diff < 7200 && "an hour ago" ||
+                diff < 86400 && Math.floor( diff / 3600 ) + " hours ago");
+      }
+      else if (day_diff == 1)
+        return "Yesterday";
+      else  if (day_diff < 7) 
+        return (day_diff == 1) ? "a day ago" : day_diff + " days ago"; 
+      else if (day_diff < 365) {
+        var w = Math.round( day_diff / 7 );
+        return (w == 1) ? "a week ago" : w + " weeks ago";
+      }
+      else {
+        var years = Math.round( day_diff / 365 );
+        var rest = (day_diff % 365);
+        var date = '';
+        if (years == 1)
+          date += 'a year';
+        else
+          date += years + " years";
+        return (rest == 0) ? date + ' ago' : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+      }
+//      var years;
+//      return day_diff == 0 && (
+//        diff < 60 && "just now" ||
+//        diff < 120 && "a minute ago" ||
+//        diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+//        diff < 7200 && "an hour ago" ||
+//        diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+//        day_diff == 1 && "Yesterday" ||
+//        day_diff < 7 && day_diff + " days ago" ||
+//        day_diff < 365 && Math.round( day_diff / 7 ) + " weeks ago" || 
+//        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
     },
     
     toHTMLElement: function(html) {

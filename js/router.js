@@ -57,6 +57,18 @@ define([
       Events.on('back', function() {
         self.backClicked = true;
       });
+      
+      // a hack to prevent browser address bar from dropping down
+      // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
+      $('div').on('pagecreate',function(event) {
+        $('a[href]', this).each(function() {
+            var self = $(this);
+            if (!self.is( "[rel='external']" ) ) {
+                self.attr('link', self.attr('href'));
+                self.removeAttr('href');
+            }
+        });
+      });      
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
@@ -493,7 +505,7 @@ define([
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
         // Check if browser's Back button was clicked
-        else if (this.backClicked  &&  this.viewsStack.length != 0) {
+        else if (!this.backClicked  &&  this.viewsStack.length != 0) {
           var url = this.urlsStack[this.viewsStack.length - 1];
           if (url == window.location.href) {
             this.currentView = this.viewsStack.pop();
