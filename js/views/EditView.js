@@ -220,7 +220,7 @@ define([
 //            alert('The item you\'re editing doesn\'t exist');
           }
 
-          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true});
+          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         }
         
         $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});

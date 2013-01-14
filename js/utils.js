@@ -51,7 +51,7 @@ define([
   var U = {
     TAG: 'Utils',    
     isPropVisible: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList)
         return false;
       
       userRole = userRole || U.getUserRole();
@@ -113,10 +113,10 @@ define([
     },
     
     isPropEditable: function(res, prop, userRole) {
-      var resExists = !!res.get('_uri');
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList)
         return false;
       
+      var resExists = !!res.get('_uri');
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
           return false;
@@ -1077,6 +1077,11 @@ define([
       return mapped;
     },
     
+    getFirstProperty: function(obj) {
+      for (var name in obj) {
+        return name;
+      }
+    },
     slice: slice
   };
   

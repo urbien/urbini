@@ -60,6 +60,9 @@ define([
     },
     navigate: function(fragment, options) {
       this.forceRefresh = options.trigger;
+      this.removeFromView = options.removeFromView;
+      this.previousView = this.currentView;
+      this.previousViewsCache = this.viewsCache;
       if (options) {
         this.errMsg = options.errMsg;
         this.info = options.info;
@@ -67,6 +70,7 @@ define([
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       this.forceRefresh = false;
+      this.removeFromView = false;
       return ret;
     },
     
@@ -153,7 +157,7 @@ define([
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       this.Collections[typeUri] = this.Collections[typeUri] || {};
-      this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
+      this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       var c = this.Collections[typeUri][key];
       if (c && !c._lastFetchedOn)
         c = null;
@@ -200,6 +204,7 @@ define([
       
       var c = this.currentModel;
       var id = c.id || c.url;
+      this.viewsCache = this.MenuViews;
       var menuPage = this.MenuViews[id];
       if (!menuPage)
         menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
@@ -239,6 +244,7 @@ define([
         mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId});
       }
       
+      this.viewsCache = this.MkResourceViews;
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
       this.changePage(mPage);
@@ -255,7 +261,7 @@ define([
       if (!edit && !ViewPage)
         return this.loadView('ViewPage', this.view, arguments);
       
-      var views = this[edit ? 'EditViews' : 'Views'];
+      var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? EditPage : ViewPage;
 
       var params = U.getHashParams();
@@ -450,6 +456,18 @@ define([
         return this;
       } finally {
         this.checkErr();
+        if (this.removeFromView) {
+          this.previousView && this.previousView.remove();
+          var cache = this.previousViewsCache;
+          if (cache) {
+            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
+            if (_.size(c))
+              delete cache[U.getFirstProperty(cache)];
+          }
+          
+          delete this.previousView;
+        }
+          
       }
     },
     changePage1: function(view) {

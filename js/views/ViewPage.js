@@ -22,7 +22,7 @@ define([
     tagName: 'a',
     clicked: false,
     initialize: function() {
-      _.bindAll(this, 'render', 'click', 'home', 'swipeleft', 'swiperight');
+      _.bindAll(this, 'render', 'click', 'home', 'swipeleft', 'swiperight', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('resource'));
@@ -31,7 +31,7 @@ define([
       Events.on("mapReady", this.showMapButton);
     },
     events: {
-//      'click #edit': 'edit',
+      'click #edit': 'edit',
       'click': 'click',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
@@ -52,11 +52,11 @@ define([
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
-//    edit: function(e) {
-//      e.preventDefault();
-//      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
-//      return this;
-//    },
+    edit: function(e) {
+      e.preventDefault();
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
+      return this;
+    },
 //    tap: function() {
 //      G.log(this.TAG, 'events');
 //      return Events.defaultTapHandler.apply(this, arguments);
