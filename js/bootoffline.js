@@ -1,4 +1,4 @@
-(function() {
+window.onload = function() {
   console.log('bootoffline init');
   var copout = function() {
     alert('You are currently offline');
@@ -20,4 +20,4 @@
   document.getElementsByTagName('body')[0].appendChild(localStorage.getItem('homePage'));
 
   new Function("d", g.boot)(document);
-})();
+}

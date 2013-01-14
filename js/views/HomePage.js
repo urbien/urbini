@@ -8,15 +8,30 @@ define([
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'pagebeforechange');
-      $(document).on('pagebeforechange', this.pagebeforechange);
+      _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow');
+//      Events.on('pagehide', this.pagehide);
+//      $(document).on('pagehide',       this.pagehide);
+//      $(document).on('pagebeforeshow', this.pagebeforeshow);
+//      $(div[data-role="page"]).on
       return this;
     },
     pagebeforechange: function(e) {
 //      if (this.first)
 //        Events.stopEvent(e);
-    },
     
+    },
+    events: {
+      'pagehide': 'pagehide',
+      'pagebeforeshow': 'pagebeforeshow'
+    },
+
+    pagehide: function(e) {
+      $('#bg').hide();
+    },    
+    pagebeforeshow: function(e) {
+      $('#bg').show();
+    },
+        
     render: function(options) {
       var item = $('#homePage');
       if (!item || item.length == 0) { 
