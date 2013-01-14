@@ -217,11 +217,21 @@
 
 <script type="text/template" id="loginPopupTemplate">
   <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
-    <h5>Login through Social Networks</h5>
+    <h4>Login through Social Networks</h4>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
-      <a href="{{= net.url }}"><img src="{{= net.icon }}" /></a>
+
+    <a data-role="button" href="{{= net.url }}" data-icon="
+        {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+        {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
+        {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+        {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
+        {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+       "> {{= net.socialNet }}
+    </a>
+
     {{ }); }}
+
     <!--h5>Login by Email</h5>
     <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
       <table>
