@@ -165,13 +165,14 @@ define([
           return;
         }
         
+        var code = xhr.status;
         var err = function() {
           G.log(RM.TAG, 'error', code, options.url);
           error(resp && resp.error || {code: code}, status, xhr);            
         }
         
         self._lastFetchedOn = now;
-        switch (xhr.status) {
+        switch (code) {
           case 200:
             break;
           case 204:

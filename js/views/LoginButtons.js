@@ -70,6 +70,7 @@ define([
         $(document.body).append(this.popupTemplate({nets: Lablz.socialNets}));
         $popup = $('#login_popup');
       }
+      $popup.trigger('create');
       $popup.popup().popup("open");
       return false; // prevents login button highlighting
     }
