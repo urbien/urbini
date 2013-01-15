@@ -114,7 +114,7 @@ define([
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
 //      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
       
-      var isMasonry = this.isMasonry = !isList  &&  U.isMasonry(vocModel);
+      var isMasonry = false; //this.isMasonry = !isList  &&  U.isMasonry(vocModel);
       
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
