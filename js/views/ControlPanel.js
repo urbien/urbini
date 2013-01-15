@@ -157,11 +157,12 @@ define([
           continue;
         var count = -1;
         if (!_.has(backlinks, p)) {
+          var idx;
           if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
             continue;
           var pp = p.substring(0, p.length - 5);
           var pMeta = meta[pp];
-          if (!pMeta  ||  !pMeta.backLink) 
+          if (!pMeta  ||  !pMeta.backLink || json[pp]) 
             continue;
           count = json[p];
           p = pp;
