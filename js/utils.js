@@ -625,7 +625,7 @@ define([
       var dnProps = U.getDisplayNameProps(meta);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
-        var uri = model.get('_uri');
+        var uri = resource.get('_uri');
         if (!uri)
           return vocModel.displayName;
         var s = uri.split('?');
@@ -1113,6 +1113,5 @@ define([
   };
   
   
-  Lablz.U = U;
-  return U;
+  return (Lablz.U = U);
 });

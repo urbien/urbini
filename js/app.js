@@ -66,9 +66,9 @@ define('app', [
         return;
       }
     
-      Voc.fetchModels(null, {success: function() {    
+      Voc.fetchModels(null, {success: function() {
         MB.updateTables(App.startApp, error);
-      }, sync: true});
+      }, error: error, sync: true});
     },
     
     startApp: function() {

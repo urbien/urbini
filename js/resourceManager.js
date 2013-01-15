@@ -34,13 +34,13 @@ define([
       if (lastFetchedOn && isUpdate) // && !shortPage)
         RM.setLastFetched(lastFetchedOn, options);
 
-      var f = function() {
+      var fetchHelper = function() {
         if (options.sync || !G.hasWebWorkers)
           return RM.defaultSync(method, data, options)
         
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
-          G.log(Voc.TAG, 'xhr', 'got resources', options.url);
+          G.log(RM.TAG, 'xhr', 'got resources', options.url);
           var xhr = event.data;
           options.success(xhr.data, 'success', xhr);
         };
@@ -56,9 +56,9 @@ define([
       };
       
       if (timeout)
-        setTimeout(f, timeout);
+        setTimeout(fetchHelper, timeout);
       else
-        f();
+        fetchHelper();
     }
 
     // provide data from indexedDB instead of a network call
@@ -314,7 +314,10 @@ define([
           RM.updateStores();
         }
         
-//        RM.db = e.target.result;
+        var res = e.target.result;
+        if (res instanceof IDBDatabase)
+          RM.db = res;
+        
         e.target.transaction.oncomplete = function() {
   //        G.recordCheckpoint("done upgrading db");
           G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
@@ -393,7 +396,7 @@ define([
         }
       };
       
-      request.onupgradeneeded = upgrade;      
+      request.onupgradeneeded = upgrade;
       request.onerror = function(e) {
         G.log(RM.TAG, 'db', "error opening db");
         if (error)
@@ -411,10 +414,15 @@ define([
         models = _.union(models, G.models, G.linkedModels);
 
       models = _.filter(models, function(m) {
-        if (Lablz.Router)
-          if (Lablz.Router.currentModel)
-            if (Lablz.Router.currentModel.type == m)
+        var r = G.Router;
+        if (r) {
+          var c = r.currentModel;
+          if (c) {
+            if (c.type == m) {
               return true;
+            }
+          }
+        }
             
         return _.contains(G.classUsage, m);
       });
@@ -446,7 +454,7 @@ define([
       var created = [];
       for (var i = 0; i < models.length; i++) {
         var type = models[i];
-        if (Voc.typeToEnum[type])
+        if (Voc.typeToEnum[type] || Voc.typeToInline[type])
           continue;
         
         if (RM.tableExists(type)) {
@@ -466,7 +474,6 @@ define([
             continue;
         }
         
-
         try {
           G.log(RM.TAG, 'db', 'creating object store: ' + type);
           var store = db.createObjectStore(type, RM.defaultOptions);
@@ -505,9 +512,6 @@ define([
 //      created.length && G.log(RM.TAG, 'db', '2. created tables: ' + created.join(","));
     },
     
-    /**
-     * will write to the database asynchronously
-     */
     addItems: function(items, classUri) {
       if (!items || !items.length)
         return;
@@ -525,7 +529,7 @@ define([
         G.log(this.TAG, "db", "2. newModel: " + classUri);
         U.pushUniq(Voc.newModels, classUri);
         RM.openDB(function() {
-          setTimeout(function() {RM.addItems(items, classUri)}, 100);
+          RM.addItems(items, classUri);
         });
         
         return;
@@ -558,7 +562,7 @@ define([
           G.log(RM.TAG, ['error', 'db'], "Error adding item to db: ", e);
         };
       });
-    }.async(100),
+    }, //.async(100),
     
     addItem: function(item, classUri) {
       var isModel = item instanceof Backbone.Model;
@@ -815,7 +819,16 @@ define([
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
   };
   
+  Events.on('modelsChanged', function(options) {
+    if (RM.db)
+      RM.updateTables(options.success, options.error);
+  });
   
+  Events.on('newResources', function(toAdd) {
+    RM.addItems(toAdd);
+  });
+    
+
 //  MB.getInstance = function() {
 //    if (RM === null) {
 //      Lablz.RM = new RM();
@@ -823,6 +836,6 @@ define([
 //    
 //    return RM;
 //  };
-  return (Lablz.ResourceManager = ResourceManager);
+  return ResourceManager;
 //  return ModelsBase.getInstance();
 });

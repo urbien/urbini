@@ -23,7 +23,6 @@ define([
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
-  //    Lablz.Events.on('refresh', this.refresh);
       return this;
     },
     events: {

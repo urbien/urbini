@@ -7,7 +7,7 @@ define([
   'cache!utils', 
   'cache!error', 
   'cache!events',
-  'cache!models/Resource',
+  'cache!models/Resource'
 ], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
@@ -251,7 +251,7 @@ define([
       
       if (toAdd.length) {
         Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
-        Lablz.ResourceManager.addItems(toAdd); 
+        Events.trigger('newResources', toAdd); 
       }
       
       return this;
