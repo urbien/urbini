@@ -23,10 +23,12 @@ define([
       if (!foundLink)
         return true;
       
-      var href = $el.attr('href');
+      var href = $el.attr('href') || $el.attr('link');
       if (href && href != '#') {
         Events.stopEvent(e);
-        return G.Router.navigate(href.slice(href.indexOf('#') + 1), true);
+        var hashIdx = href.indexOf('#');
+        var fragment = hashIdx == -1 ? href : href.slice(hashIdx + 1);
+        return G.Router.navigate(fragment, true);
       }
       else
         return true;
