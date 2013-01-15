@@ -625,11 +625,11 @@ define([
       var dnProps = U.getDisplayNameProps(meta);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
-        var uri = model.get('_uri');
+        var uri = resource.get('_uri');
         if (!uri)
           return vocModel.displayName;
         var s = uri.split('?');
-        s = decodeURIComponent(uri[1]).split('&');
+        s = decodeURIComponent(s[1]).split('&');
         for (var i=0; i<s.length; i++) {
           if (i)
             dn += ' ';
