@@ -2,9 +2,8 @@ define([
   'globals',
   'cache!../templates.jsp',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore' 
-], function(G, HTML, $, __jqm__, _) {
+], function(G, HTML, $, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g

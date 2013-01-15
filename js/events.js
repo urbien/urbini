@@ -1,10 +1,9 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone' 
-], function(G, $, __jqm__, _, Backbone) {
+], function(G, $, _, Backbone) {
   var Events = _.extend({
     TAG: 'Events.js',
     stopEvent: function(e) {

@@ -1,8 +1,6 @@
 define([
   'globals',
   'cache!jquery', 
-//  'cache!validator', 
-  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
@@ -12,7 +10,7 @@ define([
   'cache!vocManager',
   'cache!resourceManager',
   'cache!views/BasicView'
-], function(G, $, /*__jqValidate__,*/ __jqm__, _, Backbone, Templates, Events, Error, U, Voc, RM, BasicView) {
+], function(G, $, _, Backbone, Templates, Events, Error, U, Voc, RM, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -25,7 +23,6 @@ define([
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
       this.resource.on('change', this.refresh, this);
-      this.router = G.Router || Backbone.History;
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
       this.parentView = options && options.parentView;

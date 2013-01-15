@@ -1,14 +1,12 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!jqueryMobile', 
+  'cache!jquery',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
   'cache!error', 
-  'cache!events',
-  'cache!models/Resource'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource) {
+  'cache!events'
+], function(G, $, _, Backbone, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
     initialize: function(models, options) {
@@ -152,7 +150,7 @@ define([
         this.queryMap[this.offsetParam] = this.offset;
       this.rUri = options._rUri;
       options.url = this.getUrl();
-      var error = options.error = options.error || Error.getDefaultErrorHandler();
+      var error = options.error = options.error || Errors.getDefaultErrorHandler();
       var success = options.success || function(resp, status, xhr) {
         self.update(resp, options);        
       };

@@ -1,13 +1,11 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
-  'underscore', 
-  'cache!backbone', 
-  'cache!utils',
+  'cache!underscore', 
   'cache!templates',
+  'cache!utils',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, U, Templates, BasicView) {
+], function(G, $, _, Templates, U, BasicView) {
   return BasicView.extend({
     loginTemplate: 'loginButtonTemplate',
     logoutTemplate: 'logoutButtonTemplate',

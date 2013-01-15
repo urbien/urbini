@@ -1,12 +1,10 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
   'cache!error'
-], function(G, $, __jqm__, _, Backbone, U, Error) {
+], function(G, _, Backbone, U, Error) {
   var isNully = function(val) {
     return _.isUndefined(val) || val === null || val === '';
   };

@@ -1,20 +1,19 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
-  'cache!backbone', 
   'cache!templates',
   'cache!utils',
-  'cache!events' 
-], function(G, $, __jqm__, _, Backbone, Templates, U, Events) {
-  return Backbone.View.extend({
+  'cache!events',
+  'cache!views/BasicView'
+], function(G, _, Templates, U, Events, BasicView) {
+  return BasicView.extend({
     template: 'menuButtonTemplate',
     events: {
       'click #menuBtn': 'menu'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));
       return this;
     },

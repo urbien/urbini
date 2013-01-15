@@ -1,7 +1,6 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
@@ -10,14 +9,13 @@ define([
   'cache!vocManager',
   'cache!views/BasicView',
   'cache!views/ResourceListView', 
-//  'cache!views/MapView',
   'cache!views/Header', 
   'cache!views/BackButton', 
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
   'cache!views/MenuButton'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, /*MapView,*/ Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',

@@ -1,14 +1,12 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!templates',
   'cache!events', 
   'cache!utils',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, BasicView) {
+], function(G, $, _, Templates, Events, U, BasicView) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
@@ -44,7 +42,7 @@ define([
     },
     refresh: function() {
       var collection, modified;
-      if (arguments[0] instanceof Backbone.Collection) {
+      if (U.isCollection(arguments[0])) {
         collection = arguments[0];
         modified = arguments[1];
         if (collection != this.resource.collection || !_.contains(modified, this.resource.get('_uri')))

@@ -2,7 +2,6 @@ define([
   'globals',
   'cache!jquery',
   'cache!underscore',
-  'cache!backbone',
   'cache!utils',
   'cache!events',
   'cache!templates',
@@ -14,9 +13,8 @@ define([
   'cache!views/MenuButton',
   'cache!views/EditView',
   'cache!views/ResourceImageView',
-  'cache!views/ControlPanel',
-  'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel, __jqm__) {
+  'cache!views/ControlPanel'
+], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
@@ -26,7 +24,6 @@ define([
   //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('resourceEdit'));
       this.TAG = "EditPage";
-      this.router = G.Router || Backbone.History;
       this.action = options && options.action || 'edit';
       Events.on("mapReady", this.showMapButton);
     },

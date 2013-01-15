@@ -3,8 +3,8 @@ define([
 //  'cache!events',
   'cache!underscore', 
   'cache!backbone',
-  'cache!jqueryMobile'
-], function(G, _, Backbone) {
+  'cache!jquery'
+], function(G, _, Backbone, $) {
   var Error = {
     not_found: "The page you're looking for is probably in a parallel universe",
     login: "Please login, then we'll show you the top secret information you're looking for",
@@ -66,12 +66,12 @@ define([
       var msg = options.msg;
       // TODO: fix this so we don't have to use alert
 
-      alert(msg);
-//      setTimeout(function() {
-//        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
-//        if (!options.nofade)
-//          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
-//      }, options.delay || 0);
+//      alert(msg);
+      setTimeout(function() {
+        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+        if (!options.nofade)
+          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+      }, options.delay || 0);
     }
   };
   

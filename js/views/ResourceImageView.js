@@ -1,14 +1,11 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!utils',
-  'cache!templates',
   'cache!events',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, U, Templates, Events, BasicView) {
+], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click'); // fixes loss of context for 'this' within methods

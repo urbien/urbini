@@ -185,8 +185,8 @@ define([
         setTimeout(function() {Voc.saveModelsToStorage(newModels)}, 0);
         if (needUpgrade)
           Events.trigger('modelsChanged', {success: success, error: error});
-//        setTimeout(function() {RM.openDB()}, 0);
-  //        setTimeout(Voc.fetchLinkedModels, 0);
+        else
+          success && success();
       };
       
       var onErr = function(code) {
@@ -390,7 +390,7 @@ define([
       if (!localStorage)
         return; // TODO: use indexedDB
       
-      var p = localStorage.getItem(Voc.contactKey);
+      var p = G.localStorage.get(Voc.contactKey);
       var c = G.currentUser;
       if (p && !c.guest && JSON.parse(p)._uri != c._uri) {
         // no need to clear localStorage, it's only used to store models, which can be shared
@@ -521,7 +521,7 @@ define([
     },
 
     getEnumsFromLS: function() {
-      return localStorage.getItem('enumerations');
+      return G.localStorage.get('enumerations');
     },
 
     storeEnumsInLS: function(enums) {
@@ -531,7 +531,7 @@ define([
     },
 
     getModelFromLS: function(uri) {
-      return localStorage.getItem('model:' + uri);
+      return G.localStorage.get('model:' + uri);
     },
     
     storeModel: function(modelJson) {

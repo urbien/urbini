@@ -1,14 +1,12 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!events', 
   'cache!templates', 
   'cache!utils',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, Events, Templates, U, BasicView) {
+], function(G, $, _, Events, Templates, U, BasicView) {
   return BasicView.extend({
     tagName:"li",
     isCommonTemplate: true,

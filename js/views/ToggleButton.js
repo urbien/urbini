@@ -1,12 +1,10 @@
 define([
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!templates',
   'cache!events',
   'cache!views/BasicView'
-], function($, __jqm__, _, Backbone, Templates, Events, BasicView) {
+], function($, _, Templates, Events, BasicView) {
   return BasicView.extend({
     btnId: null,
     initialize: function(options) {

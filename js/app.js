@@ -1,6 +1,5 @@
 define('app', [
   'globals',
-  'cache!jquery', 
   'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
@@ -8,11 +7,10 @@ define('app', [
   'cache!utils', 
   'cache!error', 
   'cache!events',
-  'cache!indexedDBShim', 
   'cache!vocManager',
   'cache!resourceManager',
   'cache!router'
-], function(G, $, __jqm__, _, Backbone, Templates, U, Error, Events, __idbShim__, Voc, MB, Router) {  
+], function(G, __jqm__, _, Backbone, Templates, U, Error, Events, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -60,14 +58,14 @@ define('app', [
       Templates.loadTemplates();
       Voc.checkUser();
       Voc.loadStoredModels();
-    //  setTimeout(function() {MB.loadStoredModels({all: true})}, 100);
+    //  setTimeout(function() {RM.loadStoredModels({all: true})}, 100);
       if (!Voc.changedModels.length && !Voc.newModels.length) {
-        MB.updateTables(App.startApp, error);
+        RM.updateTables(App.startApp, error);
         return;
       }
     
       Voc.fetchModels(null, {success: function() {
-        MB.updateTables(App.startApp, error);
+        RM.updateTables(App.startApp, error);
       }, error: error, sync: true});
     },
     

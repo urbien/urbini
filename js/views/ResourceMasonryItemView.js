@@ -2,16 +2,14 @@ define([
   'globals',
   'cache!jquery',
   'cache!underscore',
-  'cache!backbone',
   'cache!utils',
   'cache!events',
   'cache!templates',
   'cache!views/BasicView',
   'cache!vocManager',
-  'cache!jqueryMobile',
   'cache!jqueryMasonry',
   'cache!jqueryImagesloaded'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Voc, __jqm__) {
+], function(G, $, _, U, Events, Templates, BasicView, Voc) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',

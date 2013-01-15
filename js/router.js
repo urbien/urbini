@@ -140,7 +140,7 @@ define([
     list: function(oParams, mode) {
 //      this.backClicked = this.wasBackClicked();
       if (!ListPage)
-        return this.loadView('ListPage', this.list, arguments);
+        return G.loadModule('view', 'ListPage', this.list, arguments);
       
       var self = this;
       var params = oParams.split("?");
@@ -212,7 +212,7 @@ define([
     
     menu: function() {
       if (!MenuPage)
-        return this.loadView('MenuPage', this.menu, arguments);
+        return G.loadModule('view', 'MenuPage', this.menu, arguments);
       
       var c = this.currentModel;
       var id = c.id || c.url;
@@ -224,19 +224,19 @@ define([
       this.changePage(menuPage);
     },
 
-    loadView: function(view, caller, args) {
-      var self = this;
-      if (!eval(view)) {
-        require(['cache!views/' + view], function(v) {
-          eval(view + '=v;');
-          caller.apply(self, args);
-        });
-      }
-    },
+//    loadView: function(view, caller, args) {
+//      var self = this;
+//      if (!eval(view)) {
+//        require(['cache!views/' + view], function(v) {
+//          eval(view + '=v;');
+//          caller.apply(self, args);
+//        });
+//      }
+//    },
     
     make: function(path) {
       if (!EditPage)
-        return this.loadView('EditPage', this.make, arguments);
+        return G.loadModule('view', 'EditPage', this.make, arguments);
       
       var parts = path.split('?');
       var type = decodeURIComponent(parts[0]);
@@ -264,14 +264,14 @@ define([
 
     edit: function(path) {
       if (!EditPage)
-        return this.loadView('EditPage', this.edit, arguments);
+        return G.loadModule('view', 'EditPage', this.edit, arguments);
       else
         this.view.call(this, path, true);
     },
     
     view: function (path, edit) {
       if (!edit && !ViewPage)
-        return this.loadView('ViewPage', this.view, arguments);
+        return G.loadModule('view', 'ViewPage', this.view, arguments);
       
       var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? EditPage : ViewPage;
