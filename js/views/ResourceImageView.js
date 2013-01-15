@@ -70,19 +70,20 @@ define([
 //        }
         oHeight = oHeight * ratio;
       }
-      else if (oWidth != 0) {
+      else if (oWidth  &&  oWidth != 0) {
         w = oWidth;
       }
-      if (oHeight > maxH) {
+      if (oHeight  &&  oHeight > maxH) {
         var ratio = maxH / oHeight;
         w = w * ratio;
       }
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
-      var iTemplate = "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "'>";
+      var iTemplate = w ? "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "' />"
+                        : "<img src='" + decodeURIComponent(propVal) +"' />";
       var li;
 
-      var padding = 15 - (maxW - w) / 2;
+      var padding = w ? (15 - (maxW - w) / 2) : 0;
       padding = -padding;
       li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);

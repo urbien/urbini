@@ -629,7 +629,7 @@ define([
         if (!uri)
           return vocModel.displayName;
         var s = uri.split('?');
-        s = decodeURIComponent(uri[1]).split('&');
+        s = decodeURIComponent(s[1]).split('&');
         for (var i=0; i<s.length; i++) {
           if (i)
             dn += ' ';
