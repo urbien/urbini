@@ -127,7 +127,8 @@ define([
           delete json[p];
           continue;
         }
-              
+        if (prop.autoincrement)
+          continue;
         if (p.charAt(0) == '_')
           continue;
         if (p == 'davDisplayName')
