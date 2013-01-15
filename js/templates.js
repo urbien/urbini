@@ -22,11 +22,11 @@ define([
       "phone": "telPT",
       "mobilePhone": "telPT",
       "Url": "UrlPT",
-      "Duration": "complexDatePT",
+      "system/primitiveTypes/Duration": "durationPT",
       "date": "datePT",
       "dateTime": "datePT",
       "resource": "resourcePT",
-      "Money": "moneyPT",
+      "model/company/Money": "moneyPT",
       "ComplexDate": "complexDatePT",
       "Image": "imagePT"
     },

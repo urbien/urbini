@@ -75,6 +75,10 @@
   <span>{{= Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
+<script type="text/template" id="durationPT">
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDuration(value) }}</span>
+</script>
+
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
 </script -->
@@ -96,12 +100,12 @@
 </script>
 
 <script type="text/template" id="moneyPT">
-  <span>{{= value.currency + value.value }}</span>
+  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? value : value.value) }}</span>
 </script>
 
-<script type="text/template" id="durationPT">
+<!--script type="text/template" id="durationPT">
   <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
-</script>
+</script-->
 
 <script type="text/template" id="complexDatePT">
   <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>

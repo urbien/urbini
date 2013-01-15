@@ -695,7 +695,52 @@ define([
       
       return keys.join('&');
     },
-    
+
+    getFormattedDuration: function(time) {
+      if (time <= 0)
+        return "none";
+      
+      var now = G.currentServerTime();
+      var date = U.getFormattedDate(now + time);
+      if (date.startsWith("In "))
+        return date.slice(3);
+      else if (date.endsWith(" ago"))
+        return date.slice(0, date.length - 4);
+      else if (date === 'Tomorrow')
+        return '1 day';
+      else
+        throw new Error("couldn't parse time");
+      
+//      if (time < 86400) {
+//        return time < 0 && "none" || 
+//          time < 60 && (time + " seconds") ||
+//          time < 120 && "A minute or so" ||
+//          time < 3600 && Math.floor( time / 60 ) + " minutes" ||
+//          time < 7200 && "an hour" ||
+//          Math.floor( time / 3600 ) + " hours";
+//      }
+//      
+//      var days = Math.floor(time / 86400);
+//      if (days == 1)
+//        return "1 day";
+//      else if (days < 7)
+//        return days + " days";
+//      else if (days < 365) {
+//        var w = Math.round(days / 7);
+//        return (w == 1) ? "a week" : w + " weeks";
+//      }
+//      else {
+//        var years = Math.round( day_diff / 365 );
+//        var rest = (day_diff % 365);
+//        var date = '';
+//        if (years == 1)
+//          date += 'a year';
+//        else
+//          date += years + " years";
+//        return (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+//      }
+    },
+
     getFormattedDate: function(time) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
@@ -703,34 +748,49 @@ define([
       var diff = ((now - parseFloat(time)) / 1000);
       var day_diff = Math.floor(diff / 86400);
           
-      if (isNaN(day_diff) || day_diff < 0) // || day_diff >= 31)
+      if (isNaN(day_diff))
         return null;
           
+      var future = diff < 0;
+      var absDiff = Math.abs(diff);
+      var absDayDiff = Math.abs(day_diff);
+      var pre = future ? "In " : "";
+      var post = future ? "" : " ago";
+      
       if (day_diff == 0) {
-        return (diff < 60 && "just now" ||
-                diff < 120 && "a minute ago" ||
-                diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
-                diff < 7200 && "an hour ago" ||
-                diff < 86400 && Math.floor( diff / 3600 ) + " hours ago");
+        var str = (absDiff < 60 && "just now" ||
+                absDiff < 120 && "a minute" ||
+                absDiff < 3600 && Math.floor( absDiff / 60 ) + " minutes" ||
+                absDiff < 7200 && "an hour" ||
+                absDiff < 86400 && Math.floor( absDiff / 3600 ) + " hours");
+        
+        if (absDiff >= 60)
+          str = pre + str + post;
       }
-      else if (day_diff == 1)
-        return "Yesterday";
-      else  if (day_diff < 7) 
-        return (day_diff == 1) ? "a day ago" : day_diff + " days ago"; 
-      else if (day_diff < 365) {
-        var w = Math.round( day_diff / 7 );
-        return (w == 1) ? "a week ago" : w + " weeks ago";
-      }
+      else if (absDayDiff == 1)
+        return future ? "Tomorrow" : "Yesterday";
       else {
-        var years = Math.round( day_diff / 365 );
-        var rest = (day_diff % 365);
-        var date = '';
-        if (years == 1)
-          date += 'a year';
-        else
-          date += years + " years";
-        return (rest == 0) ? date + ' ago' : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+        var str;
+        if (absDayDiff < 7) 
+          str = (absDayDiff == 1) ? "a day" : absDayDiff + " days"; 
+        else if (absDayDiff < 365) {
+          var w = Math.round( day_diff / 7 );
+          str = (w == 1) ? "a week ago" : w + " weeks ago";
+        }
+        else {
+          var years = Math.round( day_diff / 365 );
+          var rest = (day_diff % 365);
+          var date = '';
+          if (years == 1)
+            date += 'a year';
+          else
+            date += years + " years";
+          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+        }
+        
+        return pre + str + post;
       }
+      
 //      var years;
 //      return day_diff == 0 && (
 //        diff < 60 && "just now" ||
