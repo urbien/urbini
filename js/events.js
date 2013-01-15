@@ -23,9 +23,13 @@ define([
       if (!foundLink)
         return true;
       
-      event.preventDefault();
-      var href = $el.prop('href');
-      return G.Router.navigate(href.slice(href.indexOf('#') + 1), true);
+      var href = $el.attr('href');
+      if (href && href != '#') {
+        Events.stopEvent(e);
+        return G.Router.navigate(href.slice(href.indexOf('#') + 1), true);
+      }
+      else
+        return true;
     },
   
   //  Events.defaultClickHandler = function(e) {

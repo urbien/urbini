@@ -18,7 +18,7 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValue'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -272,8 +272,18 @@ define([
       else
         this.$ul.listview().listview('refresh');
     },
-    
     click: Events.defaultClickHandler,
+    onSelected: function(e) {
+      var name = e.target.name;
+      var value = e.target.value;
+      this.setValue(name, value, null, this.fieldError);
+    },
+    setValue: function(name, val, onValidated, onValidationError) {
+      var change = {}, res = this.resource;
+      change[name] = val;
+      res.lastFetchOrigin = 'edit';
+      res.set(change, {validateAll: false, error: onValidationError, validated: onValidated, skipRefresh: true});
+    },
     render: function(options) {
       G.log(this.TAG, "render");
       var res = this.resource;
@@ -287,6 +297,7 @@ define([
       var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
+      var displayedProps = {};
       
       var formId = G.nextId();
       var idx = 0;
@@ -315,6 +326,7 @@ define([
             if (!willShow(res, prop, userRole))
               continue;
   
+            displayedProps[p] = true;
             var pInfo = U.makeEditProp(prop, json[p], formId);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
@@ -343,6 +355,7 @@ define([
           if (!willShow(res, prop, userRole))
             continue;
           
+          displayedProps[p] = true;
           var pInfo = U.makeEditProp(prop, json[p], formId);
           if (!groupNameDisplayed) {
             U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
@@ -372,12 +385,9 @@ define([
         };
 
         var onFocusout = function() {
-          var self = this;                  
           var val = this.value;
-          var change = {};
-          change[this.name] = val;
-          res.lastFetchOrigin = 'edit';
-          res.set(change, {validateAll: false, error: view.fieldError, validated: validated, skipRefresh: true});
+          var name = this.name;
+          self.setValue(name, value, validated, self.fieldError);          
         };
         
         jin.focusout(onFocusout);
@@ -387,6 +397,15 @@ define([
       form.find('input.required').each(function() {
         $(this).prev('label').addClass('req');
       });
+      
+      form.find('select').change(this.onSelected);
+      
+      if (_.size(displayedProps) === 1) {
+        var prop = meta[U.getFirstProperty(displayedProps)];
+        if (Templates.getPropTemplate(prop, true) === 'resourcePET') {
+          this.$('a[name="' + p + '"]').trigger('click');
+        }
+      }
       
       this.rendered = true;
       return this;

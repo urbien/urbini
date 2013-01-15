@@ -693,5 +693,5 @@ define([
   };
   
   Voc.snm = Voc.shortNameToModel;
-  return Voc;
+  return (G.Voc = Voc);
 });

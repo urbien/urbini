@@ -1109,6 +1109,16 @@ define([
         return name;
       }
     },
+    
+    getPlural: function(res) {
+      var p = res.vocModel.pluralName;
+      if (p)
+        return p;
+      
+      p = res.displayName;
+      return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
+    },
+    
     slice: slice
   };
   

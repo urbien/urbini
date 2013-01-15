@@ -1218,32 +1218,31 @@ define('globals', function() {
       request.onerror = function (event) {
         console.log("error: " + JSON.stringify(event));
       }
-    },
-    
-    loadModule: function(type, name, caller, args) {
-      var self = this;
-      var path = '';
-      switch (type) {
-      case 'view':
-        path = 'views/';
-        break;
-      case 'resource':
-        path = 'resource/';
-        break;
-      case 'lib':
-        path = 'lib/';
-        break;
-      }
-      
-      name = path + name;
-      if (!eval(name)) {
-        require(['cache!' + name], function(v) {
-          eval(name + '=v;');
-          caller.apply(self, args);
-        });
-      }
     }
-
+//    ,
+//    loadModule: function(type, name, caller, args) {
+//      var self = this;
+//      var path = '';
+//      switch (type) {
+//      case 'view':
+//        path = 'views/';
+//        break;
+//      case 'resource':
+//        path = 'resource/';
+//        break;
+//      case 'lib':
+//        path = 'lib/';
+//        break;
+//      }
+//      
+//      if (typeof (eval(name)) === 'undefined') {
+//        require(['cache!' + path + name], function(v) {
+//          eval(name + '=v;');
+//          caller.apply(self, args);
+//        });
+//      }
+//    }
+//
 //    ,
 //    flattenObject: function(ob) {
 //      var toReturn = {};

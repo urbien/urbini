@@ -40,7 +40,7 @@ define([
           }
           if (!this.pageTitle) {
             if (res instanceof Backbone.Collection) 
-              this.pageTitle = this.vocModel['pluralName'] || res.displayName + 's';
+              this.pageTitle = U.getPlural(res);
             else {
               this.pageTitle = res.get('davDisplayName');
               if (!this.pageTitle) 
