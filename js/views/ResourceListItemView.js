@@ -170,6 +170,8 @@ define([
       if (typeof json['originalWidth'] != 'undefined' &&
           typeof  json['originalHeight'] != 'undefined' ) {
         var dim = U.fitToFrame(90, 80, json['originalWidth'] / json['originalHeight'])
+        json['width'] = dim.w;
+        json['height'] = dim.h;
         json['top'] = dim.y;
         json['right'] = dim.w - dim.x;
         json['bottom'] = dim.h - dim.y;

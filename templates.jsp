@@ -138,6 +138,7 @@
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
     <img style="
+        width:{{= width }}px; height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
