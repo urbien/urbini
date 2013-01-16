@@ -280,7 +280,7 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
-  <a href="{{=Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
@@ -387,6 +387,7 @@
     <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
+    <div name="errors"></div>
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>

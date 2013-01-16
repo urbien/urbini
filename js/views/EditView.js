@@ -10,7 +10,7 @@ define([
   'cache!vocManager',
   'cache!resourceManager',
   'cache!views/BasicView'
-], function(G, $, _, Backbone, Templates, Events, Error, U, Voc, RM, BasicView) {
+], function(G, $, _, Backbone, Templates, Events, Errors, U, Voc, RM, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -18,7 +18,7 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValue'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValue', 'getRedirect'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -26,11 +26,13 @@ define([
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
       this.parentView = options && options.parentView;
+      this.backlinkModel = options.backlinkModel;
       
       var params = U.getQueryParams();
-      var bl = {};
-      bl[params.backLink] = params.on;
-      this.resource.set(bl, {silent: true});
+      var initial = {};
+      initial[params.backLink] = params.on;      
+      this.resource.set(initial, {silent: true});
+      
       this.originalResource = this.resource.toJSON();
 
       return this;
@@ -78,21 +80,31 @@ define([
     },
     fieldError: function(resource, errors) {
       var badInputs = [];
+      var errDiv = this.$form.find('div[name="errors"]');
+      errDiv.empty();
       for (name in errors) {
+        var madeError = false;
         var input = this.$form.find('input[name="{0}"]'.format(name));
-        badInputs.push(input);
-        var id = input[0].id;
-        var err = this.$form.find('label.error[for="{0}"]'.format(id));
-        var msg = errors[name];
-        if (err.length) {
-          err[0].innerText = msg;
+        if (input.length) {        
+          badInputs.push(input);
+          var id = input[0].id;
+          var err = this.$form.find('label.error[for="{0}"]'.format(id));
+          var msg = errors[name];
+          if (err.length) {
+            err[0].innerText = msg;
+            madeError = true;
+          }
         }
-        else {
+        
+        if (!madeError) {
           var label = document.createElement('label');
           label.innerHTML = msg;
           label.setAttribute('for', id);
           label.setAttribute('class', 'error');
-          input[0].parentNode.insertBefore(label, input.nextSibling);
+          if (input.length)
+            input[0].parentNode.insertBefore(label, input.nextSibling);
+          else
+            errDiv.appendChild(label);
         }
       }
       
@@ -107,13 +119,33 @@ define([
       var vocModel = this.vocModel;
       var redirectAction = vocModel.onCreateRedirectToAction || 'PROPFIND';
       var redirectTo = vocModel.onCreateRedirectTo;
+      var redirectParams = {};      
       var redirectRoute = '';
-      var redirectPath;
-      var redirectParams = {};
+      var redirectPath = '';
       switch (redirectAction) {
         case 'LIST':
-          if (redirectTo)
-            redirectPath = vocModel.properties[redirectTo].type._uri; 
+          if (redirectTo) {
+            var dotIdx = redirectTo.indexOf('.');
+            if (doxIdx != -1) {
+              var pName = redirectTo.slice(0, dotIx);
+              var prop = vocModel.properties[pName];
+              var range = U.getLongUri(prop.range);
+              range = range && Voc.typeToModel[range];
+              if (range) {
+                params[pName] = res.get(pName);
+                var bl = redirectTo.slice(dotIdx + 1);
+                var blProp = range.properties[bl];
+                if (blProp)
+                  redirectPath = blProp.type;
+                else
+                  G.log(self.TAG, 'error', 'couldn\'t get model for range', prop.range);
+              }
+              else
+                G.log(self.TAG, 'error', 'couldn\'t get model for range', prop.range);
+            }
+            
+            redirectPath = redirectPath || vocModel.properties[redirectTo].type._uri;
+          }
           else 
             redirectPath = vocModel.type;
           
@@ -129,7 +161,7 @@ define([
             var prop = vocModel.properties[redirectTo];
             if (prop.backLink) {
               redirectPath = encodeURIComponent(res.get('_uri'));
-//              redirecPath = 'make/'; //TODO: make this work for uploading images
+//              redirectPath = 'make/'; //TODO: make this work for uploading images
             }
             else
               redirectPath = encodeURIComponent(res.get(redirectTo));
@@ -195,10 +227,12 @@ define([
 //                self.resetResource();
                 switch (json.error.code) {
                 case 401:
-                  Error.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
+                  Errors.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
                   break;
+//                case 409:
+//                  break;
                 default:
-                  Error.errDialog({msg: json.error.details, delay: 100});
+                  Errors.errDialog({msg: json.error.details, delay: 100});
                   break;
                 }
                 
@@ -206,7 +240,7 @@ define([
                 return;
               }
               else {
-                res.set(json);
+                res.set(json, {skipRefresh: true});
               }
             } catch (err) {
             }
@@ -274,9 +308,7 @@ define([
     },
     click: Events.defaultClickHandler,
     onSelected: function(e) {
-      var name = e.target.name;
-      var value = e.target.value;
-      this.setValue(name, value, null, this.fieldError);
+      this.setValue(e.target.name, e.target.value, null, this.fieldError);
     },
     setValue: function(name, val, onValidated, onValidationError) {
       var change = {}, res = this.resource;
@@ -286,12 +318,13 @@ define([
     },
     render: function(options) {
       G.log(this.TAG, "render");
-      var res = this.resource;
-      var type = res.type;
       var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
+      var res = this.resource;
+      var type = res.type;
+      var self = this;
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
@@ -385,9 +418,7 @@ define([
         };
 
         var onFocusout = function() {
-          var val = this.value;
-          var name = this.name;
-          self.setValue(name, value, validated, self.fieldError);          
+          self.setValue(this.name, this.value, validated, self.fieldError);          
         };
         
         jin.focusout(onFocusout);
@@ -400,12 +431,12 @@ define([
       
       form.find('select').change(this.onSelected);
       
-      if (_.size(displayedProps) === 1) {
-        var prop = meta[U.getFirstProperty(displayedProps)];
-        if (Templates.getPropTemplate(prop, true) === 'resourcePET') {
-          this.$('a[name="' + p + '"]').trigger('click');
-        }
-      }
+//      if (_.size(displayedProps) === 1) {
+//        var prop = meta[U.getFirstProperty(displayedProps)];
+//        if (Templates.getPropTemplate(prop, true) === 'resourcePET') {
+//          this.$('a[name="' + prop.shortName + '"]').trigger('click');
+//        }
+//      }
       
       this.rendered = true;
       return this;

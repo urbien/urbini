@@ -7,6 +7,7 @@ define([
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
+//    variable: 'G'
   };
   
   var Templates = {

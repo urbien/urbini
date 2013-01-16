@@ -5,12 +5,11 @@ define('app', [
   'cache!backbone', 
   'cache!templates', 
   'cache!utils', 
-  'cache!error', 
   'cache!events',
   'cache!vocManager',
   'cache!resourceManager',
   'cache!router'
-], function(G, __jqm__, _, Backbone, Templates, U, Error, Events, Voc, RM, Router) {  
+], function(G, __jqm__, _, Backbone, Templates, U, Events, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -64,9 +63,7 @@ define('app', [
         return;
       }
     
-      Voc.fetchModels(null, {success: function() {
-        RM.updateTables(App.startApp, error);
-      }, error: error, sync: true});
+      Voc.fetchModels(null, {success: App.startApp, error: error, sync: true});
     },
     
     startApp: function() {
@@ -81,9 +78,9 @@ define('app', [
       
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
 //      G.homePage = G.homePage || G.tabs[0].mobileUrl;
-      if (!window.location.hash) {
+//      if (!window.location.hash) {
 //        G.Router.navigate(G.homePage, {trigger: true});
-      }
+//      }
     }
   };
   

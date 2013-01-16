@@ -93,21 +93,54 @@ define([
             var selfUser = res.get(pName);
             if (me == selfUser) 
               return true;
-//            if (!resUri) { // is MKRESOURCE
-              var cloneOf = vocModel.properties[pName].cloneOf;
-              if (cloneOf) {
-                cloneOf = cloneOf.split(',');
-                for (var i = 0; i < cloneOf.length; i++) {
-                  if (cloneOf[i] === 'Submission.submittedBy')
-                    return true;
-                }
-              }
-//            }
+            else if (U.isCloneOf(vocModel.properties[pName], 'Submission.submittedBy'))
+              return true;
           }
           
           // TODO: implement this          
         }
       }
+      
+      return false;
+    },
+    
+    /**
+     * Given a subproperty and a superproperty, get the combined annotations
+     */
+    extendAnnotations: function(subProp, superProp, superModel) {
+      superProp = U.filterObj(superProp, function(name, val) {return !val.notinheritable});
+      for (var annotation in subProp) {
+        var oldAnn = superProp[annotation];
+        var newAnn = subProp[annotation];
+        if (_.isUndefined(oldAnn))
+          superProp[annotation] = newAnn;
+        else {
+          if (['cloneOf', 'subPropertyOf'].indexOf(annotation) != -1)
+            superProp[annotation] = oldAnn + ',' + newAnn;
+          else
+            superProp[annotation] = newAnn;
+        }
+      }
+      
+      return superProp;
+    },
+    
+    /**
+     * @param prop
+     * @param iProp sth like "Submission.submittedBy"
+     */
+    isCloneOf: function(prop, iPropName, vocModel, Voc) {
+      var cloneOf = prop.cloneOf;
+      var subPropertyOf = prop.subPropertyOf;
+      if (cloneOf) {
+        cloneOf = cloneOf.split(',');
+        for (var i = 0; i < cloneOf.length; i++) {
+          if (cloneOf[i] === iPropName)
+            return true;
+        }
+      }
+      else if (subPropertyOf && vocModel) // This only works if we have all superclass props on subclass
+        return U.isCloneOf(vocModel[subPropertyOf], slice.call(arguments, 1));
       
       return false;
     },
@@ -910,7 +943,7 @@ define([
       
       var propTemplate = Templates.getPropTemplate(prop);
       val = typeof val === 'undefined' || val == null ? '' : val.displayName ? val : {value: val}; 
-      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
+      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
     makeEditProp: function(prop, val, formId) {
@@ -948,7 +981,7 @@ define([
       val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       
-      return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment};
+      return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment, U: U, G: G};
     },
     
     reduceObj: function(obj, func, memo, context) {
@@ -1031,7 +1064,7 @@ define([
       if (ignoredParams)
         console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
       
-      return encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
+      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
     },
     
     pushUniq: function(arr, obj) {
@@ -1047,19 +1080,15 @@ define([
       return decodeURIComponent(str).replace(/\+/g, ' ');
     },
     
-    primitiveTypes: {uri: 'system/primitiveTypes', floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2'], ints: ['int', 'long', 'Duration']},
-    getTypedValue: function(model, prop, value) {
-      if (model.collection)
-        model = model.constructor;
-      else if (model.models)
-        model = model.model;
-      
+    primitiveTypes: {uri: 'system/primitiveTypes', floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], ints: ['int', 'long', 'Duration']},
+    getTypedValue: function(res, prop, value) {
+      var vocModel = res.vocModel;
       var p = U.primitiveTypes;
-      var prop = model.properties[prop];
+      var prop = vocModel.properties[prop];
       var range = prop.range || prop.facet;
-      if (p.floats.indexOf('range') != -1)
+      if (p.floats.indexOf(range) != -1)
         return parseFloat(value);
-      else if (p.ints.indexOf('range') != -1)
+      else if (p.ints.indexOf(range) != -1)
         return parseInt(value);
       else if (range.startsWith(p.uri)) {
         range = range.slice(pt.length + 1);
@@ -1177,11 +1206,28 @@ define([
       
       p = res.displayName;
       return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
-    },
+    }
+    ,
+//    
+//    addBaseTemplateParams: function(t) {
+//      _.extend(t, {U: U, G: G});
+//    },
     
     slice: slice
   };
-  
+
+//  var underscoreTemplate = _.template;
+//  _.template = function() {
+//    var template = underscoreTemplate.apply(this, arguments);
+////    var source = template.source;
+//    return function () {
+//      var args = U.slice.call(arguments);
+//      args[args.length] = U;
+//      args[args.length] = G;
+//      var self = this;
+//      return template.apply(self, args);
+//    }
+//  }
   
   return (Lablz.U = U);
 });

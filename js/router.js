@@ -248,12 +248,13 @@ define([
       
       var params = U.getHashParams();
       var makeId = params.makeId;
+      var backlinkModel = this.Models[params.on];
       var mPage = this.MkResourceViews[makeId];
       if (mPage && !mPage.model.get('_uri')) {
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel});
       }
       
       this.viewsCache = this.MkResourceViews;

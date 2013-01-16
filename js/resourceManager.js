@@ -14,6 +14,11 @@ define([
   var Index = idbq.Index;
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
+    if (method !== 'read') {
+      Backbone.defaultSync.apply(this, arguments);
+      return;
+    }
+      
     var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,
@@ -822,6 +827,8 @@ define([
   Events.on('modelsChanged', function(options) {
     if (RM.db)
       RM.updateTables(options.success, options.error);
+    else
+      RM.openDB(options.success, options.error);
   });
   
   Events.on('newResources', function(toAdd) {

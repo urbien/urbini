@@ -9,7 +9,7 @@ define([
   'cache!events', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
+], function(G, $, __jqm__, _, Backbone, U, Errors, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -32,7 +32,7 @@ define([
       models = changedAndNew ? _.union(Voc.changedModels, Voc.newModels) : typeof models === 'string' ? [models] : models;      
       options = options || {};
       var success = options.success;
-      var error = options.error || Error.getDefaultErrorHandler();
+      var error = options.error || Errors.getDefaultErrorHandler();
       
       function earlyExit() {
         if (success && !options.skipSuccessIfUpToDate)
@@ -333,13 +333,11 @@ define([
     },
 
     initModel: function(m) {
-      if (Voc.shortNameToModel[m.shortName])
+      var sn = m.shortName;
+      if (Voc.shortNameToModel[sn])
         return;
       
-      m.type = U.getTypeUri(m.type);
-  //    m.lastModified = new Date().getTime();
-      var sn = m.shortName;
-      var type = m.type;
+      var type = m.type = U.getTypeUri(m.type);
       if (m.enumeration) {
         Voc.shortNameToEnum[sn] = m;
         Voc.typeToEnum[type] = m;
@@ -357,8 +355,25 @@ define([
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
       var superProps = m.__super__.constructor.properties;
+      var myProps = m.myProperties;
       var hidden = m.hiddenProperties ? m.hiddenProperties.replace(/\ /g, '').split(',') : [];
-      m.properties = superProps ? _.extend(U.filterObj(superProps, function(name, prop) {return !_.contains(hidden, name)}), m.myProperties) : _.clone(m.myProperties);
+      if (superProps) {
+        superProps = U.filterObj(superProps, function(name, prop) {return !_.contains(hidden, name)});
+        for (var p in myProps) {
+          var subProp = myProps[p];
+          var superPropUri = subProp.subPropertyOf;
+          if (superPropUri) {
+            var superProp = superProps[superPropUri.slice(superPropUri.lastIndexOf('/') + 1)];
+            myProps[p] = U.extendAnnotations(subProp, superProp);
+            delete superProps[superPropUri];
+          }
+        }
+        
+        m.properties = _.extend(superProps, myProps);
+      }
+      else
+        m.properties = _.clone(myProps);
+      
       var superInterfaces = m.__super__.constructor.interfaces;
       m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
       m.prototype.initialize = Voc.getInit.apply(m);
@@ -368,7 +383,7 @@ define([
       var self = this;
       return function() { 
         self.__super__.initialize.apply(this, arguments); 
-        this.on('change', Voc.updateDB);
+//        this.on('change', Voc.updateDB);
       }
     },
   
@@ -661,7 +676,7 @@ define([
       
       var stale = []
       var fresh = [];
-      Voc.filterExpired({lastModified: r.lastModified}, expanded, fresh, stale);
+      Voc.filterExpired(expanded, fresh, stale);
       _.each(stale, function(s) {U.pushUniq(Voc.changedModels, s)});
       
       if (fresh.length) {
@@ -672,18 +687,15 @@ define([
       }
     },
     
-    filterExpired: function(info, models, fresh, stale) {
-      var baseDate = (info && info.lastModified) || G.lastModified;
+    filterExpired: function(models, fresh, stale) {
+      var baseDate = G.lastModified;
       _.each(models, function(model) {
 //        var mInfo = _.filter(G.models, function(m) {return m.type == model.type});
-        var d = baseDate || model.lastModified; //(mInfo.length && mInfo[0].lastModified);
-        if (d) {
-          var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
-            var storedDate = model._dateStored;
-            if (storedDate && storedDate >= date) {
-              fresh.push(model);
-              return;
-            }
+        var date = typeof model.lastModified === 'undefined' ? model.lastModified : Math.max(baseDate, model.lastModified);
+        var storedDate = model._dateStored;
+        if (storedDate && storedDate >= date) {
+          fresh.push(model);
+          return;
         }
         
         U.pushUniq(stale, model.type);
