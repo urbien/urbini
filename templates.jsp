@@ -75,6 +75,10 @@
   <span>{{= Lablz.U.getFormattedDate(value) }}</span>
 </script>
 
+<script type="text/template" id="durationPT">
+  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDuration(value) }}</span>
+</script>
+
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
 </script -->
@@ -96,12 +100,12 @@
 </script>
 
 <script type="text/template" id="moneyPT">
-  <span>{{= value.currency + value.value }}</span>
+  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? value : value.value) }}</span>
 </script>
 
-<script type="text/template" id="durationPT">
+<!--script type="text/template" id="durationPT">
   <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
-</script>
+</script-->
 
 <script type="text/template" id="complexDatePT">
   <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
@@ -158,11 +162,11 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + "&$title=" + encodeURIComponent(name)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(name)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -439,8 +443,8 @@
 </script>
 
 <script type="text/template" id="resourcePET">
-  <label for="{{= id }}" class="select">{{= name }}</label>
-  <a target="#" name="{{= shortName }}" class="resourceProp">{{= typeof value === 'undefined' ? name : value }}</a>
+  <!--label for="{{= id }}" class="select">{{= name }}</label-->
+  <a target="#" name="{{= shortName }}" class="resourceProp" >{{= typeof value === 'undefined' || !value ? name : value }}</a>
 
   <!--label for="{{= id }}" class="select">{{= name }}</label>
   <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp ' + classes }}">
