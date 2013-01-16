@@ -5,13 +5,15 @@ define([
   'cache!events', 
   'cache!templates', 
   'cache!utils',
-  'cache!views/BasicView'
-], function(G, $, _, Events, Templates, U, BasicView) {
+  'cache!views/BasicView',
+  'cache!vocManager'
+], function(G, $, _, Events, Templates, U, BasicView, Voc) {
   return BasicView.extend({
+    TAG: 'ResourceListItemView',
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'shoppingListHack'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
@@ -29,9 +31,41 @@ define([
       return this;
     },
     events: {
-      'click': 'click'
+      'click': 'click',
+      'click .recipeShoppingList': 'shoppingListHack'
     },
-//    tap: Events.defaultTapHandler,
+    shoppingListHack: function(e) {
+      Events.stopEvent(e);
+      var self = this;
+      var args = arguments;
+      if (!Voc.shortNameToModel.RecipeShoppingList) {
+        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
+        var allGood = Voc.fetchModels(null, { 
+           success: function() {
+             self.shoppingListHack.apply(self, args);
+           },
+           sync: true,
+        });
+        
+        return;
+      }
+        
+      var a = $(e.target).parent('a');
+      var href = a.attr('href') || a.attr('link');
+      var params = U.getQueryParams(href);
+      var recipeShoppingList = new Voc.shortNameToModel.RecipeShoppingList();
+      var props = {};
+      var shoppingList = props[params.backLink] = U.getLongUri(params.on);
+      var recipe = props.recipe = U.getLongUri(this.resource.get('recipe').value);
+      recipeShoppingList.save(props, {
+        success: function(model, response, options) {
+          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true});
+        }, 
+        error: function(model, xhr, options) {
+          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
+        }
+      });
+    },
     click: function(e) {
       var p = this.parentView;
       if (p && p.mode == G.LISTMODES.CHOOSER) {

@@ -64,7 +64,7 @@ define([
       this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
-      G.Router.navigate(G.homePage, {trigger: true, replace: false});
+      this.router.navigate(G.homePage, {trigger: true, replace: false});
       return this;
     },
     getNextPage: function() {

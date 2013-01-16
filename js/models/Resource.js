@@ -30,9 +30,13 @@ define([
     },
     url: function() {
       var uri = this.get('_uri');
-      var type = this.constructor.type;
-      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
+      var type = this.vocModel.type;
+//      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
       return G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&_uri=" + U.encode(uri);
+    },
+    saveUrl: function(attrs) {
+      var type = this.vocModel.type;
+      return G.apiUrl + 'm/' + encodeURIComponent(type) + "?$returnMade=y&" + U.getQueryString(attrs || this.attributes);
     },
     getKey: function() {
       return U.getLongUri(this.get('_uri'));
@@ -91,8 +95,10 @@ define([
         return true;
       
       if (value == null || value === '') {
-        if (prop.required)
-          return U.getPropDisplayName(prop) + ' is a required field';
+        if (prop.required) {
+          if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
+            return U.getPropDisplayName(prop) + ' is a required field';
+        }
         else
           return true;
       }
@@ -108,6 +114,11 @@ define([
           return U.validateEmail(value) || 'Please enter a valid email';
         else if (facet.toLowerCase().endsWith('phone'))
           return U.validatePhone(value) || 'Please enter a valid phone number';
+        else { 
+          var val = U.getTypedValue(this, name, value);
+          if (val == null || val !== val) // test for NaN
+            return 'Please enter a valid ' + U.getPropDisplayName(prop);
+        }
       }
         
       var cloneOf = prop.cloneOf;
@@ -139,7 +150,15 @@ define([
       options.error = options.error || Error.getDefaultErrorHandler();
       options.url = this.url();
       return Backbone.Model.prototype.fetch.call(this, options);
-    }  
+    },
+    
+    save: function(attrs, options) {
+//      var options = arguments[arguments.length - 1];
+      options = options || {};
+      options.url = this.saveUrl(attrs);
+      arguments[arguments.length - 1] = options;
+      return Backbone.Model.prototype.save.call(this, attrs, options);      
+    }
   },
   {
     type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
