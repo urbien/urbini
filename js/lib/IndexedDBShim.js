@@ -1271,6 +1271,8 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
 		window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
     window.IDBCursor.PREV = window.IDBCursor.PREV || "prev";
     window.IDBCursor.NEXT = window.IDBCursor.NEXT || "next";
+    window.IDBTransaction.READ_ONLY = window.IDBTransaction.READ_ONLY || "readonly";
+    window.IDBTransaction.READ_WRITE = window.IDBTransaction.READ_WRITE || "readwrite";
 	}
 	
 }(window, idbModules));

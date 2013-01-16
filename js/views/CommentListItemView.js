@@ -1,13 +1,11 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!events', 
   'cache!templates',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, Events, Templates, BasicView) {
+], function(G, $, _, Events, Templates, BasicView) {
   return BasicView.extend({
     tagName: 'tr',
     className: 'commentList',

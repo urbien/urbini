@@ -9,14 +9,11 @@ define([
   'cache!events', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-  'cache!indexedDBShim',
-  'cache!queryIndexedDB'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList, __idbShim__, idbq) {
+], function(G, $, __jqm__, _, Backbone, U, Error, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
 
-  Index = idbq.Index;
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
   var Voc = {
     packages: {Resource: Resource},
@@ -28,8 +25,11 @@ define([
     typeToModel: {},
     shortNameToEnum: {},
     typeToEnum: {},
+    shortNameToInline: {},
+    typeToInline: {},
     fetchModels: function(models, options) {
-      models = models ? (typeof models === 'string' ? [models] : models) : _.union(Voc.changedModels, Voc.newModels);      
+      var changedAndNew = !models;
+      models = changedAndNew ? _.union(Voc.changedModels, Voc.newModels) : typeof models === 'string' ? [models] : models;      
       options = options || {};
       var success = options.success;
       var error = options.error || Error.getDefaultErrorHandler();
@@ -82,9 +82,31 @@ define([
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
       var useWorker = G.hasWebWorkers && !options.sync;
+      var checkInModels = function(models) {
+        if (!changedAndNew)
+          return;
+        
+        var tmpC = [],
+            tmpN = [];
+        
+        for (var i = 0; i < models.length; i++) {
+          var m = models[i];
+          var type = U.getLongUri(m.s.type);
+          if (Voc.changedModels.indexOf(type) != -1)
+            tmpC.push(type);
+          else if (Voc.newModels.indexOf(type) != -1)
+            tmpN.push(type);
+        }
+        
+        Voc.changedModels = tmpC;
+        Voc.newModels = tmpN;
+        return tmpC.length || tmpN.length;
+      }
+      
       var complete = function() {
         var xhr = arguments[0];
         if (xhr.status == 304) {
+          checkInModels([]);
           success && success({fetched: 0});
           return;
         }
@@ -121,6 +143,8 @@ define([
         }
         
         var mz = data.models;
+        var needUpgrade = checkInModels(mz);
+        
         var pkg = data.packages;
         if (pkg)
           U.deepExtend(Voc.packages, pkg);
@@ -157,13 +181,12 @@ define([
         }
         
         Voc.initModels();
-        if (success)
-          success();
-        
-        G.finishedTask("ajax models");
-        
+        G.finishedTask("ajax models");        
         setTimeout(function() {Voc.saveModelsToStorage(newModels)}, 0);
-  //        setTimeout(Voc.fetchLinkedModels, 0);
+        if (needUpgrade)
+          Events.trigger('modelsChanged', {success: success, error: error});
+        else
+          success && success();
       };
       
       var onErr = function(code) {
@@ -316,14 +339,19 @@ define([
       m.type = U.getTypeUri(m.type);
   //    m.lastModified = new Date().getTime();
       var sn = m.shortName;
+      var type = m.type;
       if (m.enumeration) {
         Voc.shortNameToEnum[sn] = m;
-        Voc.typeToEnum[m.type] = m;
+        Voc.typeToEnum[type] = m;
         return;
+      }
+      else if (m.alwaysInlined) {
+        Voc.shortNameToInline[sn] = m;
+        Voc.typeToInline[type] = m;
       }
       else {
         Voc.shortNameToModel[sn] = m;
-        Voc.typeToModel[m.type] = m;
+        Voc.typeToModel[type] = m;
       }
       
       m.prototype.parse = Resource.prototype.parse;
@@ -362,7 +390,7 @@ define([
       if (!localStorage)
         return; // TODO: use indexedDB
       
-      var p = localStorage.getItem(Voc.contactKey);
+      var p = G.localStorage.get(Voc.contactKey);
       var c = G.currentUser;
       if (p && !c.guest && JSON.parse(p)._uri != c._uri) {
         // no need to clear localStorage, it's only used to store models, which can be shared
@@ -493,7 +521,7 @@ define([
     },
 
     getEnumsFromLS: function() {
-      return localStorage.getItem('enumerations');
+      return G.localStorage.get('enumerations');
     },
 
     storeEnumsInLS: function(enums) {
@@ -503,7 +531,7 @@ define([
     },
 
     getModelFromLS: function(uri) {
-      return localStorage.getItem('model:' + uri);
+      return G.localStorage.get('model:' + uri);
     },
     
     storeModel: function(modelJson) {
@@ -565,9 +593,10 @@ define([
       var r = options && options.models ? {models: _.clone(options.models)} : {models: _.clone(G.models)};
       var models = r.models;
       var added = Voc.currentModel;
-      if (added && !Voc.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length)
+      if (added && !Voc.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length) {
+        models.push(added);
         U.pushUniq(Voc.newModels, added); // We can't know whether it's been changed on the server or not, so we have to call to find out 
-//        models.push(added);
+      }
 
       if (!G.hasLocalStorage) {
         if (r) {
@@ -664,5 +693,5 @@ define([
   };
   
   Voc.snm = Voc.shortNameToModel;
-  return (Lablz.Voc = Voc);
+  return (G.Voc = Voc);
 });

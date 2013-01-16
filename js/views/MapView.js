@@ -1,15 +1,13 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
-  'cache!backbone', 
   'cache!templates',
   'cache!events', 
   'cache!utils',
   'cache!maps',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U, Mapper, BasicView) {
+], function(G, $, _, Templates, Events, U, Mapper, BasicView) {
   var MapView = BasicView.extend({
     css: [
       'leaflet.css', 
@@ -178,7 +176,7 @@ define([
       return gj;
     },
     modelToGeoJSON: function(model, metadata) {
-      if (model instanceof Backbone.Collection)
+      if (U.isCollection(model))
         return MapView.collectionToGeoJSON(model);
       
       var isShape = model.isA("Shape");

@@ -18,11 +18,13 @@
   <meta name="openGraph" content=""></meta>
   <include name="analytics-tracker.jsp" />
   <siteTitle />
-  <!-- Facebook bug, they attach #_=_ even if redirect_uri is explicitly provided -->
+  <!-- Facebook bug, they attach stuff even if redirect_uri is explicitly provided -->
   <script type="text/javascript">
+    <![CDATA[
     if (window.location.hash == '#_=_') {
       console.log("hash stripped");
       window.location.hash = '';
     }
+    ]]>
   </script>
  </container>

@@ -1,18 +1,17 @@
 define([
-  'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
-  'cache!backbone', 
   'cache!templates',
-  'cache!events' 
-], function($, __jqm__, _, Backbone, Templates, Events) {
-  return Backbone.View.extend({
+  'cache!events', 
+  'cache!views/BasicView' 
+], function(_, Templates, Events, BasicView) {
+  return BasicView.extend({
     template: 'backButtonTemplate',
     events: {
       'click #back': 'back'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
+      this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));
       return this;
     },

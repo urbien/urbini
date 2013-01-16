@@ -1,13 +1,11 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
-  'underscore', 
-  'cache!backbone', 
-  'cache!utils',
+  'cache!underscore', 
   'cache!templates',
+  'cache!utils',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, U, Templates, BasicView) {
+], function(G, $, _, Templates, U, BasicView) {
   return BasicView.extend({
     loginTemplate: 'loginButtonTemplate',
     logoutTemplate: 'logoutButtonTemplate',
@@ -32,13 +30,13 @@ define([
       this.template = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
       var method = options && options.append ? 'append' : 'html';
       var loginBtn = this.template();
-      if (!_.size(Lablz.socialNets)) {
+      if (!_.size(G.socialNets)) {
         this.$el[method](_.template(Templates.get('logoutButtonTemplate'))());
         return this;
       }
       
       var here = window.location.href;
-      _.each(Lablz.socialNets, function(net) {
+      _.each(G.socialNets, function(net) {
         var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, true); // sorted alphabetically
         var params = net.oAuthVersion == 1 ?
         {
@@ -67,7 +65,7 @@ define([
     showPopup: function() {
       var $popup = $('.ui-page-active #login_popup');
       if ($popup.length == 0) {
-        $(document.body).append(this.popupTemplate({nets: Lablz.socialNets}));
+        $(document.body).append(this.popupTemplate({nets: G.socialNets}));
         $popup = $('#login_popup');
       }
       $popup.trigger('create');

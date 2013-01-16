@@ -2,9 +2,8 @@ define([
   'globals',
   'cache!../templates.jsp',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore' 
-], function(G, HTML, $, __jqm__, _) {
+], function(G, HTML, $, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -23,11 +22,11 @@ define([
       "phone": "telPT",
       "mobilePhone": "telPT",
       "Url": "UrlPT",
-      "Duration": "complexDatePT",
+      "system/primitiveTypes/Duration": "durationPT",
       "date": "datePT",
       "dateTime": "datePT",
       "resource": "resourcePT",
-      "Money": "moneyPT",
+      "model/company/Money": "moneyPT",
       "ComplexDate": "complexDatePT",
       "Image": "imagePT"
     },

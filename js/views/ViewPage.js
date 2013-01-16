@@ -12,12 +12,10 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
-  'cache!views/EditButton',  
   'cache!views/ResourceView',
   'cache!views/ResourceImageView',
-  'cache!views/ControlPanel',
-  'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditButton, ResourceView, ResourceImageView, ControlPanel, __jqm__) {
+  'cache!views/ControlPanel'
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,
@@ -97,8 +95,6 @@ define([
       this.cp.render();
       if (G.currentUser.guest) {
         this.$('#edit').hide();
-//        this.editBtn = new EditButton({model: res});
-//        this.$('div[data-role="footer"]').append(this.editBtn.render().el);
       }
       
       if (!this.$el.parentNode) 

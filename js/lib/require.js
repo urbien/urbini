@@ -712,6 +712,7 @@ var requirejs, require, define;
 
         Module.prototype = {
             init: function (depMaps, factory, errback, options) {
+//                console.log("DEPS: " + depMaps.join(','));
                 options = options || {};
 
                 //Do not do more inits if already done. Can happen if there

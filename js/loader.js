@@ -622,7 +622,8 @@ define('globals', function() {
           }
           else if (hasLocalStorage) { // in build context, this will be false, too
             try {
-              cached = localStorage.getItem(url);
+              G.log(cache.TAG, 'cache', "loading from localStorage: " + url);
+              cached = G.localStorage.get(url);
               cached = cached && JSON.parse(cached);
             } catch (err) {
               G.log(cache.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
@@ -702,6 +703,12 @@ define('globals', function() {
   })();
   
   G.localStorage = {
+    get: function(url) {
+//      G.startedTask('localStorage GET: ' + url);
+      var item = localStorage.getItem(url);
+//      G.finishedTask('localStorage GET: ' + url);
+      return item;
+    },
     put: function(key, value, force) {
       if (!G.hasLocalStorage)
         return false;
@@ -1056,7 +1063,7 @@ define('globals', function() {
           break;
         }
         
-        var saved = localStorage.getItem(url);
+        var saved = G.localStorage.get(url);
         if (saved) {
           try {
             saved = JSON.parse(saved);
@@ -1212,6 +1219,30 @@ define('globals', function() {
         console.log("error: " + JSON.stringify(event));
       }
     }
+//    ,
+//    loadModule: function(type, name, caller, args) {
+//      var self = this;
+//      var path = '';
+//      switch (type) {
+//      case 'view':
+//        path = 'views/';
+//        break;
+//      case 'resource':
+//        path = 'resource/';
+//        break;
+//      case 'lib':
+//        path = 'lib/';
+//        break;
+//      }
+//      
+//      if (typeof (eval(name)) === 'undefined') {
+//        require(['cache!' + path + name], function(v) {
+//          eval(name + '=v;');
+//          caller.apply(self, args);
+//        });
+//      }
+//    }
+//
 //    ,
 //    flattenObject: function(ob) {
 //      var toReturn = {};

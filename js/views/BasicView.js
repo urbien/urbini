@@ -1,13 +1,8 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!jqueryMobile',
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!templates',
-  'cache!events', 
-  'cache!utils'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, U) {
+  'cache!backbone',
+  'cache!templates'
+], function(G, Backbone, Templates) {
   return Backbone.View.extend({
     initialize: function(options) {
       var res = this.data = this.model;
