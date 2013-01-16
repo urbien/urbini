@@ -221,17 +221,22 @@
 
 <script type="text/template" id="loginPopupTemplate">
   <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
-    <h4>Login through Social Networks</h4>
+    <h4>Login through Social Network</h4>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
 
-    <a data-role="button" href="{{= net.url }}" data-icon="
+    <a data-role="button" href="{{= net.url }}"> 
+        <span class="big_symbol 
         {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
         {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
         {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
         {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
         {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-       "> {{= net.socialNet }}
+        "/ >
+       </span>
+       <span>
+       {{= net.socialNet }}
+        </span>
     </a>
 
     {{ }); }}
