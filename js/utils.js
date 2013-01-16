@@ -1178,6 +1178,18 @@ define([
       p = res.displayName;
       return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
     },
+    // helps to fit n RL
+    fitToFrame : function(frmWidth, frmHeight, srcRation) {
+      var frmRatio = frmWidth / frmHeight;
+      var w, h, x = 0, y = 0;
+      if (srcRation > frmRatio) { // long
+        h = 80; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
+      } 
+      else {
+        w = 90; h = Math.floor(90 / srcRation); y = Math.floor((h - frmHeight) / 2);
+      }
+      return {x: x, y: y, w: w, h: h};
+    },
     
     slice: slice
   };

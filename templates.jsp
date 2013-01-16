@@ -136,7 +136,11 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+    <img style="
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
     {{= viewCols }}
   </a>
   {{ if (typeof distance != 'undefined') { }}
@@ -234,9 +238,7 @@
         {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
         "/ >
        </span>
-       <span>
        {{= net.socialNet }}
-        </span>
     </a>
 
     {{ }); }}
