@@ -38,7 +38,7 @@ define([
       var prop = this.vocModel.properties[shortName];
       var params = {};
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
+      this.router.navigate('make/{0}?{1}&-makeId={2}'.format(encodeURIComponent(prop.range), $.param(params), G.nextId()), {trigger: true, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {
