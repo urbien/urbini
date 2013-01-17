@@ -71,7 +71,7 @@ define([
       });      
     },
     navigate: function(fragment, options) {
-      this.forceRefresh = options.trigger;
+      this.forceRefresh = options.forceRefresh;
       this.removeFromView = options.removeFromView;
       this.previousView = this.currentView;
       this.previousViewsCache = this.viewsCache;
@@ -160,7 +160,7 @@ define([
       }
       
       var page = this.page = this.page || 1;
-      var force = this.forceRefresh;
+      var forceFetch = this.forceRefresh;
       
       if (!this.isModelLoaded(typeUri, 'list', arguments))
         return;
@@ -180,7 +180,7 @@ define([
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
 //        c.fetch({page: page});
-        setTimeout(function() {c.fetch({page: page})}, 100);
+        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }      
       
@@ -247,7 +247,8 @@ define([
         return;
       
       var params = U.getHashParams();
-      var makeId = params.makeId;
+      var makeId = params['-makeId'];
+      makeId = makeId ? parseInt(makeId) : G.nextId();
       var backlinkModel = this.Models[params.on];
       var mPage = this.MkResourceViews[makeId];
       if (mPage && !mPage.model.get('_uri')) {
@@ -331,6 +332,7 @@ define([
       if (res && !res.loaded)
         res = null;
       
+      var forceFetch = this.forceRefresh;
       var self = this;
       var collection;
       if (!res) {
@@ -352,7 +354,9 @@ define([
 //        res.fetch({
 //          success: function() {Voc.fetchModelsForLinkedResources(res)}
 //        });
-        setTimeout(res.fetch, 100);
+        setTimeout(function() {
+          res.fetch({forceFetch: forceFetch});
+        }, 100);
         
         return this;
       }
@@ -380,7 +384,7 @@ define([
   //      self.loadExtras(oParams);
       }
       
-      res.fetch({sync:true, success: success});
+      res.fetch({sync:true, success: success, forceFetch: forceFetch});
       return true;
     },
     

@@ -44,6 +44,9 @@ define([
 
       var props = this.vocModel.properties;
       var canceled = (props.cancelled || props.canceled).shortName;
+      if (!canceled)
+        return;
+      
       var data = {};
       data[canceled] = true;
       var res = this.resource;

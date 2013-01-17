@@ -23,12 +23,19 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
+      this.on('change', this.onchange);
       this.vocModel = this.constructor;
+    },
+    onchange: function(e) {
+      if (this.lastFetchOrigin !== 'server')
+        return;
+      
+      Events.trigger('newResources', this);
     },
     remove: function() {
       this.collection && this.collection.remove(this);

@@ -137,10 +137,12 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
-    <img style="
-        width:{{= width }}px; height:{{= height }}px;
-        left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+    <img style="{{=
+    		            (_.isUndefined(width) && 'width:' + width + 'px;') +
+                    (_.isUndefined(height) && 'height:' + height + 'px;') + 
+                    (_.isUndefined(left) && 'left:-' + left + 'px;') + 
+                    (_.isUndefined(top) && 'top:-' + top + 'px;') + 
+                    (_.isUndefined(top) && _.isUndefined(right) && _.isUndefined(bottom) && _.isUndefined(left) && 'clip:rect(' + top + 'px, ' + right + 'px, ' + bottom + 'px, ' + left + 'px);" }}
       src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
     {{= viewCols }}
   </a>
@@ -209,6 +211,12 @@
 <script type="text/template" id="backButtonTemplate">
   <li id="back">
     <a target="#" data-icon="chevron-left" class="back">Back</a>
+  </li>  
+</script>
+
+<script type="text/template" id="addButtonTemplate">
+  <li id="addBtn">
+    <a target="#" data-icon="plus">Create</a>
   </li>  
 </script>
 
@@ -395,7 +403,7 @@
     <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
-    <div name="errors"></div>
+    <div name="errors" style="float:left"></div>
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>

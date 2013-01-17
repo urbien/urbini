@@ -29,8 +29,9 @@ define([
       this.backlinkModel = options.backlinkModel;
       
       var params = U.getQueryParams();
-      var initial = {};
-      initial[params.backLink] = params.on;      
+      var initial = U.getQueryParams(params, this.vocModel) || {};
+      if (params.backLink && params.on)
+        initial[params.backLink] = params.on;      
       this.resource.set(initial, {silent: true});
       
       this.originalResource = this.resource.toJSON();
@@ -79,17 +80,21 @@ define([
       this.originalResource = this.resource.toJSON();
     },
     fieldError: function(resource, errors) {
+      if (arguments.length === 1)
+        errors = resource;
+      
       var badInputs = [];
       var errDiv = this.$form.find('div[name="errors"]');
       errDiv.empty();
       for (name in errors) {
+        var msg = errors[name];
         var madeError = false;
         var input = this.$form.find('input[name="{0}"]'.format(name));
+        var id;
         if (input.length) {        
           badInputs.push(input);
           var id = input[0].id;
           var err = this.$form.find('label.error[for="{0}"]'.format(id));
-          var msg = errors[name];
           if (err.length) {
             err[0].innerText = msg;
             madeError = true;
@@ -99,12 +104,13 @@ define([
         if (!madeError) {
           var label = document.createElement('label');
           label.innerHTML = msg;
-          label.setAttribute('for', id);
+          if (id)
+            label.setAttribute('for', id);
           label.setAttribute('class', 'error');
           if (input.length)
             input[0].parentNode.insertBefore(label, input.nextSibling);
           else
-            errDiv.appendChild(label);
+            errDiv[0].appendChild(label);
         }
       }
       
@@ -126,17 +132,17 @@ define([
         case 'LIST':
           if (redirectTo) {
             var dotIdx = redirectTo.indexOf('.');
-            if (doxIdx != -1) {
-              var pName = redirectTo.slice(0, dotIx);
+            if (dotIdx != -1) {
+              var pName = redirectTo.slice(0, dotIdx);
               var prop = vocModel.properties[pName];
               var range = U.getLongUri(prop.range);
               range = range && Voc.typeToModel[range];
               if (range) {
-                params[pName] = res.get(pName);
+                redirectParams[pName] = res.get(pName).value;
                 var bl = redirectTo.slice(dotIdx + 1);
                 var blProp = range.properties[bl];
                 if (blProp)
-                  redirectPath = blProp.type;
+                  redirectPath = blProp.range;
                 else
                   G.log(self.TAG, 'error', 'couldn\'t get model for range', prop.range);
               }
@@ -155,7 +161,7 @@ define([
         case 'PROPPATCH':
           redirectPath = redirectAction === 'PROPFIND' ? 'view/' : 'edit/';
           if (!redirectTo || redirectTo === '-$this') {
-            redirectPath = res.get('_uri');
+            redirectPath = encodeURIComponent(res.get('_uri'));
           }
           else {
             var prop = vocModel.properties[redirectTo];
@@ -163,15 +169,18 @@ define([
               redirectPath = encodeURIComponent(res.get('_uri'));
 //              redirectPath = 'make/'; //TODO: make this work for uploading images
             }
-            else
-              redirectPath = encodeURIComponent(res.get(redirectTo));
+            else {
+              var target = res.get(redirectTo);
+              target = target.value || target;
+              redirectPath = encodeURIComponent(target);
+            }
           }
           
           redirectRoute = 'view/';
           break;
         default:
           G.log(self.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
-          redirect = vocModel.type;
+          redirectPath = encodeURIComponent(vocModel.type);
           break;
       }
       
@@ -179,17 +188,22 @@ define([
       if (redirectMsg)
         redirectParams['-info='] = redirectMsg;
       
-      return redirectRoute + encodeURIComponent(redirectPath) + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
+      return redirectRoute + redirectPath + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
     },
     submit: function(e) {
       Events.stopEvent(e);
+      var res = this.resource; 
+      if (res.getUri()) {
+        this.router.navigate(this.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        return;
+      }
+      
       var inputs = this.$form.find('input');;
       inputs.attr('disabled', true);
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
           form = this.$form, 
-          res = this.resource, 
           vocModel = this.vocModel,
           baseParams = {'$returnMade': 'y'};
       

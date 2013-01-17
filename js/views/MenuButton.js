@@ -21,7 +21,7 @@ define([
       Events.stopEvent(e);
 //      Events.trigger('back');
 //      window.history.back();
-      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+      this.router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
       return this;
     },
     render: function(options) {

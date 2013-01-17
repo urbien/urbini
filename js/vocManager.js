@@ -336,8 +336,12 @@ define([
       var sn = m.shortName;
       if (Voc.shortNameToModel[sn])
         return;
-      
+
       var type = m.type = U.getTypeUri(m.type);
+      if (_.contains(G.classUsage, type)) {
+        G.usedModels[type] = true;
+      }
+        
       if (m.enumeration) {
         Voc.shortNameToEnum[sn] = m;
         Voc.typeToEnum[type] = m;
@@ -346,6 +350,7 @@ define([
       else if (m.alwaysInlined) {
         Voc.shortNameToInline[sn] = m;
         Voc.typeToInline[type] = m;
+        return;
       }
       else {
         Voc.shortNameToModel[sn] = m;

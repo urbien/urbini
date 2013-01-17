@@ -485,6 +485,26 @@ if (typeof JSON !== 'object') {
     }
 }());
 
+requirejs.exec = function(text) {
+//  var script = document.createElement("script");
+//  var id = "script" + (new Date).getTime();
+//  var root = document.documentElement;
+//  script.type = "text/javascript";
+//  try {
+//    script.appendChild( document.createTextNode( "window." + id + "=1;" ) );
+//  } catch(e){}
+//  root.insertBefore( script, root.firstChild );
+//  // Make sure that the execution of code works by injecting a script
+//  // tag with appendChild/createTextNode
+//  // (IE doesn't support this, fails, and uses .text instead)
+//  if ( window[ id ] ) {
+//    delete window[ id ];
+//    return true;
+//  }
+//  return false;
+    return window.eval(text);
+}
+                    
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
@@ -753,6 +773,7 @@ define('globals', function() {
   G.localStorage.resetAsync = G.localStorage.reset.async(100);
     
   var moreG = {
+    usedModels: {},
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
     sqlUrl: G.serverName + '/' + G.sqlUri,
@@ -1320,44 +1341,26 @@ define('globals', function() {
     }
   });
 
-//   G.baseBundle = {
-//     pre: {
-//     // Javascript
-//       js: ['lib/jquery', 'jqm-config', 'lib/jquery.mobile', 'lib/underscore', 'lib/backbone', 'lib/IndexedDBShim', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
-//        'views/HomePage', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
-//        /*'views/ResourceMasonryItemView',*/ 'views/ResourceListItemView', 'views/ResourceListView', 'views/ListPage', 'views/ViewPage', 'vocManager', 'resourceManager', 'router', 'app'],
-//       // CSS
-//       css: ['../lib/jquery.mobile.css', '../lib/jquery.mobile.theme.css', '../lib/jquery.mobile.structure.css', '../lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
-//       html: ['../templates.jsp']
-//     },
-//     post: {
-//       // Javascript
-//       js: ['views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/MenuPage', 'views/MapView', 'leaflet', 'leafletMarkerCluster', 'maps'],
-//       // CSS
-//       css: ['../styles/leaflet.css', '../styles/MarkerCluster.Default.css'] //$.browser.msie ? '../styles/leaflet/MarkerCluster.Default.ie.css' : '../styles/leaflet/MarkerCluster.Default.css']
-//     }
-//   };
-   
-   var viewBundle = [
-     'cache!views/Header', 
-     'cache!views/BackButton', 
-     'cache!views/LoginButtons', 
-     'cache!views/AroundMeButton', 
-     'cache!views/ResourceView', 
-     'cache!views/ResourceImageView', 
-     'cache!views/ViewPage' 
-   ];
-      
-   var listBundle = [
-     'cache!views/ResourceListItemView', 
-     'cache!views/ResourceListView', 
-     'cache!views/Header', 
-     'cache!views/BackButton', 
-     'cache!views/LoginButtons', 
-     'cache!views/AroundMeButton', 
-     'cache!views/MapItButton', 
-     'cache!views/ListPage' 
-   ];
+//   var viewBundle = [
+//     'cache!views/Header', 
+//     'cache!views/BackButton', 
+//     'cache!views/LoginButtons', 
+//     'cache!views/AroundMeButton', 
+//     'cache!views/ResourceView', 
+//     'cache!views/ResourceImageView', 
+//     'cache!views/ViewPage' 
+//   ];
+//      
+//   var listBundle = [
+//     'cache!views/ResourceListItemView', 
+//     'cache!views/ResourceListView', 
+//     'cache!views/Header', 
+//     'cache!views/BackButton', 
+//     'cache!views/LoginButtons', 
+//     'cache!views/AroundMeButton', 
+//     'cache!views/MapItButton', 
+//     'cache!views/ListPage' 
+//   ];
 
    return Lablz;
 });
