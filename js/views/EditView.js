@@ -130,7 +130,7 @@ define([
       var redirectPath = '';
       switch (redirectAction) {
         case 'LIST':
-          if (redirectTo) {
+          if (redirectTo) { 
             var dotIdx = redirectTo.indexOf('.');
             if (dotIdx != -1) {
               var pName = redirectTo.slice(0, dotIdx);
