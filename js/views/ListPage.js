@@ -65,7 +65,8 @@ define([
       this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
-      this.router.navigate(G.homePage, {trigger: true, replace: false});
+      var here = window.location.href;
+      window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
     getNextPage: function() {
@@ -89,9 +90,27 @@ define([
       this.$el.html(this.template(rl.toJSON()));
       
       var isGeo = (rl.isA("Locatable") || rl.isA("Shape")) && _.filter(rl.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
+      var vocModel = this.vocModel;
+      var hash = window.location.hash;
+      var idx;
+      var showAddButton;
+      if (hash  &&  (idx = hash.indexOf('?')) != -1) {
+        var s = hash.substring(idx + 1).split('&');
+        if (s && s.length > 0) {
+          for (var i=0; i<s.length; i++) {
+            var p = s[i].split('=');
+            var prop = vocModel.properties[p[0]];
+            if (prop  &&  prop.containerMember  &&  U.isPropVisible(vocModel, prop)) {
+              showAddButton = true;
+            }
+          }
+        }
+      }
+        
       this.buttons = {
         left: [BackButton], // , LoginButtons
-        right: isGeo ? [MapItButton, AroundMeButton, MenuButton, AddButton] : [MenuButton, AddButton],
+        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
+                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         log: [LoginButtons]    
       };
       
@@ -101,7 +120,6 @@ define([
         el: $('#headerDiv', this.el)
       }).render();
   
-      var vocModel = this.vocModel;
       var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
 

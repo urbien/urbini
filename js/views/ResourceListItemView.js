@@ -102,7 +102,7 @@ define([
       var params = U.getQueryParams(href);
       var recipeShoppingList = new Voc.shortNameToModel.RecipeShoppingList();
       var props = {};
-      var shoppingList = props[params.backLink] = U.getLongUri(params.on);
+      var shoppingList = props[params.backLink] = U.getLongUri(decodeURIComponent(params.on));
       var recipe = props.recipe = U.getLongUri(this.resource.get('recipe').value);
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
@@ -142,13 +142,9 @@ define([
       }
       var grid = U.getGridCols(m);
       var viewCols = '';
-          
+      var firstProp = true;           
       if (grid) {
         for (var row in grid) {
-          if (i == 0)
-            i++;
-          else
-            viewCols += "<br/>";
           var pName = grid[row].propertyName;
           // show groupped gridCols properties in one line
           var prop = meta[pName];
@@ -191,20 +187,28 @@ define([
                 viewCols += '<span style="font-weight:normal">' + s + '</span>';
               viewCols += '&#160;';
             }
+            firstProp = false;
             continue;
           }
-          
+
           var range = meta[pName].range;
           var s = range.indexOf('/') != -1 ? json[pName].displayName  ||  json[pName] : grid[row].value;
           var isDate = meta[pName].range == 'date'; 
+          if (!firstProp)
+            viewCols += "<br/>";
           if (!meta[pName].skipLabelInGrid) {
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-              viewCols += '<div style="display:inline"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+            viewCols += '<div style="display:inline"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
           }
-          else
-            viewCols += '<span style="font-weight:normal">' + s + '</span>';
+          else {
+            if (firstProp)
+              viewCols += '<span>' + s + '</span>';
+            else
+              viewCols += '<span style="font-weight:normal">' + s + '</span>';
+          }
+          firstProp = false;
         }
       }
       var dn = U.getDisplayName(m);
@@ -216,7 +220,7 @@ define([
       // fit image to rectangle 90px x 80px (1.125) 
       if (typeof json['originalWidth'] != 'undefined' &&
           typeof  json['originalHeight'] != 'undefined' ) {
-        var dim = U.fitToFrame(90, 80, json['originalWidth'] / json['originalHeight'])
+        var dim = U.fitToFrame(80, 80, json['originalWidth'] / json['originalHeight'])
         json['width'] = dim.w;
         json['height'] = dim.h;
         json['top'] = dim.y;

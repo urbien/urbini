@@ -11,35 +11,36 @@
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
-    <ul id="columns">
+    <!-- ul id="columns">
     </ul>
-    
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
-    </table>
+    </table-->
   </div>
   
-  <div data-role="footer" class="ui-footer ui-bar-c">
-     <a id="homeBtn" target="#" class="icon home">Home</a>
+  <div data-role="footer" class="ui-bar" data-theme="d">
+     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <!-- nextPage button removed after endless page introduction -->
-     <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
+     <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
   </div>
 </script>  
-
+ 
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content" style="margin-top: -15px;">
     <div id="resourceImage"></div><br/>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
-    <br/>
-    <br/>
+    {{ if ($('#other')) { }}
+      <br/>
+      <br/>
+    {{ } }}
     <ul data-role="listview" data-theme="c" id="cpView" class="ui-listview">
     </ul>
   </div>
 
-  <div data-role="footer">
-     <a id="homeBtn" target="#" class="icon home">Home</a>
-     <a id="edit" target="#" class="icon next ui-btn-right">Edit</a>
+  <div data-role="footer" class="ui-bar" data-theme="d">
+     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
+     <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
 </script>  
 
@@ -50,8 +51,8 @@
     </ul>
   </div>
   
-  <div data-role="footer">
-     <a id="homeBtn" target="#" class="icon home">Home</a>
+  <div data-role="footer" class="ui-bar" data-theme="d">
+     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
 </script>  
 
@@ -414,9 +415,9 @@
 </div>
 
 
-<div data-role="footer">
-  <a id="homeBtn" target="#" class="icon home">Home</a>
-</div>
+  <div data-role="footer" class="ui-bar" data-theme="d">
+     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
+  </div>
 </script>  
 
 
@@ -456,7 +457,7 @@
 
 <script type="text/template" id="resourcePET">
   <!--label for="{{= id }}" class="select">{{= name }}</label-->
-  <a target="#" name="{{= shortName }}" class="resourceProp" >{{= typeof value === 'undefined' || !value ? name : value }}</a>
+  <a target="#" name="{{= shortName }}" class="resourceProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
 
   <!--label for="{{= id }}" class="select">{{= name }}</label>
   <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp ' + classes }}">

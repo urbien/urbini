@@ -171,9 +171,10 @@ define([
       this.loadingNextPage = true;
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
+//      var requested = this.page * this.displayPerPage;
       var after = function() {
 //        var numShowing = (self.page + 1) * self.displayPerPage;
-        if (requested <= rl.models.length) {
+        if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
           self.refresh();
         }
         
@@ -181,7 +182,11 @@ define([
         self.loadingNextPage = false;
       };
       
-      var error = function() { after(); };      
+      var error = function() { after(); };
+      if (rl.models.length % this.displayPerPage > 0) {
+        this.refresh(rl);
+        return;
+      }
       if (before >= requested) {
 //        this.refresh(rl);
         after();

@@ -808,7 +808,7 @@ define([
           str = (absDayDiff == 1) ? "a day" : absDayDiff + " days"; 
         else if (absDayDiff < 365) {
           var w = Math.round( day_diff / 7 );
-          str = (w == 1) ? "a week ago" : w + " weeks ago";
+          str = (w == 1) ? "a week" : w + " weeks";
         }
         else {
           var years = Math.round( day_diff / 365 );
@@ -818,10 +818,16 @@ define([
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
         }
         
-        return pre + str + post;
+        var ret = '';
+        if (str.indexOf('In') == -1)
+          ret += pre;
+        ret += str;
+        if (str.indexOf(' ago') == -1)
+          ret += post;
+        return ret;
       }
       
 //      var years;
