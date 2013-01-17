@@ -216,7 +216,7 @@
 
 <script type="text/template" id="addButtonTemplate">
   <li id="addBtn">
-    <a target="#" data-icon="plus">Create</a>
+    <a target="#" data-icon="plus-sign">Create</a>
   </li>  
 </script>
 
