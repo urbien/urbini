@@ -20,12 +20,12 @@ define([
     changedViews: [],
     skipScrollEvent: false,
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks', 'click', 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'click', 'setMode'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.alignBricks);
-      this.$el.on('create', this.alignBricks);
+      Events.on('changePage', this.onNewItemsAppend);
+      this.$el.on('create', this.onNewItemsAppend);
       this.collection.on('reset', this.render, this);
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
@@ -168,7 +168,6 @@ define([
       var rl = this.collection;
       var before = rl.models.length;
 //      var before = this.model.offset;
-      this.loadingNextPage = true;
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
       var after = function() {
@@ -176,9 +175,10 @@ define([
         if (requested <= rl.models.length) {
           self.refresh();
         }
-        
+        // listview (not masonry) can resume to process events immediately
+        if (!self.$el.hasClass('masonry'))
+          self.skipScrollEvent = false;
         $.mobile.loading('hide');
-        self.loadingNextPage = false;
       };
       
       var error = function() { after(); };      
@@ -228,7 +228,7 @@ define([
         return;
 
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      if ($wnd.scrollTop() > 5) // initial next page retriving not by a user 
+      if ($wnd.scrollTop() > 10) // initial next page retriving not by a user 
         this.skipScrollEvent = true; 
       $.mobile.loading('show');
       var self = this;
@@ -241,11 +241,19 @@ define([
     },
 
     // masonry bricks alignment
-    alignBricks: function() {
-      // if masonry and bricks have zero dimension then impossible to align them
-      if (!this.$el.hasClass("masonry") || this.$el.width() == 0)
+    onNewItemsAppend: function() {
+      // no masonry or masonry is hidden
+      if (!this.$el.hasClass("masonry") || this.$el.width() == 0) {
+        this._resumeScrollEventProcessing();
         return;
-
+      }
+      
+      // masonry code works with DOM elements already inserted into a page
+      // small timeout insures right bricks alignment
+      var self = this;
+      setTimeout(function() { self.alignBricks(); }, 10);
+    },
+    alignBricks: function() {
       var self = this;
       var needToReload = false;
       // all bricks in masonry
