@@ -237,7 +237,8 @@ define([
       this.getNextPage();
     },
     showLoadingIndicator: function() {
-      $.mobile.loading('show');
+      // UNcomment it out after test
+      // $.mobile.loading('show');
     },
     hideLoadingIndicator: function() {
       clearTimeout(this.loadIndicatorTimerId);

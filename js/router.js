@@ -549,7 +549,9 @@ define([
 
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-
+      // hide loading indicator to prevent it on back button (?!!!!!!!!!!)
+      $.mobile.loading('hide');
+      
       // perform transition
       $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});
       Events.trigger('changePage', view);
