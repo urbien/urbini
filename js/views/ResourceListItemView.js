@@ -210,6 +210,18 @@ define([
         viewCols = '<h3>' + dn + '</h3>';
       json['viewCols'] = viewCols;
 
+      // fit image to rectangle 90px x 80px (1.125) 
+      if (typeof json['originalWidth'] != 'undefined' &&
+          typeof  json['originalHeight'] != 'undefined' ) {
+        var dim = U.fitToFrame(90, 80, json['originalWidth'] / json['originalHeight'])
+        json['width'] = dim.w;
+        json['height'] = dim.h;
+        json['top'] = dim.y;
+        json['right'] = dim.w - dim.x;
+        json['bottom'] = dim.h - dim.y;
+        json['left'] = dim.x;
+      }
+      
       this.$el.html(this.template(json));
       return this;
     }

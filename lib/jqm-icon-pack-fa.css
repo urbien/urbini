@@ -1,4 +1,9 @@
 /*
+* NOTE: this file is from 2.2.1 package extended with new symbols classes!
+* awesome font and images are from 3.0 package!
+*/
+
+/*
 	The following declaration increase the size of the "dot" which contains the icon
 	This is because some of the font awesome icons are larger than jQuery Mobile icons
 	It applies to ALL occurrences, but can be commented out or removed if necessary
@@ -381,3 +386,5 @@
 .ui-icon-paste:before                { content: "\f0ea"; }
 
 .ui-icon-user-md:before              { content: "\f200"; }
+
+.ui-icon-food:before                 {content:"\f0f5"; }
