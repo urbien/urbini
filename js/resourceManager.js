@@ -834,7 +834,11 @@ define([
   Events.on('newResources', function(toAdd) {
     RM.addItems(toAdd);
   });
-    
+
+  Events.on('canceled', function(toAdd) {
+    RM.addItems(toAdd);
+  });
+
 
 //  MB.getInstance = function() {
 //    if (RM === null) {
