@@ -57,7 +57,7 @@ define([
         success: function(json, status, xhr) {
           if (xhr.status == 200) {
             if (json.error)
-              error(json, response, options)
+              error(json, xhr, options)
             else
               res.trigger('cancel');
           }
