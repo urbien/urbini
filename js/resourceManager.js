@@ -80,11 +80,21 @@ define([
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
+        if (options.forceFetch) {
+          fetchFromServer(0);
+          return;
+        }
+        
         isUpdate = true;
         var lf = RM.getLastFetched(results, now);
         if (RM.isStale(lf, now))
           fetchFromServer(100, lf);
         
+        return;
+      }
+      
+      if (options.forceFetch) {
+        fetchFromServer(0);
         return;
       }
       
@@ -363,6 +373,15 @@ define([
         };    
      
         state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
+        if (!state.modelsChanged) {
+          for (var type in G.usedModels) {
+            if (!RM.tableExists(type)) {
+              state.modelsChanged = true;
+              break;
+            }
+          }
+        }
+        
         RM.VERSION = G.userChanged || state.modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
         if (db.version == RM.VERSION) {
           if (success)
@@ -414,7 +433,7 @@ define([
     updateStores: function(reset) {
       var db = RM.db;
       var toDel = _.union(Voc.changedModels, Voc.newModels);
-      var models = _.union(toDel, _.map(G.linkedModels, function(m){return m.type}));
+      var models = _.union(toDel, _.keys(G.usedModels), _.map(G.linkedModels, function(m){return m.type}));
       if (reset)
         models = _.union(models, G.models, G.linkedModels);
 
@@ -803,7 +822,7 @@ define([
       return true;
     },
 
-    updateTables: function(success, error) {
+    restartDB: function(success, error) {
     //  MBI.checkSysInfo();
     //  MBI.loadAndUpdateModels();
       RM.dbPaused = true;
@@ -825,16 +844,17 @@ define([
   };
   
   Events.on('modelsChanged', function(options) {
-    if (RM.db)
-      RM.updateTables(options.success, options.error);
-    else
-      RM.openDB(options.success, options.error);
+    RM[RM.db ? 'restartDB' : 'openDB'](options.success, options.error);
   });
   
   Events.on('newResources', function(toAdd) {
     RM.addItems(toAdd);
   });
-    
+
+  Events.on('canceled', function(toAdd) {
+    RM.addItems(toAdd);
+  });
+
 
 //  MB.getInstance = function() {
 //    if (RM === null) {

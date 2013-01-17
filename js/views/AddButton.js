@@ -7,21 +7,23 @@ define([
   'cache!views/BasicView'
 ], function(G, _, Templates, U, Events, BasicView) {
   return BasicView.extend({
-    template: 'menuButtonTemplate',
+    template: 'addButtonTemplate',
     events: {
-      'click #menuBtn': 'menu'
+      'click #addBtn': 'add'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'menu');
+      _.bindAll(this, 'render', 'add');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));
       return this;
     },
-    menu: function(e) {
+    add: function(e) {
       Events.stopEvent(e);
 //      Events.trigger('back');
 //      window.history.back();
-      this.router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+      var colParams = U.getQueryParams(this.collection);
+      colParams['-makeId'] = G.nextId();
+      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + (_.size(colParams) ? '?' + $.param(colParams) : ''), {trigger: true, replace: false});
       return this;
     },
     render: function(options) {

@@ -59,11 +59,11 @@ define('app', [
       Voc.loadStoredModels();
     //  setTimeout(function() {RM.loadStoredModels({all: true})}, 100);
       if (!Voc.changedModels.length && !Voc.newModels.length) {
-        RM.updateTables(App.startApp, error);
+        RM.restartDB(App.startApp, error);
         return;
       }
     
-      Voc.fetchModels(null, {success: App.startApp, error: error, sync: true});
+      Voc.fetchModels(null, {success: function() {RM.restartDB(App.startApp, error)}, error: error, sync: true});
     },
     
     startApp: function() {

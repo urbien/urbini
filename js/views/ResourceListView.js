@@ -54,6 +54,7 @@ define([
       var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
+      var canceled = _.contains(_.values(vocModel.interfaces), 'Cancellable') && (meta.cancelled || meta.canceled).shortName;
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
@@ -104,6 +105,9 @@ define([
       
       for (; i < num; i++) {
         var res = resources[i];
+        if (canceled && res.get(canceled))
+          continue;
+        
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;

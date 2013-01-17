@@ -10,12 +10,13 @@ define([
   'cache!views/BasicView',
   'cache!views/ResourceListView', 
   'cache!views/Header', 
+  'cache!views/AddButton', 
   'cache!views/BackButton', 
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
   'cache!views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -90,7 +91,7 @@ define([
       var isGeo = (rl.isA("Locatable") || rl.isA("Shape")) && _.filter(rl.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       this.buttons = {
         left: [BackButton], // , LoginButtons
-        right: isGeo ? [MapItButton, AroundMeButton, MenuButton] : [MenuButton],
+        right: isGeo ? [MapItButton, AroundMeButton, MenuButton, AddButton] : [MenuButton, AddButton],
         log: [LoginButtons]    
       };
       

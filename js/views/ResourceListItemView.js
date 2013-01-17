@@ -13,8 +13,9 @@ define([
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'shoppingListHack'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'recipeShoppingListHack', 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      this.resource.bind('remove', this.remove);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
       if (this.template) 
@@ -32,9 +33,55 @@ define([
     },
     events: {
       'click': 'click',
-      'click .recipeShoppingList': 'shoppingListHack'
+      'click .recipeShoppingList': 'recipeShoppingListHack',
+      'click .cancelItem': 'cancelItem'
     },
-    shoppingListHack: function(e) {
+    cancelItem: function(e) {
+      Events.stopEvent(e);
+      var error = function(json, xhr, options) {
+        G.log(self.TAG, 'error', 'couldn\'t create shopping list items', json);
+      }
+
+      var props = this.vocModel.properties;
+      var canceled = (props.cancelled || props.canceled).shortName;
+      if (!canceled)
+        return;
+      
+      var data = {};
+      data[canceled] = true;
+      var res = this.resource;
+      $.ajax({
+        url: G.apiUrl + 'e/' + encodeURIComponent(res.getUri()),
+        method: 'POST',
+        data: data,
+        success: function(json, status, xhr) {
+          if (xhr.status == 200) {
+            if (json.error)
+              error(json, xhr)
+            else
+              res.trigger('cancel');
+          }
+        },
+        error: error
+      });
+      
+//      this.resource.save({canceled: true}, {patch: true,
+//        success: function(model, response, options) {
+//          if (response.status == 200) {
+//            var json = JSON.parse(response.responseText);
+//            if (json.error)
+//              error(mode, response, options)
+//            else
+//              this.resource.collection.remove(this.resource);
+//          }
+//        },
+//        error: function(model, xhr, options) {
+//          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
+//        }
+//      });
+      
+    },
+    recipeShoppingListHack: function(e) {
       Events.stopEvent(e);
       var self = this;
       var args = arguments;
@@ -42,7 +89,7 @@ define([
         Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
         var allGood = Voc.fetchModels(null, { 
            success: function() {
-             self.shoppingListHack.apply(self, args);
+             self.recipeShoppingListHack.apply(self, args);
            },
            sync: true,
         });

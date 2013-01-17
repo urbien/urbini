@@ -3,8 +3,9 @@ define([
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils',
-  'cache!error'
-], function(G, _, Backbone, U, Error) {
+  'cache!error',
+  'cache!events'
+], function(G, _, Backbone, U, Error, Events) {
   var isNully = function(val) {
     return _.isUndefined(val) || val === null || val === '';
   };
@@ -22,11 +23,23 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
+      this.on('cancel', this.remove);
+      this.on('change', this.onchange);
       this.vocModel = this.constructor;
+    },
+    onchange: function(e) {
+      if (this.lastFetchOrigin !== 'server')
+        return;
+      
+      Events.trigger('newResources', this);
+    },
+    remove: function() {
+      this.collection && this.collection.remove(this);
+      Events.trigger('canceled', this);
     },
     url: function() {
       var uri = this.get('_uri');
@@ -36,10 +49,13 @@ define([
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
-      return G.apiUrl + 'm/' + encodeURIComponent(type) + "?$returnMade=y&" + U.getQueryString(attrs || this.attributes);
+      return G.apiUrl + (this.isNew() ? 'm/' : 'e/') + encodeURIComponent(type) + "?$returnMade=y&" + U.getQueryString(attrs || this.attributes);
     },
     getKey: function() {
       return U.getLongUri(this.get('_uri'));
+    },
+    getUri: function() {
+      return this.get('_uri');
     },
     parse: function (resp) {
       if (this.loaded && this.lastFetchOrigin == 'db')
@@ -155,7 +171,7 @@ define([
     save: function(attrs, options) {
 //      var options = arguments[arguments.length - 1];
       options = options || {};
-      options.url = this.saveUrl(attrs);
+      _.extend(options, {url: this.saveUrl(attrs), emulateHTTP: true});
       arguments[arguments.length - 1] = options;
       return Backbone.Model.prototype.save.call(this, attrs, options);      
     }

@@ -36,7 +36,8 @@ define([
       Events.stopEvent(e);
       var shortName = t.dataset.shortname;
       var prop = this.vocModel.properties[shortName];
-      var params = {backLinkProp: prop.shortName, backLink: prop.backLink, on: this.resource.get('_uri'), makeId: G.nextId()};
+      var params = {};
+      params[prop.backLink] = this.resource.getUri();
       this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
@@ -146,7 +147,7 @@ define([
       
       groupNameDisplayed = false;
       var tmpl_data;
-      for (var p in json) {
+      for (var p in meta) {
         if (!/^[a-zA-Z]/.test(p))
           continue;
         
