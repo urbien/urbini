@@ -19,13 +19,14 @@ define([
     page: null,
     changedViews: [],
     skipScrollEvent: false,
+    loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'alignBricks', 'click', 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'click', 'setMode'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.alignBricks);
-      this.$el.on('create', this.alignBricks);
+      Events.on('changePage', this.onNewItemsAppend);
+      this.$el.on('create', this.onNewItemsAppend);
       this.collection.on('reset', this.render, this);
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
@@ -168,7 +169,6 @@ define([
       var rl = this.collection;
       var before = rl.models.length;
 //      var before = this.model.offset;
-      this.loadingNextPage = true;
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
 //      var requested = this.page * this.displayPerPage;
@@ -177,9 +177,10 @@ define([
         if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
           self.refresh();
         }
-        
-        $.mobile.loading('hide');
-        self.loadingNextPage = false;
+        // listview (not masonry) can resume to process events immediately
+        if (!self.hasMasonry())
+          self.skipScrollEvent = false;
+        self.hideLoadingIndicator();
       };
       
       var error = function() { after(); };
@@ -233,24 +234,40 @@ define([
         return;
 
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      if ($wnd.scrollTop() > 5) // initial next page retriving not by a user 
+      // if scrollTop is near to zero then it is "initial" next page retriving not by a user
+      if ($wnd.scrollTop() > 20) {  
         this.skipScrollEvent = true; 
-      $.mobile.loading('show');
+        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+      }
       var self = this;
-      setTimeout(function() { self.getNextPage(); }, 10);
+      this.getNextPage();
     },
-    
-    _resumeScrollEventProcessing: function () {
-      this.skipScrollEvent = false;
+    showLoadingIndicator: function() {
+      $.mobile.loading('show');
+    },
+    hideLoadingIndicator: function() {
+      clearTimeout(this.loadIndicatorTimerId);
       $.mobile.loading('hide');
+    },
+    resumeScrollEventProcessing: function () {
+      this.skipScrollEvent = false;
+      this.hideLoadingIndicator();
     },
 
     // masonry bricks alignment
-    alignBricks: function() {
-      // if masonry and bricks have zero dimension then impossible to align them
-      if (!this.$el.hasClass("masonry") || this.$el.width() == 0)
+    onNewItemsAppend: function() {
+      // no masonry or masonry is hidden
+      if (!this.hasMasonry() || this.$el.width() == 0) {
+        this.resumeScrollEventProcessing();
         return;
-
+      }
+      
+      // masonry code works with DOM elements already inserted into a page
+      // small timeout insures right bricks alignment
+      var self = this;
+      setTimeout(function() { self.alignBricks(); }, 10);
+    },
+    alignBricks: function() {
       var self = this;
       var needToReload = false;
       // all bricks in masonry
@@ -278,10 +295,10 @@ define([
       if (needToReload) {
         if (hasImgSize) {
           this.$el.masonry( 'reload' );
-          this._resumeScrollEventProcessing();
+          this.resumeScrollEventProcessing();
         }
         else  
-          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self._resumeScrollEventProcessing(); });
+          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self.resumeScrollEventProcessing(); });
         return
       }
       
@@ -289,10 +306,10 @@ define([
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
         if (hasImgSize) {
           this.$el.masonry();
-          this._resumeScrollEventProcessing();
+          this.resumeScrollEventProcessing();
         }
         else  
-          this.$el.imagesLoaded( function(){ self.$el.masonry(); self._resumeScrollEventProcessing(); });
+          this.$el.imagesLoaded( function(){ self.$el.masonry(); self.resumeScrollEventProcessing(); });
         return;
       }
       
@@ -304,10 +321,14 @@ define([
       // filter unaligned "bricks" which do not have calculated, absolute position 
       if (hasImgSize) {
         this.$el.masonry('appended', $newBricks);
-        this._resumeScrollEventProcessing();
+        this.resumeScrollEventProcessing();
       }
       else  
-        this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self._resumeScrollEventProcessing(); });
+        this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self.resumeScrollEventProcessing(); });
+    },
+    // checks if built masonry (or listview) in the view
+    hasMasonry: function() {
+      return this.$el.hasClass('masonry');
     }
   }, {
     displayName: 'EditView'

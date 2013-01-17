@@ -1743,7 +1743,7 @@ table.printFB {
 .login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
-.userLogin { width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 15px;}
+.userLogin { width: auto !important; max-width: 400px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 15px;}
 .userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
