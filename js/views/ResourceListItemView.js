@@ -38,8 +38,8 @@ define([
     },
     cancelItem: function(e) {
       Events.stopEvent(e);
-      var error = function(model, xhr, options) {
-        G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
+      var error = function(json, xhr, options) {
+        G.log(self.TAG, 'error', 'couldn\'t create shopping list items', json);
       }
 
       var props = this.vocModel.properties;
@@ -57,7 +57,7 @@ define([
         success: function(json, status, xhr) {
           if (xhr.status == 200) {
             if (json.error)
-              error(mode, response, options)
+              error(json, response, options)
             else
               res.trigger('cancel');
           }
