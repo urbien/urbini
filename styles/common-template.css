@@ -752,7 +752,7 @@ tr.ftSearch td { padding: 0px; }
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
 }
-
+.ftSearch .action_btn { width: 34px; }
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
