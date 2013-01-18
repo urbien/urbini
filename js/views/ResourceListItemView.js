@@ -217,7 +217,8 @@ define([
         viewCols = '<h3>' + dn + '</h3>';
       json['viewCols'] = viewCols;
 
-      // fit image to rectangle 90px x 80px (1.125) 
+      json['width'] = json['height'] = json['top'] = json['right'] = json['bottom'] = json['left'] = ""; 
+      // fit image to frame
       if (typeof json['originalWidth'] != 'undefined' &&
           typeof  json['originalHeight'] != 'undefined' ) {
         var dim = U.fitToFrame(80, 80, json['originalWidth'] / json['originalHeight'])

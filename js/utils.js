@@ -1214,14 +1214,15 @@ define([
       return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
     },
     // helps to fit images in listview (RL)
+    // note: margins in DOM should be: -left and -top 
     fitToFrame : function(frmWidth, frmHeight, srcRation) {
       var frmRatio = frmWidth / frmHeight;
       var w, h, x = 0, y = 0;
       if (srcRation > frmRatio) { // long
-        h = 80; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
+        h = frmHeight; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
       } 
       else {
-        w = 90; h = Math.floor(90 / srcRation); y = Math.floor((h - frmHeight) / 2);
+        w = frmWidth; h = Math.floor(w / srcRation); y = Math.floor((h - frmHeight) / 2);
       }
       return {x: x, y: y, w: w, h: h};
     },
