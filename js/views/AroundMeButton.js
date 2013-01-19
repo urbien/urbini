@@ -3,8 +3,9 @@ define([
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
-  'cache!views/ToggleButton' 
-], function(G, _, Backbone, Templates, ToggleButton) {
+  'cache!views/ToggleButton', 
+  'cache!views/BasicView' 
+], function(G, _, Backbone, Templates, ToggleButton, BasicView) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',
@@ -12,7 +13,8 @@ define([
       'click #aroundMe': 'toggleAroundMe'
     },
     initialize: function(options) {      
-      _.bindAll(this, 'render', 'toggleAroundMe');
+      _.bindAll(this, 'render', 'toggleAroundMe', 'isActive');
+      BasicView.prototype.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));        
       return this;
     },

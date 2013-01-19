@@ -54,8 +54,8 @@ define([
           console.log(JSON.stringify(err));
         };
         
-        if (!options.url)
-          debugger;
+//        if (!options.url)
+//          debugger;
         
         xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
       };
@@ -451,11 +451,11 @@ define([
         return _.contains(G.classUsage, m);
       });
 
-      if (_.uniq(toDel).length != toDel.length)
-        debugger;
-      if (_.uniq(models).length != models.length)
-        debugger;
-
+//      if (_.uniq(toDel).length != toDel.length)
+//        debugger;
+//      if (_.uniq(models).length != models.length)
+//        debugger;
+//
 //      toDel = _.map(toDel, U.getClassName);
 //      models = _.map(models, U.getClassName);
 //      
@@ -489,7 +489,7 @@ define([
               G.log(RM.TAG, 'db', 'deleted object store: ' + type);
               deleted.push(type);
             } catch (err) {
-              debugger;
+//              debugger;
               G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
               return;
             }
@@ -525,7 +525,7 @@ define([
           
           created.push(type);
         } catch (err) {
-          debugger;
+//          debugger;
           G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
           return;
         }
@@ -565,7 +565,7 @@ define([
       try {
         trans = db.transaction([classUri], IDBTransaction.READ_WRITE);
       } catch (err) {
-        debugger;
+//        debugger;
         G.log(RM.TAG, ['error', 'db'], 'failed to start readwrite transaction for store', classUri, err);
         return false;
       }
@@ -757,7 +757,7 @@ define([
       try {
         trans = db.transaction([type], IDBTransaction.READ_ONLY);
       } catch (err) {
-        debugger;
+//        debugger;
         G.log(RM.TAG, ['error', 'db'], 'failed to start readonly transaction for store', type, err);
         return false;
       }

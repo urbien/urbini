@@ -2,17 +2,17 @@
   // Set up Mapper appropriately for the environment.
   if (typeof define === 'function' && define.amd) {
     // AMD
-    define(['cache!jquery', 'cache!leaflet', 'cache!leafletMarkerCluster'], function($, L) {
+    define(['cache!jquery', 'cache!leaflet', 'cache!leafletMarkerCluster', 'cache!../styles/leaflet/leaflet.css', 'cache!../styles/leaflet/MarkerCluster.Default.css'], function($, L) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Mapper.
       return (root.Mapper = factory(root, $, L));
     });
   } else {
+    var callback = function() {
+      root.Mapper = factory(root, $, L);
+    }
+    
     if (!window.$) {
-      var callback = function() {
-        root.Mapper = factory(root, $, L);
-      }
-      
       var s = document.createElement('script');
       s.setAttribute('src', 'js/lib/jquery.min.js');
       s.setAttribute('type', 'text/javascript');
@@ -30,7 +30,9 @@
           callback();
         };
       }
-    }    
+    }
+    else
+      callback();
   }
 }(this, function(root, $, L) {
   var M = Mapper = function(mapDivId) {
@@ -254,7 +256,6 @@
     }
 
 // Note: not to show maximize icon in mobile mode    
-/*    
     this.addSizeButton = function(mapDiv) {
       'use strict';
       var btn = L.control({position: 'bottomleft'});
@@ -304,7 +305,6 @@
       
       btn.addTo(this.map);  
     };
-*/
     
     this.addReZoomButton = function(bounds) {
       'use strict';
@@ -897,45 +897,10 @@
         this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);
       
       mapSettings.center = pointOfInterest.geometry.coords;
-      M.adjustBounds(mapSettings.bounds, center, 'Point');
+      Mapper.adjustBounds(mapSettings.bounds, center, 'Point');
       this.map = new L.Map(this.mapDivId || 'map', mapSettings);
       gj.addTo(this.map);
-    };
-  
-    M.adjustBounds = function(b, item, type) {
-      var bbox = M.getBoundingBox(item, type);
-      b[0][0] = Math.min(b[0][0], bbox[0][0]);
-      b[0][1] = Math.min(b[0][1], bbox[0][1]);
-      b[1][0] = Math.max(b[1][0], bbox[1][0]);
-      b[1][1] = Math.max(b[1][1], bbox[1][1]);
-      return b;
-    };
-    
-    M.getBoundingBox = function(item, type) {
-      var coords = item.geometry ? item.geometry.coords : item;
-      if (!coords.length)
-        return null;
-      
-      switch (type || item.geometry.type) {
-      case 'Point':
-        return coords.concat(coords);
-      case 'Polygon':
-        var bbox = M.getBoundingBox(coords[0], 'Point');
-        for (var i = 1; i < coords.length; i++) {
-          bbox = M.adjustBounds(bbox, coords[i], 'Point');
-        }
-        
-        return bbox;
-      case 'MultiPolygon':
-      case 'Polygon':
-        var bbox = M.getBoundingBox(coords[0], 'Polygon');
-        for (var i = 1; i < coords.length; i++) {
-          bbox = M.adjustBounds(bbox, coords[i], 'Polygon');
-        }
-        
-        return bbox;
-      }
-    };
+    };  
     
     this.addLayersControlToMap = function(radioLayers, checkboxLayers, options) {
       if ((!radioLayers && !checkboxLayers) ||
@@ -1307,7 +1272,42 @@
       return r;
     };
   };
+
+  Mapper.adjustBounds = function(b, item, type) {
+    var bbox = Mapper.getBoundingBox(item, type);
+    b[0][0] = Math.min(b[0][0], bbox[0][0]);
+    b[0][1] = Math.min(b[0][1], bbox[0][1]);
+    b[1][0] = Math.max(b[1][0], bbox[1][0]);
+    b[1][1] = Math.max(b[1][1], bbox[1][1]);
+    return b;
+  };
   
+  Mapper.getBoundingBox = function(item, type) {
+    var coords = item.geometry ? item.geometry.coords : item;
+    if (!coords.length)
+      return null;
+    
+    switch (type || item.geometry.type) {
+    case 'Point':
+      return [coords, coords];
+    case 'Polygon':
+      var bbox = Mapper.getBoundingBox(coords[0], 'Point');
+      for (var i = 1; i < coords.length; i++) {
+        bbox = Mapper.adjustBounds(bbox, coords[i], 'Point');
+      }
+      
+      return bbox;
+    case 'MultiPolygon':
+    case 'Polygon':
+      var bbox = Mapper.getBoundingBox(coords[0], 'Polygon');
+      for (var i = 1; i < coords.length; i++) {
+        bbox = Mapper.adjustBounds(bbox, coords[i], 'Polygon');
+      }
+      
+      return bbox;
+    }
+  };
+
   return Mapper;
 }));
 //});

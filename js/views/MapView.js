@@ -9,11 +9,11 @@ define([
   'cache!views/BasicView'
 ], function(G, $, _, Templates, Events, U, Mapper, BasicView) {
   var MapView = BasicView.extend({
-    css: [
-      'leaflet.css', 
-      'MarkerCluster.Default.css'
-    ],
-    cssListeners: [],
+//    css: [
+//      'leaflet.css', 
+//      'MarkerCluster.Default.css'
+//    ],
+//    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap');
@@ -22,12 +22,12 @@ define([
       Events.on("changePage", this.resetMap);
       
       var self = this;
-      csses = _.map(this.css, function(c) {return 'cache!../styles/leaflet/' + c});
-      require(csses, function() {
-        self.loadedCSS = true;
-        if (self.cssListeners.length)
-          _.each(self.cssListeners, function(f) {f()});
-      });
+//      csses = _.map(this.css, function(c) {return 'cache!../styles/leaflet/' + c});
+//      require(csses, function() {
+//        self.loadedCSS = true;
+//        if (self.cssListeners.length)
+//          _.each(self.cssListeners, function(f) {f()});
+//      });
     },
     events: {
       'click': 'click'
@@ -36,10 +36,10 @@ define([
     click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this;
-      if (!this.loadedCSS) {
-        this.cssListeners.push(self.render);
-        return this;
-      }
+//      if (!this.loadedCSS) {
+//        this.cssListeners.push(self.render);
+//        return this;
+//      }
       
       var res = this.resource || this.collection;
       var vocModel = this.vocModel;
@@ -190,11 +190,11 @@ define([
         area = model.get('area');
       }
       else {
-        var lon = model.get('longitude');
-        if (!lon)
+        var lat = model.get('latitude');
+        if (!lat)
           return null;
         
-        coords = [lon, model.get('latitude')];  
+        coords = [lat, model.get('longitude')];  
       }
       
         
@@ -204,7 +204,7 @@ define([
         if (isShape)
           bbox = [[model.get('lowestLatitude'), model.get('lowestLongitude')], [model.get('highestLatitude'), model.get('highestLongitude')]];
         else
-          bbox = [[coords[1], coords[0]], [coords[1], coords[0]]];
+          bbox = [coords, coords];
         
         if (metadata.bbox) {
           var b = metadata.bbox;

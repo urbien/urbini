@@ -134,8 +134,8 @@ define([
           }
         }
         
-        if (!data)
-          debugger;
+//        if (!data)
+//          debugger;
         
         if (data.error) {
           onErr(data.error.code);
@@ -151,8 +151,8 @@ define([
         
         G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));          
         G.linkedModels = _.map(data.linkedModels, function(m) {return _.extend(m, {type: U.getTypeUri(m.type)})}); //_.union(G.linkedModels, data.linkedModels);
-        if (_.uniq(G.linkedModels).length != G.linkedModels.length)
-          debugger;
+//        if (_.uniq(G.linkedModels).length != G.linkedModels.length)
+//          debugger;
         
         if (data.classMap)
           _.extend(G.classMap, data.classMap)

@@ -3,8 +3,9 @@ define([
   'cache!backbone', 
   'cache!templates',
   'cache!events', 
-  'cache!views/ToggleButton' 
-], function(_, Backbone, Templates, Events, ToggleButton) {
+  'cache!views/ToggleButton', 
+  'cache!views/BasicView' 
+], function(_, Backbone, Templates, Events, ToggleButton, BasicView) {
   return ToggleButton.extend({
     btnId: 'mapIt',
     template: 'mapItButtonTemplate',
@@ -13,6 +14,7 @@ define([
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'mapIt');
+      BasicView.prototype.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));
       return this;
     },

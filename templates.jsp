@@ -451,7 +451,7 @@
 <script type="text/template" id="stringPET">
   <label for="{{= id }}">{{= name }}</label> 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="resourcePET">
