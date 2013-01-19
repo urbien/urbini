@@ -18,4 +18,4 @@ window.onload = function () {
     s.setAttribute('data-main', Lablz.initScript['data-main']); 
     d.getElementsByTagName('head')[0].appendChild(s);
   }, 0);
-}
+};

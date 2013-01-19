@@ -210,7 +210,6 @@ define([
             U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
         }
       }
-      
       if (!options || options.setHTML)
         this.$el.html(frag);
       var self = this;

@@ -171,9 +171,10 @@ define([
 //      var before = this.model.offset;
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;
+//      var requested = this.page * this.displayPerPage;
       var after = function() {
 //        var numShowing = (self.page + 1) * self.displayPerPage;
-        if (requested <= rl.models.length) {
+        if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
           self.refresh();
         }
         // listview (not masonry) can resume to process events immediately
@@ -182,7 +183,11 @@ define([
         self.hideLoadingIndicator();
       };
       
-      var error = function() { after(); };      
+      var error = function() { after(); };
+      if (rl.models.length % this.displayPerPage > 0) {
+        this.refresh(rl);
+        return;
+      }
       if (before >= requested) {
 //        this.refresh(rl);
         after();
@@ -227,17 +232,22 @@ define([
 
       if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * 3.5)
         return;
-
-      // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      if ($wnd.scrollTop() > 10) // initial next page retriving not by a user 
-        this.skipScrollEvent = true; 
       
       var self = this;
-      this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);
+      // order is important, because view.getNextPage() may return immediately if we have some cached rows
+      // if scrollTop is near to zero then it is "initial" next page retriving not by a user
+      if ($wnd.scrollTop() > 20) {  
+        this.skipScrollEvent = true; 
+        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+      }
       this.getNextPage();
     },
     showLoadingIndicator: function() {
       $.mobile.loading('show');
+      // in case if fetch failed to invoke a callback
+      // then hide loading indicator after 3 sec. !!!
+      var self = this;
+      setTimeout(function() { self.hideLoadingIndicator(); }, 3000);
     },
     hideLoadingIndicator: function() {
       clearTimeout(this.loadIndicatorTimerId);

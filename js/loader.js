@@ -1341,6 +1341,7 @@ define('globals', function() {
     }
   });
 
+   
 //   var viewBundle = [
 //     'cache!views/Header', 
 //     'cache!views/BackButton', 
@@ -1356,6 +1357,7 @@ define('globals', function() {
 //     'cache!views/ResourceListView', 
 //     'cache!views/Header', 
 //     'cache!views/BackButton', 
+//     'cache!views/AddButton', 
 //     'cache!views/LoginButtons', 
 //     'cache!views/AroundMeButton', 
 //     'cache!views/MapItButton', 

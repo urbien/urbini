@@ -808,7 +808,7 @@ define([
           str = (absDayDiff == 1) ? "a day" : absDayDiff + " days"; 
         else if (absDayDiff < 365) {
           var w = Math.round( day_diff / 7 );
-          str = (w == 1) ? "a week ago" : w + " weeks ago";
+          str = (w == 1) ? "a week" : w + " weeks";
         }
         else {
           var years = Math.round( day_diff / 365 );
@@ -818,10 +818,16 @@ define([
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));  
+          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
         }
         
-        return pre + str + post;
+        var ret = '';
+        if (str.indexOf('In') == -1)
+          ret += pre;
+        ret += str;
+        if (str.indexOf(' ago') == -1)
+          ret += post;
+        return ret;
       }
       
 //      var years;
@@ -1208,14 +1214,15 @@ define([
       return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
     },
     // helps to fit images in listview (RL)
+    // note: margins in DOM should be: -left and -top 
     fitToFrame : function(frmWidth, frmHeight, srcRation) {
       var frmRatio = frmWidth / frmHeight;
       var w, h, x = 0, y = 0;
       if (srcRation > frmRatio) { // long
-        h = 80; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
+        h = frmHeight; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
       } 
       else {
-        w = 90; h = Math.floor(90 / srcRation); y = Math.floor((h - frmHeight) / 2);
+        w = frmWidth; h = Math.floor(w / srcRation); y = Math.floor((h - frmHeight) / 2);
       }
       return {x: x, y: y, w: w, h: h};
     },

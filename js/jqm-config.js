@@ -8,7 +8,8 @@ define(['cache!jquery'], function($) {
       $.mobile.pushStateEnabled = false;
       $.support.touchOverflow = true;
       $.mobile.touchOverflowEnabled = true;
-      $.mobile.loadingMessageTextVisible = true;
+//      $.mobile.loadingMessageTextVisible = true;
+//      $.mobile.hidePageLoadingMsg();
       $.mobile.buttonMarkup.hoverDelay = 25;
 //      $.event.special.swipe.scrollSupressionThreshold (default: 10px) – More than this horizontal displacement, and we will suppress scrolling.
 //      $.event.special.swipe.durationThreshold = 1000;// (default: 1000ms) – More time than this, and it isn't a swipe.

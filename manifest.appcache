@@ -11,6 +11,7 @@ js/lib/jquery.mobile-1.2.0.js
 #font/fontawesome-webfont.woff
 images/ajax-loader.gif
 lib/images/icons-18-white-pack.png
+images/frame/white_bg/live-sign.png
 <appImages>
 
 # Resources that require the user to be online.
