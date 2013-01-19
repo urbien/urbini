@@ -61,7 +61,7 @@ define([
       var isMe = poi == 'me';
       var latLon; 
       if (poi) {
-        coords = [pMap.longitude, pMap.latitude];
+        coords = [parseFloat(pMap.longitude), parseFloat(pMap.latitude)];
         center = [coords[1], coords[0]];
         poi = MapView.getBasicGeoJSON('Point', coords);
         if (isMe) {

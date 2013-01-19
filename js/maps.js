@@ -896,8 +896,7 @@
       else
         this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);
       
-      mapSettings.center = pointOfInterest.geometry.coords;
-      Mapper.adjustBounds(mapSettings.bounds, center, 'Point');
+      Mapper.adjustBounds(mapSettings.bounds, pointOfInterest.geometry.coords, 'Point');
       this.map = new L.Map(this.mapDivId || 'map', mapSettings);
       gj.addTo(this.map);
     };  
