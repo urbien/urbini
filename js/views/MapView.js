@@ -164,7 +164,7 @@ define([
           width && (medImg.width = width);
           height && (medImg.height = height);
           data.image = _.template(Templates.get("imagePT"))(medImg);
-          U.addBaseTemplateParams(data);
+//          _.extend(data, {U: U, G: G});
           return _.template(Templates.get("mapItemTemplate"))(data);
         }
       }
