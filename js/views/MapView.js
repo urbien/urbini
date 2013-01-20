@@ -16,7 +16,7 @@ define([
 //    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap');
+      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
@@ -30,9 +30,14 @@ define([
 //      });
     },
     events: {
-      'click': 'click'
+      'click': 'click',
+      'swipe': 'onSwipe',
+      'swiperight': 'onSwipe',
+      'swipeleft': 'onSwipe'
     },
-//    tap: Events.defaultTapHandler,
+    onSwipe: function(e) {
+      Events.stopEvent(e);
+    },
     click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this;
@@ -190,11 +195,11 @@ define([
         area = model.get('area');
       }
       else {
-        var lat = model.get('latitude');
-        if (!lat)
+        var lon = model.get('longitude');
+        if (!lon)
           return null;
         
-        coords = [lat, model.get('longitude')];  
+        coords = [lon, model.get('latitude')];  
       }
       
         
@@ -203,8 +208,10 @@ define([
         var bbox;
         if (isShape)
           bbox = [[model.get('lowestLatitude'), model.get('lowestLongitude')], [model.get('highestLatitude'), model.get('highestLongitude')]];
-        else
-          bbox = [coords, coords];
+        else {
+          bbox = [coords[1], coords[0]];
+          bbox = [bbox, bbox];
+        }
         
         if (metadata.bbox) {
           var b = metadata.bbox;
@@ -227,6 +234,9 @@ define([
       return [(bbox[1][0] + bbox[0][0]) / 2, (bbox[1][1] + bbox[0][1]) / 2];
     },
     
+    /**
+     * @param coords: points should be in lon, lat order
+     */
     getBasicGeoJSON: function(shapeType, coords) {
       return {
         "type": "Feature",

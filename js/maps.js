@@ -896,7 +896,7 @@
       else
         this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);
       
-      Mapper.adjustBounds(mapSettings.bounds, pointOfInterest.geometry.coords, 'Point');
+      Mapper.adjustBounds(mapSettings.bounds, pointOfInterest.geometry.coordinates, 'Point');
       this.map = new L.Map(this.mapDivId || 'map', mapSettings);
       gj.addTo(this.map);
     };  
@@ -1272,6 +1272,9 @@
     };
   };
 
+  /**
+   * item should be a geoJson object or a coordinates array with lon, lat order
+   */
   Mapper.adjustBounds = function(b, item, type) {
     var bbox = Mapper.getBoundingBox(item, type);
     b[0][0] = Math.min(b[0][0], bbox[0][0]);
@@ -1288,7 +1291,8 @@
     
     switch (type || item.geometry.type) {
     case 'Point':
-      return [coords, coords];
+      var a = [coords[1], coords[0]];
+      return [a, a];
     case 'Polygon':
       var bbox = Mapper.getBoundingBox(coords[0], 'Point');
       for (var i = 1; i < coords.length; i++) {
