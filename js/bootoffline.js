@@ -17,7 +17,9 @@ window.onload = function() {
   g = JSON.parse(g);
   window.Lablz = g;
 
-  document.getElementsByTagName('body')[0].appendChild(localStorage.getItem('homePage'));
+  var div = document.createElement('div');
+  div.innerHTML = localStorage.getItem('homePage');
+  document.getElementById('page').appendChild(div);
 
   new Function("d", g.boot)(document);
 }
