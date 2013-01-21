@@ -13,6 +13,7 @@ images/ajax-loader.gif
 lib/images/icons-18-white-pack.png
 images/frame/white_bg/live-sign.png
 <appImages>
+# cache-end
 
 # Resources that require the user to be online.
 NETWORK:
@@ -20,4 +21,4 @@ NETWORK:
 
 FALLBACK:
 mobileBoot/boot.js js/bootoffline.js
-
+# fallback-end
