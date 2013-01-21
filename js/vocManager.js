@@ -407,7 +407,7 @@ define([
     
     contactKey: "com.fog.security.contact",
     checkUser: function() {
-      if (!localStorage)
+      if (!G.hasLocalStorage)
         return; // TODO: use indexedDB
       
       var p = G.localStorage.get(Voc.contactKey);
@@ -421,7 +421,10 @@ define([
           G.userChanged = true;
         }
         
-        Voc.newModels = _.filter(_.keys(Voc.shortNameToModel), function(name) {return name != 'Resource'});
+        Voc.newModels = U.filterObj(Voc.typeToModel, function(type, model) {
+          return type != 'Resource' // && !model.alwaysInlined
+        });
+        
         return;
       }
     },

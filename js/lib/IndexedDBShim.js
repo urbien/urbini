@@ -1240,6 +1240,7 @@ var idbModules = {};
                 window.IDBDatabase = idbModules.IDBDatabase;
                 window.IDBTransaction = idbModules.IDBTransaction;
                 window.IDBRequest = idbModules.IDBRequest;
+                window.IDBObjectStore = idbModules.IDBObjectStore;
                 window.IDBCursor = idbModules.IDBCursor;
                 window.IDBIndex = idbModules.IDBIndex;
                 window.IDBKeyRange = idbModules.IDBKeyRange;

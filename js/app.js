@@ -63,7 +63,9 @@ define('app', [
         return;
       }
     
-      Voc.fetchModels(null, {success: function() {RM.restartDB(App.startApp, error)}, error: error, sync: true});
+      Voc.fetchModels(null, {success: function() {
+        !RM.db && RM.restartDB(App.startApp, error) || App.startApp();
+      }, error: error, sync: true});
     },
     
     startApp: function() {

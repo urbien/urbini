@@ -11,13 +11,27 @@ define([
   'cache!indexedDBShim',
   'cache!queryIndexedDB'
 ], function(G, $, __jqm__, _, Backbone, U, Error, Events, Voc, __idbShim__, idbq) {
+//  window.webkitIndexedDB && window.shimIndexedDB && window.shimIndexedDB.__useShim();
   var Index = idbq.Index;
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
-    if (method !== 'read') {
+    if (method === 'patch') {
+      options = options || {};
+      var success = options.success;
+      options.success = function() {
+        Events.trigger('refresh', data, data.get('_uri'));
+        setTimeout(function() {RM.addItem(data)}, 100);
+        success && success.apply(this, arguments);
+      }
+      
       Backbone.defaultSync.apply(this, arguments);
       return;
     }
+    else if (method !== 'read') {
+      Backbone.defaultSync.apply(this, arguments);
+      return;
+    }
+      
       
     var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
@@ -142,7 +156,7 @@ define([
       }
     }
     else {
-      isUpdate = resource.loaded;
+      isUpdate = resource.loaded || resource.collection;
       if (isUpdate) {
         var ts = resource.get('_lastFetchedOn');
         if (RM.isStale(ts, now))
@@ -319,26 +333,36 @@ define([
     defaultOptions: {keyPath: '_uri'},
     getUpgradeFunction: function(state, callback) {
       return function(e) {
-        G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
-        if (G.userChanged) {
-          G.userChanged = false;
-          RM.updateStores(true);
-        }
-        else if (state.modelsChanged) {
-          state.modelsChanged = false;
-          RM.updateStores();
-        }
-        
         var res = e.target.result;
         if (res instanceof IDBDatabase)
           RM.db = res;
         
+        var needsUpdate = G.userChanged || state.modelsChanged;
+        if (!needsUpdate) {
+          // unclear how it ever gets here, but it does
+          return;
+        }
+        
         e.target.transaction.oncomplete = function() {
-  //        G.recordCheckpoint("done upgrading db");
-          G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
-          if (callback)
+//          G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
+          if (callback) // && finishedUpdate)
             callback();
         };
+        
+        var finishedUpdate = false;
+        G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
+        if (G.userChanged) {
+          G.userChanged = false;
+          RM.updateStores(true);
+//          finishedUpdate = true;
+        }
+        else if (state.modelsChanged) {
+          state.modelsChanged = false;
+          RM.updateStores();
+//          finishedUpdate = true;
+        }
+        
+        
       }
     },
     
@@ -377,6 +401,8 @@ define([
           for (var type in G.usedModels) {
             if (!RM.tableExists(type)) {
               state.modelsChanged = true;
+              G.log(RM.TAG, 'db', 'need table for model:', type)
+              debugger;
               break;
             }
           }
@@ -410,7 +436,7 @@ define([
           req.onsuccess = upgrade;
         }
         else {
-          G.log(RM.TAG, 'db', 'upgrading db (via onupgradeneeded, using FF are ya?)');
+          G.log(RM.TAG, 'db', 'upgrading db');
 //          G.recordCheckpoint("upgrading db");
           db.close();
           var subReq = indexedDB.open(RM.DB_NAME, RM.VERSION);
@@ -451,23 +477,13 @@ define([
         return _.contains(G.classUsage, m);
       });
 
-//      if (_.uniq(toDel).length != toDel.length)
-//        debugger;
-//      if (_.uniq(models).length != models.length)
-//        debugger;
-//
+      if (_.uniq(toDel).length != toDel.length)
+        debugger;
+      if (_.uniq(models).length != models.length)
+        debugger;
+
 //      toDel = _.map(toDel, U.getClassName);
 //      models = _.map(models, U.getClassName);
-//      
-//      if (_.uniq(toDel).length != toDel.length)
-//        debugger;
-//      if (_.uniq(models).length != models.length)
-//        debugger;
-      
-//      models = _.map(models, function(uri) {
-//        var sIdx = uri.lastIndexOf("/");
-//        return sIdx == -1 ? uri : uri.slice(sIdx + 1);
-//      });
       
       Voc.changedModels.length = 0;
       Voc.newModels.length = 0;
@@ -837,7 +853,10 @@ define([
         if (s) s();
       }
       
-      $(document).ready(function(){RM.openDB(success, error)});
+      if (RM.db)
+        RM.openDB(success, error)
+      else
+        $(document).ready(function(){RM.openDB(success, error)});
     }
 
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////

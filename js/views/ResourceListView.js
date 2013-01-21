@@ -55,7 +55,8 @@ define([
       var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
-      var canceled = _.contains(_.values(vocModel.interfaces), 'Cancellable') && (meta.cancelled || meta.canceled).shortName;
+      var canceled = U.getCloneOf(meta, 'Cancellable.cancelled');
+      canceled = canceled.length ? canceled[0] : null;
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');

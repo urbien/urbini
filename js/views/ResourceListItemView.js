@@ -43,10 +43,11 @@ define([
       }
 
       var props = this.vocModel.properties;
-      var canceled = (props.cancelled || props.canceled).shortName;
-      if (!canceled)
+      var canceled = U.getCloneOf(props, 'Cancellable.cancelled');
+      if (!canceled.length)
         return;
       
+      canceled = canceled[0];
       var data = {};
       data[canceled] = true;
       var res = this.resource;
