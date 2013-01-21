@@ -5,11 +5,11 @@
   <title>Urbien App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"></meta>
   <meta name="apple-mobile-web-app-capable" content="yes"></meta>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta>
-  <script src="mobileBoot/boot.js"></script>  
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta>  
 </head>
 <body class="ui-mobile-viewport ui-overlay-c">
   <file />
-    <div id="page"> </div> 
+  <div id="page"> </div>
+  <script src="app/{{= app }}/mobileBoot/boot.js"></script>
 </body>
 </html>

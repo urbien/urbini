@@ -5,16 +5,16 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
-  <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
-    </ul>
+    </ul -->
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
-    </table-->
+    </table>
   </div>
   
   <div data-role="footer" class="ui-bar" data-theme="d">
@@ -25,6 +25,7 @@
 </script>  
  
 <script type="text/template" id="resource">
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content" style="margin-top: -15px;">
     <div id="resourceImage"></div><br/>
@@ -42,6 +43,11 @@
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
+</script>  
+
+<script type="text/template" id="menuP">
+   <ul data-role="listview" id="menuItems">
+   </ul>
 </script>  
 
 <script type="text/template" id="menu">
@@ -113,7 +119,7 @@
 </script>
 
 <script type="text/template" id="resourcePT">
-  <span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a style="text-decoration:none" href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
@@ -221,7 +227,7 @@
 
 <script type="text/template" id="menuButtonTemplate">
   <li id="menuBtn">
-    <a target="#" data-icon="reorder">Menu</a>
+    <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu</a>
   </li>  
 </script>
 
@@ -395,6 +401,7 @@
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div><br/>

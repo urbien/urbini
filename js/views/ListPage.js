@@ -15,8 +15,9 @@ define([
   'cache!views/LoginButtons', 
   'cache!views/AroundMeButton', 
   'cache!views/MapItButton',
+  'cache!views/MenuPanel',
   'cache!views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuPanel, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -28,6 +29,7 @@ define([
       this.template = _.template(Templates.get(this.template));
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.TAG = "ListPage";
+      this.viewId = options.viewId;
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
@@ -49,8 +51,10 @@ define([
       // open backlinks
     },
     swiperight: function(e) {
-      // open menu
-      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+//      // open menu
+//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
+//      menuPanel.render();
+////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
@@ -87,7 +91,10 @@ define([
     render:function (eventName) {
       G.log(this.TAG, 'render');  
       var rl = this.collection;
-      this.$el.html(this.template(rl.toJSON()));
+      
+      var json = rl.toJSON();
+      json.viewId = this.cid;
+      this.$el.html(this.template(json));
       
       var isGeo = (rl.isA("Locatable") || rl.isA("Shape")) && _.filter(rl.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
       var vocModel = this.vocModel;
@@ -117,6 +124,7 @@ define([
       this.header = new Header({
         model: rl, 
         buttons: this.buttons,
+        viewId: this.cid,
         el: $('#headerDiv', this.el)
       }).render();
   

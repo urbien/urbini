@@ -10,7 +10,6 @@ define([
   'cache!jqueryMobile',
   'cache!views/BasicView',
   'cache!views/ResourceMasonryItemView',
-//  'cache!views/ResourceMasonryModItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
 ], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
@@ -56,7 +55,7 @@ define([
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(meta, 'Cancellable.cancelled');
-      canceled = canceled.length ? canceled[0] : null;
+      canceled = canceled.length ? canceled[0].shortName : null;
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');

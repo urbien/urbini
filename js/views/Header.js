@@ -61,7 +61,7 @@ define([
       }
       
       var res = this.resource || this.collection;
-      w = new w({model: res, el: this.$(options.id)}).render({append: true});
+      w = new w({model: res, viewId: this.viewId, el: this.$(options.id)}).render({append: true});
       w.$(options.domEl).addClass(options.css);
       w.$el.trigger('create');
       return this;

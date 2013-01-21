@@ -12,20 +12,22 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
+  'cache!views/MenuPanel',
   'cache!views/ResourceView',
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, MenuPanel, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,
-    initialize: function() {
+    initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'home', 'swipeleft', 'swiperight', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.model.on('change', this.render, this);
       this.template = _.template(Templates.get('resource'));
       this.TAG = "ViewPage";
       this.router = G.Router || Backbone.History;
+      this.viewId = options.viewId;
       Events.on("mapReady", this.showMapButton);
     },
     events: {
@@ -42,7 +44,9 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
+//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
+      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
+      menuPanel.render();
     },
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
@@ -68,7 +72,9 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
-      this.$el.html(this.template(res.toJSON()));
+      var json = res.toJSON();
+      json.viewId = this.cid;
+      this.$el.html(this.template(json));
       
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));
@@ -83,6 +89,7 @@ define([
         model: res, 
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
+        viewId: this.cid,
         el: $('#headerDiv', this.el)
       }).render();
       

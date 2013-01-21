@@ -25,6 +25,7 @@ define([
       this.template = _.template(Templates.get('resourceEdit'));
       this.TAG = "EditPage";
       this.action = options && options.action || 'edit';
+      this.viewId = options.viewId;
       Events.on("mapReady", this.showMapButton);
     },
     set: function(params) {
@@ -51,7 +52,9 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
+//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
+      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
+      menuPanel.render();
     },
     home: function() {
 //      this.router.navigate('', {trigger: true, replace: false});
@@ -77,7 +80,9 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
-      this.$el.html(this.template(res.toJSON()));
+      var json = res.toJSON();
+      json.viewId = this.cid;
+      this.$el.html(this.template(json));
       
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));
@@ -92,6 +97,7 @@ define([
         model: res, 
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
+        viewId: this.cid,
         el: $('#headerDiv', this.el)
       }).render();
       

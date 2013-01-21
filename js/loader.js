@@ -618,7 +618,7 @@ define('globals', function() {
             url = G.getCanonicalPath(req.toUrl(name));
         
         // TODO: unhack
-        if (name == 'jqueryMobile') {
+        if (name == '1jqueryMobile') {
           req([name], function(content) {
             G.log(cache.TAG, 'cache', 'Loading jq: ' + url);
             onLoad(content);
@@ -1321,7 +1321,7 @@ define('globals', function() {
 //      cache: 'lib/requirejs.cache',
       jquery: 'lib/jquery',
       jqmConfig: 'jqm-config',
-      jqueryMobile: 'lib/jquery.mobile-1.2.0',
+      jqueryMobile: 'lib/jquery.mobile-1.3.0-beta.1',
 //      validator: 'lib/jquery.validate',
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
