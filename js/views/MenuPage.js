@@ -60,7 +60,7 @@ define([
       if (this.tabs[text]) {
         var href = t.href.slice(t.href.lastIndexOf('#') + 1)
         if (this.tabs[text] == href) {
-          e.originalEvent.preventDefault();
+          Events.stopEvent(e);
           this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
           return;
         }
