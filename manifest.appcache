@@ -12,7 +12,7 @@ js/lib/jquery.mobile-1.3.0-beta.1.js
 images/ajax-loader.gif
 lib/images/icons-18-white-pack.png
 images/frame/white_bg/live-sign.png
-<appImages>
+#<appImages>
 # cache-end
 
 # Resources that require the user to be online.
