@@ -18,6 +18,7 @@ define([
     page: null,
     changedViews: [],
     skipScrollEvent: false,
+    prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'click', 'setMode'); // fixes loss of context for 'this' within methods
@@ -225,12 +226,23 @@ define([
     onScroll: function() {
       if (!this.visible)
         return;
-
+      
       var $wnd = $(window);
       if (this.skipScrollEvent) // wait for a new data portion
         return;
-
-      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * 3.5)
+      
+      // scroll up - no need to fetch new portion of data
+      if (this.prevScrollPos > $wnd.scrollTop()) {
+        this.prevScrollPos = $wnd.scrollTop();
+        return;
+      }
+      this.prevScrollPos = $wnd.scrollTop();
+      
+      // get next page
+      // 1) masonry: 2.5 screen height to bottom
+      // 2) list view: 1 screen height to bottom
+      var factor = this.hasMasonry ? 3.5 : 2;   
+      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
         return;
       
       var self = this;
