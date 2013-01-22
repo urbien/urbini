@@ -15,9 +15,8 @@ define([
       'click #logout': 'logout'
     },
     logout: function() {
-      var url = G.serverName + '/j_security_check; // ?j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot);
-      var data = 'j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot); 
-      $.get(url, data, function() {
+      var url = G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot);
+      $.get(url, function() {
           // may be current page is not public so go to home page (?)
           window.location.hash = '';
           window.location.reload();
