@@ -167,6 +167,9 @@ define([
       // fit image to frame
       if (typeof json['originalWidth'] != 'undefined' &&
           typeof  json['originalHeight'] != 'undefined' ) {
+        
+        this.$el.addClass("image_fitted");
+        
         var dim = U.fitToFrame(80, 80, json['originalWidth'] / json['originalHeight'])
         json['width'] = dim.w;
         json['height'] = dim.h;
