@@ -304,8 +304,8 @@ html { height: 100%; }
 #resourceView { font-size: 16px; }
 /* login popup icon for Live social net (lack in awesome font currently) */
 .ui-icon-live-sign:before { content: url(../images/frame/white_bg/live-sign.png); border-radius: 4px; background-color: #aaa; padding: 2px; margin-left: 1px; }
-.ui-icon-live-sign { margin-top: 0px !important; }
-#login_popup .big_symbol { float: left; font-size: 25px; color: #aaaaaa; line-height: 10px; margin: 3px 0 0 -8px; }
+.ui-icon-live-sign { margin-top: 0px !important; line-height: 10px !important; }
+#login_popup .big_symbol { float: left; font-size: 25px; color: #aaaaaa; line-height: 100%; margin: 0px 0px 0px -8px; }
 
 /* default images 'fitting' in RL in case when image dimensions are uknown. Use "max-height: none" only with processed images */
 .ui-li-thumb { max-width: none; min-width: 80px; min-height: 80px; clip: rect(0px, 80px, 80px, 0px); }
