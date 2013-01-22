@@ -15,7 +15,7 @@ define([
       
       _.extend(this,   {
         page: 0,
-        perPage: 30,
+        perPage: 45, // 30,
         offset: 0,
         firstPage: 0,
         offsetParam: "$offset",
