@@ -281,9 +281,12 @@ define([
       // masonry code works with DOM elements already inserted into a page
       // small timeout insures right bricks alignment
       var self = this;
-      setTimeout(function() { self.alignBricks(); }, 10);
+      setTimeout(function() { self.alignBricks(); }, 50);
     },
     alignBricks: function() {
+      // masonry is hidden
+      if (this.$el.width() == 0)
+        return;
       var self = this;
       var needToReload = false;
       // all bricks in masonry
