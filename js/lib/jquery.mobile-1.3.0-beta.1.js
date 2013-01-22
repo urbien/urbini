@@ -1478,6 +1478,8 @@ if ( !$.support.boxShadow ) {
 		},
 
 		hashchange: function( event, data ) {
+		  return; //hack
+		  
 			var newEvent = new $.Event( "navigate" ),
 				beforeNavigate = new $.Event( "beforenavigate" );
 
@@ -3943,7 +3945,8 @@ $.mobile.getMaxScrollForTransition = $.mobile.getMaxScrollForTransition || defau
 
 	function releasePageTransitionLock() {
 		isPageTransitioning = false;
-			$.mobile.changePage.apply( null, pageTransitionQueue.pop() );
+		if ( pageTransitionQueue.length > 0 ) {
+//			$.mobile.changePage.apply( null, pageTransitionQueue.pop() );
 		}
 	}
 
