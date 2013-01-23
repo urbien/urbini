@@ -43,7 +43,7 @@ define([
       }
 
       var props = this.vocModel.properties;
-      var canceled = U.getCloneOf(props, 'Cancellable.cancelled');
+      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled');
       if (!canceled.length)
         return;
       
@@ -132,7 +132,7 @@ define([
       if (typeof distance != 'undefined') {
         var meta = this.vocModel.properties;
         var prop = meta['distance'];
-        var d = U.getCloneOf(meta, 'Distance.distance');
+        var d = U.getCloneOf(this.vocModel, 'Distance.distance');
         if (d)
           json['distance'] = distance + ' mi';
       }
@@ -143,15 +143,30 @@ define([
       if (U.isA(this.vocModel, 'Intersection')) {
         var href = window.location.href;
         var qidx = href.indexOf('?');
-        var a = U.getCloneOf(meta, 'Intersection.a')[0];
-        var b = U.getCloneOf(meta, 'Intersection.b')[0];
+        var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
+        var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
         if (a  ||  b) {
+          var urbModel = Voc.shortNameToModel['Urbien'];
+          var isAContact;
+          var isBContact;
+          if (urbModel) {
+            var idx = meta[a].range.lastIndexOf('/');
+            var aModel = Voc.typeToModel[U.getLongUri(meta[a].range)];
+            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien', Voc.typeToModel);
+            idx = meta[b].range.lastIndexOf('/');
+            var bModel = Voc.typeToModel[U.getLongUri(meta[b].range)];
+            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien', Voc.typeToModel);
+          }
           if (a  &&  qidx == -1) 
             return this.renderIntersectionItem(a, 'Intersection.a');
           var p = href.substring(qidx + 1).split('=')[0];
           if (a  &&  p == a)
             return this.renderIntersectionItem(b, 'Intersection.b');
-          else    
+          else if (b  &&  p == b)   
+            return this.renderIntersectionItem(a, 'Intersection.a');
+          if (isBContact)
+            return this.renderIntersectionItem(b, 'Intersection.b');
+          else          
             return this.renderIntersectionItem(a, 'Intersection.a');
         }
       }
@@ -270,41 +285,30 @@ define([
       var rUri;
       var json = m.toJSON();
       if (cloneOf == 'Intersection.a') {
-        img = json[U.getCloneOf(meta, 'Intersection.aFeatured')] || json[U.getCloneOf(meta, 'Intersection.aThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
       }
       else {
-        img = json[U.getCloneOf(meta, 'Intersection.bFeatured')] || json[U.getCloneOf(meta, 'Intersection.bThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
       }
       dn = json[delegateTo].displayName;
       rUri = json[delegateTo].value;
         
-//      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
-//      if (img == null)
-//        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
-//      if (img == null)
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
-
+//      tmpl_data['_uri'] = rUri;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
-  //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
-      var tmpl_data = _.extend(json, {mediumImage: img});
+      tmpl_data['mediumImage'] = img;
       tmpl_data['davDisplayName'] = dn;
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
         
-//      var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
-      var viewCols = this.getViewCols(json);
-      var dn = U.getDisplayName(m);
-      tmpl_data['davDisplayName'] = dn;
-      if (!viewCols.length) 
-        viewCols = '<h3>' + dn + '</h3>';
+      var viewCols = '<h3>' + dn + '</h3>';
       
       tmpl_data['viewCols'] = viewCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
       var forResourceModel = type ? Voc.typeToModel[type] : null;

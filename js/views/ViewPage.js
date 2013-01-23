@@ -45,8 +45,8 @@ define([
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
 //      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
-      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
-      menuPanel.render();
+//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
+//      menuPanel.render();
     },
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});

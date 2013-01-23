@@ -55,16 +55,22 @@ define([
       var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
-      var canceled = U.getCloneOf(meta, 'Cancellable.cancelled');
+      var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
       canceled = canceled.length ? canceled[0].shortName : null;
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = false; //!isList  &&  U.isMasonry(vocModel);
+      var isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial');; //!isList  &&  U.isMasonry(vocModel);
       
-//      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+//      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
 //        isMasonry = true;
+//      if (isMasonry) {
+//        var key = this.vocModel.shortName + '-list-item';
+//        var litemplate = U.getTypeTemplate('list-item', rl);
+//        if (litemplate)
+//          isMasonry = false;
+//      }
       var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
 //        if (U.isA(vocModel, 'Intersection')) {
@@ -113,9 +119,9 @@ define([
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
-          if (isMasonry) 
-            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
-          else if (isModification)
+          if (isMasonry  ||  isModification) 
+//            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
+//          else if (isModification)
             liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard', parentView: this});
           else if (isComment)
             liView = new CommentListItemView({model:res, parentView: this});

@@ -42,7 +42,7 @@ define([
       var isReference = U.isA(vocModel, 'Reference'); 
       if (isReference)
         return this.renderReferenceTile();
-      if (!U.isA(vocModel, 'Intersection'))   
+      if (!U.isA(vocModel, 'Intersection', Voc.typeToModel))   
         return this.renderTile();
       
       var meta = vocModel.properties;
@@ -51,8 +51,8 @@ define([
       
       var href = window.location.href;
       var qidx = href.indexOf('?');
-      var a = U.getCloneOf(meta, 'Intersection.a')[0];
-      var b = U.getCloneOf(meta, 'Intersection.b')[0];
+      var a = U.getCloneOf(vocModel, 'Intersection.a')[0];
+      var b = U.getCloneOf(vocModel, 'Intersection.b')[0];
       if (!a  ||  !b)
         return this.renderTile();
       if (qidx == -1) 
@@ -95,7 +95,7 @@ define([
       
       var rUri = m.get('_uri');
       
-      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0];
+      var img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
@@ -111,8 +111,11 @@ define([
             i++;
           else
             gridCols += "<br/>";
-          
+
           var pName = grid[row].propertyName;
+          var gP = meta[pName];          
+          if (U.isCloneOf(gP, "ImageResource.mediumImage")  ||  U.isCloneOf(gP, "ImageResource.smallImage"))
+            continue;
           if (!meta[pName].skipLabelInGrid)
             gridCols += '<span class="label">' + row + '</span>';
           var s = grid[row].value;
@@ -132,6 +135,14 @@ define([
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
+        var oWidth  = json["originalWidth"];
+        var oHeight = json["originalHeight"];
+        if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+          var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+          tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
+          tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
+        }
+
       }
       var dn = json['davDisplayName'];
       var dnProps = U.getDisplayNameProps(meta);
@@ -159,7 +170,7 @@ define([
       
       tmpl_data['rUri'] = resourceUri;
       if (U.isA(vocModel, 'CollaborationPoint')) { 
-        var comments = U.getCloneOf(meta, 'CollaborationPoint.comments');
+        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
@@ -167,15 +178,15 @@ define([
         }
       }
       if (U.isA(vocModel, 'Votable')) {
-        var votes = U.getCloneOf(meta, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length == 0)
-          votes = U.getCloneOf(meta, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
           tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
-      var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
+      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
         var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
@@ -203,15 +214,16 @@ define([
 //      if (img == null)
       var json = m.toJSON();
       
-      var forResource = U.getCloneOf(meta, 'Reference.forResource')[0];
-      var resourceDisplayName = U.getCloneOf(meta, 'Reference.resourceDisplayName')[0];
-      var forResourceUri = json[forResource].value;
-      
+      var forResource = U.getCloneOf(vocModel, 'Reference.forResource')[0];
+      var resourceDisplayName = U.getCloneOf(vocModel, 'Reference.resourceDisplayName')[0];
+      var forResourceUri = json[forResource] ? json[forResource].value : null;
+      if (!forResourceUri)
+        return this;
       var rUri = U.getLongUri(forResourceUri, Voc.shortNameToModel);
       
-      var img = U.getCloneOf(meta, 'Reference.resourceImage')[0];
+      var img = U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
       if (!img)
-        img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0];
+        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
@@ -236,7 +248,7 @@ define([
       var c =  forResourceModel ? forResourceModel : m.constructor;
       tmpl_data['rUri'] = resourceUri;
       if (U.isA(c, 'CollaborationPoint')) { 
-        var comments = U.getCloneOf(meta, 'CollaborationPoint.comments');
+        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
@@ -244,15 +256,15 @@ define([
         }
       }
       if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(meta, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length == 0)
-          votes = U.getCloneOf(meta, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
           tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
-      var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
+      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
         var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
@@ -274,18 +286,22 @@ define([
         return this;
       
       var img;
-      var dn;
-      var rUri;
       var json = m.toJSON();
       if (cloneOf == 'Intersection.a') {
-        img = json[U.getCloneOf(meta, 'Intersection.aFeatured')] || json[U.getCloneOf(meta, 'Intersection.aThumb')];
+        var aF = U.getCloneOf(vocModel, 'Intersection.aFeatured');
+        var aT = U.getCloneOf(vocModel, 'Intersection.aThumb');
+        img = aF ? json[aF[0]] : json[aT[0]];
       }
       else {
-        img = json[U.getCloneOf(meta, 'Intersection.bFeatured')] || json[U.getCloneOf(meta, 'Intersection.bThumb')];
+        var bF = U.getCloneOf(vocModel, 'Intersection.bFeatured');
+        var bT = U.getCloneOf(vocModel, 'Intersection.bThumb');
+        img = bF ? json[bF[0]] : json[bT[0]];
       }
-      dn = json[delegateTo].displayName;
-      rUri = json[delegateTo].value;
-        
+      var dn = json[delegateTo];
+      if (!dn) 
+        return this;  
+      dn = dn.displayName;
+      var rUri = json[delegateTo].value;
 //      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
@@ -298,7 +314,7 @@ define([
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
-      var tmpl_data = _.extend(json, {resourceMediumImage: img});
+      tmpl_data['_uri'] = rUri;  
       tmpl_data['davDisplayName'] = dn;
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
@@ -317,7 +333,7 @@ define([
       }
       tmpl_data['rUri'] = resourceUri;
       if (U.isA(c, 'CollaborationPoint')) { 
-        var comments = U.getCloneOf(meta, 'CollaborationPoint.comments');
+        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
@@ -325,15 +341,15 @@ define([
         }
       }
       if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(meta, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length == 0)
-          votes = U.getCloneOf(meta, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
           tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
-      var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
+      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
         var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);

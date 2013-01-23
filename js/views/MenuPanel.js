@@ -5,10 +5,11 @@ define([
   'cache!backbone',
   'cache!utils',
   'cache!events',
+  'cache!vocManager',
   'cache!templates',
   'cache!views/BasicView',
   'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, __jqm__) {
+], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, __jqm__) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -92,6 +93,15 @@ define([
       }
       
       this.buildActionsMenu(frag);
+      
+      if (this.resource) {
+        var isModificationHistory = U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel);
+        if (isModificationHistory) {
+          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+          if (ch  && !this.vocModel.properties[ch[0]].hidden) 
+            U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource_verified=y&amp;forResource_select=' + encodeURIComponent(this.resource.get('_uri'))}));
+        }
+      }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile'}));

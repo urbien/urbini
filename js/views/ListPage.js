@@ -107,8 +107,20 @@ define([
           for (var i=0; i<s.length; i++) {
             var p = s[i].split('=');
             var prop = vocModel.properties[p[0]];
-            if (prop  &&  prop.containerMember  &&  U.isPropVisible(vocModel, prop)) {
-              showAddButton = true;
+            if (prop  &&  prop.containerMember) {
+              var type = U.getLongUri(prop.range);
+              var cM = Voc.typeToModel[type];
+              if (cM) {
+                var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+                var bl = [];
+                for (var p in blProps) {
+                  var b = blProps[p];
+                  if (!b.readOnly  &&  U.getLongUri(b.range) == vocModel.type)
+                    bl.push(b);
+                }
+                if (bl.length > 0)
+                  showAddButton = true;
+              }
             }
           }
         }
@@ -116,8 +128,10 @@ define([
         
       this.buttons = {
         left: [BackButton], // , LoginButtons
-        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
-                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
+//        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
+//                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
+        right: isGeo ? (showAddButton ? [AddButton, AroundMeButton, MenuButton] : [AroundMeButton, MenuButton] ) 
+            : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         log: [LoginButtons]    
       };
       
@@ -137,13 +151,17 @@ define([
 
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-//      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-      
-      var isMasonry = false; //this.isMasonry = !isList  &&  U.isMasonry(vocModel);
-      
+      var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); 
+//      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+//      if (isMasonry) {
+//        var key = this.vocModel.shortName + '-list-item';
+//        var litemplate = U.getTypeTemplate('list-item', rl);
+//        if (litemplate)
+//          isMasonry = false;
+//      }
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification ? '#nabs_grid' :  isMasonry ? '#columns' : (isComment) ? '#comments' : '#sidebar';
+      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar';
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl, mode: this.mode});
       this.listView.render();
       if (isGeo) {

@@ -27,7 +27,7 @@
 <script type="text/template" id="resource">
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
-  <div id="resourceViewHolder" data-role="content" style="margin-top: -15px;">
+  <div id="resourceViewHolder" data-role="content">
     <div id="resourceImage"></div><br/>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
@@ -144,11 +144,14 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
-    <img style="
+    <img src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" 
+    {{ if (typeof width != 'undefined') { }}  
+      style="
         width:{{= width }}px; height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
-      src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" />
+    {{ } }}
+    />      
     {{= viewCols }}
   </a>
   {{ if (typeof distance != 'undefined') { }}
@@ -366,18 +369,19 @@
 </script>
 
 <script type="text/template" id="masonry-list-item">
-  <!--div class="anab" -->
-  <div class="pin1">
-    <!-- p style="display: inline-block;"/ -->
+  <div class="anab">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+         {{ if (typeof imgWidth != 'undefined') { }}
+           style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+         {{ } }}
+         ></img>
       </a>
     </div>
   <div class="nabRL">
     <div>
-      <!-- a href="{{= rUri }}" class="pLink">{{= davDisplayName }}</a><br/ -->
-  {{= gridCols }}
+      {{= gridCols }}
     </div>
     <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
