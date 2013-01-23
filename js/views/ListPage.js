@@ -176,20 +176,6 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
 
-      if (isMasonry) {
-        var self = this;
-        this.$wall = $('#nabs_grid');
-        this.$wall.imagesLoaded( function() { 
-          self.$wall.masonry(); 
-        });
-      }
-//      if (isMasonry) {
-//        this.$el.on('pageshow',function(event, ui){
-//          $('#nabs_grid').masonry();
-//          ////          $(window).resize();
-//        });
-//      }
-      
       this.rendered = true;
       return this;
     }
