@@ -390,7 +390,7 @@ define([
             continue;
           
           var prop = meta[p];
-          if (_.has(backlinks, p))
+          if (_.has(backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
             continue;
           
           _.extend(prop, {shortName: p});
