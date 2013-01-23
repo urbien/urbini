@@ -28,9 +28,9 @@ define([
       if (!U.isA(this.vocModel, 'ImageResource')) 
         return this;
   //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
-      var props = U.getCloneOf(meta, 'ImageResource.bigImage');
+      var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
-        props = U.getCloneOf(meta, 'ImageResource.originalImage');
+        props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
       if (!props.length) 
         return this;
       var json = this.resource.toJSON();
@@ -85,7 +85,7 @@ define([
 
       var padding = w ? (15 - (maxW - w) / 2) : 0;
       padding = -padding;
-      li = '<div style="margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
+      li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;
