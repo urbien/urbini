@@ -21,6 +21,7 @@ define([
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
       
+      L.Icon.Default.imagePath = 'images/leaflet';
       var self = this;
 //      csses = _.map(this.css, function(c) {return 'cache!../styles/leaflet/' + c});
 //      require(csses, function() {

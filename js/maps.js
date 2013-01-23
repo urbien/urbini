@@ -306,7 +306,7 @@
       btn.addTo(this.map);  
     };
     
-    this.addReZoomButton = function(bounds) {
+    this.addReZoomButton = function(options) {
       'use strict';
       var rezoom = L.control({position: 'bottomleft'});
       rezoom.onAdd = function (map) {
@@ -887,11 +887,10 @@
       this.pointOfInterest = pointOfInterest;
       if (pointOfInterest.geometry.type == 'Point') {
         var gj = L.geoJson(pointOfInterest, { 
-            onEachFeature: function (feature, layer) {
-              layer.bindPopup(pointOfInterest.properties.html);
-            }
+          onEachFeature: function (feature, layer) {
+            layer.bindPopup(pointOfInterest.properties.html);
           }
-        );
+        });
       }
       else
         this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);

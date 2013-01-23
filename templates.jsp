@@ -7,6 +7,7 @@
 <script type="text/template" id="resource-list">
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
+  <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
@@ -207,8 +208,8 @@
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
-  <li id="mapIt">
-    <a target="#" data-icon="globe">Map It</a>
+  <li>
+    <a id="mapIt" target="#" data-icon="globe">Map It</a>
   </li>
 </script>
 
@@ -462,6 +463,16 @@
   <label for="{{= id }}">{{= name }}</label> 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
   <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+</script>
+
+<script type="text/template" id="telPET">
+<label for="{{= id }}">{{= name }}</label> 
+<input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+</script>
+
+<script type="text/template" id="emailPET">
+<label for="{{= id }}">{{= name }}</label> 
+<input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="resourcePET">
