@@ -197,11 +197,17 @@ define([
       return keys;
     },
     
-    getCloneOf: function(meta, cloneOf) {
+    getCloneOf: function(model, cloneOf) {
       var keys = [];
-      for (var p in meta) {
-        if (_.has(meta[p], "cloneOf")) {
-          var clones = meta[p].cloneOf.split(",");
+      var meta = model.properties;
+      var myMeta = model.myProperties;
+
+      var m = myMeta ? myMeta : meta;
+      for (var j=0; j<2; j++) {
+        for (var p in m) {
+          if (!_.has(m[p], "cloneOf")) 
+            continue;
+          var clones = m[p].cloneOf.split(",");
           for (var i=0; i<clones.length; i++) {
             if (clones[i].replace(' ', '') == cloneOf) { 
               keys.push(p);
@@ -209,6 +215,9 @@ define([
             }
           }
         }
+        if (keys.length  ||  !myMeta)
+          break;
+        m = meta;
       }
       
       return keys;
@@ -350,8 +359,16 @@ define([
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
     
-    isA: function(model, interfaceName) {
-      return _.contains(model.interfaces, interfaceName);
+    isA: function(model, interfaceName, typeToModel) {
+      var impl = _.contains(model.interfaces, interfaceName);
+      if (impl  ||  !typeToModel)
+        return impl;
+      var superCl = model._super;
+      if (!superCl || superCl.endsWith('#Resource'))
+        return impl;
+      var m = typeToModel[superCl];
+      
+      return m ? U.isA(m, interfaceName, typeToModel) : impl;
     },
     
     getPackagePath: function(type) {
@@ -454,22 +471,22 @@ define([
     
     isMasonry: function(vocModel) {
       var meta = vocModel.properties;
-      var isMasonry = U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(meta, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(meta, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+      var isMasonry = U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
       if (!isMasonry  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
         return true;
       if (!U.isA(vocModel, 'Intersection')) 
         return isMasonry;
       var href = window.location.href;
       var qidx = href.indexOf('?');
-      var a = U.getCloneOf(meta, 'Intersection.a')[0];
+      var a = U.getCloneOf(vocModel, 'Intersection.a')[0];
       if (qidx == -1) {
-        isMasonry = (U.getCloneOf(meta, 'Intersection.aThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.aFeatured')[0]) != null;
+        isMasonry = (U.getCloneOf(vocModel, 'Intersection.aThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured')[0]) != null;
       }
       else {
-        var b = U.getCloneOf(meta, 'Intersection.b')[0];
+        var b = U.getCloneOf(vocModel, 'Intersection.b')[0];
         var p = href.substring(qidx + 1).split('=')[0];
         var delegateTo = (p == a) ? b : a;
-        isMasonry = (U.getCloneOf(meta, 'Intersection.bThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.bFeatured')[0]) != null;
+        isMasonry = (U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]) != null;
       }
       return isMasonry;
     },
@@ -876,7 +893,7 @@ define([
       var vocModel = U.getModel(resOrCol);
       var meta = vocModel.properties;
       var cloneOf;
-      var hasImgs = this.isA(vocModel, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(meta, 'ImageResource.mediumImage')).length != 0;
+      var hasImgs = this.isA(vocModel, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0;
       if (!hasImgs)
         return false;
       
