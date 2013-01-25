@@ -435,7 +435,7 @@ define([
       return _.uniq(_.map(cols, function(c) {return c.trim()}));
     },
     
-    getCols: function(res, colsType) {
+    getCols: function(res, colsType, isListView) {
       colsType = colsType || 'grid';
       var vocModel = res.vocModel;
       var cols = vocModel[colsType + 'Cols'];
@@ -464,7 +464,7 @@ define([
             return;
           }
           
-          var nameVal = U.makeProp({resource: res, prop: prop, value: val});
+          var nameVal = U.makeProp({resource: res, prop: prop, value: val, isDisplayName: isListView ? prop.displayNameElm : undefined});
           var nvn = nameVal.name;
           rows[nvn] = {value: nameVal.value};
           rows[nvn].idx = i++;
@@ -499,6 +499,27 @@ define([
         isMasonry = (U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]) != null;
       }
       return isMasonry;
+    },
+    
+    getContainerProperty: function(vocModel) {
+      var params = window.location.hash.split('?');
+      if (params.length == 1)
+        return null;
+      params = params[1].split('&');
+
+      var meta = vocModel.properties;
+      var myMeta = vocModel.myProperties;
+
+      var m = myMeta ? myMeta : meta;
+      for (var i=0; i<params.length; i++) {
+        var s = params[i].split('=')[0];
+        p = myMeta ? myMeta[s] : null;
+        if (!p)
+          p = meta[s];
+        if (p  &&  (p.containerMember || p.notifyContainer))
+          return p.shortName;
+      }
+      return null;
     },
     /**
      * to be used for model constructors, not instances
@@ -902,18 +923,27 @@ define([
       return U.isCollection(resOrCol) ? resOrCol.model : resOrCol.constructor;
     },
     
-    hasImages: function(resOrCol) {
+    getImageProperty: function(resOrCol) {
       var isCol = U.isCollection(resOrCol);
       var models = isCol ? resOrCol.models : [resOrCol];
       if (!models.length)
-        return false;
+        return null;
       
       var vocModel = U.getModel(resOrCol);
       var meta = vocModel.properties;
       var cloneOf;
-      var hasImgs = this.isA(vocModel, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0;
+      var hasImgs;
+      if (this.isA(vocModel, 'ImageResource')) {
+        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+          hasImgs = true;
+      }
+      if (!hasImgs  &&  this.isA(vocModel, 'Reference')) {
+        if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
+          hasImgs = true;
+      }
+        
       if (!hasImgs)
-        return false;
+        return null;
       
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
@@ -922,7 +952,7 @@ define([
           hasImgs = true;
       }
       
-      return hasImgs;
+      return hasImgs ? cloneOf[0] : null;
     },
     
     deepExtend: function(obj) {
@@ -981,19 +1011,23 @@ define([
       var res = info.resource;
       var vocModel = res.vocModel;
       var propName = info.propName;
-      var prop = info.prop || propName && vocModel.properties[propName];
+      var prop = info.prop || propName && vocModel && vocModel.properties[propName];
       propName = propName || prop.shortName;
       var val = info.value || U.getValue(res, propName);
+      var isDisplayName = info.isDisplayName || prop.displayNameElm;
       
       var cc = prop.colorCoding;
       if (cc) {
         cc = U.getColorCoding(cc, val);
         if (cc) {
           if (cc.startsWith("icons"))
-            val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+            val = "<img src='" + cc + "' border='0'>&#160;" + val;
           else
             val = "<span style='color:" + cc + "'>" + val + "</span>";
         }
+      }
+      else if (isDisplayName  &&  prop.range == 'string') {
+        val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
       }
       
       val = val || res.get(propName) || '';
@@ -1023,7 +1057,7 @@ define([
         val.options = eCl.values;
       }
       
-      val.value = val.value || null;
+      val.value = val.value || '';
       val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
       val.id = (formId || G.nextId()) + '.' + prop.shortName;
@@ -1330,8 +1364,12 @@ define([
         return val;
       }      
       
-      if (val.value)
-        return range.indexOf("/") === -1 ? val.value : U.getLongUri(val.value);
+      var value = val.value;
+      if (value) {
+        if (range.indexOf("/") === -1)
+          return value;
+        return value.indexOf('/') === -1 ? value : U.getLongUri(value);
+      }
       
       return val;
     },

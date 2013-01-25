@@ -610,7 +610,6 @@ define('globals', function() {
 //          G.finishedTask("load " + name);
 ////          G.recordCheckpoint('finished loading ' + name);
 //        }
-//        
 //        var ft = ol.fromText;
 //        onLoad.fromText = function() {
 //          ft.apply(self, arguments);
@@ -624,10 +623,10 @@ define('globals', function() {
         }
             
         var cached,
-            url = G.getCanonicalPath(req.toUrl(name));
+        url = G.getCanonicalPath(req.toUrl(name));
         
         // TODO: unhack
-        if (name == '1jqueryMobile') {
+        if (name == 'jqueryMobile') {
           req([name], function(content) {
             G.log(cache.TAG, 'cache', 'Loading jq: ' + url);
             onLoad(content);
@@ -1025,6 +1024,25 @@ define('globals', function() {
       div.id = G.nextId();
       div.innerHTML = html;
       (element || body).appendChild(div);
+    },
+    
+    inject: function(module, text, callback) {
+      var d = document;
+      var script = d.createElement("script");
+      var id = "script" + (new Date).getTime();
+      var root = d.documentElement;
+      script.type = "text/javascript";
+//      script.innerHtml = text;
+      try {
+        script.appendChild(d.createTextNode(text));
+      } catch(e) {
+        script.text = text; // IE
+      }
+      
+      var parent = d.head || d.body;
+      parent.appendChild(script);
+      parent.removeChild(script);
+      callback(text);
     },
 
     getCanonicalPath: function(path, separator) {

@@ -21,8 +21,10 @@ define([
       if (this.template) 
         this.isCommonTemplate = false;
       else {
-        if (options.hasImages)
+        if (options.imageProperty) {
+          this.imageProperty = options.imageProperty;
           this.template = _.template(Templates.get('listItemTemplate'));
+        }
         else
           this.template = _.template(Templates.get('listItemTemplateNoImage'));
       }
@@ -159,7 +161,8 @@ define([
         json.bottom = dim.h - dim.y;
         json.left = dim.x;
       }
-      
+      if (this.imageProperty)
+        json['image'] = json[this.imageProperty];
       this.$el.html(this.template(json));
       return this;
     },
@@ -168,12 +171,16 @@ define([
       var res = this.resource;
       var meta = this.vocModel.properties;
       var viewCols = '';
-      var grid = U.getCols(res, 'grid');
+      var grid = U.getCols(res, 'grid', true);
       if (!grid)
         return viewCols;
       var firstProp = true;
+      var containerProp = U.getContainerProperty(vocModel);
+
       for (var row in grid) {
         var pName = grid[row].propertyName;
+        if (containerProp  &&  containerProp == pName)
+          continue;
         // show groupped gridCols properties in one line
         var prop = meta[pName];
         var pGr = prop.propertyGroupList;
@@ -205,7 +212,7 @@ define([
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + prop.displayName + '</u></i></div>';                
             }
             
-            var val = U.makeProp({resource: res, prop: prop1, value: json[p]});
+            json[p] = U.makeProp({resource: res, prop: prop1, value: json[p]});
 //              var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
             var range = prop1.range;
             var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val : val;
@@ -221,7 +228,9 @@ define([
         }
 
         var range = meta[pName].range;
-        var s = range.indexOf('/') != -1 ? json[pName + '.displayName'] || json[pName] : grid[row].value;
+        // HACK for Money
+        var s = range.indexOf('/') != -1 && range != 'model/company/Money' ? json[pName + '.displayName']  ||  json[pName] : grid[row].value;
+//        var s = grid[row].value;
         var isDate = meta[pName].range == 'date'; 
         if (!firstProp)
           viewCols += "<br/>";
@@ -252,10 +261,10 @@ define([
       var rUri;
       var json = m.attributes;
       if (cloneOf == 'Intersection.a') {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')];
       }
       else {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
       }
       dn = json[delegateTo + '.displayName'];
       rUri = json[delegateTo];
@@ -267,7 +276,7 @@ define([
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
       }
-      tmpl_data['mediumImage'] = img;
+      tmpl_data['image'] = img;
       tmpl_data['davDisplayName'] = dn;
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);

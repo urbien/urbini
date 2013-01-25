@@ -60,7 +60,7 @@ define([
 
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial');; //!isList  &&  U.isMasonry(vocModel);
+      var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -91,7 +91,7 @@ define([
 //        }
 //      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
-      var hasImgs = U.hasImages(rl);
+      var imageProperty = U.getImageProperty(rl);
       var curNum = lis.length;
       var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
       
@@ -126,7 +126,7 @@ define([
           else if (isComment)
             liView = new CommentListItemView({model:res, parentView: this});
           else
-            liView = hasImgs ? new ResourceListItemView({model:res, hasImages: 'y', parentView: this}) : new ResourceListItemView({model:res, parentView: this});
+            liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this}) : new ResourceListItemView({model:res, parentView: this});
           if (nextPage)  
             this.$el.append(liView.render().el);
           else

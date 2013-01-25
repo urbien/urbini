@@ -64,7 +64,12 @@
 </script>  
 
 <script type="text/template" id="stringPT">
-  <span>{{= value }}</span>
+  {{ if (value.indexOf('<span') == -1) { }}
+     <span>{{= value }}</span>
+  {{ } }}
+  {{ if (value.indexOf('<span') == 0) { }}
+    {{= value }}
+  {{ } }}
 </script>
 
 <script type="text/template" id="emailPT">
@@ -108,7 +113,7 @@
 </script>
 
 <script type="text/template" id="moneyPT">
-  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? value : value.value) }}</span>
+  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? 0 : value.value) }}</span>
 </script>
 
 <!--script type="text/template" id="durationPT">
@@ -145,7 +150,7 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
-    <img src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" 
+    <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined') { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -351,11 +356,11 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor  + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -386,11 +391,11 @@
     </div>
     <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}

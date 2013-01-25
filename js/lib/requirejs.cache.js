@@ -78,7 +78,8 @@ define(function () {
       xhr.send(null);
     },
   
-    prependUrl: function(content, url) {
+    // this is needed for js debuggers as we eval() the instead of using <script>
+    appendSourceUrl: function(content, url) {
       return content + '\r\n//@ sourceURL=' + url;
     },
     
@@ -138,7 +139,7 @@ define(function () {
 
         var loadedCached = cached;
         if (loadedCached) {
-          cached = cache.prependUrl(cached, url);
+          cached = cache.appendSourceUrl(cached, url);
           try {
             if (trace) console.log('Loading from cache: ' + url);
             if (isCSS) {

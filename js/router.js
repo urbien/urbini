@@ -60,7 +60,7 @@ define([
       
       // a hack to prevent browser address bar from dropping down
       // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
-      $('div').on('pagecreate',function(event) {
+      $('[data-role="page"]').on('pagecreate',function(event) {
         $('a[href]', this).each(function() {
             var self = $(this);
             if (!self.is( "[rel='external']" ) ) {
