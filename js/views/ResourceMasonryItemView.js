@@ -134,15 +134,7 @@ define([
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
-  //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
-        var oWidth  = json["originalWidth"];
-        var oHeight = json["originalHeight"];
-        if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-          var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
-          tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
-          tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
-        }
-
+        _.extend(tmpl_data, this.setImageSize(json));
       }
       var dn = json['davDisplayName'];
       var dnProps = U.getDisplayNameProps(meta);
@@ -402,16 +394,8 @@ define([
       var renabFor = tmpl_data['v_showRenabFor'];
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
         tmpl_data['v_showRenabFor'] = U.encode(U.getLongUri(json[renabFor].value, Voc) + '&m_p=nabs&b_p=forResource');
-      
-      // set size of images included in the items to be able
-      // to start masonry code before images downloading
-      var oWidth  = json["originalWidth"];
-      var oHeight = json["originalHeight"];
-      if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-        var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
-        tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
-        tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
-      }
+
+      _.extend(tmpl_data, this.setImageSize(json));
       
       try {
         this.$el.html(this.modTemplate(tmpl_data));
@@ -419,7 +403,21 @@ define([
         console.log(this.TAG, 'failed to build masonry item for Modification resource ' + json['resourceDisplayName'] + ': ' + err);
       }
       return this;
+    },
+    // set size of images included in the items to be able
+    // to start masonry code before images downloading
+    setImageSize: function(json) {
+      var retObj = new Object();
+      var oWidth  = json["originalWidth"];
+      var oHeight = json["originalHeight"];
+      if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+        var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+        retObj['imgWidth'] = Math.floor(oWidth * ratio);
+        retObj['imgHeight'] = Math.floor(oHeight * ratio);
     }
+      return retObj;
+    },
+    
   }, {
     displayName: 'ResourceMasonryItemView'
   });
