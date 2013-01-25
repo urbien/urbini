@@ -1038,7 +1038,10 @@ define('globals', function() {
       } catch(e) {
         script.text = text; // IE
       }
-      (d.head || d.body).appendChild(script);
+      
+      var parent = d.head || d.body;
+      parent.appendChild(script);
+      parent.removeChild(script);
       callback(text);
     },
 

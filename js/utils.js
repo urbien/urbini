@@ -464,7 +464,7 @@ define([
             return;
           }
           
-          var nameVal = U.makeProp(res, prop.shortName, val, pisListView ? prop.displayNameElm : undefined);
+          var nameVal = U.makeProp(res, prop.shortName, val, isListView ? prop.displayNameElm : undefined);
           var nvn = nameVal.name;
           rows[nvn] = {value: nameVal.value};
           rows[nvn].idx = i++;
@@ -1358,8 +1358,12 @@ define([
         return val;
       }      
       
-      if (val.value)
-        return range.indexOf("/") === -1 ? val.value : U.getLongUri(val.value);
+      var value = val.value;
+      if (value) {
+        if (range.indexOf("/") === -1)
+          return value;
+        return value.indexOf('/') === -1 ? value : U.getLongUri(value);
+      }
       
       return val;
     },
