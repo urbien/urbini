@@ -5,11 +5,11 @@ window.onload = function() {
   };
   
   if (!localStorage || !localStorage.getItem)
-    return this.copout();
+    return copout();
   
   var g = localStorage.getItem('Globals');
   if (!g) {
-    this.copout();
+    copout();
     return;
   }
   

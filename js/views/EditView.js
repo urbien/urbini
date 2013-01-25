@@ -131,6 +131,10 @@ define([
       var vocModel = this.vocModel;
       var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE';
       var redirectTo = vocModel.onCreateRedirectTo;
+      // check if we came here by backlink
+      if (!redirectTo) 
+        redirectTo = U.getContainerProperty(vocModel);
+ 
       var redirectParams = {};      
       var redirectRoute = '';
       var redirectPath = '';
@@ -158,7 +162,7 @@ define([
             
             redirectPath = redirectPath || vocModel.properties[redirectTo].type._uri;
           }
-          else 
+          else  
             redirectPath = vocModel.type;
           
           redirectPath = encodeURIComponent(redirectPath);
@@ -253,7 +257,7 @@ define([
         
         // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         var onSaveError = function(resource, xhr, options) {
-          $('.formElement').attr('disabled', false);
+          self.getInputs().attr('disabled', false);
           var code = xhr.code || xhr.status;
           if (xhr.statusText === 'error' || code === 0) {            
             Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
@@ -358,6 +362,8 @@ define([
         res.off('change', onSuccess, self);
         self.fieldError.apply(self, arguments);
         inputs.attr('disabled', false);
+        if (texts)
+          texts.attr('disabled', false);
 //        alert('There are errors in the form, please review');
       };
 //
@@ -435,7 +441,9 @@ define([
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var displayedProps = {};
-      
+
+      var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
+
       var formId = G.nextId();
       var idx = 0;
       var groupNameDisplayed;
@@ -454,6 +462,8 @@ define([
               continue;
             
             var prop = meta[p];
+            if (params[p]  &&  prop.containerMember)
+              continue;
             if (!prop) {
 //              delete json[p];
               continue;
@@ -480,6 +490,8 @@ define([
             continue;
           
           var prop = meta[p];
+          if (params[p]  &&  prop.containerMember)
+            continue;
           if (_.has(backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
             continue;
           
@@ -511,27 +523,67 @@ define([
       this.$form = form = this.$('form');
       var inputs = this.getInputs(); //form.find('input');
       var view = this;
-      inputs.each(function(idx, input) {
-//        var input = inputs[i];
-        var i = input;
-        var name = i.name;
-        var jin = $(i);
-        var jparent = jin.parent();
-        var validated = function() {
-          jparent.find('label.error').remove();
-//          i.focus();
-        };
-
-        var onFocusout = function() {
-          var atts = {};
-          atts[this.name] = this.value;
-          self.setValues(atts, {onValidated: validated, onValidationError: self.fieldError});          
-        };
-        
-        jin.focusout(onFocusout);
-//        jin.keyup(onFocusout);
-      });
       
+      var initInputs = function(inputs) {
+        for (var i=0; i<inputs.length; i++) {
+          var i = inputs[i];
+//          var i = input;
+          var name = i.name;
+          var jin = $(i);
+          var jparent = jin.parent();
+          var validated = function() {
+            jparent.find('label.error').remove();
+  //          i.focus();
+          };
+  
+          var onFocusout = function() {
+            self.setValue(this.name, this.value, validated, self.fieldError);          
+          };
+          
+          jin.focusout(onFocusout);
+        }
+//        jin.keyup(onFocusout);
+      };
+
+      initInputs(inputs);
+//      inputs.each(function(idx, input) {
+////        var input = inputs[i];
+//        var i = input;
+//        var name = i.name;
+//        var jin = $(i);
+//        var jparent = jin.parent();
+//        var validated = function() {
+//          jparent.find('label.error').remove();
+////          i.focus();
+//        };
+//
+//        var onFocusout = function() {
+//          self.setValue(this.name, this.value, validated, self.fieldError);          
+//        };
+//        
+//        jin.focusout(onFocusout);
+////        jin.keyup(onFocusout);
+//      });
+//      
+//      texts.each(function(idx, textarea) {
+//  //      var input = inputs[i];
+//        var i = textarea;
+//        var name = i.name;
+//        var jin = $(i);
+//        var jparent = jin.parent();
+//        var validated = function() {
+//          jparent.find('label.error').remove();
+//  //        i.focus();
+//        };
+//  
+//        var onFocusout = function() {
+//          self.setValue(this.name, this.value, validated, self.fieldError);          
+//        };
+//        
+//        jin.focusout(onFocusout);
+//  //      jin.keyup(onFocusout);
+//      });
+        
       form.find('input.required').each(function() {
         $(this).prev('label').addClass('req');
       });

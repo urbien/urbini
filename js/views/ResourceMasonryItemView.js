@@ -173,7 +173,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(vocModel, 'Votable')) {
@@ -182,7 +182,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -251,7 +251,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -260,7 +260,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -314,7 +314,7 @@ define([
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
-      tmpl_data['_uri'] = rUri;  
+      tmpl_data['rUri'] = rUri;  
       tmpl_data['davDisplayName'] = dn;
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
@@ -337,7 +337,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -346,7 +346,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -393,11 +393,11 @@ define([
       
       var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(json[commentsFor], Voc) + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor].value, Voc)); // + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data.v_showVotesFor = U.encode(U.getLongUri(json[votesFor], Voc) + '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, Voc)); //+ '&m_p=votes&b_p=votable');
 
       var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
