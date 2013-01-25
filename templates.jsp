@@ -454,12 +454,12 @@
 
 <script type="text/template" id="longEnumPET">
   <label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" data-native-menu="false" class="{{= 'formElement ' + classes }}" data-mini="true" >
-    <option>{{= value || '' }}</option>
+  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'formElement ' + classes }}" data-mini="true" >
+    {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
-    {{   var p = options[o]; }}
-    <option value="{{= p.shortName }}">{{= U.getPropDisplayName(p) }}</option>
+    {{   var val = U.getPropDisplayName(options[o]); }}
+    <option value="{{= val }}">{{= val }}</option>
     {{ } }}
   </select>
 </script>

@@ -57,7 +57,6 @@ define('app', [
       Templates.loadTemplates();
       Voc.checkUser();
       Voc.loadStoredModels();
-    //  setTimeout(function() {RM.loadStoredModels({all: true})}, 100);
       if (!Voc.changedModels.length && !Voc.newModels.length) {
         RM.restartDB(App.startApp, error);
         return;
@@ -78,7 +77,7 @@ define('app', [
       G.Router = new Router();
       Backbone.history.start();
       
-      _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl)});
+      _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
 //      G.homePage = G.homePage || G.tabs[0].mobileUrl;
 //      if (!window.location.hash) {
 //        G.Router.navigate(G.homePage, {trigger: true});
