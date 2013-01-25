@@ -384,8 +384,8 @@ define([
           newStores = RM.updateStores();
         }
         
-        if (!newStores.length)
-          callback();
+        if (!newStores || !newStores.length)
+          callback  &&  callback();
         else if (useWebSQL) {
           numCallbacks = _.reduce(newStores, function(a, b) {
             return a + (!_.isUndefined(b.__ready.createObjectStore) ? 1 : 0) + (!_.isUndefined(b.__ready.createIndex) ? b.indexNames.length : 0) 
@@ -829,6 +829,9 @@ define([
       }
       
       trans.oncomplete = function(e) {
+        if (success && error) // neither success nor error were called
+          error(e);
+          
         G.log(RM.TAG, 'db', 'finished readonly transaction for store', type);
       };
       
@@ -858,10 +861,16 @@ define([
 //        G.log(RM.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
         if (result) {
-          if (query)
-            return success(result);
-          else if (uri)
-            return success([result]);
+          if (query) {
+            result = success(result);
+            success = null;
+            return result;
+          }
+          else if (uri) {
+            result = success([result]);
+            success = null;
+            return result;
+          }
           
           var val = result.value;
           if (valueTester && !valueTester(val)) {
@@ -882,6 +891,7 @@ define([
       dbReq.onerror = function (e) {
         G.log(RM.TAG, 'db', 'read via cursor onerror', e);
         error && error(e);
+        error = null;
 //        RM.onerror(e);
       }
             
