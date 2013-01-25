@@ -205,7 +205,7 @@ define([
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + prop.displayName + '</u></i></div>';                
             }
             
-            var val = U.makeProp(res, p);
+            var val = U.makeProp({resource: res, prop: prop1, value: json[p]});
 //              var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
             var range = prop1.range;
             var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val : val;

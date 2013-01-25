@@ -100,7 +100,7 @@ define([
               continue;
   
             displayedProps[p] = true;
-            var val = U.makeProp(res, p, json[p]);
+            var val = U.makeProp({resource: res, prop: prop, value: json[p]});
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -150,7 +150,7 @@ define([
           groupNameDisplayed = true;
         }
         
-        var val = U.makeProp(res, p, json[p]);
+        var val = U.makeProp({resource: res, propName: p, prop: prop, value: json[p]});
         var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
         if (otherLi) {
           if (val.name.length + v.length > maxChars)

@@ -1363,7 +1363,7 @@ define('globals', function() {
     }
   }
   
-  G.minify = G.getCookie(mCookie) === 'y';
+  G.minify = G.getCookie(mCookie) !== 'n';
   // END minify
   
   require.config({

@@ -29,7 +29,7 @@ define([
       this.vocModel = this.constructor;
     },
     onsync: function() {
-      debugger;
+//      debugger;
     },
     cancel: function(options) {
       var props = this.vocModel.properties;

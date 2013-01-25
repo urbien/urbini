@@ -464,7 +464,7 @@ define([
             return;
           }
           
-          var nameVal = U.makeProp(res, prop.shortName, val);
+          var nameVal = U.makeProp({resource: res, prop: prop, value: val});
           var nvn = nameVal.name;
           rows[nvn] = {value: nameVal.value};
           rows[nvn].idx = i++;
@@ -977,9 +977,14 @@ define([
         return modelOrJson[prop];
     },
     
-    makeProp: function(res, propName, val) {
+    makeProp: function(info) {
+      var res = info.resource;
       var vocModel = res.vocModel;
-      var prop = vocModel.properties[propName];
+      var propName = info.propName;
+      var prop = info.prop || propName && vocModel.properties[propName];
+      propName = propName || prop.shortName;
+      var val = info.value || U.getValue(res, propName);
+      
       var cc = prop.colorCoding;
       if (cc) {
         cc = U.getColorCoding(cc, val);
