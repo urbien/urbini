@@ -563,7 +563,7 @@ define('globals', function() {
         return supported;
       })();
 
-  define('cache', ['module', 'require'], function (module, require) {
+  define('cache', ['module', 'require'], function (module, localReq) {
     var masterConfig = (module.config && module.config()) || {};
     var cache = {
       TAG: 'cache',
@@ -593,7 +593,7 @@ define('globals', function() {
           default:
             onLoad.fromText(text);
 //            var callback = function() {
-//              require([name], onLoad);
+//              localReq([name], onLoad);
 //            }
 //            
 //            G.inject(text, callback);
@@ -1026,24 +1026,24 @@ define('globals', function() {
       (element || body).appendChild(div);
     },
     
-    inject: function(module, text, callback) {
-      var d = document;
-      var script = d.createElement("script");
-      var id = "script" + (new Date).getTime();
-      var root = d.documentElement;
-      script.type = "text/javascript";
-//      script.innerHtml = text;
-      try {
-        script.appendChild(d.createTextNode(text));
-      } catch(e) {
-        script.text = text; // IE
-      }
-      
-      var parent = d.head || d.body;
-      parent.appendChild(script);
-      parent.removeChild(script);
-      callback(text);
-    },
+//    inject: function(module, text, callback) {
+//      var d = document;
+//      var script = d.createElement("script");
+//      var id = "script" + (new Date).getTime();
+//      var root = d.documentElement;
+//      script.type = "text/javascript";
+////      script.innerHtml = text;
+//      try {
+//        script.appendChild(d.createTextNode(text));
+//      } catch(e) {
+//        script.text = text; // IE
+//      }
+//      
+//      var parent = d.head || d.body;
+//      parent.appendChild(script);
+//      parent.removeChild(script);
+//      callback(text);
+//    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -1276,34 +1276,22 @@ define('globals', function() {
     
     inject: function(text, callback) {
       var script = doc.createElement("script");
-      var id = "script" + (new Date).getTime();
-      var root = doc.documentElement;      
       script.type = "text/javascript";
-      try {
-        script.appendChild(doc.createTextNode( "window." + id + "=1;" ));
-      } catch(e) {}
-      
-      root.insertBefore(script, root.firstChild);
-      script.onreadystatechange = script.onload = function() {
-        var state = script.readyState;
-        if (!callback.done && (!state || /loaded|complete/.test(state))) {
-          callback.done = true;
-          callback();
-        }
-      };
-
+      script.async = true;
       // Make sure that the execution of code works by injecting a script
       // tag with appendChild/createTextNode
       // (IE doesn't support this, fails, and uses .text instead)
-      if (window[id]) {
-        delete window[id];
+      try {
         script.appendChild(doc.createTextNode(text));
-      } else {
-        script.text = data;
+      } catch (err) {
+        script.text = text;
       }
 
-      (body || head).appendChild(script);
-//      setTimeout(callback, 1000);
+      head.appendChild(script);
+      head.removeChild(script);
+//      var root = doc.documentElement;      
+//      root.insertBefore(script, root.firstChild);
+//      root.removeChild(script);
       callback();
     }
         
@@ -1396,6 +1384,7 @@ define('globals', function() {
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
       queryIndexedDB: 'lib/queryIndexedDB',
+//      priorityQueue: 'lib/priorityQueue',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
       jqueryImagesloaded: 'lib/jquery.imagesloaded',
