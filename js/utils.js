@@ -140,7 +140,7 @@ define([
         }
       }
       else if (subPropertyOf && vocModel) // This only works if we have all superclass props on subclass
-        return U.isCloneOf(vocModel[subPropertyOf], slice.call(arguments, 1));
+        return U.isCloneOf(vocModel[U.getLongUri(subPropertyOf)], slice.call(arguments, 1));
       
       return false;
     },
@@ -428,11 +428,17 @@ define([
       return null;
     },
     
+    getColsMeta: function(vocModel, colsType) {
+      colsType = colsType || 'grid';
+      var cols = vocModel[colsType + 'Cols'];
+      cols = cols && cols.split(',');
+      return _.uniq(_.map(cols, function(c) {return c.trim()}));
+    },
     
-    getGridCols: function(model, typeOfCols) {
-      var m = model;
-      var mConstructor = m.constructor;
-      var cols = typeOfCols ? mConstructor[typeOfCols] : mConstructor.gridCols;
+    getCols: function(res, colsType) {
+      colsType = colsType || 'grid';
+      var vocModel = res.vocModel;
+      var cols = vocModel[colsType + 'Cols'];
       cols = cols && cols.split(',');
       var resourceLink;
       var rows = {};
@@ -440,27 +446,31 @@ define([
       if (cols) {
         _.each(cols, function (col) {
           col = col.trim();
-          var prop = mConstructor.properties[col];
+          var prop = vocModel.properties[col];
           if (!prop)
             return;
-          var val = m.get(col);
+          
+          var val = res.get(col);
           if (!val) {
             var pGr = prop.propertyGroupList;
             if (pGr) {
-              var s = prop.label || prop.displayName;
+              var s = U.getPropDisplayName(prop);
               var nameVal = {name: s, value: pGr};
-              rows[nameVal.name] = {value : nameVal.value};  
-              rows[nameVal.name].propertyName = col;  
-              rows[nameVal.name].idx = i++;
+              rows[s] = {value : pGr};  
+              rows[s].propertyName = col;  
+              rows[s].idx = i++;
             }
+            
             return;
           }
-          var nameVal = U.makeProp(prop, val);
-          rows[nameVal.name] = {value: nameVal.value};
-          rows[nameVal.name].idx = i++;
-          rows[nameVal.name].propertyName = col;
+          
+          var nameVal = U.makeProp(res, prop.shortName, val);
+          var nvn = nameVal.name;
+          rows[nvn] = {value: nameVal.value};
+          rows[nvn].idx = i++;
+          rows[nvn].propertyName = col;
           if (prop.resourceLink)
-            rows[nameVal.name].resourceLink = true;
+            rows[nvn].resourceLink = true;
     //        resourceLink = nameVal.value;
     //      else
         });
@@ -668,6 +678,10 @@ define([
     },
     
     getDisplayName: function(resource, meta) {
+      var dn = resource.get('davDisplayName');
+      if (dn)
+        return dn;
+      
       var vocModel = resource.vocModel;
       if (!meta) 
         meta = vocModel.properties;
@@ -876,10 +890,14 @@ define([
       return _.map(data instanceof Backbone.Collection ? data.models : [data], function(m) {return m.get('_uri')});
     },
     
-    isCollection: function(resOrCol) {
-      return resOrCol instanceof Backbone.Collection;
+    isCollection: function(res) {
+      return res instanceof Backbone.Collection;
     },
-    
+
+    isModel: function(res) {
+      return res instanceof Backbone.Model;
+    },
+
     getModel: function(resOrCol) {
       return U.isCollection(resOrCol) ? resOrCol.model : resOrCol.constructor;
     },
@@ -952,7 +970,16 @@ define([
       return false;
     },
 
-    makeProp: function(prop, val) {
+    getValue: function(modelOrJson, prop) {
+      if (U.isModel(modelOrJson))
+        return modelOrJson.get(prop);
+      else
+        return modelOrJson[prop];
+    },
+    
+    makeProp: function(res, propName, val) {
+      var vocModel = res.vocModel;
+      var prop = vocModel.properties[propName];
       var cc = prop.colorCoding;
       if (cc) {
         cc = U.getColorCoding(cc, val);
@@ -964,18 +991,31 @@ define([
         }
       }
       
+      val = val || res.get(propName) || '';
+      var displayName = res.get(propName + '.displayName');
+      if (displayName)
+        val = {value: val, displayName: displayName};
+      else
+        val = {value: val};
+      
       var propTemplate = Templates.getPropTemplate(prop);
-      val = typeof val === 'undefined' || val == null ? '' : val.displayName ? val : {value: val}; 
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, val, formId) {
-      var propTemplate = Templates.getPropTemplate(prop, true);
+    makeEditProp: function(prop, val, formId, Voc) {
+      var propTemplate = Templates.getPropTemplate(prop, true, val);
       val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
-      if (propTemplate === 'enumPET') {
+      var isEnum = propTemplate === 'enumPET';      
+      if (isEnum) {
         var facet = prop.facet;
-        facet = facet.slice(facet.lastIndexOf('/') + 1);
-        val.options = G.Voc.shortNameToEnum[facet].values;
+        var eCl = Voc.typeToEnum[U.getLongUri(facet)];
+        if (!eCl)
+          throw new Error("Enum {0} has not yet been loaded".format(facet));
+        
+        var valLength = _.pluck(eCl.values, "displayName").join('').length;
+        propTemplate = 'longEnumPET';
+//        propTemplate = valLength < 25 ? 'shortEnumPET' : 'longEnumPET';
+        val.options = eCl.values;
       }
       
       val.value = val.value || null;
@@ -1003,6 +1043,7 @@ define([
       
       val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      _.extend(val, {U: U, G: G});
       
       return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment, U: U, G: G};
     },
@@ -1103,7 +1144,11 @@ define([
       return decodeURIComponent(str).replace(/\+/g, ' ');
     },
     
-    primitiveTypes: {uri: 'system/primitiveTypes', floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], ints: ['int', 'long', 'Duration']},
+    primitiveTypes: {
+//      uri: 'system/primitiveTypes', 
+      floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
+      ints: ['int', 'long', 'Duration']
+    },
     getTypedValue: function(res, prop, value) {
       var vocModel = res.vocModel;
       var p = U.primitiveTypes;
@@ -1113,15 +1158,15 @@ define([
         return parseFloat(value);
       else if (p.ints.indexOf(range) != -1)
         return parseInt(value);
-      else if (range.startsWith(p.uri)) {
-        range = range.slice(pt.length + 1);
-        if (p.floats.indexOf(range) != -1)
-          return parseFloat(value);
-        else if (p.ints.indexOf(range) != -1)
-          return parseInt(value);
-        else
-          return value;        
-      }
+//      else if (range.startsWith(p.uri)) {
+//        range = range.slice(pt.length + 1);
+//        if (p.floats.indexOf(range) != -1)
+//          return parseFloat(value);
+//        else if (p.ints.indexOf(range) != -1)
+//          return parseInt(value);
+//        else
+//          return value;        
+//      }
       
       if (range == 'ComplexDate' || range ==  'dateTime') {
         try {
@@ -1243,11 +1288,53 @@ define([
       }
       return {x: x, y: y, w: w, h: h};
     },
+    
+    getHash: function() {
+      var hash = window.location.hash;
+      return hash.length ? hash.slice(1) : hash;
+    },
+    
+    flattenModelJson: function(m, vocModel) {
+      var vocProps = vocModel.properties;
+      var flat = {};
+      for (var name in m) {
+        var prop = vocProps[name];
+        if (name.indexOf(".") != -1) {
+          flat[name] = m[name];
+          continue;
+        }
+          
+        if (!prop)
+          continue;
+        
+        flat[name] = U.getFlatValue(prop, m[name]);
+      }
+      
+      return flat;
+    },
+    
+    getFlatValue: function(prop, val) {
+      if (U.isNully(val))
+        return null;
+      
+      var range = prop.range || '';
+      if (typeof val !== 'object') {
+        if (range.indexOf('/') != -1 && /^[a-z]+\//.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
+          return U.getLongUri(val);
+        
+        return val;
+      }      
+      
+      if (val.value)
+        return range.indexOf("/") === -1 ? val.value : U.getLongUri(val.value);
+      
+      return val;
+    },
+    
+    isNully: function(val) {
+      return _.isUndefined(val) || val === null || val === '';
+    },
 
-//    
-//    addBaseTemplateParams: function(t) {
-//      _.extend(t, {U: U, G: G});
-//    },
     slice: slice
   };
 

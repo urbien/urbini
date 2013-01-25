@@ -147,7 +147,7 @@ define([
         if (isModification  ||  isMasonry)
           this.$el.trigger('create');
         else
-          this.$el.listview('refresh');
+          this.$el.listview().listview('refresh');
       }
       else {
         this.initializedListView = true;
@@ -350,6 +350,8 @@ define([
       }
       else  
         this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self.resumeScrollEventProcessing(); });
+      
+      this.$el.trigger('create');      
     },
     // checks if built masonry (or listview) in the view
     hasMasonry: function() {

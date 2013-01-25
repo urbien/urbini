@@ -137,7 +137,7 @@ define([
   },
   {
     getMapItemHTML: function(res) {
-      var grid = U.getGridCols(res);
+      var grid = U.getCols(res, 'grid');
     
       var resourceLink;
       for (var row in grid) {

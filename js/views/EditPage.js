@@ -11,21 +11,22 @@ define([
   'cache!views/LoginButtons',
   'cache!views/AroundMeButton',
   'cache!views/MenuButton',
+  'cache!views/MenuPanel',
   'cache!views/EditView',
   'cache!views/ResourceImageView',
   'cache!views/ControlPanel'
-], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, MenuPanel, EditView, ResourceImageView, ControlPanel) {
+  var editOptions = ['action', 'viewId'];
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
-
   //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('resourceEdit'));
       this.TAG = "EditPage";
-      this.action = options && options.action || 'edit';
-      this.viewId = options.viewId;
+      this.editOptions = _.extend({action: 'edit'}, _.pick(options, this.editOptions));
+      _.extend(this, this.editOptions);
       Events.on("mapReady", this.showMapButton);
     },
     set: function(params) {
@@ -80,7 +81,7 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
-      var json = res.toJSON();
+      var json = res.attributes;
       json.viewId = this.cid;
       this.$el.html(this.template(json));
       
@@ -104,7 +105,7 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
       this.imageView.render();
-      this.editView = new EditView({el: $('#resourceEditView', this.el), model: res, parentView: this});
+      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res}, this.editOptions));
       if (this.editParams)
         this.editView.set(this.editParams);
       

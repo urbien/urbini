@@ -12,98 +12,101 @@
  */
 
 define(['cache!indexedDBShim'], function() {
-  (function() {
+
+  function init() {
+    (function() {
 //    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
 //    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
-    var getAll_ = function(fn, range, direction) {
-      // This is the most common use of IDBKeyRange. If more specific uses of
-      // cursors are needed then a full wrapper should be created.
-      var d = {};
-      var request;
-      try {
-        if (range) {
-          request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range), direction || IDBCursor.NEXT);
-        } else {
-          request = this[fn](null, direction || IDBCursor.NEXT);
+      var getAll_ = function(fn, range, direction) {
+        // This is the most common use of IDBKeyRange. If more specific uses of
+        // cursors are needed then a full wrapper should be created.
+        var d = {};
+        var request;
+        try {
+          if (range) {
+            request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range), direction || IDBCursor.NEXT);
+          } else {
+            request = this[fn](null, direction || IDBCursor.NEXT);
+          }
+        } catch (err) {
+          d.onerror && d.onerror(err);
+          return null;
         }
-      } catch (err) {
-        d.onerror && d.onerror(err);
-        return null;
-      }
-      
-      var result = [];
-      request.onsuccess = function(ev) {
-        var cursor = ev.target.result;
-        if (cursor) {
-          result.push(cursor.value || cursor.primaryKey);
-          cursor['continue']();
-        }
-        else {
-          d.result = result;
-          d.onsuccess && d.onsuccess(ev);
-        }
-      };
-      
-      request.onerror = d.onerror;
-      return d;
-    };
-
-    var methods = {
-      getAllKeys: function(bound, direction) {
-        return getAll_.call(this, 'openKeyCursor', bound, direction);
-      },
-      
-      getAll: function(bound, direction) {
-        return getAll_.call(this, 'openCursor', bound, direction);
-      },
-      
-      openKeyCursor: function(bound, direction) {
-        var req = {};
-        var ocReq = bound ? this.openCursor(bound, direction) : this.openCursor(direction);
-        var toReturn = [];
-        ocReq.onsuccess = function(event) {
-          var cursor = event.target.result;
+        
+        var result = [];
+        request.onsuccess = function(ev) {
+          var cursor = ev.target.result;
           if (cursor) {
-            toReturn.push(cursor.primaryKey);
+            result.push(cursor.value || cursor.primaryKey);
             cursor['continue']();
           }
           else {
-            req.result = toReturn;
-            req.onsuccess && req.onsuccess.call(self, toReturn);
+            d.result = result;
+            d.onsuccess && d.onsuccess(ev);
           }
         };
         
-        ocReq.onerror = function(event) {
-          req.onerror && req.onerror.call(self, event);
-        };
+        request.onerror = d.onerror;
+        return d;
+      };
+  
+      var methods = {
+        getAllKeys: function(bound, direction) {
+          return getAll_.call(this, 'openKeyCursor', bound, direction);
+        },
         
-        return req;
-      }
-    };
-
-    var args = arguments;
-    for (var i = 0; i < args.length; i++) {
-      var obj = args[i];
-      for (var m in methods) {
-        if (!obj.prototype[m]) {
-          obj.getAll_ = getAll_;
-          for (var method in methods) {
-            obj.prototype[method] = obj.prototype[method] || obj.prototype['moz' + method] || methods[method];
-          }
+        getAll: function(bound, direction) {
+          return getAll_.call(this, 'openCursor', bound, direction);
+        },
+        
+        openKeyCursor: function(bound, direction) {
+          var req = {};
+          var ocReq = bound ? this.openCursor(bound, direction) : this.openCursor(direction);
+          var toReturn = [];
+          ocReq.onsuccess = function(event) {
+            var cursor = event.target.result;
+            if (cursor) {
+              toReturn.push(cursor.primaryKey);
+              cursor['continue']();
+            }
+            else {
+              req.result = toReturn;
+              req.onsuccess && req.onsuccess.call(self, toReturn);
+            }
+          };
           
-          break;
+          ocReq.onerror = function(event) {
+            req.onerror && req.onerror.call(self, event);
+          };
+          
+          return req;
+        }
+      };
+  
+      var args = arguments;
+      for (var i = 0; i < args.length; i++) {
+        var obj = args[i];
+        for (var m in methods) {
+          if (!obj.prototype[m]) {
+            obj.getAll_ = getAll_;
+            for (var method in methods) {
+              obj.prototype[method] = obj.prototype[method] || obj.prototype['moz' + method] || methods[method];
+            }
+            
+            break;
+          }
         }
       }
-    }
-    
-//    // TODO: for now, override native methods, so we can implement limit and offset
-//    for (var i = 0; i < args.length; i++) {
-//      var obj = args[i];
-//      for (var m in methods) {
-//        obj.prototype[m] = methods[m];
-//      }
-//    }
-  })(IDBIndex, IDBObjectStore);
+      
+  //    // TODO: for now, override native methods, so we can implement limit and offset
+  //    for (var i = 0; i < args.length; i++) {
+  //      var obj = args[i];
+  //      for (var m in methods) {
+  //        obj.prototype[m] = methods[m];
+  //      }
+  //    }
+    })(IDBIndex, IDBObjectStore);
+  }
   
   function Index(name) {
     function queryMaker(op) {
@@ -231,7 +234,8 @@ define(['cache!indexedDBShim'], function() {
             return;
           }
           else if (!keys.length || limit && limit == results.length) {
-            results.push(r.result);
+            var item = r.result;
+            item && results.push(item);
             notifySuccess(request, results);
             return;
           }
@@ -495,6 +499,7 @@ define(['cache!indexedDBShim'], function() {
   }
   
   return {
+    init: init,
     Index: Index,
     notifySuccess: notifySuccess,
     Cursor: Cursor,

@@ -78,7 +78,7 @@ define([
       }
       var self = this;
       var res = this.resource || this.collection;
-      var json = res.toJSON();
+      var json = res.attributes;
       this.$el.html(this.template(json));      
 
       var ul = this.$('#menuItems');
@@ -99,7 +99,7 @@ define([
         if (isModificationHistory) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
           if (ch  && !this.vocModel.properties[ch[0]].hidden) 
-            U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource_verified=y&amp;forResource_select=' + encodeURIComponent(this.resource.get('_uri'))}));
+            U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
         }
       }
       if (!G.currentUser.guest) {

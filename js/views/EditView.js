@@ -18,14 +18,13 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValue', 'getRedirect'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
-      this.parentView = options && options.parentView;
       this.backlinkModel = options.backlinkModel;
       
       var params = U.getQueryParams();
@@ -55,12 +54,14 @@ define([
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
       function onChoose(res) {
-        G.log(self.TAG, 'testing', res.toJSON());
+        G.log(self.TAG, 'testing', res.attributes);
         var props = {};
         props[prop] = res.get('_uri');
         self.resource.set(props, {skipValidation: true, skipRefresh: true});
-        e.target.innerHTML = res.get('davDisplayName');
-        G.Router.navigate(hash, {trigger:true, replace: true});
+        var link = e.target;
+        link.innerHTML = res.get('davDisplayName');
+        $(link).data('uri', res.getUri());
+        self.router.navigate(hash, {trigger:true, replace: true});
 //        G.Router.changePage(self.parentView);
         // set text
       }
@@ -77,7 +78,13 @@ define([
     },
     resetForm: function() {
       $('form').clearForm();      
-      this.originalResource = this.resource.toJSON();
+//      this.originalResource = this.resource.toJSON();
+    },
+    getInput: function(selector) {
+      return this.$form.find('input').or('textarea').find(selector);
+    },
+    getInputs: function() {
+      return this.$form.find('.formElement,.resourceProp');
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -120,10 +127,9 @@ define([
         }, 1000);
       }
     },
-    getRedirect: function() {
-      var res = this.model;
+    redirect: function(res, options) {
       var vocModel = this.vocModel;
-      var redirectAction = vocModel.onCreateRedirectToAction || 'PROPFIND';
+      var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE';
       var redirectTo = vocModel.onCreateRedirectTo;
       var redirectParams = {};      
       var redirectRoute = '';
@@ -138,7 +144,7 @@ define([
               var range = U.getLongUri(prop.range);
               range = range && Voc.typeToModel[range];
               if (range) {
-                redirectParams[pName] = res.get(pName).value;
+                redirectParams[pName] = res.get(pName);
                 var bl = redirectTo.slice(dotIdx + 1);
                 var blProp = range.properties[bl];
                 if (blProp)
@@ -156,6 +162,7 @@ define([
             redirectPath = vocModel.type;
           
           redirectPath = encodeURIComponent(redirectPath);
+          options.forceRefresh = true;
           break;
         case 'PROPFIND':
         case 'PROPPATCH':
@@ -178,9 +185,14 @@ define([
           
           redirectRoute = 'view/';
           break;
+        case 'SOURCE':
+          redirectPath = self.source;
+          options.forceRefresh = true;
+          break;
         default:
           G.log(self.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
           redirectPath = encodeURIComponent(vocModel.type);
+          options.forceRefresh = true;
           break;
       }
       
@@ -188,88 +200,158 @@ define([
       if (redirectMsg)
         redirectParams['-info='] = redirectMsg;
       
-      return redirectRoute + redirectPath + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
+      var redirect = redirectRoute + redirectPath + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
+      this.router.navigate(redirect, options);
+    },
+    getValue: function(input) {
+      var val = input.tagName === 'A' ? $(input).data('uri') : input.value;
+      if (_.contains(input.classList, 'boolean'))
+        return val === 'Yes' ? true : false;
+      else
+        return typeof val === 'undefined' ? 'null' : val;
     },
     submit: function(e) {
       Events.stopEvent(e);
+      var isEdit = (this.action === 'edit');
       var res = this.resource; 
-      if (res.getUri()) {
-        this.router.navigate(this.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+      if (!isEdit && res.getUri()) {
+        this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
       
-      var inputs = this.$form.find('input');;
+      var inputs = this.getInputs();
       inputs.attr('disabled', true);
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
           form = this.$form, 
-          vocModel = this.vocModel,
-          baseParams = {'$returnMade': 'y'};
+          vocModel = this.vocModel;
       
+      var atts = {};
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var name = input.name;
+        if (_.isUndefined(name))
+          continue;
+        
+        val = this.getValue(input);
+        atts[name] = val;
+      }
+      
+      this.resetResource();
+      this.setValues(atts, {onValidationError: this.fieldError});
       var succeeded = false;
       var onSuccess = function() {
         if (succeeded)
           return;
         
         succeeded = true;
-        var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
-        if (this.action === 'edit' && !_.size(props))
+        var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
+//        var props = atts;
+        if (isEdit && !_.size(props))
           return;
         
         // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
-        
-        _.extend(props, baseParams);
-//        _.extend(props, {type: vocModel.type, uri: res.get('_uri')});
-        var callback = function(xhr, status) {
-          inputs.attr('disabled', false);
-          if (status !== 'success') {
-            alert('There was an error with your request, please resubmit');
+        var onSaveError = function(resource, xhr, options) {
+          $('.formElement').attr('disabled', false);
+          var code = xhr.code || xhr.status;
+          if (xhr.statusText === 'error' || code === 0) {            
+            Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
             return;
           }
           
-          switch (xhr.status) {
-          case 304:
-            alert('No changes made');
-            $('input').attr('disabled', false);
-            break;
-          case 200:
-            var json;
-            try {
-              json = JSON.parse(xhr.responseText);
-              if (json.error) {
-//                self.resetResource();
-                switch (json.error.code) {
-                case 401:
-                  Errors.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
-                  break;
-//                case 409:
-//                  break;
-                default:
-                  Errors.errDialog({msg: json.error.details, delay: 100});
-                  break;
-                }
-                
-                G.log(self.TAG, 'error', JSON.stringify(json));
-                return;
-              }
-              else {
-                res.set(json, {skipRefresh: true});
-              }
-            } catch (err) {
+          var json = {};
+          try {
+            json = JSON.parse(xhr.responseText);
+          } catch (err) {
+          }
+          
+          var msg = json.error.details;
+          switch (code) {
+            case 401:
+              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+              break;
+            case 404:
+              debugger;
+              Errors.errDialog({msg: msg || 'Item not found', delay: 100});
+              break;
+            case 409:
+              debugger;
+              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
+              break;
+            default:
+              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+//              debugger;
+              break;
+          }
+        };
+        
+        res.save(props, {
+          success: function(resource, response, options) {
+            if (response.error) {
+              onSaveError(resource, response, options);
+              return;
             }
             
-            Events.trigger('refresh', res, res.get('_uri'));
-            setTimeout(function() {RM.addItem(res)}, 100);
-            break;
-//          case 404:
-//            alert('The item you\'re editing doesn\'t exist');
-          }
-
-          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-        }
+            $('.formElement').attr('disabled', false);
+//            res.set(response, {skipRefresh: true});
+            self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+          },
+          
+          error: onSaveError
+        });
         
-        $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
+//        _.extend(props, baseParams);
+//        _.extend(props, {type: vocModel.type, uri: res.get('_uri')});
+//        var callback = function(xhr, status) {
+//          inputs.attr('disabled', false);
+//          if (status !== 'success') {
+//            alert('There was an error with your request, please resubmit');
+//            return;
+//          }
+//          
+//          switch (xhr.status) {
+//          case 304:
+//            alert('No changes made');
+//            $('input').attr('disabled', false);
+//            break;
+//          case 200:
+//            var json;
+//            try {
+//              json = JSON.parse(xhr.responseText);
+//              if (json.error) {
+////                self.resetResource();
+//                switch (json.error.code) {
+//                case 401:
+//                  Errors.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
+//                  break;
+////                case 409:
+////                  break;
+//                default:
+//                  Errors.errDialog({msg: json.error.details, delay: 100});
+//                  break;
+//                }
+//                
+//                G.log(self.TAG, 'error', JSON.stringify(json));
+//                return;
+//              }
+//              else {
+//                res.set(json, {skipRefresh: true});
+//              }
+//            } catch (err) {
+//            }
+//            
+//            Events.trigger('refresh', res, res.get('_uri'));
+//            setTimeout(function() {RM.addItem(res)}, 100);
+//            break;
+////          case 404:
+////            alert('The item you\'re editing doesn\'t exist');
+//          }
+//
+//          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+//        }
+//        
+//        $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
       };
       
       var onError = function(errors) {
@@ -311,24 +393,32 @@ define([
           return this;
       }
       
-      if (this.$ul.hasClass('ui-listview')) {
-        var lis = this.$('li').detach();
-        this.render();
-        this.$ul.trigger('create');
-        this.$ul.listview('refresh');
-      }
+      if (this.$el.hasClass('ui-listview'))
+        this.$el.listview('refresh');
       else
-        this.$ul.listview().listview('refresh');
+        this.$el.trigger('create');
+
+//      if (this.$ul.hasClass('ui-listview')) {
+//        var lis = this.$('li').detach();
+//        this.render();
+//        this.$ul.trigger('create');
+//        this.$ul.listview('refresh');
+//      }
+//      else
+//      this.$ul.listview().listview('refresh');
     },
     click: Events.defaultClickHandler,
     onSelected: function(e) {
-      this.setValue(e.target.name, e.target.value, null, this.fieldError);
+      Events.stopEvent(e);
+      var atts = {};
+      var t = e.target;
+      atts[t.name] = t.value;
+      this.setValues(atts, {onValidationError: this.fieldError});
     },
-    setValue: function(name, val, onValidated, onValidationError) {
-      var change = {}, res = this.resource;
-      change[name] = val;
+    setValues: function(atts, options) {
+      var res = this.resource;
       res.lastFetchOrigin = 'edit';
-      res.set(change, {validateAll: false, error: onValidationError, validated: onValidated, skipRefresh: true});
+      res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
     },
     render: function(options) {
       G.log(this.TAG, "render");
@@ -339,7 +429,7 @@ define([
       var res = this.resource;
       var type = res.type;
       var self = this;
-      var json = res.toJSON();
+      var json = res.attributes;
       var frag = document.createDocumentFragment();
       var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
@@ -365,7 +455,7 @@ define([
             
             var prop = meta[p];
             if (!prop) {
-              delete json[p];
+//              delete json[p];
               continue;
             }
 
@@ -374,7 +464,7 @@ define([
               continue;
   
             displayedProps[p] = true;
-            var pInfo = U.makeEditProp(prop, json[p], formId);
+            var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -395,7 +485,7 @@ define([
           
           _.extend(prop, {shortName: p});
           if (!prop) {
-            delete json[p];
+//            delete json[p];
             continue;
           }
 
@@ -403,7 +493,7 @@ define([
             continue;
           
           displayedProps[p] = true;
-          var pInfo = U.makeEditProp(prop, json[p], formId);
+          var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
           if (!groupNameDisplayed) {
             U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             groupNameDisplayed = true;
@@ -413,12 +503,13 @@ define([
         }
       }        
         
-      if (!options || options.setHTML)
-        (this.$ul = this.$('#fieldsList')).html(frag);
+      (this.$ul = this.$('#fieldsList')).html(frag);
+      this.$ul.trigger('create');
+//        this.$ul.listview('refresh');
       
       var doc = document;
       this.$form = form = this.$('form');
-      var inputs = form.find('input');
+      var inputs = this.getInputs(); //form.find('input');
       var view = this;
       inputs.each(function(idx, input) {
 //        var input = inputs[i];
@@ -432,7 +523,9 @@ define([
         };
 
         var onFocusout = function() {
-          self.setValue(this.name, this.value, validated, self.fieldError);          
+          var atts = {};
+          atts[this.name] = this.value;
+          self.setValues(atts, {onValidated: validated, onValidationError: self.fieldError});          
         };
         
         jin.focusout(onFocusout);

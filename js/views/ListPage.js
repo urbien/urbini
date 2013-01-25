@@ -130,7 +130,7 @@ define([
         left: [BackButton], // , LoginButtons
 //        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
 //                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
-        right: isGeo ? (showAddButton ? [AddButton, AroundMeButton, MenuButton] : [AroundMeButton, MenuButton] ) 
+        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [AroundMeButton, MapItButton, MenuButton] ) 
             : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         log: [LoginButtons]    
       };

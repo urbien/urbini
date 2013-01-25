@@ -71,7 +71,7 @@ define([
       G.log(this.TAG, "render");
       var self = this;
       var res = this.resource || this.collection;
-      this.$el.html(this.template(res.toJSON()));      
+      this.$el.html(this.template(res.attributes));      
       this.buttons = {
         left: [BackButton, LoginButtons],
         right: []

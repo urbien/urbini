@@ -74,6 +74,7 @@ define([
       this.forceRefresh = options.forceRefresh;
       this.removeFromView = options.removeFromView;
       this.previousView = this.currentView;
+      this.previousFragment = U.getHash();
       this.previousViewsCache = this.viewsCache;
       if (options) {
         this.errMsg = options.errMsg;
@@ -255,7 +256,7 @@ define([
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;
@@ -349,7 +350,7 @@ define([
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res});
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
         this.changePage(v);
 //        res.fetch({
 //          success: function() {Voc.fetchModelsForLinkedResources(res)}
@@ -376,7 +377,7 @@ define([
 //        return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res});
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
       var paintMap;
       var success = function(data) {
         self.changePage(v);

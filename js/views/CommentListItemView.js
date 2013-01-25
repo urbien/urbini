@@ -16,7 +16,6 @@ define([
       
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
-      this.parentView = options && options.parentView;
       return this;
     },
     events: {

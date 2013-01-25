@@ -63,7 +63,7 @@ define([
       if (!meta)
         return this;
       
-      var json = res.toJSON();
+      var json = res.attributes;
       var frag = document.createDocumentFragment();
   
       var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true);
@@ -93,7 +93,7 @@ define([
               continue;
 
             if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-              delete json[p];
+//              delete json[p];
               continue;
             }
                   
@@ -101,7 +101,6 @@ define([
               continue;
   
             displayedProps[p] = true;
-//            json[p] = U.makeProp(prop, json[p]);
             var n = U.getPropDisplayName(prop);
             var range = prop.range; 
             var isPropEditable = U.isPropEditable(res, prop, role);
@@ -170,7 +169,7 @@ define([
         }
         if (count == -1) {
           if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-            delete json[p];
+//            delete json[p];
             continue;
           }
         }
@@ -180,7 +179,6 @@ define([
   
         var isPropEditable = U.isPropEditable(res, prop, role);
         var doShow = false;
-//        json[p] = U.makeProp(prop, json[p]);
         var n = U.getPropDisplayName(prop);
         var cnt;
         if (!_.has(json,p)) {

@@ -25,7 +25,6 @@ define([
 
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
-      this.parentView = options && options.parentView;
       return this;
     },
     events: {
@@ -91,7 +90,7 @@ define([
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
 //      if (img == null)
-      var json = m.toJSON();
+      var json = m.attributes;
       
       var rUri = m.get('_uri');
       
@@ -104,7 +103,7 @@ define([
       var resourceLink;
       var i = 0;
 
-      var grid = U.getGridCols(m);
+      var grid = U.getCols(m, 'grid');
       if (grid) {
         for (var row in grid) {
           if (i == 0)
@@ -134,9 +133,17 @@ define([
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
-        _.extend(tmpl_data, this.setImageSize(json));
+  //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
+        var oWidth  = json.originalWidth;
+        var oHeight = json.originalHeight;
+        if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+          var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+          tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
+          tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
+        }
+
       }
-      var dn = json['davDisplayName'];
+      var dn = json.davDisplayName;
       var dnProps = U.getDisplayNameProps(meta);
       if (!dn  &&  dnProps) {
         var first = true;
@@ -204,11 +211,11 @@ define([
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
 //      if (img == null)
-      var json = m.toJSON();
+      var json = m.attributes;
       
       var forResource = U.getCloneOf(vocModel, 'Reference.forResource')[0];
       var resourceDisplayName = U.getCloneOf(vocModel, 'Reference.resourceDisplayName')[0];
-      var forResourceUri = json[forResource] ? json[forResource].value : null;
+      var forResourceUri = json[forResource];
       if (!forResourceUri)
         return this;
       var rUri = U.getLongUri(forResourceUri, Voc.shortNameToModel);
@@ -278,7 +285,7 @@ define([
         return this;
       
       var img;
-      var json = m.toJSON();
+      var json = m.attributes;
       if (cloneOf == 'Intersection.a') {
         var aF = U.getCloneOf(vocModel, 'Intersection.aFeatured');
         var aT = U.getCloneOf(vocModel, 'Intersection.aThumb');
@@ -292,8 +299,9 @@ define([
       var dn = json[delegateTo];
       if (!dn) 
         return this;  
-      dn = dn.displayName;
-      var rUri = json[delegateTo].value;
+      
+      var rUri = dn;
+      dn = json[delegateTo + '.displayName'] || dn;
 //      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
@@ -361,21 +369,21 @@ define([
       if (!meta)
         return this;
       
-      var json = this.resource.toJSON();
-      var imgSrc = json['v_imgSrc'];
+      var json = this.resource.attributes;
+      var imgSrc = json.v_imgSrc;
       if (!imgSrc)
         imgSrc = 'forResource';
       if (typeof json[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), Voc);
+      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc]), Voc);
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json['modifiedBy'].value, Voc));
-      tmpl_data['modifiedBy'].value = modBy;
+      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json.modifiedBy, Voc));
+      tmpl_data.modifiedBy = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
-      var img = json['resourceMediumImage'];
+      var img = json.resourceMediumImage;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
@@ -383,41 +391,35 @@ define([
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
       
-      var commentsFor = tmpl_data['v_showCommentsFor'];
+      var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor].value, Voc) + '&m_p=comments&b_p=forum');
+        tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(json[commentsFor], Voc) + '&m_p=comments&b_p=forum');
   
-      var votesFor = tmpl_data['v_showVotesFor'];
+      var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, Voc) + '&m_p=votes&b_p=votable');
+        tmpl_data.v_showVotesFor = U.encode(U.getLongUri(json[votesFor], Voc) + '&m_p=votes&b_p=votable');
 
-      var renabFor = tmpl_data['v_showRenabFor'];
+      var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data['v_showRenabFor'] = U.encode(U.getLongUri(json[renabFor].value, Voc) + '&m_p=nabs&b_p=forResource');
-
-      _.extend(tmpl_data, this.setImageSize(json));
+        tmpl_data.v_showRenabFor = U.encode(U.getLongUri(json[renabFor], Voc) + '&m_p=nabs&b_p=forResource');
+      
+      // set size of images included in the items to be able
+      // to start masonry code before images downloading
+      var oWidth  = json.originalWidth;
+      var oHeight = json.originalHeight;
+      if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+        var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+        tmpl_data.imgWidth = Math.floor(oWidth * ratio);
+        tmpl_data.imgHeight = Math.floor(oHeight * ratio);
+      }
       
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {
-        console.log(this.TAG, 'failed to build masonry item for Modification resource ' + json['resourceDisplayName'] + ': ' + err);
+        console.log(this.TAG, 'failed to build masonry item for Modification resource ' + json.resourceDisplayName + ': ' + err);
       }
       return this;
-    },
-    // set size of images included in the items to be able
-    // to start masonry code before images downloading
-    setImageSize: function(json) {
-      var retObj = new Object();
-      var oWidth  = json["originalWidth"];
-      var oHeight = json["originalHeight"];
-      if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-        var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
-        retObj['imgWidth'] = Math.floor(oWidth * ratio);
-        retObj['imgHeight'] = Math.floor(oHeight * ratio);
     }
-      return retObj;
-    },
-    
   }, {
     displayName: 'ResourceMasonryItemView'
   });
