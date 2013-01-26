@@ -97,9 +97,14 @@ define([
       if (this.resource) {
         var isModificationHistory = U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel);
         if (isModificationHistory) {
-          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-          if (ch  && !this.vocModel.properties[ch[0]].hidden) 
-            U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
+          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+          if (!ch  ||  ch.length == 0)
+            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+          if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
+            var cnt = res.get(ch[0]) && res.get(ch[0]).count;
+            if (cnt  &&  cnt > 0)
+              U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
+          }
         }
       }
       if (!G.currentUser.guest) {
