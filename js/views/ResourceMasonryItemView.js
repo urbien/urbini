@@ -393,11 +393,11 @@ define([
       
       var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor].value, Voc)); // + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor], Voc)); // + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor].value, Voc)); //+ '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor], Voc)); //+ '&m_p=votes&b_p=votable');
 
       var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
