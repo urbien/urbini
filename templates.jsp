@@ -64,10 +64,10 @@
 </script>  
 
 <script type="text/template" id="stringPT">
-  {{ if (value.indexOf('<span') == -1) { }}
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span>{{= value }}</span>
   {{ } }}
-  {{ if (value.indexOf('<span') == 0) { }}
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') == 0) { }}
     {{= value }}
   {{ } }}
 </script>
@@ -332,7 +332,10 @@
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-         style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"></img>
+        {{ if (typeof imgWidth != 'undefined') { }} 
+         style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+         {{ } }}
+         ></img>
       </a>
     </div>
   </div>
@@ -363,11 +366,12 @@
           <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor  + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
+        <!--
         {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-            <!--Nab-->
+          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
           </a>
         {{ } }}
+        -->
         </div>
     </td>
     </tr>
@@ -398,10 +402,12 @@
           <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
+        <!--
         {{ if (typeof v_showRenabFor != 'undefined') { }}
           <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
           </a>
         {{ } }}
+        -->
      </div>
   </div>     
 </div>
@@ -500,6 +506,10 @@
     <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
     <option value="test">Not supported</option>
   </select-->
+</script>
+
+<script type="text/template" id="multivaluePET">
+  <a target="#" name="{{= shortName }}" class="multivalueProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
 </script>
 
 <script type="text/template" id="booleanPET">
