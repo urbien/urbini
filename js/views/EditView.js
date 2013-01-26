@@ -56,7 +56,7 @@ define([
       function onChoose(res) {
         G.log(self.TAG, 'testing', res.attributes);
         var props = {};
-        props[prop] = res.get('_uri');
+        props[prop] = res.getUri();
         self.resource.set(props, {skipValidation: true, skipRefresh: true});
         var link = e.target;
         link.innerHTML = res.get('davDisplayName');
@@ -154,10 +154,10 @@ define([
                 if (blProp)
                   redirectPath = blProp.range;
                 else
-                  G.log(self.TAG, 'error', 'couldn\'t get model for range', prop.range);
+                  G.log(this.TAG, 'error', 'couldn\'t get model for range', prop.range);
               }
               else
-                G.log(self.TAG, 'error', 'couldn\'t get model for range', prop.range);
+                G.log(this.TAG, 'error', 'couldn\'t get model for range', prop.range);
             }
             
             redirectPath = redirectPath || vocModel.properties[redirectTo].type._uri;
@@ -172,12 +172,12 @@ define([
         case 'PROPPATCH':
           redirectPath = redirectAction === 'PROPFIND' ? 'view/' : 'edit/';
           if (!redirectTo || redirectTo === '-$this') {
-            redirectPath = encodeURIComponent(res.get('_uri'));
+            redirectPath = encodeURIComponent(res.getUri());
           }
           else {
             var prop = vocModel.properties[redirectTo];
             if (prop.backLink) {
-              redirectPath = encodeURIComponent(res.get('_uri'));
+              redirectPath = encodeURIComponent(res.getUri());
 //              redirectPath = 'make/'; //TODO: make this work for uploading images
             }
             else {
@@ -190,11 +190,15 @@ define([
           redirectRoute = 'view/';
           break;
         case 'SOURCE':
-          redirectPath = self.source;
+          redirectPath = this.source;
+          if (_.isUndefined(redirectPath)) {
+            redirectPath = encodeURIComponent(this.resource.getUri());
+            redirectRoute = 'view/';
+          }
           options.forceRefresh = true;
           break;
         default:
-          G.log(self.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
+          G.log(this.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
           redirectPath = encodeURIComponent(vocModel.type);
           options.forceRefresh = true;
           break;
@@ -306,7 +310,7 @@ define([
         });
         
 //        _.extend(props, baseParams);
-//        _.extend(props, {type: vocModel.type, uri: res.get('_uri')});
+//        _.extend(props, {type: vocModel.type, uri: res.getUri()});
 //        var callback = function(xhr, status) {
 //          inputs.attr('disabled', false);
 //          if (status !== 'success') {
@@ -345,7 +349,7 @@ define([
 //            } catch (err) {
 //            }
 //            
-//            Events.trigger('refresh', res, res.get('_uri'));
+//            Events.trigger('refresh', res, res.getUri());
 //            setTimeout(function() {RM.addItem(res)}, 100);
 //            break;
 ////          case 404:
@@ -372,7 +376,7 @@ define([
           url += 'm/' + encodeURIComponent(vocModel.type);
           break;
         case 'edit':
-          url += 'e/' + encodeURIComponent(res.get('_uri'));
+          url += 'e/' + encodeURIComponent(res.getUri());
           break;
       }
       
@@ -395,7 +399,7 @@ define([
       if (data instanceof Backbone.Collection) {
         collection = data;
         modified = arguments[1];
-        if (collection != this.resource.collection || !_.contains(modified, this.resource.get('_uri')))
+        if (collection != this.resource.collection || !_.contains(modified, this.resource.getUri()))
           return this;
       }
       
@@ -413,9 +417,16 @@ define([
 //      else
 //      this.$ul.listview().listview('refresh');
     },
-    click: Events.defaultClickHandler,
+    click: function(e) {
+      if (e.target.tagName === 'select') {
+        Events.stopEvent(e);
+        return;
+      }
+      
+      return Events.defaultClickHandler(e);
+    },
     onSelected: function(e) {
-      Events.stopEvent(e);
+//      Events.stopEvent(e);
       var atts = {};
       var t = e.target;
       atts[t.name] = t.value;
@@ -537,7 +548,9 @@ define([
           };
   
           var onFocusout = function() {
-            self.setValue(this.name, this.value, validated, self.fieldError);          
+            var atts = {};
+            atts[this.name] = this.value;
+            self.setValues(atts, {onValidated: validated, onValidationError: self.fieldError});
           };
           
           jin.focusout(onFocusout);

@@ -130,7 +130,8 @@ define([
                 groupNameDisplayed = true;
               }
               
-              var uri = U.getShortUri(res.get('_uri'), vocModel); 
+//              var uri = U.getShortUri(res.get('_uri'), vocModel); 
+              var uri = res.getUri();
               if (isPropEditable)
                 U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
               else
@@ -201,7 +202,8 @@ define([
 //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //          var range = U.getClassName(prop.range);
           var range = prop.range;
-          var uri = U.getShortUri(res.get('_uri'), vocModel); 
+//          var uri = U.getShortUri(res.get('_uri'), vocModel); 
+          var uri = res.getUri();
           if (isPropEditable)
             U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
           else

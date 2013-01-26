@@ -34,7 +34,7 @@ define([
       Backbone.defaultSync.apply(this, arguments);
       return;
     }
-        
+    
     var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,

@@ -180,8 +180,8 @@ define([
         this.currentModel = c;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
-//        c.fetch({page: page});
-        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
+        c.fetch({page: page, forceFetch: forceFetch});
+//        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }      
       
@@ -355,9 +355,9 @@ define([
 //        res.fetch({
 //          success: function() {Voc.fetchModelsForLinkedResources(res)}
 //        });
-        setTimeout(function() {
+//        setTimeout(function() {
           res.fetch({forceFetch: forceFetch});
-        }, 100);
+//        }, 100);
         
         return this;
       }

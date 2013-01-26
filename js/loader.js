@@ -591,13 +591,13 @@ define('globals', function() {
             G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
             break;
           default:
-//            onLoad.fromText(text);
-            var callback = function() {
-              require([name], onLoad);
-            }
-            
-            G.inject(text, callback);
-          break;
+            onLoad.fromText(text);
+//            var callback = function() {
+//              require([name], onLoad);
+//            }
+//            
+//            G.inject(text, callback);
+            break;
         }        
       },
       
@@ -752,7 +752,7 @@ define('globals', function() {
         localStorage.removeItem(key);
         localStorage.setItem(key, value);
       } catch(e) {
-//        debugger;
+        debugger;
         if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
           ls.reset(force && function() {
@@ -1381,6 +1381,7 @@ define('globals', function() {
     }
   }
   
+//  G.minify = G.getCookie(mCookie) !== 'n';
   G.minify = G.getCookie(mCookie) === 'y';
   // END minify
   

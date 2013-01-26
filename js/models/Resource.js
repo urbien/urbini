@@ -29,7 +29,7 @@ define([
       this.vocModel = this.constructor;
     },
     onsync: function() {
-      debugger;
+//      debugger;
     },
     cancel: function(options) {
       var props = this.vocModel.properties;
@@ -41,7 +41,7 @@ define([
       var props = {};
       props[canceled] = true;
       var self = this;
-      res.save(props, {
+      this.save(props, {
         success: function(resource, response, options) {
           if (response.error) {
             if (options.error)

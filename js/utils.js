@@ -464,7 +464,7 @@ define([
             return;
           }
           
-          var nameVal = U.makeProp(res, prop.shortName, val, isListView ? prop.displayNameElm : undefined);
+          var nameVal = U.makeProp({resource: res, prop: prop, value: val, isDisplayName: isListView ? prop.displayNameElm : undefined});
           var nvn = nameVal.name;
           rows[nvn] = {value: nameVal.value};
           rows[nvn].idx = i++;
@@ -1007,9 +1007,15 @@ define([
         return modelOrJson[prop];
     },
     
-    makeProp: function(res, propName, val, isDisplayName) {
+    makeProp: function(info) {
+      var res = info.resource;
       var vocModel = res.vocModel;
-      var prop = vocModel.properties[propName];
+      var propName = info.propName;
+      var prop = info.prop || propName && vocModel && vocModel.properties[propName];
+      propName = propName || prop.shortName;
+      var val = info.value || U.getValue(res, propName);
+      var isDisplayName = info.isDisplayName || prop.displayNameElm;
+      
       var cc = prop.colorCoding;
       if (cc) {
         cc = U.getColorCoding(cc, val);
@@ -1051,7 +1057,7 @@ define([
         val.options = eCl.values;
       }
       
-      val.value = val.value || null;
+      val.value = val.value || '';
       val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
       val.id = (formId || G.nextId()) + '.' + prop.shortName;
