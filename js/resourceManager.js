@@ -385,7 +385,7 @@ define([
         }
         
         if (!newStores.length)
-          callback();
+          callback && callback();
         else if (useWebSQL) {
           numCallbacks = _.reduce(newStores, function(a, b) {
             return a + (!_.isUndefined(b.__ready.createObjectStore) ? 1 : 0) + (!_.isUndefined(b.__ready.createIndex) ? b.indexNames.length : 0) 
@@ -530,11 +530,13 @@ define([
         if (Voc.typeToEnum[type] || Voc.typeToInline[type])
           continue;
         
-        if (RM.storeExists(type)) {
+        var exists = RM.storeExists(type);
+        if (exists) {
           if (reset || _.contains(toDel, type)) {
             try {
-              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
+//              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
               RM.db.deleteObjectStore(type);
+              exists = false;
               G.log(RM.TAG, 'db', 'deleted object store: ' + type);
               deleted.push(type);
             } catch (err) {
@@ -546,42 +548,37 @@ define([
           else
             continue;
         }
-        
-        try {
-//          G.log(RM.TAG, 'db', 'creating object store: ' + type);
-          var store = RM.db.createObjectStore(type, RM.defaultOptions);
-          newStores.push(store);
-          G.log(RM.TAG, 'db', 'created object store: ' + type);
-          var m = Voc.typeToModel[type];
-          if (m) {
-            var indices = [];
-            var vc = m.viewCols || '';
-            var gc = m.gridCols || '';
-            var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
-            _.each(cols, function(pName) {
-              pName = pName.trim();
-              if (!pName.length)
-                return;
-              
-              G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
-              var index = store.createIndex(pName, pName, {unique: false});              
-              G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
-              indices.push(pName);
-            });
 
-            // wrong, this is for backlink resources, not the class itself
-//            _.each(m.properties, function(prop, pName) {
-//              if (_.has(prop, 'sortAscending') && !_.contains(indices, pName)) {
-//                store.createIndex(pName, pName, {unique: false});
-//              }
-//            });
+        if (!exists) {
+          try {
+  //          G.log(RM.TAG, 'db', 'creating object store: ' + type);
+            var store = RM.db.createObjectStore(type, RM.defaultOptions);
+            newStores.push(store);
+            G.log(RM.TAG, 'db', 'created object store: ' + type);
+            var m = Voc.typeToModel[type];
+            if (m) {
+              var indices = [];
+              var vc = m.viewCols || '';
+              var gc = m.gridCols || '';
+              var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
+              _.each(cols, function(pName) {
+                pName = pName.trim();
+                if (!pName.length)
+                  return;
+                
+                G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
+                var index = store.createIndex(pName, pName, {unique: false});              
+                G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
+                indices.push(pName);
+              });  
+            }
+            
+            created.push(type);
+          } catch (err) {
+            debugger;
+            G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
+            return;
           }
-          
-          created.push(type);
-        } catch (err) {
-          debugger;
-          G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
-          return;
         }
       }
       
@@ -599,8 +596,13 @@ define([
       if (!RM.db)
         return;
       
-      if (!classUri)
-        classUri = U.getTypeUri(items[0].type._uri);
+      if (!classUri) {
+        var first = items[0];
+        if (U.isModel(first))
+          classUri = first.vocModel.type;
+        else
+          classUri = U.getTypeUri(items[0].type._uri);
+      }
       
       if (!RM.storeExists(classUri)) {
         G.log(RM.TAG, 'db', 'closing db for upgrade');
@@ -916,15 +918,15 @@ define([
     RM[RM.db ? 'restartDB' : 'openDB'](options.success, options.error);
   });
   
-  Events.on('newResources', function(toAdd) {
+  Events.on('resourcesChanged', function(toAdd) {
     RM.addItems(toAdd);
   });
 
-  Events.on('canceled', function(toAdd) {
-    RM.addItems(toAdd);
-  });
-
-
+//  Events.on('canceled', function(toAdd) {
+//    RM.addItems(toAdd);
+//  });
+//
+//
 //  MB.getInstance = function() {
 //    if (RM === null) {
 //      Lablz.RM = new RM();
