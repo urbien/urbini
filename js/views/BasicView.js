@@ -1,10 +1,13 @@
 define([
   'globals',
+  'cache!underscore',
   'cache!backbone',
   'cache!templates'
-], function(G, Backbone, Templates) {
+], function(G, _, Backbone, Templates) {
+  var basicOptions = ['source', 'parentView'];
   return Backbone.View.extend({
     initialize: function(options) {
+      _.extend(this, _.pick(options, basicOptions));
       var res = this.data = this.model;
       if (this.model instanceof Backbone.Collection) {
         this.collection = res;

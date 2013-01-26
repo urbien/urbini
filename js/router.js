@@ -60,7 +60,7 @@ define([
       
       // a hack to prevent browser address bar from dropping down
       // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
-      $('div').on('pagecreate',function(event) {
+      $('[data-role="page"]').on('pagecreate',function(event) {
         $('a[href]', this).each(function() {
             var self = $(this);
             if (!self.is( "[rel='external']" ) ) {
@@ -74,6 +74,7 @@ define([
       this.forceRefresh = options.forceRefresh;
       this.removeFromView = options.removeFromView;
       this.previousView = this.currentView;
+      this.previousFragment = U.getHash();
       this.previousViewsCache = this.viewsCache;
       if (options) {
         this.errMsg = options.errMsg;
@@ -179,8 +180,8 @@ define([
         this.currentModel = c;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
-//        c.fetch({page: page});
-        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
+        c.fetch({page: page, forceFetch: forceFetch});
+//        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }      
       
@@ -255,7 +256,7 @@ define([
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;
@@ -349,14 +350,14 @@ define([
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res});
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
         this.changePage(v);
 //        res.fetch({
 //          success: function() {Voc.fetchModelsForLinkedResources(res)}
 //        });
-        setTimeout(function() {
+//        setTimeout(function() {
           res.fetch({forceFetch: forceFetch});
-        }, 100);
+//        }, 100);
         
         return this;
       }
@@ -376,7 +377,7 @@ define([
 //        return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res});
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
       var paintMap;
       var success = function(data) {
         self.changePage(v);

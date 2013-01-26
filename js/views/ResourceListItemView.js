@@ -21,14 +21,15 @@ define([
       if (this.template) 
         this.isCommonTemplate = false;
       else {
-        if (options.hasImages)
+        if (options.imageProperty) {
+          this.imageProperty = options.imageProperty;
           this.template = _.template(Templates.get('listItemTemplate'));
+        }
         else
           this.template = _.template(Templates.get('listItemTemplateNoImage'));
       }
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
-      this.parentView = options && options.parentView;
       return this;
     },
     events: {
@@ -38,49 +39,15 @@ define([
     },
     cancelItem: function(e) {
       Events.stopEvent(e);
-      var error = function(json, xhr, options) {
-        G.log(self.TAG, 'error', 'couldn\'t create shopping list items', json);
-      }
-
-      var props = this.vocModel.properties;
-      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled');
-      if (!canceled.length)
-        return;
-      
-      canceled = canceled[0].shortName;
-      var data = {};
-      data[canceled] = true;
-      var res = this.resource;
-      $.ajax({
-        url: G.apiUrl + 'e/' + encodeURIComponent(res.getUri()),
-        method: 'POST',
-        data: data,
-        success: function(json, status, xhr) {
-          if (xhr.status == 200) {
-            if (json.error)
-              error(json, xhr)
-            else
-              res.trigger('cancel');
+      this.resource.cancel({
+        error: function(resource, xhr, options) {
+          var code = xhr.code || xhr.status;
+          if (xhr.statusText === 'error' || code === 0) {            
+            Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
+            return;
           }
-        },
-        error: error
+        }
       });
-      
-//      this.resource.save({canceled: true}, {patch: true,
-//        success: function(model, response, options) {
-//          if (response.status == 200) {
-//            var json = JSON.parse(response.responseText);
-//            if (json.error)
-//              error(mode, response, options)
-//            else
-//              this.resource.collection.remove(this.resource);
-//          }
-//        },
-//        error: function(model, xhr, options) {
-//          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
-//        }
-//      });
-      
     },
     recipeShoppingListHack: function(e) {
       Events.stopEvent(e);
@@ -104,10 +71,10 @@ define([
       var recipeShoppingList = new Voc.shortNameToModel.RecipeShoppingList();
       var props = {};
       var shoppingList = props[params.backLink] = U.getLongUri(decodeURIComponent(params.on));
-      var recipe = props.recipe = U.getLongUri(this.resource.get('recipe').value);
+      var recipe = props.recipe = U.getLongUri(this.resource.get('recipe'));
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
-          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true});
+          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
         }, 
         error: function(model, xhr, options) {
           G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
@@ -128,13 +95,14 @@ define([
       if (!meta)
         return this;
       var json = m.toJSON();
+      _.extend(json, {U:U, G:G});
       var distance = m.get('distance');
       if (typeof distance != 'undefined') {
         var meta = this.vocModel.properties;
         var prop = meta['distance'];
         var d = U.getCloneOf(this.vocModel, 'Distance.distance');
         if (d)
-          json['distance'] = distance + ' mi';
+          json.distance = distance + ' mi';
       }
       if (!this.isCommonTemplate) {
         this.$el.html(this.template(json));
@@ -173,41 +141,46 @@ define([
       
       var viewCols = this.getViewCols(json);
       var dn = U.getDisplayName(m);
-      json['davDisplayName'] = dn;
+      json.davDisplayName = dn;
       if (!viewCols.length) 
         viewCols = '<h3>' + dn + '</h3>';
-      json['viewCols'] = viewCols;
+      json.viewCols = viewCols;
 
-      json['width'] = json['height'] = json['top'] = json['right'] = json['bottom'] = json['left'] = ""; 
+      json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
-      if (typeof json['originalWidth'] != 'undefined' &&
-          typeof  json['originalHeight'] != 'undefined' ) {
+      if (typeof json.originalWidth != 'undefined' &&
+          typeof  json.originalHeight != 'undefined' ) {
         
         this.$el.addClass("image_fitted");
         
-        var dim = U.fitToFrame(80, 80, json['originalWidth'] / json['originalHeight'])
-        json['width'] = dim.w;
-        json['height'] = dim.h;
-        json['top'] = dim.y;
-        json['right'] = dim.w - dim.x;
-        json['bottom'] = dim.h - dim.y;
-        json['left'] = dim.x;
+        var dim = U.fitToFrame(80, 80, json.originalWidth / json.originalHeight)
+        json.width = dim.w;
+        json.height = dim.h;
+        json.top = dim.y;
+        json.right = dim.w - dim.x;
+        json.bottom = dim.h - dim.y;
+        json.left = dim.x;
       }
-      
+      if (this.imageProperty)
+        json['image'] = json[this.imageProperty];
       this.$el.html(this.template(json));
       return this;
     },
     
     getViewCols: function(json) {
-      var model = this.resource;
+      var res = this.resource;
       var meta = this.vocModel.properties;
       var viewCols = '';
-      var grid = U.getGridCols(model);
+      var grid = U.getCols(res, 'grid', true);
       if (!grid)
         return viewCols;
       var firstProp = true;
+      var containerProp = U.getContainerProperty(vocModel);
+
       for (var row in grid) {
         var pName = grid[row].propertyName;
+        if (containerProp  &&  containerProp == pName)
+          continue;
         // show groupped gridCols properties in one line
         var prop = meta[pName];
         var pGr = prop.propertyGroupList;
@@ -221,7 +194,7 @@ define([
             
             var prop1 = meta[p];
             if (!prop1) {
-              delete json[p];
+//              delete json[p];
               continue;
             }
                   
@@ -231,17 +204,18 @@ define([
               continue;
             if (prop1['displayNameElm'])
               continue;
-            if (!U.isPropVisible(model, prop1))
+            if (!U.isPropVisible(res, prop1))
               continue;
   
             if (first) {
               first = false;
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + prop.displayName + '</u></i></div>';                
             }
-            json[p] = U.makeProp(prop1, json[p]);
+            
+            json[p] = U.makeProp({resource: res, prop: prop1, value: json[p]});
 //              var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
             var range = prop1.range;
-            var s = range.indexOf('/') != -1 ? json[p].displayName  ||  json[p] : json[p].value;
+            var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val : val;
             var isDate = prop1.range == 'date';
             if (!prop1.skipLabelInGrid) 
               viewCols += '<div style="display:inline"><span class="label">' + prop1.displayName + ':</span><span style="font-weight:normal">' + s + '</span></div>';
@@ -254,7 +228,9 @@ define([
         }
 
         var range = meta[pName].range;
-        var s = range.indexOf('/') != -1 ? json[pName].displayName  ||  json[pName] : grid[row].value;
+        // HACK for Money
+        var s = range.indexOf('/') != -1 && range != 'model/company/Money' ? json[pName + '.displayName']  ||  json[pName] : grid[row].value;
+//        var s = grid[row].value;
         var isDate = meta[pName].range == 'date'; 
         if (!firstProp)
           viewCols += "<br/>";
@@ -283,15 +259,15 @@ define([
       var img;
       var dn;
       var rUri;
-      var json = m.toJSON();
+      var json = m.attributes;
       if (cloneOf == 'Intersection.a') {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')];
       }
       else {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
       }
-      dn = json[delegateTo].displayName;
-      rUri = json[delegateTo].value;
+      dn = json[delegateTo + '.displayName'];
+      rUri = json[delegateTo];
         
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 //      tmpl_data['_uri'] = rUri;
@@ -300,7 +276,7 @@ define([
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
       }
-      tmpl_data['mediumImage'] = img;
+      tmpl_data['image'] = img;
       tmpl_data['davDisplayName'] = dn;
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);

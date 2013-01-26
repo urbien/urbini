@@ -38,15 +38,22 @@ define([
         if (collection != res.collection || !_.contains(modified, res.get('_uri')))
           return this;
       }
-      
-      if (this.$el.hasClass('ui-listview')) {
-        var lis = this.$('li').detach();
-        this.render();
-        this.$el.trigger('create');
+  
+      if (this.$el.hasClass('ui-listview'))
         this.$el.listview('refresh');
-      }
       else
-        this.$el.listview().listview('refresh');
+        this.$el.trigger('create');
+      
+//      if (this.$el.hasClass('ui-listview')) {
+//        var lis = this.$('li').detach();
+//        this.render();
+//        this.$el.trigger('create');
+//        this.$el.listview('refresh');
+//      }
+//      else {
+//        this.$el.trigger('create');
+//        this.$el.listview().listview('refresh');
+//      }
     },
 //    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
@@ -85,7 +92,7 @@ define([
             
             var prop = meta[p];
             if (!prop) {
-              delete json[p];
+//              delete json[p];
               continue;
             }
                   
@@ -93,18 +100,20 @@ define([
               continue;
   
             displayedProps[p] = true;
-            json[p] = U.makeProp(prop, json[p]);
+            var val = U.makeProp({resource: res, prop: prop, value: json[p]});
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
   
             // remove HTML tags, test length of pure text
-            var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
-            if (json[p].name.length + v.length > maxChars)
-              U.addToFrag(frag, this.propRowTemplate2(json[p]));
+            var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
+            if (val.name.length + v.length > maxChars)
+              U.addToFrag(frag, this.propRowTemplate2(val));
             else
-              U.addToFrag(frag, this.propRowTemplate(json[p]));
+              U.addToFrag(frag, this.propRowTemplate(val));
+            
+            json[p] = val;
           }
         }
       }
@@ -121,7 +130,7 @@ define([
           continue;
         
         if (!prop) {
-          delete json[p];
+//          delete json[p];
           continue;
         }
         if (prop.autoincrement)
@@ -141,19 +150,19 @@ define([
           groupNameDisplayed = true;
         }
         
-        json[p] = U.makeProp(prop, json[p]);
-        var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+        var val = U.makeProp({resource: res, propName: p, prop: prop, value: json[p]});
+        var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
         if (otherLi) {
-          if (json[p].name.length + v.length > maxChars)
-            otherLi += this.propRowTemplate2(json[p]);
+          if (val.name.length + v.length > maxChars)
+            otherLi += this.propRowTemplate2(val);
           else
-            otherLi += this.propRowTemplate(json[p]);
+            otherLi += this.propRowTemplate(val);
         }
         else {
-          if (json[p].name.length + v.length > maxChars)
-            U.addToFrag(frag, this.propRowTemplate2(json[p]));
+          if (val.name.length + v.length > maxChars)
+            U.addToFrag(frag, this.propRowTemplate2(val));
           else
-            U.addToFrag(frag, this.propRowTemplate(json[p]));
+            U.addToFrag(frag, this.propRowTemplate(val));
         }
       }
       
@@ -166,11 +175,9 @@ define([
       
   //    var j = {"props": json};
   //    this.$el.html(html);
-      if (!options || options.setHTML)
-        this.$el.html(frag);
-      var self = this;
-  
       this.rendered = true;
+      this.$el.html(frag);      
+      this.$el.trigger('create');
       return this;
     }
   }, {

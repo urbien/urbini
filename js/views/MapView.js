@@ -21,6 +21,7 @@ define([
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
       
+      L.Icon.Default.imagePath = 'images/leaflet';
       var self = this;
 //      csses = _.map(this.css, function(c) {return 'cache!../styles/leaflet/' + c});
 //      require(csses, function() {
@@ -136,7 +137,7 @@ define([
   },
   {
     getMapItemHTML: function(res) {
-      var grid = U.getGridCols(res);
+      var grid = U.getCols(res, 'grid');
     
       var resourceLink;
       for (var row in grid) {

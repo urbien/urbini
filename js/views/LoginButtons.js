@@ -18,9 +18,9 @@ define([
       var url = G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot);
       $.get(url, function() {
           // may be current page is not public so go to home page (?)
-          window.location.hash = '';
-          window.location.reload();
-        });
+        window.location.hash = '';
+        window.location.reload();
+      });
         // window.location.href = G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.serverName + '/' + G.pageRoot);      
     },
     initialize: function(options) {

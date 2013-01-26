@@ -130,7 +130,7 @@ define([
         left: [BackButton], // , LoginButtons
 //        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
 //                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
-        right: isGeo ? (showAddButton ? [AddButton, AroundMeButton, MenuButton] : [AroundMeButton, MenuButton] ) 
+        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [AroundMeButton, MapItButton, MenuButton] ) 
             : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         log: [LoginButtons]    
       };
@@ -151,7 +151,7 @@ define([
 
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); 
+      var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
 //      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
 //      if (isMasonry) {
 //        var key = this.vocModel.shortName + '-list-item';

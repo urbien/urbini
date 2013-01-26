@@ -6,14 +6,10 @@ define([
   'cache!error',
   'cache!events'
 ], function(G, _, Backbone, U, Error, Events) {
-  var isNully = function(val) {
-    return _.isUndefined(val) || val === null || val === '';
-  };
-  
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);
-    if (isNully(prev))
-      return !isNully(val);
+    if (U.isNully(prev))
+      return !U.isNully(val);
     else if (prev !== val && prev.toString() !== val)
       return true;
     
@@ -23,13 +19,40 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
+      this.on('sync', this.onsync);
       this.vocModel = this.constructor;
+    },
+    onsync: function() {
+//      debugger;
+    },
+    cancel: function(options) {
+      var props = this.vocModel.properties;
+      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled');
+      if (!canceled.length)
+        throw new Error("{0} can not be canceled because it does not have a 'canceled' property".format(U.getDisplayName(this)));
+      
+      canceled = canceled[0].shortName;
+      var props = {};
+      props[canceled] = true;
+      var self = this;
+      this.save(props, {
+        success: function(resource, response, options) {
+          if (response.error) {
+            if (options.error)
+              options.error(resource, response, options);
+            
+            return;
+          }
+          
+          self.trigger('cancel');
+        }
+      });
     },
     onchange: function(e) {
       if (this.lastFetchOrigin !== 'server')
@@ -49,7 +72,8 @@ define([
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
-      return G.apiUrl + (this.isNew() ? 'm/' : 'e/') + encodeURIComponent(type) + "?$returnMade=y&" + U.getQueryString(attrs || this.attributes);
+      var isNew = this.isNew();
+      return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type) ;
     },
     getKey: function() {
       return U.getLongUri(this.get('_uri'));
@@ -76,14 +100,16 @@ define([
       return resp;
     },
     
-    set: function(props) {
+    set: function(props, options) {
       var self = this;
-      props = U.filterObj(props, function(name, val) {
-        return willSave(self, name, val);
-      })
-      
-      if (!_.size(props))
-        return;
+      if (!options || !options.silent) {
+        props = U.filterObj(props, function(name, val) {
+          return willSave(self, name, val);
+        })
+        
+        if (!_.size(props))
+          return;
+      }
       
       return Backbone.Model.prototype.set.apply(this, [props].concat(U.slice.call(arguments, 1)));
     },
@@ -142,18 +168,6 @@ define([
         if (/^Address1?\.postalCode1?$/.test(cloneOf))
           return U.validateZip(value) || 'Please enter a valid Postal Code';
       }
-
-//      for (var name in prop) {
-//        var error;
-//        switch (name) {
-//          case "required":
-//            error = value == null && (name + " is required");
-//            break;
-//        }
-//        
-//        if (typeof error != 'undefined')
-//          return error;
-//      }
       
       return true;
     },
@@ -169,11 +183,13 @@ define([
     },
     
     save: function(attrs, options) {
-//      var options = arguments[arguments.length - 1];
       options = options || {};
-      _.extend(options, {url: this.saveUrl(attrs), emulateHTTP: true});
-      arguments[arguments.length - 1] = options;
-      return Backbone.Model.prototype.save.call(this, attrs, options);      
+      var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
+      if (!data.$returnMade)
+        data.$returnMade = 'y';
+
+      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: U.getQueryString(data)});
+      return Backbone.Model.prototype.save.call(this, attrs, options);
     }
   },
   {

@@ -509,6 +509,10 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
+  
+  var doc = document;
+  var head = document.getElementsByTagName('head')[0];
+  var body = document.getElementsByTagName('body')[0];
   Function.prototype.async = function(constantTimeout) {
     var self = this;
     return function() {
@@ -559,7 +563,7 @@ define('globals', function() {
         return supported;
       })();
 
-  define('cache', ['module'], function (module) {
+  define('cache', ['module', 'require'], function (module, require) {
     var masterConfig = (module.config && module.config()) || {};
     var cache = {
       TAG: 'cache',
@@ -567,7 +571,7 @@ define('globals', function() {
 //        return content + '\r\n//@ sourceURL=' + url;
 //      },
       
-      loadModule: function(text, url, onLoad) {
+      loadModule: function(text, url, onLoad, name) {
 //        text = cache.prependUrl(text, url);
         text = text + '\r\n//@ sourceURL=' + url;
         var ext = url.match(/\.[a-zA-Z]+$/g);
@@ -588,26 +592,30 @@ define('globals', function() {
             break;
           default:
             onLoad.fromText(text);
+//            var callback = function() {
+//              require([name], onLoad);
+//            }
+//            
+//            G.inject(text, callback);
             break;
         }        
       },
-          
+      
       load: function (name, req, onLoad, config) {
         G.startedTask("load " + name);
-        var ol = onLoad;
-        var self = this;
-        onLoad = function() {
-          ol.apply(self, arguments);
-          G.finishedTask("load " + name);
-//          G.recordCheckpoint('finished loading ' + name);
-        }
-        
-        var ft = ol.fromText;
-        onLoad.fromText = function() {
-          ft.apply(self, arguments);
-          G.finishedTask("load " + name);
-//          G.recordCheckpoint('finished loading ' + name);
-        }
+//        var ol = onLoad;
+//        var self = this;
+//        onLoad = function() {
+//          ol.apply(self, arguments);
+//          G.finishedTask("load " + name);
+////          G.recordCheckpoint('finished loading ' + name);
+//        }
+//        var ft = ol.fromText;
+//        onLoad.fromText = function() {
+//          ft.apply(self, arguments);
+//          G.finishedTask("load " + name);
+////          G.recordCheckpoint('finished loading ' + name);
+//        }
         
         if (config.isBuild) {
           onLoad();
@@ -615,10 +623,10 @@ define('globals', function() {
         }
             
         var cached,
-            url = G.getCanonicalPath(req.toUrl(name));
+        url = G.getCanonicalPath(req.toUrl(name));
         
         // TODO: unhack
-        if (name == '1jqueryMobile') {
+        if (name == 'jqueryMobile') {
           req([name], function(content) {
             G.log(cache.TAG, 'cache', 'Loading jq: ' + url);
             onLoad(content);
@@ -647,6 +655,7 @@ define('globals', function() {
               cached = cached && JSON.parse(cached);
             } catch (err) {
               G.log(cache.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
+              G.localStorage.delete(url);
               cached = null;
             }
             
@@ -665,10 +674,11 @@ define('globals', function() {
           if (loadedCached) {            
             try {
               G.log(cache.TAG, 'cache', 'Loading from', loadSource, url);
-              cache.loadModule(cached, url, onLoad);
+              cache.loadModule(cached, url, onLoad, name);
               G.log(cache.TAG, 'cache', 'End loading from', loadSource, url);
             } catch (err) {
               G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
+              G.localStorage.delete(url);
               loadedCached = false;
             }
           } 
@@ -680,7 +690,7 @@ define('globals', function() {
         /// use 'sendXhr' instead of 'req' so we can store to localStorage
         G.loadBundle(name, function() {
           if (G.modules[url])
-            cache.loadModule(G.modules[url], url, onLoad);
+            cache.loadModule(G.modules[url], url, onLoad, name);
           else
             G.log(cache.TAG, ['error', 'cache'], 'failed to load module', name);
         });        
@@ -718,7 +728,7 @@ define('globals', function() {
   });
 
   G.serverName = (function() {     
-    var s = document.getElementsByTagName('base')[0].href;
+    var s = doc.getElementsByTagName('base')[0].href;
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
   })();
   
@@ -728,6 +738,9 @@ define('globals', function() {
       var item = localStorage.getItem(url);
 //      G.finishedTask('localStorage GET: ' + url);
       return item;
+    },
+    delete: function(key) {
+      localStorage.removeItem(key);
     },
     put: function(key, value, force) {
       if (!G.hasLocalStorage)
@@ -739,6 +752,7 @@ define('globals', function() {
         localStorage.removeItem(key);
         localStorage.setItem(key, value);
       } catch(e) {
+        debugger;
         if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
           ls.reset(force && function() {
@@ -998,18 +1012,37 @@ define('globals', function() {
     },
 
     appendCSS: function(text, callback) {
-      var style = document.createElement('style');
+      var style = doc.createElement('style');
       style.type = 'text/css';
       style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
-      document.getElementsByTagName('head')[0].appendChild(style);
+      head.appendChild(style);
       callback();
     },
     
     appendHTML: function(html, element) {
-      var div = document.createElement('div');
+      var div = doc.createElement('div');
       div.id = G.nextId();
       div.innerHTML = html;
-      (element || document.getElementsByTagName('body')[0]).appendChild(div);
+      (element || body).appendChild(div);
+    },
+    
+    inject: function(module, text, callback) {
+      var d = document;
+      var script = d.createElement("script");
+      var id = "script" + (new Date).getTime();
+      var root = d.documentElement;
+      script.type = "text/javascript";
+//      script.innerHtml = text;
+      try {
+        script.appendChild(d.createTextNode(text));
+      } catch(e) {
+        script.text = text; // IE
+      }
+      
+      var parent = d.head || d.body;
+      parent.appendChild(script);
+      parent.removeChild(script);
+      callback(text);
     },
 
     getCanonicalPath: function(path, separator) {
@@ -1201,11 +1234,11 @@ define('globals', function() {
       var exdate = new Date();
       exdate.setDate(exdate.getDate() + exdays);
       var c_value = escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-      document.cookie = name + "=" + c_value;
+      doc.cookie = name + "=" + c_value;
     },
     
     getCookie: function(name) {
-      var i, x, y, cookies = document.cookie.split(";");
+      var i, x, y, cookies = doc.cookie.split(";");
       for (i = 0;i < cookies.length; i++) {
         var cookie = cookies[i];
         x = cookie.substr(0, cookie.indexOf("="));
@@ -1239,7 +1272,42 @@ define('globals', function() {
       request.onerror = function (event) {
         console.log("error: " + JSON.stringify(event));
       }
+    },
+    
+    inject: function(text, callback) {
+      var script = doc.createElement("script");
+      var id = "script" + (new Date).getTime();
+      var root = doc.documentElement;      
+      script.type = "text/javascript";
+      try {
+        script.appendChild(doc.createTextNode( "window." + id + "=1;" ));
+      } catch(e) {}
+      
+      root.insertBefore(script, root.firstChild);
+      script.onreadystatechange = script.onload = function() {
+        var state = script.readyState;
+        if (!callback.done && (!state || /loaded|complete/.test(state))) {
+          callback.done = true;
+          callback();
+        }
+      };
+
+      // Make sure that the execution of code works by injecting a script
+      // tag with appendChild/createTextNode
+      // (IE doesn't support this, fails, and uses .text instead)
+      if (window[id]) {
+        delete window[id];
+        script.appendChild(doc.createTextNode(text));
+      } else {
+        script.text = data;
+      }
+
+      (body || head).appendChild(script);
+//      setTimeout(callback, 1000);
+      callback();
     }
+        
+
 //    ,
 //    loadModule: function(type, name, caller, args) {
 //      var self = this;
@@ -1313,6 +1381,7 @@ define('globals', function() {
     }
   }
   
+//  G.minify = G.getCookie(mCookie) !== 'n';
   G.minify = G.getCookie(mCookie) === 'y';
   // END minify
   

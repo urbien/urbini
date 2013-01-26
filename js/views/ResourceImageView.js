@@ -33,7 +33,7 @@ define([
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
       if (!props.length) 
         return this;
-      var json = this.resource.toJSON();
+      var json = this.resource.attributes;
       var p = props[0];
       var propVal = json[p];
       if (typeof propVal == 'undefined') 
@@ -53,8 +53,8 @@ define([
       var metaH = meta[p]['imageHeight'];
       var metaDim = meta[p]['maxDimension'];
 
-      var oWidth = json['originalWidth'];
-      var oHeight = json['originalHeight'];
+      var oWidth = json.originalWidth;
+      var oHeight = json.originalHeight;
 
       var w;
       var h;

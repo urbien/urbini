@@ -8,6 +8,7 @@ define([
   var Error = {
     not_found: "The page you're looking for is probably in a parallel universe",
     login: "Please login, then we'll show you the top secret information you're looking for",
+    unauthorized: "You are unauthorized to view this information",
     offline: 'Your device is currently offline. Please come back to the 21st century, we miss you!',
     timeout: 'Slow internet connection, please try again',
     getDefaultErrorHandler: function(errorHandler) {
@@ -20,12 +21,13 @@ define([
           window.history.back();
           switch (code) {
           case 401: 
-             console.log('redirecting to user-login');
+            console.log('redirecting to user-login');
              // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
 //             Backbone.history.navigate("login/socialnet", {trigger: true} );
 //            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
 //            window.history.back();
-            Error.errDialog({msg: Error.login, delay: 1000});
+            
+            Error.errDialog({msg: G.currentUser.guest ? Error.login : Error.unauthorized, delay: 1000});
             return;
           case 404:
             console.log('no results');

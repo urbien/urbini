@@ -134,8 +134,8 @@ define([
           }
         }
         
-//        if (!data)
-//          debugger;
+        if (!data)
+          debugger;
         
         if (data.error) {
           onErr(data.error.code);
@@ -421,6 +421,7 @@ define([
           G.userChanged = true;
         }
         
+//        debugger;
         Voc.newModels = U.filterObj(Voc.typeToModel, function(type, model) {
           return type != 'Resource' // && !model.alwaysInlined
         });
@@ -685,11 +686,15 @@ define([
       var stale = []
       var fresh = [];
       Voc.filterExpired(expanded, fresh, stale);
-      _.each(stale, function(s) {U.pushUniq(Voc.changedModels, s)});
+      _.each(stale, function(s) {
+//        debugger;
+        U.pushUniq(Voc.changedModels, s)
+      });
       
       if (fresh.length) {
         var unloaded = Voc.initStoredModels(fresh);
         _.each(unloaded, function (m) {
+//          debugger;
           U.pushUniq(Voc.changedModels, m);
         });
       }
@@ -706,6 +711,7 @@ define([
           return;
         }
         
+//        debugger;
         U.pushUniq(stale, model.type);
         return;
       });

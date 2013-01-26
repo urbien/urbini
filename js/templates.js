@@ -23,7 +23,7 @@ define([
       "phone": "telPT",
       "mobilePhone": "telPT",
       "Url": "UrlPT",
-      "system/primitiveTypes/Duration": "durationPT",
+      "Duration": "durationPT",
       "date": "datePT",
       "dateTime": "datePT",
       "resource": "resourcePT",
@@ -35,20 +35,20 @@ define([
     propEditTemplates: {
       "string": "stringPET",
       "enum": "enumPET",
-//      "enum1": "shortEnumPET",
-//      "enum2": "longEnumPET",
+      "enum1": "shortEnumPET",
+      "enum2": "longEnumPET",
       "resource": "resourcePET",
-      "boolean": "booleanPET"
+      "boolean": "booleanPET",
+      "phone": "telPET",
+      "mobilePhone": "telPET",
+      "emailAddress": "emailPET"
 //       ,
 //      "boolean": "booleanPET",
 //      "int": "intPET",
 //      "float": "intPET",
 //      "double": "intPET",
-//      "http://www.hudsonfog.com/voc/system/primitiveTypes/emailAddress": "emailPET",
-//      "http://www.hudsonfog.com/voc/system/primitiveTypes/phone": "telPET",
-//      "http://www.hudsonfog.com/voc/system/primitiveTypes/mobilePhone": "telPET",
 //      "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPET",
-//      "http://www.hudsonfog.com/voc/system/primitiveTypes/Duration": "complexDatePET",
+//      "Duration": "complexDatePET",
 //      "date": "datePET",
 //      "resource": "resourcePET",
 //      "http://www.hudsonfog.com/voc/model/company/Money": "moneyPET",
@@ -71,11 +71,10 @@ define([
       return this.templates[name];
     },
     
-    facet: 'http://www.hudsonfog.com/voc/system/fog/Property/facet',
-    getPropTemplate: function(prop, edit) {
+    getPropTemplate: function(prop, edit, val) {
       var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
-      var facet = this.facet;
-      return (prop[facet] && t[prop[facet]]) || t[prop.range] || (prop.range.indexOf('/') == -1 ? t.string : t.resource);
+      var template = (prop.facet && t[prop.facet]) || t[prop.range] || (prop.range.indexOf('/') == -1 ? t.string : t.resource);
+      return template;
     }
   };
   

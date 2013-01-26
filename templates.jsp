@@ -7,6 +7,7 @@
 <script type="text/template" id="resource-list">
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
+  <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
@@ -63,7 +64,12 @@
 </script>  
 
 <script type="text/template" id="stringPT">
-  <span>{{= value }}</span>
+  {{ if (value.indexOf('<span') == -1) { }}
+     <span>{{= value }}</span>
+  {{ } }}
+  {{ if (value.indexOf('<span') == 0) { }}
+    {{= value }}
+  {{ } }}
 </script>
 
 <script type="text/template" id="emailPT">
@@ -107,7 +113,7 @@
 </script>
 
 <script type="text/template" id="moneyPT">
-  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? value : value.value) }}</span>
+  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? 0 : value.value) }}</span>
 </script>
 
 <!--script type="text/template" id="durationPT">
@@ -144,7 +150,7 @@
 
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
-    <img src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" 
+    <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined') { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -207,8 +213,8 @@
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
-  <li id="mapIt">
-    <a target="#" data-icon="globe">Map It</a>
+  <li>
+    <a id="mapIt" target="#" data-icon="globe">Map It</a>
   </li>
 </script>
 
@@ -304,17 +310,17 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
 <td class="cl" valign="top">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter.value) }}">
-    {{= submitter.displayName }}
+  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
+    {{= obj['submitter.displayName'] }}
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
   <br/><br/>
-  <span class="commentListDate">{{= submitTime.displayName }}</span>
+  <span class="commentListDate">{{= obj['submitTime.displayName'] }}</span>
   <br/>
   <a data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=' + encodeURIComponent('sql?uri=' + encodeURIComponent(_uri)) }}">
   </a>
@@ -333,7 +339,7 @@
   <table width="100%" class="modP">
     <tr>
       <td class="urbien" width="55px">
-        <a href="{{= modifiedBy.value }}">
+        <a href="{{= modifiedBy }}">
           <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
         </a>
       </td>
@@ -350,11 +356,11 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor  + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -385,11 +391,11 @@
     </div>
     <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=sql%3furi%3d' + encodeURIComponent(v_showVotesFor) }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -416,8 +422,8 @@
     <div name="errors" style="float:left"></div>
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="submit" id="submit" data-theme="a">Submit</button></div>
-        <div class="ui-block-b"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="a">Submit</button></div>
       </fieldset>
     </div>
   </form>
@@ -432,7 +438,7 @@
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>
-  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="editRowTemplate">
@@ -443,25 +449,46 @@
 
 <script type="text/template" id="telPET">
   <label for="{{= id }}">{{= name }}</label>
-  <input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" />
+  <input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" />
 </script>
 
-<script type="text/template" id="enumPET">
+<script type="text/template" id="longEnumPET">
   <label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" data-native-menu="false" class="{{= classes }}">
+  <select name="{{= shortName }}" id="{{= id }}" data-native-menu="false" class="{{= 'formElement ' + classes }}" data-mini="true" >
     <option>{{= value || '' }}</option>
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
-    {{   var pProps = options[o]; }}
-    <option value="{{= pProps.displayName }}">{{= pProps.label || pProps.displayName }}</option>
+    {{   var p = options[o]; }}
+    <option value="{{= p.shortName }}">{{= U.getPropDisplayName(p) }}</option>
     {{ } }}
   </select>
 </script>
 
+<!--script type="text/template" id="shortEnumPET">
+  <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+    <legend>{{= name }}</legend>
+    {{ for (var o in options) { }} 
+    {{   var p = options[o]; }}
+         <input type="radio" name="radio-choice-b" id="{{= id + '.' + p.shortName }}" value="{{= p.shortName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
+         <label for="{{= id + '.' + p.shortName }}">{{= U.getPropDisplayName(p) }}</label>
+    {{ } }}
+  </fieldset>
+</script-->
+
 <script type="text/template" id="stringPET">
   <label for="{{= id }}">{{= name }}</label> 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= classes }}" {{= rules }} />
+  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+</script>
+
+<script type="text/template" id="telPET">
+<label for="{{= id }}">{{= name }}</label> 
+<input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+</script>
+
+<script type="text/template" id="emailPET">
+<label for="{{= id }}">{{= name }}</label> 
+<input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="resourcePET">
@@ -469,7 +496,7 @@
   <a target="#" name="{{= shortName }}" class="resourceProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
 
   <!--label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp ' + classes }}">
+  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp' + classes }}" data-mini="true">
     <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
     <option value="test">Not supported</option>
   </select-->
@@ -477,7 +504,7 @@
 
 <script type="text/template" id="booleanPET">
   <label for="{{= id }}">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="{{= classes }}">
+  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="{{= 'formElement boolean ' + classes }}" data-mini="true">
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
