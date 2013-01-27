@@ -1388,6 +1388,7 @@ define('globals', function() {
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
+      jqueryIndexedDB: 'lib/jquery-indexeddb',
       queryIndexedDB: 'lib/queryIndexedDB',
 //      priorityQueue: 'lib/priorityQueue',
       leaflet: 'lib/leaflet',
@@ -1400,7 +1401,8 @@ define('globals', function() {
       jqueryMasonry: ['cache!jquery'],
 //      validator: ['jquery'],
       jqueryImagesloaded: ['cache!jquery'],
-      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css']
+      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css'],
+      jqueryIndexedDB: ['cache!jquery', 'cache!indexedDBShim']
 //          ,
 //      mobiscrollDate: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],
 //      mobiscrollJQM: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],

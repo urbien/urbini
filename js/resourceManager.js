@@ -7,7 +7,8 @@ define([
   'cache!events', 
   'cache!vocManager',
   'cache!indexedDBShim',
-  'cache!queryIndexedDB'
+  'cache!queryIndexedDB',
+  'cache!jqueryIndexedDB'
 ], function(G, $, _, Backbone, U, Events, Voc, __idbShim__, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
