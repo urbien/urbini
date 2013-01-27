@@ -5,6 +5,8 @@ define([
   'cache!backbone' 
 ], function(G, $, _, Backbone) {
   var Events = _.extend({
+    REQUEST_LOGIN: 'req-login',
+    LOGOUT: 'logout',
     TAG: 'Events.js',
     stopEvent: function(e) {
       e.preventDefault();

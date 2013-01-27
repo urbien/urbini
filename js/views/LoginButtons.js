@@ -47,7 +47,7 @@ define([
     },
     
     showPopup: function() {
-      Events.trigger(401);
+      Events.trigger(Events.REQUEST_LOGIN);
       return false;
 //      var $popup = $('.ui-page-active #login_popup');
 //      if ($popup.length == 0) {

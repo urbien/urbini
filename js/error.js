@@ -21,7 +21,7 @@ define([
           switch (code) {
           case 401: 
             G.log(Events.TAG, 'error', 'redirecting to user-login');
-            Events.trigger(401, G.currentUser.guest ? Errors.login : Errors.unauthorized);
+            Events.trigger(Events.REQUEST_LOGIN, G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
             console.log('no results');

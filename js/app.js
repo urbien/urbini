@@ -86,7 +86,7 @@ define('app', [
     },
     
     setupLoginLogout: function() {
-      Events.on(401, function(msg) {
+      Events.on(Events.REQUEST_LOGIN, function(msg) {
         var here = window.location.href;
         _.each(G.socialNets, function(net) {
           var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, true); // sorted alphabetically
@@ -124,9 +124,8 @@ define('app', [
       });
       
       var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
-      Events.on('logout', function(options) {
+      Events.on(Events.LOGOUT, function(options) {
         options = _.extend({}, defaults, options);
-        returnUri = returnUri || defaultReturnUri;
         var url = G.serverName + '/j_security_check?j_signout=true';
         $.get(url, function() {
             // may be current page is not public so go to home page (?)
