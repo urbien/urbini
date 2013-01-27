@@ -10,9 +10,8 @@ define([
   'cache!views/Header',
   'cache!views/BackButton',
   'cache!views/LoginButtons',
-  'cache!views/ResourceView',
-  'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView, __jqm__) {
+  'cache!views/ResourceView'
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');

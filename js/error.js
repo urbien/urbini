@@ -1,11 +1,10 @@
 define([
   'globals',
-//  'cache!events',
-  'cache!underscore', 
-  'cache!backbone',
-  'cache!jquery'
-], function(G, _, Backbone, $) {
-  var Error = {
+  'cache!utils',
+  'cache!jquery',
+  'cache!events'
+], function(G, U, $, Events) {
+  var Errors = {
     not_found: "The page you're looking for is probably in a parallel universe",
     login: "Please login, then we'll show you the top secret information you're looking for",
     unauthorized: "You are unauthorized to view this information",
@@ -21,40 +20,35 @@ define([
           window.history.back();
           switch (code) {
           case 401: 
-            console.log('redirecting to user-login');
-             // window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
-//             Backbone.history.navigate("login/socialnet", {trigger: true} );
-//            window.location.href = G.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + U.encode(window.location.href);
-//            window.history.back();
-            
-            Error.errDialog({msg: G.currentUser.guest ? Error.login : Error.unauthorized, delay: 1000});
+            G.log(Events.TAG, 'error', 'redirecting to user-login');
+            Events.trigger(401, G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
             console.log('no results');
             var errMsg = err.details;
             if (!errMsg) {
-              if (originalModel && (originalModel instanceof Backbone.Model || originalModel instanceof Backbone.Collection)) // && originalModel.queryMap.length == 0)))
+              if (originalModel && (U.isModel(originalModel) || U.isCollection(originalModel))) // && originalModel.queryMap.length == 0)))
                 errMsg = "No results were found for your query";
   //              router.navigate(defaultDestination || originalModel.shortName || originalModel.constructor.shortName, {trigger: true, replace: true, errMsg: "No results were found for your query"});
             else
-                errMsg = Error.not_found;
+                errMsg = Errors.not_found;
             }
 //              router.navigate(defaultDestination || G.homePage, {trigger: true, replace: true, errMsg: Error.not_found});            
-            Error.errDialog({msg: errMsg, delay: 1000});
+            Errors.errDialog({msg: errMsg, delay: 1000});
             return;
           default:
             switch (type) {
               case 'offline':
               case 'timeout':
-//                Events.trigger('error', err.details ? err : _.extend(err, {details: Error.OFFLINE}));
-//                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Error[G.online ? type : 'offline']});
-                Error.errDialog({msg: err.details || Error[G.online ? type : 'offline'], delay: 1000});
+//                Events.trigger('error', err.details ? err : _.extend(err, {details: Errors.OFFLINE}));
+//                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Errors[G.online ? type : 'offline']});
+                Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
-//                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Error.not_found});
-                Error.errDialog({msg: err.details || Error.not_found, delay: 1000});
+//                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Errors.not_found});
+                Errors.errDialog({msg: err.details || Errors.not_found, delay: 1000});
             }
             return;
           }
@@ -77,5 +71,5 @@ define([
     }
   };
   
-  return Error;
+  return Errors;
 });

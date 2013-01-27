@@ -1,7 +1,6 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
@@ -15,9 +14,9 @@ define([
   'cache!views/ViewPage'
 //  , 
 //  'cache!views/EditPage' 
-], function(G, $, __jqm__, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
+], function(G, $, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var MenuPage, EditPage;
+  var MenuPage, EditPage, EditView;
   var Router = Backbone.Router.extend({
 //    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
 //    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
@@ -141,7 +140,7 @@ define([
     list: function(oParams, mode) {
 //      this.backClicked = this.wasBackClicked();
       if (!ListPage)
-        return this.loadView('ListPage', this.list, arguments);
+        return this.loadViews('ListPage', this.list, arguments);
       
       var self = this;
       var params = oParams.split("?");
@@ -213,7 +212,7 @@ define([
     
     menu: function() {
       if (!MenuPage)
-        return this.loadView('MenuPage', this.menu, arguments);
+        return this.loadViews('MenuPage', this.menu, arguments);
       
       var c = this.currentModel;
       var id = c.id || c.url;
@@ -225,19 +224,28 @@ define([
       this.changePage(menuPage);
     },
 
-    loadView: function(view, caller, args) {
+    loadViews: function(views, caller, args) {
+      views = $.isArray(views) ? views : [views];
       var self = this;
-      if (!eval(view)) {
-        require(['cache!views/' + view], function(v) {
-          eval(view + '=v;');
-          caller.apply(self, args);
+      var unloaded = _.filter(views, function(v) {return !eval(v)});
+      if (unloaded.length) {
+        var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
+        G.loadBundle(unloadedMods, function() {
+          require(_.map(unloadedMods, function(v) {return 'cache!' + v}), function() {
+            var a = U.slice.call(arguments);
+            for (var i = 0; i < a.length; i++) {              
+              eval(unloaded[i] + '=a[i];');
+            }
+            
+            caller.apply(self, args);
+          });
         });
       }
     },
     
     make: function(path) {
       if (!EditPage)
-        return this.loadView('EditPage', this.make, arguments);
+        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
       
       var parts = path.split('?');
       var type = decodeURIComponent(parts[0]);
@@ -267,14 +275,14 @@ define([
 
     edit: function(path) {
       if (!EditPage)
-        return this.loadView('EditPage', this.edit, arguments);
+        return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
       else
         this.view.call(this, path, true);
     },
     
     view: function (path, edit) {
       if (!edit && !ViewPage)
-        return this.loadView('ViewPage', this.view, arguments);
+        return this.loadViews('ViewPage', this.view, arguments);
       
       var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? EditPage : ViewPage;

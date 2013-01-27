@@ -502,7 +502,7 @@ requirejs.exec = function(text) {
 //    return true;
 //  }
 //  return false;
-    return window.eval(text);
+  return window.eval.call({}, text);
 }
                     
 define('globals', function() {
@@ -1376,6 +1376,11 @@ define('globals', function() {
   require.config({
     paths: {
 //      cache: 'lib/requirejs.cache',
+//      mobiscroll: 'lib/mobiscroll-core',
+//      mobiscrollDate: 'lib/mobiscroll-datetime',
+//      mobiscrollJQM: 'lib/mobiscroll-jqm',
+//      mobiscrollJQMW: 'lib/mobiscroll-jqmwidget',
+      mobiscroll: 'lib/mobiscroll-datetime-min',
       jquery: 'lib/jquery',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.3.0-beta.1',
@@ -1391,11 +1396,17 @@ define('globals', function() {
       jqueryMasonry: 'lib/jquery.masonry'
     },
     shim: {
-      leafletMarkerCluster: ['leaflet'],
-      jqueryMasonry: ['jquery'],
+      leafletMarkerCluster: ['cache!leaflet'],
+      jqueryMasonry: ['cache!jquery'],
 //      validator: ['jquery'],
-      jqueryImagesloaded: ['jquery'],
-      queryIndexedDB: ['indexedDBShim']
+      jqueryImagesloaded: ['cache!jquery'],
+      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css']
+//          ,
+//      mobiscrollDate: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],
+//      mobiscrollJQM: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],
+//      mobiscrollJQMW: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll']
+//      mobiscroll: ['cache!jquery', 'cache!mobiscroll.core', 'cache!mobiscroll.jqm', 'cache!mobiscroll.jqmwidget', 'cache!../styles/mobiscroll.core.css', 'cache!../styles/mobiscroll.jqm.css']
+//      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css']
     }
   });
 

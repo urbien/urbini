@@ -1,7 +1,6 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
@@ -9,7 +8,7 @@ define([
   'cache!events', 
   'cache!models/Resource', 
   'cache!collections/ResourceList', 
-], function(G, $, __jqm__, _, Backbone, U, Errors, Events, Resource, ResourceList) {
+], function(G, $, _, Backbone, U, Errors, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -60,7 +59,7 @@ define([
             
             options.sync = false;
             options.success = success;
-            setTimeout(function() {Voc.fetchModels(models, options)}, 100);
+            Voc.fetchModels(models, options);
           }
           
           Voc.fetchModels(urgent, options);

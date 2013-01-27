@@ -41,7 +41,9 @@ define([
       "boolean": "booleanPET",
       "phone": "telPET",
       "mobilePhone": "telPET",
-      "emailAddress": "emailPET"
+      "emailAddress": "emailPET",
+      "date": "datePET",
+      "ComplexDate": "datePET"
 //       ,
 //      "boolean": "booleanPET",
 //      "int": "intPET",
@@ -49,7 +51,6 @@ define([
 //      "double": "intPET",
 //      "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPET",
 //      "Duration": "complexDatePET",
-//      "date": "datePET",
 //      "resource": "resourcePET",
 //      "http://www.hudsonfog.com/voc/model/company/Money": "moneyPET",
 //      "http://www.hudsonfog.com/voc/system/fog/ComplexDate": "complexDatePET",

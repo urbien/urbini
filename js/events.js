@@ -12,8 +12,8 @@ define([
     },
     defaultClickHandler: function(e) {
       G.log(this.TAG || Events.TAG, 'events', 'click');
-      var event = e.originalEvent;
-      var el = event.target;
+//      var event = e.originalEvent;
+      var el = e.target;
       var $el = $(el);
       var p = $el;
       var foundLink = false;

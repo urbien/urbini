@@ -2,14 +2,12 @@ define([
   'globals',
   'cache!jquery',
   'cache!underscore',
-  'cache!backbone',
   'cache!utils',
   'cache!events',
   'cache!vocManager',
   'cache!templates',
-  'cache!views/BasicView',
-  'cache!jqueryMobile'
-], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, __jqm__) {
+  'cache!views/BasicView'
+], function(G, $, _, U, Events, Voc, Templates, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -21,7 +19,6 @@ define([
       this.template = _.template(Templates.get('menuP'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.router = G.Router || Backbone.history;
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;
@@ -122,10 +119,10 @@ define([
     
     buildActionsMenu: function(frag) {
       U.addToFrag(frag, this.groupHeaderTemplate({value: 'Actions'}));
-      if (this.model instanceof Backbone.Collection)
-        this.buildActionsMenuForList(frag);
-      else
+      if (this.resource)
         this.buildActionsMenuForRes(frag);
+      else
+        this.buildActionsMenuForList(frag);
       
       U.addToFrag(frag, this.menuItemTemplate({title: 'Subscribe', mobileUrl: '', id: 'subscribe'}));
     },

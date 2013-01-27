@@ -1,13 +1,12 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates',
   'cache!events',
   'cache!views/BasicView'
-], function(G, $, __jqm__, _, Backbone, Templates, Events, BasicView) {
+], function(G, $, _, Backbone, Templates, Events, BasicView) {
   return BasicView.extend({
     template: 'editButtonTemplate',
     events: {

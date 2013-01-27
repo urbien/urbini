@@ -151,7 +151,7 @@ define([
       
       var resExists = !!res.get('_uri');
       if (resExists) { 
-        if (prop.primary || prop.avoidDisplayingInEdit || prop.immutable)
+        if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
           return false;
       }
       else {
@@ -1071,16 +1071,16 @@ define([
           val.type = 'tel';
       }
       
-      var classes = [];
-      var rules = {};
-      if (prop.required) {
-        classes.push('required');
+//      var classes = [];
+      var rules = {"data-formEl": true};
+      if (prop.required)
         rules.required = 'required';
-      }
+      if (U.isDateOrTimeProp(prop))
+        rules['data-datetime'] = true;
       if (prop.maxSize)
         rules.maxlength = prop.maxSize;
       
-      val.classes = classes.join(' ');
+//      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       _.extend(val, {U: U, G: G});
       
@@ -1378,6 +1378,25 @@ define([
       return _.isUndefined(val) || val === null || val === '';
     },
 
+    _dateProps: ['ComplexDate', 'date', 'dateTime'],
+    _timeProps: ['Duration', 'years', 'hours', 'minutes', 'seconds'],
+    isDateOrTimeProp: function(prop) {
+      return U.isDateProp(prop) || U.isTimeProp(prop);
+    },
+
+    isDateProp: function(prop) {
+      return prop.range && _.contains(U._dateProps, prop.range);
+    },
+
+    isTimeProp: function(prop) {
+      return prop.range && _.contains(U._timeProps, prop.range);
+    },
+
+    toDateParts: function(millis) {
+      var date = millis ? new Date(millis) : new Date();
+      return [date.getMonth(), date.getDate(), date.getFullYear()];//, date.getMonth(), date.getDate()];
+    },
+    
     slice: slice
   };
 

@@ -7,12 +7,11 @@ define([
   'cache!events',
   'cache!vocManager',
   'cache!templates',
-  'cache!jqueryMobile',
   'cache!views/BasicView',
   'cache!views/ResourceMasonryItemView',
   'cache!views/ResourceListItemView',
   'cache!views/CommentListItemView'
-], function(G, $, _, Backbone, U, Events, Voc, Templates, __jqm__, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return BasicView.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -56,8 +55,8 @@ define([
       var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
-      canceled = canceled.length ? canceled[0].shortName : null;
-
+      canceled = canceled.length ? canceled[0] : null;
+      
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 

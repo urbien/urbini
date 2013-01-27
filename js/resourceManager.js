@@ -1,16 +1,14 @@
 define([
   'globals',
   'cache!jquery', 
-  'cache!jqueryMobile', 
   'cache!underscore', 
   'cache!backbone', 
   'cache!utils', 
-  'cache!error', 
   'cache!events', 
   'cache!vocManager',
   'cache!indexedDBShim',
   'cache!queryIndexedDB'
-], function(G, $, __jqm__, _, Backbone, U, Error, Events, Voc, __idbShim__, idbq) {
+], function(G, $, _, Backbone, U, Events, Voc, __idbShim__, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = false;
@@ -41,7 +39,7 @@ define([
     forceFetch = options.forceFetch,
     synchronous = options.sync,
     now = G.currentServerTime(),
-    isCollection = data instanceof Backbone.Collection,
+    isCollection = U.isCollection(data),
     vocModel = data.vocModel;
     
     if (isCollection)
@@ -530,13 +528,11 @@ define([
         if (Voc.typeToEnum[type] || Voc.typeToInline[type])
           continue;
         
-        var exists = RM.storeExists(type);
-        if (exists) {
+        if (RM.storeExists(type)) {
           if (reset || _.contains(toDel, type)) {
             try {
 //              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
               RM.db.deleteObjectStore(type);
-              exists = false;
               G.log(RM.TAG, 'db', 'deleted object store: ' + type);
               deleted.push(type);
             } catch (err) {
@@ -549,36 +545,34 @@ define([
             continue;
         }
 
-        if (!exists) {
-          try {
-  //          G.log(RM.TAG, 'db', 'creating object store: ' + type);
-            var store = RM.db.createObjectStore(type, RM.defaultOptions);
-            newStores.push(store);
-            G.log(RM.TAG, 'db', 'created object store: ' + type);
-            var m = Voc.typeToModel[type];
-            if (m) {
-              var indices = [];
-              var vc = m.viewCols || '';
-              var gc = m.gridCols || '';
-              var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
-              _.each(cols, function(pName) {
-                pName = pName.trim();
-                if (!pName.length)
-                  return;
-                
-                G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
-                var index = store.createIndex(pName, pName, {unique: false});              
-                G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
-                indices.push(pName);
-              });  
-            }
-            
-            created.push(type);
-          } catch (err) {
-            debugger;
-            G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
-            return;
+        try {
+//          G.log(RM.TAG, 'db', 'creating object store: ' + type);
+          var store = RM.db.createObjectStore(type, RM.defaultOptions);
+          newStores.push(store);
+          G.log(RM.TAG, 'db', 'created object store: ' + type);
+          var m = Voc.typeToModel[type];
+          if (m) {
+            var indices = [];
+            var vc = m.viewCols || '';
+            var gc = m.gridCols || '';
+            var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
+            _.each(cols, function(pName) {
+              pName = pName.trim();
+              if (!pName.length)
+                return;
+              
+              G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
+              var index = store.createIndex(pName, pName, {unique: false});              
+              G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
+              indices.push(pName);
+            });  
           }
+          
+          created.push(type);
+        } catch (err) {
+          debugger;
+          G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
+          return;
         }
       }
       
@@ -649,7 +643,7 @@ define([
     }, //.async(100),
     
     addItem: function(item, classUri) {
-      var isModel = item instanceof Backbone.Model;
+      var isModel = U.isModel(item);
       classUri = classUri ? classUri : isModel ? item.vocModel.type : U.getTypeUri(item.type._uri);
       item = isModel ? item.toJSON() : item;
       RM.addItems([item], classUri);
@@ -710,7 +704,7 @@ define([
     },
 
     buildDBQuery: function(store, data, filter) {
-      if (data instanceof Backbone.Model)
+      if (U.isModel(data))
         return false;
       
       var query, orderBy, 
@@ -779,13 +773,16 @@ define([
           return null;
         
         var op = opVal[0];
-        var bound = U.getTypedValue(data, name, opVal[1]);
+        op = op === '=' ? '==' : op; 
+//        var bound = U.getTypedValue(data, name, opVal[1]);
+        var bound = opVal[1];
         rules.push(function(val) {
-//          try {
+          try {
 //            return eval(val[name] + op + bound);
-//          } catch (err){
-//            return false;
-//          }
+            return eval('"' + val[name] + '"' + op + '"' + bound + '"');
+          } catch (err){
+            return false;
+          }
           
           // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
           return true;
@@ -813,7 +810,6 @@ define([
       var total = options.perPage;
       var filter = options.filter;
       var data = options.data;
-//      var vocModel = model instanceof Backbone.Collection ? model.model : model.constructor;
     
 //      var name = U.getClassName(type);
 //      var db = RM.db;

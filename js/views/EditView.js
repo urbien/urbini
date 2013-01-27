@@ -10,7 +10,11 @@ define([
   'cache!vocManager',
   'cache!resourceManager',
   'cache!views/BasicView'
+//  ,
+//  'cache!mobiscroll',
+//  'cache!mobiscroll-duration'
 ], function(G, $, _, Backbone, Templates, Events, Errors, U, Voc, RM, BasicView) {
+  var scrollDfd;
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -32,16 +36,67 @@ define([
       if (params.backLink && params.on)
         initial[params.backLink] = params.on;      
       this.resource.set(initial, {silent: true});
-      
       this.originalResource = this.resource.toJSON();
-
+      
       return this;
     },
     events: {
       'click .cancel': 'cancel',
       'submit form': 'submit',
       'click .resourceProp': 'chooser',
-      'click': 'click'
+      'click': 'click',
+      'click input[data-datetime]': 'mobiscroll'
+    },
+    mobiscroll: function(e) {
+      if ($.mobiscroll)
+        return true;
+      
+      var thisName = e.target.name;
+      var meta = this.vocModel.properties;
+      Events.stopEvent(e);
+      require(['cache!mobiscroll', 'cache!mobiscroll-duration'], function() {
+        // mobiscrollers
+        var today = new Date();
+        var thisScroller;
+        form.find('.i-txt').each(function() {
+          var name = this.name;
+          var prop = meta[name];
+          var isDate = U.isDateProp(prop);
+          var isTime = U.isTimeProp(prop);
+          var settings = {
+            theme: 'jqm',
+            display: 'modal',
+            mode:'scroller',
+            label: U.getPropDisplayName(prop),
+            shortName: name,
+            onSelect: self.onSelected,
+            input: this
+//              parseValue: U.toDateParts
+//              ,
+//              formatResult: function(d) {
+//                if (_.isUndefined(d[0]))
+//                  return today;
+//                else
+//                  return new Date(d[2], d[0], d[1]);
+//              }
+          };
+          
+          if (isDate) 
+            settings.isDate = true;
+          else if (isTime)
+            settings.isTime = true;
+          
+          var scroller = $(this).mobiscroll()[isDate ? 'date' : 'duration'](settings);
+//          var scroller = $(this).mobiscroll()['duration'](settings);
+          var val = this.value && parseInt(this.value);
+          if (typeof val === 'number')
+            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+          
+          if (name === thisName)
+            scroller.click().focus();
+        });
+//        $(e.target).trigger('click');        
+      });
     },
     chooser: function(e) {
       Events.stopEvent(e);
@@ -84,7 +139,8 @@ define([
       return this.$form.find('input').or('textarea').find(selector);
     },
     getInputs: function() {
-      return this.$form.find('.formElement,.resourceProp');
+//      return this.$form.find('.formElement,.resourceProp');
+      return this.$form.find('[data-formEl]');
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -212,11 +268,17 @@ define([
       this.router.navigate(redirect, options);
     },
     getValue: function(input) {
-      var val = input.tagName === 'A' ? $(input).data('uri') : input.value;
+      var jInput = $(input);
+      var val = input.tagName === 'A' ? jInput.data('uri') : input.value;
       if (_.contains(input.classList, 'boolean'))
         return val === 'Yes' ? true : false;
-      else
-        return typeof val === 'undefined' ? 'null' : val;
+      else {
+        var date = jInput.data('data-datetime');
+        if (date)
+          return date;
+        else
+          return val;
+      }
     },
     submit: function(e) {
       Events.stopEvent(e);
@@ -246,8 +308,6 @@ define([
         atts[name] = val;
       }
       
-      this.resetResource();
-      this.setValues(atts, {onValidationError: this.fieldError});
       var succeeded = false;
       var onSuccess = function() {
         if (succeeded)
@@ -278,6 +338,7 @@ define([
           switch (code) {
             case 401:
               Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+//              Events.on(401, msg || 'You are not unauthorized to make these changes');
               break;
             case 404:
               debugger;
@@ -302,7 +363,6 @@ define([
             }
             
             $('.formElement').attr('disabled', false);
-//            res.set(response, {skipRefresh: true});
             self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           },
           
@@ -366,8 +426,6 @@ define([
         res.off('change', onSuccess, self);
         self.fieldError.apply(self, arguments);
         inputs.attr('disabled', false);
-        if (texts)
-          texts.attr('disabled', false);
 //        alert('There are errors in the form, please review');
       };
 //
@@ -380,10 +438,14 @@ define([
           break;
       }
       
+      this.resetResource();
+//      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var errors = res.validate(res.attributes, {validateAll: true, skipRefresh: true});
-      if (typeof errors === 'undefined')
+      var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
+      if (typeof errors === 'undefined') {
+        this.setValues(atts, {skipValidation: true});
         onSuccess();
+      }
       else
         onError(errors);
     },
@@ -426,10 +488,29 @@ define([
       return Events.defaultClickHandler(e);
     },
     onSelected: function(e) {
-//      Events.stopEvent(e);
       var atts = {};
-      var t = e.target;
-      atts[t.name] = t.value;
+      if (arguments.length > 1) {
+        var val = arguments[0];
+        var scroller = arguments[1];
+        var settings = scroller.settings;
+        var name = settings.shortName,
+            input = settings.input;
+        if (settings.isDate) {
+          var millis = atts[name] = new Date(val).getTime();
+          $(input).data('data-datetime', millis);
+        }
+        else if (settings.isTime) {
+          var secs = atts[name] = scroller.getSeconds();
+          $(input).data('data-datetime', secs);
+        }
+        else
+          debugger;
+      }
+      else {
+        var t = e.target;
+        atts[t.name] = t.value;
+      }
+//      Events.stopEvent(e);
       this.setValues(atts, {onValidationError: this.fieldError});
     },
     setValues: function(atts, options) {
@@ -438,6 +519,13 @@ define([
       res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
     },
     render: function(options) {
+      var self = this;
+      var args = arguments;
+      if (scrollDfd && !scrollDfd.isResolved()) {
+        scrollDfd.done(function() {self.render.apply(self, args)});
+        return;
+      }
+      
       G.log(this.TAG, "render");
       var meta = this.vocModel.properties;
       if (!meta)
@@ -445,7 +533,6 @@ define([
       
       var res = this.resource;
       var type = res.type;
-      var self = this;
       var json = res.attributes;
       var frag = document.createDocumentFragment();
       var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
@@ -597,11 +684,23 @@ define([
 //  //      jin.keyup(onFocusout);
 //      });
         
-      form.find('input.required').each(function() {
+      form.find('[required]').each(function() {
         $(this).prev('label').addClass('req');
       });
       
       form.find('select').change(this.onSelected);
+      form.find("input").bind("keydown", function(event) {
+        // track enter key
+        var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+        if (keycode == 13) { // keycode for enter key
+          // force the 'Enter Key' to implicitly click the Submit button
+          Events.stopEvent(event);
+          form.submit();
+          return false;
+        } else  {
+          return true;
+        }
+      }); // end of function
       
 //      if (_.size(displayedProps) === 1) {
 //        var prop = meta[U.getFirstProperty(displayedProps)];

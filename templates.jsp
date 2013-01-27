@@ -248,7 +248,7 @@
 
 <script type="text/template" id="loginPopupTemplate">
   <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
-    <h4>Login through Social Network</h4>
+    <h4 id="loginMsg">{{= msg }}</h4>
     <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
 
@@ -423,7 +423,7 @@
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="a">Submit</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="a" class="submit">Submit</button></div>
       </fieldset>
     </div>
   </form>
@@ -438,7 +438,7 @@
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>
-  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="editRowTemplate">
@@ -449,12 +449,12 @@
 
 <script type="text/template" id="telPET">
   <label for="{{= id }}">{{= name }}</label>
-  <input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" />
+  <input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </script>
 
 <script type="text/template" id="longEnumPET">
   <label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'formElement ' + classes }}" data-mini="true" >
+  <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
     {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
     {{ for (var o in options) { }} 
     {{   if (o === value) continue; }}
@@ -469,7 +469,7 @@
     <legend>{{= name }}</legend>
     {{ for (var o in options) { }} 
     {{   var p = options[o]; }}
-         <input type="radio" name="radio-choice-b" id="{{= id + '.' + p.shortName }}" value="{{= p.shortName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
+         <input type="radio" name="radio-choice-b" id="{{= id + '.' + p.shortName }}" {{= rules }} value="{{= p.shortName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
          <label for="{{= id + '.' + p.shortName }}">{{= U.getPropDisplayName(p) }}</label>
     {{ } }}
   </fieldset>
@@ -478,36 +478,36 @@
 <script type="text/template" id="stringPET">
   <label for="{{= id }}">{{= name }}</label> 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="telPET">
 <label for="{{= id }}">{{= name }}</label> 
-<input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+<input type="tel" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement' }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="emailPET">
 <label for="{{= id }}">{{= name }}</label> 
-<input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' + classes }}" {{= rules }} data-mini="true" />
+<input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement' }}" {{= rules }} data-mini="true" />
 </script>
 
 <script type="text/template" id="resourcePET">
   <!--label for="{{= id }}" class="select">{{= name }}</label-->
-  <a target="#" name="{{= shortName }}" class="resourceProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
-
-  <!--label for="{{= id }}" class="select">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" class="{{= 'resourceProp' + classes }}" data-mini="true">
-    <option value="{{= typeof value === 'undefined' ? '' : value }}">{{= name }}</option>
-    <option value="test">Not supported</option>
-  </select-->
+  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
 </script>
 
 <script type="text/template" id="booleanPET">
   <label for="{{= id }}">{{= name }}</label>
-  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="{{= 'formElement boolean ' + classes }}" data-mini="true">
+  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="formElement boolean" data-mini="true">
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
+</script>
+
+<script type="text/template" id="datePET">
+  <label for="{{= id }}">{{= name }}</label>
+  <input id="{{= id }}" class="i-txt" name="{{= shortName }}" {{= rules }} data-mini="true" />
+  <!--input type="hidden" id="{{= id + '.hidden' }}" name="{{= shortName }}" {{= rules }} data-mini="true" /-->
 </script>
 
 <!-- END EDIT TEMPLATES -->

@@ -19,7 +19,7 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
@@ -37,32 +37,28 @@ define([
       if (!canceled.length)
         throw new Error("{0} can not be canceled because it does not have a 'canceled' property".format(U.getDisplayName(this)));
       
-      canceled = canceled[0].shortName;
+      canceled = canceled[0];
       var props = {};
       props[canceled] = true;
       var self = this;
-      this.save(props, {
-        success: function(resource, response, options) {
-          if (response.error) {
-            if (options.error)
-              options.error(resource, response, options);
-            
-            return;
-          }
-          
+//      this.save(props, options);
+      var success = options.success;
+      options.success = function(resource, response, options) {
+        success && success.apply(this, arguments);
+        if (!response.error)          
           self.trigger('cancel');
-        }
-      });
+      }
+
+      this.save(props, options);
     },
     onchange: function(e) {
       if (this.lastFetchOrigin !== 'server')
         return;
       
-      Events.trigger('newResources', this);
+      Events.trigger('resourcesChanged', [this]);
     },
     remove: function() {
       this.collection && this.collection.remove(this);
-      Events.trigger('canceled', this);
     },
     url: function() {
       var uri = this.get('_uri');
@@ -187,8 +183,21 @@ define([
       var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
       if (!data.$returnMade)
         data.$returnMade = 'y';
+      if (!this.isNew())
+        data._uri = this.getUri();
 
+      var self = this;
       options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: U.getQueryString(data)});
+      
+      var success = options.success;
+      options.success = function(resource, response, opts) {
+        success && success.apply(this, arguments);
+        if (response.error)
+          return;
+        
+        Events.trigger('resourcesChanged', [self]);
+      };
+      
       return Backbone.Model.prototype.save.call(this, attrs, options);
     }
   },

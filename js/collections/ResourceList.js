@@ -249,7 +249,7 @@ define([
       
       if (toAdd.length) {
         Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
-        Events.trigger('newResources', toAdd); 
+        Events.trigger('resourcesChanged', toAdd); 
       }
       
       return this;
