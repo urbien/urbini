@@ -308,8 +308,7 @@ html { height: 100%; }
 #login_popup .big_symbol { float: left; font-size: 25px; color: #aaaaaa; line-height: 100%; margin: 0px 0px 0px -8px; }
 
 /* default images 'fitting' in RL in case when image dimensions are uknown. Use "max-height: none" only with processed images */
-.ui-li-thumb { max-width: none; min-width: 80px; min-height: 80px; clip: rect(0px, 80px, 80px, 0px); }
-.image_fitted .ui-li-thumb { max-height: none; }
+.image_fitted .ui-li-thumb { max-width: none; max-height: none; min-width: 80px; min-height: 80px; clip: rect(0px, 80px, 80px, 0px); }
 
 /* JQM toggle switch alignment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }

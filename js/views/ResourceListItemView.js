@@ -260,12 +260,37 @@ define([
       var dn;
       var rUri;
       var json = m.attributes;
+      var h, w;
       if (cloneOf == 'Intersection.a') {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')];
+//        img = json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
+        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
       }
       else {
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
+//        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
+        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
+        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
       }
+      
+      
+      json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
+      // fit image to frame
+      if (typeof w != 'undefined' &&
+          typeof h != 'undefined' ) {
+        
+        this.$el.addClass("image_fitted");
+        
+        var dim = U.fitToFrame(80, 80, w / h)
+        json.width = dim.w;
+        json.height = dim.h;
+        json.top = dim.y;
+        json.right = dim.w - dim.x;
+        json.bottom = dim.h - dim.y;
+        json.left = dim.x;
+      }
+
       dn = json[delegateTo + '.displayName'];
       rUri = json[delegateTo];
         

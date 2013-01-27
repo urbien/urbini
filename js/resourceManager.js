@@ -382,7 +382,7 @@ define([
           newStores = RM.updateStores();
         }
         
-        if (!newStores.length)
+        if (!newStores || !newStores.length)
           callback && callback();
         else if (useWebSQL) {
           numCallbacks = _.reduce(newStores, function(a, b) {
@@ -528,11 +528,13 @@ define([
         if (Voc.typeToEnum[type] || Voc.typeToInline[type])
           continue;
         
-        if (RM.storeExists(type)) {
+        var exists = RM.storeExists(type);
+        if (exists) {
           if (reset || _.contains(toDel, type)) {
             try {
 //              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
               RM.db.deleteObjectStore(type);
+              exists = false;
               G.log(RM.TAG, 'db', 'deleted object store: ' + type);
               deleted.push(type);
             } catch (err) {
@@ -544,6 +546,7 @@ define([
           else
             continue;
         }
+<<<<<<< HEAD
 
         try {
 //          G.log(RM.TAG, 'db', 'creating object store: ' + type);
@@ -566,13 +569,46 @@ define([
               G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
               indices.push(pName);
             });  
+=======
+        
+        if (!exists) {
+          try {
+  //          G.log(RM.TAG, 'db', 'creating object store: ' + type);
+            var store = RM.db.createObjectStore(type, RM.defaultOptions);
+            newStores.push(store);
+            G.log(RM.TAG, 'db', 'created object store: ' + type);
+            var m = Voc.typeToModel[type];
+            if (m) {
+              var indices = [];
+              var vc = m.viewCols || '';
+              var gc = m.gridCols || '';
+              var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
+              _.each(cols, function(pName) {
+                pName = pName.trim();
+                if (!pName.length)
+                  return;
+                
+                G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
+                var index = store.createIndex(pName, pName, {unique: false});              
+                G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
+                indices.push(pName);
+              });
+  
+              // wrong, this is for backlink resources, not the class itself
+  //            _.each(m.properties, function(prop, pName) {
+  //              if (_.has(prop, 'sortAscending') && !_.contains(indices, pName)) {
+  //                store.createIndex(pName, pName, {unique: false});
+  //              }
+  //            });
+            }
+            
+            created.push(type);
+          } catch (err) {
+            debugger;
+            G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
+            return;
+>>>>>>> origin/master
           }
-          
-          created.push(type);
-        } catch (err) {
-          debugger;
-          G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
-          return;
         }
       }
       
@@ -827,6 +863,9 @@ define([
       }
       
       trans.oncomplete = function(e) {
+        if (success && error) // neither success nor error were called
+          error(e);
+          
         G.log(RM.TAG, 'db', 'finished readonly transaction for store', type);
       };
       
@@ -856,10 +895,16 @@ define([
 //        G.log(RM.TAG, 'db', 'read via cursor onsuccess');
         var result = e.target.result;
         if (result) {
-          if (query)
-            return success(result);
-          else if (uri)
-            return success([result]);
+          if (query) {
+            result = success(result);
+            success = null;
+            return result;
+          }
+          else if (uri) {
+            result = success([result]);
+            success = null;
+            return result;
+          }
           
           var val = result.value;
           if (valueTester && !valueTester(val)) {
@@ -880,6 +925,7 @@ define([
       dbReq.onerror = function (e) {
         G.log(RM.TAG, 'db', 'read via cursor onerror', e);
         error && error(e);
+        error = null;
 //        RM.onerror(e);
       }
             
