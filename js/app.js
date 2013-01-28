@@ -1,15 +1,17 @@
 define('app', [
   'globals',
+  'cache!jquery',
   'cache!jqueryMobile',
   'cache!underscore', 
   'cache!backbone', 
   'cache!templates', 
   'cache!utils', 
   'cache!events',
+  'cache!error',
   'cache!vocManager',
   'cache!resourceManager',
   'cache!router'
-], function(G, __jqm__, _, Backbone, Templates, U, Events, Voc, RM, Router) {  
+], function(G, $, __jqm__, _, Backbone, Templates, U, Events, Errors, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -78,7 +80,13 @@ define('app', [
       Backbone.history.start();
       
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
+      App.setupModuleCache();
       App.setupLoginLogout();
+      if (G.currentUser.guest && G.online) {
+        setTimeout(function() {          
+          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});
+        }, 100);
+      }
 //      G.homePage = G.homePage || G.tabs[0].mobileUrl;
 //      if (!window.location.hash) {
 //        G.Router.navigate(G.homePage, {trigger: true});
@@ -86,7 +94,13 @@ define('app', [
     },
     
     setupLoginLogout: function() {
-      Events.on(Events.REQUEST_LOGIN, function(msg) {
+      Events.on(Events.REQUEST_LOGIN, function(options) {
+        options = _.extend({online: 'Login through a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+        if (!G.online) {
+          Errors.errDialog({msg: options.offline});
+          return;
+        }
+        
         var here = window.location.href;
         _.each(G.socialNets, function(net) {
           var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, true); // sorted alphabetically
@@ -112,7 +126,7 @@ define('app', [
         
         var popupTemplate = _.template(Templates.get('loginPopupTemplate'));
         var $popup = $('.ui-page-active #login_popup');
-        var html = popupTemplate({nets: G.socialNets, msg: msg || 'Login through a Social Net'});
+        var html = popupTemplate({nets: G.socialNets, msg: options.online});
         if ($popup.length == 0) {
           $(document.body).append(html);
           $popup = $('#login_popup');
@@ -133,6 +147,55 @@ define('app', [
           window.location.reload();
         });        
       });
+    },
+    
+//    setupModuleCache: function() {
+//      G.require = function(modules, callback, context) {
+//        modules = $.isArray(modules) ? modules : [modules];
+//        for (var i = 0; i < modules.length; i++) {
+//          var m = modules[i];
+//          if (!G.modCache[m]) {
+//            G.modCache[m] = $.Deferred(function(defer) {
+//              require([m], function(mod) {
+//                defer.resolve(mod);
+//              });
+//            }).promise();
+//          }
+//          
+//          modules[i] = G.modCache[m];
+//        }
+//        
+//        return $.when.apply(null, modules).then(function() {
+//          callback.apply(context, arguments);
+//        }).promise();
+//      }
+//    }
+    setupModuleCache: function() {
+      G.require = function(modules, callback, context) {
+        modules = $.isArray(modules) ? modules : [modules];
+        var mods = [], newModNames = [];
+        for (var i = 0; i < modules.length; i++) {
+          var m = modules[i];
+          if (!G.modCache[m]) {
+            G.modCache[m] = $.Deferred();
+            newModNames.push(m);
+          }
+          
+          mods.push(G.modCache[m]);
+        }
+        
+        if (newModNames.length) {
+          require(newModNames, function() {
+            for (var i = 0; i < newModNames.length; i++) {
+              G.modCache[newModNames[i]].resolve(arguments[i]);
+            }          
+          });
+        }
+        
+        return $.when.apply(null, mods).then(function() {
+          callback.apply(context, arguments);
+        }).promise();
+      }
     }
   };
   
