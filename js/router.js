@@ -25,7 +25,7 @@ define([
       ""                : "home",
       ":type"           : "list", 
       "view/*path"      : "view",  
-      "menu/*path"      : "menu", 
+//      "menu/*path"      : "menu", 
       "edit/*path"      : "edit", 
       "make/*path"      : "make", 
       "chooser/*path"   : "choose", 
@@ -138,7 +138,6 @@ define([
      * return true if page change will be asynchronous, false or undefined otherwise
      */
     list: function(oParams, mode) {
-//      this.backClicked = this.wasBackClicked();
       if (!ListPage)
         return this.loadViews('ListPage', this.list, arguments);
       
@@ -210,19 +209,19 @@ define([
       return this;
     },
     
-    menu: function() {
-      if (!MenuPage)
-        return this.loadViews('MenuPage', this.menu, arguments);
-      
-      var c = this.currentModel;
-      var id = c.id || c.url;
-      this.viewsCache = this.MenuViews;
-      var menuPage = this.MenuViews[id];
-      if (!menuPage)
-        menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
-      
-      this.changePage(menuPage);
-    },
+//    menu: function() {
+//      if (!MenuPage)
+//        return this.loadViews('MenuPage', this.menu, arguments);
+//      
+//      var c = this.currentModel;
+//      var id = c.id || c.url;
+//      this.viewsCache = this.MenuViews;
+//      var menuPage = this.MenuViews[id];
+//      if (!menuPage)
+//        menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
+//      
+//      this.changePage(menuPage);
+//    },
 
     loadViews: function(views, caller, args) {
       views = $.isArray(views) ? views : [views];

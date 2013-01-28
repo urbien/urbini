@@ -4,9 +4,9 @@ define([
   'cache!templates',
   'cache!utils',
   'cache!events',
-  'cache!views/MenuPanel',
   'cache!views/BasicView'
-], function(G, _, Templates, U, Events, MenuPanel, BasicView) {
+], function(G, _, Templates, U, Events, BasicView) {
+  var MenuPanel;
   return BasicView.extend({
     template: 'menuButtonTemplate',
     events: {
@@ -21,11 +21,11 @@ define([
     },
     menu: function(e) {
       Events.stopEvent(e);
-      var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model});
-      menuPanel.render();
-////      Events.trigger('back');
-////      window.history.back();
-//      this.router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+      G.require('views/MenuPanel', function(MenuPanel) {
+        var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model});
+        menuPanel.render();        
+      }, this);
+
       return this;
     },
     render: function(options) {
