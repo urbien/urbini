@@ -74,8 +74,15 @@ define([
     
     getPropTemplate: function(prop, edit, val) {
       var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
-      var template = (prop.facet && t[prop.facet]) || t[prop.range] || (prop.range.indexOf('/') == -1 ? t.string : t.resource);
-      return template;
+      var template;
+      if (prop.facet  &&  !prop.multiValue)
+        template = t[prop.facet];
+      if (!template) {
+        if (prop.multiValue)
+          return t.resource;
+        template = t[prop.range];
+      }
+      return template ? template : (prop.range.indexOf('/') == -1 ? t.string : t.resource);
     }
   };
   

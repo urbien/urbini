@@ -1003,6 +1003,24 @@ define('globals', function() {
 //      parent.removeChild(script);
 //      callback(text);
 //    },
+    inject: function(module, text, callback) {
+      var d = document;
+      var script = d.createElement("script");
+      var id = "script" + (new Date).getTime();
+      var root = d.documentElement;
+      script.type = "text/javascript";
+//      script.innerHtml = text;
+      try {
+        script.appendChild(d.createTextNode(text));
+      } catch(e) {
+        script.text = text; // IE
+      }
+      
+      var parent = d.head || d.body;
+      parent.appendChild(script);
+      parent.removeChild(script);
+      callback(module);
+    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';

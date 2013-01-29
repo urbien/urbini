@@ -7,6 +7,7 @@ define([
   'events', 
   'utils',
   'vocManager',
+  'error',
   'views/BasicView',
   'views/ResourceListView', 
   'views/Header', 
@@ -17,13 +18,13 @@ define([
   'views/MapItButton',
   'views/MenuPanel',
   'views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuPanel, MenuButton) {
+], function(G, $, _, Backbone, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuPanel, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'home', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
+      _.bindAll(this, 'render','click', 'home', 'submit', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
@@ -45,7 +46,8 @@ define([
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft',
-      'pageshow': 'pageshow'
+      'pageshow': 'pageshow',
+      'submit': 'submit'
     },
     swipeleft: function(e) {
       // open backlinks
@@ -56,6 +58,18 @@ define([
 //      menuPanel.render();
 ////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
+    submit: function(e) {
+//      Events.stopEvent(e);
+//      var isEdit = (this.action === 'edit');
+//      if (p && p.mode == G.LISTMODES.CHOOSER) {
+      Events.stopEvent(e);
+      var checked = $('input:checked');
+      if (checked.length)
+        Events.trigger('chooser', {model: this.model, checked: checked});
+      else
+        Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
+//      }
+    }, 
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
 /*
@@ -107,21 +121,21 @@ define([
           for (var i=0; i<s.length; i++) {
             var p = s[i].split('=');
             var prop = vocModel.properties[p[0]];
-            if (prop  &&  prop.containerMember) {
-              var type = U.getLongUri(prop.range);
-              var cM = Voc.typeToModel[type];
-              if (cM) {
-                var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-                var bl = [];
-                for (var p in blProps) {
-                  var b = blProps[p];
-                  if (!b.readOnly  &&  U.getLongUri(b.range) == vocModel.type)
-                    bl.push(b);
-                }
-                if (bl.length > 0)
-                  showAddButton = true;
-              }
+            if (!prop  ||  !prop.containerMember) 
+              continue;
+            var type = U.getLongUri(prop.range);
+            var cM = Voc.typeToModel[type];
+            if (!cM) 
+              continue;
+            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+            var bl = [];
+            for (var p in blProps) {
+              var b = blProps[p];
+              if (!b.readOnly  &&  U.getLongUri(b.range) == vocModel.type)
+                bl.push(b);
             }
+            if (bl.length > 0)
+              showAddButton = true;
           }
         }
       }
@@ -159,9 +173,11 @@ define([
 //        if (litemplate)
 //          isMasonry = false;
 //      }
+      
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
+      var isMV = window.location.hash  &&  window.location.hash.indexOf('$multiValue=y') != -1;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar';
+      var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
       this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl, mode: this.mode});
       this.listView.render();
       if (isGeo) {
@@ -173,8 +189,10 @@ define([
         });
       }
       
-      if (!this.$el.parentNode) 
+      if (!this.$el.parentNode)  
         $('body').append(this.$el);
+      if (!isMV)
+        $('form#mv').css("display", "none");
 
       this.rendered = true;
       return this;

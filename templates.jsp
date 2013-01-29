@@ -16,6 +16,13 @@
     </ul -->
     <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
     </table>
+    <form data-ajax="false" id="mv" action="#">
+      <input type="submit" id="mvSubmit" value="Submit" />
+      <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup" id="mvChooser">
+        </fieldset>
+      </div>
+    </form>  
   </div>
   
   <div data-role="footer" class="ui-bar" data-theme="d">
@@ -439,8 +446,12 @@
   <div data-role="footer" class="ui-bar" data-theme="d">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
-</script>  
+</script>
 
+<script type="text/template" id="mvListItem">
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" />
+  <label for="{{= id }}">{{= davDisplayName }}</label>
+</script>
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>
@@ -448,8 +459,8 @@
 </script>
 
 <script type="text/template" id="editRowTemplate">
-  <li data-role="fieldcontain">{{= value }}<br />
-  {{= typeof comment === 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }}
+  <li data-role="fieldcontain">{{= value }}
+  {{= typeof comment === 'undefined' ? '' : '<br /><span class="comment">' + comment + '</span>' }}
   </li>
 </script>
 
@@ -482,9 +493,9 @@
 </script-->
 
 <script type="text/template" id="stringPET">
-  <label for="{{= id }}">{{= name }}</label> 
+  <label for="{{= id }}" data-theme="c">{{= name }}</label> 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <{{= _.isUndefined(prop.maxSize) ? 'input' : prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true" />
+  <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
 </script>
 
 <script type="text/template" id="telPET">
@@ -499,7 +510,7 @@
 
 <script type="text/template" id="resourcePET">
   <!--label for="{{= id }}" class="select">{{= name }}</label-->
-  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}</a>
+  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ? name : value) : displayName }}</a>
 </script>
 
 <script type="text/template" id="multivaluePET">

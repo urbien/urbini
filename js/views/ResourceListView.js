@@ -89,6 +89,7 @@ define([
 //          }
 //        }
 //      }
+      var isMultiValueChooser = window.location.hash  &&  window.location.hash.indexOf('$multiValue=y') != -1;
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var imageProperty = U.getImageProperty(rl);
       var curNum = lis.length;
@@ -118,7 +119,9 @@ define([
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
-          if (isMasonry  ||  isModification) 
+          if (isMultiValueChooser)
+            liView = new ResourceListItemView({model:res, mv: true, tagName: 'div', className: "ui-controlgroup-controls", parentView: this});
+          else if (isMasonry  ||  isModification) 
 //            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
 //          else if (isModification)
             liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard', parentView: this});
@@ -128,8 +131,10 @@ define([
             liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this}) : new ResourceListItemView({model:res, parentView: this});
           if (nextPage)  
             this.$el.append(liView.render().el);
-          else
-            frag.appendChild(liView.render().el);
+          else {
+            var fr = liView.render().el; 
+            frag.appendChild(fr);
+          }
         }
         else if (!nextPage)
           frag.appendChild(lis[i]);
@@ -143,7 +148,7 @@ define([
 //      this.renderMany(this.model.models.slice(0, lis.length));
 
       if (this.initializedListView) {
-        if (isModification  ||  isMasonry)
+        if (isModification  ||  isMasonry  ||  isMultiValueChooser)
           this.$el.trigger('create');
         else
           this.$el.listview().listview('refresh');

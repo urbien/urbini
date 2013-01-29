@@ -47,6 +47,7 @@ define([
         return;
       
       this.initializedScrollers = true, self = this;
+      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
       Events.stopEvent(e);
       
 //      // mobiscrollers don't disappear on their own when you hit the back button
@@ -111,21 +112,55 @@ define([
       var self = this;
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
-      function onChoose(res) {
+      function onChoose(options) {
+        var res;
+        var checked;
+        var isMultiValue = options.model; 
+        if (isMultiValue) {
+          res =  options.model;
+          checked = options.checked;
+        }
+        else
+          res = options;
         G.log(self.TAG, 'testing', res.attributes);
         var props = {};
-        props[prop] = res.getUri();
-        self.resource.set(props, {skipValidation: true, skipRefresh: true});
         var link = e.target;
-        link.innerHTML = res.get('davDisplayName');
-        $(link).data('uri', res.getUri());
+        if (isMultiValue) {
+          var set = '';
+          var innerHtml = '';
+          for (var i=0; i<checked.length; i++) {
+//            var val = $('label[for="' + checked[i].id + '"]')[0].value;
+            var style = checked[i].style;
+            if (style  &&  style.display  == 'none')
+              continue;
+            if (i != 0)
+              innerHtml += ', ';
+            innerHtml += checked[i].name;
+            set += '<input type="checkbox" checked="true" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
+          }
+          link.innerHTML = innerHtml;
+          link.parentNode.innerHTML += set;
+        }
+        else {
+          props[prop] = res.getUri();
+          self.resource.set(props, {skipValidation: true, skipRefresh: true});
+          link.innerHTML = res.get('davDisplayName');
+          $(link).data('uri', res.getUri());
+        }
         self.router.navigate(hash, {trigger:true, replace: true});
 //        G.Router.changePage(self.parentView);
         // set text
       }
       
-      Events.once('chooser', onChoose, this);
-      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(this.vocModel.properties[prop].range)), {trigger: true});
+      var pr = this.vocModel.myProperties[prop]  ||  this.vocModel.properties[prop];
+      if (pr.multiValue) {
+        Events.once('chooser', onChoose, this);
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?$multiValue=y", {trigger: true});
+      }
+      else { 
+        Events.once('chooser', onChoose, this);
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+      }
     },
     set: function(params) {
       _.extend(this, params);
@@ -272,7 +307,13 @@ define([
     },
     getValue: function(input) {
       var jInput = $(input);
-      var val = input.tagName === 'A' ? jInput.data('uri') : input.value;
+      var val;
+      
+      var p = this.vocModel.properties[input.name];
+      if (p  &&  p.multiValue)
+        val = input.innerHTML;
+      else
+        val = input.tagName === 'A' ? jInput.data('uri') : input.value;
       if (_.contains(input.classList, 'boolean'))
         return val === 'Yes' ? true : false;
       else {
@@ -308,7 +349,16 @@ define([
           continue;
         
         val = this.getValue(input);
-        atts[name] = val;
+        if (name.indexOf('_select') == -1  ||  !this.vocModel.properties[name.substring(0, name.length - 7)].multiValue)
+          atts[name] = val;
+        else {
+          var v = atts[name];
+          if (!v) {
+            v = [];
+            atts[name] = v;
+          }
+          v.push(val);
+        }
       }
       
       var succeeded = false;
