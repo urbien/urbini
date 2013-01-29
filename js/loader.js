@@ -502,7 +502,8 @@ requirejs.exec = function(text) {
 //    return true;
 //  }
 //  return false;
-  return window.eval.call({}, text);
+  //return window.eval.call({}, text);
+  return eval(text);
 }
                     
 define('globals', function() {
@@ -592,11 +593,12 @@ define('globals', function() {
             break;
           default:
             onLoad.fromText(text);
+            
 //            var callback = function() {
-//              localReq([name], onLoad);
+//              require([url], onLoad);
 //            }
-//            
-//            G.inject(text, callback);
+//          
+//            G.inject(url, text, callback);
             break;
         }        
       },
@@ -1045,6 +1047,24 @@ define('globals', function() {
 //      parent.removeChild(script);
 //      callback(text);
 //    },
+    inject: function(module, text, callback) {
+      var d = document;
+      var script = d.createElement("script");
+      var id = "script" + (new Date).getTime();
+      var root = d.documentElement;
+      script.type = "text/javascript";
+//      script.innerHtml = text;
+      try {
+        script.appendChild(d.createTextNode(text));
+      } catch(e) {
+        script.text = text; // IE
+      }
+      
+      var parent = d.head || d.body;
+      parent.appendChild(script);
+      parent.removeChild(script);
+      callback(module);
+    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -1275,7 +1295,7 @@ define('globals', function() {
       }
     },
     
-    inject: function(text, callback) {
+    inject1: function(text, callback) {
       var script = doc.createElement("script");
       script.type = "text/javascript";
       script.async = true;
