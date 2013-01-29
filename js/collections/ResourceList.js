@@ -1,11 +1,11 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!utils', 
-  'cache!error', 
-  'cache!events'
+  'jquery',
+  'underscore', 
+  'backbone', 
+  'utils', 
+  'error', 
+  'events'
 ], function(G, $, _, Backbone, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({

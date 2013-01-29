@@ -1,9 +1,9 @@
 define([
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!templates',
-  'cache!events',
-  'cache!views/BasicView'
+  'jquery', 
+  'underscore', 
+  'templates',
+  'events',
+  'views/BasicView'
 ], function($, _, Templates, Events, BasicView) {
   return BasicView.extend({
     btnId: null,

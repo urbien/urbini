@@ -1,20 +1,20 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore',
-  'cache!utils',
-  'cache!events',
-  'cache!templates',
-  'cache!views/BasicView',
-  'cache!views/Header',
-  'cache!views/BackButton',
-  'cache!views/LoginButtons',
-  'cache!views/AroundMeButton',
-  'cache!views/MenuButton',
-  'cache!views/MenuPanel',
-  'cache!views/EditView',
-  'cache!views/ResourceImageView',
-  'cache!views/ControlPanel'
+  'jquery',
+  'underscore',
+  'utils',
+  'events',
+  'templates',
+  'views/BasicView',
+  'views/Header',
+  'views/BackButton',
+  'views/LoginButtons',
+  'views/AroundMeButton',
+  'views/MenuButton',
+  'views/MenuPanel',
+  'views/EditView',
+  'views/ResourceImageView',
+  'views/ControlPanel'
 ], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, MenuPanel, EditView, ResourceImageView, ControlPanel) {
   var editOptions = ['action', 'viewId'];
   return BasicView.extend({

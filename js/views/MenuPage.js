@@ -1,16 +1,16 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!utils',
-  'cache!events',
-  'cache!templates',
-  'cache!views/BasicView',
-  'cache!views/Header',
-  'cache!views/BackButton',
-  'cache!views/LoginButtons',
-  'cache!views/ResourceView'
+  'jquery',
+  'underscore',
+  'backbone',
+  'utils',
+  'events',
+  'templates',
+  'views/BasicView',
+  'views/Header',
+  'views/BackButton',
+  'views/LoginButtons',
+  'views/ResourceView'
 ], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView) {
   return BasicView.extend({
     initialize: function(options) {

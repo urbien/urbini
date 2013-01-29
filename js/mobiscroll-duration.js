@@ -1,4 +1,4 @@
-define(['cache!jquery', 'cache!mobiscroll'], function ($) {
+define(['jquery', 'mobiscroll'], function ($) {
 
   var ms = $.mobiscroll;
   var second = 1,

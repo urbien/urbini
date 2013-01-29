@@ -1,12 +1,12 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore',
-  'cache!utils',
-  'cache!events',
-  'cache!vocManager',
-  'cache!templates',
-  'cache!views/BasicView'
+  'jquery',
+  'underscore',
+  'utils',
+  'events',
+  'vocManager',
+  'templates',
+  'views/BasicView'
 ], function(G, $, _, U, Events, Voc, Templates, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',

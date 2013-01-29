@@ -1,10 +1,10 @@
 define([
   'globals',
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!utils',
-  'cache!error',
-  'cache!events'
+  'underscore', 
+  'backbone', 
+  'utils',
+  'error',
+  'events'
 ], function(G, _, Backbone, U, Error, Events) {
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);

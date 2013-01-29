@@ -164,6 +164,10 @@
 						return idbObjectStore.deleteIndex(indexName);
 					};
 					
+					result.getIndexNames = function() {
+					  return idbObjectStore.indexNames;
+					};
+					
 					return result;
 				},
 				
@@ -172,7 +176,13 @@
 						if (r.length === 1) {
 							return IDBKeyRange.only(r[0]);
 						} else {
-							return IDBKeyRange.bound(r[0], r[1], r[2] || true, r[3] || true);
+						  var lower = r[0], upper = r[1], lOpen = r[2] || true, uOpen = r[3] || true;
+						  if (lower && upper)
+						    return IDBKeyRange.bound(lower, upper, lOpen, uOpen);
+						  else if (lower)
+                return IDBKeyRange.lowerBound(lower, lOpen);
+              else
+                return IDBKeyRange.upperBound(upper, uOpen);
 						}
 					} else if (typeof r === "undefined") {
 						return null;
@@ -280,7 +290,37 @@
 							} else {
 								return idbIndex.openKeyCursor(wrap.range(key));
 							}
+						},
+						"_getAll": function(range, direction, keysOnly) { 
+						  return $.Deferred(function(dfd) {
+						    var results = [];
+						    var callback = keysOnly ? function(result) {
+						      results.push(this.result.primaryKey);
+						    } : function(result) {
+                  results.push(result.value);
+                }
+						    
+						    wrap.cursor(function(){
+						      var op = keysOnly ? "openKeyCursor" : "openCursor";
+						      if (direction) {
+						        return idbIndex[op](wrap.range(range), direction);
+						      } else {
+						        return idbIndex[op](wrap.range(range));
+						      }
+						    }, callback).done(function() {
+						      dfd.resolve(results);
+						    }).fail(function() {
+						      dfd.reject();
+						    });
+						  }).promise();
 						}
+//						,
+//            "getAll": function(callback, range, direction){
+//						  return this._getAll.apply(this, arguments);
+//						},
+//            "getAllKeys": function(callback, range, direction){
+//              return this._getAll.apply(this, [callback, range, direction, true]);
+//            }
 					};
 				}
 			};
@@ -341,15 +381,15 @@
 									//console.log("DB Opened without version change", newDbOpenReq.result);
 									copyReq(newDbOpenReq);
 									callback("onsuccess", result, [e], function(){
-										newDbOpenReq.result.close();
+//										newDbOpenReq.result.close();
 									});
-									newDbOpenReq.result.close();
+//									newDbOpenReq.result.close();
 								};
 								newDbOpenReq.onerror = function(e){
 									copyReq(newDbOpenReq);
 									callback("onerror", result, [e], function(){
 										//console.log("Closed database in newRequest on error", newDbOpenReq);
-										newDbOpenReq.result.close();
+//										newDbOpenReq.result.close();
 									});
 								};
 								newDbOpenReq.onblocked = function(e){
@@ -357,7 +397,7 @@
 									copyReq(newDbOpenReq);
 									callback("onblocked", result, [e], function(){
 										//console.log("Closed database in newRequest on blocked", newDbOpenReq);
-										newDbOpenReq.result.close();
+//										newDbOpenReq.result.close();
 									});
 								};
 							};
@@ -372,10 +412,10 @@
 							};
 						} else if (oldVersion === newVersion) {
 							callback("onsuccess", result, [e]);
-							db.close();
+//							db.close();
 						} else {
 							callback("onerror", result, [e]);
-							db.close();
+//							db.close();
 						}
 					} else {
 						callback("onsuccess", result, [e]);
@@ -498,10 +538,10 @@
 						
 					});
 				},
-				"objectStore": function(storeName, mode){
+				"objectStore": function(storeName, mode) {
 					var me = this, result = {};
 					
-					function op(callback){
+					function op(callback) {
 						return $.Deferred(function(dfd){
 							function onTransactionProgress(trans, callback){
 								try {
@@ -567,12 +607,15 @@
 									//console.log("Error in transaction inside object store", err);
 									dfd.rejectWith(this, [err, e]);
 								}
-							}, function(trans){
+							}, function(trans) {
 								//console.log("Transaction is in progress", trans);
 								onTransactionProgress(trans, callback);
 							});
 						});
 					}
+					
+//					function getIndexNames(wrappedObjectStore) {
+//					}
 					
 					function crudOp(opName, args){
 						return op(function(wrappedObjectStore){
@@ -602,16 +645,29 @@
 								return indexOp("each", indexName, [callback, range, direction]);
 							},
 							"eachKey": function(callback, range, direction){
-								return indexOp("eachKey", indexName, [callback, range, direction]);
+                return indexOp("eachKey", indexName, [callback, range, direction]);
 							},
 							"get": function(key){
 								return indexOp("get", indexName, [key]);
 							},
-							"getKey": function(key){
-								return indexOp("getKey", indexName, [key]);
-							}
+							"getKey": function(callback, range, direction){
+								return indexOp("getKey", indexName, [callback, range, direction]);
+							},
+							"getAll": function(range, direction){
+							  return indexOp("_getAll", indexName, [range, direction]);
+							},
+              "getAllKeys": function(range, direction){
+                return indexOp("_getAll", indexName, [range, direction, true]);
+              }
+//              "getIndexNames": function(){
+//                return indexOp("getIndexNames");
+//              }
 						};
 					};
+					
+					result.getIndexNames = function() {
+					  return crudOp("getIndexNames");
+					}
 					
 					return result;
 				}

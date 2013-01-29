@@ -11,8 +11,8 @@
 /**
  * Three sources of JS file loading
  * 1. Listed in loader in baseBundle JS files are first loaded into memory by loader.js.
- *    When define is called JS files listed in define and prepanded with 'cache!' get moved from memory to cache
- * 2. Loading from cache: listed in define call JS files that prepanded with 'cache!' will be first attempted to load from cache
+ *    When define is called JS files listed in define and prepanded with '' get moved from memory to cache
+ * 2. Loading from cache: listed in define call JS files that prepanded with '' will be first attempted to load from cache
  * 3. From server 
  */
 (function () {

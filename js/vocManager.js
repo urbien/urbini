@@ -1,13 +1,13 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!utils', 
-  'cache!error', 
-  'cache!events', 
-  'cache!models/Resource', 
-  'cache!collections/ResourceList', 
+  'jquery', 
+  'underscore', 
+  'backbone', 
+  'utils', 
+  'error', 
+  'events', 
+  'models/Resource', 
+  'collections/ResourceList', 
 ], function(G, $, _, Backbone, U, Errors, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));

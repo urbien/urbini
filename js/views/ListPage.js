@@ -1,22 +1,22 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!templates',
-  'cache!events', 
-  'cache!utils',
-  'cache!vocManager',
-  'cache!views/BasicView',
-  'cache!views/ResourceListView', 
-  'cache!views/Header', 
-  'cache!views/AddButton', 
-  'cache!views/BackButton', 
-  'cache!views/LoginButtons', 
-  'cache!views/AroundMeButton', 
-  'cache!views/MapItButton',
-  'cache!views/MenuPanel',
-  'cache!views/MenuButton'
+  'jquery', 
+  'underscore', 
+  'backbone', 
+  'templates',
+  'events', 
+  'utils',
+  'vocManager',
+  'views/BasicView',
+  'views/ResourceListView', 
+  'views/Header', 
+  'views/AddButton', 
+  'views/BackButton', 
+  'views/LoginButtons', 
+  'views/AroundMeButton', 
+  'views/MapItButton',
+  'views/MenuPanel',
+  'views/MenuButton'
 ], function(G, $, _, Backbone, Templates, Events, U, Voc, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuPanel, MenuButton) {
   var MapView;
   return BasicView.extend({
@@ -166,7 +166,7 @@ define([
       this.listView.render();
       if (isGeo) {
         var self = this;
-        require(['cache!views/MapView'], function(MV) {
+        require(['views/MapView'], function(MV) {
           MapView = MV;
           self.mapView = new MapView({model: rl, el: self.$('#mapHolder', self.el)});
           self.mapView.render();

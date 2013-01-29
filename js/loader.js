@@ -485,24 +485,20 @@ if (typeof JSON !== 'object') {
     }
 }());
 
+  
+                    
 requirejs.exec = function(text) {
-//  var script = document.createElement("script");
-//  var id = "script" + (new Date).getTime();
-//  var root = document.documentElement;
-//  script.type = "text/javascript";
+  // Script Injection
+  Lablz.inject(text);
+  // Indirect Eval
 //  try {
-//    script.appendChild( document.createTextNode( "window." + id + "=1;" ) );
-//  } catch(e){}
-//  root.insertBefore( script, root.firstChild );
-//  // Make sure that the execution of code works by injecting a script
-//  // tag with appendChild/createTextNode
-//  // (IE doesn't support this, fails, and uses .text instead)
-//  if ( window[ id ] ) {
-//    delete window[ id ];
-//    return true;
+//    return window.eval.call({}, text);
+//  } catch (err) {
+//    // Safari will throw err: "The "this" value passed to eval must be the global object from which eval originated" 
+//    return window.eval(text);
 //  }
-//  return false;
-  return window.eval.call({}, text);
+  // Direct Eval
+//  return eval(text);
 }
                     
 define('globals', function() {
@@ -510,9 +506,10 @@ define('globals', function() {
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
   
-  var doc = document;
-  var head = document.getElementsByTagName('head')[0];
-  var body = document.getElementsByTagName('body')[0];
+  var doc = document,
+      head = document.getElementsByTagName('head')[0],
+      body = document.getElementsByTagName('body')[0];
+  
   Function.prototype.async = function(constantTimeout) {
     var self = this;
     return function() {
@@ -537,6 +534,120 @@ define('globals', function() {
     G.online = true;
   }, false);
 
+  var loadModule = function(text, url, contextOrOnLoad, name) {
+    var context,
+        onLoad,
+        ext = url.match(/\.[a-zA-Z]+$/g)[0];
+    
+    if (ext === '.jsp')
+      onLoad = contextOrOnLoad;
+    else
+      context = contextOrOnLoad;
+      
+    switch (ext) {
+      case '.css':
+        text += '\r\n//@ sourceURL=' + url;
+        G.appendCSS(text);
+        G.log(G.TAG, 'cache', 'cache.get: ' + url);
+        context.completeLoad(name); // pseudonym for onLoad
+        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+        break;
+      case '.html':
+      case '.jsp':
+//        debugger;
+        G.log(G.TAG, 'cache', 'cache.get: ' + url);
+        onLoad(text);
+        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+        break;
+      default:
+        text += '\r\n//@ sourceURL=' + url;
+        requirejs.exec(text);
+        context.completeLoad(name);
+        break;
+    }        
+  };
+
+  requirejs.load = function (context, name, url, config) {
+    var completeLoad = context.completeLoad,
+        url = G.getCanonicalPath(url),
+        config = config || (context && context.config) || {},
+        cached;
+
+    if (/\.(jsp|css|html)\.js$/.test(url))
+      url = url.replace(/\.js$/, '');
+    
+    // TODO: unhack
+//    if (name == 'jqueryMobile') {
+//      localRequire([name], function(mod) {
+//        G.log(G.TAG, 'cache', 'Loading jq: ' + url);
+//        completeLoad(mod);
+//        G.log(G.TAG, 'cache', 'End loading jq: ' + url);
+//      });
+//      
+//      return;
+//    }
+    
+    var isText = ext = name.match(/\.[a-zA-Z]+$/g);
+    if (ext)
+      ext = ext[0].slice(1).toLowerCase();
+      
+    var mCache = G.modules;
+    var inMemory = mCache && mCache[url];
+    var loadedCached = false;
+    if (inMemory || hasLocalStorage) {
+      var loadSource = inMemory ? 'memory' : 'LS';
+      if (inMemory) {
+        cached = mCache[url];
+      }
+      else if (hasLocalStorage) { // in build context, this will be false, too
+        try {
+          G.log(G.TAG, 'cache', "loading from localStorage: " + url);
+          cached = G.localStorage.get(url);
+          cached = cached && JSON.parse(cached);
+        } catch (err) {
+          G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
+          G.localStorage.delete(url);
+          cached = null;
+        }
+        
+        if (cached) {
+          var timestamp = G.files[name];
+          if (timestamp && timestamp <= cached.modified)
+            cached = cached.text;
+          else {
+            localStorage.removeItem(url);
+            cached = null;
+          }
+        }
+      }
+
+      var loadedCached = cached;
+      if (loadedCached) {            
+        try {
+          G.log(G.TAG, 'cache', 'Loading from', loadSource, url);
+          loadModule(cached, url, context, name);
+          G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
+        } catch (err) {
+          G.log(G.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
+          G.localStorage.delete(url);
+          loadedCached = false;
+        }
+      } 
+    }
+    
+    if (loadedCached)
+      return;
+    
+    /// use 'sendXhr' instead of 'req' so we can store to localStorage
+    G.loadBundle(name, function() {
+      if (G.modules[url])
+        loadModule(G.modules[url], url, context, name);
+      else
+        G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
+    });        
+  };
+
+  
   /**
    * AMD-cache, a loader plugin for AMD loaders.
    *
@@ -550,8 +661,8 @@ define('globals', function() {
   /**
    * Three sources of JS file loading
    * 1. Listed in loader in baseBundle JS files are first loaded into memory by loader.js.
-   *    When define is called JS files listed in define and prepanded with 'cache!' get moved from memory to cache
-   * 2. Loading from cache: listed in define call JS files that prepanded with 'cache!' will be first attempted to load from cache
+   *    When define is called JS files listed in define and prepanded with '' get moved from memory to cache
+   * 2. Loading from cache: listed in define call JS files that prepanded with '' will be first attempted to load from cache
    * 3. From server 
    */
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -563,165 +674,13 @@ define('globals', function() {
         return supported;
       })();
 
-  define('cache', ['module', 'require'], function (module, localReq) {
-    var masterConfig = (module.config && module.config()) || {};
+  define('cache', function() {
     var cache = {
       TAG: 'cache',
-//      prependUrl: function(content, url) {
-//        return content + '\r\n//@ sourceURL=' + url;
-//      },
-      
-      loadModule: function(text, url, onLoad, name) {
-//        text = cache.prependUrl(text, url);
-        text = text + '\r\n//@ sourceURL=' + url;
-        var ext = url.match(/\.[a-zA-Z]+$/g);
-        switch (ext[0]) {
-          case '.css':
-            G.appendCSS(text, function() {
-              G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-              onLoad();
-              G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-            });
-            break;
-          case '.html':
-          case '.jsp':
-            G.log(cache.TAG, 'cache', 'cache.get: ' + url);
-  //          G.appendHTML(text);
-            onLoad(text);
-            G.log(cache.TAG, 'cache', 'end cache.get: ' + url);
-            break;
-          default:
-            onLoad.fromText(text);
-//            var callback = function() {
-//              localReq([name], onLoad);
-//            }
-//            
-//            G.inject(text, callback);
-            break;
-        }        
-      },
-      
       load: function (name, req, onLoad, config) {
-        G.startedTask("load " + name);
-//        var ol = onLoad;
-//        var self = this;
-//        onLoad = function() {
-//          ol.apply(self, arguments);
-//          G.finishedTask("load " + name);
-////          G.recordCheckpoint('finished loading ' + name);
-//        }
-//        var ft = ol.fromText;
-//        onLoad.fromText = function() {
-//          ft.apply(self, arguments);
-//          G.finishedTask("load " + name);
-////          G.recordCheckpoint('finished loading ' + name);
-//        }
-        
-        if (config.isBuild) {
-          onLoad();
-          return;
-        }
-            
-        var cached,
-        url = G.getCanonicalPath(req.toUrl(name));
-        
-        // TODO: unhack
-        if (name == 'jqueryMobile') {
-          req([name], function(content) {
-            G.log(cache.TAG, 'cache', 'Loading jq: ' + url);
-            onLoad(content);
-            G.log(cache.TAG, 'cache', 'End loading jq: ' + url);
-          });
-          
-          return;
-        }
-        
-        var isText = ext = name.match(/\.[a-zA-Z]+$/g);
-        if (ext)
-          ext = ext[0].slice(1).toLowerCase();
-          
-        var mCache = G.modules;
-        var inMemory = mCache && mCache[url];
-        var loadedCached = false;
-        if (inMemory || hasLocalStorage) {
-          var loadSource = inMemory ? 'memory' : 'LS';
-          if (inMemory) {
-            cached = mCache[url];
-          }
-          else if (hasLocalStorage) { // in build context, this will be false, too
-            try {
-              G.log(cache.TAG, 'cache', "loading from localStorage: " + url);
-              cached = G.localStorage.get(url);
-              cached = cached && JSON.parse(cached);
-            } catch (err) {
-              G.log(cache.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-              G.localStorage.delete(url);
-              cached = null;
-            }
-            
-            if (cached) {
-              var timestamp = G.files[name];
-              if (timestamp && timestamp <= cached.modified)
-                cached = cached.text;
-              else {
-                localStorage.removeItem(url);
-                cached = null;
-              }
-            }
-          }
-
-          var loadedCached = cached;
-          if (loadedCached) {            
-            try {
-              G.log(cache.TAG, 'cache', 'Loading from', loadSource, url);
-              cache.loadModule(cached, url, onLoad, name);
-              G.log(cache.TAG, 'cache', 'End loading from', loadSource, url);
-            } catch (err) {
-              G.log(cache.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
-              G.localStorage.delete(url);
-              loadedCached = false;
-            }
-          } 
-        }
-        
-        if (loadedCached)
-          return;
-        
-        /// use 'sendXhr' instead of 'req' so we can store to localStorage
-        G.loadBundle(name, function() {
-          if (G.modules[url])
-            cache.loadModule(G.modules[url], url, onLoad, name);
-          else
-            G.log(cache.TAG, ['error', 'cache'], 'failed to load module', name);
-        });        
-      },
-      
-      save: function(url, text, delay) {
-        G.localStorage.putAsync(delay || 0, url, G.prepForStorage(text, G.serverTime, false));
-      },
-      
-//      getCanonicalPath: function(path, separator) {
-//        separator = separator || '/';
-//        var parts = path.split(separator);
-//        var stack = [];
-//        for (var i = 0; i < parts.length; i++) {
-//          if (parts[i] == '..')
-//            stack.pop();
-//          else
-//            stack.push(parts[i]);
-//        }
-//        
-//        return stack.join(separator);
-//      },      
-//      leaf: function(obj, path, separator) {
-//        path = cache.getCanonicalPath(path);
-//        if (typeof obj == 'undefined' || !obj)
-//          return null;
-//        
-//        separator = separator || '.';
-//        var dIdx = path.indexOf(separator);
-//        return dIdx == -1 ? obj[path] : cache.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-//      }    
+        // hack for jsp, otherwise define callback function will not get jsp text
+        requirejs.load(onLoad, name, req.toUrl(name), config);
+      }
     };
 
     return cache;
@@ -1012,12 +971,11 @@ define('globals', function() {
       }, timeout);
     },
 
-    appendCSS: function(text, callback) {
+    appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
       style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
       head.appendChild(style);
-      callback();
     },
     
     appendHTML: function(html, element) {
@@ -1088,13 +1046,18 @@ define('globals', function() {
         var bt = bundle[type];
         for (var i = 0; i < bt.length; i++) {
           var info = bt[i];
-          var name;
-          for (var n in info) {
-            name = n;
-            break;
+          var name, timestamp;
+          if (typeof info === 'string')
+            name = info, timestamp = G.files[name];
+          else {
+            for (var n in info) {
+              name = n;
+              break;
+            }
+            
+            timestamp = info[name];
           }
           
-          var timestamp = info[name];
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
@@ -1275,10 +1238,19 @@ define('globals', function() {
       }
     },
     
-    inject: function(text, callback) {
+    inject: function(text) {// , context) {
       var script = doc.createElement("script");
       script.type = "text/javascript";
       script.async = true;
+//      if (context) {
+//        if (script.attachEvent && !(script.attachEvent.toString && script.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
+//          script.attachEvent('onreadystatechange', context.onScriptLoad);
+//        } else {
+//          script.addEventListener('load', context.onScriptLoad, false);
+//          script.addEventListener('error', context.onScriptError, false);
+//        }
+//      }
+
       // Make sure that the execution of code works by injecting a script
       // tag with appendChild/createTextNode
       // (IE doesn't support this, fails, and uses .text instead)
@@ -1290,10 +1262,11 @@ define('globals', function() {
 
       head.appendChild(script);
       head.removeChild(script);
+//      script.src = src;
 //      var root = doc.documentElement;      
 //      root.insertBefore(script, root.firstChild);
 //      root.removeChild(script);
-      callback();
+//      callback();
     }
         
 
@@ -1314,7 +1287,7 @@ define('globals', function() {
 //      }
 //      
 //      if (typeof (eval(name)) === 'undefined') {
-//        require(['cache!' + path + name], function(v) {
+//        require(['' + path + name], function(v) {
 //          eval(name + '=v;');
 //          caller.apply(self, args);
 //        });
@@ -1398,42 +1371,42 @@ define('globals', function() {
       jqueryMasonry: 'lib/jquery.masonry'
     },
     shim: {
-      leafletMarkerCluster: ['cache!leaflet'],
-      jqueryMasonry: ['cache!jquery'],
+      leafletMarkerCluster: ['leaflet'],
+      jqueryMasonry: ['jquery'],
 //      validator: ['jquery'],
-      jqueryImagesloaded: ['cache!jquery'],
-      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css'],
-      jqueryIndexedDB: ['cache!jquery', 'cache!indexedDBShim']
+      jqueryImagesloaded: ['jquery'],
+      mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
+      jqueryIndexedDB: ['jquery', 'indexedDBShim']
 //          ,
-//      mobiscrollDate: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],
-//      mobiscrollJQM: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll'],
-//      mobiscrollJQMW: ['cache!jquery', 'cache!jqueryMobile', 'cache!mobiscroll']
-//      mobiscroll: ['cache!jquery', 'cache!mobiscroll.core', 'cache!mobiscroll.jqm', 'cache!mobiscroll.jqmwidget', 'cache!../styles/mobiscroll.core.css', 'cache!../styles/mobiscroll.jqm.css']
-//      mobiscroll: ['cache!jquery', 'cache!../styles/mobiscroll.datetime.min.css']
+//      mobiscrollDate: ['jquery', 'jqueryMobile', 'mobiscroll'],
+//      mobiscrollJQM: ['jquery', 'jqueryMobile', 'mobiscroll'],
+//      mobiscrollJQMW: ['jquery', 'jqueryMobile', 'mobiscroll']
+//      mobiscroll: ['jquery', 'mobiscroll.core', 'mobiscroll.jqm', 'mobiscroll.jqmwidget', '../styles/mobiscroll.core.css', '../styles/mobiscroll.jqm.css']
+//      mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css']
     }
   });
 
    
 //   var viewBundle = [
-//     'cache!views/Header', 
-//     'cache!views/BackButton', 
-//     'cache!views/LoginButtons', 
-//     'cache!views/AroundMeButton', 
-//     'cache!views/ResourceView', 
-//     'cache!views/ResourceImageView', 
-//     'cache!views/ViewPage' 
+//     'views/Header', 
+//     'views/BackButton', 
+//     'views/LoginButtons', 
+//     'views/AroundMeButton', 
+//     'views/ResourceView', 
+//     'views/ResourceImageView', 
+//     'views/ViewPage' 
 //   ];
 //      
 //   var listBundle = [
-//     'cache!views/ResourceListItemView', 
-//     'cache!views/ResourceListView', 
-//     'cache!views/Header', 
-//     'cache!views/BackButton', 
-//     'cache!views/AddButton', 
-//     'cache!views/LoginButtons', 
-//     'cache!views/AroundMeButton', 
-//     'cache!views/MapItButton', 
-//     'cache!views/ListPage' 
+//     'views/ResourceListItemView', 
+//     'views/ResourceListView', 
+//     'views/Header', 
+//     'views/BackButton', 
+//     'views/AddButton', 
+//     'views/LoginButtons', 
+//     'views/AroundMeButton', 
+//     'views/MapItButton', 
+//     'views/ListPage' 
 //   ];
 
    return Lablz;
@@ -1462,14 +1435,15 @@ require(['globals'], function(G) {
     var css = G.bundles.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       var cssObj = css[i];
-      for (var name in cssObj) {        
-        css[i] = 'cache!' + name;
+      for (var name in cssObj) {
+//        css[i] = 'cache!' + name;
+        css[i] = name;
         break;
       }
     }
     
     G.startedTask("loading modules");
-    require(['cache!jquery', 'cache!jqmConfig', 'cache!app'].concat(css), function($, jqmConfig, App) {
+    require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
       G.finishedTask("loading modules");
       G.browser = $.browser;
       App.initialize();

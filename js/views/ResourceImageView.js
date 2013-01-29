@@ -1,10 +1,10 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!utils',
-  'cache!events',
-  'cache!views/BasicView'
+  'jquery', 
+  'underscore', 
+  'utils',
+  'events',
+  'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {

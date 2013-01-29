@@ -1,8 +1,8 @@
 define([
   'globals',
-  'cache!utils',
-  'cache!jquery',
-  'cache!events'
+  'utils',
+  'jquery',
+  'events'
 ], function(G, U, $, Events) {
   var Errors = {
     not_found: "The page you're looking for is probably in a parallel universe",

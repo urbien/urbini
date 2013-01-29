@@ -1,10 +1,10 @@
 define([
   'globals',
-  'cache!underscore', 
-  'cache!templates',
-  'cache!utils',
-  'cache!events',
-  'cache!views/BasicView'
+  'underscore', 
+  'templates',
+  'utils',
+  'events',
+  'views/BasicView'
 ], function(G, _, Templates, U, Events, BasicView) {
   return BasicView.extend({
     template: 'addButtonTemplate',

@@ -1,11 +1,11 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!templates',
-  'cache!utils',
-  'cache!views/BasicView',
-  'cache!events'
+  'jquery', 
+  'underscore', 
+  'templates',
+  'utils',
+  'views/BasicView',
+  'events'
 ], function(G, $, _, Templates, U, BasicView, Events) {
   return BasicView.extend({
     loginTemplate: 'loginButtonTemplate',

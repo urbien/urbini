@@ -1,20 +1,15 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!templates',
-  'cache!events', 
-  'cache!error', 
-  'cache!utils',
-  'cache!vocManager',
-  'cache!resourceManager',
-  'cache!views/BasicView'
-//  ,
-//  'cache!mobiscroll',
-//  'cache!mobiscroll-duration'
-], function(G, $, _, Backbone, Templates, Events, Errors, U, Voc, RM, BasicView) {
-  var scrollDfd;
+  'jquery', 
+  'underscore', 
+  'templates',
+  'events', 
+  'error', 
+  'utils',
+  'vocManager',
+  'resourceManager',
+  'views/BasicView'
+], function(G, $, _, Templates, Events, Errors, U, Voc, RM, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -48,14 +43,20 @@ define([
       'click input[data-datetime]': 'mobiscroll'
     },
     mobiscroll: function(e) {
-      if ($.mobiscroll)
-        return true;
+      if (this.initializedScrollers)
+        return;
+      
+      this.initializedScrollers = true, self = this;
+      Events.stopEvent(e);
+      
+//      // mobiscrollers don't disappear on their own when you hit the back button
+//      Events.once('changePage', function() {
+//        $('.jqm, .dw-modal').remove();
+//      });
       
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
-      Events.stopEvent(e);
-      require(['cache!mobiscroll', 'cache!mobiscroll-duration'], function() {
-        // mobiscrollers
+      G.require(['mobiscroll', 'mobiscroll-duration'], function() {
         var today = new Date();
         var thisScroller;
         form.find('.i-txt').each(function() {
@@ -70,6 +71,8 @@ define([
             label: U.getPropDisplayName(prop),
             shortName: name,
             onSelect: self.onSelected,
+//            onShow: function(dw, v) {
+//            },
             input: this
 //              parseValue: U.toDateParts
 //              ,
@@ -95,9 +98,9 @@ define([
           if (name === thisName)
             scroller.click().focus();
         });
-//        $(e.target).trigger('click');        
       });
     },
+
     chooser: function(e) {
       Events.stopEvent(e);
       var el = e.target;
@@ -458,7 +461,7 @@ define([
         return;
       
       var collection, modified;
-      if (data instanceof Backbone.Collection) {
+      if (U.isCollection(data)) {
         collection = data;
         modified = arguments[1];
         if (collection != this.resource.collection || !_.contains(modified, this.resource.getUri()))
@@ -519,14 +522,9 @@ define([
       res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
     },
     render: function(options) {
+      G.log(this.TAG, "render");
       var self = this;
       var args = arguments;
-      if (scrollDfd && !scrollDfd.isResolved()) {
-        scrollDfd.done(function() {self.render.apply(self, args)});
-        return;
-      }
-      
-      G.log(this.TAG, "render");
       var meta = this.vocModel.properties;
       if (!meta)
         return this;

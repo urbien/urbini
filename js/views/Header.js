@@ -1,12 +1,12 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!templates',
-  'cache!events', 
-  'cache!utils',
-  'cache!views/BasicView'
+  'jquery',
+  'underscore', 
+  'backbone', 
+  'templates',
+  'events', 
+  'utils',
+  'views/BasicView'
 ], function(G, $, _, Backbone, Templates, Events, U, BasicView) {
   return BasicView.extend({
     template: 'headerTemplate',

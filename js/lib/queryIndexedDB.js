@@ -11,103 +11,108 @@
  *
  */
 
-define(['cache!indexedDBShim'], function() {
+define(['indexedDBShim', 'jqueryIndexedDB'], function() {
+//  function init() {
+//    (function() {
+////    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
+////    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
+//      var getAll_ = function(fn, range, direction) {
+//        return $.Deferred(function(dfd){
+//          // This is the most common use of IDBKeyRange. If more specific uses of
+//          // cursors are needed then a full wrapper should be created.
+//          var request;
+//          try {
+//            if (range) {
+//              request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range), direction || IDBCursor.NEXT);
+//            } else {
+//              request = this[fn](null, direction || IDBCursor.NEXT);
+//            }
+//          } catch (err) {
+////            d.onerror && d.onerror(err);
+//            dfd.rejectWith(request, [err]);
+//            return null;
+//          }
+//          
+//          var result = [];
+//          request.onsuccess = function(ev) {
+//            var cursor = ev.target.result;
+//            if (cursor) {
+//              result.push(cursor.value || cursor.primaryKey);
+//              cursor['continue']();
+//            }
+//            else {
+//              dfd.resolveWith(request, result);
+////              d.result = result;
+////              d.onsuccess && d.onsuccess(ev);
+//            }
+//          };
+//          
+////          request.onerror = d.onerror;
+//          return d;
+//        });
+//      };
+//  
+//      var methods = {
+//        getAllKeys: function(bound, direction) {
+//          return getAll_.call(this, 'openKeyCursor', bound, direction);
+//        },
+//        
+//        getAll: function(bound, direction) {
+//          return getAll_.call(this, 'openCursor', bound, direction);
+//        },
+//        
+//        openKeyCursor: function(bound, direction) {
+//          var req = {};
+//          var ocReq = bound ? this.openCursor(bound, direction) : this.openCursor(direction);
+//          var toReturn = [];
+//          ocReq.onsuccess = function(event) {
+//            var cursor = event.target.result;
+//            if (cursor) {
+//              toReturn.push(cursor.primaryKey);
+//              cursor['continue']();
+//            }
+//            else {
+//              req.result = toReturn;
+//              req.onsuccess && req.onsuccess.call(self, toReturn);
+//            }
+//          };
+//          
+//          ocReq.onerror = function(event) {
+//            req.onerror && req.onerror.call(self, event);
+//          };
+//          
+//          return req;
+//        }
+//      };
+//  
+//      var args = arguments;
+//      for (var i = 0; i < args.length; i++) {
+//        var obj = args[i];
+//        for (var m in methods) {
+//          if (!obj.prototype[m]) {
+//            obj.getAll_ = getAll_;
+//            for (var method in methods) {
+//              obj.prototype[method] = obj.prototype[method] || obj.prototype['moz' + method] || methods[method];
+//            }
+//            
+//            break;
+//          }
+//        }
+//      }
+//      
+//  //    // TODO: for now, override native methods, so we can implement limit and offset
+//  //    for (var i = 0; i < args.length; i++) {
+//  //      var obj = args[i];
+//  //      for (var m in methods) {
+//  //        obj.prototype[m] = methods[m];
+//  //      }
+//  //    }
+//    })(IDBIndex, IDBObjectStore);
+//  }
+  var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
+  IDBCursor.PREV = IDBCursor.PREV || "prev";
+  IDBCursor.NEXT = IDBCursor.NEXT || "next";
 
-  function init() {
-    (function() {
-//    IDBIndex.prototype.getAllKeys = IDBIndex.prototype.getAllKeys || IDBIndex.prototype.mozGetAllKeys;
-//    IDBIndex.prototype.getAll = IDBIndex.prototype.getAll || IDBIndex.prototype.mozGetAll;
-      var getAll_ = function(fn, range, direction) {
-        // This is the most common use of IDBKeyRange. If more specific uses of
-        // cursors are needed then a full wrapper should be created.
-        var d = {};
-        var request;
-        try {
-          if (range) {
-            request = this[fn](range instanceof IDBKeyRange ? range : IDBKeyRange.bound(range, range), direction || IDBCursor.NEXT);
-          } else {
-            request = this[fn](null, direction || IDBCursor.NEXT);
-          }
-        } catch (err) {
-          d.onerror && d.onerror(err);
-          return null;
-        }
-        
-        var result = [];
-        request.onsuccess = function(ev) {
-          var cursor = ev.target.result;
-          if (cursor) {
-            result.push(cursor.value || cursor.primaryKey);
-            cursor['continue']();
-          }
-          else {
-            d.result = result;
-            d.onsuccess && d.onsuccess(ev);
-          }
-        };
-        
-        request.onerror = d.onerror;
-        return d;
-      };
-  
-      var methods = {
-        getAllKeys: function(bound, direction) {
-          return getAll_.call(this, 'openKeyCursor', bound, direction);
-        },
-        
-        getAll: function(bound, direction) {
-          return getAll_.call(this, 'openCursor', bound, direction);
-        },
-        
-        openKeyCursor: function(bound, direction) {
-          var req = {};
-          var ocReq = bound ? this.openCursor(bound, direction) : this.openCursor(direction);
-          var toReturn = [];
-          ocReq.onsuccess = function(event) {
-            var cursor = event.target.result;
-            if (cursor) {
-              toReturn.push(cursor.primaryKey);
-              cursor['continue']();
-            }
-            else {
-              req.result = toReturn;
-              req.onsuccess && req.onsuccess.call(self, toReturn);
-            }
-          };
-          
-          ocReq.onerror = function(event) {
-            req.onerror && req.onerror.call(self, event);
-          };
-          
-          return req;
-        }
-      };
-  
-      var args = arguments;
-      for (var i = 0; i < args.length; i++) {
-        var obj = args[i];
-        for (var m in methods) {
-          if (!obj.prototype[m]) {
-            obj.getAll_ = getAll_;
-            for (var method in methods) {
-              obj.prototype[method] = obj.prototype[method] || obj.prototype['moz' + method] || methods[method];
-            }
-            
-            break;
-          }
-        }
-      }
-      
-  //    // TODO: for now, override native methods, so we can implement limit and offset
-  //    for (var i = 0; i < args.length; i++) {
-  //      var obj = args[i];
-  //      for (var m in methods) {
-  //        obj.prototype[m] = methods[m];
-  //      }
-  //    }
-    })(IDBIndex, IDBObjectStore);
-  }
-  
   function Index(name) {
     function queryMaker(op) {
       return function () {
@@ -136,75 +141,75 @@ define(['cache!indexedDBShim'], function() {
     }
   }
   
-  /**
-   * Helper that notifies a 'success' event on a request, with a given
-   * result object. This is typically either a cursor or a result array.
-   */
-  function notifySuccess(request, result) {
-    var event = {type: "success",
-                 target: request}; //TODO complete event interface
-    request.readyState = IDBRequest.DONE;
-    request.result = result;
-    if (typeof request.onsuccess == "function") {
-      request.onsuccess(event);
-    }
-  }
-  
-  /**
-   * Create a cursor object.
-   */
-  function Cursor(store, request, keys, keyOnly) {
-    var cursor = {
-      continue: function continue_() {
-        if (!keys.length) {
-          notifySuccess(request, undefined);
-          return;
-        }
-        var key = keys.shift();
-        if (keyOnly) {
-          cursor.key = key;
-          notifySuccess(request, cursor);
-          return;
-        }
-        var r = store.get(key);
-        r.onsuccess = function onsuccess() {
-          cursor.key = key;
-          cursor.value = r.result;
-          notifySuccess(request, cursor);
-        };
-      }
-      //TODO complete cursor interface
-    };
-    return cursor;
-  }
-  
-  /**
-   * Create a request object.
-   */
-  function Request() {
-    return {
-      result: undefined,
-      onsuccess: null,
-      onerror: null,
-      readyState: IDBRequest.LOADING
-      // TODO complete request interface
-    };
-  }
-  
-  /**
-   * Create a request that will receive a cursor.
-   *
-   * This will also kick off the query, instantiate the Cursor when the
-   * results are available, and notify the first 'success' event.
-   */
-  function CursorRequest(store, queryFunc, keyOnly) {
-    var request = Request();
-    queryFunc(store, function (keys) {
-      var cursor = Cursor(store, request, keys, keyOnly);
-      cursor.continue();
-    });
-    return request;
-  }
+//  /**
+//   * Helper that notifies a 'success' event on a request, with a given
+//   * result object. This is typically either a cursor or a result array.
+//   */
+//  function notifySuccess(request, result) {
+//    var event = {type: "success",
+//                 target: request}; //TODO complete event interface
+//    request.readyState = IDBRequest.DONE;
+//    request.result = result;
+//    if (typeof request.onsuccess == "function") {
+//      request.onsuccess(event);
+//    }
+//  }
+//  
+//  /**
+//   * Create a cursor object.
+//   */
+//  function Cursor(store, request, keys, keyOnly) {
+//    var cursor = {
+//      "continue": function continue_() {
+//        if (!keys.length) {
+//          notifySuccess(request, undefined);
+//          return;
+//        }
+//        var key = keys.shift();
+//        if (keyOnly) {
+//          cursor.key = key;
+//          notifySuccess(request, cursor);
+//          return;
+//        }
+//        var r = store.get(key);
+//        r.onsuccess = function onsuccess() {
+//          cursor.key = key;
+//          cursor.value = r.result;
+//          notifySuccess(request, cursor);
+//        };
+//      }
+//      //TODO complete cursor interface
+//    };
+//    return cursor;
+//  }
+//  
+//  /**
+//   * Create a request object.
+//   */
+//  function Request() {
+//    return {
+//      result: undefined,
+//      onsuccess: null,
+//      onerror: null,
+//      readyState: IDBRequest.LOADING
+//      // TODO complete request interface
+//    };
+//  }
+//  
+//  /**
+//   * Create a request that will receive a cursor.
+//   *
+//   * This will also kick off the query, instantiate the Cursor when the
+//   * results are available, and notify the first 'success' event.
+//   */
+//  function CursorRequest(store, queryFunc, keyOnly) {
+//    var request = Request();
+//    queryFunc(store, function (keys) {
+//      var cursor = Cursor(store, request, keys, keyOnly);
+//      cursor.continue();
+//    });
+//    return request;
+//  }
   
   /**
    * Create a request that will receive a result array.
@@ -213,40 +218,8 @@ define(['cache!indexedDBShim'], function() {
    * notify the 'success' event.
    */
   function ResultRequest(store, queryFunc, keyOnly, limit, offset) {
-    var request = Request();
-    queryFunc(store, function (keys) {
-      if (keyOnly || !keys.length) {
-        notifySuccess(request, keys);
-        return;
-      }
-      
-      var results = [];
-      var i = 0;
-      function getNext() {
-        var r = store.get(keys.shift());
-        r.onsuccess = function onsuccess() {
-          if (offset && i++ < offset) {
-            if (!keys.length)
-              notifySuccess(request, results);
-            else
-              getNext();
-              
-            return;
-          }
-          else if (!keys.length || limit && limit == results.length) {
-            var item = r.result;
-            item && results.push(item);
-            notifySuccess(request, results);
-            return;
-          }
-          
-          results.push(r.result);
-          getNext();
-        };
-      }
-      getNext();
-    });
-    return request;
+    var op = keyOnly ? "getAllKeys" : "getAll";
+    return queryFunc(store, op).promise();
   }
   
   /**
@@ -261,10 +234,6 @@ define(['cache!indexedDBShim'], function() {
       // Sadly we need to expose this to make Intersection and Union work :(
       _queryFunc: queryFunc,
       
-      limit: null,
-      
-      offset: 0,
-      
       and: function and(query2) {
         return Intersection(query, query2);
       },
@@ -273,20 +242,20 @@ define(['cache!indexedDBShim'], function() {
         return Union(query, query2);
       },
   
-      openCursor: function openCursor(store) {
-        return CursorRequest(store, queryFunc, false);
-      },
-  
-      openKeyCursor: function openKeyCursor(store) {
-        return CursorRequest(store, queryFunc, true);
-      },
+//      openCursor: function openCursor(store) {
+//        return CursorRequest(store, queryFunc, false);
+//      },
+//  
+//      openKeyCursor: function openKeyCursor(store) {
+//        return CursorRequest(store, queryFunc, true);
+//      },
   
       getAll: function getAll(store) {
-        return ResultRequest(store, queryFunc, false, this.limit, this.offset);
+        return ResultRequest(store, queryFunc, false);
       },
   
       getAllKeys: function getAllKeys(store) {
-        return ResultRequest(store, queryFunc, true, this.limit, this.offset);
+        return ResultRequest(store, queryFunc, true);
       },
       
       sort: function(column, reverse) {
@@ -306,6 +275,10 @@ define(['cache!indexedDBShim'], function() {
       setOffset: function(offset) {
         this.offset = offset;
         return this;        
+      },
+      
+      setPrimaryKey: function(pKey) {
+        this.primaryKey = pKey;
       },
       
       toString: toString
@@ -330,89 +303,75 @@ define(['cache!indexedDBShim'], function() {
       var range;
       switch (op) {
         case "all":
-          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : undefined;
+//          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : undefined;
+          range = values[0] ? [values[0], null, false, true] : undefined;
           break;
         case "eq":
-          range = IDBKeyRange.only(values[0]);
+//          range = IDBKeyRange.only(values[0]);
+          range = values[0];
           break;
         case "lt":
-          range = IDBKeyRange.upperBound(values[0], true);
+//          range = IDBKeyRange.upperBound(values[0], true);
+          range = [null, values[0], true, false];
           break;
         case "lteq":
-          range = IDBKeyRange.upperBound(values[0]);
+//          range = IDBKeyRange.upperBound(values[0]);
+          range = [null, values[0], true, true];
           break;
         case "gt":
-          range = IDBKeyRange.lowerBound(values[0], true);
+//          range = IDBKeyRange.lowerBound(values[0], true);
+          range = [values[0], null, false, true];
           break;
         case "gteq":
-          range = IDBKeyRange.lowerBound(values[0]);
-          range.upperOpen = true;
+//          range = IDBKeyRange.lowerBound(values[0]);
+//          range.upperOpen = true;
+          range = [values[0], null, true, true];
           break;
         case "between":
-          range = IDBKeyRange.bound(values[0], values[1], true, true);
+//          range = IDBKeyRange.bound(values[0], values[1], true, true);
+          range = [values[0], values[1], false, false];
           break;
         case "betweeq":
-          range = IDBKeyRange.bound(values[0], values[1]);
+//          range = IDBKeyRange.bound(values[0], values[1]);
+          range = [values[0], values[1], true, true];
           break;
       }
       
       return range;
     }
 
-    function queryKeys(store, callback) {
-      var limit = query.limit,
-          offset = query.offest,
-          direction = query.direction || direction;
-      
-      var index = store.index(indexName);
-      var range = makeRange();
-//      if (limit || offset) {
-//        var request = index.openKeyCursor(range, direction);
-//        var results = [];
-//        var i = 0;
-//        request.onsuccess = function onsuccess(ev) {
-//          var cursor = ev.target.result;
-//          if (cursor) {
-//            if (offset && i < offset) {
-//              cursor['continue']();
-//              return;
-//            }
-//            else if (limit && results.length == limit) {
-//              callback(results);
-//              return;
-//            }
-//              
-//            results.push(cursor.primaryKey);
-//            cursor['continue']();
-//          }
-//          else {
-//            callback(results);
-//          }
-//        }
-//        
-//        return;
-//      }
-      
-      var request = range ? index.getAllKeys(range, direction) : index.getAllKeys(undefined, direction);
-      request.onsuccess = function onsuccess(event) {
-        var result = request.result;
-        if (!negate) {
-          callback(result, limit, offset);
-          return;
-        }
-  
-        // Deal with the negation case. This means we fetch all keys and then
-        // subtract the original result from it.
-        request = index.getAllKeys();
-        request.onsuccess = function onsuccess(event) {
-          var all = request.result;
-          callback(arraySub(all, result), limit, offset);
-        };
-      };
-      
-      request.onerror = function onerror(event) {
-        console.log("err: " + JSON.stringify(event));
-      }
+    /**
+     * @param op getAll or getAllKeys
+     */
+    function queryIndex(store, op) {
+      return $.Deferred(function(defer) {
+        var qLimit = query.limit,
+            qOffset = query.offset,
+            direction = query.direction || direction;
+        
+        var index = store.index(indexName);
+        var range = makeRange();
+        var request = range ? index[op](range, direction) : index[op](undefined, direction);
+        request.done(function(result, event) {
+          if (!negate) {
+            defer.resolve(arrayLimit(arrayOffset(result, qOffset), qLimit));
+            return;
+          }
+          
+          request = index[op];
+          request.done(function(all, event) {
+            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result), qOffset), qLimit));
+          }).fail(function(err, event) {
+            debugger;
+            console.log("err: " + JSON.stringify(err));
+            defer.reject.apply(arguments);
+          });
+        }).fail(function(err, event) {
+          console.log("err: " + JSON.stringify(err));
+          debugger;
+          defer.reject();
+        });
+      });      
     }
   
     var args = arguments;
@@ -420,7 +379,7 @@ define(['cache!indexedDBShim'], function() {
       return "IndexQuery(" + Array.prototype.slice.call(args).toSource().slice(1, -1) + ")";
     }
   
-    var query = Query(queryKeys, toString);
+    var query = Query(queryIndex, toString);
     return query;
   }
 
@@ -428,27 +387,25 @@ define(['cache!indexedDBShim'], function() {
   function SetOperation(setOp) {
     return function(query1, query2) {
 //      if (!query1.indexed || !query2.indexed)
-      function queryKeys(store, callback) {
-        var firstResult;
-        var finish = function(keys) {
-//          console.log('finished query: ' + (this == query1 ? query1 : query2).toString());
-          if (!firstResult)
-            firstResult = keys;            
-          else 
-            callback(setOp.op(firstResult, keys))
-        }
-    
-        query1._queryFunc(store, finish);
-//        console.log('started query: ' + query1.toString());
-        query2._queryFunc(store, finish);
-//        console.log('started query: ' + query2.toString());
+      var query;
+      function queryFunc(store, op) {
+        var dfd = $.Deferred();
+        $.when(query1._queryFunc(store, op), query2._queryFunc(store, op)).then(function(results1, results2) {
+          dfd.resolve(arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey), query.offset), query.limit));
+        }, function(err) {
+          debugger;
+        }, function(event) {
+          debugger;
+        });
+        
+        return dfd;
       }
   
       function toString() {
         return setOp.name + "(" + query1.toString() + ", " + query2.toString() + ")";
       }
       
-      return Query(queryKeys, toString);
+      return (query = Query(queryFunc, toString));
     }
   }
   
@@ -466,16 +423,33 @@ define(['cache!indexedDBShim'], function() {
     return SetOperation(SetOps.Union)(query1, query2);
   }
   
-  
-  function arraySub(minuend, subtrahend) {
-    if (!minuend.length || !subtrahend.length) {
+  function arraySub(minuend, subtrahend, primaryKey) {
+    if (!minuend.length || !subtrahend.length)
       return minuend;
-    }
-    return minuend.filter(function(item) {
+    
+    var minKeys = primaryKey ? primaryKeys(minuend, primaryKey) : minuend;
+    return subtrahend.filter(function(item) {
+      item = primaryKey ? item[primaryKey] : item;
       return subtrahend.indexOf(item) == -1;
     });
   }
-  
+
+  function arrayOffset(foo, offset) {
+    if (!offset)
+      return foo;
+    if (offset > foo.length)
+      return [];
+    
+    return foo.slice(offset);
+  }
+
+  function arrayLimit(foo, limit) {
+    if (!limit || limit > foo.length)
+      return foo;
+
+    return foo.slice(0, limit);
+  }
+
   function arrayUnion(foo, bar) {
     if (!foo.length) {
       return bar;
@@ -483,35 +457,50 @@ define(['cache!indexedDBShim'], function() {
     if (!bar.length) {
       return foo;
     }
+    
     return foo.concat(arraySub(bar, foo));
   }
   
-  function arrayIntersect(foo, bar) {
-    if (!foo.length) {
+  function primaryKeys(items, key) {
+    var keys = [];
+    for (var i = 0; i < items.length; i++) {
+      keys.push(items[i][key]);
+    }
+    
+    return keys;
+  }
+  
+  function arrayIntersect(foo, bar, primaryKey) {
+    if (!foo.length)
       return foo;
-    }
-    if (!bar.length) {
+    if (!bar.length)
       return bar;
-    }
+    
+//    var fooKeys = primaryKey ? primaryKeys(foo, primaryKey) : foo;
+    var barKeys = primaryKey ? primaryKeys(bar, primaryKey) : bar;
     return foo.filter(function(item) {
-      return bar.indexOf(item) != -1;
+      item = primaryKey ? item[primaryKey] : item;
+      return barKeys.indexOf(item) != -1;
     });
   }
   
   return {
-    init: init,
+//    init: init,
     Index: Index,
-    notifySuccess: notifySuccess,
-    Cursor: Cursor,
-    Request: Request,
-    CursorRequest: CursorRequest,
+//    notifySuccess: notifySuccess,
+//    Cursor: Cursor,
+//    Request: Request,
+//    CursorRequest: CursorRequest,
     ResultRequest: ResultRequest,
     Query: Query,
     IndexQuery: IndexQuery,
     Intersection: Intersection,
-    Union: Union,
-    arraySub: arraySub,
-    arrayUnion: arrayUnion,
-    arrayIntersect: arrayIntersect
+    Union: Union
+//    ,
+//    arraySub: arraySub,
+//    arrayUnion: arrayUnion,
+//    arrayIntersect: arrayIntersect,
+//    offset: offset,
+//    limit: limit
   };
 });

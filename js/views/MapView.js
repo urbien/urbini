@@ -1,12 +1,12 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!templates',
-  'cache!events', 
-  'cache!utils',
-  'cache!maps',
-  'cache!views/BasicView'
+  'jquery', 
+  'underscore', 
+  'templates',
+  'events', 
+  'utils',
+  'maps',
+  'views/BasicView'
 ], function(G, $, _, Templates, Events, U, Mapper, BasicView) {
   var MapView = BasicView.extend({
 //    css: [
@@ -23,7 +23,7 @@ define([
       
       L.Icon.Default.imagePath = 'images/leaflet';
       var self = this;
-//      csses = _.map(this.css, function(c) {return 'cache!../styles/leaflet/' + c});
+//      csses = _.map(this.css, function(c) {return '../styles/leaflet/' + c});
 //      require(csses, function() {
 //        self.loadedCSS = true;
 //        if (self.cssListeners.length)

@@ -4,7 +4,7 @@
  https://github.com/danzel/Leaflet.markercluster
 */
 
-//define(['cache!leaflet'], function(L) {
+//define(['leaflet'], function(L) {
 (function (window, undefined) {
 
 
@@ -1748,7 +1748,7 @@ var init = function(L) {
 };
 
 if (!window.L && typeof require !== 'undefined')
-  require(['cache!leaflet'], function(L) {init(L)});
+  require(['leaflet'], function(L) {init(L)});
 else
   init(window.L);
 

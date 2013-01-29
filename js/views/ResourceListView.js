@@ -1,16 +1,16 @@
 define([
   'globals',
-  'cache!jquery',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!utils',
-  'cache!events',
-  'cache!vocManager',
-  'cache!templates',
-  'cache!views/BasicView',
-  'cache!views/ResourceMasonryItemView',
-  'cache!views/ResourceListItemView',
-  'cache!views/CommentListItemView'
+  'jquery',
+  'underscore',
+  'backbone',
+  'utils',
+  'events',
+  'vocManager',
+  'templates',
+  'views/BasicView',
+  'views/ResourceMasonryItemView',
+  'views/ResourceListItemView',
+  'views/CommentListItemView'
 ], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return BasicView.extend({
     displayPerPage: 10, // for client-side paging

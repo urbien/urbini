@@ -1,11 +1,11 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!templates',
-  'cache!events', 
-  'cache!utils',
-  'cache!views/BasicView'
+  'jquery', 
+  'underscore', 
+  'templates',
+  'events', 
+  'utils',
+  'views/BasicView'
 ], function(G, $, _, Templates, Events, U, BasicView) {
   return BasicView.extend({
     tagName: "tr",

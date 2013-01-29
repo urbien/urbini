@@ -1,12 +1,12 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!events', 
-  'cache!templates', 
-  'cache!utils',
-  'cache!views/BasicView',
-  'cache!vocManager'
+  'jquery', 
+  'underscore', 
+  'events', 
+  'templates', 
+  'utils',
+  'views/BasicView',
+  'vocManager'
 ], function(G, $, _, Events, Templates, U, BasicView, Voc) {
   return BasicView.extend({
     TAG: 'ResourceListItemView',

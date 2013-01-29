@@ -1,8 +1,8 @@
 define([
   'globals',
   'cache!../templates.jsp',
-  'cache!jquery', 
-  'cache!underscore' 
+  'jquery', 
+  'underscore' 
 ], function(G, HTML, $, _) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,

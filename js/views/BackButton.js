@@ -1,8 +1,8 @@
 define([
-  'cache!underscore', 
-  'cache!templates',
-  'cache!events', 
-  'cache!views/BasicView' 
+  'underscore', 
+  'templates',
+  'events', 
+  'views/BasicView' 
 ], function(_, Templates, Events, BasicView) {
   return BasicView.extend({
     template: 'backButtonTemplate',

@@ -1,9 +1,9 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!backbone',
-  'cache!events'
+  'jquery', 
+  'underscore', 
+  'backbone',
+  'events'
 ], function(G, $, _, Backbone, Events) {
   return Backbone.View.extend({
     first: true,

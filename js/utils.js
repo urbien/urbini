@@ -1,8 +1,8 @@
 define([
   'globals',
-  'cache!underscore',
-  'cache!backbone',
-  'cache!templates'
+  'underscore',
+  'backbone',
+  'templates'
 ], function(G, _, Backbone, Templates) {
   var ArrayProto = Array.prototype;
   ArrayProto.remove = function() {

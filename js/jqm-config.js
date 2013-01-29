@@ -1,5 +1,5 @@
 // see: http://jquerymobile.com/test/docs/pages/backbone-require.html
-define(['cache!jquery'], function($) {
+define(['jquery'], function($) {
   $(document).bind("mobileinit", function () {
       console.log('mobileinit');
       $.mobile.ajaxEnabled = false;

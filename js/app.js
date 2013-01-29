@@ -1,16 +1,16 @@
 define('app', [
   'globals',
-  'cache!jquery',
-  'cache!jqueryMobile',
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!templates', 
-  'cache!utils', 
-  'cache!events',
-  'cache!error',
-  'cache!vocManager',
-  'cache!resourceManager',
-  'cache!router'
+  'jquery',
+  'jqueryMobile',
+  'underscore', 
+  'backbone', 
+  'templates', 
+  'utils', 
+  'events',
+  'error',
+  'vocManager',
+  'resourceManager',
+  'router'
 ], function(G, $, __jqm__, _, Backbone, Templates, U, Events, Errors, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
@@ -60,12 +60,15 @@ define('app', [
       Voc.checkUser();
       Voc.loadStoredModels();
       if (!Voc.changedModels.length && !Voc.newModels.length) {
-        RM.restartDB(App.startApp, error);
+        RM.restartDB().done(App.startApp).fail(error);
         return;
       }
     
       Voc.fetchModels(null, {success: function() {
-        RM.db ? App.startApp() : RM.restartDB(App.startApp, error);
+        if (RM.db)
+          App.startApp();
+        else
+          RM.restartDB().done(App.startApp).fail(error);
       }, error: error, sync: true});
     },
     
@@ -82,11 +85,11 @@ define('app', [
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
       App.setupModuleCache();
       App.setupLoginLogout();
-      if (G.currentUser.guest && G.online) {
-        setTimeout(function() {          
-          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});
-        }, 100);
-      }
+//      if (G.currentUser.guest && G.online) {
+//        setTimeout(function() {          
+//          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});
+//        }, 100);
+//      }
 //      G.homePage = G.homePage || G.tabs[0].mobileUrl;
 //      if (!window.location.hash) {
 //        G.Router.navigate(G.homePage, {trigger: true});

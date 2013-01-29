@@ -1,19 +1,19 @@
 define([
   'globals',
-  'cache!jquery', 
-  'cache!underscore', 
-  'cache!backbone', 
-  'cache!utils', 
-  'cache!events', 
-  'cache!error', 
-  'cache!models/Resource', 
-  'cache!collections/ResourceList', 
-  'cache!vocManager',
-  'cache!views/HomePage', 
-  'cache!views/ListPage', 
-  'cache!views/ViewPage'
+  'jquery', 
+  'underscore', 
+  'backbone', 
+  'utils', 
+  'events', 
+  'error', 
+  'models/Resource', 
+  'collections/ResourceList', 
+  'vocManager',
+  'views/HomePage', 
+  'views/ListPage', 
+  'views/ViewPage'
 //  , 
-//  'cache!views/EditPage' 
+//  'views/EditPage' 
 ], function(G, $, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var MenuPage, EditPage, EditView;
@@ -230,7 +230,7 @@ define([
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
         G.loadBundle(unloadedMods, function() {
-          require(_.map(unloadedMods, function(v) {return 'cache!' + v}), function() {
+          require(_.map(unloadedMods, function(v) {return '' + v}), function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
               eval(unloaded[i] + '=a[i];');
@@ -305,8 +305,10 @@ define([
           other = other.length ? other : undefined;
           this.view(U.encode(G.currentUser._uri) + "?" + p, other);
         }
-        else
-          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
+        else {
+          Events.trigger(Events.REQUEST_LOGIN, 'Please login');
+//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
+        }
         
         return;
       }
@@ -416,7 +418,7 @@ define([
       if (!LoginView) {
         var args = arguments;
         var self = this;
-        require(['cache!views/LoginButtons'], function(LV) {
+        require(['views/LoginButtons'], function(LV) {
           LoginView = LV;
           self.login.apply(self, args);
         })
