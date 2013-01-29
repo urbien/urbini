@@ -21,13 +21,18 @@ define([
       if (this.template) 
         this.isCommonTemplate = false;
       else {
-        if (options.imageProperty) {
+        if (options.mv) {
+          this.template = _.template(Templates.get('mvListItem'));
+          this.$el.attr("data-role", "controlgroup");
+        }
+        else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
           this.template = _.template(Templates.get('listItemTemplate'));
         }
         else
           this.template = _.template(Templates.get('listItemTemplateNoImage'));
       }
+        
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;
@@ -82,10 +87,14 @@ define([
       });
     },
     click: function(e) {
-      var p = this.parentView;
-      if (p && p.mode == G.LISTMODES.CHOOSER) {
-        Events.stopEvent(e);
-        Events.trigger('chooser', this.model);
+      if (window.location.hash  &&  window.location.hash.indexOf('$multiValue=y') != -1)
+        Events.defaultClickHandler(e);  
+      else {
+        var p = this.parentView;
+        if (p && p.mode == G.LISTMODES.CHOOSER) {
+          Events.stopEvent(e);
+          Events.trigger('chooser', this.model);
+        }
       }
     },
     render: function(event) {
@@ -95,8 +104,8 @@ define([
       if (!meta)
         return this;
       var json = m.toJSON();
-      _.extend(json, {U:U, G:G});
       var distance = m.get('distance');
+      _.extend(json, {U:U, G:G});
       if (typeof distance != 'undefined') {
         var meta = this.vocModel.properties;
         var prop = meta['distance'];
@@ -104,6 +113,7 @@ define([
         if (d)
           json.distance = distance + ' mi';
       }
+      json.shortUri = U.getShortUri(json._uri, this.vocModel);
       if (!this.isCommonTemplate) {
         this.$el.html(this.template(json));
         return this;
@@ -262,16 +272,28 @@ define([
       var json = m.attributes;
       var h, w;
       if (cloneOf == 'Intersection.a') {
-//        img = json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')];
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
-        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
-        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+        var imageP = U.getCloneOf(this.vocModel, 'Intersection.aThumb');
+        if (!imageP  ||  imageP.length == 0)
+          imageP = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+        if (imageP) {
+          img = json[imageP[0]]; 
+          
+  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+          w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
+          h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+        }
       }
       else {
-//        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
-        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
-        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
-        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+        var imageP = U.getCloneOf(this.vocModel, 'Intersection.bThumb');
+        if (!imageP  ||  imageP.length == 0)
+          imageP = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
+        if (imageP) {
+          img = json[imageP[0]]; 
+  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
+  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+          w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
+          h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+        }
       }
       
       
