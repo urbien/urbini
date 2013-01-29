@@ -128,6 +128,14 @@
 
 
 /* begin primary declarations */
+/* can use only ttf as appcache does not allow conditional load, for now support only IE10 and all modern browsers */
+@font-face {
+	font-family: 'FontAwesome';
+	src: url('font/fontawesome-webfont.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+/*
 @font-face {
 	font-family: 'FontAwesome';
 	src: url('font/fontawesome-webfont.eot');
@@ -139,6 +147,7 @@
 	font-weight: normal;
 	font-style: normal;
 }
+*/
 [class^="ui-icon-"]:before, [class*=" ui-icon-"]:before {
 	font-family: FontAwesome !important;
 	font-weight: normal;
