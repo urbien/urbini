@@ -472,7 +472,7 @@ define([
             RM.restartDB();
             break;
           case 'upgradeneeded':
-            debugger;
+//            debugger;
             break;
         }
         G.log(RM.TAG, 'db', event.type);
