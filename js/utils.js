@@ -304,8 +304,14 @@ define([
         return U.getLongUri(longUri, {type: type});
       }
       else {
-        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?...
-        return qIdx === -1 ? G.defaultVocPath + uri : G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?... or wf/Urbien/.....
+        if (qIdx !== -1)
+          return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+        
+        if (uri.startsWith('wf/'))
+          return G.serverName + '/' + uri;
+        else
+          return G.defaultVocPath + uri;
       }
     },
 
@@ -692,9 +698,35 @@ define([
 //      });
 //    },
     
-    getPropertiesWith: function(props, annotation, returnArray) {
-      var filtered = U.filterObj(props, function(name, value) {
-        return props[name][annotation];
+    getArrayOfPropertiesWith: function(props, annotations) {
+      return U.getPropertiesWith(props, {name: annotations}, true);
+    },
+    
+    getPropertiesWith: function(props, annotations, returnArray) {
+      var type = U.getObjectType(annotations);
+      switch (type) {
+        case '[object String]':
+          annotations = [{name: annotations}];
+          break;
+        case '[object Object]':
+          annotations = [annotations];
+          break;
+      }
+        
+      var filtered = U.filterObj(props, function(name, val) {
+        for (var i = 0; i < annotations.length; i++) {
+          var a = annotations[i];
+          var annotationVal = props[name][a.name];
+          var values = typeof a.value === 'undefined' ? a.values : [a.value];
+          if (typeof values === 'undefined') {
+            if (typeof annotationVal === 'undefined') 
+              return false;
+          }
+          else if (values.indexOf(annotationVal) === -1) 
+            return false;
+        }
+        
+        return true;
       });
       
       return returnArray ? _.toArray(filtered) : filtered;
@@ -870,12 +902,12 @@ define([
         if (absDayDiff < 7) 
           str = (absDayDiff == 1) ? "a day" : absDayDiff + " days"; 
         else if (absDayDiff < 365) {
-          var w = Math.round( day_diff / 7 );
+          var w = Math.round( absDayDiff / 7 );
           str = (w == 1) ? "a week" : w + " weeks";
         }
         else {
-          var years = Math.round( day_diff / 365 );
-          var rest = (day_diff % 365);
+          var years = Math.round( absDayDiff / 365 );
+          var rest = (absDayDiff % 365);
           var date = '';
           if (years == 1)
             date += 'a year';
@@ -1195,16 +1227,19 @@ define([
     },
     
     primitiveTypes: {
-//      uri: 'system/primitiveTypes', 
+//      uri: 'system/primitiveTypes',
+      dates: ['date', 'dateTime', 'ComplexDate'],
       floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
-      ints: ['int', 'long', 'Duration']
+      ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
     },
     getTypedValue: function(res, prop, value) {
       var vocModel = res.vocModel;
       var p = U.primitiveTypes;
       var prop = vocModel.properties[prop];
       var range = prop.range || prop.facet;
-      if (p.floats.indexOf(range) != -1)
+      if (p.dates.indexOf(range) != -1)
+        return U.parseDate(value);
+      else if (p.floats.indexOf(range) != -1)
         return parseFloat(value);
       else if (p.ints.indexOf(range) != -1)
         return parseInt(value);
@@ -1220,18 +1255,17 @@ define([
       
       if (range == 'ComplexDate' || range ==  'dateTime') {
         try {
-          var i = parseInt(value);
-          if (isNaN(i))
-            return value;
+          if (isNaN(value))
+            return parseInt(value);
           else
-            return i;
+            return value;
         } catch (err) {
           // TODO: check if it's valid, like 'today', etc.
           return value; 
         }
       }
       else if (range == 'Money')
-        return parseFloat(value);
+        return isNaN(value) ? parseFloat(value) : value;
 
 //    var hIdx = range.indexOf('#');
 //    if (hIdx != -1) {
@@ -1389,6 +1423,35 @@ define([
       return _.isUndefined(val) || val === null || val === '';
     },
 
+    isFalsy: function(val, range) {
+      if (U.isNully(val))
+        return true;
+      
+      var primitives = U.primitiveTypes;
+      if (_.contains(primitives.ints, range)) {
+        try {
+          return !!parseInt(val);
+        } catch (err) {
+          return true;
+        }
+      }
+      else if (_.contains(primitives.floats, range)) {
+        try {
+          return !!parseFloat(val);
+        } catch (err) {
+          return true;
+        }
+      }
+      
+      switch(range) {
+        case 'boolean':
+          return val === 'false' || val === false;
+        default:
+          return val === 'null' || !val; // val could be an empty string
+      }
+    },
+    
+
     _dateProps: ['ComplexDate', 'date', 'dateTime'],
     _timeProps: ['Duration', 'years', 'hours', 'minutes', 'seconds'],
     isDateOrTimeProp: function(prop) {
@@ -1406,6 +1469,44 @@ define([
     toDateParts: function(millis) {
       var date = millis ? new Date(millis) : new Date();
       return [date.getMonth(), date.getDate(), date.getFullYear()];//, date.getMonth(), date.getDate()];
+    },
+    
+    millis: {
+      second: 1000,
+      minute: 60000,
+      hour: 3600000,
+      day: 86400000,
+      week: 604800000,
+      month: 2592000000,
+      year: 31536000000
+    },
+    
+    parseDate: function(date) {
+      if (!isNaN(date))
+        return parseInt(date);
+      
+      var startOfDay = new Date();
+      startOfDay.setHours(0,0,0,0);
+      startOfDay = startOfDay.getTime();
+      switch (date) {
+        case 'today':
+          return startOfDay;
+        case 'tomorrow':
+          return startOfDay + U.millis.day;
+        case 'yesterday':
+          return startOfDay - U.millis.day;
+        case 'day after tomorrow':
+          return startOfDay + 2*U.millis.day;
+      }
+      
+      var parsed = date.match(/(\d)* ?(second|minute|hour|day|week|month|year){1}s? ?(ago|ahead)/);
+      if (!parsed)
+        throw new Error('couldn\'t parse date: ' + date);
+      
+      var num = parsed[1] ? parseInt(parsed[1]) : 0;
+      var length = U.millis[parsed[2]];
+      var multiplier = parsed[3] === 'ago' ? -1 : 1;
+      return startOfDay + num * length * multiplier;
     },
     
     slice: slice

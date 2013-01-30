@@ -109,10 +109,7 @@ define(['indexedDBShim', 'jqueryIndexedDB'], function() {
 //  //    }
 //    })(IDBIndex, IDBObjectStore);
 //  }
-  var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
-  IDBCursor.PREV = IDBCursor.PREV || "prev";
-  IDBCursor.NEXT = IDBCursor.NEXT || "next";
-
+  var IDBCursor = $.indexedDB.IDBCursor;
   function Index(name) {
     function queryMaker(op) {
       return function () {

@@ -3,11 +3,12 @@ define([
   'jquery', 
   'underscore', 
   'events', 
+  'error', 
   'templates', 
   'utils',
   'views/BasicView',
   'vocManager'
-], function(G, $, _, Events, Templates, U, BasicView, Voc) {
+], function(G, $, _, Events, Errors, Templates, U, BasicView, Voc) {
   return BasicView.extend({
     TAG: 'ResourceListItemView',
     tagName:"li",
@@ -82,6 +83,15 @@ define([
           self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
         }, 
         error: function(model, xhr, options) {
+          var json;
+          try {
+            json = JSON.parse(xhr.responseText).error;
+          } catch (err) {
+            G.log(self.TAG, 'error', 'couldn\'t create shopping list items, no error info from server');
+            return;
+          }
+          
+          Errors.errDialog({msg: json.details});
           G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
         }
       });

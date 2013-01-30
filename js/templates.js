@@ -43,7 +43,8 @@ define([
       "mobilePhone": "telPET",
       "emailAddress": "emailPET",
       "date": "datePET",
-      "ComplexDate": "datePET"
+      "ComplexDate": "datePET",
+      "model/company/Money": "stringPET"
 //       ,
 //      "boolean": "booleanPET",
 //      "int": "intPET",

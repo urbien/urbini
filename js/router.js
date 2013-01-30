@@ -230,7 +230,7 @@ define([
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
         G.loadBundle(unloadedMods, function() {
-          require(_.map(unloadedMods, function(v) {return '' + v}), function() {
+          G.require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
               eval(unloaded[i] + '=a[i];');

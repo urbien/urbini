@@ -66,7 +66,7 @@ define([
       var json = res.attributes;
       var frag = document.createDocumentFragment();
   
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true);
+      var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;

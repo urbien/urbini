@@ -76,6 +76,9 @@ define('app', [
       if (App.started)
         return;
       
+      App.setupModuleCache();
+      App.setupLoginLogout();
+      
       G.app = App;
       App.started = true;
       var models = G.models;
@@ -83,8 +86,6 @@ define('app', [
       Backbone.history.start();
       
       _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
-      App.setupModuleCache();
-      App.setupLoginLogout();
 //      if (G.currentUser.guest && G.online) {
 //        setTimeout(function() {          
 //          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});

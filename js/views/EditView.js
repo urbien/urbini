@@ -17,7 +17,7 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -27,10 +27,10 @@ define([
       this.backlinkModel = options.backlinkModel;
       
       var params = U.getQueryParams();
-      var initial = U.getQueryParams(params, this.vocModel) || {};
+      var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
       if (params.backLink && params.on)
-        initial[params.backLink] = params.on;      
-      this.resource.set(initial, {silent: true});
+        init[params.backLink] = params.on;      
+      this.resource.set(init, {silent: true});
       this.originalResource = this.resource.toJSON();
       
       return this;
@@ -494,7 +494,7 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
+      var errors = res.validate(_.extend(atts, this.initialParams), {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         onSuccess();
@@ -571,6 +571,36 @@ define([
       res.lastFetchOrigin = 'edit';
       res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
     },
+    addProp: function(info) {
+      var p = info.name;
+      if (!/^[a-zA-Z]/.test(p) || info.displayedProps[p])
+        return;
+      
+      var prop = info.prop;
+      if (!prop) {
+//        delete json[p];
+        return;
+      }
+      
+      if (info.params[p]  &&  prop.containerMember)
+        return;
+      if (_.has(info.backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
+        return;
+
+      _.extend(prop, {shortName: p});
+      var res = this.resource;
+      if (!willShow(res, prop, info.userRole))
+        return;
+      
+      info.displayedProps[p] = true;
+      var pInfo = U.makeEditProp(prop, info.values[p], info.formId, Voc);
+      if (!info.groupNameDisplayed) {
+        U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
+        info.groupNameDisplayed = true;
+      }
+
+      U.addToFrag(info.frag, this.editRowTemplate(pInfo));
+    },
     render: function(options) {
       G.log(this.TAG, "render");
       var self = this;
@@ -583,19 +613,18 @@ define([
       var type = res.type;
       var json = res.attributes;
       var frag = document.createDocumentFragment();
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
+      var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var displayedProps = {};
 
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
-
       var formId = G.nextId();
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
-      var rules = {};
       var userRole = U.getUserRole();
+      var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
@@ -604,61 +633,51 @@ define([
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
-            if (!/^[a-zA-Z]/.test(p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
-              continue;
-            
-            var prop = meta[p];
-            if (params[p]  &&  prop.containerMember)
-              continue;
-            if (!prop) {
-//              delete json[p];
-              continue;
-            }
-
-            _.extend(prop, {shortName: p});
-            if (!willShow(res, prop, userRole))
-              continue;
-  
-            displayedProps[p] = true;
-            var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
-            if (!groupNameDisplayed) {
-              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-              groupNameDisplayed = true;
-            }
-  
-            U.addToFrag(frag, this.editRowTemplate(pInfo));
+            this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName}));
+//            var p = props[j].trim();
+//            if (!/^[a-zA-Z]/.test(p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
+//              continue;
+//            
+//            var prop = meta[p];
+//            if (params[p]  &&  prop.containerMember)
+//              continue;
+//            if (!prop) {
+////              delete json[p];
+//              continue;
+//            }
+//
+//            _.extend(prop, {shortName: p});
+//            if (!willShow(res, prop, userRole))
+//              continue;
+//  
+//            displayedProps[p] = true;
+//            var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
+//            if (!groupNameDisplayed) {
+//              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+//              groupNameDisplayed = true;
+//            }
+//  
+//            U.addToFrag(frag, this.editRowTemplate(pInfo));
           }
         }
+        
+        var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
+        var init = this.initialParams;
+        for (var p in reqd) {
+          p = p.trim();
+          if (typeof init[p] !== 'undefined')
+            continue;
+          
+          _.extend(info, {name: p, prop: reqd[p]});
+          this.addProp(info);
+        }        
       }
       else {
         for (var p in meta) {
-          if (!/^[a-zA-Z]/.test(p))
-            continue;
-          
-          var prop = meta[p];
-          if (params[p]  &&  prop.containerMember)
-            continue;
-          if (_.has(backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
-            continue;
-          
-          _.extend(prop, {shortName: p});
-          if (!prop) {
-//            delete json[p];
-            continue;
-          }
-
-          if (!willShow(res, prop, userRole))
-            continue;
-          
-          displayedProps[p] = true;
-          var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
-          if (!groupNameDisplayed) {
-            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-            groupNameDisplayed = true;
-          }
-  
-          U.addToFrag(frag, this.editRowTemplate(pInfo));
-        }
+          p = p.trim();
+          _.extend(info, {name: p, prop: meta[p]});
+          this.addProp(info);
+        }        
       }        
         
       (this.$ul = this.$('#fieldsList')).html(frag);

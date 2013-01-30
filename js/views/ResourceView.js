@@ -66,7 +66,7 @@ define([
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList", true); // last param specifies to return array
+      var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
 //      propGroups = propGroups.length ? propGroups : U.getPropertiesWith(vocModel.properties, "propertyGRoupsList", true);
       propGroups = _.sortBy(propGroups, function(pg) {
         return pg.index;

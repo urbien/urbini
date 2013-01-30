@@ -198,6 +198,12 @@ define([
         Events.trigger('resourcesChanged', [self]);
       };
       
+//      var error = options.error;
+//      options.error = function(reosurce, xhr, options) {
+//        
+//        error && error.apply(this, arguments);
+//      }
+      
       return Backbone.Model.prototype.save.call(this, attrs, options);
     }
   },

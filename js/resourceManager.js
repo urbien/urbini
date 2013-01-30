@@ -10,6 +10,7 @@ define([
 ], function(G, $, _, Backbone, U, Events, Voc, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
+  var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
   var Index = idbq.Index;
@@ -251,12 +252,6 @@ define([
       }
 
       return ts || 0;
-//      return now - ts;
-//      var staleness = age - RM.maxDataAge;
-//      if (staleness > 0)
-//        G.log(RM.TAG, 'info', 'data is stale at: ' + age + ' millis old');
-//      
-//      return staleness;
     },
   
     setLastFetched: function(lastFetchedOn, options) {
@@ -266,19 +261,12 @@ define([
       }
     },
   
-    updateDB: function(res) {
-//      var self = this;
-      if (res.lastFetchOrigin != 'db' && !res.collection) // if this resource is part of a collection, the collection will update the db in bulk
-        setTimeout(function() {RM.addItem(res)}, 100);
-    },
+//    updateDB: function(res) {
+////      var self = this;
+//      if (res.lastFetchOrigin != 'db' && !res.collection) // if this resource is part of a collection, the collection will update the db in bulk
+//        setTimeout(function() {RM.addItem(res)}, 100);
+//    },
   
-//    varRinde rInit = Resource.initialize;
-//    Resource.initialize = function() {
-//      rInit.apply(this, arguments);
-//      this.on('change', RM.updateDB);
-//    };
-
-
     /////////////////////////////////////////// START IndexedDB stuff ///////////////////////////////////////////
     db: null,
     VERSION: 1,
@@ -292,109 +280,13 @@ define([
       
       return names._items ? _.contains(names._items, name) : names.contains(name);
     },
-//    indexExists: function(store, name) {
-//      debugger;
-//      var names = store.getIndexNames();
-//      return _.contains(names._items ? names._items : names, name);
-//    },
-//    onerror: function(e) {
-//      G.userChanged = true;
-////      G.recordCheckpoint("closing db due to error");
-//      RM.db && RM.db.close();
-//      RM.openDB();
-//      G.log(RM.TAG, ['error', 'db'], "db error: " + JSON.stringify(e));
-//    },
-//    
-//    onabort: function(e) {
-//      G.log(RM.TAG, ['error', 'db'], "db abort: " + e);
-//    },
-//    
-//    this.reset = function() {
-//      var db = RM.db;
-//      var rModels = _.filter(_.union(G.models, G.linkedModels), function(m) {return _.contains(G.classUsage, m)});
-//      var rModels = _.map(rModels, function(m) {
-//        return (m.type || m.uri).slice(m.type.lastIndexOf('/') + 1)
-//      });
-//      
-//      var deleted = [];
-//      var created = [];
-//      _.each(db.objectStoreNames, function(name) {            
-//        db.deleteObjectStore(name);
-//        deleted.push(name);
-//        if (_.contains(rModels, name)) {
-//          db.createObjectStore(name, RM.defaultOptions);
-//          created.push(name);
-//        }
-//      })
-//      
-//      deleted.length && G.log(RM.TAG, 'db', '1. deleted tables: ' + deleted.join(','));
-//      created.length && G.log(RM.TAG, 'db', '1. created tables: ' + created.join(','));
-//      G.userChanged = false;
-//    }
     
     deleteDatabase: function(callback) {
       G.log(RM.TAG, ['error', 'db'], "db blocked, deleting database");
-//      if (confirm('delete database?'))
         window.webkitIndexedDB.deleteDatabase(RM.DB_NAME).onsuccess = callback;
     },
     
     defaultOptions: {keyPath: '_uri', autoIncrement: false},
-//    storeIsReady: function(store) {
-//      var readyState = store.__ready;
-//      return _.isUndefined(readyState.createObjectStore) || readyState.createObjectStore &&  _.isUndefined(readyState.createIndex) || readyState.createIndex;
-//    },
-    
-//    getUpgradeFunction: function(state, callback) {
-//      return function(e) {
-//        var res = e.target.result;
-//        if (res instanceof IDBDatabase)
-//          RM.db = res;
-//        
-//        var needsUpdate = G.userChanged || state.modelsChanged;
-//        if (!needsUpdate) {
-//          // unclear how it ever gets here, but it does
-//          return;
-//        }
-//        
-//        var newStores = [];
-//        var numCallbacks = 1;
-//        var numCalledBack = 0;
-//        e.target.transaction.oncomplete = function() {
-//          numCalledBack++;
-//          if (callback && numCalledBack >= numCallbacks) {
-//            G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
-//            callback();
-//            callback = null;
-//          }
-////          if (callback) {// && finishedUpdate)
-////            if (!useWebSQL)
-////              callback();
-////            else if (_.all(newStores, RM.storeIsReady))
-////              callback() && (callback = null);
-////          }
-//        };
-//        
-//        var finishedUpdate = false;
-//        G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
-//        if (G.userChanged) {
-//          G.userChanged = false;
-//          newStores = RM.updateStores(true);
-//        }
-//        else if (state.modelsChanged) {
-//          state.modelsChanged = false;
-//          newStores = RM.updateStores();
-//        }
-//        
-//        if (!newStores || !newStores.length)
-//          callback && callback();
-//        else if (useWebSQL) {
-//          numCallbacks = _.reduce(newStores, function(a, b) {
-//            return a + (!_.isUndefined(b.__ready.createObjectStore) ? 1 : 0) + (!_.isUndefined(b.__ready.createIndex) ? b.indexNames.length : 0) 
-//          }, 0);
-//        }
-//      }
-//    },
-    
     DB_NAME: "lablz",
     runTask: function() {
       return this.taskManager.runTask.apply(this.taskManager, arguments);
@@ -407,17 +299,20 @@ define([
       /**
        * @param task function that returns a $.Deferred object when run
        */
-      runTask: function(task, sequential) {
+      runTask: function(task, name, sequential) {
         var promise, self = RM.taskManager;
         if (!sequential) {
           if (self.blocked) {
-            self.nonseq.push(task);
+            G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing non-sequential task:', name);
+            self.nonseq.push({task: task, name: name});
           }
           else {
+            G.log(RM.TAG, 'db', 'Running non-sequential task:', name);
             promise = task();
             promise._lablzId = G.nextId();
             self.runningTasks.push(promise);
             promise.done(function() {
+              G.log(RM.TAG, 'db', 'Finished non-sequential task:', name);
               self.runningTasks.remove(promise);
             }); 
           }
@@ -428,30 +323,34 @@ define([
         // Sequential task - need to wait for all currently running tasks to finish
         // and block any new tasks from starting until this one's done
         if (self.blocked) {
+          G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing sequential task', name);
           var dfd = new $.Deferred();
-          self.seqQueue.push({task: task, deferred: dfd});
+          self.seqQueue.push({task: task, name: name, deferred: dfd});
           return dfd.promise();
         }
-        
+       
+        G.log(RM.TAG, 'db', 'Waiting for non-sequential tasks to finish to run sequential task:', name);
         self.blocked = true;
         var defer = $.Deferred();
         $.when.apply(null, self.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
+          G.log(RM.TAG, 'db', 'Running sequential task:', name);
           var taskPromise = task();
           taskPromise.always(function() {
+            G.log(RM.TAG, 'db', 'Finished sequential task:', name);
             var qLength = self.seqQueue.length;
             self.blocked = false; // unblock to allow next task to start;
             if (qLength) {
               var next = self.seqQueue.shift();
               var dfd = next.deferred;
-              self.runTask(next.task, true).done(dfd.resolve).fail(dfd.reject);
+              self.runTask(next.task, next.name, true).done(dfd.resolve).fail(dfd.reject);
             }
             else {
               if (self.nonseq.length) {
-                _.map(self.nonseq, self.runTask);
+                _.map(self.nonseq, function(t) {self.runTask(t.task, t.name)});
                 self.nonseq.length = 0;
               }
             }
-    
+            
             defer.resolve();
           });
         });
@@ -460,51 +359,76 @@ define([
       }
     },
     
-    state: {
-      modelsChanged: false
+    /**
+     * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
+     */
+    updateDB: function() {
+      return $.Deferred(function(defer) {
+        var toKill = _.union(Voc.changedModels, Voc.newModels);
+        Voc.changedModels.length = 0;
+        Voc.newModels.length = 0;
+        if (RM.db) {
+          toKill = _.filter(toKill, function(m) {
+            return RM.db.objectStoreNames.contains(m);
+          });
+          
+          if (toKill.length)
+            RM.upgradeDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
+        }
+        else
+          RM.openDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
+      }).promise();
     },
     
-    openDB: function(version) {
+    /**
+     * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
+     */
+    openDB: function(options) {
+      var version, toMake, toKill;
+      if (options)
+        version = options.version, toMake = options.toMake, toKill = options.toKill;
+
+      if (!version) {
+        if (RM.db) {
+          var currentVersion = isNaN(RM.db.version) ? 0 : parseInt(RM.db.version);
+          version = (G.userChanged || toMake || toKill) ? currentVersion + 1 : currentVersion;
+        }
+      }
+
+      
+//      if (arguments.length) {
+//        var a1 = arguments[0];
+//        var type = U.getObjectType(a1);
+//        switch (type) {
+//          case '[object String]':
+//            storesToCreate = [a1];
+//            break;
+//          case '[object Array]':
+//            storesToCreate = a1;
+//            break;
+//          case '[object Number]':
+//            version = a1;
+//            break;
+//        }
+//      }
       
       var settings = {
-        upgrade: function(transaction) {          
+        upgrade: function(transaction) {
           G.log(RM.TAG, "db", 'in upgrade function');
-          var needsUpdate = G.userChanged || RM.state.modelsChanged;
-          if (!needsUpdate) {
+          if (!G.userChanged && !toMake && !toKill) {
             G.log(RM.TAG, "db", 'upgrade not necessary');
-            // unclear how it ever gets here, but it does
             return;
           }
           
           G.log(RM.TAG, "db", 'upgrading...');
-          var newStores = [];
-//          var numCallbacks = 1;
-//          var numCalledBack = 0;
-//          e.target.transaction.oncomplete = function() {
-//            numCalledBack++;
-//            if (numCalledBack >= numCallbacks) {
-//              G.log(RM.TAG, 'db', 'db upgrade transaction.oncomplete');
-//            }
-//          };
-          
-          var finishedUpdate = false;
           G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
           if (G.userChanged) {
             G.userChanged = false;
-            newStores = RM.updateStores(transaction, true);
+            newStores = RM.updateStores(transaction, toMake, toKill, true);
           }
-          else if (RM.state.modelsChanged) {
-            RM.state.modelsChanged = false;
-            newStores = RM.updateStores(transaction);
+          else {
+            newStores = RM.updateStores(transaction, toMake, toKill);
           }
-          
-//          if (!newStores || !newStores.length) {
-//          }
-//          else if (useWebSQL) {
-//            numCallbacks = _.reduce(newStores, function(a, b) {
-//              return a + (!_.isUndefined(b.__ready.createObjectStore) ? 1 : 0) + (!_.isUndefined(b.__ready.createIndex) ? b.indexNames.length : 0) 
-//            }, 0);
-//          }        
         }
       };
       
@@ -517,186 +441,60 @@ define([
       }
       
       G.log(RM.TAG, "db", 'opening db');
-      var dbPromise = RM.$db = $.indexedDB('lablz', settings);
-      dbPromise.done(function(db, event) {
-        RM.db = db;
-        RM.state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
-        if (!RM.state.modelsChanged) {
-          for (var type in G.usedModels) {
-            if (!RM.storeExists(type)) {
-              RM.state.modelsChanged = true;
-              G.log(RM.TAG, 'db', 'need table for model:', type)
-              break;
-            }
+      var dbPromise = $.Deferred();
+      var openPromise = RM.$db = $.indexedDB('lablz', settings);
+      openPromise.done(function(db, event) {
+        if (!RM.db) {
+          if (!version) {
+            var currentVersion = db && isNaN(db.version) ? 0 : parseInt(db.version);
+            version = (G.userChanged || toMake || toKill) ? currentVersion + 1 : currentVersion;
           }
         }
         
-        RM.VERSION = G.userChanged || RM.state.modelsChanged ? (isNaN(RM.db.version) ? 1 : parseInt(RM.db.version) + 1) : RM.db.version;
-        if (RM.db.version == RM.VERSION) {
+        RM.db = db;
+        RM.VERSION = version; // just in case we want it later on, don't know for what yet
+        if (RM.db.version === version) {
           G.log(RM.TAG, 'db', "done prepping db");
+          dbPromise.resolve();
           return;
         }
 
-        RM.runTask(function() {
-          return $.Deferred(function(defer) {
-            RM.openDB(RM.VERSION).done(defer.resolve);
-          }).promise();
-        }, true);
+        RM.upgradeDB(_.extend(options, {version: version})).done(dbPromise.resolve).fail(dbPromise.reject);
       }).fail(function(error, event) {
+        debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
+        dbPromise.reject();
       }).progress(function(db, event) {
-//        debugger;
+        switch (event.type) {
+          case 'blocked':
+            debugger;
+            dbPromise.reject();
+            RM.restartDB();
+            break;
+          case 'upgradeneeded':
+            debugger;
+            break;
+        }
         G.log(RM.TAG, 'db', event.type);
       });
       
       return dbPromise;
     },
     
-//    openDB1: function(success, error) {
-//      var state = {
-//        modelsChanged: false
-//      };
-//      
-//      G.log(RM.TAG, 'db', "opening db");
-//      var request = indexedDB.open(RM.DB_NAME);
-//    
-//      request.onblocked = function(event) {
-//        alert("Please close all other tabs with this site open!");
-//      };
-//    
-//      request.onabort = RM.onabort;
-//    
-//      var onsuccess;
-//      var upgrade = RM.getUpgradeFunction(state, success);
-//      request.onsuccess = onsuccess = function(e) {
-//        G.log(RM.TAG, 'db', 'open db onsuccess');
-//        RM.db = e.target.result;
-//        RM.useUpgradeNeeded = RM.useUpgradeNeeded || !RM.db.setVersion;
-////        var db = RM.db;
-//        RM.db.onversionchange = function(event) {
-//          G.log(RM.TAG, 'db', 'closing db - onversionchange');
-////          alert('version change');
-//          RM.db.close();
-//          RM.openDB(success, error);
-////          window.location.reload();
-////          setTimeout(function() {alert("A new version of this page is ready. Please reload!");}, 5000);
-//        };    
-//     
-//        state.modelsChanged = !!Voc.changedModels.length || !!Voc.newModels.length;
-//        if (!state.modelsChanged) {
-//          for (var type in G.usedModels) {
-//            if (!RM.storeExists(type)) {
-//              state.modelsChanged = true;
-//              G.log(RM.TAG, 'db', 'need table for model:', type)
-////              debugger;
-//              break;
-//            }
-//          }
-//        }
-//        
-//        RM.VERSION = G.userChanged || state.modelsChanged ? (isNaN(RM.db.version) ? 1 : parseInt(RM.db.version) + 1) : RM.db.version;
-//        if (RM.db.version == RM.VERSION) {
-//          if (success)
-//            success();
-//          
-////          G.recordCheckpoint("done prepping db");
-//          G.log(RM.TAG, 'db', "done prepping db");
-//          return;
-//        }
-//        
-////          G.recordCheckpoint("upgrading db");
-//        G.log(RM.TAG, 'db', 'about to upgrade db');
-//        if (RM.useUpgradeNeeded) { // detect whether we will use deprecated db.setVersion or upgradeneededevent
-//          G.log(RM.TAG, 'db', 'upgrading db');
-////          G.recordCheckpoint("upgrading db");
-//          RM.db.close();
-//          var subReq = indexedDB.open(RM.DB_NAME, RM.VERSION);
-//          subReq.onsuccess = request.onsuccess;
-//          subReq.onerror = request.onerror;
-//          subReq.onupgradeneeded = request.onupgradeneeded;
-//        }
-//        else {
-//          G.log(RM.TAG, 'db', 'in old setVersion. User changed: ' + G.userChanged + '. Changed models: ' + (Voc.changedModels.join(',') || 'none') + ', new models: ' + (Voc.newModels.join(',') || 'none')); // deprecated but needed for Chrome
-//          
-//          // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
-//          var req = RM.db.setVersion(RM.VERSION);
-//          // onsuccess is the only place we can create Object Stores
-//          req.onerror = RM.onerror;
-//          req.onblocked = function(e) {
-//            RM.deleteDatabase(function() {
-//              RM.openDB.apply(success, error);
-//            });
-//          };
-//          
-//          req.onsuccess = upgrade;
-//        }
-//      };
-//      
-//      request.onupgradeneeded = upgrade;
-//      request.onerror = function(e) {
-//        G.log(RM.TAG, 'db', "error opening db");
-//        if (error)
-//          error(e);
-//        
-//        RM.onerror(e);
-//      };  
-//    },
-    
-    updateStores: function(trans, reset) {
-//      var db = RM.db;
-      // previously we made stores for linked models as well, but we don't anymore because we don't know ahead of time which indices they will need
-      
-      var toDel = _.union(Voc.changedModels, Voc.newModels);
-      var models = _.union(toDel, _.keys(G.usedModels)); //, _.map(G.linkedModels, function(m){return m.type}));
-      if (reset)
-        momdels = G.models;
-//        models = _.union(models, G.models, G.linkedModels);
-
-      models = _.filter(models, function(m) {
-        if (!Voc.typeToModel[m])
-          return false; // can't create indices
-        
-        var r = G.Router;
-        if (r) {
-          var c = r.currentModel;
-          if (c) {
-            if (c.type == m) {
-              return true;
-            }
-          }
-        }
-            
-        return _.contains(G.classUsage, m);
-      });
-
-      if (_.uniq(toDel).length != toDel.length)
-        debugger;
-      if (_.uniq(models).length != models.length)
-        debugger;
-
-//      toDel = _.map(toDel, U.getClassName);
-//      models = _.map(models, U.getClassName);
-      
-      Voc.changedModels.length = 0;
-      Voc.newModels.length = 0;
-      if (!models.length)
-        return;
-      
-      var newStores = [];
-      var deleted = [];
-      var created = [];
-      for (var i = 0; i < models.length; i++) {
-        var type = models[i];
+    updateStores: function(trans, toMake, toKill, reset) {
+//      var toKill = toKill || _.union(Voc.changedModels, Voc.newModels);
+//      Voc.changedModels.length = 0;
+//      Voc.newModels.length = 0;      
+      for (var i = 0; i < toMake.length; i++) {
+        var type = toMake[i];
         if (Voc.typeToEnum[type] || Voc.typeToInline[type])
           continue;
         
         if (RM.storeExists(type)) {
-          if (reset || _.contains(toDel, type)) {
+          if (reset || _.contains(toKill, type)) {
             try {
-//              G.log(RM.TAG, 'db', 'deleting object store: ' + type);
               trans.deleteObjectStore(type);
               G.log(RM.TAG, 'db', 'deleted object store: ' + type);
-              deleted.push(type);
             } catch (err) {
               debugger;
               G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
@@ -708,9 +506,7 @@ define([
         }
 
         try {
-//          G.log(RM.TAG, 'db', 'creating object store: ' + type);
           var store = trans.createObjectStore(type, RM.defaultOptions);
-          newStores.push(store);
           G.log(RM.TAG, 'db', 'created object store: ' + type);
           var m = Voc.typeToModel[type];
           var indices = [];
@@ -727,61 +523,43 @@ define([
             G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
             indices.push(pName);
           });  
-          
-          created.push(type);
         } catch (err) {
           debugger;
           G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
           return;
         }
       }
-      
-//      deleted.length && G.log(RM.TAG, 'db', '2. deleted tables: ' + deleted.join(","));
-//      created.length && G.log(RM.TAG, 'db', '2. created tables: ' + created.join(","));
-      
-      return newStores;
     },
     
     addItems: function(items, classUri) {
-      return RM.runTask(function() {
-        return $.Deferred(function(defer) {        
-          if (!items || !items.length || !RM.db) {
-            defer.resolve();
-            return;
-          }
-          
-          if (!classUri) {
-            var first = items[0];
-            if (U.isModel(first))
-              classUri = first.vocModel.type;
-            else
-              classUri = U.getTypeUri(items[0].type._uri);
-          }
-          
+      if (!items || !items.length)
+        return;
+      
+      if (!RM.db) {
+        var args = arguments;
+        setTimeout(function() {addItems.apply(RM, arguments)}, 1000);
+        return;
+      }
+      
+      if (!classUri) {
+        var first = items[0];
+        if (U.isModel(first))
+          classUri = first.vocModel.type;
+        else
+          classUri = U.getTypeUri(items[0].type._uri);
+      }
+      
+      if (!RM.storeExists(classUri)) {
+        RM.upgradeDB({toMake: [classUri]}).done(function() {
+          RM.addItems(items, classUri);
+        });
+        
+        return;
+      }
+      
+      RM.runTask(function() {
+        return $.Deferred(function(defer) {
           var vocModel = Voc.typeToModel[classUri];
-          if (!RM.storeExists(classUri)) {
-            defer.resolve();
-            RM.runTask(function() {
-              defer = $.Deferred(function(defer) {
-                G.log(this.TAG, "db", "2. newModel: " + classUri);
-                U.pushUniq(Voc.newModels, classUri);
-                
-                RM.openDB().done(defer.resolve);
-    //            RM.openDB(function() {
-    //              RM.addItems(items, classUri);
-    //            });            
-              });
-              
-              defer.done(function() {
-                RM.addItems(items, classUri);
-              });
-              
-              return defer.promise();
-            }, true);
-            
-            return;
-          }
-  
           for (var i = 0; i < items.length; i++) {
             var item = items[i];
             item = U.isModel(item) ? item.toJSON() : item;
@@ -803,7 +581,7 @@ define([
             }
           });
         }).promise()
-      });
+      }, "Add Items");
     }, //.async(100),
     
     addItem: function(item, classUri) {
@@ -824,7 +602,6 @@ define([
     
       request.onsuccess = function(e) {
         G.log(RM.TAG, 'db', 'delete item onsuccess');
-    //    RM.getItems(type);
       };
     
       request.onerror = function(e) {
@@ -924,6 +701,46 @@ define([
       return query;
     },
     
+    makeTest: function(prop, op, bound) {
+      var range = prop.range;
+      var name = prop.shortName;
+      switch (range) {        
+        case 'boolean':
+          var falsy = function(res) {
+            return U.isFalsy(res[name], range);
+          }
+          var truthy = function(res) {
+            return !U.isFalsy(res[name], range);
+          }
+          
+          if (op === '==')
+            return U.isFalsy(bound, range) ? falsy : truthy;
+          else
+            return U.isFalsy(bound, range) ? truthy : falsy;
+        case 'date':
+        case 'dateTime':
+        case 'ComplexDate':
+          try {
+            bound = U.parseDate(bound);
+          } catch (err) {
+            return function() {return false};
+          }
+          // fall through to default
+        default: {
+          return function(res) {
+            try {
+              return new Function("a", "b", "return a {0} b".format(op))(res[name], bound);
+            } catch (err){
+              return false;
+            }
+            
+            // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
+            return true;
+          };
+        }
+      }
+    },
+    
     buildValueTesterFunction: function(params, data) {
       var rules = [];
       _.each(params, function(value, name) {
@@ -935,17 +752,17 @@ define([
         op = op === '=' ? '==' : op; 
 //        var bound = U.getTypedValue(data, name, opVal[1]);
         var bound = opVal[1];
-        rules.push(function(val) {
-          try {
-//            return eval(val[name] + op + bound);
-            return eval('"' + val[name] + '"' + op + '"' + bound + '"');
-          } catch (err){
-            return false;
-          }
-          
-          // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
-          return true;
-        });
+        rules.push(RM.makeTest(vocModel.properties[name], op, bound));
+//        rules.push(function(val) {
+//          try {
+//            return eval('"' + val[name] + '"' + op + '"' + bound + '"');
+//          } catch (err){
+//            return false;
+//          }
+//          
+//          // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
+//          return true;
+//        });
       });
       
       return function(val) {
@@ -967,11 +784,14 @@ define([
       var total = options.perPage;
       var filter = options.filter;
       var data = options.data;
-      if (!RM.storeExists(type))
+      if (!RM.storeExists(type)) {
+        // don't upgrade here, upgrade when we add items to the db
         return false;
+      }
 
       function queryWithoutIndex() {
         return $.Deferred(function(defer) {            
+          G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
           var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
           var valueTester = RM.buildValueTesterFunction(filter, data);
           var results = [];
@@ -981,7 +801,7 @@ define([
               results.push(val);
           };
           
-          var direction = U.isTrue(data.queryMap.$asc) || IDBCursor.PREV;
+          var direction = U.isTrue(data.queryMap.$asc) ? IDBCursor.NEXT : IDBCursor.PREV;
           var iterationPromise;
           if (startAfter)
             iterationPromise = store.each(filterResults, IDBKeyRange.lowerBound(startAfter, true), direction);
@@ -996,17 +816,18 @@ define([
       }
 
       return RM.runTask(function() {
-        G.log(RM.TAG, "db", 'Starting getItems Transaction');
+        G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
 //        var store = $.indexedDB('lablz').objectStore(type, IDBTransaction.READ_ONLY);
         var results = [];
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri)
-          return store.get(uri);
+          return store.get(uri).promise();
 
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
           var qDefer = $.Deferred();
           query.getAll(store).done(qDefer.resolve).fail(function() {
+            G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
             queryWithoutIndex().promise().done(qDefer.resolve).fail(qDefer.reject);
           });
           
@@ -1014,82 +835,18 @@ define([
         }
         else
           return queryWithoutIndex().promise();
-      });
-      
-//      G.log(RM.TAG, 'db', 'starting readonly transaction for store', type);
-//      var trans;
-//      try {
-//        trans = RM.db.transaction([type], IDBTransaction.READ_ONLY);
-//      } catch (err) {
-//        debugger;
-//        G.log(RM.TAG, ['error', 'db'], 'failed to start readonly transaction for store', type, err);
-//        return false;
-//      }
-//      
-//      trans.oncomplete = function(e) {
-//        if (success && error) // neither success nor error were called
-//          error(e);
-//          
-//        G.log(RM.TAG, 'db', 'finished readonly transaction for store', type);
-//      };
-//      
-//      var store = trans.objectStore(type);      
-//      var query, dbReq, cursorRequest, valueTester, results = [];
-//      if (!uri) {
-//        query = RM.buildDBQuery(store, data, filter);
-//        if (!query)
-//          valueTester = RM.buildValueTesterFunction(filter, data);
-//      }
-//      
-//      if (query) {
-//        dbReq = query.getAll(store);
-//      }
-//      else {
-//        if (uri)
-//          dbReq = store.get(uri);
-//        else
-//          dbReq = startAfter ? store.openCursor(IDBKeyRange.lowerBound(startAfter, true)) : store.openCursor();
-//      }
-//      
-//      dbReq.onsuccess = function(e) {
-////        G.log(RM.TAG, 'db', 'read via cursor onsuccess');
-//        var result = e.target.result;
-//        if (result) {
-//          if (query) {
-//            result = success(result);
-//            success = null;
-//            return result;
-//          }
-//          else if (uri) {
-//            result = success([result]);
-//            success = null;
-//            return result;
-//          }
-//          
-//          var val = result.value;
-//          if (valueTester && !valueTester(val)) {
-//            result['continue']();
-//            return;            
-//          }
-//          
-//          results.push(val);
-//          if (!total || results.length < total) {
-//            result['continue']();
-//            return;
-//          }
-//        }
-//        
-//        return success && success(results);
-//      };
-//    
-//      dbReq.onerror = function (e) {
-//        G.log(RM.TAG, 'db', 'read via cursor onerror', e);
-//        error && error(e);
-//        error = null;
-////        RM.onerror(e);
-//      }
+      }, "Get Items");
     },
 
+    upgradeDB: function() {
+      var args = arguments;
+      return RM.runTask(function() {
+        return $.Deferred(function(defer) {
+          RM.openDB.apply(null, args).done(defer.resolve).fail(defer.reject);
+        }).promise();
+      }, "upgradeDB", true);      
+    },
+    
     restartDB: function() {
       return RM.runTask(function() {
         return $.Deferred(function(defer) {
@@ -1097,32 +854,19 @@ define([
             RM.openDB().done(defer.resolve);
 //          }); 
         }).promise();
-      }, true);
+      }, "restartDB", true);
     }
 
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
   };
   
   Events.on('modelsChanged', function(options) {
-    RM.restartDB().done(options.success).fail(options.error);
+    RM.updateDB().done(options.success).fail(options.error);
   });
   
   Events.on('resourcesChanged', function(toAdd) {
     RM.addItems(toAdd);
   });
 
-//  Events.on('canceled', function(toAdd) {
-//    RM.addItems(toAdd);
-//  });
-//
-//
-//  MB.getInstance = function() {
-//    if (RM === null) {
-//      Lablz.RM = new RM();
-//    }
-//    
-//    return RM;
-//  };
   return (Lablz.ResourceManager = ResourceManager);
-//  return ModelsBase.getInstance();
 });

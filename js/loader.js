@@ -489,7 +489,13 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-  Lablz.inject(text);
+  var nav = Lablz.navigator;
+  if (nav.isChrome || nav.isSafari)
+    Lablz.inject(text);
+  else if (nav.isFirefox)
+    return window.eval.call({}, text);
+  else // Safari
+    return window.eval(text);
   // Indirect Eval
 //  try {
 //    return window.eval.call({}, text);
@@ -742,8 +748,22 @@ define('globals', function() {
     
   };
   
+  function testCSS(prop) {
+    return prop in document.documentElement.style;
+  }
+  
+  
   G.localStorage.putAsync = G.localStorage.put.async(100);
   G.localStorage.resetAsync = G.localStorage.reset.async(100);
+  var n = G.navigator = {
+    isOpera: !!(window.opera && window.opera.version),  // Opera 8.0+
+    isFirefox: testCSS('MozBoxSizing'),                 // FF 0.8+
+    isSafari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
+    // At least Safari 3+: "[object HTMLElementConstructor]"
+    isIE: /*@cc_on!@*/false || testCSS('msTransform')  // At least IE6
+  };
+  
+  n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
     modCache: {},
