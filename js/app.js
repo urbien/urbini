@@ -60,16 +60,44 @@ define('app', [
       Voc.checkUser();
       Voc.loadStoredModels();
       if (!Voc.changedModels.length && !Voc.newModels.length) {
-        RM.restartDB().done(App.startApp).fail(error);
+        RM.restartDB().always(this.startApp);
         return;
       }
+
+      this.prepModels();
+    },
     
-      Voc.fetchModels(null, {success: function() {
-        if (RM.db)
-          App.startApp();
-        else
-          RM.restartDB().done(App.startApp).fail(error);
-      }, error: error, sync: true});
+    prepModels: function() {
+      var self = this;
+      var error = function(info) {
+        debugger;
+        if (info.status === 0) {
+          if (G.online)
+            self.prepModels(); // keep trying
+          else {
+//            window.location.hash = '';
+//            window.location.reload();
+            Errors.offline();
+          }
+        }
+        else if (info.error) {
+          throw new Error('failed to load app: ' + info.error.details);            
+        }
+        else {
+          throw new Error('failed to load app');
+        }
+      };
+      
+      Voc.fetchModels(null, {
+        success: function() {
+          if (RM.db)
+            self.startApp();
+          else
+            RM.restartDB().always(App.startApp);
+        },
+        error: error,
+        sync: true
+      });
     },
     
     startApp: function() {
@@ -101,7 +129,7 @@ define('app', [
       Events.on(Events.REQUEST_LOGIN, function(options) {
         options = _.extend({online: 'Login through a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
         if (!G.online) {
-          Errors.errDialog({msg: options.offline});
+          Errors.offline();
           return;
         }
         

@@ -119,7 +119,7 @@ define([
           var status = arguments[1];
           if (status != 'success') {
             G.log(Voc.TAG, 'error', "couldn't fetch models");
-            onErr(arguments[0].status);
+            error.apply(null, arguments);
             return;
           }
           
@@ -137,7 +137,7 @@ define([
           debugger;
         
         if (data.error) {
-          onErr(data.error.code);
+          error(data);
           return;
         }
         
@@ -181,16 +181,15 @@ define([
         
         Voc.initModels();
         G.finishedTask("ajax models");        
-        setTimeout(function() {Voc.saveModelsToStorage(newModels)}, 0);
-        if (needUpgrade)
-          Events.trigger('modelsChanged', {success: success, error: error});
-        else
-          success && success();
+        setTimeout(function() {Voc.saveModelsToStorage(newModels)}, 100);        
+        success && success();
+//        if (needUpgrade)
+//          Events.trigger('modelsChanged');//, {success: success, error: error});
       };
       
-      var onErr = function(code) {
-        return error.apply(this, [null, {type: code}, options]);
-      }
+//      var onErr = function(code) {
+//        return error.apply(this, [null, {type: code}, options]);
+//      }
       
       if (useWorker) {
         var xhrWorker = new Worker(G.xhrWorker);

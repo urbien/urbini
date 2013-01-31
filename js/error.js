@@ -5,11 +5,13 @@ define([
   'events'
 ], function(G, U, $, Events) {
   var Errors = {
-    not_found: "The page you're looking for is probably in a parallel universe",
-    login: "Please login, then we'll show you the top secret information you're looking for",
-    unauthorized: "You are unauthorized to view this information",
-    offline: 'Your device is currently offline. Please come back to the 21st century, we miss you!',
-    timeout: 'Slow internet connection, please try again',
+    msgs: {
+      not_found: "The page you're looking for is probably in a parallel universe",
+      login: "Please login, then we'll show you the top secret information you're looking for",
+      unauthorized: "You are unauthorized to view this information",
+      offline: 'Your device is currently offline. Please come back to the 21st century, we miss you!',
+      timeout: 'Slow internet connection, please try again',
+    },
     getDefaultErrorHandler: function(errorHandler) {
       var id = G.nextId();
       return function(originalModel, err, options) {
@@ -20,7 +22,7 @@ define([
           window.history.back();
           switch (code) {
           case 401: 
-            G.log(Events.TAG, 'error', 'redirecting to user-login');
+            G.log(Events.TAG, 'error', 'requesting user-login');
             Events.trigger(Events.REQUEST_LOGIN, G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
@@ -70,6 +72,17 @@ define([
       }, options.delay || 0);
     }
   };
+  
+  function errDialogFunction(msg) {
+    return function() {
+      Errors.errDialog({msg: msg});
+    }
+  };
+  
+  var msgs = Errors.msgs;
+  for (var m in msgs) {
+    Errors[m] = errDialogFunction(msgs[m]);
+  }
   
   return Errors;
 });

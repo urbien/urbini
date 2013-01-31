@@ -8,8 +8,8 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, $, _, Backbone, U, Events, Voc, idbq) {
-  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
-  useWebSQL && window.shimIndexedDB.__useShim();
+//  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+//  useWebSQL && window.shimIndexedDB.__useShim();
   var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
@@ -61,8 +61,13 @@ define([
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           G.log(RM.TAG, 'xhr', 'got resources', options.url);
-          var xhr = event.data;
-          options.success(xhr.data, 'success', xhr);
+          var resp = event.data;
+          if (resp)
+            options.success(resp.data, 'success', resp);
+          else {
+            debugger;
+            options.error(data, resp.error, options);
+          }
         };
         
         xhrWorker.onerror = function(err) {
@@ -147,13 +152,16 @@ define([
     }
     
     dbPromise.done(function(results) {
-      if (!results || !results.length)
+      if (!results || (isCollection && !results.length)) {
+        debugger;
         return fetchFromServer();
+      }
     
       options.sync = false;
       // simulate a normal async network call
       data.lastFetchOrigin = 'db';
       G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
+      results = U.getObjectType(results) === '[object Object]' ? [results] : results;
       var resp = {data: results, metadata: {offset: start}};
       var numBefore = isCollection && collection.resources.length;
       defaultSuccess(resp, 'success', null); // add to / update collection
@@ -197,7 +205,8 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
-    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
+//    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
+    useUpgradeNeeded: !!window.IDBOpenDBRequest,
     defaultSync: function(method, data, options) {
       if (options.sync)
         options.timeout = 5000;
@@ -311,7 +320,7 @@ define([
             promise = task();
             promise._lablzId = G.nextId();
             self.runningTasks.push(promise);
-            promise.done(function() {
+            promise.always(function() {
               G.log(RM.TAG, 'db', 'Finished non-sequential task:', name);
               self.runningTasks.remove(promise);
             }); 
@@ -323,10 +332,17 @@ define([
         // Sequential task - need to wait for all currently running tasks to finish
         // and block any new tasks from starting until this one's done
         if (self.blocked) {
-          G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing sequential task', name);
-          var dfd = new $.Deferred();
-          self.seqQueue.push({task: task, name: name, deferred: dfd});
-          return dfd.promise();
+          if (!self.runningTasks.length) {
+            G.log(RM.TAG, 'db', 'A sequential finished but failed to report');
+            self.blocked = false;
+            debugger;
+          }
+          else {
+            G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing sequential task', name);
+            var dfd = new $.Deferred();
+            self.seqQueue.push({task: task, name: name, deferred: dfd});
+            return dfd.promise();
+          }
         }
        
         G.log(RM.TAG, 'db', 'Waiting for non-sequential tasks to finish to run sequential task:', name);
@@ -335,7 +351,10 @@ define([
         $.when.apply(null, self.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
           G.log(RM.TAG, 'db', 'Running sequential task:', name);
           var taskPromise = task();
+          taskPromise.name = name;
+          self.runningTasks.push(taskPromise);
           taskPromise.always(function() {
+            self.runningTasks.remove(taskPromise);
             G.log(RM.TAG, 'db', 'Finished sequential task:', name);
             var qLength = self.seqQueue.length;
             self.blocked = false; // unblock to allow next task to start;
@@ -386,18 +405,23 @@ define([
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
     openDB: function(options) {
-      var version, toMake, toKill;
-      if (options)
-        version = options.version, toMake = options.toMake, toKill = options.toKill;
+      options = options || {};
+      var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
+      toKill = _.union(toKill, Voc.changedModels, Voc.newModels);
+      var modelsChanged = function() {
+        return G.userChanged || toKill.length || toMake.length;
+      }
+      
+      Voc.changedModels.length = 0;
+      Voc.newModels.length = 0;
 
       if (!version) {
         if (RM.db) {
           var currentVersion = isNaN(RM.db.version) ? 0 : parseInt(RM.db.version);
-          version = (G.userChanged || toMake || toKill) ? currentVersion + 1 : currentVersion;
+          version = modelsChanged() ? currentVersion + 1 : currentVersion;
         }
       }
 
-      
 //      if (arguments.length) {
 //        var a1 = arguments[0];
 //        var type = U.getObjectType(a1);
@@ -450,7 +474,7 @@ define([
         if (!RM.db) {
           if (!version) {
             var currentVersion = db && isNaN(db.version) ? 0 : parseInt(db.version);
-            version = (G.userChanged || toMake || toKill) ? currentVersion + 1 : currentVersion;
+            version = modelsChanged() ? currentVersion + 1 : currentVersion;
           }
         }
         
@@ -462,7 +486,9 @@ define([
           return;
         }
 
-        RM.upgradeDB(_.extend(options, {version: version})).done(dbPromise.resolve).fail(dbPromise.reject);
+        // Queue up upgrade
+        RM.upgradeDB(_.extend(options, {version: version}));
+        dbPromise.resolve();
       }).fail(function(error, event) {
         debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
@@ -854,7 +880,7 @@ define([
       return RM.runTask(function() {
         return $.Deferred(function(defer) {
 //          $(document).ready(function() {
-            RM.openDB().done(defer.resolve);
+            RM.openDB().done(defer.resolve).fail(defer.reject);
 //          }); 
         }).promise();
       }, "restartDB", true);
@@ -864,11 +890,15 @@ define([
   };
   
   Events.on('modelsChanged', function(options) {
-    RM.updateDB().done(options.success).fail(options.error);
+    var updatePromise = RM.updateDB();
+    if (options) {
+      options.success && updatePromise.done(options.success);
+      options.error && updatePromise.fail(options.error);
+    }
   });
   
   Events.on('resourcesChanged', function(toAdd) {
-    RM.addItems(toAdd);
+    setTimeout(function() {RM.addItems(toAdd)}, 100);
   });
 
   return (Lablz.ResourceManager = ResourceManager);
