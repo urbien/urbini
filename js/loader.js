@@ -929,7 +929,7 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (!G.trace.ON)
+      if (!G.trace.ON || !console || !console.log)
         return;
       
       var types = typeof type == 'string' ? [type] : type;

@@ -568,7 +568,7 @@ define([
         try {
           var store = trans.createObjectStore(type, RM.defaultOptions);
           G.log(RM.TAG, 'db', 'created object store: ' + type);
-          var m = Voc.typeToModel[type];
+          var vocModel = Voc.typeToModel[type];
           var indices = [];
           var indexNames = RM.getIndexNames(vocModel);
           _.each(indexNames, function(pName) {

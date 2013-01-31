@@ -29,7 +29,7 @@ define([
       this.vocModel = vocModel = this.model;
       this.resources = this.models;
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
-      this.on('add', this.onAdd, this);
+//      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
       this.type = vocModel.type;
@@ -138,7 +138,6 @@ define([
       this.resources = this.models;
     },
     onAdd: function(model) {
-  //    console.log("resourceList onAdd");
     },
     fetchAll: function(options) { 
       return Backbone.Model.prototype.fetch.call(this, options);
