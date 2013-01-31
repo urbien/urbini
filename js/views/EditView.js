@@ -390,7 +390,8 @@ define([
           var msg = json.error.details;
           switch (code) {
             case 401:
-              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+              Events.trigger(Events.REQUEST_LOGIN);
+//              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
 //              Events.on(401, msg || 'You are not unauthorized to make these changes');
               break;
             case 404:
