@@ -152,10 +152,8 @@ define([
     }
     
     dbPromise.done(function(results) {
-      if (!results || (isCollection && !results.length)) {
-        debugger;
+      if (!results || (isCollection && !results.length))
         return fetchFromServer();
-      }
     
       options.sync = false;
       // simulate a normal async network call
