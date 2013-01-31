@@ -374,6 +374,8 @@ define([
           
           if (toKill.length)
             RM.upgradeDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
+          else
+            defer.resolve();
         }
         else
           RM.openDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
@@ -415,6 +417,7 @@ define([
       var settings = {
         upgrade: function(transaction) {
           G.log(RM.TAG, "db", 'in upgrade function');
+//          debugger;
           if (!G.userChanged && !toMake && !toKill) {
             G.log(RM.TAG, "db", 'upgrade not necessary');
             return;
