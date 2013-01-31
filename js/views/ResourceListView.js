@@ -13,6 +13,7 @@ define([
   'views/CommentListItemView'
 ], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return BasicView.extend({
+    TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
@@ -214,7 +215,7 @@ define([
 //    tap: Events.defaultTapHandler,
     click: Events.defaultClickHandler,
     swipe: function(e) {
-      console.log("swipe");
+      G.log(this.TAG, "info", "swipe");
     },
     
     changed: function(view) {

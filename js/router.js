@@ -499,7 +499,7 @@ define([
     },
     changePage1: function(view) {
       if (view == this.currentView) {
-        console.log("Not replacing view with itself");
+        G.log(this.TAG, "render", "Not replacing view with itself");
         return;
       }
       

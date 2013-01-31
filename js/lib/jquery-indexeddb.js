@@ -1,4 +1,4 @@
-(function($, undefined){
+define(['jquery', 'indexedDBShim'], function($) {
 	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
@@ -678,4 +678,4 @@
 	$.indexedDB.IDBCursor = IDBCursor;
 	$.indexedDB.IDBTransaction = IDBTransaction;
 	$.idb = $.indexedDB;
-})(jQuery);
+});

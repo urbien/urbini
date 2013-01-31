@@ -5,6 +5,7 @@ define([
   'events'
 ], function(G, U, $, Events) {
   var Errors = {
+    TAG: "Errors",
     msgs: {
       not_found: "The page you're looking for is probably in a parallel universe",
       login: "Please login, then we'll show you the top secret information you're looking for",
@@ -22,11 +23,11 @@ define([
           window.history.back();
           switch (code) {
           case 401: 
-            G.log(Events.TAG, 'error', 'requesting user-login');
+            G.log(Errors.TAG, 'error', 'requesting user-login');
             Events.trigger(Events.REQUEST_LOGIN, G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
-            console.log('no results');
+            G.log(Errors.TAG, "error", 'no results');
             var errMsg = err.details;
             if (!errMsg) {
               if (originalModel && (U.isModel(originalModel) || U.isCollection(originalModel))) // && originalModel.queryMap.length == 0)))

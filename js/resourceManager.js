@@ -62,8 +62,14 @@ define([
         xhrWorker.onmessage = function(event) {
           G.log(RM.TAG, 'xhr', 'got resources', options.url);
           var resp = event.data;
-          if (resp)
-            options.success(resp.data, 'success', resp);
+          if (resp) {
+            if (resp.error) {
+              G.log(RM.TAG, 'Web Worker', JSON.stringify(error), resp.responseText);
+              options.error(data, resp.error, options);
+            }
+            else
+              options.success(resp.data, 'success', resp);
+          }
           else {
             debugger;
             options.error(data, resp.error, options);
@@ -71,7 +77,7 @@ define([
         };
         
         xhrWorker.onerror = function(err) {
-          console.log(JSON.stringify(err));
+          G.log(RM.TAG, 'Web Worker', JSON.stringify(err));
         };
         
         xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
@@ -511,6 +517,28 @@ define([
       return dbPromise;
     },
     
+    getIndexNames: function(vocModel) {
+      var vc = vocModel.viewCols || '';
+      var gc = vocModel.gridCols || '';
+      var extras = [];
+      if (U.isA(vocModel, "Locatable")) {
+        var lat = U.getCloneOf(vocModel, "Locatable.latitude");
+        if (lat.length) extras.push(lat[0]);
+        var lon = U.getCloneOf(vocModel, "Locatable.longitude");
+        if (lon.length) extras.push(lon[0]);
+      }
+      else if (U.isA(vocModel, "Shape")) {
+        var lat = U.getCloneOf(vocModel, "Shape.interiorPointLatitude");
+        if (lat.length) extras.push(lat[0]);
+        var lon = U.getCloneOf(vocModel, "Shape.interiorPointLongitude");
+        if (lon.length) extras.push(lon[0]);
+      }
+      
+      var cols = _.union(extras, _.map((vc + ',' + gc).split(','), function(c) {
+        return c.trim().replace('DAV:displayname', 'davDisplayName')
+      }));
+    },
+    
     updateStores: function(trans, toMake, toKill, reset) {
 //      var toKill = toKill || _.union(Voc.changedModels, Voc.newModels);
 //      Voc.changedModels.length = 0;
@@ -540,10 +568,11 @@ define([
           G.log(RM.TAG, 'db', 'created object store: ' + type);
           var m = Voc.typeToModel[type];
           var indices = [];
-          var vc = m.viewCols || '';
-          var gc = m.gridCols || '';
-          var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
-          _.each(cols, function(pName) {
+//          var vc = m.viewCols || '';
+//          var gc = m.gridCols || '';
+//          var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
+          var indexNames = RM.getIndexNames(vocModel);
+          _.each(indexNames, function(pName) {
             pName = pName.trim();
             if (!pName.length)
               return;
@@ -681,6 +710,7 @@ define([
       var query, orderBy, 
           defOp = 'eq',
           collection = data,
+          vocModel = collection.vocModel,
           qMap = collection.queryMap,
           filter = filter || U.getQueryParams(collection);
       
@@ -692,13 +722,11 @@ define([
       if (!orderBy && !_.size(filter))
         return false;
       
-      var vCols = U.getColsMeta(data.vocModel, 'grid');
-      var gCols = U.getColsMeta(data.vocModel, 'view');
-      var cols = _.union(vCols, gCols);
-      if (orderBy && !_.contains(cols, orderBy))
+      var indexNames = RM.getIndexNames(vocModel);
+      if (orderBy && !_.contains(indexNames, orderBy))
         return false;
       
-      if (!_.all(_.keys(filter), function(name) {return _.contains(cols, name);}))
+      if (!_.all(_.keys(filter), function(name) {return _.contains(indexNames, name);}))
         return false;
 
       for (var name in filter) {

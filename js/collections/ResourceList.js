@@ -9,6 +9,7 @@ define([
 ], function(G, $, _, Backbone, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
+    TAG: "ResourceList",
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -42,10 +43,10 @@ define([
       this.parseQuery(options._query);
 //      this.sync = this.constructor.sync;
       
-      console.log("init " + this.shortName + " resourceList");
+      G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
     getNextPage: function(options) {
-      console.log("fetching next page");
+      G.log(this.TAG, "info", "fetching next page");
       this.offset += this.perPage;
       this.offset = Math.min(this.offset, this.resources.length);
       this.pager(options);
@@ -117,7 +118,7 @@ define([
       if (response.data) {
         this.offset = response.metadata.offset;
         if (this.offset)
-          console.log("received page, offset = " + this.offset);
+          G.log(this.TAG, "info", "received page, offset = " + this.offset);
         
         this.page = Math.floor(this.offset / this.perPage);
         response = response.data;
@@ -133,7 +134,7 @@ define([
       return response;
     },
     onReset: function(model) {
-      console.log("resourceList onReset");
+      G.log(this.TAG, "info", "resourceList onReset");
       this.resources = this.models;
     },
     onAdd: function(model) {

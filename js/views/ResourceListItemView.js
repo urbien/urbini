@@ -378,7 +378,7 @@ define([
       try {
         this.$el.html(this.template(tmpl_data));
       } catch (err) {
-        console.log('2. failed to delete table ' + name + ': ' + err);
+        console.log('couldn\'t render resourceListItemView: ' + err);
       }
       
       return this;

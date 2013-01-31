@@ -13,8 +13,12 @@ onmessage = function(event) {
   };
   
   if (type && type.toUpperCase() == 'JSON') {
-    resp.data = JSON.parse(text);
-    resp.responseText = null;
+    try {
+      resp.data = JSON.parse(text);
+      resp.responseText = null;
+    } catch (err) {
+      resp.error = {code: 500, type: 'other': details: "Couldn't parse response text"};
+    }
   }
   
   if (status > 399 && status < 600)

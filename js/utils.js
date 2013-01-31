@@ -1207,8 +1207,8 @@ define([
         }
       });
       
-      if (ignoredParams)
-        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
+//      if (ignoredParams)
+//        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
       
       return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
     },

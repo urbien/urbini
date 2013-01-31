@@ -168,7 +168,7 @@ define([
       return true;
     },
     isA: function(interfaceName) {
-      return U.isA(this.constructor, interfaceName);
+      return U.isA(this.vocModel, interfaceName);
     },
     fetch: function(options) {
       var self = this;

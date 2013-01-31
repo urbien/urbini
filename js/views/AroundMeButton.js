@@ -63,7 +63,11 @@ define([
         timestamp: new Date().getTime()
       };
       
-      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+      var isCollection = U.isCollection(this.model), 
+          params = isCollection ? U.getQueryParams(this.model) : {};
+
+      _.extend(params, coords, {'-item': item || 'me', '$orderBy': 'distance'});
+      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?" + U.getQueryString(params), {trigger: true});
       return this;
     }
   },

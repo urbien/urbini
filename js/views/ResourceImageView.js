@@ -7,6 +7,7 @@ define([
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
+    TAG: "ResourceImageView",
     initialize: function(options) {
       _.bindAll(this, 'render','click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -17,7 +18,7 @@ define([
     },
     click: Events.defaultClickHandler,
     refresh: function() {
-      console.log("refresh resource");
+      G.log(this.TAG, "info", "refresh resource");
       return this;
     },
     render: function(options) {

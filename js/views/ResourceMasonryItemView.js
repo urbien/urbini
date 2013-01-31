@@ -16,7 +16,7 @@ define([
 //    tagName: 'li',
     
     IMG_MAX_WIDTH: 205, // value of CSS rule: ".nab .anab .galleryItem_css3 img"
-    
+    TAG: "ResourceMasonryItemView",
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -273,7 +273,7 @@ define([
       try {
         this.$el.html(this.template(tmpl_data));
       } catch (err) {
-        console.log('2. failed to delete table ' + name + ': ' + err);
+        G.log(this.TAG, "error", "failed to render ResourceMansonryItemView reference tile");
       }
       
       return this;
@@ -359,7 +359,7 @@ define([
       try {
         this.$el.html(this.template(tmpl_data));
       } catch (err) {
-        console.log('2. failed to delete table ' + name + ': ' + err);
+        G.log(this.TAG, "error", "failed to render ResourceMansonryItemView intersection tile");
       }
       
       return this;
@@ -416,7 +416,7 @@ define([
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {
-        console.log(this.TAG, 'failed to build masonry item for Modification resource ' + json.resourceDisplayName + ': ' + err);
+        G.log(this.TAG, 'failed to build masonry item for Modification resource ' + json.resourceDisplayName + ': ' + err);
       }
       return this;
     }

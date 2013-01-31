@@ -1251,30 +1251,6 @@ define('globals', function() {
         }
       }
     },
-
-    testIDBQ: function(storeName, q) {
-      var query;
-      for (var i = 0; i < q.length; i++) {
-        var val = q[i];
-        var subQuery = Lablz.idbq.Index(val.index)[val.op](val.bound);
-        query = query ? query.and(subQuery) : subQuery;
-      }
-//    var query = q.reduce(function(memo, val) {
-//      return memo.and(Lablz.idbq.Index(val.index)[val.op](val.bound));
-//    });
-      
-      var store = Lablz.MBI.db.transaction([storeName], 'readonly').objectStore(storeName);
-      var request = query.getAll(store);
-      var goals;
-      request.onsuccess = function (event) {
-        goals = request.result;
-        console.log(JSON.stringify(event.target.result));
-      }
-      
-      request.onerror = function (event) {
-        console.log("error: " + JSON.stringify(event));
-      }
-    },
     
     inject: function(text) {// , context) {
       var script = doc.createElement("script");
