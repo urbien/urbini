@@ -407,7 +407,7 @@ define([
       var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
       toKill = _.union(toKill, Voc.changedModels, Voc.newModels);
       var modelsChanged = function() {
-        return G.userChanged || toKill.length || toMake.length;
+        return !!(G.userChanged || toKill.length || toMake.length);
       }
       
       Voc.changedModels.length = 0;
@@ -469,16 +469,19 @@ define([
       var dbPromise = $.Deferred();
       var openPromise = RM.$db = $.indexedDB('lablz', settings);
       openPromise.done(function(db, event) {
-        if (!RM.db) {
-          if (!version) {
-            var currentVersion = db && isNaN(db.version) ? 0 : parseInt(db.version);
-            version = modelsChanged() ? currentVersion + 1 : currentVersion;
+        var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
+        if (!RM.db && !version) {
+          if (modelsChanged()) {
+            G.log(RM.TAG, "db", "current db version: " + currentVersion + ", upgrading");
+            version = currentVersion + 1;
           }
+          else 
+            version = currentVersion;              
         }
         
         RM.db = db;
         RM.VERSION = version; // just in case we want it later on, don't know for what yet
-        if (RM.db.version === version) {
+        if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
           dbPromise.resolve();
           return;
