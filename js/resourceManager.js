@@ -537,6 +537,8 @@ define([
       var cols = _.union(extras, _.map((vc + ',' + gc).split(','), function(c) {
         return c.trim().replace('DAV:displayname', 'davDisplayName')
       }));
+      
+      return cols;
     },
     
     updateStores: function(trans, toMake, toKill, reset) {
@@ -568,9 +570,6 @@ define([
           G.log(RM.TAG, 'db', 'created object store: ' + type);
           var m = Voc.typeToModel[type];
           var indices = [];
-//          var vc = m.viewCols || '';
-//          var gc = m.gridCols || '';
-//          var cols = _.uniq(_.map((vc + ',' + gc).split(','), function(c) {return c.trim().replace('DAV:displayname', 'davDisplayName')}));
           var indexNames = RM.getIndexNames(vocModel);
           _.each(indexNames, function(pName) {
             pName = pName.trim();
@@ -578,7 +577,7 @@ define([
               return;
             
             G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
-            var index = store.createIndex(pName);              
+            var index = store.createIndex(pName, pName, {unique: false, multiEntry: false});
             G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
             indices.push(pName);
           });  

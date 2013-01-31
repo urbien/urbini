@@ -17,7 +17,7 @@ onmessage = function(event) {
       resp.data = JSON.parse(text);
       resp.responseText = null;
     } catch (err) {
-      resp.error = {code: 500, type: 'other': details: "Couldn't parse response text"};
+      resp.error = {code: 500, type: 'other', details: "Couldn't parse response text"};
     }
   }
   
