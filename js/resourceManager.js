@@ -390,7 +390,7 @@ define([
           });
           
           if (toKill.length)
-            RM.upgradeDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
+            RM.upgradeDB({killStores: toKill, msg: "need to kill some stores, queueing db upgrade"}).done(defer.resolve).fail(defer.reject);
           else
             defer.resolve();
         }
@@ -485,7 +485,7 @@ define([
         }
 
         // Queue up upgrade
-        RM.upgradeDB(_.extend(options, {version: version}));
+        RM.upgradeDB(_.extend(options, {version: version, msg: "opened db, userChanged: " + !!G.userChanged + ", stores to kill: " + toKill.join(",") + ", stores to make: " + toMake.join() + ", queueing db upgrade"}));
         dbPromise.resolve();
       }).fail(function(error, event) {
         debugger;
@@ -494,7 +494,7 @@ define([
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-            debugger;
+//            debugger;
             dbPromise.reject();
             RM.restartDB();
             break;
@@ -577,7 +577,7 @@ define([
       }
       
       if (!RM.storeExists(classUri)) {
-        RM.upgradeDB({toMake: [classUri]}).done(function() {
+        RM.upgradeDB({toMake: [classUri], msg: "Need to make store: " + classUri + ", queueing db upgrade"}).done(function() {
           RM.addItems(items, classUri);
         });
         
@@ -865,13 +865,12 @@ define([
       }, "Get Items");
     },
 
-    upgradeDB: function() {
-      var args = arguments;
+    upgradeDB: function(options) {
       return RM.runTask(function() {
         return $.Deferred(function(defer) {
-          RM.openDB.apply(null, args).done(defer.resolve).fail(defer.reject);
+          RM.openDB(options).done(defer.resolve).fail(defer.reject);
         }).promise();
-      }, "upgradeDB", true);      
+      }, options && options.msg || "upgradeDB", true);      
     },
     
     restartDB: function() {
