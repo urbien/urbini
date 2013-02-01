@@ -25,6 +25,8 @@ define([
         if (options.mv) {
           this.template = _.template(Templates.get('mvListItem'));
           this.$el.attr("data-role", "controlgroup");
+          this.mvProp = options.mvProp;
+          this.mvVals = options.mvVals;
         }
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
@@ -97,7 +99,7 @@ define([
       });
     },
     click: function(e) {
-      if (window.location.hash  &&  window.location.hash.indexOf('$multiValue=y') != -1)
+      if (this.mvProp)
         Events.defaultClickHandler(e);  
       else {
         var p = this.parentView;
@@ -114,8 +116,14 @@ define([
       if (!meta)
         return this;
       var json = m.toJSON();
-      var distance = m.get('distance');
       _.extend(json, {U:U, G:G});
+
+      if (this.mvProp) {  
+        json['chkId'] = G.nextId() + '.' + this.mvProp;
+        if (this.mvVals  &&  $.inArray(json.davDisplayName, this.mvVals) != -1)
+          json['checked'] = 'checked';
+      }
+      var distance = m.get('distance');
       if (typeof distance != 'undefined') {
         var meta = this.vocModel.properties;
         var prop = meta['distance'];
@@ -283,34 +291,39 @@ define([
       var h, w;
       if (cloneOf == 'Intersection.a') {
         var imageP = U.getCloneOf(this.vocModel, 'Intersection.aThumb');
-        if (!imageP  ||  imageP.length == 0)
-          imageP = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
-        if (imageP) {
+        if (imageP  &&  imageP.length != 0)
           img = json[imageP[0]]; 
-          
-  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
-          w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
-          h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+        if (!img) {
+          imageP = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+          if (imageP) 
+            img = json[imageP[0]];
         }
+            
+    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
+        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
       }
       else {
         var imageP = U.getCloneOf(this.vocModel, 'Intersection.bThumb');
-        if (!imageP  ||  imageP.length == 0)
-          imageP = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
-        if (imageP) {
+        if (imageP  &&  imageP.length != 0)
           img = json[imageP[0]]; 
-  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
-  //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
-          w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
-          h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+        if (!img) {
+          imageP = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
+        
+          if (imageP) 
+            img = json[imageP[0]];
         }
+    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
+    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
+        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
       }
       
       
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
-      if (typeof w != 'undefined' &&
-          typeof h != 'undefined' ) {
+      if (typeof w != 'undefined' &&  w.length  && 
+          typeof h != 'undefined' &&  h.length) {
         
         this.$el.addClass("image_fitted");
         
