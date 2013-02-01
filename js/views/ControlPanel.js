@@ -38,7 +38,7 @@ define([
       var prop = this.vocModel.properties[shortName];
       var params = {};
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}&-makeId={2}'.format(encodeURIComponent(prop.range), $.param(params), G.nextId()), {trigger: true, replace: false});
+      this.router.navigate('make/{0}?{1}&-makeId={2}&$title={3}'.format(encodeURIComponent(prop.range), $.param(params), G.nextId(), t.dataset.title), {trigger: true, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {
@@ -77,6 +77,9 @@ define([
       var groupNameDisplayed;
       var maxChars = 30;
       var first;
+      var title = U.getDisplayName(res, meta);
+      if (title)
+        title = ' for ' + title;
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
@@ -133,9 +136,9 @@ define([
 //              var uri = U.getShortUri(res.get('_uri'), vocModel); 
               var uri = res.getUri();
               if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
+                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: n + title}));
               else
-                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
+                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: n + title}));
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //              else
@@ -205,9 +208,9 @@ define([
 //          var uri = U.getShortUri(res.get('_uri'), vocModel); 
           var uri = res.getUri();
           if (isPropEditable)
-            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri}));
+            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: n + title}));
           else
-            U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri}));
+            U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: n + title}));
         }
       }
       if (!options || options.setHTML)
