@@ -34,7 +34,7 @@ define([
       }
       else
         return true;
-    },
+    }
   
   //  Events.defaultClickHandler = function(e) {
   //    G.log(this.TAG || Events.TAG, 'events', 'click');
