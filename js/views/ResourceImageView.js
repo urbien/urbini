@@ -32,9 +32,21 @@ define([
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
-      if (!props.length) 
-        return this;
+      var oWidth;
+      var oHeight;
       var json = this.resource.attributes;
+      if (props.length) {
+        oWidth = json.originalWidth;
+        oHeight = json.originalHeight;
+      } 
+      else {
+        if (U.isA(this.vocModel, 'Intersection')) 
+          props = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+        if (!props.length) 
+          return this;
+        oWidth = json.aOriginalWidth;
+        oHeight = json.aOriginalHeight;
+      }
       var p = props[0];
       var propVal = json[p];
       if (typeof propVal == 'undefined') 
@@ -53,9 +65,6 @@ define([
       var metaW = meta[p]['imageWidth'];
       var metaH = meta[p]['imageHeight'];
       var metaDim = meta[p]['maxDimension'];
-
-      var oWidth = json.originalWidth;
-      var oHeight = json.originalHeight;
 
       var w;
       var h;
