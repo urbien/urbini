@@ -92,7 +92,7 @@ define([
       this.buildActionsMenu(frag);
       
       if (this.resource) {
-        var isModificationHistory = U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel);
+        var isModificationHistory = this.resource.isA('ModificationHistory');
         if (isModificationHistory) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  ch.length == 0)

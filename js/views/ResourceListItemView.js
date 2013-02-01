@@ -59,7 +59,7 @@ define([
       Events.stopEvent(e);
       var self = this;
       var args = arguments;
-      if (!Voc.shortNameToModel.RecipeShoppingList) {
+      if (!G.shortNameToModel.RecipeShoppingList) {
         Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
         var allGood = Voc.fetchModels(null, { 
            success: function() {
@@ -74,7 +74,7 @@ define([
       var a = $(e.target).parent('a');
       var href = a.attr('href') || a.attr('link');
       var params = U.getQueryParams(href);
-      var recipeShoppingList = new Voc.shortNameToModel.RecipeShoppingList();
+      var recipeShoppingList = new G.shortNameToModel.RecipeShoppingList();
       var props = {};
       var shoppingList = props[params.backLink] = U.getLongUri(decodeURIComponent(params.on));
       var recipe = props.recipe = U.getLongUri(this.resource.get('recipe'));
@@ -128,22 +128,22 @@ define([
         this.$el.html(this.template(json));
         return this;
       }
-      if (U.isA(this.vocModel, 'Intersection')) {
+      if (m.isA('Intersection')) {
         var href = window.location.href;
         var qidx = href.indexOf('?');
         var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
         var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
         if (a  ||  b) {
-          var urbModel = Voc.shortNameToModel['Urbien'];
+          var urbModel = G.shortNameToModel['Urbien'];
           var isAContact;
           var isBContact;
           if (urbModel) {
             var idx = meta[a].range.lastIndexOf('/');
-            var aModel = Voc.typeToModel[U.getLongUri(meta[a].range)];
-            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien', Voc.typeToModel);
+            var aModel = G.typeToModel[U.getLongUri(meta[a].range)];
+            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien', G.typeToModel);
             idx = meta[b].range.lastIndexOf('/');
-            var bModel = Voc.typeToModel[U.getLongUri(meta[b].range)];
-            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien', Voc.typeToModel);
+            var bModel = G.typeToModel[U.getLongUri(meta[b].range)];
+            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien', G.typeToModel);
           }
           if (a  &&  qidx == -1) 
             return this.renderIntersectionItem(a, 'Intersection.a');
@@ -344,7 +344,7 @@ define([
       
       var type = U.getTypeUri(rUri);
       
-      var forResourceModel = type ? Voc.typeToModel[type] : null;
+      var forResourceModel = type ? G.typeToModel[type] : null;
       var c =  forResourceModel ? forResourceModel : m.constructor;
       if (forResourceModel) {
         var meta = c.properties;

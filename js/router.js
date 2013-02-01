@@ -143,7 +143,7 @@ define([
       
       var self = this;
       var params = oParams.split("?");
-      var typeUri = U.getTypeUri(decodeURIComponent(params[0]), Voc);
+      var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
       var className = U.getClassName(typeUri);
       var query = params.length > 1 ? params[1] : undefined;
       if (query) {
@@ -183,7 +183,7 @@ define([
         return this;
       }      
       
-      var model = Voc.shortNameToModel[className] || Voc.typeToModel[typeUri];
+      var model = G.shortNameToModel[className] || G.typeToModel[typeUri];
       if (!model)
         return this;
       
@@ -263,7 +263,7 @@ define([
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new Voc.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;
@@ -313,20 +313,20 @@ define([
         return;
       }
       
-      uri = U.getLongUri(decodeURIComponent(uri), Voc);
-      var typeUri = U.getTypeUri(uri, Voc);
+      uri = U.getLongUri(decodeURIComponent(uri));
+      var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;
       
       var className = U.getClassName(typeUri);
-      var typeCl = Voc.shortNameToModel[className] || Voc.typeToModel[typeUri];
+      var typeCl = G.shortNameToModel[className] || G.typeToModel[typeUri];
       if (!typeCl)
         return this;
 
-//      if (!uri || !Voc.shortNameToModel[className]) {
+//      if (!uri || !G.shortNameToModel[className]) {
 //        Voc.loadStoredModels({models: [typeUri || className]});
 //          
-//        if (!uri || !Voc.shortNameToModel[className]) {
+//        if (!uri || !G.shortNameToModel[className]) {
 //          Voc.fetchModels(typeUri, 
 //            {success: function() {
 //              self.view.apply(self, [path]);
@@ -381,7 +381,7 @@ define([
 //        }
 //      }
 //  
-//      var typeCl = Voc.shortNameToModel[className];
+//      var typeCl = G.shortNameToModel[className];
 //      if (!typeCl)
 //        return this;
       
@@ -451,7 +451,7 @@ define([
 //    },
     
     isModelLoaded: function(type, method, args) {
-      var m = Voc.typeToModel[type];
+      var m = G.typeToModel[type];
       if (m)
         return m;
 

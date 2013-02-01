@@ -14,18 +14,14 @@ define([
   };
 
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
+  G.shortNameToModel.Resource = Resource;
+  G.typeToModel.Resource = Resource;
   var Voc = {
     packages: {Resource: Resource},
     models: [],
     changedModels: [],
     newModels: [],
     models: [Resource],
-    shortNameToModel: {Resource: Resource},
-    typeToModel: {},
-    shortNameToEnum: {},
-    typeToEnum: {},
-    shortNameToInline: {},
-    typeToInline: {},
     fetchModels: function(models, options) {
       var changedAndNew = !models;
       models = changedAndNew ? _.union(Voc.changedModels, Voc.newModels) : typeof models === 'string' ? [models] : models;      
@@ -44,7 +40,7 @@ define([
         return earlyExit();
       
       var c = Voc.currentModel;
-      var urgent = options.sync && models.length > 1 && c && !Voc.typeToModel[c] && c;
+      var urgent = options.sync && models.length > 1 && c && !G.typeToModel[c] && c;
       if (urgent) {
         urgent = Voc.getModelInfo([urgent]);
         if (urgent.length) {
@@ -260,7 +256,7 @@ define([
         return !range ? null : isResource ? range : _.contains(G.classUsage, range) ? range : null;
       })), function(m) {
         // no need to reload known types
-        return m && !Voc.typeToModel[m];
+        return m && !G.typeToModel[m];
       }); 
   
       var linkedModels = [];
@@ -289,7 +285,7 @@ define([
       
       var tmp = [];
 
-      var l = _.keys(Voc.typeToModel);
+      var l = _.keys(G.typeToModel);
       var modelsToFetch = [];
 
       for (var propName in meta) {
@@ -332,7 +328,7 @@ define([
 
     initModel: function(m) {
       var sn = m.shortName;
-      if (Voc.shortNameToModel[sn])
+      if (G.shortNameToModel[sn])
         return;
 
       var type = m.type = U.getTypeUri(m.type);
@@ -341,18 +337,18 @@ define([
       }
         
       if (m.enumeration) {
-        Voc.shortNameToEnum[sn] = m;
-        Voc.typeToEnum[type] = m;
+        G.shortNameToEnum[sn] = m;
+        G.typeToEnum[type] = m;
         return;
       }
       else if (m.alwaysInlined) {
-        Voc.shortNameToInline[sn] = m;
-        Voc.typeToInline[type] = m;
+        G.shortNameToInline[sn] = m;
+        G.typeToInline[type] = m;
         return;
       }
       else {
-        Voc.shortNameToModel[sn] = m;
-        Voc.typeToModel[type] = m;
+        G.shortNameToModel[sn] = m;
+        G.typeToModel[type] = m;
       }
       
       m.prototype.parse = Resource.prototype.parse;
@@ -394,10 +390,10 @@ define([
       models = models || Voc.models;
       for (var i = 0; i < models.length; i++) {
         var m = models[i];
-    //    if (Voc.shortNameToModel[m.shortName])
+    //    if (G.shortNameToModel[m.shortName])
     //      continue;
         if (m.shortName != 'Resource')
-          delete Voc.shortNameToModel[m.shortName];
+          delete G.shortNameToModel[m.shortName];
         
         Voc.initModel(m);
       }
@@ -420,7 +416,7 @@ define([
         }
         
 //        debugger;
-        Voc.newModels = U.filterObj(Voc.typeToModel, function(type, model) {
+        Voc.newModels = U.filterObj(G.typeToModel, function(type, model) {
           return type != 'Resource' // && !model.alwaysInlined
         });
         
@@ -615,7 +611,7 @@ define([
       var r = options && options.models ? {models: _.clone(options.models)} : {models: _.clone(G.models)};
       var models = r.models;
       var added = Voc.currentModel;
-      if (added && !Voc.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length) {
+      if (added && !G.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length) {
         models.push(added);
         U.pushUniq(Voc.newModels, added); // We can't know whether it's been changed on the server or not, so we have to call to find out 
       }
@@ -623,15 +619,15 @@ define([
       if (!G.hasLocalStorage) {
         if (r) {
           _.forEach(models, function(model) {
-            G.log(Voc.TAG, 'db', "1. newModel: " + model.shortName);
-            U.pushUniq(Voc.newModels, model.type);
+            G.log(Voc.TAG, 'db', "1. newModel: " + model);
+            U.pushUniq(Voc.newModels, model);
           });
         }
         
         return; // TODO: use indexedDB
       }
       
-      if (!_.size(Voc.shortNameToEnum))
+      if (!_.size(G.shortNameToEnum))
         Voc.loadEnums();
       
       var extraModels;
@@ -640,10 +636,10 @@ define([
       for (var i = models.length - 1; i > -1; i--) {
         var model = models[i];
         var uri = model.type || model;
-        if (!uri || !(uri = U.getLongUri(uri, Voc)))
+        if (!uri || !(uri = U.getLongUri(uri)))
           continue;
         
-        if (typeToJSON[uri] || Voc.typeToModel[uri])
+        if (typeToJSON[uri] || G.typeToModel[uri])
           continue;
         
         var jm;
@@ -716,6 +712,6 @@ define([
     }
   };
   
-  Voc.snm = Voc.shortNameToModel;
+  Voc.snm = G.shortNameToModel;
   return (G.Voc = Voc);
 });

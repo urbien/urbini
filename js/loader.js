@@ -496,6 +496,9 @@ requirejs.exec = function(text) {
     return window.eval.call({}, text);
   else // Safari
     return window.eval(text);
+  
+//  return Lablz.inject(text);
+  
   // Indirect Eval
 //  try {
 //    return window.eval.call({}, text);
@@ -718,12 +721,13 @@ define('globals', function() {
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
-        if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+        if(['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
           ls.reset(force && function() {
             ls.put(key, value)
           });
         } else {
+          debugger;
           G.hasLocalStorage = false;
           G.log(G.TAG, "Local storage write failure: ", e);
         }
@@ -766,6 +770,16 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    defaults: {
+      radius: 15 // km
+    },
+    models: [],
+    shortNameToModel: {},
+    typeToModel: {},
+    shortNameToEnum: {},
+    typeToEnum: {},
+    shortNameToInline: {},
+    typeToInline: {},
     modCache: {},
     usedModels: {},
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
@@ -1023,24 +1037,24 @@ define('globals', function() {
 //      parent.removeChild(script);
 //      callback(text);
 //    },
-    inject: function(module, text, callback) {
-      var d = document;
-      var script = d.createElement("script");
-      var id = "script" + (new Date).getTime();
-      var root = d.documentElement;
-      script.type = "text/javascript";
-//      script.innerHtml = text;
-      try {
-        script.appendChild(d.createTextNode(text));
-      } catch(e) {
-        script.text = text; // IE
-      }
-      
-      var parent = d.head || d.body;
-      parent.appendChild(script);
-      parent.removeChild(script);
-      callback(module);
-    },
+//    inject: function(module, text, callback) {
+//      var d = document;
+//      var script = d.createElement("script");
+//      var id = "script" + (new Date).getTime();
+//      var root = d.documentElement;
+//      script.type = "text/javascript";
+////      script.innerHtml = text;
+//      try {
+//        script.appendChild(d.createTextNode(text));
+//      } catch(e) {
+//        script.text = text; // IE
+//      }
+//      
+//      var parent = d.head || d.body;
+//      parent.appendChild(script);
+//      parent.removeChild(script);
+//      callback(module);
+//    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';

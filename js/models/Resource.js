@@ -167,6 +167,12 @@ define([
       
       return true;
     },
+    isAll: function(interfaceNames) {
+      return U.isAll(this.vocModel, interfaceNames);
+    },
+    isOneOf: function(interfaceNames) {
+      return U.isOneOf(this.vocModel, interfaceNames);
+    },
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },

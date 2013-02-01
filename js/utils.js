@@ -140,7 +140,7 @@ define([
      * @param prop
      * @param iProp sth like "Submission.submittedBy"
      */
-    isCloneOf: function(prop, iPropName, vocModel, Voc) {
+    isCloneOf: function(prop, iPropName, vocModel) {
       var cloneOf = prop.cloneOf;
       var subPropertyOf = prop.subPropertyOf;
       if (cloneOf) {
@@ -241,6 +241,8 @@ define([
         pk = hint.primaryKeys;
         snm = hint.shortNameToModel;
       }
+      else
+        snm = G.shortNameToModel;
       
 //      var pattern1 = \Qhttp:\/\/\E?(.*)\Q\/sql\/\E?();
 //      uri.match(\Qhttp:\/\/\E?([^/]+))
@@ -375,17 +377,31 @@ define([
       var nameAndId = uri.match(regex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
+   
+    isAll: function(model, interfaceNames) {
+      return U.isA(model, interfaceNames, "AND");
+    },
     
-    isA: function(model, interfaceName, typeToModel) {
-      var impl = _.contains(model.interfaces, interfaceName);
-      if (impl  ||  !typeToModel)
-        return impl;
-      var superCl = model._super;
-      if (!superCl || superCl.endsWith('#Resource'))
-        return impl;
-      var m = typeToModel[superCl];
+    isOneOf: function(model, interfaceNames) {
+      return U.isA(model, interfaceNames, "OR");
+    },
+    
+    isA: function(model, interfaceNames, op) {
+      var OR = op === 'OR';
+      interfaceNames = typeof interfaceNames === 'string' ? [interfaceNames] : interfaceNames;
+      var intersection = _.intersection(model.interfaces, interfaceNames);
+      if (OR && intersection.length || !OR && intersection.length === interfaceNames.length)
+        return true;
+      else
+        return false;
       
-      return m ? U.isA(m, interfaceName, typeToModel) : impl;
+//      var leftOver = _.difference(interfaceNames, intersection);      
+//      var superCl = model._super;
+//      if (!superCl || superCl.endsWith('#Resource'))
+//        return false;
+//      
+//      var m = G.typeToModel[superCl];
+//      return m ? U.isA(m, leftOver) : impl;
     },
     
     getPackagePath: function(type) {
@@ -976,18 +992,30 @@ define([
       var meta = vocModel.properties;
       var cloneOf;
       var hasImgs;
-      if (this.isA(vocModel, 'ImageResource')) {
+      if (U.isA(vocModel, 'ImageResource')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
           hasImgs = true;
       }
-      if (!hasImgs  &&  this.isA(vocModel, 'Reference')) {
+      if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
           hasImgs = true;
       }
+//      if (!hasImgs  &&  U.isA(vocModel, 'Intersection')) {
+//        var a = U.getCloneOf(vocModel, 'Intersection.aFeatured'), b = U.getCloneOf(vocModel, 'Intersection.bFeatured');
+//        if (a.length && b.length) {
+//          a = a[0], b = b[0];
+//          for (var i = 0; i < models.length; i++) {
+//            var m = models[i];
+//            if (m.get(a) === )
+//              hasImgs = true;
+//          }
+//        }
+//      }
         
       if (!hasImgs)
         return null;
       
+      cloneOf = cloneOf[0];
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
         var m = models[i];
@@ -995,7 +1023,7 @@ define([
           hasImgs = true;
       }
       
-      return hasImgs ? cloneOf[0] : null;
+      return hasImgs ? cloneOf : null;
     },
     
     deepExtend: function(obj) {
@@ -1084,13 +1112,13 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, val, formId, Voc) {
+    makeEditProp: function(prop, val, formId) {
       var propTemplate = Templates.getPropTemplate(prop, true, val);
       val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = Voc.typeToEnum[U.getLongUri(facet)];
+        var eCl = G.typeToEnum[U.getLongUri(facet)];
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
@@ -1507,6 +1535,37 @@ define([
       var length = U.millis[parsed[2]];
       var multiplier = parsed[3] === 'ago' ? -1 : 1;
       return startOfDay + num * length * multiplier;
+    },
+    
+    getPositionProps: function(vocModel) {
+      var positionProps = {};
+      if (U.isA(vocModel, "Locatable")) {
+        var lat = U.getCloneOf(vocModel, "Locatable.latitude");
+        if (lat.length) 
+          positionProps.latitude = lat[0];
+        var lon = U.getCloneOf(vocModel, "Locatable.longitude");
+        if (lon.length) 
+          positionProps.longitude = lon[0];
+      }
+      else if (U.isA(vocModel, "Shape")) {
+        var lat = U.getCloneOf(vocModel, "Shape.interiorPointLatitude");
+        if (lat.length) 
+          positionProps.latitude = lat[0];
+        var lon = U.getCloneOf(vocModel, "Shape.interiorPointLongitude");
+        if (lon.length) 
+          positionProps.longitude = lon[0];
+      }
+      
+      if (U.isA(vocModel, "Distance")) {
+        var radius = U.getCloneOf(vocModel, "Distance.radius");
+        if (radius.length) 
+          positionProps.radius = radius[0];
+        var distance = U.getCloneOf(vocModel, "Distance.distance");
+        if (distance.length)
+          positionProps.distance = distance[0];
+      }
+      
+      return positionProps;
     },
     
     slice: slice

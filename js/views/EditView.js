@@ -240,7 +240,7 @@ define([
               var pName = redirectTo.slice(0, dotIdx);
               var prop = vocModel.properties[pName];
               var range = U.getLongUri(prop.range);
-              range = range && Voc.typeToModel[range];
+              range = range && G.typeToModel[range];
               if (range) {
                 redirectParams[pName] = res.get(pName);
                 var bl = redirectTo.slice(dotIdx + 1);
@@ -594,7 +594,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(prop, info.values[p], info.formId, Voc);
+      var pInfo = U.makeEditProp(prop, info.values[p], info.formId);
       if (!info.groupNameDisplayed) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
@@ -652,7 +652,7 @@ define([
 //              continue;
 //  
 //            displayedProps[p] = true;
-//            var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
+//            var pInfo = U.makeEditProp(prop, json[p], formId);
 //            if (!groupNameDisplayed) {
 //              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
 //              groupNameDisplayed = true;

@@ -8,7 +8,9 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, $, _, Backbone, U, Events, Voc, idbq) {
-//  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+  useWebSQL && window.shimIndexedDB.__useShim();
+//  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
   var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
@@ -209,8 +211,8 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
-//    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
-    useUpgradeNeeded: !!window.IDBOpenDBRequest,
+    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
+//    useUpgradeNeeded: !!window.IDBOpenDBRequest,
     defaultSync: function(method, data, options) {
       if (options.sync)
         options.timeout = 5000;
@@ -520,23 +522,16 @@ define([
     getIndexNames: function(vocModel) {
       var vc = vocModel.viewCols || '';
       var gc = vocModel.gridCols || '';
-      var extras = [];
-      if (U.isA(vocModel, "Locatable")) {
-        var lat = U.getCloneOf(vocModel, "Locatable.latitude");
-        if (lat.length) extras.push(lat[0]);
-        var lon = U.getCloneOf(vocModel, "Locatable.longitude");
-        if (lon.length) extras.push(lon[0]);
-      }
-      else if (U.isA(vocModel, "Shape")) {
-        var lat = U.getCloneOf(vocModel, "Shape.interiorPointLatitude");
-        if (lat.length) extras.push(lat[0]);
-        var lon = U.getCloneOf(vocModel, "Shape.interiorPointLongitude");
-        if (lon.length) extras.push(lon[0]);
-      }
-      
-      var cols = _.union(extras, _.map((vc + ',' + gc).split(','), function(c) {
+      var extras = U.getPositionProps(vocModel);
+      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
         return c.trim().replace('DAV:displayname', 'davDisplayName')
       }));
+      
+      var props = vocModel.properties;
+      cols = _.filter(cols, function(c) {
+        var p = props[c];
+        return p && !p.backLink;
+      })
       
       return cols;
     },
@@ -547,7 +542,7 @@ define([
 //      Voc.newModels.length = 0;      
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
-        if (Voc.typeToEnum[type] || Voc.typeToInline[type])
+        if (G.typeToEnum[type] || G.typeToInline[type])
           continue;
         
         if (RM.storeExists(type)) {
@@ -568,7 +563,7 @@ define([
         try {
           var store = trans.createObjectStore(type, RM.defaultOptions);
           G.log(RM.TAG, 'db', 'created object store: ' + type);
-          var vocModel = Voc.typeToModel[type];
+          var vocModel = G.typeToModel[type];
           var indices = [];
           var indexNames = RM.getIndexNames(vocModel);
           _.each(indexNames, function(pName) {
@@ -576,8 +571,8 @@ define([
             if (!pName.length)
               return;
             
-            G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
-            var index = store.createIndex(pName, pName, {unique: false, multiEntry: false});
+//            G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
+            var index = store.createIndex(pName, {unique: false, multiEntry: false});
             G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
             indices.push(pName);
           });  
@@ -617,7 +612,7 @@ define([
       
       RM.runTask(function() {
         return $.Deferred(function(defer) {
-          var vocModel = Voc.typeToModel[classUri];
+          var vocModel = G.typeToModel[classUri];
           for (var i = 0; i < items.length; i++) {
             var item = items[i];
             item = U.isModel(item) ? item.toJSON() : item;
@@ -656,7 +651,7 @@ define([
       var type = item._uri || item.vocModel.type;
       var trans = RM.db.transaction([type], IDBTransaction.READ_WRITE);
       var store = trans.objectStore(type);
-      var request = store.delete(uri);
+      var request = store["delete"](uri);
     
       request.onsuccess = function(e) {
         G.log(RM.TAG, 'db', 'delete item onsuccess');
@@ -722,12 +717,35 @@ define([
         return false;
       
       var indexNames = RM.getIndexNames(vocModel);
-      if (orderBy && !_.contains(indexNames, orderBy))
+      if (orderBy && orderBy !== 'distance' && !_.contains(indexNames, orderBy))
         return false;
       
       if (!_.all(_.keys(filter), function(name) {return _.contains(indexNames, name);}))
         return false;
 
+      var positionProps = U.getPositionProps(vocModel);
+      var latLonQuery;
+      if (_.size(positionProps)) {
+        var radius = positionProps.radius && filter[positionProps.radius];
+        radius = isNaN(radius) ? G.defaults.radius : parseFloat(radius); // km
+          
+        var latProp = positionProps.latitude, lonProp = positionProps.longitude;
+        var lat = filter[latProp], lon = filter[lonProp];
+        if (/^-?\d+/.test(lat)) {
+          var latRadius = radius / 110; // 1 deg latitude is roughly 110 km 
+          lat = parseFloat(lat);
+          latLonQuery = Index(latProp).gteq(lat - latRadius).and(Index(latProp).lteq(lat + latRadius));
+        }
+        if (/^-?\d+/.test(lon)) {
+          var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate  
+          lon = parseFloat(lon);          
+          latLonQuery = Index(lonProp).gteq(lon - lonRadius).and(Index(lonProp).lteq(lon + lonRadius));
+        }
+        
+        delete filter[latProp]; 
+        delete filter[lonProp];
+      }
+      
       for (var name in filter) {
 //        var name = modelParams[i];
         var opVal = RM.parseOperatorAndValue(filter[name]);
@@ -741,6 +759,9 @@ define([
         subQuery.setPrimaryKey('_uri');
         query = query ? query.and(subQuery) : subQuery;
       }
+      
+      if (latLonQuery)
+        query = query.and(latLonQuery);
       
       if (orderBy) {
 //        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
@@ -873,7 +894,6 @@ define([
       }
 
       return RM.runTask(function() {
-        G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
 //        var store = $.indexedDB('lablz').objectStore(type, IDBTransaction.READ_ONLY);
         var results = [];
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
@@ -882,6 +902,7 @@ define([
 
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
+          G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
           var qDefer = $.Deferred();
           query.getAll(store).done(qDefer.resolve).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
