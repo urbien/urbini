@@ -7,7 +7,7 @@ define([
   'error', 
   'events', 
   'models/Resource', 
-  'collections/ResourceList', 
+  'collections/ResourceList' 
 ], function(G, $, _, Backbone, U, Errors, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));

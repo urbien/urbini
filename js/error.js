@@ -11,7 +11,7 @@ define([
       login: "Please login, then we'll show you the top secret information you're looking for",
       unauthorized: "You are unauthorized to view this information",
       offline: 'Your device is currently offline. Please come back to the 21st century, we miss you!',
-      timeout: 'Slow internet connection, please try again',
+      timeout: 'Slow internet connection, please try again'
     },
     getDefaultErrorHandler: function(errorHandler) {
       var id = G.nextId();

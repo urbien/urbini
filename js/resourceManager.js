@@ -656,7 +656,7 @@ define([
       var type = item._uri || item.vocModel.type;
       var trans = RM.db.transaction([type], IDBTransaction.READ_WRITE);
       var store = trans.objectStore(type);
-      var request = store.delete(uri);
+      var request = store["delete"](uri);
     
       request.onsuccess = function(e) {
         G.log(RM.TAG, 'db', 'delete item onsuccess');
