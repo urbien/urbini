@@ -172,17 +172,16 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(vocModel, 'Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -250,17 +249,16 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -337,16 +335,16 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           
-          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.voteUse');
+        var votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.likes');
+          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
