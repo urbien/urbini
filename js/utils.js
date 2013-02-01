@@ -975,9 +975,18 @@ define([
       var vocModel = U.getModel(resOrCol);
       var meta = vocModel.properties;
       var cloneOf;
+      var aCloneOf;
+      var bCloneOf;
       var hasImgs;
       if (this.isA(vocModel, 'ImageResource')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+          hasImgs = true;
+      }
+      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
+      if (isIntersection) {
+        aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured');
+        bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured');
+        if (aCloneOf.length != 0  &&  bCloneOf.length != 0)
           hasImgs = true;
       }
       if (!hasImgs  &&  this.isA(vocModel, 'Reference')) {
@@ -991,11 +1000,13 @@ define([
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
         var m = models[i];
+        if (isIntersection  &&  (m.get(aCloneOf) || m.get(bCloneOf))) 
+          return aCloneOf[0];
         if (m.get(cloneOf))
-          hasImgs = true;
+          return cloneOf[0];
       }
       
-      return hasImgs ? cloneOf[0] : null;
+      return null;
     },
     
     deepExtend: function(obj) {
@@ -1101,7 +1112,8 @@ define([
       }
       
       val.value = val.value || '';
-      val.name = U.getPropDisplayName(prop);
+      if (!prop.skipLabelInEdit)
+        val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
       val.id = (formId || G.nextId()) + '.' + prop.shortName;
       val.prop = prop;
