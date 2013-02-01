@@ -115,7 +115,7 @@ define([
       function onChoose(options) {
         var res;
         var checked;
-        var isMultiValue = options.model; 
+        var isMultiValue = options.model != null; 
         if (isMultiValue) {
           res =  options.model;
           checked = options.checked;
@@ -153,14 +153,21 @@ define([
       }
       
       var pr = this.vocModel.myProperties[prop]  ||  this.vocModel.properties[prop];
+      Events.once('chooser', onChoose, this);
       if (pr.multiValue) {
-        Events.once('chooser', onChoose, this);
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?$multiValue=y", {trigger: true});
+        var prName = pr.displayName;
+        if (!prName)
+          prName = pr.shortName;
+        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
+        if (this.action == 'make')
+//        if (hash.indexOf('make/') == 0)
+          params += '&$type=' + encodeURIComponent(this.vocModel.type) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
+        else
+          params += '&$forResource=' + encodeURIComponent(this.model.get('_uri')) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + params, {trigger: true});
       }
-      else { 
-        Events.once('chooser', onChoose, this);
+      else 
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
-      }
     },
     set: function(params) {
       _.extend(this, params);
@@ -627,6 +634,17 @@ define([
       var userRole = U.getUserRole();
       var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
       if (propGroups.length) {
+        if (propGroups.length > 1  &&  propGroups[0].shortName != 'general') {
+          var generalGroup = $.grep(propGroups, function(item, i) {
+            return item.shortName == 'general';
+          });
+          if (generalGroup) {
+            $.each(propGroups, function(i){
+              if(propGroups[i].shortName === 'general') propGroups.splice(i,1);
+            });
+            propGroups.unshift(generalGroup[0]);
+          }
+        }
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
@@ -634,7 +652,8 @@ define([
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
-            this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName}));
+            this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
+            groupNameDisplayed = true;
 //            var p = props[j].trim();
 //            if (!/^[a-zA-Z]/.test(p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
 //              continue;
@@ -692,10 +711,10 @@ define([
       
       var initInputs = function(inputs) {
         for (var i=0; i<inputs.length; i++) {
-          var i = inputs[i];
+          var input = inputs[i];
 //          var i = input;
-          var name = i.name;
-          var jin = $(i);
+          var name = input.name;
+          var jin = $(input);
           var jparent = jin.parent();
           var validated = function() {
             jparent.find('label.error').remove();
