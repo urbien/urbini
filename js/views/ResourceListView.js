@@ -60,7 +60,7 @@ define([
       
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = this.isMasonry = vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -90,7 +90,29 @@ define([
 //          }
 //        }
 //      }
-      var isMultiValueChooser = window.location.hash  &&  window.location.hash.indexOf('$multiValue=y') != -1;
+      var hash = window.location.hash;
+      var idx;
+      var isMultiValueChooser = hash  &&  (idx = hash.indexOf('$multiValue=')) != -1;
+      var mvProp; // = isMultiValueChooser ? hash.substring(idx + 12) : null;
+      var mvVals = [];
+      if (isMultiValueChooser) {
+        idx += 12;
+        var idx1 = hash.indexOf('&', idx);
+        if (idx1 == -1)
+          mvProp = hash.substring(idx);
+        else {
+          mvProp = hash.substring(idx, idx1);
+          var pr = '&$' + mvProp + '=';
+          idx = hash.indexOf(pr);
+          if (idx != -1) {
+            var p = hash.substring(idx + pr.length);
+            var s = decodeURIComponent(p);
+            s = s.split(',');
+            for (var i=0; i<s.length; i++)
+              mvVals.push(s[i].trim());
+          }
+        }
+      }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var imageProperty = U.getImageProperty(rl);
       var curNum = lis.length;
@@ -121,7 +143,7 @@ define([
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (isMultiValueChooser)
-            liView = new ResourceListItemView({model:res, mv: true, tagName: 'div', className: "ui-controlgroup-controls", parentView: this});
+            liView = new ResourceListItemView({model:res, mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, mvVals: mvVals});
           else if (isMasonry  ||  isModification) 
 //            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
 //          else if (isModification)

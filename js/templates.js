@@ -79,7 +79,7 @@ define([
       if (prop.facet  &&  !prop.multiValue)
         template = t[prop.facet];
       if (!template) {
-        if (prop.multiValue)
+        if (prop.multiValue  &&  edit)
           return t.resource;
         template = t[prop.range];
       }

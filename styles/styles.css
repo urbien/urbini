@@ -96,3 +96,6 @@ label.error {
 }
 
 em { color: red; font-weight: bold; padding-right: .25em; }
+#editForm .ui-select, #mv .ui-field-contain .ui-controlgroup-controls {
+  width: 100%;
+}
