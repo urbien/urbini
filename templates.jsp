@@ -8,8 +8,8 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c"></ul>
+  <div id="sidebarDiv" style="padding: 20px 5px;" class="ui-content" data-role="content" role="main">
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -158,7 +158,7 @@
 <script type="text/template" id="listItemTemplate">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
-    {{ if (typeof width != 'undefined') { }}  
+    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
@@ -190,11 +190,11 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(name) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(name)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -366,12 +366,15 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor  + '&amp;-makeId=' + Lablz.nextId() }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri  + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
+          {{ if (v_showVotesFor.count) { }}
+             v_showVotesFor.count
+          {{ } }}
         {{ } }}
         <!--
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -385,7 +388,7 @@
   </table>
 </script>
 
-<script type="text/template" id="masonry-list-item">
+<!-- script type="text/template" id="masonry-list-item">
   <div class="anab">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -402,23 +405,65 @@
     </div>
     <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor + '&amp;-makeId=' + Lablz.nextId() }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}"> 
           </a>
         {{ } }}
-        <!--
         {{ if (typeof v_showRenabFor != 'undefined') { }}
           <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
           </a>
         {{ } }}
-        -->
      </div>
   </div>     
 </div>
-<!--/div -->
+</script -->
+
+<script type="text/template" id="masonry-list-item">
+  <div class="anab">
+    <div class="galleryItem_css3">
+      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+         {{ if (typeof imgWidth != 'undefined') { }}
+           style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+         {{ } }}
+         ></img>
+      </a>
+    </div>
+  <div class="nabRL">
+    <div>
+      {{= gridCols }}
+    </div>
+
+    <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
+        {{ if (typeof v_showCommentsFor != 'undefined') { }}
+          <a style="float:left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">Comment
+          </a>
+          {{ if (v_showCommentsFor.count) { }}
+            <a style="float:right; font-size:12px;" href="{{= Lablz.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} ">
+              <span class="ui-icon-comment-alt"></span>&#160;{{= v_showCommentsFor.count }} 
+            </a>
+          {{ } }}
+        {{ } }}
+        {{ if (typeof v_showVotesFor != 'undefined') { }}
+          <a  style="float: left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
+          {{ if (typeof v_showCommentsFor != 'undefined') { }}
+             &#160;&#160;&#8226;
+          {{ } }}
+          &#160;&#160;Like 
+          </a>
+          {{ if (v_showVotesFor.count) { }}
+          <div style="float:right; font-size:12px;"> 
+            <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>&#160;{{= v_showVotesFor.count }} 
+            </a>
+          </div>
+          {{ } }}
+        {{ } }}
+     </div>
+  </div>     
+</div>
 </script>
 
 
@@ -449,8 +494,8 @@
 </script>
 
 <script type="text/template" id="mvListItem">
-  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" />
-  <label for="{{= id }}">{{= davDisplayName }}</label>
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= chkId }}" value="{{= _uri }}" {{= typeof checked === 'undefined' ? '' : checked }} />
+  <label for="{{= chkId }}">{{= davDisplayName }}</label>
 </script>
 
 <script type="text/template" id="emailPET">
@@ -470,7 +515,10 @@
 </script>
 
 <script type="text/template" id="longEnumPET">
+  {{ if (name && name.length > 0) { }}
+
   <label for="{{= id }}" class="select">{{= name }}</label>
+  {{ } }} 
   <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
     {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
     {{ for (var o in options) { }} 
@@ -493,9 +541,14 @@
 </script-->
 
 <script type="text/template" id="stringPET">
-  <label for="{{= id }}" data-theme="c">{{= name }}</label> 
+  {{ if (name) { }}
+  <label for="{{= id }}" data-theme="c">{{= name }}</label>
+    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+  {{ } }} 
   <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
-  <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+  {{ if (!name) { }}
+    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }}>{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+  {{ } }} 
 </script>
 
 <script type="text/template" id="telPET">
@@ -510,7 +563,7 @@
 
 <script type="text/template" id="resourcePET">
   <!--label for="{{= id }}" class="select">{{= name }}</label-->
-  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ? name : value) : displayName }}</a>
+  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? name : value) : displayName }}</a>
 </script>
 
 <script type="text/template" id="multivaluePET">
@@ -518,7 +571,9 @@
 </script>
 
 <script type="text/template" id="booleanPET">
-  <label for="{{= id }}">{{= name }}</label>
+  {{ if (name && name.length > 0) { }}
+    <label for="{{= id }}">{{= name }}</label>
+  {{ } }}
   <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="formElement boolean" data-mini="true">
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
