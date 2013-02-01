@@ -21,7 +21,7 @@ define([
       
       this.router = G.Router || Backbone.history;
       return this;
-    },
+    }
   }, {
     displayName: 'BasicView'
   });

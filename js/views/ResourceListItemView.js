@@ -65,7 +65,7 @@ define([
            success: function() {
              self.recipeShoppingListHack.apply(self, args);
            },
-           sync: true,
+           sync: true
         });
         
         return;
@@ -382,7 +382,7 @@ define([
       }
       
       return this;
-    },
+    }
 
   });  
 });
