@@ -1,3 +1,4 @@
+body { -webkit-text-size-adjust: none }
 /* overriding jqm rules */
 /*
 .ui-mobile [data-role="page"], .ui-mobile [data-role="dialog"], .ui-page {
