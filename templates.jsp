@@ -36,7 +36,7 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content">
-    <div id="resourceImage"></div><br/>
+    <div id="resourceImage"></div>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
     {{ if ($('#other')) { }}
@@ -74,9 +74,10 @@
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span>{{= value }}</span>
   {{ } }}
-  {{ if (typeof value != 'undefined' && value.indexOf('<span') == 0) { }}
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
   {{ } }}
+  
 </script>
 
 <script type="text/template" id="emailPT">
@@ -541,13 +542,13 @@
 </script-->
 
 <script type="text/template" id="stringPET">
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="c">{{= name }}</label>
-    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
-  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
   {{ if (!name) { }}
-    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }}>{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
 </script>
 
