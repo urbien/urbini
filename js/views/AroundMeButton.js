@@ -4,8 +4,9 @@ define([
   'backbone', 
   'templates',
   'views/ToggleButton', 
-  'views/BasicView' 
-], function(G, _, Backbone, Templates, ToggleButton, BasicView) {
+  'views/BasicView',
+  'utils'
+], function(G, _, Backbone, Templates, ToggleButton, BasicView, U) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',
@@ -66,7 +67,7 @@ define([
       var isCollection = U.isCollection(this.model), 
           params = isCollection ? U.getQueryParams(this.model) : {};
 
-      _.extend(params, coords, {'-item': item || 'me', '$orderBy': 'distance'});
+      _.extend(params, {latitude: coords.latitude, longitude: coords.longitude, '-item': item || 'me', '$orderBy': 'distance'});
       Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?" + U.getQueryString(params), {trigger: true});
       return this;
     }
