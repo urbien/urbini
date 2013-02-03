@@ -979,8 +979,11 @@ define([
       var bCloneOf;
       var hasImgs;
       if (this.isA(vocModel, 'ImageResource')) {
-        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
           hasImgs = true;
+        else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+          hasImgs = true;
+
       }
       var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       if (isIntersection) {
@@ -1095,9 +1098,16 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, val, formId, Voc) {
+    makeEditProp: function(prop, values, formId, Voc) {
+      var p = prop.shortName;
+      var val = values[p];
       var propTemplate = Templates.getPropTemplate(prop, true, val);
-      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
+      if (typeof val === 'undefined')
+        val = {};
+      else if (values[p + '.displayName'])
+        val = {value: val, displayName: values[p + '.displayName']};
+      else
+        val = {value: val};
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
