@@ -489,13 +489,14 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval.call({}, text);
-  else // Safari
+//  var nav = Lablz.navigator;
+//  if (nav.isChrome || nav.isSafari)
+//    Lablz.inject(text);
+//  else if (nav.isFirefox)
+//    return window.eval.call({}, text);
+//  else // Safari
     return window.eval(text);
+//  return eval(text);
   
 //  return Lablz.inject(text);
   
@@ -1404,7 +1405,8 @@ define('globals', function() {
 //      validator: ['jquery'],
       jqueryImagesloaded: ['jquery'],
       mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
-      jqueryIndexedDB: ['jquery', 'indexedDBShim']
+      jqueryIndexedDB: ['jquery', 'indexedDBShim'],
+      indexedDBShim: ['taskQueue']
 //          ,
 //      mobiscrollDate: ['jquery', 'jqueryMobile', 'mobiscroll'],
 //      mobiscrollJQM: ['jquery', 'jqueryMobile', 'mobiscroll'],

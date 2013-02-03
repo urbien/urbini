@@ -339,8 +339,10 @@ define([
         var qIdx = type.indexOf('?');
         return qIdx == -1 ? type : type.slice(0, qIdx);
       }
-      else
-        return hint.type || hint.shortNameToModel[typeName] && hint.shortNameToModel[typeName].type;
+      else {
+        var vocModel = G.shortNameToModel[typeName];
+        return hint.type || vocModel && vocModel.type;
+      }
     },
     
     getClassName: function(uri) {
