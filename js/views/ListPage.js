@@ -145,8 +145,8 @@ define([
 //        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
 //                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [AroundMeButton, MapItButton, MenuButton] ) 
-            : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
-        log: [LoginButtons]    
+            : (showAddButton ? [AddButton, MenuButton] : [MenuButton])
+//        log: [LoginButtons]    
       };
       
       this.header = new Header({
@@ -192,7 +192,7 @@ define([
       if (!this.$el.parentNode)  
         $('body').append(this.$el);
       if (!isMV)
-        $('form#mv').css("display", "none");
+        $('form#mv').hide();
 
       this.rendered = true;
       return this;
