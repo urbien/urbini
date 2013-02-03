@@ -601,7 +601,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(prop, info.values[p], info.formId, Voc);
+      var pInfo = U.makeEditProp(prop, info.values, info.formId, Voc);
       if (!info.groupNameDisplayed) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
