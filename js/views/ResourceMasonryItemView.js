@@ -30,7 +30,17 @@ define([
       'click': 'click'
     },
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: function(e) {
+      if (this.mvProp)
+        Events.defaultClickHandler(e);  
+      else {
+        var p = this.parentView;
+        if (p && p.mode == G.LISTMODES.CHOOSER) {
+          Events.stopEvent(e);
+          Events.trigger('chooser', this.model);
+        }
+      }
+    },
     render: function(event) {
       var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, 'Modification', G.typeToModel);
@@ -73,7 +83,7 @@ define([
 //          var delegateTo = (p == a) ? b : a;
 //          aprop = models[0].get(delegateTo);
 //        }
-//        var type = U.getTypeUri(U.getTypeUri(aprop['value']), {type: aprop['value'], shortNameToModel: G.shortNameToModel});
+//        var type = U.getTypeUri(U.getTypeUri(aprop['value']), {type: aprop['value']});
           
           
 //      return this.renderTile();
@@ -257,7 +267,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri,)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');

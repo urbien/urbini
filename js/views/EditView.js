@@ -152,22 +152,33 @@ define([
         // set text
       }
       
-      var pr = this.vocModel.myProperties[prop]  ||  this.vocModel.properties[prop];
+      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
+      var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
       Events.once('chooser', onChoose, this);
+      var params = {};
+      if (pr.where) {
+        _.extend(params, U.parseWhere(pr.where));
+      }
+      
       if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
-        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
+        params.$multiValue = prop;
+        params['$' + prop] = e.target.innerHTML;
         if (this.action == 'make')
-//        if (hash.indexOf('make/') == 0)
-          params += '&$type=' + encodeURIComponent(this.vocModel.type) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
+          params.$type = type;
         else
-          params += '&$forResource=' + encodeURIComponent(this.model.get('_uri')) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + params, {trigger: true});
+          params.$forResource = uri;
+        
+        params.$title = prName + ' for ' + vocModel.displayName;
+//        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
       }
-      else 
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+      
+//      else 
+//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+      var queryStr = _.size(params) ? '?' + $.param(params) : '';
+      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + queryStr, {trigger: true});
     },
     set: function(params) {
       _.extend(this, params);

@@ -654,7 +654,7 @@ define([
         return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
       }
 
-      if (model instanceof Backbone.Collection) { // if it's a collection
+      if (U.isCollection(model)) { // if it's a collection
         qMap = collection.queryMap;
         model = collection.model;
       }
@@ -1570,6 +1570,40 @@ define([
       
       return positionProps;
     },
+
+    parseWhere: function(where) {
+                    // nuke whitespace outside of single and double quotes
+      where = where.replace(/\s+(?=([^']*'[^']*')*[^']*$)/g, '')
+                    // convert to API params
+                   .replace(/==/g, '=')
+                   .replace(/(>=|<=)/, '=$1')
+                    // replace self with user uri
+                   .replace(/\'self\'|\\"self\\"|\\\'self\\\'|\\\"self\\\"/g, G.currentUser._uri);
+                       
+      // TODO: support OR
+      where = where.split(/&&/);
+      var params = {};
+      for (var i = 0; i < where.length; i++) {
+        // TODO: support <=, >=, etc.
+        var pair = where[i].split('=');
+        params[pair.shift()] = pair.join('=');
+      }
+      
+      return params;
+    },
+    
+//    removeUnquotedWhitespace: function(text) {
+//      qStack = [];
+//      sqStack = [];
+//      qqStack = [];
+//      qsqStask = [];
+//      var newText = '';
+//      for (var i in text) {
+//        switch (i) {
+//        case '\''
+//        }
+//      }
+//    },
     
     slice: slice
   };
