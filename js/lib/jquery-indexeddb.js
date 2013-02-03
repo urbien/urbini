@@ -4,12 +4,17 @@ define(['jquery', 'indexedDBShim'], function($) {
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
-	
-	/**
-	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
-	 * supports strings
-	 */
-	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+//  window.shimIndexedDB.__useShim();
+//	
+//  var indexedDB = window.shimIndexedDB || window.indexedDB;
+  var usingShim = indexedDB === window.shimIndexedDB;
+//  if (usingShim)
+//    window.shimIndexedDB.__debug(true);  
+//	/**
+//	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
+//	 * supports strings
+//	 */
+//	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 	
 	function getDefaultTransaction(mode){
 		var result = null;
@@ -49,15 +54,13 @@ define(['jquery', 'indexedDBShim'], function($) {
 				}
 			}
 			
-			
 			var wrap = {
 				"request": function(req, args){
 					return $.Deferred(function(dfd){
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
 							idbRequest.onsuccess = function(e){
-								//console.log("Success", idbRequest, e, this);
-								dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
 								//console.log("Error", idbRequest, e, this);
@@ -78,6 +81,20 @@ define(['jquery', 'indexedDBShim'], function($) {
 							if (typeof idbRequest.onupgradeneeded !== "undefined" && idbRequest.onupgradeneeded === null) {
 								idbRequest.onupgradeneeded = function(e){
 									//console.log("Upgrade", idbRequest, e, this);
+								  var trans = idbRequest.transaction;
+								  if (usingShim) {
+  								  trans.onupgradecomplete = function() {
+//  								    debugger;
+							        dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+							        console.log("WebSQL upgrade transaction complete");
+  								  }
+								  }
+								  else {
+								    trans.oncomplete = function(e) {
+//								      debugger;
+								    }
+								  }
+								  
 									dfd.notifyWith(idbRequest, [idbRequest.result, e]);
 								};
 							}
@@ -92,7 +109,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 					return {
 						"objectStore": function(storeName){
 							try {
-								return wrap.objectStore(idbTransaction.objectStore(storeName));
+								return wrap.objectStore(idbTransaction.objectStore(storeName), idbTransaction);
 							} catch (e) {
 								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
 								return wrap.objectStore(null);
@@ -117,7 +134,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 						}
 					};
 				},
-				"objectStore": function(idbObjectStore){
+				"objectStore": function(idbObjectStore) {
 					var result = {};
 					// Define CRUD operations
 					var crudOps = ["add", "put", "get", "delete", "clear", "count"];
@@ -155,6 +172,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 						if (!indexName) {
 							indexName = prop;
 						}
+						
 						return wrap.index(function(){
 							return idbObjectStore.createIndex(indexName, prop, options);
 						});
@@ -162,10 +180,6 @@ define(['jquery', 'indexedDBShim'], function($) {
 					
 					result.deleteIndex = function(indexName){
 						return idbObjectStore.deleteIndex(indexName);
-					};
-					
-					result.getIndexNames = function() {
-					  return idbObjectStore.indexNames;
 					};
 					
 					return result;
@@ -360,6 +374,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 						if (oldVersion < newVersion) {
 							var versionReq = db.setVersion(newVersion);
 							versionReq.onsuccess = function(upgradeEvent){
+//							  debugger;
 								result.transaction = versionReq.result;
 								var event = new Event("upgradeneeded");
 								event.oldVersion = oldVersion;
@@ -518,7 +533,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 									dfd.resolveWith(idbTransaction, [e]);
 								};
 							} catch (e) {
-								//console.log("Creating a traction failed", e, storeNames, mode, this);
+								//console.log("Creating a transaction failed", e, storeNames, mode, this);
 								e.type = "exception";
 								dfd.rejectWith(this, [e]);
 								return;
@@ -579,7 +594,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 											}
 										};
 										me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
-											//console.log("Transaction completed when trying to create object store");
+//											console.log("Transaction completed when trying to create object store");
 											// Nothing much to do
 										}, function(err, e){
 											dfd.rejectWith(this, [err, e]);
@@ -608,14 +623,11 @@ define(['jquery', 'indexedDBShim'], function($) {
 									dfd.rejectWith(this, [err, e]);
 								}
 							}, function(trans) {
-								//console.log("Transaction is in progress", trans);
+								console.log("Transaction is in progress", trans);
 								onTransactionProgress(trans, callback);
 							});
 						});
 					}
-					
-//					function getIndexNames(wrappedObjectStore) {
-//					}
 					
 					function crudOp(opName, args){
 						return op(function(wrappedObjectStore){
@@ -659,15 +671,8 @@ define(['jquery', 'indexedDBShim'], function($) {
               "getAllKeys": function(range, direction){
                 return indexOp("_getAll", indexName, [range, direction, true]);
               }
-//              "getIndexNames": function(){
-//                return indexOp("getIndexNames");
-//              }
 						};
 					};
-					
-					result.getIndexNames = function() {
-					  return crudOp("getIndexNames");
-					}
 					
 					return result;
 				}
@@ -677,5 +682,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 	
 	$.indexedDB.IDBCursor = IDBCursor;
 	$.indexedDB.IDBTransaction = IDBTransaction;
+//  $.indexedDB.IDBCursor = idbModules.IDBCursor;
+//  $.indexedDB.IDBTransaction = idbModules.IDBTransaction;
 	$.idb = $.indexedDB;
 });
