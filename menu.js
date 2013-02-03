@@ -12912,7 +12912,7 @@ function addOrReplaceUrlParam(url, name, value) {
   var newUrl = url;
   var hashIdx = newUrl.indexOf("#");
   var afterHash;
-  if (hashIdx != -1) {
+  if (hashIdx != -1  &&  newUrl.indexOf('/app/') == -1) {
     afterHash = newUrl.substring(hashIdx);
     newUrl = newUrl.substring(0, hashIdx);
   }
