@@ -1065,7 +1065,6 @@ define([
           return false;
         m = type2Model[subClassOf];
       }
-      return false;
     },
 
     getValue: function(modelOrJson, prop) {
