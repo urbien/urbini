@@ -114,8 +114,9 @@ define([
       var vocModel = this.vocModel;
       var hash = window.location.hash;
       var idx;
-      var showAddButton;
-      if (hash  &&  (idx = hash.indexOf('?')) != -1) {
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var showAddButton = !isChooser  &&  vocModel.type.endsWith('/App'); 
+      if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
         if (s && s.length > 0) {
           for (var i=0; i<s.length; i++) {
@@ -145,8 +146,8 @@ define([
 //        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
 //                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
         right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [AroundMeButton, MapItButton, MenuButton] ) 
-            : (showAddButton ? [AddButton, MenuButton] : [MenuButton])
-//        log: [LoginButtons]    
+            : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
+        log: [LoginButtons]    
       };
       
       this.header = new Header({
@@ -165,7 +166,8 @@ define([
 
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isMasonry = this.isMasonry = vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial'); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
 //      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
 //      if (isMasonry) {
 //        var key = this.vocModel.shortName + '-list-item';
