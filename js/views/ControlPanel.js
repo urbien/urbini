@@ -136,7 +136,7 @@ define([
               
 //              var uri = U.getShortUri(res.get('_uri'), vocModel); 
               var uri = res.getUri();
-              var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'>&nbsp;&nbsp;" + n;
+              var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
               if (isPropEditable)
                 U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t}));
               else
@@ -209,7 +209,7 @@ define([
           var range = prop.range;
 //          var uri = U.getShortUri(res.get('_uri'), vocModel); 
           var uri = res.getUri();
-          var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'>&nbsp;&nbsp;" + n;
+          var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
           if (isPropEditable)
             U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t}));
           else
