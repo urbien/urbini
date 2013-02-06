@@ -132,10 +132,6 @@ define([
           json.distance = distance + ' mi';
       }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
-      if (!this.isCommonTemplate) {
-        this.$el.html(this.template(json));
-        return this;
-      }
       if (m.isA('Intersection')) {
         var href = window.location.href;
         var qidx = href.indexOf('?');
@@ -165,6 +161,12 @@ define([
           else          
             return this.renderIntersectionItem(a, 'Intersection.a');
         }
+      }
+      if (!this.isCommonTemplate) {
+        if (this.imageProperty)
+          this.$el.addClass("image_fitted");
+        this.$el.html(this.template(json));
+        return this;
       }
       
       var viewCols = this.getViewCols(json);
@@ -288,20 +290,32 @@ define([
       var dn;
       var rUri;
       var json = m.attributes;
-      var h, w;
+      var h = '', w = '';
       if (cloneOf == 'Intersection.a') {
         var imageP = U.getCloneOf(this.vocModel, 'Intersection.aThumb');
-        if (imageP  &&  imageP.length != 0)
-          img = json[imageP[0]]; 
+        var hasAImageProps;
+        if (imageP  &&  imageP.length != 0) {
+          img = json[imageP[0]];
+          hasAImageProps = true;
+        }
         if (!img) {
           imageP = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
-          if (imageP) 
+          if (imageP  &&  imageP.length != 0) { 
             img = json[imageP[0]];
+            hasAImageProps = true;
+          }
         }
-            
+        if (!img  &&  !hasAImageProps  &&  U.isA(this.vocModel, 'Intersection')) {
+          imageP = U.getCloneOf(this.vocModel, 'ImageResource.smallImage');
+          if (imageP  &&  imageP.length != 0) {
+            img = json[imageP[0]];
+          }
+        }
     //        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
-        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
-        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+        if (img) {
+          w = json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
+          h = json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+        }
       }
       else {
         var imageP = U.getCloneOf(this.vocModel, 'Intersection.bThumb');
@@ -315,15 +329,20 @@ define([
         }
     //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
-        w = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
-        h = img ? '' : json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+        if (img) {
+          w = json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
+          h = json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+        }
       }
-      
+      if (img  &&  !this.isCommonTemplate) {
+        this.$el.addClass("image_fitted");
+        this.$el.html(this.template(json));
+        return this;
+      }
       
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
-      if (typeof w != 'undefined' &&  w.length  && 
-          typeof h != 'undefined' &&  h.length) {
+      if (typeof w != 'undefined'  &&   typeof h != 'undefined') {
         
         this.$el.addClass("image_fitted");
         

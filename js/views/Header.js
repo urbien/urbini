@@ -29,7 +29,8 @@ define([
         if (!this.pageTitle) {
           if (hash) {
             var params = U.getQueryParams(hash);
-            this.pageTitle = params.$title;
+            this.title = params.$title;
+            this.pageTitle = params.$title  &&  params.$title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
 //            var v = hash.split('&');
 //            for (var i=0; i<v.length; i++) {
 //              var a = v[i].split('=');
@@ -44,11 +45,14 @@ define([
               this.pageTitle = res.get('davDisplayName');
               if (!this.pageTitle) 
                 this.pageTitle = U.getDisplayName(res);
+              this.title = this.vocModel['displayName'] + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + this.pageTitle;
+              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
             }
           }
         }
       }
-      
+      if (!this.title)
+        this.title = this.pageTitle;
       this.$el.prevObject.attr('data-title', this.pageTitle);
       return this;
     },
@@ -83,8 +87,10 @@ define([
       var r = this.buttons.right;
       r && this.makeWidgets(r, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
       
-      var log = this.buttons.log;
-      log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
+      if (G.currentUser.guest) {
+        var log = this.buttons.log;
+        log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
+      }
       return this;
     }
   });

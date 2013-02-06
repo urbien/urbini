@@ -154,6 +154,7 @@ define([
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
+        
         params.$multiValue = prop;
         params['$' + prop] = e.target.innerHTML;
         if (this.action == 'make')
@@ -161,7 +162,7 @@ define([
         else
           params.$forResource = uri;
         
-        params.$title = prName + ' for ' + vocModel.displayName;
+        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
 //        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
       }
       
@@ -550,7 +551,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(prop, info.values[p], info.formId);
+      var pInfo = U.makeEditProp(prop, info.values, info.formId);
       if (!info.groupNameDisplayed) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
@@ -589,7 +590,7 @@ define([
           });
           if (generalGroup) {
             $.each(propGroups, function(i){
-              if(propGroups[i].shortName === 'general') propGroups.splice(i,1);
+              if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
             });
             propGroups.unshift(generalGroup[0]);
           }
@@ -620,6 +621,8 @@ define([
       else {
         for (var p in meta) {
           p = p.trim();
+          if (meta[p].readOnly)
+            continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);
         }        

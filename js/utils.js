@@ -160,6 +160,13 @@ define([
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList)
         return false;
       
+      var roles = prop.allowRoles;
+      if (roles  &&  (roles.indexOf('self') == -1))
+        return false;
+      roles = prop.allowRolesToEdit;
+      if (roles  &&  (roles.indexOf('self') == -1))
+        return false;
+      
       var resExists = !!res.get('_uri');
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
@@ -888,7 +895,7 @@ define([
 //      }
     },
 
-    getFormattedDate: function(time) {
+    getFormattedDate: function(time, firstLevel) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
       var now = G.currentServerTime();
@@ -920,9 +927,13 @@ define([
         var str;
         if (absDayDiff < 7) 
           str = (absDayDiff == 1) ? "a day" : absDayDiff + " days"; 
-        else if (absDayDiff < 365) {
+        else if (absDayDiff < 30) {
           var w = Math.round( absDayDiff / 7 );
           str = (w == 1) ? "a week" : w + " weeks";
+        }
+        else if (absDayDiff < 365) {
+          var m = Math.round( absDayDiff / 30 );
+          str = (m == 1) ? "a month" : m + " months";
         }
         else {
           var years = Math.round( absDayDiff / 365 );
@@ -932,7 +943,7 @@ define([
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
+          str = (rest == 0  ||  firstLevel) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
         }
         
         var ret = '';
@@ -998,8 +1009,11 @@ define([
       var bCloneOf;
       var hasImgs;
       if (U.isA(vocModel, 'ImageResource')) {
-        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
           hasImgs = true;
+        else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+          hasImgs = true;
+
       }
       var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       if (isIntersection) {
@@ -1010,7 +1024,7 @@ define([
           hasImgs = true;
         }
       }
-      if (!hasImgs  &&  this.isA(vocModel, 'Reference')) {
+      if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
           hasImgs = true;
       }
@@ -1073,7 +1087,6 @@ define([
           return false;
         m = type2Model[subClassOf];
       }
-      return false;
     },
 
     getValue: function(modelOrJson, prop) {
@@ -1117,9 +1130,16 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, val, formId) {
+    makeEditProp: function(prop, values, formId) {
+      var p = prop.shortName;
+      var val = values[p];
       var propTemplate = Templates.getPropTemplate(prop, true, val);
-      val = typeof val === 'undefined' ? {} : val.displayName ? val : {value: val};
+      if (typeof val === 'undefined')
+        val = {};
+      else if (values[p + '.displayName'])
+        val = {value: val, displayName: values[p + '.displayName']};
+      else
+        val = {value: val};
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
@@ -1149,7 +1169,7 @@ define([
       }
       
 //      var classes = [];
-      var rules = {"data-formEl": true};
+      var rules = prop.multiValue ? {} : {"data-formEl": true};
       if (prop.required)
         rules.required = 'required';
       if (U.isDateOrTimeProp(prop))

@@ -36,7 +36,7 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content">
-    <div id="resourceImage"></div><br/>
+    <div id="resourceImage"></div>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
     </ul>
     {{ if ($('#other')) { }}
@@ -54,7 +54,7 @@
 </script>  
 
 <script type="text/template" id="menuP">
-   <ul data-role="listview" id="menuItems">
+   <ul data-role="none" data-theme="a" id="menuItems">
    </ul>
 </script>  
 
@@ -74,9 +74,10 @@
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span>{{= value }}</span>
   {{ } }}
-  {{ if (typeof value != 'undefined' && value.indexOf('<span') == 0) { }}
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
   {{ } }}
+  
 </script>
 
 <script type="text/template" id="emailPT">
@@ -182,7 +183,17 @@
 </script>
 
 <script type="text/template" id="menuItemTemplate">
-  <li><a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}"><h3>{{= title }}</h3></a></li>
+  <li>
+    <img style="max-height: 60px; max-width: 60px; float:left;" src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" />
+    {{ if (typeof icon != 'undefined') { }}
+       <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}" data-role="button" data-icon="{{= icon }}">  
+    {{ } }}
+    {{ if (typeof icon == 'undefined') { }}
+       <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}" >  
+    {{ } }}
+    <h3 style="color:#ccc">{{= title }}
+  </h3></a>
+  </li>
 </script>
 
 <script type="text/template" id="propRowTemplate">
@@ -190,7 +201,7 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= encodeURIComponent(title) }}" data-icon="plus"></a></li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
@@ -202,7 +213,7 @@
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">
-   <li data-role="list-divider">{{= value }}</li>
+   <li data-theme="d" data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -309,7 +320,8 @@
       <ul id="headerUl"></ul>
     </div>
     <div id="name" align="center">
-      <h3 style="margin: 8px;" id="pageTitle">{{= this.pageTitle }}</h3>
+      <!-- h3 style="margin: 8px;font-size:16px;font-family:Tahoma, Lucinda Grande, Verdana, Helvetica, Arial, sans-serif;" id="pageTitle">{{= this.pageTitle }}</h3 -->
+      <h3 id="pageTitle">{{= this.title }}</h3>
     </div>
   </div>
 </script>
@@ -327,7 +339,8 @@
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
   <br/><br/>
-  <span class="commentListDate">{{= obj['submitTime.displayName'] }}</span>
+  <!-- span class="commentListDate">{{= obj['submitTime.displayName'] }}</span -->
+  <span class="commentListDate">{{= Lablz.U.getFormattedDate(submitTime, true) }}</span>
   <br/>
   <a data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=' + encodeURIComponent('sql?uri=' + encodeURIComponent(_uri)) }}">
   </a>
@@ -436,7 +449,7 @@
     <div>
       {{= gridCols }}
     </div>
-
+{{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
     <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
           <a style="float:left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">Comment
@@ -462,6 +475,7 @@
           {{ } }}
         {{ } }}
      </div>
+{{ } }}  
   </div>     
 </div>
 </script>
@@ -541,13 +555,13 @@
 </script-->
 
 <script type="text/template" id="stringPET">
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="c">{{= name }}</label>
-    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
-  <!--input type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" placeholder="{{= typeof comment === 'undefined' ? '' : comment }}" /-->
   {{ if (!name) { }}
-    <{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100 ? 'input' : 'textarea style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }}>{{= typeof value === 'undefined' ? '' : value }}</{{= _.isUndefined(prop.maxSize) ||  prop.maxSize < 100  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
 </script>
 

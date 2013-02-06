@@ -76,7 +76,10 @@ define([
       this.pager();
     },
     getUrl: function() {
-      return this.baseUrl + (this.queryMap ? "?$minify=y&" + $.param(this.queryMap) : '');
+      var url = this.baseUrl + (this.queryMap ? "?$minify=y&" + $.param(this.queryMap) : '');
+      if (this.queryMap  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
+        url += '&$chooser=y';
+      return url;
     },
     parseQuery: function(query) {
       if (!query)
