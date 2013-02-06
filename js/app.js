@@ -50,6 +50,7 @@ define('app', [
   };
 
   var App = {
+    TAG: 'App',
     initialize: function() {
       var error = function(e) {
         G.log('init', 'error', "failed to init app, not starting");
@@ -57,9 +58,11 @@ define('app', [
       };
       
       Templates.loadTemplates();
+      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
+      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
       Voc.checkUser();
       Voc.loadStoredModels();
-      if (!Voc.changedModels.length && !Voc.newModels.length) {
+      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
         RM.restartDB().always(this.startApp);
         return;
       }
@@ -109,20 +112,14 @@ define('app', [
       
       G.app = App;
       App.started = true;
-      var models = G.models;
+      if (window.location.hash == '#_=_') {
+//        debugger;
+        G.log(App.TAG, "info", "hash stripped");
+        window.location.hash = '';
+      }
+      
       G.Router = new Router();
       Backbone.history.start();
-      
-      _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
-//      if (G.currentUser.guest && G.online) {
-//        setTimeout(function() {          
-//          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});
-//        }, 100);
-//      }
-//      G.homePage = G.homePage || G.tabs[0].mobileUrl;
-//      if (!window.location.hash) {
-//        G.Router.navigate(G.homePage, {trigger: true});
-//      }
     },
     
     setupLoginLogout: function() {

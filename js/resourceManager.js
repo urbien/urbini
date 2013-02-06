@@ -9,13 +9,13 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, $, _, Backbone, U, Events, TaskQueue, Voc, idbq) {
-//  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
-//  useWebSQL && window.shimIndexedDB.__useShim();
+  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+  useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
-  var useWebSQL = true;
-  window.shimIndexedDB.__useShim();
-  var IDBCursor = $.indexedDB.IDBCursor;
+//  var useWebSQL = true;
+//  window.shimIndexedDB.__useShim();
+//  var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
   var Index = idbq.Index;
@@ -316,9 +316,10 @@ define([
      */
     updateDB: function() {
       return $.Deferred(function(defer) {
-        var toKill = _.union(Voc.changedModels, Voc.newModels);
+//        debugger;
+        var toKill = _.clone(Voc.changedModels);
         Voc.changedModels.length = 0;
-        Voc.newModels.length = 0;
+//        Voc.newModels.length = 0;
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
             return RM.db.objectStoreNames.contains(m);
@@ -342,9 +343,9 @@ define([
         debugger;
         var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
           G.userChanged = false;
-          openDB(options);
+          RM.openDB(options);
         }).fail(function(error, event) {
-          openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
+          RM.openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
           debugger;
         }).progress(function(db, event) {
           RM.upgradeDB(options).done(dbPromise.resolve).fail(dbPromise.reject);;
@@ -356,10 +357,13 @@ define([
 
       options = options || {};
       var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
-      toKill = _.union(toKill, Voc.changedModels, Voc.newModels);
+//      toKill = _.union(toKill, Voc.changedModels); // , Voc.newModels);
       var modelsChanged = function() {
         return !!(toKill.length || toMake.length);
       }
+      
+//      if (toKill && toKill.length)
+//        debugger;
       
       if (!version) {
         if (RM.db) {
@@ -412,6 +416,9 @@ define([
           return;
         }
 
+//        if (toKill && toKill.length)
+//          debugger;
+
         // Queue up upgrade
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
         dbPromise.resolve();
@@ -454,7 +461,6 @@ define([
     },
     
     updateStores: function(trans, toMake, toKill) {
-//      var toKill = toKill || _.union(Voc.changedModels, Voc.newModels);
       toKill = _.union(_.intersection(toMake, toKill), toKill);
       for (var i = 0; i < toKill.length; i++) {
         var type = toKill[i];
@@ -498,8 +504,23 @@ define([
         }
       }
       
-      Voc.changedModels.length = 0;
-      Voc.newModels.length = 0;
+//      var updated = _.intersection(Voc.changedModels, _.union(toKill, toMake));
+//      if (!updated.length)
+//        return;
+//      
+//      debugger;
+//      Voc.changedModels = _.difference(Voc.changedModels, updated);
+//      var stillUnsaved = [], toSave = [];
+//      for (var i = 0; i < Voc.unsavedModels.length; i++) {
+//        var m = Voc.unsavedModels[i];
+//        if (updated.indexOf(m.type) == -1)
+//          stillUnsaved.push(m);
+//        else
+//          toSave.push(m);
+//      }
+//      
+//      Voc.saveModelsToStorage(toSave);
+//      Voc.unsavedModels = stillUnsaved;
     },
     
     addItems: function(items, classUri) {

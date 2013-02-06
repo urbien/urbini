@@ -7,7 +7,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 //  window.shimIndexedDB.__useShim();
 //	
 //  var indexedDB = window.shimIndexedDB || window.indexedDB;
-  var usingShim = indexedDB === window.shimIndexedDB;
+  var usingShim = window.indexedDB === window.shimIndexedDB;
 //  if (usingShim)
 //    window.shimIndexedDB.__debug(true);  
 //	/**
@@ -109,7 +109,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 					return {
 						"objectStore": function(storeName){
 							try {
-								return wrap.objectStore(idbTransaction.objectStore(storeName), idbTransaction);
+								return wrap.objectStore(idbTransaction.objectStore(storeName));
 							} catch (e) {
 								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
 								return wrap.objectStore(null);
@@ -623,7 +623,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 									dfd.rejectWith(this, [err, e]);
 								}
 							}, function(trans) {
-								console.log("Transaction is in progress", trans);
+//								console.log("Transaction is in progress", trans);
 								onTransactionProgress(trans, callback);
 							});
 						});

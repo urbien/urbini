@@ -83,24 +83,25 @@ define([
       if (G.tabs) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
-          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+//          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+          t.mobileUrl = t.hash;
           U.addToFrag(frag, self.menuItemTemplate(t));
-          self.tabs[t.title] = t.mobileUrl;
+//          self.tabs[t.title] = t.mobileUrl;
         });
       }
       
       this.buildActionsMenu(frag);
-      
+      var vocModel = this.vocModel;
       if (this.resource) {
-        var isModificationHistory = this.resource.isA('ModificationHistory');
+        var isModificationHistory = res.isA('ModificationHistory');
         if (isModificationHistory) {
-          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+          var ch = U.getCloneOf(vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  ch.length == 0)
-            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-          if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
+            ch = U.getCloneOf(vocModel, 'ModificationHistory.changeHistory');
+          if (ch  &&  ch.length != 0  && !vocModel.properties[ch[0]].hidden) { 
             var cnt = res.get(ch[0]) && res.get(ch[0]).count;
             if (cnt  &&  cnt > 0)
-              U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
+              U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(res.getUri())}));
           }
         }
       }
@@ -157,7 +158,7 @@ define([
     edit: function() {
     },
     
-    delete: function() {
+    "delete": function() {
       alert('deleted...not really though');
     },
     

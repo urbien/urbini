@@ -202,6 +202,9 @@ define([
       var self = this;
       var rl = this.collection;
       var before = rl.models.length;
+      if (!before)
+        return;
+      
 //      var before = this.model.offset;
       this.page++;
       var requested = (this.page + 1) * this.displayPerPage;

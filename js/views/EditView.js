@@ -72,17 +72,7 @@ define([
             label: U.getPropDisplayName(prop),
             shortName: name,
             onSelect: self.onSelected,
-//            onShow: function(dw, v) {
-//            },
             input: this
-//              parseValue: U.toDateParts
-//              ,
-//              formatResult: function(d) {
-//                if (_.isUndefined(d[0]))
-//                  return today;
-//                else
-//                  return new Date(d[2], d[0], d[1]);
-//              }
           };
           
           if (isDate) 
@@ -439,59 +429,7 @@ define([
           },
           
           error: onSaveError
-        });
-        
-//        _.extend(props, baseParams);
-//        _.extend(props, {type: vocModel.type, uri: res.getUri()});
-//        var callback = function(xhr, status) {
-//          inputs.attr('disabled', false);
-//          if (status !== 'success') {
-//            alert('There was an error with your request, please resubmit');
-//            return;
-//          }
-//          
-//          switch (xhr.status) {
-//          case 304:
-//            alert('No changes made');
-//            $('input').attr('disabled', false);
-//            break;
-//          case 200:
-//            var json;
-//            try {
-//              json = JSON.parse(xhr.responseText);
-//              if (json.error) {
-////                self.resetResource();
-//                switch (json.error.code) {
-//                case 401:
-//                  Errors.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
-//                  break;
-////                case 409:
-////                  break;
-//                default:
-//                  Errors.errDialog({msg: json.error.details, delay: 100});
-//                  break;
-//                }
-//                
-//                G.log(self.TAG, 'error', JSON.stringify(json));
-//                return;
-//              }
-//              else {
-//                res.set(json, {skipRefresh: true});
-//              }
-//            } catch (err) {
-//            }
-//            
-//            Events.trigger('refresh', res, res.getUri());
-//            setTimeout(function() {RM.addItem(res)}, 100);
-//            break;
-////          case 404:
-////            alert('The item you\'re editing doesn\'t exist');
-//          }
-//
-//          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-//        }
-//        
-//        $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
+        });        
       };
       
       var onError = function(errors) {
@@ -665,30 +603,6 @@ define([
             var p = props[j].trim();
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
-//            var p = props[j].trim();
-//            if (!/^[a-zA-Z]/.test(p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
-//              continue;
-//            
-//            var prop = meta[p];
-//            if (params[p]  &&  prop.containerMember)
-//              continue;
-//            if (!prop) {
-////              delete json[p];
-//              continue;
-//            }
-//
-//            _.extend(prop, {shortName: p});
-//            if (!willShow(res, prop, userRole))
-//              continue;
-//  
-//            displayedProps[p] = true;
-//            var pInfo = U.makeEditProp(prop, json[p], formId);
-//            if (!groupNameDisplayed) {
-//              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-//              groupNameDisplayed = true;
-//            }
-//  
-//            U.addToFrag(frag, this.editRowTemplate(pInfo));
           }
         }
         
@@ -743,45 +657,7 @@ define([
 //        jin.keyup(onFocusout);
       };
 
-      initInputs(inputs);
-//      inputs.each(function(idx, input) {
-////        var input = inputs[i];
-//        var i = input;
-//        var name = i.name;
-//        var jin = $(i);
-//        var jparent = jin.parent();
-//        var validated = function() {
-//          jparent.find('label.error').remove();
-////          i.focus();
-//        };
-//
-//        var onFocusout = function() {
-//          self.setValue(this.name, this.value, validated, self.fieldError);          
-//        };
-//        
-//        jin.focusout(onFocusout);
-////        jin.keyup(onFocusout);
-//      });
-//      
-//      texts.each(function(idx, textarea) {
-//  //      var input = inputs[i];
-//        var i = textarea;
-//        var name = i.name;
-//        var jin = $(i);
-//        var jparent = jin.parent();
-//        var validated = function() {
-//          jparent.find('label.error').remove();
-//  //        i.focus();
-//        };
-//  
-//        var onFocusout = function() {
-//          self.setValue(this.name, this.value, validated, self.fieldError);          
-//        };
-//        
-//        jin.focusout(onFocusout);
-//  //      jin.keyup(onFocusout);
-//      });
-        
+      initInputs(inputs);        
       form.find('[required]').each(function() {
         $(this).prev('label').addClass('req');
       });

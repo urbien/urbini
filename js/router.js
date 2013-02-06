@@ -12,25 +12,17 @@ define([
   'views/HomePage', 
   'views/ListPage', 
   'views/ViewPage'
-//  , 
-//  'views/EditPage' 
 ], function(G, $, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
-//  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var MenuPage, EditPage, EditView;
+  var EditPage, EditView;
   var Router = Backbone.Router.extend({
-//    ":type"           : "list", // e.g. app/ichangeme#<resourceType>
-//    ":type/:backlink" : "list", // e.g. app/ichangeme#<resourceUri>/<backlinkProperty>
-//    "view/*path"      : "view"  // e.g. app/ichangeme#view/<resourceUri>
     routes:{
       ""                : "home",
       ":type"           : "list", 
       "view/*path"      : "view",  
-//      "menu/*path"      : "menu", 
       "edit/*path"      : "edit", 
       "make/*path"      : "make", 
       "chooser/*path"   : "choose", 
       ":type/:backlink" : "list"
-//      "login/*path"     : "login" 
     },
 
     CollectionViews: {},
@@ -209,20 +201,6 @@ define([
       return this;
     },
     
-//    menu: function() {
-//      if (!MenuPage)
-//        return this.loadViews('MenuPage', this.menu, arguments);
-//      
-//      var c = this.currentModel;
-//      var id = c.id || c.url;
-//      this.viewsCache = this.MenuViews;
-//      var menuPage = this.MenuViews[id];
-//      if (!menuPage)
-//        menuPage = this.MenuViews[id] = new MenuPage({model: this.currentModel});
-//      
-//      this.changePage(menuPage);
-//    },
-
     loadViews: function(views, caller, args) {
       views = $.isArray(views) ? views : [views];
       var self = this;

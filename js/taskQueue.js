@@ -36,6 +36,7 @@ define(['globals', 'underscore', 'jquery'], function(G, _, $) {
           sequential = options.sequential,
           force = options.force,
           yield = options.yield,
+          name = options.name,
           promise;
       
       if (!sequential) {

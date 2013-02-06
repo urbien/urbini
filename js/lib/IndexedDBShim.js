@@ -391,7 +391,6 @@ var idbModules = window.idbModules = {};
     IDBIndex.prototype.__createIndex = function(indexName, keyPath, optionalParameters) {
       var me = this;
       var transaction = me.__idbObjectStore.transaction;
-      debugger;
       transaction.tq.runTask(function() {
         return $.Deferred(function(defer) {
           transaction.db.__db.transaction(function(tx){
@@ -438,7 +437,6 @@ var idbModules = window.idbModules = {};
                               idbModules.DEBUG && console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
                               tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
                                   me.__idbObjectStore.__setReadyState("createIndex", true);
-                                  debugger;
                                   defer.resolve(me);
                               }, error);
                           }

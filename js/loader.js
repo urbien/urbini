@@ -616,7 +616,7 @@ define('globals', function() {
           cached = cached && JSON.parse(cached);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage.delete(url);
+          G.localStorage["delete"](url);
           cached = null;
         }
         
@@ -625,7 +625,7 @@ define('globals', function() {
           if (timestamp && timestamp <= cached.modified)
             cached = cached.text;
           else {
-            localStorage.removeItem(url);
+            G.localStorage["delete"](url);
             cached = null;
           }
         }
@@ -638,8 +638,8 @@ define('globals', function() {
           loadModule(cached, url, context, name);
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
-          G.log(G.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage.delete(url);
+          G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
+          G.localStorage["delete"](url);
           loadedCached = false;
         }
       } 
@@ -708,7 +708,7 @@ define('globals', function() {
 //      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
-    delete: function(key) {
+    "delete": function(key) {
       localStorage.removeItem(key);
     },
     put: function(key, value, force) {
@@ -718,7 +718,7 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
-        localStorage.removeItem(key);
+        G.localStorage["delete"](key);
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
@@ -741,7 +741,7 @@ define('globals', function() {
       this.resetting = true;
       for (var key in localStorage) {
         if (key.indexOf('model:') == 0)
-          localStorage.removeItem(key);
+          G.localStorage["delete"](key);
       }
       
       if (after) 
@@ -774,7 +774,7 @@ define('globals', function() {
     defaults: {
       radius: 15 // km
     },
-    models: [],
+    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     shortNameToModel: {},
     typeToModel: {},
     shortNameToEnum: {},
@@ -1140,7 +1140,7 @@ define('globals', function() {
             saved = JSON.parse(saved);
           } catch (err) {
             pruned.push(url);
-            localStorage.removeItem(url);
+            G.localStorage["delete"](url);
             continue;
           }
           
@@ -1154,7 +1154,7 @@ define('globals', function() {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
               
-            localStorage.removeItem(url);
+            G.localStorage["delete"](url);
           }
         }
         

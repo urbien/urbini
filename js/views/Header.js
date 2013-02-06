@@ -21,7 +21,7 @@ define([
         var hash = window.location.hash && window.location.hash.slice(1);
         if (hash && G.tabs) {
           decHash = decodeURIComponent(hash);
-          var matches = _.filter(G.tabs, function(t) {return t.mobileUrl == hash || decodeURIComponent(t.mobileUrl) == decHash});
+          var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
           if (matches.length)
             this.pageTitle = matches[0].title;
         }

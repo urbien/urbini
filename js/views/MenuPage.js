@@ -146,7 +146,7 @@ define([
     edit: function() {
     },
     
-    delete: function() {
+    "delete": function() {
       alert('deleted...not really though');
     },
     

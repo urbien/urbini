@@ -333,8 +333,9 @@ define([
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
         var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
-        if (type.startsWith(G.sqlUrl))
-          type = 'http://' + type.slice(G.sqlUrl.length + 1);
+        var sqlIdx = type.indexOf(G.sqlUri);
+        if (sqlIdx != -1)
+          type = 'http://' + type.slice(sqlIdx + G.sqlUri.length + 1);
         
         var qIdx = type.indexOf('?');
         return qIdx == -1 ? type : type.slice(0, qIdx);
@@ -1183,68 +1184,68 @@ define([
 //    buildHash: function(model) {
 //      return model instanceof Backbone.Model ? 'view/' + U.encode(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
-    
-    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
-    paramsToSkip: ['hideFltr'],
-    getMobileUrl: function(url) {
-      var orgParams = U.getQueryParams(url);
-      if (url.startsWith('v.html'))
-        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
-      
-      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
-      var type = orgParams.type;
-//      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
-      delete orgParams.type;
-      var ignoredParams = '';
-      var params = {};
-      _.forEach(_.keys(orgParams), function(p) {
-        if (_.contains(U.paramsToSkip, p))
-          return;
-        
-        var apiParam = U.apiParamMap[p];
-        if (typeof apiParam !== 'undefined') {
-          var val = orgParams[p];
-          if (apiParam == '$limit')
-            val = Math.max(parseInt(val, 10), 50);
-          
-          params[apiParam] = val;
-          return;
-        }
-        
-        if (p.startsWith('-')) {
-          ignoredParams += p + ',';
-          return;
-        }
-        
-        var val = orgParams[p];
-        if (typeof val === 'undefined' || val === '')
-          return;
-        
-        var matches = p.match(/^\.?([a-zA-Z_]+)(_select|_To|_From)$/);
-        if (matches && matches.length > 1) {
-          var pType = matches.length >=3 ? matches[2] : null;
-          if (pType) {
-            if (pType == '_From')
-              val = '>=' + val; // to make the query string look like "start=>=today", with <=today encoded of course            
-            else if (pType == '_To')
-              val = '<=' + val; // to make the query string look like "end=<=today", with <=today encoded of course
-          }
-          
-          params[matches[1]] = val;
-        }
-        else {
-          if (!p.match(/^[a-zA-Z]/) || p.endsWith('_verified')) // starts with a letter
-            return;
-          
-          params[p] = val;
-        }
-      });
-      
-//      if (ignoredParams)
-//        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
-      
-      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
-    },
+//    
+//    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
+//    paramsToSkip: ['hideFltr'],
+//    getMobileUrl: function(url) {
+//      var orgParams = U.getQueryParams(url);
+//      if (url.startsWith('v.html'))
+//        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
+//      
+//      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
+//      var type = orgParams.type;
+////      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
+//      delete orgParams.type;
+//      var ignoredParams = '';
+//      var params = {};
+//      _.forEach(_.keys(orgParams), function(p) {
+//        if (_.contains(U.paramsToSkip, p))
+//          return;
+//        
+//        var apiParam = U.apiParamMap[p];
+//        if (typeof apiParam !== 'undefined') {
+//          var val = orgParams[p];
+//          if (apiParam == '$limit')
+//            val = Math.max(parseInt(val, 10), 50);
+//          
+//          params[apiParam] = val;
+//          return;
+//        }
+//        
+//        if (p.startsWith('-')) {
+//          ignoredParams += p + ',';
+//          return;
+//        }
+//        
+//        var val = orgParams[p];
+//        if (typeof val === 'undefined' || val === '')
+//          return;
+//        
+//        var matches = p.match(/^\.?([a-zA-Z_]+)(_select|_To|_From)$/);
+//        if (matches && matches.length > 1) {
+//          var pType = matches.length >=3 ? matches[2] : null;
+//          if (pType) {
+//            if (pType == '_From')
+//              val = '>=' + val; // to make the query string look like "start=>=today", with <=today encoded of course            
+//            else if (pType == '_To')
+//              val = '<=' + val; // to make the query string look like "end=<=today", with <=today encoded of course
+//          }
+//          
+//          params[matches[1]] = val;
+//        }
+//        else {
+//          if (!p.match(/^[a-zA-Z]/) || p.endsWith('_verified')) // starts with a letter
+//            return;
+//          
+//          params[p] = val;
+//        }
+//      });
+//      
+////      if (ignoredParams)
+////        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
+//      
+//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
+//    },
     
     pushUniq: function(arr, obj) {
       if (!_.contains(arr, obj))
@@ -1606,22 +1607,31 @@ define([
 //        }
 //      }
 //    },
+    pick: function(obj) {
+      var type = U.getObjectType(obj);
+      switch (type) {
+      case '[object Object]':
+        return _.pick.apply(null, arguments);
+      case '[object Array]':
+        var keys = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
+        var arrCopy = [];
+        for (var i = 0; i < obj.length; i++) {
+          var item = obj[i], copy = {};
+          for (var j = 0; j < keys.length; j++) {
+            var key = keys[j];
+            if (key in item) 
+              copy[key] = item[key];
+          }
+          
+          arrCopy.push(copy);
+        }
+        
+        return arrCopy;
+      }
+    },
     
     slice: slice
   };
 
-//  var underscoreTemplate = _.template;
-//  _.template = function() {
-//    var template = underscoreTemplate.apply(this, arguments);
-////    var source = template.source;
-//    return function () {
-//      var args = U.slice.call(arguments);
-//      args[args.length] = U;
-//      args[args.length] = G;
-//      var self = this;
-//      return template.apply(self, args);
-//    }
-//  }
-  
   return (Lablz.U = U);
 });

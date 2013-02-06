@@ -11,11 +11,10 @@ define([
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/MenuButton',
-  'views/MenuPanel',
   'views/EditView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, MenuPanel, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
   var editOptions = ['action', 'viewId'];
   return BasicView.extend({
     clicked: false,

@@ -12,11 +12,10 @@ define([
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/MenuButton',
-  'views/MenuPanel',
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, MenuPanel, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,
@@ -44,9 +43,6 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
-//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
-//      menuPanel.render();
     },
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
