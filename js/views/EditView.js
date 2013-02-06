@@ -159,11 +159,12 @@ define([
         if (!prName)
           prName = pr.shortName;
         var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
+        var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
         if (this.action == 'make')
 //        if (hash.indexOf('make/') == 0)
-          params += '&$type=' + encodeURIComponent(this.vocModel.type) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
+          params += '&$type=' + encodeURIComponent(this.vocModel.type) + "&$title=" + encodeURIComponent(t);
         else
-          params += '&$forResource=' + encodeURIComponent(this.model.get('_uri')) + "&$title=" + encodeURIComponent(prName + ' for ' + this.vocModel.displayName);
+          params += '&$forResource=' + encodeURIComponent(this.model.get('_uri')) + "&$title=" + encodeURIComponent(t);
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + params, {trigger: true});
       }
       else 
@@ -640,7 +641,7 @@ define([
           });
           if (generalGroup) {
             $.each(propGroups, function(i){
-              if(propGroups[i].shortName === 'general') propGroups.splice(i,1);
+              if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
             });
             propGroups.unshift(generalGroup[0]);
           }
@@ -695,6 +696,8 @@ define([
       else {
         for (var p in meta) {
           p = p.trim();
+          if (meta[p].readOnly)
+            continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);
         }        
