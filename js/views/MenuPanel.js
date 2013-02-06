@@ -29,7 +29,7 @@ define([
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
-      'click #subscribe': 'subscribe',
+      'click #subscribe': 'subscribe'
 //      'swipeleft': 'swipeleft',
 //      'swiperight': 'swiperight'
     },
@@ -81,14 +81,16 @@ define([
       var ul = this.$('#menuItems');
       var frag = document.createDocumentFragment();
       if (G.tabs) {
-        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
+//        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
+//        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
           t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
           U.addToFrag(frag, self.menuItemTemplate(t));
           self.tabs[t.title] = t.mobileUrl;
         });
       }
-      
+      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') }));        
+
       this.buildActionsMenu(frag);
       
       if (this.resource) {
@@ -106,10 +108,11 @@ define([
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(G.pageRoot)}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile', image: G.currentUser.thumb}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(G.pageRoot)}));
       }
       
+      U.addToFrag(frag, self.menuItemTemplate({title: 'Home', pageUrl: G.pageRoot}));
       ul.append(frag);
       
       this.rendered = true;
@@ -129,7 +132,7 @@ define([
       else
         this.buildActionsMenuForList(frag);
       
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Subscribe', mobileUrl: '', id: 'subscribe'}));
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Follow', mobileUrl: '', id: 'subscribe'}));
     },
     
     buildActionsMenuForList: function(frag) {
@@ -157,7 +160,7 @@ define([
     edit: function() {
     },
     
-    delete: function() {
+    "delete": function() {
       alert('deleted...not really though');
     },
     
