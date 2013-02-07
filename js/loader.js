@@ -708,7 +708,7 @@ define('globals', function() {
 //      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
-    "delete": function(key) {
+    del: function(key) {
       localStorage.removeItem(key);
     },
     put: function(key, value, force) {
@@ -718,7 +718,7 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
-        G.localStorage["delete"](key);
+        G.localStorage.del(key);
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
@@ -741,7 +741,7 @@ define('globals', function() {
       this.resetting = true;
       for (var key in localStorage) {
         if (key.indexOf('model:') == 0)
-          G.localStorage["delete"](key);
+          G.localStorage.del(key);
       }
       
       if (after) 
@@ -749,7 +749,7 @@ define('globals', function() {
       
       if (!resetting)
         G.Voc && G.Voc.saveModelsToStorage();
-    },
+    }
     
   };
   
@@ -1140,7 +1140,7 @@ define('globals', function() {
             saved = JSON.parse(saved);
           } catch (err) {
             pruned.push(url);
-            G.localStorage["delete"](url);
+            G.localStorage.del(url);
             continue;
           }
           
@@ -1154,7 +1154,7 @@ define('globals', function() {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
               
-            G.localStorage["delete"](url);
+            G.localStorage.del(url);
           }
         }
         
@@ -1179,7 +1179,7 @@ define('globals', function() {
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
-        data: {modules: pruned.join(','), minify: G.minify},
+        data: {modules: pruned.join(','), minify: G.minify}
       };
       
       var complete = function(resp) {

@@ -749,9 +749,6 @@ define([
             } catch (err){
               return false;
             }
-            
-            // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
-            return true;
           };
         }
       }
