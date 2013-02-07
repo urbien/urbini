@@ -616,7 +616,7 @@ define('globals', function() {
           cached = cached && JSON.parse(cached);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage["delete"](url);
+          G.localStorage.del(url);
           cached = null;
         }
         
@@ -625,7 +625,7 @@ define('globals', function() {
           if (timestamp && timestamp <= cached.modified)
             cached = cached.text;
           else {
-            G.localStorage["delete"](url);
+            G.localStorage.del(url);
             cached = null;
           }
         }
@@ -639,7 +639,7 @@ define('globals', function() {
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage["delete"](url);
+          G.localStorage.del(url);
           loadedCached = false;
         }
       } 
