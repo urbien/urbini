@@ -489,13 +489,17 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval.call({}, text);
-  else // Safari
+//  var nav = Lablz.navigator;
+//  if (nav.isChrome || nav.isSafari)
+//    Lablz.inject(text);
+//  else if (nav.isFirefox)
+//    return window.eval.call({}, text);
+//  else // Safari
     return window.eval(text);
+//  return eval(text);
+  
+//  return Lablz.inject(text);
+  
   // Indirect Eval
 //  try {
 //    return window.eval.call({}, text);
@@ -612,7 +616,7 @@ define('globals', function() {
           cached = cached && JSON.parse(cached);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage.delete(url);
+          G.localStorage.del(url);
           cached = null;
         }
         
@@ -621,7 +625,7 @@ define('globals', function() {
           if (timestamp && timestamp <= cached.modified)
             cached = cached.text;
           else {
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
             cached = null;
           }
         }
@@ -634,8 +638,8 @@ define('globals', function() {
           loadModule(cached, url, context, name);
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
-          G.log(G.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage.delete(url);
+          G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
+          G.localStorage.del(url);
           loadedCached = false;
         }
       } 
@@ -704,7 +708,7 @@ define('globals', function() {
 //      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
-    delete: function(key) {
+    del: function(key) {
       localStorage.removeItem(key);
     },
     put: function(key, value, force) {
@@ -714,16 +718,17 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
-        localStorage.removeItem(key);
+        G.localStorage.del(key);
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
-        if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+        if(['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
           ls.reset(force && function() {
             ls.put(key, value)
           });
         } else {
+          debugger;
           G.hasLocalStorage = false;
           G.log(G.TAG, "Local storage write failure: ", e);
         }
@@ -736,7 +741,7 @@ define('globals', function() {
       this.resetting = true;
       for (var key in localStorage) {
         if (key.indexOf('model:') == 0)
-          localStorage.removeItem(key);
+          G.localStorage.del(key);
       }
       
       if (after) 
@@ -744,7 +749,7 @@ define('globals', function() {
       
       if (!resetting)
         G.Voc && G.Voc.saveModelsToStorage();
-    },
+    }
     
   };
   
@@ -766,6 +771,16 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    defaults: {
+      radius: 15 // km
+    },
+    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
+    shortNameToModel: {},
+    typeToModel: {},
+    shortNameToEnum: {},
+    typeToEnum: {},
+    shortNameToInline: {},
+    typeToInline: {},
     modCache: {},
     usedModels: {},
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
@@ -1023,24 +1038,24 @@ define('globals', function() {
 //      parent.removeChild(script);
 //      callback(text);
 //    },
-    inject: function(module, text, callback) {
-      var d = document;
-      var script = d.createElement("script");
-      var id = "script" + (new Date).getTime();
-      var root = d.documentElement;
-      script.type = "text/javascript";
-//      script.innerHtml = text;
-      try {
-        script.appendChild(d.createTextNode(text));
-      } catch(e) {
-        script.text = text; // IE
-      }
-      
-      var parent = d.head || d.body;
-      parent.appendChild(script);
-      parent.removeChild(script);
-      callback(module);
-    },
+//    inject: function(module, text, callback) {
+//      var d = document;
+//      var script = d.createElement("script");
+//      var id = "script" + (new Date).getTime();
+//      var root = d.documentElement;
+//      script.type = "text/javascript";
+////      script.innerHtml = text;
+//      try {
+//        script.appendChild(d.createTextNode(text));
+//      } catch(e) {
+//        script.text = text; // IE
+//      }
+//      
+//      var parent = d.head || d.body;
+//      parent.appendChild(script);
+//      parent.removeChild(script);
+//      callback(module);
+//    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -1125,7 +1140,7 @@ define('globals', function() {
             saved = JSON.parse(saved);
           } catch (err) {
             pruned.push(url);
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
             continue;
           }
           
@@ -1139,7 +1154,7 @@ define('globals', function() {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
               
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
           }
         }
         
@@ -1164,7 +1179,7 @@ define('globals', function() {
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
-        data: {modules: pruned.join(','), minify: G.minify},
+        data: {modules: pruned.join(','), minify: G.minify}
       };
       
       var complete = function(resp) {
@@ -1390,7 +1405,8 @@ define('globals', function() {
 //      validator: ['jquery'],
       jqueryImagesloaded: ['jquery'],
       mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
-      jqueryIndexedDB: ['jquery', 'indexedDBShim']
+      jqueryIndexedDB: ['jquery', 'indexedDBShim'],
+      indexedDBShim: ['taskQueue']
 //          ,
 //      mobiscrollDate: ['jquery', 'jqueryMobile', 'mobiscroll'],
 //      mobiscrollJQM: ['jquery', 'jqueryMobile', 'mobiscroll'],
