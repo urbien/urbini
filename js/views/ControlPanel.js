@@ -137,10 +137,11 @@ define([
 //              var uri = U.getShortUri(res.get('_uri'), vocModel); 
               var uri = res.getUri();
               var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
+              var comment = prop.comment;
               if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t}));
+                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
               else
-                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t}));
+                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //              else
@@ -210,10 +211,11 @@ define([
 //          var uri = U.getShortUri(res.get('_uri'), vocModel); 
           var uri = res.getUri();
           var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
+          var comment = prop.comment;
           if (isPropEditable)
-            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t}));
+            U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
           else
-            U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t}));
+            U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
         }
       }
       if (!options || options.setHTML)
