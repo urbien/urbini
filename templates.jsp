@@ -8,7 +8,7 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" style="padding: 20px 5px;" class="ui-content" data-role="content" role="main">
+  <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="c"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
@@ -183,14 +183,14 @@
 </script>
 
 <script type="text/template" id="menuItemTemplate">
-  <li>
+  {{ if (typeof icon == 'undefined') { }}
+    <li>
+  {{ } }}
+  {{ if (typeof icon != 'undefined') { }}
+    <li data-icon="{{= icon }}">
+  {{ } }}
     <img style="max-height: 60px; max-width: 60px; float:left;" src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" />
-    {{ if (typeof icon != 'undefined') { }}
-       <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}" data-role="button" data-icon="{{= icon }}">  
-    {{ } }}
-    {{ if (typeof icon == 'undefined') { }}
-       <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" href="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}" >  
-    {{ } }}
+    <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}">  
     <h3 style="color:#ccc">{{= title }}
   </h3></a>
   </li>
@@ -201,7 +201,12 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= encodeURIComponent(title) }}" data-icon="plus"></a></li>
+   <li>
+     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= encodeURIComponent(title) }}" data-icon="plus"></a>
+     {{ if (typeof comment != 'undentified') { }}
+       <p style="padding-left: 15px;">{{= comment }}</p>
+     {{ } }}
+   </li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
@@ -313,6 +318,10 @@
   </li>
 </script>
 
+<script type="text/template" id="publishButtonTemplate">
+  <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">Your application has been changed please re-Publish</a>
+</script>
+
 <script type="text/template" id="headerTemplate">
   <div data-role="header" class="ui-header ui-bar-c">
     <div id="errMsg"></div>
@@ -322,6 +331,11 @@
     <div id="name" align="center">
       <!-- h3 style="margin: 8px;font-size:16px;font-family:Tahoma, Lucinda Grande, Verdana, Helvetica, Arial, sans-serif;" id="pageTitle">{{= this.pageTitle }}</h3 -->
       <h3 id="pageTitle">{{= this.title }}</h3>
+      <div style="max-width:400px;" id="publishBtn">
+        {{ if (typeof publish != 'undefined') { }}
+          {{= publish }}
+        {{ } }}
+      </div>
     </div>
   </div>
 </script>
