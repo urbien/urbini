@@ -54,14 +54,21 @@ define([
       
       if (typeof t === 'undefined' || !t)
         return;
-      
+      text = text.replace(/(<([^>]+)>)/ig, '').trim();
       if (this.tabs[text]) {
-        var href = t.href.slice(t.href.lastIndexOf('#') + 1)
+        var href = $(t).attr('href') || $(t).attr('link');
+        var idx = href.lastIndexOf('#');
+        var href = idx == -1 ? href : href.slice(idx + 1)
         if (this.tabs[text] == href) {
           e.originalEvent.preventDefault();
           this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
           return;
         }
+      }
+      var link = $(t).attr('link');
+      if (link) {
+        $(t).removeAttr('link');
+        $(t).attr('href', link);
       }
     },
 //    tap: Events.defaultTapHandler,
@@ -89,30 +96,32 @@ define([
           self.tabs[t.title] = t.mobileUrl;
         });
       }
-      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') }));        
-
+      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?$or=" + encodeURIComponent("creator=_me||lastDeployed=!null") }));        
+      
       this.buildActionsMenu(frag);
       
-      if (this.resource) {
-        var isModificationHistory = U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel);
-        if (isModificationHistory) {
-          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-          if (!ch  ||  ch.length == 0)
-            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-          if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
-            var cnt = res.get(ch[0]) && res.get(ch[0]).count;
-            if (cnt  &&  cnt > 0)
-              U.addToFrag(frag, this.menuItemTemplate({title: 'Activity', pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
-          }
+      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel)) {
+        var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+        if (!ch  ||  ch.length == 0)
+          ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+        if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
+          var cnt = res.get(ch[0]) && res.get(ch[0]).count;
+          if (cnt  &&  cnt > 0) 
+            U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
         }
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: 'view/profile', image: G.currentUser.thumb}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(G.pageRoot)}));
+
+        pageUrl = 'view/profile';
+        var title = 'Profile';
+        U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
+        self.tabs[title] = pageUrl;
+
+        U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
-      
-      U.addToFrag(frag, self.menuItemTemplate({title: 'Home', pageUrl: G.pageRoot}));
+      U.addToFrag(frag, this.menuItemTemplate({title: "Home", pageUrl: G.serverName + '/' + G.pageRoot, icon: 'home'}));
+
       ul.append(frag);
       
       this.rendered = true;
