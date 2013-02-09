@@ -493,7 +493,7 @@ requirejs.exec = function(text) {
   if (nav.isChrome || nav.isSafari)
     Lablz.inject(text);
   else if (nav.isFirefox)
-    return window.eval.call({}, text);
+    return window.eval(text);  
   else // Safari
     return window.eval(text);
   // Indirect Eval
@@ -552,7 +552,7 @@ define('globals', function() {
       
     switch (ext) {
       case '.css':
-        text += '\r\n//@ sourceURL=' + url;
+        text += '\r\n/*//@ sourceURL=' + url + '*/';
         G.appendCSS(text);
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
@@ -566,7 +566,11 @@ define('globals', function() {
         G.log(G.TAG, 'cache', 'end cache.get: ' + url);
         break;
       default:
-        text += '\r\n//@ sourceURL=' + url;
+//        text += '\n//@ sourceURL=' + url.slice(0, -2) + 'min.js';
+        if (G.navigator.isIE) text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+        text += '\n//@ sourceMappingURL=' + url + '.map';
+        text += '\n//@ sourceURL=' + url;
+        if (G.navigator.isIE) text += '*/\n';
         requirejs.exec(text);
         context.completeLoad(name);
         break;
@@ -612,7 +616,7 @@ define('globals', function() {
           cached = cached && JSON.parse(cached);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage.delete(url);
+          G.localStorage["delete"](url);
           cached = null;
         }
         
@@ -635,7 +639,7 @@ define('globals', function() {
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
           G.log(G.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage.delete(url);
+          G.localStorage["delete"](url);
           loadedCached = false;
         }
       } 
@@ -704,7 +708,7 @@ define('globals', function() {
 //      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
-    delete: function(key) {
+    "delete": function(key) {
       localStorage.removeItem(key);
     },
     put: function(key, value, force) {
@@ -744,7 +748,7 @@ define('globals', function() {
       
       if (!resetting)
         G.Voc && G.Voc.saveModelsToStorage();
-    },
+    }
     
   };
   
@@ -1164,7 +1168,7 @@ define('globals', function() {
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
-        data: {modules: pruned.join(','), minify: G.minify},
+        data: {modules: pruned.join(','), minify: G.minify}
       };
       
       var complete = function(resp) {
