@@ -16,9 +16,8 @@ define([
   'views/LoginButtons', 
   'views/AroundMeButton', 
   'views/MapItButton',
-  'views/MenuPanel',
   'views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuPanel, MenuButton) {
+], function(G, $, _, Backbone, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
