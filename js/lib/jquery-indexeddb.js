@@ -1,15 +1,27 @@
-define(['jquery', 'indexedDBShim'], function($) {
+define(['globals', 'indexedDBShim'], function(G) {
 	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
+//  window.shimIndexedDB.__useShim();
+//
+	var usingShim, indexedDB;
+	if (typeof window.webkitIndexedDB !== 'undefined') {
+	  indexedDB =  window.shimIndexedDB;
+	  usingShim = true;
+	} 
+	else {
+	  indexedDB = window.indexedDB;
+	}
 	
-	/**
-	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
-	 * supports strings
-	 */
-	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+//  if (usingShim)
+//    window.shimIndexedDB.__debug(true);  
+//	/**
+//	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
+//	 * supports strings
+//	 */
+//	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 	
 	function getDefaultTransaction(mode){
 		var result = null;
@@ -49,15 +61,20 @@ define(['jquery', 'indexedDBShim'], function($) {
 				}
 			}
 			
-			
 			var wrap = {
 				"request": function(req, args){
 					return $.Deferred(function(dfd){
+//					  dfd.__lablzId = G.nextId();
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
-							idbRequest.onsuccess = function(e){
-								//console.log("Success", idbRequest, e, this);
-								dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+							idbRequest.onsuccess = function(e) {
+//							  if (usingShim) {
+//  							  var trans = idbRequest.transaction;
+//  							  if (trans && trans.mode === 2) // version transaction (see IndexedDBShim)
+//  							    return; // wait for trans.onupgradecomplete
+//							  }
+							  
+						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
 								//console.log("Error", idbRequest, e, this);
@@ -78,6 +95,21 @@ define(['jquery', 'indexedDBShim'], function($) {
 							if (typeof idbRequest.onupgradeneeded !== "undefined" && idbRequest.onupgradeneeded === null) {
 								idbRequest.onupgradeneeded = function(e){
 									//console.log("Upgrade", idbRequest, e, this);
+//								  var trans = idbRequest.transaction;
+//								  if (trans) {
+//  								  if (usingShim) {
+//    								  trans.onupgradecomplete = function() {
+//  							        console.log("WebSQL upgrade transaction complete");
+//    								    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+//    								  }
+//  								  }
+//  								  else {
+//  								    trans.oncomplete = function(e) {
+//  //								      debugger;
+//  								    }
+//  								  }
+//								  }
+								  
 									dfd.notifyWith(idbRequest, [idbRequest.result, e]);
 								};
 							}
@@ -90,6 +122,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 				// Wraps the IDBTransaction to return promises, and other dependent methods
 				"transaction": function(idbTransaction){
 					return {
+//					  __callbacks: {},
 						"objectStore": function(storeName){
 							try {
 								return wrap.objectStore(idbTransaction.objectStore(storeName));
@@ -115,9 +148,31 @@ define(['jquery', 'indexedDBShim'], function($) {
 						"abort": function(){
 							idbTransaction.abort();
 						}
+//						__addCallbacks: function(key, callback) {
+//              var callbacks = this.__callbacks[key] = this.__callbacks[key] || [];
+//              if (callback)
+//                callbacks.push(callback);
+//              
+//              idbTransaction[key] = idbTransaction[key] || function() {
+//                debugger;
+//                for (var i = 0; i < callbacks.length; i++) {
+//                  callbacks[i]();
+//                }
+//              }
+//              
+//              return this;
+//						},
+//            "onupgradecomplete": function(callback) {
+//						  debugger;
+//						  return this.__addCallbacks("onupgradecomplete", callback);
+//            },
+//						"oncomplete": function(callback) {
+//              return this.__addCallbacks("oncomplete", callback);
+//						}
+//					}.__addCallbacks("onupgradecomplete").__addCallbacks("oncomplete");
 					};
 				},
-				"objectStore": function(idbObjectStore){
+				"objectStore": function(idbObjectStore) {
 					var result = {};
 					// Define CRUD operations
 					var crudOps = ["add", "put", "get", "delete", "clear", "count"];
@@ -155,6 +210,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 						if (!indexName) {
 							indexName = prop;
 						}
+						
 						return wrap.index(function(){
 							return idbObjectStore.createIndex(indexName, prop, options);
 						});
@@ -162,10 +218,6 @@ define(['jquery', 'indexedDBShim'], function($) {
 					
 					result.deleteIndex = function(indexName){
 						return idbObjectStore.deleteIndex(indexName);
-					};
-					
-					result.getIndexNames = function() {
-					  return idbObjectStore.indexNames;
 					};
 					
 					return result;
@@ -254,8 +306,8 @@ define(['jquery', 'indexedDBShim'], function($) {
 					try {
 						var idbIndex = (typeof index === "function" ? index() : index);
 					} catch (e) {
-						idbIndex = null;
-						//console.log("failed to init idbIndex", e);
+//						idbIndex = null;
+					  throw e;
 					}
 					
 					return {
@@ -364,6 +416,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 							var versionReq = db.setVersion(newVersion);
               //console.log("invoked setVersion");
 							versionReq.onsuccess = function(upgradeEvent){
+//							  debugger;
 								result.transaction = versionReq.result;
 								var event = new $.Event("upgradeneeded");
 								event.oldVersion = oldVersion;
@@ -583,7 +636,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 											}
 										};
 										me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
-											//console.log("Transaction completed when trying to create object store");
+//											console.log("Transaction completed when trying to create object store");
 											// Nothing much to do
 										}, function(err, e){
 											dfd.rejectWith(this, [err, e]);
@@ -612,14 +665,11 @@ define(['jquery', 'indexedDBShim'], function($) {
 									dfd.rejectWith(this, [err, e]);
 								}
 							}, function(trans) {
-								//console.log("Transaction is in progress", trans);
+//								console.log("Transaction is in progress", trans);
 								onTransactionProgress(trans, callback);
 							});
 						});
 					}
-					
-//					function getIndexNames(wrappedObjectStore) {
-//					}
 					
 					function crudOp(opName, args){
 						return op(function(wrappedObjectStore){
@@ -663,15 +713,8 @@ define(['jquery', 'indexedDBShim'], function($) {
               "getAllKeys": function(range, direction){
                 return indexOp("_getAll", indexName, [range, direction, true]);
               }
-//              "getIndexNames": function(){
-//                return indexOp("getIndexNames");
-//              }
 						};
 					};
-					
-					result.getIndexNames = function() {
-					  return crudOp("getIndexNames");
-					}
 					
 					return result;
 				}
@@ -679,7 +722,14 @@ define(['jquery', 'indexedDBShim'], function($) {
 		}
 	});
 	
-	$.indexedDB.IDBCursor = IDBCursor;
-	$.indexedDB.IDBTransaction = IDBTransaction;
+	if (usingShim) {
+	  $.indexedDB.IDBCursor = idbModules.IDBCursor;
+	  $.indexedDB.IDBTransaction = idbModules.IDBTransaction;
+	}
+	else {
+  	$.indexedDB.IDBCursor = IDBCursor;
+  	$.indexedDB.IDBTransaction = IDBTransaction;
+	}
+	
 	$.idb = $.indexedDB;
 });

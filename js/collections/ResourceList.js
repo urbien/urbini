@@ -1,12 +1,9 @@
 define([
   'globals',
-  'jquery',
-  'underscore', 
-  'backbone', 
   'utils', 
   'error', 
   'events'
-], function(G, $, _, Backbone, U, Errors, Events) {
+], function(G, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
     TAG: "ResourceList",
@@ -106,6 +103,12 @@ define([
     },
     getKey: function() {
       return this.vocModel.type;
+    },
+    isAll: function(interfaceNames) {
+      return U.isAll(this.vocModel, interfaceNames);
+    },
+    isOneOf: function(interfaceNames) {
+      return U.isOneOf(this.vocModel, interfaceNames);
     },
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);

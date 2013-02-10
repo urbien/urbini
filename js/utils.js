@@ -1,9 +1,7 @@
 define([
   'globals',
-  'underscore',
-  'backbone',
   'templates'
-], function(G, _, Backbone, Templates) {
+], function(G, Templates) {
   var ArrayProto = Array.prototype;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -140,7 +138,7 @@ define([
      * @param prop
      * @param iProp sth like "Submission.submittedBy"
      */
-    isCloneOf: function(prop, iPropName, vocModel, Voc) {
+    isCloneOf: function(prop, iPropName, vocModel) {
       var cloneOf = prop.cloneOf;
       var subPropertyOf = prop.subPropertyOf;
       if (cloneOf) {
@@ -248,6 +246,8 @@ define([
         pk = hint.primaryKeys;
         snm = hint.shortNameToModel;
       }
+      else
+        snm = G.shortNameToModel;
       
 //      var pattern1 = \Qhttp:\/\/\E?(.*)\Q\/sql\/\E?();
 //      uri.match(\Qhttp:\/\/\E?([^/]+))
@@ -338,14 +338,17 @@ define([
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
         var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
-        if (type.startsWith(G.sqlUrl))
-          type = 'http://' + type.slice(G.sqlUrl.length + 1);
+        var sqlIdx = type.indexOf(G.sqlUri);
+        if (sqlIdx != -1)
+          type = 'http://' + type.slice(sqlIdx + G.sqlUri.length + 1);
         
         var qIdx = type.indexOf('?');
         return qIdx == -1 ? type : type.slice(0, qIdx);
       }
-      else
-        return hint.type || hint.shortNameToModel[typeName] && hint.shortNameToModel[typeName].type;
+      else {
+        var vocModel = G.shortNameToModel[typeName];
+        return hint.type || vocModel && vocModel.type;
+      }
     },
     
     getClassName: function(uri) {
@@ -382,17 +385,31 @@ define([
       var nameAndId = uri.match(regex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
+   
+    isAll: function(model, interfaceNames) {
+      return U.isA(model, interfaceNames, "AND");
+    },
     
-    isA: function(model, interfaceName, typeToModel) {
-      var impl = _.contains(model.interfaces, interfaceName);
-      if (impl  ||  !typeToModel)
-        return impl;
-      var superCl = model._super;
-      if (!superCl || superCl.endsWith('#Resource'))
-        return impl;
-      var m = typeToModel[superCl];
+    isOneOf: function(model, interfaceNames) {
+      return U.isA(model, interfaceNames, "OR");
+    },
+    
+    isA: function(model, interfaceNames, op) {
+      var OR = op === 'OR';
+      interfaceNames = typeof interfaceNames === 'string' ? [interfaceNames] : interfaceNames;
+      var intersection = _.intersection(model.interfaces, interfaceNames);
+      if (OR && intersection.length || !OR && intersection.length === interfaceNames.length)
+        return true;
+      else
+        return false;
       
-      return m ? U.isA(m, interfaceName, typeToModel) : impl;
+//      var leftOver = _.difference(interfaceNames, intersection);      
+//      var superCl = model._super;
+//      if (!superCl || superCl.endsWith('#Resource'))
+//        return false;
+//      
+//      var m = G.typeToModel[superCl];
+//      return m ? U.isA(m, leftOver) : impl;
     },
     
     getPackagePath: function(type) {
@@ -627,7 +644,7 @@ define([
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
       q[name] = value;
-      q = sort ? U.getQueryString(q, sort) : $.param(q);
+      q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
     
@@ -645,7 +662,7 @@ define([
         return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
       }
 
-      if (model instanceof Backbone.Collection) { // if it's a collection
+      if (U.isCollection(model)) { // if it's a collection
         qMap = collection.queryMap;
         model = collection.model;
       }
@@ -811,9 +828,12 @@ define([
     },
     /// String prototype extensions
     
-    getQueryString: function(paramMap, sort) {
-      if (!sort)
-        return $.param(paramMap);
+    getQueryString: function(paramMap, options) {
+      options = options || {};
+      if (!options.sort) {
+        result = $.param(paramMap);
+        return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
+      }
       
       var keys = [];
       for (var p in paramMap) {
@@ -828,7 +848,7 @@ define([
         keys[i] = keys[i] + '=' + U.encode(paramMap[keys[i]]);
       }
       
-      return keys.join('&');
+      return keys.join(options.delimiter || '&');
     },
 
     getFormattedDuration: function(time) {
@@ -989,7 +1009,7 @@ define([
       var aCloneOf;
       var bCloneOf;
       var hasImgs;
-      if (this.isA(vocModel, 'ImageResource')) {
+      if (U.isA(vocModel, 'ImageResource')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
           hasImgs = true;
         else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
@@ -1000,10 +1020,12 @@ define([
       if (isIntersection) {
         aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured');
         bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured');
-        if (aCloneOf.length != 0  &&  bCloneOf.length != 0)
+        if (aCloneOf.length != 0  &&  bCloneOf.length != 0) {
+          aCloneOf = aCloneOf[0], bCloneOf = bCloneOf[0];
           hasImgs = true;
+        }
       }
-      if (!hasImgs  &&  this.isA(vocModel, 'Reference')) {
+      if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
           hasImgs = true;
       }
@@ -1011,13 +1033,14 @@ define([
       if (!hasImgs)
         return null;
       
+      cloneOf = cloneOf[0];
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
         var m = models[i];
         if (isIntersection  &&  (m.get(aCloneOf) || m.get(bCloneOf))) 
-          return aCloneOf[0];
+          return aCloneOf;
         if (m.get(cloneOf))
-          return cloneOf[0];
+          return cloneOf;
       }
       
       return null;
@@ -1108,7 +1131,7 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, values, formId, Voc) {
+    makeEditProp: function(prop, values, formId) {
       var p = prop.shortName;
       var val = values[p];
       var propTemplate = Templates.getPropTemplate(prop, true, val);
@@ -1121,7 +1144,7 @@ define([
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = Voc.typeToEnum[U.getLongUri(facet)];
+        var eCl = G.typeToEnum[U.getLongUri(facet)];
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
@@ -1182,68 +1205,68 @@ define([
 //    buildHash: function(model) {
 //      return model instanceof Backbone.Model ? 'view/' + U.encode(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
-    
-    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
-    paramsToSkip: ['hideFltr'],
-    getMobileUrl: function(url) {
-      var orgParams = U.getQueryParams(url);
-      if (url.startsWith('v.html'))
-        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
-      
-      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
-      var type = orgParams.type;
-//      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
-      delete orgParams.type;
-      var ignoredParams = '';
-      var params = {};
-      _.forEach(_.keys(orgParams), function(p) {
-        if (_.contains(U.paramsToSkip, p))
-          return;
-        
-        var apiParam = U.apiParamMap[p];
-        if (typeof apiParam !== 'undefined') {
-          var val = orgParams[p];
-          if (apiParam == '$limit')
-            val = Math.max(parseInt(val, 10), 50);
-          
-          params[apiParam] = val;
-          return;
-        }
-        
-        if (p.startsWith('-')) {
-          ignoredParams += p + ',';
-          return;
-        }
-        
-        var val = orgParams[p];
-        if (typeof val === 'undefined' || val === '')
-          return;
-        
-        var matches = p.match(/^\.?([a-zA-Z_]+)(_select|_To|_From)$/);
-        if (matches && matches.length > 1) {
-          var pType = matches.length >=3 ? matches[2] : null;
-          if (pType) {
-            if (pType == '_From')
-              val = '>=' + val; // to make the query string look like "start=>=today", with <=today encoded of course            
-            else if (pType == '_To')
-              val = '<=' + val; // to make the query string look like "end=<=today", with <=today encoded of course
-          }
-          
-          params[matches[1]] = val;
-        }
-        else {
-          if (!p.match(/^[a-zA-Z]/) || p.endsWith('_verified')) // starts with a letter
-            return;
-          
-          params[p] = val;
-        }
-      });
-      
-//      if (ignoredParams)
-//        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
-      
-      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
-    },
+//    
+//    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
+//    paramsToSkip: ['hideFltr'],
+//    getMobileUrl: function(url) {
+//      var orgParams = U.getQueryParams(url);
+//      if (url.startsWith('v.html'))
+//        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
+//      
+//      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
+//      var type = orgParams.type;
+////      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
+//      delete orgParams.type;
+//      var ignoredParams = '';
+//      var params = {};
+//      _.forEach(_.keys(orgParams), function(p) {
+//        if (_.contains(U.paramsToSkip, p))
+//          return;
+//        
+//        var apiParam = U.apiParamMap[p];
+//        if (typeof apiParam !== 'undefined') {
+//          var val = orgParams[p];
+//          if (apiParam == '$limit')
+//            val = Math.max(parseInt(val, 10), 50);
+//          
+//          params[apiParam] = val;
+//          return;
+//        }
+//        
+//        if (p.startsWith('-')) {
+//          ignoredParams += p + ',';
+//          return;
+//        }
+//        
+//        var val = orgParams[p];
+//        if (typeof val === 'undefined' || val === '')
+//          return;
+//        
+//        var matches = p.match(/^\.?([a-zA-Z_]+)(_select|_To|_From)$/);
+//        if (matches && matches.length > 1) {
+//          var pType = matches.length >=3 ? matches[2] : null;
+//          if (pType) {
+//            if (pType == '_From')
+//              val = '>=' + val; // to make the query string look like "start=>=today", with <=today encoded of course            
+//            else if (pType == '_To')
+//              val = '<=' + val; // to make the query string look like "end=<=today", with <=today encoded of course
+//          }
+//          
+//          params[matches[1]] = val;
+//        }
+//        else {
+//          if (!p.match(/^[a-zA-Z]/) || p.endsWith('_verified')) // starts with a letter
+//            return;
+//          
+//          params[p] = val;
+//        }
+//      });
+//      
+////      if (ignoredParams)
+////        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
+//      
+//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
+//    },
     
     pushUniq: function(arr, obj) {
       if (!_.contains(arr, obj))
@@ -1541,21 +1564,95 @@ define([
       return startOfDay + num * length * multiplier;
     },
     
+    getPositionProps: function(vocModel) {
+      var positionProps = {};
+      if (U.isA(vocModel, "Locatable")) {
+        var lat = U.getCloneOf(vocModel, "Locatable.latitude");
+        if (lat.length) 
+          positionProps.latitude = lat[0];
+        var lon = U.getCloneOf(vocModel, "Locatable.longitude");
+        if (lon.length) 
+          positionProps.longitude = lon[0];
+      }
+      else if (U.isA(vocModel, "Shape")) {
+        var lat = U.getCloneOf(vocModel, "Shape.interiorPointLatitude");
+        if (lat.length) 
+          positionProps.latitude = lat[0];
+        var lon = U.getCloneOf(vocModel, "Shape.interiorPointLongitude");
+        if (lon.length) 
+          positionProps.longitude = lon[0];
+      }
+      
+      if (U.isA(vocModel, "Distance")) {
+        var radius = U.getCloneOf(vocModel, "Distance.radius");
+        if (radius.length) 
+          positionProps.radius = radius[0];
+        var distance = U.getCloneOf(vocModel, "Distance.distance");
+        if (distance.length)
+          positionProps.distance = distance[0];
+      }
+      
+      return positionProps;
+    },
+
+    parseWhere: function(where) {
+                    // nuke whitespace outside of single and double quotes
+      where = where.replace(/\s+(?=([^']*'[^']*')*[^']*$)/g, '')
+                    // convert to API params
+                   .replace(/==/g, '=')
+                   .replace(/(>=|<=)/, '=$1')
+                    // replace self with user uri
+                   .replace(/\'self\'|\\"self\\"|\\\'self\\\'|\\\"self\\\"/g, G.currentUser._uri);
+                       
+      // TODO: support OR
+      where = where.split(/&&/);
+      var params = {};
+      for (var i = 0; i < where.length; i++) {
+        // TODO: support <=, >=, etc.
+        var pair = where[i].split('=');
+        params[pair.shift()] = pair.join('=');
+      }
+      
+      return params;
+    },
+    
+//    removeUnquotedWhitespace: function(text) {
+//      qStack = [];
+//      sqStack = [];
+//      qqStack = [];
+//      qsqStask = [];
+//      var newText = '';
+//      for (var i in text) {
+//        switch (i) {
+//        case '\''
+//        }
+//      }
+//    },
+    pick: function(obj) {
+      var type = U.getObjectType(obj);
+      switch (type) {
+      case '[object Object]':
+        return _.pick.apply(null, arguments);
+      case '[object Array]':
+        var keys = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
+        var arrCopy = [];
+        for (var i = 0; i < obj.length; i++) {
+          var item = obj[i], copy = {};
+          for (var j = 0; j < keys.length; j++) {
+            var key = keys[j];
+            if (key in item) 
+              copy[key] = item[key];
+          }
+          
+          arrCopy.push(copy);
+        }
+        
+        return arrCopy;
+      }
+    },
+    
     slice: slice
   };
 
-//  var underscoreTemplate = _.template;
-//  _.template = function() {
-//    var template = underscoreTemplate.apply(this, arguments);
-////    var source = template.source;
-//    return function () {
-//      var args = U.slice.call(arguments);
-//      args[args.length] = U;
-//      args[args.length] = G;
-//      var self = this;
-//      return template.apply(self, args);
-//    }
-//  }
-  
   return (Lablz.U = U);
 });

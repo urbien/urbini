@@ -1,11 +1,9 @@
 define([
-  'underscore', 
-  'backbone', 
   'templates',
   'events', 
   'views/ToggleButton', 
   'views/BasicView' 
-], function(_, Backbone, Templates, Events, ToggleButton, BasicView) {
+], function(Templates, Events, ToggleButton, BasicView) {
   return ToggleButton.extend({
     btnId: 'mapIt',
     template: 'mapItButtonTemplate',

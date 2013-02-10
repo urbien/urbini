@@ -1,12 +1,8 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
-  'backbone',
   'utils',
   'events',
   'templates',
-  'vocManager',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
@@ -16,7 +12,7 @@ define([
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, Backbone, U, Events, Templates, Voc, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,
@@ -44,9 +40,6 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
-//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
-//      menuPanel.render();
     },
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
@@ -83,7 +76,7 @@ define([
           right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
-      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", Voc.typeToModel)) {
+      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", G.typeToModel)) {
         var user = G.currentUser._uri;
         var appOwner = res.get('creator');
         if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))

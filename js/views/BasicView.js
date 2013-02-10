@@ -1,9 +1,7 @@
 define([
   'globals',
-  'underscore',
-  'backbone',
   'templates'
-], function(G, _, Backbone, Templates) {
+], function(G, Templates) {
   var basicOptions = ['source', 'parentView'];
   return Backbone.View.extend({
     initialize: function(options) {

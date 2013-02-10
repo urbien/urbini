@@ -489,13 +489,17 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval(text);  
-  else // Safari
+//  var nav = Lablz.navigator;
+//  if (nav.isChrome || nav.isSafari)
+//    Lablz.inject(text);
+//  else if (nav.isFirefox)
+//    return window.eval.call({}, text);  
+//  else // Safari
     return window.eval(text);
+//  return eval(text);
+  
+//  return Lablz.inject(text);
+  
   // Indirect Eval
 //  try {
 //    return window.eval.call({}, text);
@@ -572,7 +576,7 @@ define('globals', function() {
         text += '\n//@ sourceURL=' + url;
         if (G.navigator.isIE) text += '*/\n';
         requirejs.exec(text);
-        context.completeLoad(name);
+        context.completeLoad(name); // JQM hack
         break;
     }        
   };
@@ -585,7 +589,7 @@ define('globals', function() {
 
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
-    
+        
     // TODO: unhack
 //    if (name == 'jqueryMobile') {
 //      localRequire([name], function(mod) {
@@ -616,7 +620,7 @@ define('globals', function() {
           cached = cached && JSON.parse(cached);
         } catch (err) {
           G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage["delete"](url);
+          G.localStorage.del(url);
           cached = null;
         }
         
@@ -625,7 +629,7 @@ define('globals', function() {
           if (timestamp && timestamp <= cached.modified)
             cached = cached.text;
           else {
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
             cached = null;
           }
         }
@@ -638,8 +642,8 @@ define('globals', function() {
           loadModule(cached, url, context, name);
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
-          G.log(G.TAG, 'cache', 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage["delete"](url);
+          G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
+          G.localStorage.del(url);
           loadedCached = false;
         }
       } 
@@ -689,7 +693,13 @@ define('globals', function() {
       TAG: 'cache',
       load: function (name, req, onLoad, config) {
         // hack for jsp, otherwise define callback function will not get jsp text
-        requirejs.load(onLoad, name, req.toUrl(name), config);
+        if (name === 'jqueryMobile') {
+          req([name], function() {
+            onLoad(name);
+          });
+        }
+        else
+          requirejs.load(onLoad, name, req.toUrl(name), config);
       }
     };
 
@@ -703,12 +713,10 @@ define('globals', function() {
   
   G.localStorage = {
     get: function(url) {
-//      G.startedTask('localStorage GET: ' + url);
       var item = localStorage.getItem(url);
-//      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
-    "delete": function(key) {
+    del: function(key) {
       localStorage.removeItem(key);
     },
     put: function(key, value, force) {
@@ -718,16 +726,17 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
-        localStorage.removeItem(key);
+        G.localStorage.del(key);
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
-        if(['QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+        if(['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // reset to make space
           ls.reset(force && function() {
             ls.put(key, value)
           });
         } else {
+          debugger;
           G.hasLocalStorage = false;
           G.log(G.TAG, "Local storage write failure: ", e);
         }
@@ -740,7 +749,7 @@ define('globals', function() {
       this.resetting = true;
       for (var key in localStorage) {
         if (key.indexOf('model:') == 0)
-          localStorage.removeItem(key);
+          G.localStorage.del(key);
       }
       
       if (after) 
@@ -748,8 +757,21 @@ define('globals', function() {
       
       if (!resetting)
         G.Voc && G.Voc.saveModelsToStorage();
-    }
+    },
     
+    nukeScripts: function() {
+      for (var key in localStorage) {
+        if (/.*\.js|css|jsp$/.test(key))
+          G.localStorage.del(key);
+      }
+    },
+    
+    nukeHandlers: function() {
+      for (var key in localStorage) {
+        if (/^handlers/.test(key))
+          G.localStorage.del(key);
+      }
+    }
   };
   
   function testCSS(prop) {
@@ -770,6 +792,21 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+//    isJQM: function(url) {
+//      return /^jquery\.mobile.*\.js$/.test(url);
+//    },
+    webWorkers: {},
+    customHandlers: {},
+    defaults: {
+      radius: 15 // km
+    },
+    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
+    shortNameToModel: {},
+    typeToModel: {},
+    shortNameToEnum: {},
+    typeToEnum: {},
+    shortNameToInline: {},
+    typeToInline: {},
     modCache: {},
     usedModels: {},
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
@@ -783,7 +820,11 @@ define('globals', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    xhrWorker: G.serverName + '/js/xhrWorker.js',
+	xhrWorker: G.serverName + '/js/xhrWorker.js',
+    getXhrWorker: function() {
+      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
+      return G.xhrWorker;
+    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1027,24 +1068,24 @@ define('globals', function() {
 //      parent.removeChild(script);
 //      callback(text);
 //    },
-    inject: function(module, text, callback) {
-      var d = document;
-      var script = d.createElement("script");
-      var id = "script" + (new Date).getTime();
-      var root = d.documentElement;
-      script.type = "text/javascript";
-//      script.innerHtml = text;
-      try {
-        script.appendChild(d.createTextNode(text));
-      } catch(e) {
-        script.text = text; // IE
-      }
-      
-      var parent = d.head || d.body;
-      parent.appendChild(script);
-      parent.removeChild(script);
-      callback(module);
-    },
+//    inject: function(module, text, callback) {
+//      var d = document;
+//      var script = d.createElement("script");
+//      var id = "script" + (new Date).getTime();
+//      var root = d.documentElement;
+//      script.type = "text/javascript";
+////      script.innerHtml = text;
+//      try {
+//        script.appendChild(d.createTextNode(text));
+//      } catch(e) {
+//        script.text = text; // IE
+//      }
+//      
+//      var parent = d.head || d.body;
+//      parent.appendChild(script);
+//      parent.removeChild(script);
+//      callback(module);
+//    },
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -1129,7 +1170,7 @@ define('globals', function() {
             saved = JSON.parse(saved);
           } catch (err) {
             pruned.push(url);
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
             continue;
           }
           
@@ -1143,7 +1184,7 @@ define('globals', function() {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
               
-            localStorage.removeItem(url);
+            G.localStorage.del(url);
           }
         }
         
@@ -1213,7 +1254,7 @@ define('globals', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = new Worker(G.xhrWorker);
+        var xhrWorker = G.getXhrWorker();
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
@@ -1350,19 +1391,26 @@ define('globals', function() {
   var qIdx = hash.indexOf('?');
   var set = false;
   var mCookie = G.serverName + '/cookies/minify';
+  var minified = G.getCookie(mCookie) === 'y';
   if (qIdx != -1) {    
     var hParams = hash.slice(qIdx + 1).split('&');
     for (var i = 0; i < hParams.length; i++) {
       var p = hParams[i].split('=');
       if (p[0] == '-min') {
         G.setCookie(mCookie, p[1], 100000);
+        var newMinified = p[1] === 'y';
+        if (newMinified != minified) {
+          minified = newMinified;
+          G.localStorage.nukeScripts();
+        }
+        
         break;
       }
     }
   }
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
-  G.minify = G.getCookie(mCookie) === 'y';
+  G.minify = minified;
   // END minify
   
   require.config({
@@ -1394,7 +1442,8 @@ define('globals', function() {
 //      validator: ['jquery'],
       jqueryImagesloaded: ['jquery'],
       mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
-      jqueryIndexedDB: ['jquery', 'indexedDBShim']
+      jqueryIndexedDB: ['jquery', 'indexedDBShim'],
+      indexedDBShim: ['taskQueue']
 //          ,
 //      mobiscrollDate: ['jquery', 'jqueryMobile', 'mobiscroll'],
 //      mobiscrollJQM: ['jquery', 'jqueryMobile', 'mobiscroll'],

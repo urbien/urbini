@@ -26,7 +26,7 @@ define([
       if (!meta)
         return this;
       
-      if (!U.isA(this.vocModel, 'ImageResource')) 
+      if (!this.resource.isA('ImageResource')) 
         return this;
   //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');

@@ -1,13 +1,10 @@
 define([
   'globals',
-  'jquery',
-  'underscore', 
-  'backbone', 
   'templates',
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Backbone, Templates, Events, U, BasicView) {
+], function(G, Templates, Events, U, BasicView) {
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
@@ -21,7 +18,7 @@ define([
         var hash = window.location.hash && window.location.hash.slice(1);
         if (hash && G.tabs) {
           decHash = decodeURIComponent(hash);
-          var matches = _.filter(G.tabs, function(t) {return t.mobileUrl == hash || decodeURIComponent(t.mobileUrl) == decHash});
+          var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
           if (matches.length)
             this.pageTitle = matches[0].title;
         }

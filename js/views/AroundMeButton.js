@@ -1,12 +1,10 @@
 define([
   'globals',
-  'underscore', 
-  'backbone', 
   'templates',
   'views/ToggleButton', 
   'views/BasicView',
   'utils'
-], function(G, _, Backbone, Templates, ToggleButton, BasicView, U) {
+], function(G, Templates, ToggleButton, BasicView, U) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',

@@ -6,10 +6,9 @@ define([
   'events',
   'templates',
   'views/BasicView',
-  'vocManager',
   'jqueryMasonry',
   'jqueryImagesloaded'
-], function(G, $, _, U, Events, Templates, BasicView, Voc) {
+], function(G, $, _, U, Events, Templates, BasicView) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -31,17 +30,27 @@ define([
       'click': 'click'
     },
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+    click: function(e) {
+      if (this.mvProp)
+        Events.defaultClickHandler(e);  
+      else {
+        var p = this.parentView;
+        if (p && p.mode == G.LISTMODES.CHOOSER) {
+          Events.stopEvent(e);
+          Events.trigger('chooser', this.model);
+        }
+      }
+    },
     render: function(event) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', G.typeToModel);
       if (isModification) 
         return this.renderModificationTile();
       var m = this.resource;
-      var isReference = U.isA(vocModel, 'Reference'); 
+      var isReference = m.isA('Reference'); 
       if (isReference)
         return this.renderReferenceTile();
-      if (!U.isA(vocModel, 'Intersection', Voc.typeToModel))   
+      if (!m.isA('Intersection'))   
         return this.renderTile();
       
       var meta = vocModel.properties;
@@ -74,7 +83,7 @@ define([
 //          var delegateTo = (p == a) ? b : a;
 //          aprop = models[0].get(delegateTo);
 //        }
-//        var type = U.getTypeUri(U.getTypeUri(aprop['value']), {type: aprop['value'], shortNameToModel: Voc.shortNameToModel});
+//        var type = U.getTypeUri(U.getTypeUri(aprop['value']), {type: aprop['value']});
           
           
 //      return this.renderTile();
@@ -168,26 +177,26 @@ define([
       
       
       tmpl_data['rUri'] = resourceUri;
-      if (U.isA(vocModel, 'CollaborationPoint')) { 
+      if (m.isA('CollaborationPoint')) { 
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
-      if (U.isA(vocModel, 'Votable')) {
+      if (m.isA('Votable')) {
         var votes = U.getCloneOf(vocModel, 'Votable.likes');
         if (votes.length == 0)
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -217,7 +226,7 @@ define([
       var forResourceUri = json[forResource];
       if (!forResourceUri)
         return this;
-      var rUri = U.getLongUri(forResourceUri, Voc.shortNameToModel);
+      var rUri = U.getLongUri(forResourceUri);
       
       var img = U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
       if (!img)
@@ -242,14 +251,14 @@ define([
       tmpl_data['gridCols'] = gridCols;
       
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
-      var forResourceModel = Voc.typeToModel[U.getTypeUri(forResourceUri)];
-      var c =  forResourceModel ? forResourceModel : m.constructor;
+      var forResourceModel = G.typeToModel[U.getTypeUri(forResourceUri)];
+      var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
       if (U.isA(c, 'CollaborationPoint')) { 
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -258,13 +267,13 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -323,19 +332,18 @@ define([
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
-      var forResourceModel = type ? Voc.typeToModel[type] : null;
+      var forResourceModel = type ? G.typeToModel[type] : null;
       var c =  forResourceModel ? forResourceModel : m.constructor;
       if (forResourceModel) {
         var meta = c.properties;
         meta = meta || m.properties;
       }
       tmpl_data['rUri'] = resourceUri;
-      if (U.isA(c, 'CollaborationPoint')) { 
+      if (m.isA('CollaborationPoint')) { 
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
-          var pMeta = meta[comments[0]];
-          
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          var pMeta = meta[comments[0]];          
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -344,13 +352,13 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri, Voc)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri, Voc)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -374,10 +382,10 @@ define([
       if (typeof json[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc]), Voc);
+      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc]));
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json.modifiedBy, Voc));
+      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json.modifiedBy));
       tmpl_data.modifiedBy = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
@@ -391,15 +399,15 @@ define([
       
       var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor], Voc)); // + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor])); // + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor], Voc)); //+ '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor])); //+ '&m_p=votes&b_p=votable');
 
       var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data.v_showRenabFor = U.encode(U.getLongUri(json[renabFor], Voc) + '&m_p=nabs&b_p=forResource');
+        tmpl_data.v_showRenabFor = U.encode(U.getLongUri(json[renabFor]) + '&m_p=nabs&b_p=forResource');
       
       // set size of images included in the items to be able
       // to start masonry code before images downloading

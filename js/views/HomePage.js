@@ -1,10 +1,7 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone',
   'events'
-], function(G, $, _, Backbone, Events) {
+], function(G, Events) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {

@@ -1,16 +1,18 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'utils', 
   'events', 
+  'taskQueue',
   'vocManager',
   'queryIndexedDB'
-], function(G, $, _, Backbone, U, Events, Voc, idbq) {
-//  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+], function(G, U, Events, TaskQueue, Voc, idbq) {
+  var useWebSQL = typeof window.webkitIndexedDB !== 'undefined' && window.shimIndexedDB;
+  useWebSQL && window.shimIndexedDB.__useShim();
+//  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
-  var IDBCursor = $.indexedDB.IDBCursor;
+//  var useWebSQL = true;
+//  window.shimIndexedDB.__useShim();
+//  var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
   var Index = idbq.Index;
@@ -33,7 +35,7 @@ define([
       return;
     }
     
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,
     forceFetch = options.forceFetch,
@@ -56,8 +58,9 @@ define([
 
       var fetchHelper = function() {
         if (options.sync || !G.hasWebWorkers)
-          return RM.defaultSync(method, data, options)
+          return RM.defaultSync(method, data, options);
         
+//        G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers}).done(options.success, options.error);
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           G.log(RM.TAG, 'xhr', 'got resources', options.url);
@@ -117,6 +120,9 @@ define([
           defaultSuccess(null, 'success', {status: 304});
           return; // no need to fetch from db on update
         }
+      }
+      else if (start < numNow) {
+        return; // no need to refetch from db, we already did
       }
     }
     else {
@@ -209,8 +215,8 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
-//    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
-    useUpgradeNeeded: !!window.IDBOpenDBRequest,
+    useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
+//    useUpgradeNeeded: !!window.IDBOpenDBRequest,
     defaultSync: function(method, data, options) {
       if (options.sync)
         options.timeout = 5000;
@@ -294,109 +300,29 @@ define([
       return names._items ? _.contains(names._items, name) : names.contains(name);
     },
     
-    deleteDatabase: function(callback) {
-      G.log(RM.TAG, ['error', 'db'], "db blocked, deleting database");
-        window.webkitIndexedDB.deleteDatabase(RM.DB_NAME).onsuccess = callback;
-    },
-    
     defaultOptions: {keyPath: '_uri', autoIncrement: false},
     DB_NAME: "lablz",
     runTask: function() {
-      return this.taskManager.runTask.apply(this.taskManager, arguments);
+      return this.taskQueue.runTask.apply(this.taskManager, arguments);
     },
-    taskManager: {
-      nonseq: [],
-      seqQueue: [],
-      runningTasks: [],
-      blocked: false,
-      /**
-       * @param task function that returns a $.Deferred object when run
-       */
-      runTask: function(task, name, sequential) {
-        var promise, self = RM.taskManager;
-        if (!sequential) {
-          if (self.blocked) {
-            G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing non-sequential task:', name);
-            self.nonseq.push({task: task, name: name});
-          }
-          else {
-            G.log(RM.TAG, 'db', 'Running non-sequential task:', name);
-            promise = task();
-            promise._lablzId = G.nextId();
-            self.runningTasks.push(promise);
-            promise.always(function() {
-              G.log(RM.TAG, 'db', 'Finished non-sequential task:', name);
-              self.runningTasks.remove(promise);
-            }); 
-          }
-        
-          return promise;
-        }
-        
-        // Sequential task - need to wait for all currently running tasks to finish
-        // and block any new tasks from starting until this one's done
-        if (self.blocked) {
-          if (!self.runningTasks.length) {
-            G.log(RM.TAG, 'db', 'A sequential finished but failed to report');
-            self.blocked = false;
-            debugger;
-          }
-          else {
-            G.log(RM.TAG, 'db', 'Waiting for sequential task to finish, queueing sequential task', name);
-            var dfd = new $.Deferred();
-            self.seqQueue.push({task: task, name: name, deferred: dfd});
-            return dfd.promise();
-          }
-        }
-       
-        G.log(RM.TAG, 'db', 'Waiting for non-sequential tasks to finish to run sequential task:', name);
-        self.blocked = true;
-        var defer = $.Deferred();
-        $.when.apply(null, self.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
-          G.log(RM.TAG, 'db', 'Running sequential task:', name);
-          var taskPromise = task();
-          taskPromise.name = name;
-          self.runningTasks.push(taskPromise);
-          taskPromise.always(function() {
-            self.runningTasks.remove(taskPromise);
-            G.log(RM.TAG, 'db', 'Finished sequential task:', name);
-            var qLength = self.seqQueue.length;
-            self.blocked = false; // unblock to allow next task to start;
-            if (qLength) {
-              var next = self.seqQueue.shift();
-              var dfd = next.deferred;
-              self.runTask(next.task, next.name, true).done(dfd.resolve).fail(dfd.reject);
-            }
-            else {
-              if (self.nonseq.length) {
-                _.map(self.nonseq, function(t) {self.runTask(t.task, t.name)});
-                self.nonseq.length = 0;
-              }
-            }
-            
-            defer.resolve();
-          });
-        });
-        
-        return defer.promise();
-      }
-    },
+    taskQueue: new TaskQueue("DB"),
     
     /**
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
     updateDB: function() {
       return $.Deferred(function(defer) {
-        var toKill = _.union(Voc.changedModels, Voc.newModels);
+//        debugger;
+        var toKill = _.clone(Voc.changedModels);
         Voc.changedModels.length = 0;
-        Voc.newModels.length = 0;
+//        Voc.newModels.length = 0;
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
             return RM.db.objectStoreNames.contains(m);
           });
           
           if (toKill.length)
-            RM.upgradeDB({killStores: toKill, msg: "need to kill some stores, queueing db upgrade"}).done(defer.resolve).fail(defer.reject);
+            RM.upgradeDB({killStores: toKill, msg: "upgrade to kill stores: " + toKill.join(",")}).done(defer.resolve).fail(defer.reject);
           else
             defer.resolve();
         }
@@ -409,16 +335,34 @@ define([
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
     openDB: function(options) {
+      if (G.userChanged) {
+        G.log(RM.TAG, 'db', 'user changed, deleting database');
+        var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
+          G.userChanged = false;
+          G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
+          RM.openDB(options);
+        }).fail(function(error, event) {
+          RM.openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
+          G.log(RM.TAG, 'db', 'failed to delete database');
+          debugger;
+        }).progress(function(db, event) {
+          RM.upgradeDB(options).done(dbPromise.resolve).fail(dbPromise.reject);;
+          debugger;
+        });
+        
+        return dbPromise;
+      }
+
       options = options || {};
       var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
-      toKill = _.union(toKill, Voc.changedModels, Voc.newModels);
+//      toKill = _.union(toKill, Voc.changedModels); // , Voc.newModels);
       var modelsChanged = function() {
-        return !!(G.userChanged || toKill.length || toMake.length);
+        return !!(toKill.length || toMake.length);
       }
       
-      Voc.changedModels.length = 0;
-      Voc.newModels.length = 0;
-
+//      if (toKill && toKill.length)
+//        debugger;
+      
       if (!version) {
         if (RM.db) {
           var currentVersion = isNaN(RM.db.version) ? 0 : parseInt(RM.db.version);
@@ -426,40 +370,21 @@ define([
         }
       }
 
-//      if (arguments.length) {
-//        var a1 = arguments[0];
-//        var type = U.getObjectType(a1);
-//        switch (type) {
-//          case '[object String]':
-//            storesToCreate = [a1];
-//            break;
-//          case '[object Array]':
-//            storesToCreate = a1;
-//            break;
-//          case '[object Number]':
-//            version = a1;
-//            break;
-//        }
-//      }
-      
       var settings = {
         upgrade: function(transaction) {
           G.log(RM.TAG, "db", 'in upgrade function');
-//          debugger;
-          if (!G.userChanged && !toMake && !toKill) {
+          if (!toMake.length && !toKill.length) {
             G.log(RM.TAG, "db", 'upgrade not necessary');
             return;
           }
           
           G.log(RM.TAG, "db", 'upgrading...');
           G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
-          if (G.userChanged) {
-            G.userChanged = false;
-            newStores = RM.updateStores(transaction, toMake, toKill, true);
-          }
-          else {
-            newStores = RM.updateStores(transaction, toMake, toKill);
-          }
+          newStores = RM.updateStores(transaction, toMake, toKill);
+//          transaction.onupgradecomplete(function() {
+//            debugger;
+//            dbPromise.resolve();
+//          });
         }
       };
       
@@ -473,7 +398,7 @@ define([
       
       G.log(RM.TAG, "db", 'opening db');
       var dbPromise = $.Deferred();
-      var openPromise = RM.$db = $.indexedDB('lablz', settings);
+      var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
         var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
         if (!RM.db && !version) {
@@ -493,8 +418,11 @@ define([
           return;
         }
 
+//        if (toKill && toKill.length)
+//          debugger;
+
         // Queue up upgrade
-        RM.upgradeDB(_.extend(options, {version: version, msg: "opened db, userChanged: " + !!G.userChanged + ", stores to kill: " + toKill.join(",") + ", stores to make: " + toMake.join() + ", queueing db upgrade"}));
+        RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
         dbPromise.resolve();
       }).fail(function(error, event) {
         debugger;
@@ -503,7 +431,7 @@ define([
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-//            debugger;
+            debugger;
             dbPromise.reject();
             RM.restartDB();
             break;
@@ -520,73 +448,94 @@ define([
     getIndexNames: function(vocModel) {
       var vc = vocModel.viewCols || '';
       var gc = vocModel.gridCols || '';
-      var extras = [];
-      if (U.isA(vocModel, "Locatable")) {
-        var lat = U.getCloneOf(vocModel, "Locatable.latitude");
-        if (lat.length) extras.push(lat[0]);
-        var lon = U.getCloneOf(vocModel, "Locatable.longitude");
-        if (lon.length) extras.push(lon[0]);
-      }
-      else if (U.isA(vocModel, "Shape")) {
-        var lat = U.getCloneOf(vocModel, "Shape.interiorPointLatitude");
-        if (lat.length) extras.push(lat[0]);
-        var lon = U.getCloneOf(vocModel, "Shape.interiorPointLongitude");
-        if (lon.length) extras.push(lon[0]);
-      }
-      
-      var cols = _.union(extras, _.map((vc + ',' + gc).split(','), function(c) {
+      var extras = U.getPositionProps(vocModel);
+      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
         return c.trim().replace('DAV:displayname', 'davDisplayName')
       }));
+      
+      var props = vocModel.properties;
+      cols = _.filter(cols, function(c) {
+        var p = props[c];
+        return p && !p.backLink;
+      })
       
       return cols;
     },
     
-    updateStores: function(trans, toMake, toKill, reset) {
-//      var toKill = toKill || _.union(Voc.changedModels, Voc.newModels);
-//      Voc.changedModels.length = 0;
-//      Voc.newModels.length = 0;      
+    updateStores: function(trans, toMake, toKill) {
+      toKill = _.union(_.intersection(toMake, toKill), toKill);
+      for (var i = 0; i < toKill.length; i++) {
+        var type = toKill[i];
+        if (RM.storeExists(type)) {
+          try {
+            trans.deleteObjectStore(type);
+            G.log(RM.TAG, 'db', 'deleted object store: ' + type);
+          } catch (err) {
+            debugger;
+            G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
+            return;
+          }
+        }
+      }
+      
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
-        if (Voc.typeToEnum[type] || Voc.typeToInline[type])
+        if (G.typeToEnum[type] || G.typeToInline[type])
           continue;
         
-        if (RM.storeExists(type)) {
-          if (reset || _.contains(toKill, type)) {
-            try {
-              trans.deleteObjectStore(type);
-              G.log(RM.TAG, 'db', 'deleted object store: ' + type);
-            } catch (err) {
-              debugger;
-              G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
-              return;
-            }
-          }          
-          else
-            continue;
+        var vocModel = G.typeToModel[type];
+        if (!vocModel) {
+          debugger;
+          continue;
         }
-
+        
         try {
+          if (RM.db && RM.db.objectStoreNames.contains(type))
+            continue;
+          
           var store = trans.createObjectStore(type, RM.defaultOptions);
+          if (!store) {
+            debugger;
+            continue;
+          }
+          
           G.log(RM.TAG, 'db', 'created object store: ' + type);
-          var vocModel = Voc.typeToModel[type];
           var indices = [];
           var indexNames = RM.getIndexNames(vocModel);
-          _.each(indexNames, function(pName) {
-            pName = pName.trim();
+          for (var i = 0; i < indexNames.length; i++) {
+            var pName = indexNames[i].trim();
             if (!pName.length)
               return;
             
-            G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
-            var index = store.createIndex(pName, pName, {unique: false, multiEntry: false});
+//            G.log(RM.TAG, 'db', 'creating index', pName, 'for store', type);
+            var index = store.createIndex(pName, {unique: false, multiEntry: false});
             G.log(RM.TAG, 'db', 'created index', pName, 'for store', type);
             indices.push(pName);
-          });  
+          }  
         } catch (err) {
           debugger;
           G.log(RM.TAG, ['error', 'db'], '2. failed to create table ' + type + ': ' + err);
           return;
         }
       }
+      
+//      var updated = _.intersection(Voc.changedModels, _.union(toKill, toMake));
+//      if (!updated.length)
+//        return;
+//      
+//      debugger;
+//      Voc.changedModels = _.difference(Voc.changedModels, updated);
+//      var stillUnsaved = [], toSave = [];
+//      for (var i = 0; i < Voc.unsavedModels.length; i++) {
+//        var m = Voc.unsavedModels[i];
+//        if (updated.indexOf(m.type) == -1)
+//          stillUnsaved.push(m);
+//        else
+//          toSave.push(m);
+//      }
+//      
+//      Voc.saveModelsToStorage(toSave);
+//      Voc.unsavedModels = stillUnsaved;
     },
     
     addItems: function(items, classUri) {
@@ -595,7 +544,7 @@ define([
       
       if (!RM.db) {
         var args = arguments;
-        setTimeout(function() {addItems.apply(RM, arguments)}, 1000);
+        setTimeout(function() {RM.addItems.apply(RM, arguments)}, 1000);
         return;
       }
       
@@ -608,7 +557,7 @@ define([
       }
       
       if (!RM.storeExists(classUri)) {
-        RM.upgradeDB({toMake: [classUri], msg: "Need to make store: " + classUri + ", queueing db upgrade"}).done(function() {
+        RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
           RM.addItems(items, classUri);
         });
         
@@ -617,7 +566,7 @@ define([
       
       RM.runTask(function() {
         return $.Deferred(function(defer) {
-          var vocModel = Voc.typeToModel[classUri];
+          var vocModel = G.typeToModel[classUri];
           for (var i = 0; i < items.length; i++) {
             var item = items[i];
             item = U.isModel(item) ? item.toJSON() : item;
@@ -625,21 +574,20 @@ define([
           }
           
           G.log(RM.TAG, "db", 'Starting addItems Transaction');
-          RM.$db.transaction(classUri, IDBTransaction.READ_WRITE).then(function() {
+          RM.$db.transaction(classUri, IDBTransaction.READ_WRITE).promise().done(function() {
             G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
             defer.resolve();
-          }, function(err, e){
+          }).fail(function(err, e){
             defer.reject();
             G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
-          }, function(transaction) {
+          }).progress(function(transaction) {
             var store = transaction.objectStore(classUri);
             for (var i = 0; i < items.length; i++) {
               store.put(items[i]);
-//              G.log(RM.TAG, "db", 'Storing', items[i]._uri);
             }
           });
         }).promise()
-      }, "Add Items");
+      }, {name: "Add Items"});
     }, //.async(100),
     
     addItem: function(item, classUri) {
@@ -722,12 +670,35 @@ define([
         return false;
       
       var indexNames = RM.getIndexNames(vocModel);
-      if (orderBy && !_.contains(indexNames, orderBy))
+      if (orderBy && orderBy !== 'distance' && !_.contains(indexNames, orderBy))
         return false;
       
       if (!_.all(_.keys(filter), function(name) {return _.contains(indexNames, name);}))
         return false;
 
+      var positionProps = U.getPositionProps(vocModel);
+      var latLonQuery;
+      if (_.size(positionProps)) {
+        var radius = positionProps.radius && filter[positionProps.radius];
+        radius = isNaN(radius) ? G.defaults.radius : parseFloat(radius); // km
+          
+        var latProp = positionProps.latitude, lonProp = positionProps.longitude;
+        var lat = filter[latProp], lon = filter[lonProp];
+        if (/^-?\d+/.test(lat)) {
+          var latRadius = radius / 110; // 1 deg latitude is roughly 110 km 
+          lat = parseFloat(lat);
+          latLonQuery = Index(latProp).gteq(lat - latRadius).and(Index(latProp).lteq(lat + latRadius));
+        }
+        if (/^-?\d+/.test(lon)) {
+          var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate  
+          lon = parseFloat(lon);          
+          latLonQuery = Index(lonProp).gteq(lon - lonRadius).and(Index(lonProp).lteq(lon + lonRadius));
+        }
+        
+        delete filter[latProp]; 
+        delete filter[lonProp];
+      }
+      
       for (var name in filter) {
 //        var name = modelParams[i];
         var opVal = RM.parseOperatorAndValue(filter[name]);
@@ -741,6 +712,9 @@ define([
         subQuery.setPrimaryKey('_uri');
         query = query ? query.and(subQuery) : subQuery;
       }
+      
+      if (latLonQuery)
+        query = query.and(latLonQuery);
       
       if (orderBy) {
 //        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
@@ -790,9 +764,6 @@ define([
             } catch (err){
               return false;
             }
-            
-            // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
-            return true;
           };
         }
       }
@@ -807,19 +778,8 @@ define([
         
         var op = opVal[0];
         op = op === '=' ? '==' : op; 
-//        var bound = U.getTypedValue(data, name, opVal[1]);
         var bound = opVal[1];
         rules.push(RM.makeTest(vocModel.properties[name], op, bound));
-//        rules.push(function(val) {
-//          try {
-//            return eval('"' + val[name] + '"' + op + '"' + bound + '"');
-//          } catch (err){
-//            return false;
-//          }
-//          
-//          // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
-//          return true;
-//        });
       });
       
       return function(val) {
@@ -873,7 +833,6 @@ define([
       }
 
       return RM.runTask(function() {
-        G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
 //        var store = $.indexedDB('lablz').objectStore(type, IDBTransaction.READ_ONLY);
         var results = [];
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
@@ -882,6 +841,7 @@ define([
 
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
+          G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
           var qDefer = $.Deferred();
           query.getAll(store).done(qDefer.resolve).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
@@ -892,15 +852,24 @@ define([
         }
         else
           return queryWithoutIndex().promise();
-      }, "Get Items");
+      }, {name: "Get Items"});
     },
 
     upgradeDB: function(options) {
       return RM.runTask(function() {
         return $.Deferred(function(defer) {
+          if (RM.db && options) {
+            var toMake = options.toMake;
+            if (toMake && toMake.length) {
+              toMake = _.filter(toMake, function(m) {
+                return !RM.db.objectStoreNames.contains(m);
+              });
+            }
+          }
+          
           RM.openDB(options).done(defer.resolve).fail(defer.reject);
         }).promise();
-      }, options && options.msg || "upgradeDB", true);      
+      }, {name: options && options.msg || "upgradeDB", sequential: true});      
     },
     
     restartDB: function() {
@@ -910,7 +879,7 @@ define([
             RM.openDB().done(defer.resolve).fail(defer.reject);
 //          }); 
         }).promise();
-      }, "restartDB", true);
+      }, {name: "restartDB", sequential: true});
     }
 
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////

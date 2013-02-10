@@ -12,19 +12,18 @@ onmessage = function(event) {
     responseText: text
   };
   
-  if (type && type.toUpperCase() == 'JSON') {
+  if (text && type && type.toUpperCase() == 'JSON') {
     try {
       resp.data = JSON.parse(text);
       resp.responseText = null;
     } catch (err) {
-      resp.error = {code: 500, type: 'other', details: "Couldn't parse response text"};
+      resp.error = {code: status, type: 'other', details: "Couldn't parse response text"};
     }
   }
   
   if (status > 399 && status < 600)
     postMessage(resp);    
   else {
-      
     postMessage(resp);
   }
 }

@@ -1,13 +1,10 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
   'utils',
   'events',
-  'vocManager',
   'templates',
   'views/BasicView'
-], function(G, $, _, U, Events, Voc, Templates, BasicView) {
+], function(G, U, Events, Templates, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -91,16 +88,24 @@ define([
 //        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
 //        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
-          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+//          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+          t.mobileUrl = t.hash;
           U.addToFrag(frag, self.menuItemTemplate(t));
-          self.tabs[t.title] = t.mobileUrl;
+//          self.tabs[t.title] = t.mobileUrl;
         });
       }
-      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?$or=" + encodeURIComponent("creator=_me||lastDeployed=!null") }));        
       
-      this.buildActionsMenu(frag);
+      var params = {lastDeployed: '!null'};
+      if (!G.currentUser.guest) {
+        params.creator = '_me';
+        debugger;
+        params = {'$or': U.getQueryString(params, {delimiter: '||'})};
+      }
       
-      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', Voc.typeToModel)) {
+      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?" + $.param(params) }));        
+      
+      this.buildActionsMenu(frag);      
+      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
         var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
         if (!ch  ||  ch.length == 0)
           ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');

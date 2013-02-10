@@ -49,7 +49,7 @@ define([
       
       var res = this.resource || this.collection;
       var vocModel = this.vocModel;
-      if (U.isA(vocModel, "Shape")) {
+      if (res.isA("Shape")) {
         this.remove();
         return this;
       }

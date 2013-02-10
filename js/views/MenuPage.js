@@ -1,8 +1,5 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
-  'backbone',
   'utils',
   'events',
   'templates',
@@ -11,7 +8,7 @@ define([
   'views/BackButton',
   'views/LoginButtons',
   'views/ResourceView'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView) {
+], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
@@ -146,7 +143,7 @@ define([
     edit: function() {
     },
     
-    delete: function() {
+    "delete": function() {
       alert('deleted...not really though');
     },
     

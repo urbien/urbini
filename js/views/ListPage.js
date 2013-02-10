@@ -1,12 +1,8 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'templates',
   'events', 
   'utils',
-  'vocManager',
   'error',
   'views/BasicView',
   'views/ResourceListView', 
@@ -17,7 +13,7 @@ define([
   'views/AroundMeButton', 
   'views/MapItButton',
   'views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, Templates, Events, U, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -109,7 +105,7 @@ define([
       json.viewId = this.cid;
       this.$el.html(this.template(json));
       
-      var isGeo = (rl.isA("Locatable") || rl.isA("Shape")) && _.filter(rl.models, function(m) {return m.get('latitude') || m.get('shapeJson')}).length;
+      var isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       var vocModel = this.vocModel;
       var hash = window.location.hash;
       var idx;
@@ -124,7 +120,7 @@ define([
             if (!prop  ||  !prop.containerMember) 
               continue;
             var type = U.getLongUri(prop.range);
-            var cM = Voc.typeToModel[type];
+            var cM = G.typeToModel[type];
             if (!cM) 
               continue;
             var blProps = U.getPropertiesWith(cM.properties, 'backLink');
@@ -157,7 +153,7 @@ define([
       }).render();
   
       var models = rl.models;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification', Voc.typeToModel);
+      var isModification = U.isAssignableFrom(vocModel, 'Modification', G.typeToModel);
 
 //      var meta = models[0].__proto__.constructor.properties;
 //      meta = meta || models[0].properties;
@@ -175,7 +171,7 @@ define([
 //          isMasonry = false;
 //      }
       
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', Voc.typeToModel);
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', G.typeToModel);
       var isMV = window.location.hash  &&  window.location.hash.indexOf('$multiValue=') != -1;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');

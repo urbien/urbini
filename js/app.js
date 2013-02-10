@@ -1,9 +1,7 @@
 define('app', [
   'globals',
-  'jquery',
-  'jqueryMobile',
-  'underscore', 
-  'backbone', 
+  'backbone',
+  'cache!jqueryMobile',
   'templates', 
   'utils', 
   'events',
@@ -11,7 +9,7 @@ define('app', [
   'vocManager',
   'resourceManager',
   'router'
-], function(G, $, __jqm__, _, Backbone, Templates, U, Events, Errors, Voc, RM, Router) {  
+], function(G, Backbone, __jqm__, Templates, U, Events, Errors, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();
@@ -50,6 +48,7 @@ define('app', [
   };
 
   var App = {
+    TAG: 'App',
     initialize: function() {
       var error = function(e) {
         G.log('init', 'error', "failed to init app, not starting");
@@ -57,9 +56,11 @@ define('app', [
       };
       
       Templates.loadTemplates();
+      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
+      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
       Voc.checkUser();
       Voc.loadStoredModels();
-      if (!Voc.changedModels.length && !Voc.newModels.length) {
+      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
         RM.restartDB().always(this.startApp);
         return;
       }
@@ -104,25 +105,20 @@ define('app', [
       if (App.started)
         return;
       
+//      App.setupWorkers();
       App.setupModuleCache();
       App.setupLoginLogout();
       
       G.app = App;
       App.started = true;
-      var models = G.models;
+      if (window.location.hash == '#_=_') {
+//        debugger;
+        G.log(App.TAG, "info", "hash stripped");
+        window.location.hash = '';
+      }
+      
       G.Router = new Router();
       Backbone.history.start();
-      
-      _.each(G.tabs, function(t) {t.mobileUrl = U.getMobileUrl(t.pageUrl);});
-//      if (G.currentUser.guest && G.online) {
-//        setTimeout(function() {          
-//          Events.trigger(Events.REQUEST_LOGIN, {online: 'Please login'});
-//        }, 100);
-//      }
-//      G.homePage = G.homePage || G.tabs[0].mobileUrl;
-//      if (!window.location.hash) {
-//        G.Router.navigate(G.homePage, {trigger: true});
-//      }
     },
     
     setupLoginLogout: function() {
@@ -135,7 +131,7 @@ define('app', [
         
         var here = window.location.href;
         _.each(G.socialNets, function(net) {
-          var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, true); // sorted alphabetically
+          var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, {sort: true}); // sorted alphabetically
           var params = net.oAuthVersion == 1 ?
               {
             episode: 1, 
@@ -153,7 +149,7 @@ define('app', [
           };
           
           net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
-          net.url = net.authEndpoint + '?' + U.getQueryString(params, true); // sorted alphabetically
+          net.url = net.authEndpoint + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
         var popupTemplate = _.template(Templates.get('loginPopupTemplate'));

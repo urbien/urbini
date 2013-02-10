@@ -1,15 +1,11 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
   'templates',
   'events', 
   'error', 
   'utils',
-  'vocManager',
-  'resourceManager',
   'views/BasicView'
-], function(G, $, _, Templates, Events, Errors, U, Voc, RM, BasicView) {
+], function(G, Templates, Events, Errors, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -72,17 +68,7 @@ define([
             label: U.getPropDisplayName(prop),
             shortName: name,
             onSelect: self.onSelected,
-//            onShow: function(dw, v) {
-//            },
             input: this
-//              parseValue: U.toDateParts
-//              ,
-//              formatResult: function(d) {
-//                if (_.isUndefined(d[0]))
-//                  return today;
-//                else
-//                  return new Date(d[2], d[0], d[1]);
-//              }
           };
           
           if (isDate) 
@@ -152,8 +138,15 @@ define([
         // set text
       }
       
-      var pr = this.vocModel.myProperties[prop]  ||  this.vocModel.properties[prop];
+      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
+      var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
       Events.once('chooser', onChoose, this);
+      var params = {};
+//      if (pr.where) {
+//        debugger;
+//        _.extend(params, U.parseWhere(pr.where));
+//      }
+      
       if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
@@ -161,14 +154,15 @@ define([
         var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
         var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
         if (this.action == 'make')
-//        if (hash.indexOf('make/') == 0)
-          params += '&$type=' + encodeURIComponent(this.vocModel.type) + "&$title=" + encodeURIComponent(t);
+          params.$type = type;
         else
-          params += '&$forResource=' + encodeURIComponent(this.model.get('_uri')) + "&$title=" + encodeURIComponent(t);
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + params, {trigger: true});
+          params.$forResource = uri;
+        
+        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
+//        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
       }
       else {
-        if (!U.isAssignableFrom(this.vocModel, "WebProperty", Voc.typeToModel))
+        if (!U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel))
           this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
         else {
           var title = U.getQueryParams(window.location.hash)['$title'];
@@ -264,7 +258,7 @@ define([
               var pName = redirectTo.slice(0, dotIdx);
               var prop = vocModel.properties[pName];
               var range = U.getLongUri(prop.range);
-              range = range && Voc.typeToModel[range];
+              range = range && G.typeToModel[range];
               if (range) {
                 redirectParams[pName] = res.get(pName);
                 var bl = redirectTo.slice(dotIdx + 1);
@@ -445,59 +439,7 @@ define([
           },
           
           error: onSaveError
-        });
-        
-//        _.extend(props, baseParams);
-//        _.extend(props, {type: vocModel.type, uri: res.getUri()});
-//        var callback = function(xhr, status) {
-//          inputs.attr('disabled', false);
-//          if (status !== 'success') {
-//            alert('There was an error with your request, please resubmit');
-//            return;
-//          }
-//          
-//          switch (xhr.status) {
-//          case 304:
-//            alert('No changes made');
-//            $('input').attr('disabled', false);
-//            break;
-//          case 200:
-//            var json;
-//            try {
-//              json = JSON.parse(xhr.responseText);
-//              if (json.error) {
-////                self.resetResource();
-//                switch (json.error.code) {
-//                case 401:
-//                  Errors.errDialog({msg: 'You are not authorized to make these changes', delay: 100});
-//                  break;
-////                case 409:
-////                  break;
-//                default:
-//                  Errors.errDialog({msg: json.error.details, delay: 100});
-//                  break;
-//                }
-//                
-//                G.log(self.TAG, 'error', JSON.stringify(json));
-//                return;
-//              }
-//              else {
-//                res.set(json, {skipRefresh: true});
-//              }
-//            } catch (err) {
-//            }
-//            
-//            Events.trigger('refresh', res, res.getUri());
-//            setTimeout(function() {RM.addItem(res)}, 100);
-//            break;
-////          case 404:
-////            alert('The item you\'re editing doesn\'t exist');
-//          }
-//
-//          self.router.navigate(self.getRedirect(res), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-//        }
-//        
-//        $.ajax({type:'POST', url: url, data: $.param(props), complete: callback});
+        });        
       };
       
       var onError = function(errors) {
@@ -618,7 +560,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(prop, info.values, info.formId, Voc);
+      var pInfo = U.makeEditProp(prop, info.values, info.formId);
       if (!info.groupNameDisplayed) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
@@ -655,7 +597,8 @@ define([
           var generalGroup = $.grep(propGroups, function(item, i) {
             return item.shortName == 'general';
           });
-          if (generalGroup) {
+          
+          if (generalGroup.length) {
             $.each(propGroups, function(i){
               if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
             });
@@ -671,30 +614,6 @@ define([
             var p = props[j].trim();
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
-//            var p = props[j].trim();
-//            if (!/^[a-zA-Z]/.test(p) || _.has(backlinks, p)) //  || _.contains(gridCols, p))
-//              continue;
-//            
-//            var prop = meta[p];
-//            if (params[p]  &&  prop.containerMember)
-//              continue;
-//            if (!prop) {
-////              delete json[p];
-//              continue;
-//            }
-//
-//            _.extend(prop, {shortName: p});
-//            if (!willShow(res, prop, userRole))
-//              continue;
-//  
-//            displayedProps[p] = true;
-//            var pInfo = U.makeEditProp(prop, json[p], formId, Voc);
-//            if (!groupNameDisplayed) {
-//              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-//              groupNameDisplayed = true;
-//            }
-//  
-//            U.addToFrag(frag, this.editRowTemplate(pInfo));
           }
         }
         
@@ -751,45 +670,7 @@ define([
 //        jin.keyup(onFocusout);
       };
 
-      initInputs(inputs);
-//      inputs.each(function(idx, input) {
-////        var input = inputs[i];
-//        var i = input;
-//        var name = i.name;
-//        var jin = $(i);
-//        var jparent = jin.parent();
-//        var validated = function() {
-//          jparent.find('label.error').remove();
-////          i.focus();
-//        };
-//
-//        var onFocusout = function() {
-//          self.setValue(this.name, this.value, validated, self.fieldError);          
-//        };
-//        
-//        jin.focusout(onFocusout);
-////        jin.keyup(onFocusout);
-//      });
-//      
-//      texts.each(function(idx, textarea) {
-//  //      var input = inputs[i];
-//        var i = textarea;
-//        var name = i.name;
-//        var jin = $(i);
-//        var jparent = jin.parent();
-//        var validated = function() {
-//          jparent.find('label.error').remove();
-//  //        i.focus();
-//        };
-//  
-//        var onFocusout = function() {
-//          self.setValue(this.name, this.value, validated, self.fieldError);          
-//        };
-//        
-//        jin.focusout(onFocusout);
-//  //      jin.keyup(onFocusout);
-//      });
-        
+      initInputs(inputs);        
       form.find('[required]').each(function() {
         $(this).prev('label').addClass('req');
       });
