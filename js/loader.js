@@ -1388,7 +1388,9 @@ define('globals', function() {
   
   // Determine whether we want the server to minify stuff
   // START minify
-  var hash = window.location.hash;
+  var hash = window.location.href;
+  var hashIdx = hash.indexOf('#');
+  hash = hashIdx === -1 ? '' : hash.slice(hashIdx + 1);
   var qIdx = hash.indexOf('?');
   var set = false;
   var mCookie = G.serverName + '/cookies/minify';

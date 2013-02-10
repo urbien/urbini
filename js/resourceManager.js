@@ -74,7 +74,6 @@ define([
               options.success(resp.data, 'success', resp);
           }
           else {
-            debugger;
             options.error(data, resp.error, options);
           }
         };
@@ -344,10 +343,8 @@ define([
         }).fail(function(error, event) {
           RM.openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
           G.log(RM.TAG, 'db', 'failed to delete database');
-          debugger;
         }).progress(function(db, event) {
           RM.upgradeDB(options).done(dbPromise.resolve).fail(dbPromise.reject);;
-          debugger;
         });
         
         return dbPromise;
@@ -425,13 +422,11 @@ define([
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
         dbPromise.resolve();
       }).fail(function(error, event) {
-        debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
         dbPromise.reject();
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-            debugger;
             dbPromise.reject();
             RM.restartDB();
             break;
@@ -471,7 +466,6 @@ define([
             trans.deleteObjectStore(type);
             G.log(RM.TAG, 'db', 'deleted object store: ' + type);
           } catch (err) {
-            debugger;
             G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
             return;
           }
@@ -485,7 +479,7 @@ define([
         
         var vocModel = G.typeToModel[type];
         if (!vocModel) {
-          debugger;
+          G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
           continue;
         }
         
