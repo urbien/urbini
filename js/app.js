@@ -70,7 +70,7 @@ define('app', [
     prepModels: function() {
       var self = this;
       var error = function(info) {
-        debugger;
+//        debugger;
         if (info.status === 0) {
           if (G.online)
             self.prepModels(); // keep trying
