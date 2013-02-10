@@ -820,11 +820,11 @@ define('globals', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-	xhrWorker: G.serverName + '/js/xhrWorker.js',
-    getXhrWorker: function() {
-      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
-      return G.xhrWorker;
-    },
+    xhrWorker: G.serverName + '/js/xhrWorker.js',
+//    getXhrWorker: function() {
+//      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
+//      return G.xhrWorker;
+//    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1254,7 +1254,8 @@ define('globals', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = G.getXhrWorker();
+//        var xhrWorker = G.getXhrWorker();
+        var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
