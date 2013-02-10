@@ -3,7 +3,6 @@ define([
   'templates',
   'events', 
   'utils',
-  'vocManager',
   'error',
   'views/BasicView',
   'views/ResourceListView', 
@@ -14,7 +13,7 @@ define([
   'views/AroundMeButton', 
   'views/MapItButton',
   'views/MenuButton'
-], function(G, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, Templates, Events, U, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',

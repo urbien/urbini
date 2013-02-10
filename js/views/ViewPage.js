@@ -3,7 +3,6 @@ define([
   'utils',
   'events',
   'templates',
-  'vocManager',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
@@ -77,7 +76,7 @@ define([
           right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
-      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", Voc.typeToModel)) {
+      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", G.typeToModel)) {
         var user = G.currentUser._uri;
         var appOwner = res.get('creator');
         if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))

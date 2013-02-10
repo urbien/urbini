@@ -58,8 +58,9 @@ define([
 
       var fetchHelper = function() {
         if (options.sync || !G.hasWebWorkers)
-          return RM.defaultSync(method, data, options)
+          return RM.defaultSync(method, data, options);
         
+//        G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers}).done(options.success, options.error);
         var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           G.log(RM.TAG, 'xhr', 'got resources', options.url);
@@ -489,6 +490,9 @@ define([
         }
         
         try {
+          if (RM.db && RM.db.objectStoreNames.contains(type))
+            continue;
+          
           var store = trans.createObjectStore(type, RM.defaultOptions);
           if (!store) {
             debugger;
@@ -774,19 +778,8 @@ define([
         
         var op = opVal[0];
         op = op === '=' ? '==' : op; 
-//        var bound = U.getTypedValue(data, name, opVal[1]);
         var bound = opVal[1];
         rules.push(RM.makeTest(vocModel.properties[name], op, bound));
-//        rules.push(function(val) {
-//          try {
-//            return eval('"' + val[name] + '"' + op + '"' + bound + '"');
-//          } catch (err){
-//            return false;
-//          }
-//          
-//          // TODO: test values correctly, currently fails to eval stuff like 134394343439<=today
-//          return true;
-//        });
       });
       
       return function(val) {
@@ -865,6 +858,15 @@ define([
     upgradeDB: function(options) {
       return RM.runTask(function() {
         return $.Deferred(function(defer) {
+          if (RM.db && options) {
+            var toMake = options.toMake;
+            if (toMake && toMake.length) {
+              toMake = _.filter(toMake, function(m) {
+                return !RM.db.objectStoreNames.contains(m);
+              });
+            }
+          }
+          
           RM.openDB(options).done(defer.resolve).fail(defer.reject);
         }).promise();
       }, {name: options && options.msg || "upgradeDB", sequential: true});      

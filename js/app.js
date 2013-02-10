@@ -105,6 +105,7 @@ define('app', [
       if (App.started)
         return;
       
+//      App.setupWorkers();
       App.setupModuleCache();
       App.setupLoginLogout();
       
@@ -130,7 +131,7 @@ define('app', [
         
         var here = window.location.href;
         _.each(G.socialNets, function(net) {
-          var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, true); // sorted alphabetically
+          var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, {sort: true}); // sorted alphabetically
           var params = net.oAuthVersion == 1 ?
               {
             episode: 1, 
@@ -148,7 +149,7 @@ define('app', [
           };
           
           net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
-          net.url = net.authEndpoint + '?' + U.getQueryString(params, true); // sorted alphabetically
+          net.url = net.authEndpoint + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
         var popupTemplate = _.template(Templates.get('loginPopupTemplate'));
@@ -223,6 +224,54 @@ define('app', [
           callback.apply(context, arguments);
         }).promise();
       }
+    }
+//    ,
+//    
+//    setupWorkers: function(options) {
+//      var hasWebWorkers = G.hasWebWorkers;
+//      G.ajax = function(options) {
+//        var useWorker = hasWebWorkers && !options.sync;
+//        if (useWorker) {
+//          return new $.Deferred(function(defer) {
+//            xhrWorker = G.getXhrWorker();          
+//            xhrWorker.onmessage = function(event) {
+//              var xhr = event.data;
+//              defer.resolve(xhr.data, xhr.status, xhr);
+//            };
+//            
+//            xhrWorker.onerror = function(err) {
+//              defer.reject({}, err, options);
+//            };
+//            
+//            xhrWorker.postMessage(_.pluck(options, ['type', 'url', 'data', 'method']));
+//          }).promise();
+//        }
+//        else {
+//          return $.ajax(options).then(function(data, status, jqXHR) {
+//            // $.ajax
+//            if (status != 'success') {
+//              defer.reject(jqXHR, status, options);
+//              return;
+//            }
+//            
+//            if (options.type === 'jSON') {
+//              var responseText = jqXHR.responseText;
+//              try {
+//                data = JSON.parse(responseText);
+//              } catch (err) {
+//  //              G.log(Voc.TAG, 'error', "couldn't eval response from server. Requested url: " + options.url);
+//                defer.reject(jqXHR, status, options);            
+//                return;
+//              }
+//            }
+//            
+//            defer.resolve(data, status, jqXHR);
+//          }, 
+//          function(jqXHR, ajaxOptions, err) {
+//            defer.reject(jqXHR, err, options);
+//          });
+//        }
+//      }
     }
   };
   

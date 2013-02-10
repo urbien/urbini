@@ -1,13 +1,10 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
   'utils',
   'events',
-  'vocManager',
   'templates',
   'views/BasicView'
-], function(G, $, _, U, Events, Voc, Templates, BasicView) {
+], function(G, U, Events, Templates, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -97,7 +94,15 @@ define([
 //          self.tabs[t.title] = t.mobileUrl;
         });
       }
-      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?$or=" + encodeURIComponent("creator=_me||lastDeployed=!null") }));        
+      
+      var params = {lastDeployed: '!null'};
+      if (!G.currentUser.guest) {
+        params.creator = '_me';
+        debugger;
+        params = {'$or': U.getQueryString(params, {delimiter: '||'})};
+      }
+      
+      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?" + $.param(params) }));        
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {

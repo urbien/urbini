@@ -489,12 +489,12 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval(text);  
-  else // Safari
+//  var nav = Lablz.navigator;
+//  if (nav.isChrome || nav.isSafari)
+//    Lablz.inject(text);
+//  else if (nav.isFirefox)
+//    return window.eval.call({}, text);  
+//  else // Safari
     return window.eval(text);
 //  return eval(text);
   
@@ -587,11 +587,11 @@ define('globals', function() {
         config = config || (context && context.config) || {},
         cached;
 
-    if (/jquery.*mobile/.test(url))
-      return;
-    
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
+    
+//    if (/^jquery\.mobile.*\.js$/.test(url))
+//      return;
     
     // TODO: unhack
 //    if (name == 'jqueryMobile') {
@@ -763,6 +763,13 @@ define('globals', function() {
         if (/.*\.js|css|jsp$/.test(key))
           G.localStorage.del(key);
       }      
+    },
+    
+    nukeHandlers: function() {
+      for (var key in localStorage) {
+        if (/^handlers/.test(key))
+          G.localStorage.del(key);
+      }      
     }
   };
   
@@ -784,6 +791,7 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    webWorkers: {},
     customHandlers: {},
     defaults: {
       radius: 15 // km
@@ -808,7 +816,10 @@ define('globals', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    xhrWorker: G.serverName + '/js/xhrWorker.js',
+    getXhrWorker: function() {
+      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
+      return G.xhrWorker;
+    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1238,7 +1249,7 @@ define('globals', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = new Worker(G.xhrWorker);
+        var xhrWorker = G.getXhrWorker();
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);

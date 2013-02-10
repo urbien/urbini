@@ -17,12 +17,12 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', /*'onchange',*/ 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
-      this.on('change', this.onchange);
+//      this.on('change', this.onchange);
       this.on('sync', this.onsync);
       this.vocModel = this.constructor;
     },
@@ -49,12 +49,12 @@ define([
 
       this.save(props, options);
     },
-    onchange: function(e) {
-      if (this.lastFetchOrigin !== 'server')
-        return;
-      
-      Events.trigger('resourcesChanged', [this]);
-    },
+//    onchange: function(e) {
+//      if (this.lastFetchOrigin !== 'server')
+//        return;
+//      
+//      Events.trigger('resourcesChanged', [this]);
+//    },
     remove: function() {
       this.collection && this.collection.remove(this);
     },

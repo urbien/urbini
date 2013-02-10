@@ -644,7 +644,7 @@ define([
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
       q[name] = value;
-      q = sort ? U.getQueryString(q, sort) : $.param(q);
+      q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
     
@@ -828,9 +828,12 @@ define([
     },
     /// String prototype extensions
     
-    getQueryString: function(paramMap, sort) {
-      if (!sort)
-        return $.param(paramMap);
+    getQueryString: function(paramMap, options) {
+      options = options || {};
+      if (!options.sort) {
+        result = $.param(paramMap);
+        return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
+      }
       
       var keys = [];
       for (var p in paramMap) {
@@ -845,7 +848,7 @@ define([
         keys[i] = keys[i] + '=' + U.encode(paramMap[keys[i]]);
       }
       
-      return keys.join('&');
+      return keys.join(options.delimiter || '&');
     },
 
     getFormattedDuration: function(time) {

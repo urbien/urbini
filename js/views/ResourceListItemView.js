@@ -173,7 +173,7 @@ define([
       var dn = U.getDisplayName(m);
       json.davDisplayName = dn;
       if (!viewCols.length) {
-        var isClass = U.isAssignableFrom(vocModel, 'WebClass', Voc.typeToModel);
+        var isClass = U.isAssignableFrom(vocModel, 'WebClass', G.typeToModel);
         viewCols = '<h3>' + dn + '</h3>';
         if (isClass) {
           var comment = json['comment'];

@@ -1,15 +1,11 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
   'templates',
   'events', 
   'error', 
   'utils',
-  'vocManager',
-  'resourceManager',
   'views/BasicView'
-], function(G, $, _, Templates, Events, Errors, U, Voc, RM, BasicView) {
+], function(G, Templates, Events, Errors, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
@@ -166,7 +162,7 @@ define([
 //        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
       }
       else {
-        if (!U.isAssignableFrom(this.vocModel, "WebProperty", Voc.typeToModel))
+        if (!U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel))
           this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
         else {
           var title = U.getQueryParams(window.location.hash)['$title'];

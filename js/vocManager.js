@@ -489,14 +489,18 @@ define([
       var typeName = type.slice(type.lastIndexOf('/') + 1);
       _.each(handlers, function(handler) {
         with(handler) {
-          script = script.replace(/(<([^>]+)>)/ig, '').trim();
-          try {
-            script = FunctionProxy(script);
-//            eval("script = " + script); //(new Function("return {{0}}".format(script)))();
-          } catch (err) {
-            G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
-            return;          
-          }  
+          if (typeof script === 'string') {
+            script = script.replace(/(<([^>]+)>)/ig, '').trim();
+            try {
+              script = FunctionProxy(script);
+  //            eval("script = " + script); //(new Function("return {{0}}".format(script)))();
+            } catch (err) {
+              G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
+              return;          
+            }
+          }
+          else
+            return script; // is already a function
         }
         
         Events.on('add.' + type, Voc.prepareHandler(handler.script, handler.toDavClassUri));
@@ -543,10 +547,25 @@ define([
       p = p && JSON.parse(p);
       var c = G.currentUser;
       G.userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
-      if (G.userChanged && !c.guest) {
-        // no need to clear localStorage, it's only used to store models, which can be shared
-        G.localStorage.put(Voc.contactKey, JSON.stringify(c));
+      if (G.userChanged) {
+        if (!c.guest) {
+          // no need to clear localStorage, it's only used to store models, which can be shared
+          G.localStorage.put(Voc.contactKey, JSON.stringify(c));
+        }
+         
+        G.localStorage.nukeHandlers();
+        Voc.fetchHandlers();
       }
+    },
+    
+    fetchHandlers: function() {
+      var models = _.keys(G.typeToModel);
+      for (var key in localStorage) {
+        if (key.startsWith('model:'))
+          models.push(key.slice(6));
+      }
+      
+      models = _.uniq(models).join(',');
     },
     
     saveModelsToStorage: function(models) {
