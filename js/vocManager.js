@@ -100,7 +100,7 @@ define([
       var infos = Voc.getModelInfo(models);      
       var modelsCsv = JSON.stringify(models);
       G.startedTask("ajax models");
-      var useWorker = G.hasWebWorkers && !options.sync;
+//      var useWorker = G.hasWebWorkers && !options.sync;
       var checkInModels = function(respModels) {
         if (!changedAndNew)
           return;
@@ -130,131 +130,144 @@ define([
 //        Voc.newModels = tmpN;
 //        return tmpC.length || tmpN.length;
       }
+
+      var ajaxSettings = _.extend({
+        type: 'JSON', 
+        url: G.modelsUrl, 
+        data: {models: modelsCsv}, 
+        method: 'POST', 
+        timeout: 5000
+      }, _.pick(options, 'sync'));
       
-      var complete = function() {
-        var xhr = arguments[0];
-        if (xhr.status == 304) {
-          checkInModels([]);
-          success && success({fetched: 0});
-          return;
-        }
-        
-        if (useWorker) {
-          // XHR          
-          data = xhr.data;
-        }
-        else {                                
-          // $.ajax
-          var status = arguments[1];
-          if (status != 'success') {
-            G.log(Voc.TAG, 'error', "couldn't fetch models");
-            error(xhr, status, options);
+      G.ajax(ajaxSettings)
+        .done(function(data, status, xhr) {
+//        var xhr = arguments[0];
+          if (xhr.status == 304) {
+            checkInModels([]);
+            success && success({fetched: 0});
             return;
           }
           
-          var responseText = xhr.responseText;
-          try {
-            data = JSON.parse(responseText);
-          } catch (err) {
-            G.log(Voc.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
-            error(null, null, options);            
+//          if (useWorker) {
+//            // XHR          
+//            data = xhr.data;
+//          }
+//          else {                                
+//            // $.ajax
+//            var status = arguments[1];
+//            if (status != 'success') {
+//              G.log(Voc.TAG, 'error', "couldn't fetch models");
+//              error(xhr, status, options);
+//              return;
+//            }
+//            
+//            var responseText = xhr.responseText;
+//            try {
+//              data = JSON.parse(responseText);
+//            } catch (err) {
+//              G.log(Voc.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
+//              error(null, null, options);            
+//              return;
+//            }
+//          }
+          
+          if (!data) {
+            debugger;
             return;
           }
-        }
-        
-        if (!data) {
+          
+          if (data.error) {
+            error(data);
+            return;
+          }
+          
+          var mz = data.models || [];
+          var needUpgrade = checkInModels(mz);
+          var pkg = data.packages;
+          if (pkg)
+            U.deepExtend(Voc.packages, pkg);
+          
+          G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
+          var more = data.linkedModelsMetadata;
+          if (more) {
+            G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
+              m.type = U.getLongUri(m.type);
+              return m;
+            }));
+          }
+          
+          if (data.classMap)
+            _.extend(G.classMap, data.classMap)
+          
+          var newModels = [];
+          for (var i = 0; i < mz.length; i++) {
+            var newModelJson = mz[i];
+            var p = newModelJson.path;
+            var lastDot = p.lastIndexOf('.');
+            var path = p.slice(0, lastDot);
+            var name = p.slice(lastDot + 1);
+            var sup = newModelJson.sPath;
+            
+            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
+            var newModel;
+            if (newModelJson.s.enumeration)
+              newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
+            else
+              newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
+            
+            U.pushUniq(newModels, newModel);
+          }
+          
+          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
+  //        for (var i = 0; i < newModels.length; i++) {
+  //          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
+  //        }
+
+          Voc.initModels(newModels);          
+          setTimeout(function() {
+            Voc.saveModelsToStorage(newModels);
+          }, 100);
+          G.finishedTask("ajax models");
+          Voc.setupHandlers(data.handlers);
+          success && success();
+          if (needUpgrade)
+            Events.trigger('modelsChanged');//, {success: success, error: error});
+        }).fail(function(xhr, err, aOpts) {
           debugger;
-          return;
-        }
-        
-        if (data.error) {
-          error(data);
-          return;
-        }
-        
-        var mz = data.models;
-        var needUpgrade = checkInModels(mz);
-        var handlers = data.handlers;
-        if (handlers)
-          _.extend(G.customHandlers, data.handlers);
-        
-        var pkg = data.packages;
-        if (pkg)
-          U.deepExtend(Voc.packages, pkg);
-        
-        G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
-        var more = data.linkedModelsMetadata;
-        if (more) {
-          G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
-            m.type = U.getLongUri(m.type);
-            return m;
-          }));
-        }
-        
-        if (data.classMap)
-          _.extend(G.classMap, data.classMap)
-        
-        var newModels = [];
-        for (var i = 0; i < mz.length; i++) {
-          var newModelJson = mz[i];
-          var p = newModelJson.path;
-          var lastDot = p.lastIndexOf('.');
-          var path = p.slice(0, lastDot);
-          var name = p.slice(lastDot + 1);
-          var sup = newModelJson.sPath;
-          
-          // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-          var newModel;
-          if (newModelJson.s.enumeration)
-            newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
-          else
-            newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
-          
-          U.pushUniq(newModels, newModel);
-        }
-        
-        Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
-//        for (var i = 0; i < newModels.length; i++) {
-//          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
-//        }
-        
-        Voc.initModels(newModels);
-        G.finishedTask("ajax models");        
-        setTimeout(function() {
-          Voc.saveModelsToStorage(newModels);
-//          Voc.initHandlers(handlers);
-          Voc.saveHandlersToStorage(handlers);
-        }, 100);
-        success && success();
-        if (needUpgrade)
-          Events.trigger('modelsChanged');//, {success: success, error: error});
-      };
+        });
       
 //      var onErr = function(code) {
 //        return error.apply(this, [null, {type: code}, options]);
 //      }
       
-      if (useWorker) {
-        var xhrWorker = new Worker(G.xhrWorker);
-        xhrWorker.onmessage = function(event) {
-          G.log(Voc.TAG, 'xhr', 'got models', modelsCsv);
-          complete(event.data);
-        };
-        
-        xhrWorker.onerror = function(err) {
-          G.log(Voc.TAG, 'xhr', JSON.stringify(err));
-        };
-        
-        xhrWorker.postMessage({type: 'JSON', url: G.modelsUrl, data: {models: modelsCsv}, method: 'POST'});
-      }
-      else {
-        $.ajax({
-          url: G.modelsUrl, 
-          type: 'POST',
-          data: {"models": modelsCsv},
-          timeout: 5000,
-          complete: complete
-        });
+//      if (useWorker) {
+//        var xhrWorker = new Worker(G.xhrWorker);
+//        xhrWorker.onmessage = function(event) {
+//          G.log(Voc.TAG, 'xhr', 'got models', modelsCsv);
+//          complete(event.data);
+//        };
+//        
+//        xhrWorker.onerror = function(err) {
+//          G.log(Voc.TAG, 'xhr', JSON.stringify(err));
+//        };
+//        
+//        xhrWorker.postMessage({type: 'JSON', url: G.modelsUrl, data: {models: modelsCsv}, method: 'POST'});
+//      }
+//      else {
+//        $.ajax({
+//          url: G.modelsUrl, 
+//          type: 'POST',
+//          data: {"models": modelsCsv},
+//          timeout: 5000,
+//          complete: complete
+//        });
+//      }
+    },
+    
+    setupHandlers: function(handlers) {
+      if (handlers) {
+        _.extend(G.customHandlers, handlers);
+        Voc.saveHandlersToStorage(handlers);
       }
     },
     
@@ -558,14 +571,21 @@ define([
       }
     },
     
-    fetchHandlers: function() {
-      var models = _.keys(G.typeToModel);
-      for (var key in localStorage) {
-        if (key.startsWith('model:'))
-          models.push(key.slice(6));
+    fetchHandlers: function(models) {
+      if (!models) {
+        models = _.keys(G.typeToModel);
+        for (var key in localStorage) {
+          if (key.startsWith('model:'))
+            models.push(key.slice(6));
+        }
+        
+        models = _.uniq(models).join(',');
       }
       
-      models = _.uniq(models).join(',');
+      G.ajax({method: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
+        debugger;
+        Voc.setupHandlers(data);
+      });
     },
     
     saveModelsToStorage: function(models) {

@@ -58,6 +58,7 @@ define('app', [
       Templates.loadTemplates();
       _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
       _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
+      App.setupWorkers();
       Voc.checkUser();
       Voc.loadStoredModels();
       if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
@@ -105,7 +106,6 @@ define('app', [
       if (App.started)
         return;
       
-//      App.setupWorkers();
       App.setupModuleCache();
       App.setupLoginLogout();
       
@@ -224,54 +224,51 @@ define('app', [
           callback.apply(context, arguments);
         }).promise();
       }
-    }
-//    ,
-//    
-//    setupWorkers: function(options) {
-//      var hasWebWorkers = G.hasWebWorkers;
-//      G.ajax = function(options) {
-//        var useWorker = hasWebWorkers && !options.sync;
-//        if (useWorker) {
-//          return new $.Deferred(function(defer) {
-//            xhrWorker = G.getXhrWorker();          
-//            xhrWorker.onmessage = function(event) {
-//              var xhr = event.data;
-//              defer.resolve(xhr.data, xhr.status, xhr);
-//            };
-//            
-//            xhrWorker.onerror = function(err) {
-//              defer.reject({}, err, options);
-//            };
-//            
-//            xhrWorker.postMessage(_.pluck(options, ['type', 'url', 'data', 'method']));
-//          }).promise();
-//        }
-//        else {
-//          return $.ajax(options).then(function(data, status, jqXHR) {
-//            // $.ajax
-//            if (status != 'success') {
-//              defer.reject(jqXHR, status, options);
-//              return;
-//            }
-//            
-//            if (options.type === 'jSON') {
-//              var responseText = jqXHR.responseText;
-//              try {
-//                data = JSON.parse(responseText);
-//              } catch (err) {
-//  //              G.log(Voc.TAG, 'error', "couldn't eval response from server. Requested url: " + options.url);
-//                defer.reject(jqXHR, status, options);            
-//                return;
-//              }
-//            }
-//            
-//            defer.resolve(data, status, jqXHR);
-//          }, 
-//          function(jqXHR, ajaxOptions, err) {
-//            defer.reject(jqXHR, err, options);
-//          });
-//        }
-//      }
+    },
+    
+    setupWorkers: function() {
+      var hasWebWorkers = G.hasWebWorkers;
+      G.ajax = function(options) {
+        var opts = _.clone(options);
+        var useWorker = hasWebWorkers && !opts.sync;
+        return new $.Deferred(function(defer) {
+          if (useWorker) {
+            G.log(App.TAG, 'xhr', 'webworker', opts.url);
+            xhrWorker = G.getXhrWorker();          
+            xhrWorker.onmessage = function(event) {
+              var xhr = event.data;
+              defer.resolve(xhr.data, xhr.status, xhr);
+            };
+            
+            xhrWorker.onerror = function(err) {
+              debugger;
+              defer.reject({}, "error", err);
+            };
+            
+            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method']));
+          }
+          else {
+            G.log(App.TAG, 'xhr', '$.ajax', opts.url);
+            $.ajax(_.pick(opts, ['timeout', 'method', 'url', 'headers', 'data'])).then(function(data, status, jqXHR) {
+              if (status != 'success') {
+                defer.reject(jqXHR, status, opts);
+                return;
+              }
+              
+              if (data.error) {
+                debugger;
+                defer.reject(jqXHR, data.error, opts);
+              }
+              else
+                defer.resolve(data, status, jqXHR);
+            }, 
+            function(jqXHR, status, err) {
+              debugger;
+              defer.reject(jqXHR, {code: jqXHR.status, details: err}, opts);
+            });
+          }
+        }).promise();
+      }
     }
   };
   

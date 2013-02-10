@@ -60,30 +60,39 @@ define([
         if (options.sync || !G.hasWebWorkers)
           return RM.defaultSync(method, data, options);
         
-//        G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers}).done(options.success, options.error);
-        var xhrWorker = new Worker(G.xhrWorker);
-        xhrWorker.onmessage = function(event) {
-          G.log(RM.TAG, 'xhr', 'got resources', options.url);
-          var resp = event.data;
-          if (resp) {
-            if (resp.error) {
-              G.log(RM.TAG, 'Web Worker', JSON.stringify(error), resp.responseText);
-              options.error(data, resp.error, options);
-            }
-            else
-              options.success(resp.data, 'success', resp);
-          }
-          else {
+        G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers})
+          .done(function(data, status, xhr) {
             debugger;
-            options.error(data, resp.error, options);
-          }
-        };
+            options.success(data, status, xhr);
+          }).fail(function(xhr, status, msg) {
+            debugger;
+            G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
+            options.error(null, xhr, options);
+          });
         
-        xhrWorker.onerror = function(err) {
-          G.log(RM.TAG, 'Web Worker', JSON.stringify(err));
-        };
-        
-        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
+//        var xhrWorker = new Worker(G.xhrWorker);
+//        xhrWorker.onmessage = function(event) {
+//          G.log(RM.TAG, 'xhr', 'got resources', options.url);
+//          var resp = event.data;
+//          if (resp) {
+//            if (resp.error) {
+//              G.log(RM.TAG, 'Web Worker', JSON.stringify(error), resp.responseText);
+//              options.error(data, resp.error, options);
+//            }
+//            else
+//              options.success(resp.data, 'success', resp);
+//          }
+//          else {
+//            debugger;
+//            options.error(data, resp.error, options);
+//          }
+//        };
+//        
+//        xhrWorker.onerror = function(err) {
+//          G.log(RM.TAG, 'Web Worker', JSON.stringify(err));
+//        };
+//        
+//        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
       };
       
       if (timeout)

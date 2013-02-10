@@ -171,7 +171,7 @@ define([
         if (isModification  ||  isMasonry  ||  isMultiValueChooser)
           this.$el.trigger('create');
         else
-          this.$el.listview().listview('refresh');
+          this.$el.listview('refresh');
       }
       else {
         this.initializedListView = true;

@@ -762,14 +762,14 @@ define('globals', function() {
       for (var key in localStorage) {
         if (/.*\.js|css|jsp$/.test(key))
           G.localStorage.del(key);
-      }      
+      }
     },
     
     nukeHandlers: function() {
       for (var key in localStorage) {
         if (/^handlers/.test(key))
           G.localStorage.del(key);
-      }      
+      }
     }
   };
   
