@@ -493,7 +493,7 @@ requirejs.exec = function(text) {
   if (nav.isChrome || nav.isSafari)
     Lablz.inject(text);
   else if (nav.isFirefox)
-    return window.eval.call({}, text);
+    return window.eval(text);  
   else // Safari
     return window.eval(text);
 //  return eval(text);
@@ -556,7 +556,7 @@ define('globals', function() {
       
     switch (ext) {
       case '.css':
-        text += '\r\n//@ sourceURL=' + url;
+        text += '\r\n/*//@ sourceURL=' + url + '*/';
         G.appendCSS(text);
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
@@ -570,7 +570,11 @@ define('globals', function() {
         G.log(G.TAG, 'cache', 'end cache.get: ' + url);
         break;
       default:
-        text += '\r\n//@ sourceURL=' + url;
+//        text += '\n//@ sourceURL=' + url.slice(0, -2) + 'min.js';
+        if (G.navigator.isIE) text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+        text += '\n//@ sourceMappingURL=' + url + '.map';
+        text += '\n//@ sourceURL=' + url;
+        if (G.navigator.isIE) text += '*/\n';
         requirejs.exec(text);
         context.completeLoad(name);
         break;

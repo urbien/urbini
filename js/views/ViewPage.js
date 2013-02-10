@@ -3,16 +3,19 @@ define([
   'utils',
   'events',
   'templates',
+  'vocManager',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/MenuButton',
+  'views/PublishButton',
+  'views/MenuPanel',
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, PublishButton, MenuPanel, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,
@@ -71,18 +74,24 @@ define([
       
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));
-      
       this.buttons = {
           left: [BackButton],
           right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
+      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", Voc.typeToModel)) {
+        var user = G.currentUser._uri;
+        var appOwner = res.get('creator');
+        if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))
+          this.hasPublish = true;
+      }
       
       this.header = new Header({
         model: res, 
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
+        doPublish: this.hasPublish,
         el: $('#headerDiv', this.el)
       }).render();
       
