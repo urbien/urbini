@@ -142,12 +142,12 @@ define([
       G.ajax(ajaxSettings)
         .done(function(data, status, xhr) {
 //        var xhr = arguments[0];
-          if (xhr.status == 304) {
-            checkInModels([]);
-            success && success({fetched: 0});
-            return;
-          }
-          
+//          if (xhr.status == 304) {
+//            checkInModels([]);
+//            success && success({fetched: 0});
+//            return;
+//          }
+//          
 //          if (useWorker) {
 //            // XHR          
 //            data = xhr.data;
@@ -233,6 +233,12 @@ define([
           if (needUpgrade)
             Events.trigger('modelsChanged');//, {success: success, error: error});
         }).fail(function(xhr, err, aOpts) {
+          if (xhr.status === 304) {
+            checkInModels([]);
+            success && success({fetched: 0});
+            return;
+          }
+          
           debugger;
         });
       

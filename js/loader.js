@@ -576,7 +576,7 @@ define('globals', function() {
         text += '\n//@ sourceURL=' + url;
         if (G.navigator.isIE) text += '*/\n';
         requirejs.exec(text);
-        context.completeLoad(name);
+        context.completeLoad(name); // JQM hack
         break;
     }        
   };
@@ -589,10 +589,7 @@ define('globals', function() {
 
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
-    
-//    if (/^jquery\.mobile.*\.js$/.test(url))
-//      return;
-    
+        
     // TODO: unhack
 //    if (name == 'jqueryMobile') {
 //      localRequire([name], function(mod) {
@@ -696,7 +693,13 @@ define('globals', function() {
       TAG: 'cache',
       load: function (name, req, onLoad, config) {
         // hack for jsp, otherwise define callback function will not get jsp text
-        requirejs.load(onLoad, name, req.toUrl(name), config);
+        if (name === 'jqueryMobile') {
+          req([name], function() {
+            onLoad(name);
+          });
+        }
+        else
+          requirejs.load(onLoad, name, req.toUrl(name), config);
       }
     };
 
@@ -710,9 +713,7 @@ define('globals', function() {
   
   G.localStorage = {
     get: function(url) {
-//      G.startedTask('localStorage GET: ' + url);
       var item = localStorage.getItem(url);
-//      G.finishedTask('localStorage GET: ' + url);
       return item;
     },
     del: function(key) {
@@ -791,6 +792,9 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+//    isJQM: function(url) {
+//      return /^jquery\.mobile.*\.js$/.test(url);
+//    },
     webWorkers: {},
     customHandlers: {},
     defaults: {

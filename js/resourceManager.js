@@ -65,6 +65,9 @@ define([
             debugger;
             options.success(data, status, xhr);
           }).fail(function(xhr, status, msg) {
+            if (xhr.status === 304)
+              return;
+            
             debugger;
             G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
             options.error(null, xhr, options);
