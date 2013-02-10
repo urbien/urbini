@@ -6,9 +6,8 @@ define([
   'templates',
   'events', 
   'utils',
-  'views/PublishButton',
   'views/BasicView'
-], function(G, $, _, Backbone, Templates, Events, U, PublishButton, BasicView) {
+], function(G, $, _, Backbone, Templates, Events, U, BasicView) {
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
@@ -87,9 +86,11 @@ define([
      
       var r = this.buttons.right;
       r && this.makeWidgets(r, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
-      
+      var self = this;
       if (this.doPublish) {
-        this.publish = new PublishButton({el: $('div#publishBtn', this.el), model: this.resource}).render();
+        require(['views/PublishButton'], function(PublishButton) {
+          self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
+        });
       }
       if (G.currentUser.guest) {
         var log = this.buttons.log;
