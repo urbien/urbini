@@ -155,9 +155,8 @@ define([
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
-        
-        params.$multiValue = prop;
-        params['$' + prop] = e.target.innerHTML;
+        var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
+        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
         if (this.action == 'make')
           params.$type = type;
         else
@@ -166,14 +165,24 @@ define([
         params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
 //        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
       }
-      
-//      else 
-//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
-      var queryStr = _.size(params) ? '?' + $.param(params) : '';
-      if (pr.where)
-        queryStr = (queryStr ? '?' : '&') + pr.where; 
-      var range = pr.lookupFrom || pr.range;
-      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(range)) + queryStr, {trigger: true});
+      else {
+        if (!U.isAssignableFrom(this.vocModel, "WebProperty", Voc.typeToModel))
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+        else {
+          var title = U.getQueryParams(window.location.hash)['$title'];
+          var t;
+          if (!title)
+            t = this.vocModel.displayName;
+          else {
+            var idx = title.indexOf('</span>');
+            t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
+          }
+          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
+          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
+
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
+        }
+      }
     },
     set: function(params) {
       _.extend(this, params);

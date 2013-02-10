@@ -10,12 +10,10 @@ define([
   'views/LoginButtons',
   'views/AroundMeButton',
   'views/MenuButton',
-  'views/PublishButton',
-  'views/MenuPanel',
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, PublishButton, MenuPanel, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,

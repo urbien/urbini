@@ -5,7 +5,7 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
@@ -33,7 +33,7 @@
 </script>  
  
 <script type="text/template" id="resource">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content">
     <div id="resourceImage"></div>
@@ -497,7 +497,7 @@
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div><br/>
