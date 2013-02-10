@@ -32,7 +32,7 @@ define([
 //          $('.formElement').attr('disabled', false);
           self.router.navigate(window.location.href, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         },
-        queryString: 'deploy=true',
+        queryString: 'deploy=true'
 //        error: onSaveError
       });
       return this;
