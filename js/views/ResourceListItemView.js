@@ -172,8 +172,15 @@ define([
       var viewCols = this.getViewCols(json);
       var dn = U.getDisplayName(m);
       json.davDisplayName = dn;
-      if (!viewCols.length) 
+      if (!viewCols.length) {
+        var isClass = U.isAssignableFrom(vocModel, 'WebClass', Voc.typeToModel);
         viewCols = '<h3>' + dn + '</h3>';
+        if (isClass) {
+          var comment = json['comment'];
+          if (comment) 
+            viewCols += '<p>' + comment + "</p>";
+        }
+      }
       json.viewCols = viewCols;
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
@@ -200,9 +207,10 @@ define([
     getViewCols: function(json) {
       var res = this.resource;
       var meta = this.vocModel.properties;
+      
       var viewCols = '';
       var grid = U.getCols(res, 'grid', true);
-      if (!grid)
+      if (!grid) 
         return viewCols;
       var firstProp = true;
       var containerProp = U.getContainerProperty(vocModel);
