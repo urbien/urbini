@@ -38,8 +38,10 @@ define([
       return this;
     },
     render: function() {
-      if (this.template)
+      if (this.template) {
         this.$el.html(this.template());
+        this.$el.trigger('create');
+      }
       return this;
     }
   });
