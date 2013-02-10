@@ -1,15 +1,12 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'utils', 
   'events', 
   'taskQueue',
   'vocManager',
   'queryIndexedDB'
-], function(G, $, _, Backbone, U, Events, TaskQueue, Voc, idbq) {
-  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
+], function(G, U, Events, TaskQueue, Voc, idbq) {
+  var useWebSQL = typeof window.webkitIndexedDB !== 'undefined' && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
@@ -38,7 +35,7 @@ define([
       return;
     }
     
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, dbSuccess, dbError, save, fetchFromServer, numNow, shortPage, collection, resource,      
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,
     forceFetch = options.forceFetch,
@@ -122,6 +119,9 @@ define([
           defaultSuccess(null, 'success', {status: 304});
           return; // no need to fetch from db on update
         }
+      }
+      else if (start < numNow) {
+        return; // no need to refetch from db, we already did
       }
     }
     else {
@@ -299,11 +299,6 @@ define([
       return names._items ? _.contains(names._items, name) : names.contains(name);
     },
     
-    deleteDatabase: function(callback) {
-      G.log(RM.TAG, ['error', 'db'], "db blocked, deleting database");
-        window.webkitIndexedDB.deleteDatabase(RM.DB_NAME).onsuccess = callback;
-    },
-    
     defaultOptions: {keyPath: '_uri', autoIncrement: false},
     DB_NAME: "lablz",
     runTask: function() {
@@ -340,12 +335,14 @@ define([
      */
     openDB: function(options) {
       if (G.userChanged) {
-        debugger;
+        G.log(RM.TAG, 'db', 'user changed, deleting database');
         var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
           G.userChanged = false;
+          G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
           RM.openDB(options);
         }).fail(function(error, event) {
           RM.openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
+          G.log(RM.TAG, 'db', 'failed to delete database');
           debugger;
         }).progress(function(db, event) {
           RM.upgradeDB(options).done(dbPromise.resolve).fail(dbPromise.reject);;
@@ -375,7 +372,7 @@ define([
       var settings = {
         upgrade: function(transaction) {
           G.log(RM.TAG, "db", 'in upgrade function');
-          if (!toMake && !toKill) {
+          if (!toMake.length && !toKill.length) {
             G.log(RM.TAG, "db", 'upgrade not necessary');
             return;
           }
@@ -383,6 +380,10 @@ define([
           G.log(RM.TAG, "db", 'upgrading...');
           G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
           newStores = RM.updateStores(transaction, toMake, toKill);
+//          transaction.onupgradecomplete(function() {
+//            debugger;
+//            dbPromise.resolve();
+//          });
         }
       };
       
@@ -481,10 +482,20 @@ define([
         if (G.typeToEnum[type] || G.typeToInline[type])
           continue;
         
+        var vocModel = G.typeToModel[type];
+        if (!vocModel) {
+          debugger;
+          continue;
+        }
+        
         try {
           var store = trans.createObjectStore(type, RM.defaultOptions);
+          if (!store) {
+            debugger;
+            continue;
+          }
+          
           G.log(RM.TAG, 'db', 'created object store: ' + type);
-          var vocModel = G.typeToModel[type];
           var indices = [];
           var indexNames = RM.getIndexNames(vocModel);
           for (var i = 0; i < indexNames.length; i++) {

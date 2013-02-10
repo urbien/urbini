@@ -1,12 +1,9 @@
 define([
   'globals',
-  'jquery',
-  'underscore', 
-  'backbone', 
   'utils', 
   'error', 
   'events'
-], function(G, $, _, Backbone, U, Errors, Events) {
+], function(G, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
     TAG: "ResourceList",

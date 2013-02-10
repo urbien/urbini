@@ -1,13 +1,20 @@
-define(['jquery', 'indexedDBShim'], function($) {
+define(['globals', 'indexedDBShim'], function(G) {
 	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
 //  window.shimIndexedDB.__useShim();
-//	
-//  var indexedDB = window.shimIndexedDB || window.indexedDB;
-  var usingShim = window.indexedDB === window.shimIndexedDB;
+//
+	var usingShim, indexedDB;
+	if (typeof window.webkitIndexedDB !== 'undefined') {
+	  indexedDB =  window.shimIndexedDB;
+	  usingShim = true;
+	} 
+	else {
+	  indexedDB = window.indexedDB;
+	}
+	
 //  if (usingShim)
 //    window.shimIndexedDB.__debug(true);  
 //	/**
@@ -57,9 +64,16 @@ define(['jquery', 'indexedDBShim'], function($) {
 			var wrap = {
 				"request": function(req, args){
 					return $.Deferred(function(dfd){
+//					  dfd.__lablzId = G.nextId();
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
-							idbRequest.onsuccess = function(e){
+							idbRequest.onsuccess = function(e) {
+//							  if (usingShim) {
+//  							  var trans = idbRequest.transaction;
+//  							  if (trans && trans.mode === 2) // version transaction (see IndexedDBShim)
+//  							    return; // wait for trans.onupgradecomplete
+//							  }
+							  
 						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
@@ -81,19 +95,20 @@ define(['jquery', 'indexedDBShim'], function($) {
 							if (typeof idbRequest.onupgradeneeded !== "undefined" && idbRequest.onupgradeneeded === null) {
 								idbRequest.onupgradeneeded = function(e){
 									//console.log("Upgrade", idbRequest, e, this);
-								  var trans = idbRequest.transaction;
-								  if (usingShim) {
-  								  trans.onupgradecomplete = function() {
-//  								    debugger;
-							        dfd.resolveWith(idbRequest, [idbRequest.result, e]);
-							        console.log("WebSQL upgrade transaction complete");
-  								  }
-								  }
-								  else {
-								    trans.oncomplete = function(e) {
-//								      debugger;
-								    }
-								  }
+//								  var trans = idbRequest.transaction;
+//								  if (trans) {
+//  								  if (usingShim) {
+//    								  trans.onupgradecomplete = function() {
+//  							        console.log("WebSQL upgrade transaction complete");
+//    								    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+//    								  }
+//  								  }
+//  								  else {
+//  								    trans.oncomplete = function(e) {
+//  //								      debugger;
+//  								    }
+//  								  }
+//								  }
 								  
 									dfd.notifyWith(idbRequest, [idbRequest.result, e]);
 								};
@@ -107,6 +122,7 @@ define(['jquery', 'indexedDBShim'], function($) {
 				// Wraps the IDBTransaction to return promises, and other dependent methods
 				"transaction": function(idbTransaction){
 					return {
+//					  __callbacks: {},
 						"objectStore": function(storeName){
 							try {
 								return wrap.objectStore(idbTransaction.objectStore(storeName));
@@ -132,6 +148,28 @@ define(['jquery', 'indexedDBShim'], function($) {
 						"abort": function(){
 							idbTransaction.abort();
 						}
+//						__addCallbacks: function(key, callback) {
+//              var callbacks = this.__callbacks[key] = this.__callbacks[key] || [];
+//              if (callback)
+//                callbacks.push(callback);
+//              
+//              idbTransaction[key] = idbTransaction[key] || function() {
+//                debugger;
+//                for (var i = 0; i < callbacks.length; i++) {
+//                  callbacks[i]();
+//                }
+//              }
+//              
+//              return this;
+//						},
+//            "onupgradecomplete": function(callback) {
+//						  debugger;
+//						  return this.__addCallbacks("onupgradecomplete", callback);
+//            },
+//						"oncomplete": function(callback) {
+//              return this.__addCallbacks("oncomplete", callback);
+//						}
+//					}.__addCallbacks("onupgradecomplete").__addCallbacks("oncomplete");
 					};
 				},
 				"objectStore": function(idbObjectStore) {
@@ -268,7 +306,8 @@ define(['jquery', 'indexedDBShim'], function($) {
 					try {
 						var idbIndex = (typeof index === "function" ? index() : index);
 					} catch (e) {
-						idbIndex = null;
+//						idbIndex = null;
+					  throw e;
 					}
 					////console.logidbIndex, index);
 					return {
@@ -680,9 +719,14 @@ define(['jquery', 'indexedDBShim'], function($) {
 		}
 	});
 	
-	$.indexedDB.IDBCursor = IDBCursor;
-	$.indexedDB.IDBTransaction = IDBTransaction;
-//  $.indexedDB.IDBCursor = idbModules.IDBCursor;
-//  $.indexedDB.IDBTransaction = idbModules.IDBTransaction;
+	if (usingShim) {
+	  $.indexedDB.IDBCursor = idbModules.IDBCursor;
+	  $.indexedDB.IDBTransaction = idbModules.IDBTransaction;
+	}
+	else {
+  	$.indexedDB.IDBCursor = IDBCursor;
+  	$.indexedDB.IDBTransaction = IDBTransaction;
+	}
+	
 	$.idb = $.indexedDB;
 });

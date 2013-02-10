@@ -146,9 +146,10 @@ define([
       var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
       Events.once('chooser', onChoose, this);
       var params = {};
-      if (pr.where) {
-        _.extend(params, U.parseWhere(pr.where));
-      }
+//      if (pr.where) {
+//        debugger;
+//        _.extend(params, U.parseWhere(pr.where));
+//      }
       
       if (pr.multiValue) {
         var prName = pr.displayName;
@@ -169,7 +170,10 @@ define([
 //      else 
 //        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
       var queryStr = _.size(params) ? '?' + $.param(params) : '';
-      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + queryStr, {trigger: true});
+      if (pr.where)
+        queryStr = (queryStr ? '?' : '&') + pr.where; 
+      var range = pr.lookupFrom || pr.range;
+      this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(range)) + queryStr, {trigger: true});
     },
     set: function(params) {
       _.extend(this, params);
@@ -588,7 +592,8 @@ define([
           var generalGroup = $.grep(propGroups, function(item, i) {
             return item.shortName == 'general';
           });
-          if (generalGroup) {
+          
+          if (generalGroup.length) {
             $.each(propGroups, function(i){
               if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
             });

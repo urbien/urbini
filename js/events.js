@@ -1,9 +1,6 @@
 define([
-  'globals',
-  'jquery', 
-  'underscore', 
-  'backbone' 
-], function(G, $, _, Backbone) {
+  'globals'
+], function(G) {
   var Events = _.extend({
     REQUEST_LOGIN: 'req-login',
     LOGOUT: 'logout',

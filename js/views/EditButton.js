@@ -1,12 +1,9 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'templates',
   'events',
   'views/BasicView'
-], function(G, $, _, Backbone, Templates, Events, BasicView) {
+], function(G, Templates, Events, BasicView) {
   return BasicView.extend({
     template: 'editButtonTemplate',
     events: {

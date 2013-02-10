@@ -1,17 +1,33 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'utils', 
   'error', 
   'events', 
   'models/Resource', 
   'collections/ResourceList' 
-], function(G, $, _, Backbone, U, Errors, Events, Resource, ResourceList) {
+], function(G, U, Errors, Events, Resource, ResourceList) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
+
+  // from http://www.bennadel.com/blog/1929-Using-The-WITH-Keyword-With-Javascript-s-Function-Constructor.htm
+  var FunctionProxy = function(sourceCode) {
+    
+   // When executing the Function constructor, we are going
+   // to wrap the source code in a WITH keyword block that
+   // allows the THIS context to extend the local scope of
+   // the function.
+   //
+   // NOTE: This works without a nested self-executing
+   // function. I put it in there simply because it makes me
+   // feel a little more comfortable with the use of the
+   // WITH keyword.
+    return Function(
+      "with (this) {" +
+        "return " + sourceCode + ";" +
+      "};"
+    );
+  }
 
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
   G.shortNameToModel.Resource = Resource;
@@ -19,6 +35,7 @@ define([
   var Voc = {
     packages: {Resource: Resource},
     models: [],
+    scriptContext: {},
     unsavedModels: [],
     changedModels: [],
 //    newModels: [],
@@ -88,28 +105,28 @@ define([
         if (!changedAndNew)
           return;
         
-        var tmpC = [];
-//            tmpN = [];
-        
-        for (var i = 0; i < models.length; i++) {
-          var m = models[i];
-          var type = U.getLongUri(m.s.type);
-          if (Voc.changedModels.indexOf(type) != -1)
-            tmpC.push(type);
-//          else if (Voc.newModels.indexOf(type) != -1)
-//            tmpN.push(type);
-        }
-        
-        return !!tmpC.length;
-//        models = _.filter(respModels, function(m) {
+//        var tmpC = [];
+//        for (var i = 0; i < respModels.length; i++) {
+//          var m = respModels[i];
 //          var type = U.getLongUri(m.s.type);
-//          return models.indexOf(type) != -1;
-//        });
+//          if (models.indexOf(type) != -1)
+//            tmpC.push(type);
+//        }
 //        
+//        models = tmpC;
 //        if (changedAndNew)
-//          Voc.changedModels = _.map(models, function(m) {return U.getLongUri(m.s.type)});
+//          Voc.changedModels = tmpC;
 //        
-//        return models.length;
+//        return !!tmpC.length;
+        models = _.filter(respModels, function(m) {
+          var type = U.getLongUri(m.s.type);
+          return models.indexOf(type) != -1;
+        });
+        
+        if (changedAndNew)
+          Voc.changedModels = _.map(models, function(m) {return U.getLongUri(m.s.type)});
+        
+        return models.length;
 //        Voc.newModels = tmpN;
 //        return tmpC.length || tmpN.length;
       }
@@ -131,7 +148,7 @@ define([
           var status = arguments[1];
           if (status != 'success') {
             G.log(Voc.TAG, 'error', "couldn't fetch models");
-            error.apply(null, arguments);
+            error(xhr, status, options);
             return;
           }
           
@@ -145,8 +162,10 @@ define([
           }
         }
         
-        if (!data)
+        if (!data) {
           debugger;
+          return;
+        }
         
         if (data.error) {
           error(data);
@@ -155,6 +174,9 @@ define([
         
         var mz = data.models;
         var needUpgrade = checkInModels(mz);
+        var handlers = data.handlers;
+        if (handlers)
+          _.extend(G.customHandlers, data.handlers);
         
         var pkg = data.packages;
         if (pkg)
@@ -165,6 +187,7 @@ define([
         if (more) {
           G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
             m.type = U.getLongUri(m.type);
+            return m;
           }));
         }
         
@@ -197,7 +220,11 @@ define([
         
         Voc.initModels(newModels);
         G.finishedTask("ajax models");        
-//        setTimeout(function() {Voc.saveModelsToStorage(newModels)}, 100);
+        setTimeout(function() {
+          Voc.saveModelsToStorage(newModels);
+//          Voc.initHandlers(handlers);
+          Voc.saveHandlersToStorage(handlers);
+        }, 100);
         success && success();
         if (needUpgrade)
           Events.trigger('modelsChanged');//, {success: success, error: error});
@@ -371,6 +398,7 @@ define([
         G.usedModels[type] = true;
       }
         
+      Voc.scriptContext[sn] = m;
       if (m.enumeration) {
         G.shortNameToEnum[sn] = m;
         G.typeToEnum[type] = m;
@@ -388,7 +416,8 @@ define([
       
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
-      var superProps = m.__super__.constructor.properties;
+      m.superClass = m.__super__.constructor;
+      var superProps = m.superClass.properties;
       var myProps = m.myProperties;
       var hidden = m.hiddenProperties ? m.hiddenProperties.replace(/\ /g, '').split(',') : [];
       if (superProps) {
@@ -408,11 +437,84 @@ define([
       else
         m.properties = _.clone(myProps);
       
-      var superInterfaces = m.__super__.constructor.interfaces;
+      var superInterfaces = m.superClass.interfaces;
       m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
       m.prototype.initialize = Voc.getInit.apply(m);
+      setTimeout(function() {
+        Voc.initCustomHandlers(type);
+      }, 1000);
     },
-  
+    
+    prepareHandler: function(handler, resultType) {
+      return function() {
+        return Voc.executeHandler(handler, resultType, arguments);
+      }
+    },
+    
+    executeHandler: function(handler, resultType, args, context) {
+      var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
+      var __handlerResult__ = {};
+      __handlerResult__[type] = {};
+
+      try {
+        debugger;
+        handler.apply(__handlerResult__).apply(context || {}, args);
+      } catch (err) {
+        return;
+      }
+
+      debugger;
+      Voc.fetchModels(resultType, {
+        success: function() {
+          var res = new G.typeToModel[resultType]();
+          res.save(__handlerResult__[type], {silent: true});
+        }, 
+        error: function() {
+          debugger;
+        }
+      });
+    },
+    
+    initCustomHandlers: function(type) {
+      var handlers = G.customHandlers[type];
+      if (!handlers) {
+        handlers = G.localStorage.get("handlers:" + type);
+        if (handlers)
+          handlers = JSON.parse(handlers);
+      }
+      
+      if (!handlers)
+        return;
+    
+      var typeName = type.slice(type.lastIndexOf('/') + 1);
+      _.each(handlers, function(handler) {
+        with(handler) {
+          script = script.replace(/(<([^>]+)>)/ig, '').trim();
+          try {
+            script = FunctionProxy(script);
+//            eval("script = " + script); //(new Function("return {{0}}".format(script)))();
+          } catch (err) {
+            G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
+            return;          
+          }  
+        }
+        
+        Events.on('add.' + type, Voc.prepareHandler(handler.script, handler.toDavClassUri));
+
+//        var events = script.events;
+//        if (events) {
+//          for (var event in events) {
+//            try {
+//              var listener = script[events[event]];
+//              Events.on(event + '.' + type, listener, Voc.scriptContext);
+//            } catch (err) {
+//              G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
+//            }
+//          }
+//        }
+      });
+    },
+    
     getInit: function() {
       var self = this;
       return function() { 
@@ -420,13 +522,11 @@ define([
 //        this.on('change', Voc.updateDB);
       }
     },
-  
+
     initModels: function(models) {
       models = models || Voc.models;
       for (var i = 0; i < models.length; i++) {
         var m = models[i];
-    //    if (G.shortNameToModel[m.shortName])
-    //      continue;
         if (m.shortName != 'Resource')
           delete G.shortNameToModel[m.shortName];
         
@@ -453,7 +553,7 @@ define([
       if (!localStorage)
         return; // TODO: use indexedDB
       
-      var models = models || Voc.models;
+      models = models || Voc.models;
       if (!models.length)
         return;
     
@@ -465,7 +565,8 @@ define([
         
         var modelJson = U.toJSON(model);
         modelJson._dateStored = now;
-        modelJson._super = model.__super__.constructor.type;
+        if (model.superClass)
+          modelJson._super = model.superClass.type;
         if (model.enumeration)
           enumModels[model.type] = modelJson;
         else
@@ -477,6 +578,15 @@ define([
         enums = enums ? JSON.parse(enums) : {};
         _.extend(enums, enumModels);
         Voc.storeEnumsInLS(enums);
+      }
+    },
+
+    saveHandlersToStorage: function(handlers) {
+      if (!localStorage || !_.size(handlers))
+        return;
+    
+      for (var type in handlers) {
+        G.localStorage.putAsync('handlers:' + type, handlers[type]);
       }
     },
 
@@ -576,7 +686,7 @@ define([
     getModelFromLS: function(uri) {
       return G.localStorage.get('model:' + uri);
     },
-    
+
     storeModel: function(modelJson) {
       setTimeout(function() {
         G.localStorage.putAsync('model:' + modelJson.type, JSON.stringify(modelJson));

@@ -1,8 +1,5 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
-  'backbone',
   'utils',
   'events',
   'vocManager',
@@ -11,7 +8,7 @@ define([
   'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
   'views/CommentListItemView'
-], function(G, $, _, Backbone, U, Events, Voc, Templates, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+], function(G, U, Events, Voc, Templates, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
   return BasicView.extend({
     TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging

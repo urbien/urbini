@@ -1156,17 +1156,17 @@ var idbModules = window.idbModules = {};
                                         var trans = req.transaction = req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
                                         trans.tq = new TaskQueue("IDBShim upgrade to " + version);
                                         idbModules.util.callback("onupgradeneeded", req, e, function(){
-                                            var e = idbModules.Event("success");
-                                            idbModules.util.callback("onsuccess", req, e);
-                                            var oncomplete = trans.onupgradecomplete;
-                                            if (oncomplete) {
+//                                            var oncomplete = trans.onupgradecomplete;
+//                                            if (oncomplete) {
                                               trans.tq.runTask(function() {
                                                 return $.Deferred(function(defer) {
-                                                  oncomplete();
+                                                  var e = idbModules.Event("success");
+                                                  idbModules.util.callback("onsuccess", req, e);
+//                                                  oncomplete();
                                                   defer.resolve();
                                                 }).promise();
                                               }, {name: "Complete upgrade transaction", sequential: true, yield: true});
-                                            }
+//                                            }
                                         });
                                         
                                     }, dbCreateError);

@@ -1,9 +1,7 @@
 define([
   'globals',
-  'underscore',
-  'backbone',
   'templates'
-], function(G, _, Backbone, Templates) {
+], function(G, Templates) {
   var ArrayProto = Array.prototype;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;

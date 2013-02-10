@@ -1,8 +1,5 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'utils', 
   'events', 
   'error', 
@@ -12,7 +9,7 @@ define([
   'views/HomePage', 
   'views/ListPage', 
   'views/ViewPage'
-], function(G, $, _, Backbone, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
+], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
   var EditPage, EditView;
   var Router = Backbone.Router.extend({
     routes:{
@@ -539,7 +536,7 @@ define([
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
       // perform transition
-      $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse || (MenuPage && view instanceof MenuPage)});
+      $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
       Events.trigger('changePage', view);
 //      if (this.backClicked)
 //        $(window).resize();

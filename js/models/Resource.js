@@ -1,11 +1,9 @@
 define([
   'globals',
-  'underscore', 
-  'backbone', 
   'utils',
   'error',
   'events'
-], function(G, _, Backbone, U, Error, Events) {
+], function(G, U, Error, Events) {
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);
     if (U.isNully(prev))
@@ -78,8 +76,15 @@ define([
       return this.get('_uri');
     },
     parse: function (resp) {
-      if (this.loaded && this.lastFetchOrigin == 'db')
-        return resp;
+      var lf;
+      if (this.lastFetchOrigin) {
+        if (this.lastFetchOrigin === 'db') {
+          if (this.loaded)
+            return resp;
+        }
+        else
+          lf = G.currentServerTime();
+      }
       
       if (!resp || resp.error)
         return null;
@@ -92,6 +97,9 @@ define([
       resp._shortUri = U.getShortUri(uri, this.constructor);
       var primaryKeys = U.getPrimaryKeys(this.constructor);
       resp._uri = U.getLongUri(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});
+      if (lf)
+        resp._lastFetchedOn = lf;
+      
       this.loaded = true;
       return resp;
     },
@@ -187,9 +195,10 @@ define([
     save: function(attrs, options) {
       options = options || {};
       var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
+      var isNew = this.isNew();
       if (!data.$returnMade)
         data.$returnMade = 'y';
-      if (!this.isNew())
+      if (!isNew)
         data._uri = this.getUri();
 
       var self = this;
@@ -202,6 +211,14 @@ define([
           return;
         
         Events.trigger('resourcesChanged', [self]);
+        var method = isNew ? 'add.' : 'edit.';
+        if (!G.currentUser.guest) {
+          Events.trigger(method + self.vocModel.type, self);
+          var sup = self.vocModel;
+          while (sup = sup.superClass) {
+            Events.trigger(method + sup.type, self);
+          }
+        }
       };
       
 //      var error = options.error;

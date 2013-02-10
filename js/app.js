@@ -1,9 +1,7 @@
 define('app', [
   'globals',
-  'jquery',
+  'backbone',
   'jqueryMobile',
-  'underscore', 
-  'backbone', 
   'templates', 
   'utils', 
   'events',
@@ -11,7 +9,7 @@ define('app', [
   'vocManager',
   'resourceManager',
   'router'
-], function(G, $, __jqm__, _, Backbone, Templates, U, Events, Errors, Voc, RM, Router) {  
+], function(G, Backbone, __jqm__, Templates, U, Events, Errors, Voc, RM, Router) {  
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();

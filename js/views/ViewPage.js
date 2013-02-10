@@ -1,8 +1,5 @@
 define([
   'globals',
-  'jquery',
-  'underscore',
-  'backbone',
   'utils',
   'events',
   'templates',
@@ -15,7 +12,7 @@ define([
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, Backbone, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     tagName: 'a',
     clicked: false,

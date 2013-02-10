@@ -1,8 +1,5 @@
 define([
   'globals',
-  'jquery', 
-  'underscore', 
-  'backbone', 
   'templates',
   'events', 
   'utils',
@@ -17,7 +14,7 @@ define([
   'views/AroundMeButton', 
   'views/MapItButton',
   'views/MenuButton'
-], function(G, $, _, Backbone, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, Templates, Events, U, Voc, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',

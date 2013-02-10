@@ -489,12 +489,12 @@ if (typeof JSON !== 'object') {
                     
 requirejs.exec = function(text) {
   // Script Injection
-//  var nav = Lablz.navigator;
-//  if (nav.isChrome || nav.isSafari)
-//    Lablz.inject(text);
-//  else if (nav.isFirefox)
-//    return window.eval.call({}, text);
-//  else // Safari
+  var nav = Lablz.navigator;
+  if (nav.isChrome || nav.isSafari)
+    Lablz.inject(text);
+  else if (nav.isFirefox)
+    return window.eval.call({}, text);
+  else // Safari
     return window.eval(text);
 //  return eval(text);
   
@@ -583,6 +583,9 @@ define('globals', function() {
         config = config || (context && context.config) || {},
         cached;
 
+    if (/jquery.*mobile/.test(url))
+      return;
+    
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
     
@@ -749,8 +752,14 @@ define('globals', function() {
       
       if (!resetting)
         G.Voc && G.Voc.saveModelsToStorage();
-    }
+    },
     
+    nukeScripts: function() {
+      for (var key in localStorage) {
+        if (/.*\.js|css|jsp$/.test(key))
+          G.localStorage.del(key);
+      }      
+    }
   };
   
   function testCSS(prop) {
@@ -771,6 +780,7 @@ define('globals', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    customHandlers: {},
     defaults: {
       radius: 15 // km
     },
@@ -1361,19 +1371,26 @@ define('globals', function() {
   var qIdx = hash.indexOf('?');
   var set = false;
   var mCookie = G.serverName + '/cookies/minify';
+  var minified = G.getCookie(mCookie) === 'y';
   if (qIdx != -1) {    
     var hParams = hash.slice(qIdx + 1).split('&');
     for (var i = 0; i < hParams.length; i++) {
       var p = hParams[i].split('=');
       if (p[0] == '-min') {
         G.setCookie(mCookie, p[1], 100000);
+        var newMinified = p[1] === 'y';
+        if (newMinified != minified) {
+          minified = newMinified;
+          G.localStorage.nukeScripts();
+        }
+        
         break;
       }
     }
   }
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
-  G.minify = G.getCookie(mCookie) === 'y';
+  G.minify = minified;
   // END minify
   
   require.config({
