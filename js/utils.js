@@ -1,7 +1,8 @@
 define([
   'globals',
-  'templates'
-], function(G, Templates) {
+  'templates',
+  'jquery'
+], function(G, Templates, $) {
   var ArrayProto = Array.prototype;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -346,6 +347,8 @@ define([
         return qIdx == -1 ? type : type.slice(0, qIdx);
       }
       else {
+        if (typeName == 'Class')
+          return 'http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Class';
         var vocModel = G.shortNameToModel[typeName];
         return hint.type || vocModel && vocModel.type;
       }
