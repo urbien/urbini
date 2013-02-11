@@ -10,8 +10,10 @@ define([
   'views/HomePage', 
   'views/ListPage', 
   'views/ViewPage'
+//  'views/EditPage' 
 ], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
-  var EditPage, EditView;
+//  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
+  var MenuPage, EditPage, EditView;
   var Router = Backbone.Router.extend({
     routes:{
       ""                : "home",
@@ -246,6 +248,45 @@ define([
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
       this.changePage(mPage);
+    },
+
+    make1: function(path) {
+      if (!EditPage)
+        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
+      
+      var parts = path.split('?');
+      var type = decodeURIComponent(parts[0]);
+      if (!type.startsWith('http'))
+        type = G.defaultVocPath + type;
+      
+      if (!this.isModelLoaded(type, 'make', arguments))
+        return;
+      
+      var params = U.getHashParams();
+      var makeId = params['-makeId'];
+      makeId = makeId ? parseInt(makeId) : G.nextId();
+      var backlinkModel = this.Models[params.on];
+      var mPage = this.MkResourceViews[makeId];
+      if (mPage && !mPage.model.get('_uri')) {
+        // all good, continue making ur mkresource
+        this.viewsCache = this.MkResourceViews;
+        this.currentModel = mPage.resource;
+        mPage.set({action: 'make'});
+        this.changePage(mPage);
+      }
+      else {
+        var res = this.currentModel = new Voc.typeToModel[type]({action: 'make', params: params });
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: res, action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
+        var self = this;
+        var success = function(data) {
+          self.changePage(mPage);
+//          Voc.fetchModelsForLinkedResources(res);
+    //      self.loadExtras(oParams);
+        }
+        
+        res.fetch({sync:true, success: success, forceFetch: this.forceFetch});
+      }
+      
     },
 
     edit: function(path) {

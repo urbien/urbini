@@ -534,6 +534,7 @@
 <script type="text/template" id="editRowTemplate">
   <li data-role="fieldcontain">{{= value }}
   {{= typeof comment === 'undefined' ? '' : '<br /><span class="comment">' + comment + '</span>' }}
+<!--  {{= typeof comment === 'undefined' ? '' : '<br /><span style="font-weight: normal">' + comment + '</span>'}} -->
   </li>
 </script>
 

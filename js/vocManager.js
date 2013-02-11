@@ -758,11 +758,16 @@ define([
     
     loadStoredModels: function(options) {
       Voc.detectCurrentModel();
-      if (G.userChanged)
+      if (G.userChanged) {
+        if (options && options.models)
+          Voc.changedModels = U.getObjectType(options.models) === '[object String]' ? [options.models] : options.models;
+        if (Voc.currentModel)
+          U.pushUniq(Voc.changedModels, Voc.currentModel);
         return;
+      }
 
       // for easy lookup by type
-      if (!G.modelsMetadataMap) {
+      if (!_.size(G.modelsMetadataMap)) {
         G.modelsMetadataMap = {};
         for (var i = 0; i < G.modelsMetadata.length; i++) {
           var m = G.modelsMetadata[i];

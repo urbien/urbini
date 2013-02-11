@@ -123,8 +123,8 @@ define([
           return;
       }
     }
-
-    var key = this.getKey && this.getKey();
+    var luri = window.location.hash;
+    var key = luri &&  luri.indexOf('#make') == 0 ? null : this.getKey && this.getKey();
     if (!key) {
       if (G.online)
         fetchFromServer();
@@ -416,6 +416,8 @@ define([
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
+            debugger;
+            G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
             dbPromise.reject();
             RM.restartDB();
             break;

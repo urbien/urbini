@@ -5,8 +5,8 @@
 }
 
 span.comment {
-  #font-style: italic;
-  color: #888;  
+  color: #888;
+  font-weight: normal;  
 }
 
 label.req::before {
