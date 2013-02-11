@@ -760,10 +760,12 @@ define('globals', function() {
     },
     
     nukeScripts: function() {
+      G.recordCheckpoint("nuking scripts");
       for (var key in localStorage) {
-        if (/.*\.(js|css|jsp)$/.test(key))
+        if (/\.(?:js|css|jsp)$/.test(key))
           G.localStorage.del(key);
       }
+      G.recordCheckpoint("nuked scripts");
     },
     
     nukeHandlers: function() {
@@ -820,11 +822,11 @@ define('globals', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    xhrWorker: G.serverName + '/js/xhrWorker.js',
-//    getXhrWorker: function() {
-//      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
-//      return G.xhrWorker;
-//    },
+//    xhrWorker: G.serverName + '/js/xhrWorker.js',
+    getXhrWorker: function() {
+      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
+      return G.xhrWorker;
+    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1205,11 +1207,15 @@ define('globals', function() {
         
       }
       
+      data = {modules: pruned.join(',')};
+      if (typeof G.minify !== 'undefined')
+        data.minify = G.minify;
+      
       var useWorker = G.hasWebWorkers && async;
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         method: 'POST',
-        data: {modules: pruned.join(','), minify: G.minify}
+        data: data
       };
       
       var complete = function(resp) {
@@ -1254,8 +1260,7 @@ define('globals', function() {
       }
 
       if (useWorker) {
-//        var xhrWorker = G.getXhrWorker();
-        var xhrWorker = new Worker(G.xhrWorker);
+        var xhrWorker = G.getXhrWorker();
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
@@ -1394,16 +1399,15 @@ define('globals', function() {
   var qIdx = hash.indexOf('?');
   var set = false;
   var mCookie = G.serverName + '/cookies/minify';
-  var minified = G.getCookie(mCookie) === 'y';
+  var minified = G.getCookie(mCookie);
   if (qIdx != -1) {    
     var hParams = hash.slice(qIdx + 1).split('&');
     for (var i = 0; i < hParams.length; i++) {
       var p = hParams[i].split('=');
       if (p[0] == '-min') {
         G.setCookie(mCookie, p[1], 100000);
-        var newMinified = p[1] === 'y';
-        if (newMinified != minified) {
-          minified = newMinified;
+        if (p[1] != minified) {
+          minified = p[1];
           G.localStorage.nukeScripts();
         }
         
@@ -1413,7 +1417,7 @@ define('globals', function() {
   }
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
-  G.minify = minified;
+  G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
   // END minify
   
   require.config({

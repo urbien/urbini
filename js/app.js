@@ -237,7 +237,10 @@ define('app', [
             xhrWorker = G.getXhrWorker();          
             xhrWorker.onmessage = function(event) {
               var xhr = event.data;
-              defer.resolve(xhr.data, xhr.status, xhr);
+              if (xhr.status === 304)
+                defer.reject(xhr, "unmodified");
+              else
+                defer.resolve(xhr.data, xhr.status, xhr);
             };
             
             xhrWorker.onerror = function(err) {

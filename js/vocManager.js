@@ -36,7 +36,7 @@ define([
     packages: {Resource: Resource},
     models: [],
     scriptContext: {},
-    unsavedModels: [],
+//    unsavedModels: [],
     changedModels: [],
 //    newModels: [],
     models: [Resource],
@@ -96,7 +96,7 @@ define([
         
         return;
       }
-      
+
       var infos = Voc.getModelInfo(models);      
       var modelsCsv = JSON.stringify(infos);
       G.startedTask("ajax models");
@@ -141,36 +141,6 @@ define([
       
       G.ajax(ajaxSettings)
         .done(function(data, status, xhr) {
-//        var xhr = arguments[0];
-//          if (xhr.status == 304) {
-//            checkInModels([]);
-//            success && success({fetched: 0});
-//            return;
-//          }
-//          
-//          if (useWorker) {
-//            // XHR          
-//            data = xhr.data;
-//          }
-//          else {                                
-//            // $.ajax
-//            var status = arguments[1];
-//            if (status != 'success') {
-//              G.log(Voc.TAG, 'error', "couldn't fetch models");
-//              error(xhr, status, options);
-//              return;
-//            }
-//            
-//            var responseText = xhr.responseText;
-//            try {
-//              data = JSON.parse(responseText);
-//            } catch (err) {
-//              G.log(Voc.TAG, 'error', "couldn't eval JSON from server. Requested models: " + modelsCsv);
-//              error(null, null, options);            
-//              return;
-//            }
-//          }
-          
           if (!data) {
             debugger;
             return;
@@ -187,6 +157,7 @@ define([
           if (pkg)
             U.deepExtend(Voc.packages, pkg);
           
+          G.lastModified = data.lastModified;
           G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
           var more = data.linkedModelsMetadata;
           if (more) {
@@ -215,10 +186,12 @@ define([
             else
               newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
             
+            newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;
             U.pushUniq(newModels, newModel);
           }
           
-          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
+//          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
+          Voc.models = _.union(Voc.models, newModels);
   //        for (var i = 0; i < newModels.length; i++) {
   //          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
   //        }
