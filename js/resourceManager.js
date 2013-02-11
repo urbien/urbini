@@ -71,31 +71,7 @@ define([
             debugger;
             G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
             options.error(null, xhr, options);
-          });
-        
-//        var xhrWorker = new Worker(G.xhrWorker);
-//        xhrWorker.onmessage = function(event) {
-//          G.log(RM.TAG, 'xhr', 'got resources', options.url);
-//          var resp = event.data;
-//          if (resp) {
-//            if (resp.error) {
-//              G.log(RM.TAG, 'Web Worker', JSON.stringify(error), resp.responseText);
-//              options.error(data, resp.error, options);
-//            }
-//            else
-//              options.success(resp.data, 'success', resp);
-//          }
-//          else {
-//            debugger;
-//            options.error(data, resp.error, options);
-//          }
-//        };
-//        
-//        xhrWorker.onerror = function(err) {
-//          G.log(RM.TAG, 'Web Worker', JSON.stringify(err));
-//        };
-//        
-//        xhrWorker.postMessage({type: 'JSON', url: options.url, method: 'GET', headers: options.headers});
+          });        
       };
       
       if (timeout)
@@ -356,10 +332,8 @@ define([
         }).fail(function(error, event) {
           RM.openDB(options).done(dbPromise.resolve).fail(dbPromise.reject); // try again?
           G.log(RM.TAG, 'db', 'failed to delete database');
-          debugger;
         }).progress(function(db, event) {
           RM.upgradeDB(options).done(dbPromise.resolve).fail(dbPromise.reject);;
-          debugger;
         });
         
         return dbPromise;
@@ -437,13 +411,11 @@ define([
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
         dbPromise.resolve();
       }).fail(function(error, event) {
-        debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
         dbPromise.reject();
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-            debugger;
             dbPromise.reject();
             RM.restartDB();
             break;
@@ -483,7 +455,6 @@ define([
             trans.deleteObjectStore(type);
             G.log(RM.TAG, 'db', 'deleted object store: ' + type);
           } catch (err) {
-            debugger;
             G.log(RM.TAG, ['error', 'db'], '2. failed to delete table ' + type + ': ' + err);
             return;
           }
@@ -497,7 +468,7 @@ define([
         
         var vocModel = G.typeToModel[type];
         if (!vocModel) {
-          debugger;
+          G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
           continue;
         }
         

@@ -761,7 +761,7 @@ define('globals', function() {
     
     nukeScripts: function() {
       for (var key in localStorage) {
-        if (/.*\.js|css|jsp$/.test(key))
+        if (/.*\.(js|css|jsp)$/.test(key))
           G.localStorage.del(key);
       }
     },
@@ -820,10 +820,11 @@ define('globals', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    getXhrWorker: function() {
-      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
-      return G.xhrWorker;
-    },
+    xhrWorker: G.serverName + '/js/xhrWorker.js',
+//    getXhrWorker: function() {
+//      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
+//      return G.xhrWorker;
+//    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1253,7 +1254,8 @@ define('globals', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = G.getXhrWorker();
+//        var xhrWorker = G.getXhrWorker();
+        var xhrWorker = new Worker(G.xhrWorker);
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
@@ -1386,7 +1388,9 @@ define('globals', function() {
   
   // Determine whether we want the server to minify stuff
   // START minify
-  var hash = window.location.hash;
+  var hash = window.location.href;
+  var hashIdx = hash.indexOf('#');
+  hash = hashIdx === -1 ? '' : hash.slice(hashIdx + 1);
   var qIdx = hash.indexOf('?');
   var set = false;
   var mCookie = G.serverName + '/cookies/minify';

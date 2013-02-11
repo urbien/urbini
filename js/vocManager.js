@@ -98,7 +98,7 @@ define([
       }
       
       var infos = Voc.getModelInfo(models);      
-      var modelsCsv = JSON.stringify(models);
+      var modelsCsv = JSON.stringify(infos);
       G.startedTask("ajax models");
 //      var useWorker = G.hasWebWorkers && !options.sync;
       var checkInModels = function(respModels) {
