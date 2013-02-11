@@ -98,7 +98,6 @@ define([
       var params = {lastDeployed: '!null'};
       if (!G.currentUser.guest) {
         params.creator = '_me';
-        debugger;
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
       

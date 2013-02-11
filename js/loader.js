@@ -761,7 +761,7 @@ define('globals', function() {
     
     nukeScripts: function() {
       for (var key in localStorage) {
-        if (/.*\.js|css|jsp$/.test(key))
+        if (/.*\.(js|css|jsp)$/.test(key))
           G.localStorage.del(key);
       }
     },
