@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define([
   'globals',
   'templates',
@@ -215,30 +215,40 @@ define([
       return keys;
     },
     
-    getCloneOf: function(model, cloneOf) {
-      var keys = [];
+    getCloneOf: function(model) {
+      cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
+      var results = {};
       var meta = model.properties;
       var myMeta = model.myProperties;
-
       var m = myMeta ? myMeta : meta;
-      for (var j=0; j<2; j++) {
-        for (var p in m) {
-          if (!_.has(m[p], "cloneOf")) 
-            continue;
-          var clones = m[p].cloneOf.split(",");
-          for (var i=0; i<clones.length; i++) {
-            if (clones[i].replace(' ', '') == cloneOf) { 
-              keys.push(p);
-              break;
+
+      for (var i = 0; i < cloneOf.length; i++) {
+        var vals = [];
+        var iProp = cloneOf[i];
+        for (var j=0; j<2; j++) {
+          for (var p in m) {
+            if (!_.has(m[p], "cloneOf")) 
+              continue;
+            var clones = m[p].cloneOf.split(",");
+            for (var i=0; i<clones.length; i++) {
+              if (clones[i].replace(' ', '') == iProp) { 
+                vals.push(p);
+                break;
+              }
             }
           }
+          
+          if (vals.length  ||  !myMeta)
+            break;
+          
+          m = meta;
         }
-        if (keys.length  ||  !myMeta)
-          break;
-        m = meta;
+        
+        if (vals.length)
+          results[iProp] = vals;
       }
       
-      return keys;
+      return _.size(results) === 1 ? results[U.getFirstProperty(results)] : results;
     },
     
     getLongUri: function(uri, hint) {
@@ -1518,13 +1528,23 @@ define([
     },
 
     isDateProp: function(prop) {
-      return prop.range && _.contains(U._dateProps, prop.range);
+      return U.isXProp(prop, U._dateProps);
     },
 
     isTimeProp: function(prop) {
-      return prop.range && _.contains(U._timeProps, prop.range);
+      return U.isXProp(prop, U._timeProps);
     },
 
+    isXProp: function(prop, propShortNameSet) {
+      if (!prop.range)
+        return false;
+      
+      var range = prop.range;
+      var lsIdx = range.lastIndexOf('/');
+      range = lsIdx === -1 ? range : range.slice(lsIdx + 1);
+      return _.contains(propShortNameSet, range);      
+    },
+    
     toDateParts: function(millis) {
       var date = millis ? new Date(millis) : new Date();
       return [date.getMonth(), date.getDate(), date.getFullYear()];//, date.getMonth(), date.getDate()];
@@ -1655,6 +1675,7 @@ define([
       }
     },
     
+    imageResourceProps: ['ImageResource.originalImage', 'ImageResource.smallImage', 'ImageResource.mediumImage', 'ImageResource.bigImage', 'ImageResource.bigMediumImage'],
     slice: slice
   };
 

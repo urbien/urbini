@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define('app', [
   'globals',
   'backbone',
@@ -230,7 +230,6 @@ define('app', [
     setupWorkers: function() {
       var hasWebWorkers = G.hasWebWorkers;
       G.ajax = function(options) {
-        debugger;
         var opts = _.clone(options);
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
@@ -239,8 +238,10 @@ define('app', [
             var xhrWorker = G.getXhrWorker();          
             xhrWorker.onmessage = function(event) {
               var xhr = event.data;
-              if (xhr.status === 304)
+              if (xhr.status === 304) {
+                debugger;
                 defer.reject(xhr, "unmodified");
+              }
               else
                 defer.resolve(xhr.data, xhr.status, xhr);
             };
@@ -255,6 +256,7 @@ define('app', [
           else {
             G.log(App.TAG, 'xhr', '$.ajax', opts.url);
             $.ajax(_.pick(opts, ['timeout', 'method', 'url', 'headers', 'data'])).then(function(data, status, jqXHR) {
+//              debugger;
               if (status != 'success') {
                 defer.reject(jqXHR, status, opts);
                 return;

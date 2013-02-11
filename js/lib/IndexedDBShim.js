@@ -1167,7 +1167,7 @@ var idbModules = window.idbModules = {};
 //                                                  oncomplete();
                                                   defer.resolve();
                                                 }).promise();
-                                              }, {name: "Complete upgrade transaction", sequential: true, yield: true});
+                                              }, {name: "Complete upgrade transaction", sequential: true, yields: true});
 //                                            }
                                         });
                                         

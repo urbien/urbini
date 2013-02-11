@@ -10,5 +10,5 @@
       <property name="(http://www.hudsonfog.com/voc/model/company/Friend)forum.friend1.featured1" href="y" />
       <br /><br />
     </where>
-    <a href="mkResource.html?type=http://www.hudsonfog.com/voc/model/social/FriendApp&amp;friend1=-$this.forum.friend2&amp;friend2=-$this.forum.friend1&amp;displayProps=y"><text text="Reciprocate Friendship" /></a> 
+    <a href="mkResource.html?type=http://www.hudsonfog.com/voc/model/social/FriendApp&amp;friend1=-$this.forum.friend2&amp;friend2=-$this.forum.friend1&amp;displayProps=y"><text text="Friend them back?" /></a> 
 </div>

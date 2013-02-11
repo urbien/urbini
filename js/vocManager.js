@@ -97,7 +97,7 @@ define([
         return;
       }
 
-      var infos = Voc.getModelInfo(models);      
+      var infos = Voc.getModelInfo(models);
       var modelsCsv = JSON.stringify(infos);
       G.startedTask("ajax models");
 //      var useWorker = G.hasWebWorkers && !options.sync;
@@ -178,6 +178,7 @@ define([
             var path = p.slice(0, lastDot);
             var name = p.slice(lastDot + 1);
             var sup = newModelJson.sPath;
+            newModelJson.lastModified = newModelJson.s.lastModified ? Math.max(G.lastModified, newModelJson.s.lastModified) : G.lastModified;
             
             // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
             var newModel;
@@ -186,7 +187,6 @@ define([
             else
               newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
             
-            newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;
             U.pushUniq(newModels, newModel);
           }
           
@@ -211,8 +211,6 @@ define([
             success && success({fetched: 0});
             return;
           }
-          
-          debugger;
         });
       
 //      var onErr = function(code) {
@@ -253,11 +251,13 @@ define([
     getModelInfo: function(models) {
       var now = G.currentServerTime();
       return _.filter(_.map(models, function(m) {
-        var info = G.modelsMetadataMap[m] || G.oldModelsMetadataMap[m];
-        if (info)
-          return {uri: info.type, lastModified: info.lastModified};
-        else
-          return m;
+        if (_.contains(G.storedModelTypes, m)) {
+          var info = G.modelsMetadataMap[m];
+          if (info && info.stored || (info = G.oldModelsMetadataMap[m]))
+            return {uri: info.type, lastModified: info.lastModified};
+        }
+        
+        return m;
 //        if (info)
 //          return info;
         
@@ -445,21 +445,51 @@ define([
     
     executeHandler: function(handler, resultType, args, context) {
       var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
-      var __handlerResult__ = {};
-      __handlerResult__[type] = {};
+      var result = {};
+      result[type] = {};
 
       try {
-        debugger;
-        handler.apply(__handlerResult__).apply(context || {}, args);
+        handler.apply(result).apply(context || {}, args);
       } catch (err) {
         return;
       }
 
-      debugger;
+      result = result[type];
       Voc.fetchModels(resultType, {
         success: function() {
-          var res = new G.typeToModel[resultType]();
-          res.save(__handlerResult__[type], {silent: true});
+          var toVocModel =  G.typeToModel[resultType];
+          var res = args[0];
+          var fromVocModel = res.vocModel;
+          
+          // copy image props, if both are imageResources
+          debugger;
+          if (U.isA(fromVocModel, "ImageResource") && U.isA(toVocModel, "ImageResource")) {
+            var fromTo = {};
+            for (var i = 0; i < U.imageResourceProps.length; i++) {
+              var iProp = U.imageResourceProps[i];
+              var to = U.getCloneOf(toVocModel, iProp);
+              if (!to || result[to]) {
+                fromTo = null;
+                break;
+              }
+              
+              var from = U.getCloneOf(fromVocModel, iProp);
+              if (from)
+                fromTo[from] = to;
+            }
+            
+            if (fromTo) {
+              for (var from in fromTo) {
+                var to = fromTo[from];
+                from = res.get(from);
+                if (from)
+                  result[to] = from;
+              }
+            }
+          }
+          
+          var res = new toVocModel();
+          res.save(result, {silent: true});
         }, 
         error: function() {
           debugger;
@@ -707,7 +737,9 @@ define([
 
     storeModel: function(modelJson) {
       setTimeout(function() {
-        G.localStorage.putAsync('model:' + modelJson.type, JSON.stringify(modelJson));
+        var type = modelJson.type;
+        G.localStorage.putAsync('model:' + type, JSON.stringify(modelJson));
+        U.pushUniq(G.storedModelTypes, type);
       }, 100);
     },
 
@@ -758,6 +790,7 @@ define([
     
     loadStoredModels: function(options) {
       Voc.detectCurrentModel();
+      G.storedModelTypes = _.size(G.storedModelTypes) ? G.storedModelTypes : _.map(_.filter(_.keys(localStorage), function(m) {return m.startsWith('model:')}), function(m) {return m.slice(6)});
       if (G.userChanged) {
         if (options && options.models)
           Voc.changedModels = U.getObjectType(options.models) === '[object String]' ? [options.models] : options.models;
@@ -840,10 +873,14 @@ define([
             continue;
           }
         
+          var meta = G.modelsMetadataMap[uri];
+          if (meta)
+            meta.stored = true;
+          
           jm = JSON.parse(jm);
         }
         
-        if (jm) { 
+        if (jm) {
           var chain = Voc.getModelChain(jm, typeToJSON);
           if (chain) {
             for (var j = 0; j < chain.length; j++) {

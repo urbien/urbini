@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define(['globals', 'indexedDBShim'], function(G) {
 	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
@@ -590,7 +590,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 						}, function(err, e){
 							dfd.rejectWith(this, [e, err]);
 						}, function(res, e){
-							console.log("Database open is blocked or upgrade needed", res, e.type);
+							console.log("Database event on open: ", e.type, res);
 							//dfd.notifyWith(this, ["", e]);
 						});
 						

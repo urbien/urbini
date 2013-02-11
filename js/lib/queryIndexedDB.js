@@ -11,7 +11,7 @@
  *
  */
 
-'use strict';
+//'use strict';
 define(['jqueryIndexedDB'], function() {
   var IDBCursor = $.indexedDB.IDBCursor;
   function Index(name) {

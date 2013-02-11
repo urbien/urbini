@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define(['jquery', 'mobiscroll'], function ($) {
 
   var ms = $.mobiscroll;

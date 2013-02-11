@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define([
   'globals',
   'cache!../templates.jsp',
@@ -45,6 +45,7 @@ define([
       "emailAddress": "emailPET",
       "date": "datePET",
       "ComplexDate": "datePET",
+      "system/primitiveTypes/Duration": "datePET",
       "model/company/Money": "stringPET"
 //       ,
 //      "boolean": "booleanPET",

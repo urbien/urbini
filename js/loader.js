@@ -512,7 +512,7 @@ requirejs.exec = function(text) {
 //  return eval(text);
 }
                     
-'use strict';
+//'use strict';
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
@@ -756,10 +756,13 @@ define('cache', function() {
 //      debugger;
       var resetting = this.resetting;
       this.resetting = true;
-      for (var key in localStorage) {
+      G.storedModelTypes = [];
+      for (var i = localStorage.length - 1; i > -1; i--) {
+        var key = localStorage.key(i);
         if (key.indexOf('model:') == 0)
           G.localStorage.del(key);
       }
+      
       
       if (after) 
         after();
@@ -828,6 +831,7 @@ define('cache', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    storedModelTypes: [],
     minifyByDefault: true,
     FLAG_MIN: '/*//min*/',
     FLAG_FULL: '/*//full*/',

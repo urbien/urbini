@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 define([
   'globals',
   'utils',
@@ -40,7 +40,7 @@ define([
 //    },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true, replace: true});
       return this;
     },
     click: function(e) {
@@ -169,9 +169,6 @@ define([
     },
     
     add: function() {
-    },
-    
-    edit: function() {
     },
     
     "delete": function() {
