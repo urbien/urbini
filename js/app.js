@@ -239,8 +239,8 @@ define('app', [
             xhrWorker.onmessage = function(event) {
               var xhr = event.data;
               if (xhr.status === 304) {
-                debugger;
-                defer.reject(xhr, "unmodified");
+//                debugger;
+                defer.reject(xhr, "unmodified", "unmodified");
               }
               else
                 defer.resolve(xhr.data, xhr.status, xhr);
