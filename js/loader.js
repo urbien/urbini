@@ -726,7 +726,7 @@ define('globals', function() {
       var ls = G.localStorage;
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
-        G.localStorage.del(key);
+//        G.localStorage.del(key);
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
@@ -800,6 +800,7 @@ define('globals', function() {
     defaults: {
       radius: 15 // km
     },
+    modelsMetadataMap: {},
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     shortNameToModel: {},
     typeToModel: {},
