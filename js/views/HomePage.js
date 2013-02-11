@@ -1,7 +1,8 @@
 define([
   'globals',
-  'events'
-], function(G, Events) {
+  'events',
+  'backbone'
+], function(G, Events, Backbone) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
