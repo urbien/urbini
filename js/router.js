@@ -1,3 +1,4 @@
+'use strict';
 define([
   'globals',
   'utils', 
@@ -281,7 +282,7 @@ define([
           this.view(U.encode(G.currentUser._uri) + "?" + p, other);
         }
         else {
-          Events.trigger(Events.REQUEST_LOGIN, 'Please login');
+          Events.trigger('req-login', 'Please login');
 //          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         }
         

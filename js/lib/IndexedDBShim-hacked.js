@@ -899,6 +899,7 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
             }
             // Start using the version transaction
             me.db.__db.transaction(function(tx){
+                var executeRequest;
                 me.__tx = tx;
                 var q = null, i = 0;
                 function success(result, req){
@@ -923,7 +924,7 @@ logger.log = logger.error = logger.warn = logger.debug = function(){
                     executeRequest();
                 }
                 try {
-                    function executeRequest(){
+                    executeRequest = executeRequest(){
                         if (i >= me.__requests.length) {
                             me.__active = false; // All requests in the transaction is done
                             me.__requests = [];

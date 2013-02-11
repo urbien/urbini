@@ -1,3 +1,4 @@
+'use strict';
 define([
   'globals',
   'utils', 
@@ -62,7 +63,6 @@ define([
         
         G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers})
           .done(function(data, status, xhr) {
-            debugger;
             options.success(data, status, xhr);
           }).fail(function(xhr, status, msg) {
             if (xhr.status === 304)

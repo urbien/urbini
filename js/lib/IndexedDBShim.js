@@ -1,3 +1,4 @@
+//'use strict';
 define(['jquery', 'taskQueue'], function($, TaskQueue) {
 
 /**
@@ -897,6 +898,7 @@ var idbModules = window.idbModules = {};
             }
             // Start using the version transaction
             me.db.__db.transaction(function(tx){
+                var executeRequest;
                 me.__tx = tx;
                 var q = null, i = 0;
                 function success(result, req){
@@ -921,7 +923,7 @@ var idbModules = window.idbModules = {};
                     executeRequest();
                 }
                 try {
-                    function executeRequest(){
+                    executeRequest = function(){
                         if (i >= me.__requests.length) {
                             me.__active = false; // All requests in the transaction is done
                             me.__requests = [];

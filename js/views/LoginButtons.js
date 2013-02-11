@@ -1,3 +1,4 @@
+'use strict';
 define([
   'globals',
   'jquery', 
@@ -47,7 +48,7 @@ define([
     },
     
     showPopup: function() {
-      Events.trigger(Events.REQUEST_LOGIN);
+      Events.trigger('req-login');
       return false;
 //      var $popup = $('.ui-page-active #login_popup');
 //      if ($popup.length == 0) {

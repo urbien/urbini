@@ -1,3 +1,4 @@
+'use strict';
 define('app', [
   'globals',
   'backbone',
@@ -122,7 +123,7 @@ define('app', [
     },
     
     setupLoginLogout: function() {
-      Events.on(Events.REQUEST_LOGIN, function(options) {
+      Events.on('req-login', function(options) {
         options = _.extend({online: 'Login through a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
         if (!G.online) {
           Errors.offline();
@@ -166,7 +167,7 @@ define('app', [
       });
       
       var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
-      Events.on(Events.LOGOUT, function(options) {
+      Events.on('logout', function(options) {
         options = _.extend({}, defaults, options);
         var url = G.serverName + '/j_security_check?j_signout=true';
         $.get(url, function() {
@@ -229,12 +230,13 @@ define('app', [
     setupWorkers: function() {
       var hasWebWorkers = G.hasWebWorkers;
       G.ajax = function(options) {
+        debugger;
         var opts = _.clone(options);
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
           if (useWorker) {
             G.log(App.TAG, 'xhr', 'webworker', opts.url);
-            xhrWorker = G.getXhrWorker();          
+            var xhrWorker = G.getXhrWorker();          
             xhrWorker.onmessage = function(event) {
               var xhr = event.data;
               if (xhr.status === 304)

@@ -1,3 +1,4 @@
+'use strict';
 define(['globals'], function(G) {
   var TaskQueue = function(name) {
     if (!(this instanceof TaskQueue))

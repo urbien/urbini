@@ -1,3 +1,4 @@
+'use strict';
 define([
   'globals',
   'utils',
@@ -24,7 +25,7 @@ define([
           switch (code) {
           case 401: 
             G.log(Errors.TAG, 'error', 'requesting user-login');
-            Events.trigger(Events.REQUEST_LOGIN, G.currentUser.guest ? Errors.login : Errors.unauthorized);
+            Events.trigger('req-login', G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
             G.log(Errors.TAG, "error", 'no results');

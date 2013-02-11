@@ -1,3 +1,4 @@
+//'use strict';
 define([
   'globals',
   'utils', 
@@ -34,7 +35,6 @@ define([
   G.typeToModel.Resource = Resource;
   var Voc = {
     packages: {Resource: Resource},
-    models: [],
     scriptContext: {},
 //    unsavedModels: [],
     changedModels: [],

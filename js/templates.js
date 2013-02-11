@@ -1,3 +1,4 @@
+'use strict';
 define([
   'globals',
   'cache!../templates.jsp',

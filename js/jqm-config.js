@@ -1,4 +1,5 @@
 // see: http://jquerymobile.com/test/docs/pages/backbone-require.html
+'use strict';
 define(['jquery'], function($) {
   $(document).bind("mobileinit", function () {
 //      console.log('mobileinit');

@@ -1,3 +1,4 @@
+'use strict';
 define(['globals', 'indexedDBShim'], function(G) {
 	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;

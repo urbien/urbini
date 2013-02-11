@@ -488,13 +488,14 @@ if (typeof JSON !== 'object') {
   
                     
 requirejs.exec = function(text) {
+  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
-//  var nav = Lablz.navigator;
-//  if (nav.isChrome || nav.isSafari)
-//    Lablz.inject(text);
-//  else if (nav.isFirefox)
-//    return window.eval.call({}, text);  
-//  else // Safari
+  var nav = Lablz.navigator;
+  if (nav.isChrome || nav.isSafari)
+    Lablz.inject(text);
+  else if (nav.isFirefox)
+    return window.eval.call({}, text);  
+  else // Safari
     return window.eval(text);
 //  return eval(text);
   
@@ -511,6 +512,7 @@ requirejs.exec = function(text) {
 //  return eval(text);
 }
                     
+'use strict';
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
@@ -556,7 +558,9 @@ define('globals', function() {
       
     switch (ext) {
       case '.css':
+//        if (G.minify !== true)
         text += '\r\n/*//@ sourceURL=' + url + '*/';
+        text = G.addMinFlag(text);
         G.appendCSS(text);
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
@@ -571,10 +575,13 @@ define('globals', function() {
         break;
       default:
 //        text += '\n//@ sourceURL=' + url.slice(0, -2) + 'min.js';
-        if (G.navigator.isIE) text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-        text += '\n//@ sourceMappingURL=' + url + '.map';
-        text += '\n//@ sourceURL=' + url;
-        if (G.navigator.isIE) text += '*/\n';
+//        if (G.minify !== true) {
+          if (G.navigator.isIE) text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+          text += '\n//@ sourceMappingURL=' + url + '.map';
+          text += '\n//@ sourceURL=' + url;
+          if (G.navigator.isIE) text += '*/\n';
+//        }
+        text = G.addMinFlag(text);
         requirejs.exec(text);
         context.completeLoad(name); // JQM hack
         break;
@@ -642,6 +649,7 @@ define('globals', function() {
           loadModule(cached, url, context, name);
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
+//          debugger;
           G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
           G.localStorage.del(url);
           loadedCached = false;
@@ -688,7 +696,8 @@ define('globals', function() {
         return supported;
       })();
 
-  define('cache', function() {
+  'use strict';
+define('cache', function() {
     var cache = {
       TAG: 'cache',
       load: function (name, req, onLoad, config) {
@@ -760,16 +769,38 @@ define('globals', function() {
     },
     
     nukeScripts: function() {
-      G.recordCheckpoint("nuking scripts");
-      for (var key in localStorage) {
-        if (/\.(?:js|css|jsp)$/.test(key))
+      var start = new Date().getTime();
+      var length = localStorage.length;
+      console.log("nuking scripts, localStorage has", length, "keys", start);
+//      var cache = {};
+//      for (var i = length - 1; i > -1; i--) {
+//        var key = localStorage.key(i);
+//        if (!/\.(?:js|css|jsp)$/.test(key))
+//          cache[key] = G.localStorage.get(key);
+//      }
+//      
+//      localStorage.clear();
+//      for (var key in cache) {
+//        G.localStorage.put(key, cache[key]);
+//      }
+//      
+//      delete cache;
+      for (var i = length - 1; i > -1; i--) {
+        var key = localStorage.key(i);
+        if (/\.(?:js|css|jsp)$/.test(key)) {          
+          var start1 = new Date().getTime();
           G.localStorage.del(key);
+          console.log("nuked", key, new Date().getTime() - start1);
+        }
       }
-      G.recordCheckpoint("nuked scripts");
+
+      console.log("nuking scripts took", new Date().getTime() - start, "ms");
     },
     
     nukeHandlers: function() {
-      for (var key in localStorage) {
+      var length = localStorage.length;
+      for (var i = length - 1; i > -1; i--) {
+        var key = localStorage.key(i);
         if (/^handlers/.test(key))
           G.localStorage.del(key);
       }
@@ -797,6 +828,14 @@ define('globals', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    minifyByDefault: true,
+    FLAG_MIN: '/*//min*/',
+    FLAG_FULL: '/*//full*/',
+    addMinFlag: function(text) {
+//      return (G.minify ? G.FLAG_MIN : G.FLAG_FULL) + text;
+//      return text + (G.minify ? G.FLAG_MIN : G.FLAG_FULL);
+      return text;
+    },
     webWorkers: {},
     customHandlers: {},
     defaults: {
@@ -1157,6 +1196,11 @@ define('globals', function() {
       if (!hasLocalStorage)
         return modules;
       
+      var minify = G.minify,
+          def = G.minifyByDefault,
+          mini = G.FLAG_MINI,
+          full = G.FLAG_full;
+
       var pruned = [];
       for (var i = 0; i < modules.length; i++) {
         var dmInfo = modules[i];
@@ -1179,7 +1223,13 @@ define('globals', function() {
           var dateSaved = saved.modified;
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
-            G.modules[url] = saved.text;
+            var text = saved.text;
+//            if ((minify===true || typeof minify ==='undefined' && def && text.slice(text.length - mini.length) !== mini) || (minify===false || typeof minify ==='undefined' && !def && text.slice(text - full.length) !== full)) {
+//              // wrong minification mode on this file
+//            }
+//            else
+              G.modules[url] = text;
+            
             continue;
           }
           else {
@@ -1252,6 +1302,7 @@ define('globals', function() {
             }, 100, this);
 //            for (var url in newModules) {
 //              G.localStorage.putAsync(100, url, G.prepForStorage(newModules[url], G.serverTime), false, true); // don't force, but do async
+//              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime), false); // don't force
 //            }
           }, 100);
         }

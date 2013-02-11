@@ -1,4 +1,5 @@
-//define([
+//'use strict';
+define([
 //  'leaflet', 'leaflet.markercluster'
 //], function(L) {
 //
