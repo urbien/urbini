@@ -3946,7 +3946,7 @@ $.mobile.getMaxScrollForTransition = $.mobile.getMaxScrollForTransition || defau
 	function releasePageTransitionLock() {
 		isPageTransitioning = false;
 		if ( pageTransitionQueue.length > 0 ) {
-//			$.mobile.changePage.apply( null, pageTransitionQueue.pop() );
+			$.mobile.changePage.apply( null, pageTransitionQueue.pop() );
 		}
 	}
 
@@ -8471,9 +8471,15 @@ $.mobile.document.delegate( ":jqmData(role='table')", "tablecreate", function() 
 
 	// create the hide/show toggles
 	reverseHeaders.each(function(i){
-		var $cells = $( this ).jqmData( "cells" ),
-			colstart = $( this ).jqmData( "colstart" ),
-			hierarchyClass = $cells.not( this ).filter( "thead th" ).length && " ui-table-cell-label-top",
+		var $cells = $( this ).jqmData( "cells" );
+			
+		if (!$cells) {
+		  debugger;
+		  return;
+		}
+		  
+		var	colstart = $( this ).jqmData( "colstart" ),
+		  hierarchyClass = $cells.not( this ).filter( "thead th" ).length && " ui-table-cell-label-top",
 			text = $(this).text();
 
 			if( text !== ""  ){

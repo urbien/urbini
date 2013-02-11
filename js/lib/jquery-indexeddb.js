@@ -82,7 +82,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 							};
 							if (typeof idbRequest.onblocked !== "undefined" && idbRequest.onblocked === null) {
 								idbRequest.onblocked = function(e){
-									//console.log("Blocked", idbRequest, e, this);
+									console.log("Blocked", idbRequest, e, this);
 									var res;
 									try {
 										res = idbRequest.result;
@@ -309,7 +309,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 //						idbIndex = null;
 					  throw e;
 					}
-					////console.logidbIndex, index);
+					
 					return {
 						"each": function(callback, range, direction){
 							return wrap.cursor(function(){
@@ -402,6 +402,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 					//}, 1);
 				}
 				
+				//console.log("openReqShim: opening DB with", version);
 				var dbOpenReq = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
 				var result = new IDBRequest();
 				dbOpenReq.onsuccess = function(e){
@@ -411,11 +412,13 @@ define(['globals', 'indexedDBShim'], function(G) {
 						var oldVersion = parseInt(db.version || 0, 10);
 						var newVersion = typeof version === "undefined" ? (oldVersion === 0 ? 1 : oldVersion) : parseInt(version, 10);
 						if (oldVersion < newVersion) {
+			        //console.log("using setVersion");
 							var versionReq = db.setVersion(newVersion);
+              //console.log("invoked setVersion");
 							versionReq.onsuccess = function(upgradeEvent){
 //							  debugger;
 								result.transaction = versionReq.result;
-								var event = new Event("upgradeneeded");
+								var event = new $.Event("upgradeneeded");
 								event.oldVersion = oldVersion;
 								event.newVersion = newVersion;
 								for (key in upgradeEvent) {
@@ -426,13 +429,13 @@ define(['globals', 'indexedDBShim'], function(G) {
 								callback("onupgradeneeded", result, [event]);
 								// Version transaction is now complete, to open ordinary transaction
 								versionReq.result.db.close();
-								//console.log("Database closed, and will try to open again, with same version");
+								console.log("Database closed, and will try to open again, with same version");
 								var newDbOpenReq = indexedDB.open(dbName);
 								delete result.transaction;
 								delete result.result;
 								
 								newDbOpenReq.onsuccess = function(e){
-									//console.log("DB Opened without version change", newDbOpenReq.result);
+									console.log("DB Opened without version change", newDbOpenReq.result);
 									copyReq(newDbOpenReq);
 									callback("onsuccess", result, [e], function(){
 //										newDbOpenReq.result.close();
@@ -442,16 +445,16 @@ define(['globals', 'indexedDBShim'], function(G) {
 								newDbOpenReq.onerror = function(e){
 									copyReq(newDbOpenReq);
 									callback("onerror", result, [e], function(){
-										//console.log("Closed database in newRequest on error", newDbOpenReq);
+										console.log("Closed database in newRequest on error", newDbOpenReq);
 //										newDbOpenReq.result.close();
 									});
 								};
 								newDbOpenReq.onblocked = function(e){
-									//console.log("DB Blocked without version change", newDbOpenReq.result);
+									console.log("DB Blocked without version change", newDbOpenReq.result);
 									copyReq(newDbOpenReq);
 									callback("onblocked", result, [e], function(){
-										//console.log("Closed database in newRequest on blocked", newDbOpenReq);
-//										newDbOpenReq.result.close();
+										console.log("Closed database in newRequest on blocked", newDbOpenReq);
+										newDbOpenReq.result.close();
 									});
 								};
 							};
@@ -461,7 +464,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 							};
 							versionReq.onblocked = function(e){
 								// This always gets called, resulting the blocking the DB upgrade
-								//console.log("Version transaction blocked, so calling the on blocked method");
+								console.log("Version transaction blocked, so calling the on blocked method");
 								callback("onblocked", result, [e]);
 							};
 						} else if (oldVersion === newVersion) {
@@ -477,7 +480,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 				};
 				dbOpenReq.onerror = function(e){
 					copyReq();
-					//console.log("Error", dbOpenReq);
+					console.log("Error", dbOpenReq);
 					callback("onerror", result, [e]);
 				};
 				dbOpenReq.onblocked = function(e){
@@ -512,13 +515,13 @@ define(['globals', 'indexedDBShim'], function(G) {
 					}
 				};
 			}, function(error, e){
-				////console.logerror, e);
+				//console.logerror, e);
 				// Nothing much to do if an error occurs
 			}, function(db, e){
 				if (e && e.type === "upgradeneeded") {
 					if (config && config.schema) {
 						// Assuming that version is always an integer 
-						//console.log("Upgrading DB to ", db.version);
+						console.log("Upgrading DB to ", db.version);
 						for (var i = e.oldVersion + 1; i <= e.newVersion; i++) {
 							typeof config.schema[i] === "function" && config.schema[i].call(this, wrap.transaction(this.transaction));
 						}
@@ -572,7 +575,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 									dfd.resolveWith(idbTransaction, [e]);
 								};
 							} catch (e) {
-								//console.log("Creating a transaction failed", e, storeNames, mode, this);
+								console.log("Creating a transaction failed", e, storeNames, mode, this);
 								e.type = "exception";
 								dfd.rejectWith(this, [e]);
 								return;
@@ -586,7 +589,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 						}, function(err, e){
 							dfd.rejectWith(this, [e, err]);
 						}, function(res, e){
-							//console.log("Database open is blocked or upgrade needed", res, e.type);
+							console.log("Database open is blocked or upgrade needed", res, e.type);
 							//dfd.notifyWith(this, ["", e]);
 						});
 						
@@ -658,7 +661,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 										}
 									});
 								} else {
-									//console.log("Error in transaction inside object store", err);
+									console.log("Error in transaction inside object store", err);
 									dfd.rejectWith(this, [err, e]);
 								}
 							}, function(trans) {
