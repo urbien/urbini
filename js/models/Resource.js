@@ -61,8 +61,22 @@ define([
     url: function() {
       var uri = this.get('_uri');
       var type = this.vocModel.type;
+      var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y";
+      if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
-      return G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&_uri=" + U.encode(uri);
+        return retUri + "&_uri=" + U.encode(uri);
+      var action = this.get('action');
+      if (action != 'make') 
+        return retUri;
+      var params = this.get('params');
+      if (params) {
+        params.$action = 'make';
+        retUri += '&' + U.getQueryString(params);
+//        retUri += '&$action=make';
+//        for (var p in params) 
+//          retUri += '&' + p +'=' + encodeURIComponent(params[p]);
+      }  
+      return retUri;
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
@@ -89,6 +103,11 @@ define([
       if (!resp || resp.error)
         return null;
 
+      if (!resp.data) {
+        this.loaded = true;
+        return resp;
+      }
+        
       var uri = resp._uri;
       if (!uri) {      
         resp = resp.data[0];
@@ -202,7 +221,10 @@ define([
         data._uri = this.getUri();
 
       var self = this;
-      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: U.getQueryString(data)});
+      var qs = U.getQueryString(data);
+      if (options.queryString)
+        qs += '&' + options.queryString;
+      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
       
       var success = options.success;
       options.success = function(resource, response, opts) {
