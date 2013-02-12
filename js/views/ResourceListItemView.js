@@ -363,10 +363,14 @@ define([
         json.bottom = dim.h - dim.y;
         json.left = dim.x;
       }
-
-      dn = json[delegateTo + '.displayName'];
+      if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
+        dn = json[U.getCloneOf(this.vocModel, 'Reference.resourceDisplayName')];
+      else
+        dn = json[delegateTo + '.displayName'];
+      
       rUri = json[delegateTo];
-        
+      if (rUri)
+        json['_uri'] = rUri;
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 //      tmpl_data['_uri'] = rUri;
       if (typeof img != 'undefined') {
@@ -383,7 +387,7 @@ define([
       
       tmpl_data['viewCols'] = viewCols;
       
-      var type = U.getTypeUri(rUri);
+      var type = rUri ? U.getTypeUri(rUri) : null;
       
       var forResourceModel = type ? G.typeToModel[type] : null;
       var c =  forResourceModel ? forResourceModel : m.constructor;

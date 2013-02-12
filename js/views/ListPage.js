@@ -180,7 +180,7 @@ define([
       this.listView.render();
       if (isGeo) {
         var self = this;
-        require(['views/MapView'], function(MV) {
+        G.require(['views/MapView'], function(MV) {
           MapView = MV;
           self.mapView = new MapView({model: rl, el: self.$('#mapHolder', self.el)});
           self.mapView.render();

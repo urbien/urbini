@@ -18,6 +18,7 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
+      this.hiddenPropTemplate = _.template(Templates.get('hiddenPET'));
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
@@ -131,7 +132,12 @@ define([
         else {
           props[prop] = res.getUri();
           self.resource.set(props, {skipValidation: true, skipRefresh: true});
-          link.innerHTML = res.get('davDisplayName');
+          var vocModel = this.vocModel;
+          var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
+          var dn = pr.displayName;
+          if (!dn)
+            dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
           $(link).data('uri', res.getUri());
         }
         self.router.navigate(hash, {trigger:true, replace: true});
@@ -148,19 +154,32 @@ define([
 //        _.extend(params, U.parseWhere(pr.where));
 //      }
       
+      var domain = U.getLongUri(this.model.get('domain'));
       if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
         var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
-        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
+
+        var rParams = {
+          $multiValue: prop,
+          $title: t,
+          $forResource: domain
+        };
         if (this.action == 'make')
-          params.$type = type;
+          rParams.$type = type;
         else
-          params.$forResource = uri;
-        
-        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
+          rParams.$forResource = uri;
+//        
+//        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
+//        if (this.action == 'make')
+//          params.$type = type;
+//        else
+//          params.$forResource = uri;
+//        
+//        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
 //        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(rParams), {trigger: true});
       }
       else {
         if (!U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel))
@@ -174,10 +193,17 @@ define([
             var idx = title.indexOf('</span>');
             t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
           }
-          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
-          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
+          var rParams = {
+            $prop: pr.shortName,
+            $type:  this.vocModel.type,
+            $title: t,
+            $forResource: domain
+          };
+//          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
+//          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
+//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
         }
       }
     },
@@ -550,8 +576,15 @@ define([
         return;
       }
       
-      if (info.params[p]  &&  prop.containerMember)
+      if (info.params[p]  &&  prop.containerMember) {
+        if (prop.required) {
+          var rules = ' data-formEl="true"';
+          var longUri = U.getLongUri(info.params[p]);
+          U.addToFrag(info.frag, this.hiddenPropTemplate({value: longUri, shortName: p, id: info.formId, rules: rules }));
+        }
+        
         return;
+      }
       if (_.has(info.backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
         return;
 
@@ -613,6 +646,9 @@ define([
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
+            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
+              continue;
+
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
           }
@@ -624,6 +660,8 @@ define([
           p = p.trim();
           if (typeof init[p] !== 'undefined')
             continue;
+          if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
+            continue;
           
           _.extend(info, {name: p, prop: reqd[p]});
           this.addProp(info);
@@ -632,7 +670,9 @@ define([
       else {
         for (var p in meta) {
           p = p.trim();
-          if (meta[p].readOnly)
+          if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  json[p]))
+            continue;
+          if (this.action != 'make'  &&  meta[p].immutable  &&  json[p])
             continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);

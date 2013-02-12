@@ -79,7 +79,7 @@ define([
       };
       if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", G.typeToModel)) {
         var user = G.currentUser._uri;
-        var appOwner = res.get('creator');
+        var appOwner = U.getLongUri(res.get('creator'));
         if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))
           this.hasPublish = true;
       }

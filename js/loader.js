@@ -494,7 +494,7 @@ requirejs.exec = function(text) {
   if (nav.isChrome || nav.isSafari)
     Lablz.inject(text);
   else if (nav.isFirefox)
-    return window.eval.call({}, text);  
+    return window.eval(text);
   else // Safari
     return window.eval(text);
 //  return eval(text);

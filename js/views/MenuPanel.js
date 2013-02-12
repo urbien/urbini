@@ -27,7 +27,9 @@ define([
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
-      'click #subscribe': 'subscribe'
+      'click #subscribe': 'subscribe',
+      'click #logout': 'logout'
+
 //      'swipeleft': 'swipeleft',
 //      'swiperight': 'swiperight'
     },
@@ -42,6 +44,11 @@ define([
       Events.stopEvent(e);
       this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true, replace: true});
       return this;
+    },
+    logout: function(e) {
+      e.stopEvent();
+      Events.trigger('logout');
+      return;
     },
     click: function(e) {
       var t = e.target;
@@ -107,9 +114,9 @@ define([
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
         var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-        if (!ch  ||  ch.length == 0)
+        if (!ch  ||  !ch.length)
           ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-        if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
+        if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
           var cnt = res.get(ch[0]) && res.get(ch[0]).count;
           if (cnt  &&  cnt > 0) 
             U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
