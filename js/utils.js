@@ -1497,7 +1497,7 @@ define([
       if (value) {
         if (range.indexOf("/") === -1)
           return value;
-        return value.indexOf('/') === -1 ? value : U.getLongUri(value);
+        return typeof value !== 'string' ? value : value.indexOf('/') === -1 ? value : U.getLongUri(value);
       }
       
       return val;
