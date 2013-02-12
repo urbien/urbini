@@ -110,7 +110,7 @@ define([
       var vocModel = this.vocModel;
       var hash = window.location.hash;
       var idx;
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
       var showAddButton = !isChooser  &&  vocModel.type.endsWith('/App'); 
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
