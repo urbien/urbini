@@ -2,11 +2,20 @@
   // Set up Mapper appropriately for the environment.
   if (typeof define === 'function' && define.amd) {
     // AMD
-define(['jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function($, L) {
-      // Export global even in AMD case in case this script is loaded with
-      // others that may still expect a global Mapper.
-      return (root.Mapper = factory(root, $, L));
-    });
+//    if (Lablz && Lablz.require) {
+//      debugger;
+//      Lablz.require(['jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function($, L) {
+//        return (root.Mapper = factory(root, $, L));
+//      });
+//    }
+//    else {
+    debugger;
+      define(['jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function($, L) {
+        // Export global even in AMD case in case this script is loaded with
+        // others that may still expect a global Mapper.
+        return (root.Mapper = factory(root, $, L));
+      });
+//    }
   } else {
     var callback = function() {
       root.Mapper = factory(root, $, L);
