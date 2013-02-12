@@ -214,10 +214,13 @@ define('app', [
         }
         
         if (newModNames.length) {
-          require(newModNames, function() {
-            for (var i = 0; i < newModNames.length; i++) {
-              G.modCache[newModNames[i]].resolve(arguments[i]);
-            }          
+          debugger;
+          G.loadBundle(newModNames, function() {
+            require(newModNames, function() {
+              for (var i = 0; i < newModNames.length; i++) {
+                G.modCache[newModNames[i]].resolve(arguments[i]);
+              }          
+            });
           });
         }
         
