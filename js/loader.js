@@ -702,7 +702,6 @@ define('globals', function() {
         return supported;
       })();
 
-  'use strict';
 define('cache', function() {
     var cache = {
       TAG: 'cache',

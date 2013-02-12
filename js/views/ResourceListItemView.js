@@ -248,16 +248,16 @@ define([
   
             if (first) {
               first = false;
-              viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + prop.displayName + '</u></i></div>';                
+              viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + U.getPropDisplayName(prop) + '</u></i></div>';                
             }
             
-            json[p] = U.makeProp({resource: res, prop: prop1, value: json[p]});
-//              var v = json[p].value.replace(/(<([^>]+)>)/ig, '').trim();
+            var val = json[p] = U.makeProp({resource: res, prop: prop1, value: json[p]});
+//            var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
             var range = prop1.range;
-            var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val : val;
+            var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val.value : val.value;
             var isDate = prop1.range == 'date';
             if (!prop1.skipLabelInGrid) 
-              viewCols += '<div style="display:inline"><span class="label">' + prop1.displayName + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + ':</span><span style="font-weight:normal">' + s + '</span></div>';
             else
               viewCols += '<span style="font-weight:normal">' + s + '</span>';
             viewCols += '&#160;';
