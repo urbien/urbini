@@ -352,7 +352,7 @@ define([
 //            modelsToFetch.push(type);
 //        }
 //        else
-          !p.alwaysInlined  &&  p.range  &&  !p.backLink  &&  p.range.indexOf('/') != -1  &&  p.range.indexOf('/Image') == -1  &&  tmp.push(propName);
+          !U.isInlined(p)  &&  p.range  &&  !p.backLink  &&  p.range.indexOf('/') != -1  &&  p.range.indexOf('/Image') == -1  &&  tmp.push(propName);
       }
       if (!tmp.length)
         return;

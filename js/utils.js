@@ -1690,6 +1690,10 @@ define([
     },
     
     imageResourceProps: ['ImageResource.originalImage', 'ImageResource.smallImage', 'ImageResource.mediumImage', 'ImageResource.bigImage', 'ImageResource.bigMediumImage'],
+    inlinedPropRegex: /model\/company\/Money|system\/primitiveTypes\/Duration|system\/fog\/ComplexDate$/,
+    isInlined: function(prop) {
+      return U.inlinedPropRegex.test(prop.range) || U.inlinedPropRegex.test(prop.facet);
+    },
     slice: slice
   };
 
