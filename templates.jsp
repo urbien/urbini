@@ -97,7 +97,7 @@
 </script>
 
 <script type="text/template" id="durationPT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDuration(value) }}</span>
+  <span>{{= typeof displayName !== 'undefined' ? displayName : Lablz.U.getFormattedDuration(value) }}</span>
 </script>
 
 <!--script type="text/template" id="datePT">

@@ -84,12 +84,11 @@ define(['jquery', 'mobiscroll'], function ($) {
             for (var i = 0; i < d.length; i++)
               d[i] = parseInt(d[i]);
               
-//            d = $.map(d, parseInt);
             var numDays = (d[0] || 0) * 7 + (d[1] || 0);
-            var str = (numDays ? numDays + ' days, ' : '') +
-                      (d[2] ? d[2] + ' hours, ' : '') +
-                      (d[3] ? d[3] + ' minutes, ' : '') +
-                      (d[4] ? d[4] + ' seconds, ' : '');                      
+            var str = (numDays ? numDays + ' day{0}, '.format(numDays === 1 ? '' : 's') : '') +
+                      (d[2] ? d[2] + ' hour{0}, '.format(d[2] === 1 ? '' : 's') : '') +
+                      (d[3] ? d[3] + ' minute{0}, '.format(d[3] === 1 ? '' : 's') : '') +
+                      (d[4] ? d[4] + ' second{0}, '.format(d[4] === 1 ? '' : 's') : '');                      
                 
             return str.length ? str.slice(0, str.length - 2) : str;
           },
@@ -98,7 +97,7 @@ define(['jquery', 'mobiscroll'], function ($) {
             if (!val)
               return defaults.vals;
             
-            var match = elm.val().match(/((\d+) weeks)?[ ,]*((\d+) days)?[ ,]*((\d+) hours)?[ ,]*((\d+) minutes)?[ ,]*((\d+) seconds)?[ ,]*/);
+            var match = elm.val().match(/((\d+) week[s]?)?[ ,]*((\d+) day[s]?)?[ ,]*((\d+) hour[s]?)?[ ,]*((\d+) minute[s]?)?[ ,]*((\d+) second[s]?)?[ ,]*/);
             if (!match)
               return defaults.vals;
             else {

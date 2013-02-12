@@ -24,7 +24,7 @@ define([
       "phone": "telPT",
       "mobilePhone": "telPT",
       "Url": "UrlPT",
-      "Duration": "durationPT",
+      "system/primitiveTypes/Duration": "durationPT",
       "date": "datePT",
       "dateTime": "datePT",
       "resource": "resourcePT",

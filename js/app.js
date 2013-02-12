@@ -214,7 +214,6 @@ define('app', [
         }
         
         if (newModNames.length) {
-          debugger;
           G.loadBundle(newModNames, function() {
             require(newModNames, function() {
               for (var i = 0; i < newModNames.length; i++) {

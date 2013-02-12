@@ -440,31 +440,30 @@ define([
     },
     
     prepareHandler: function(handler, resultType) {
-      return function() {
-        return Voc.executeHandler(handler, resultType, arguments);
+      return function(res) {
+        return Voc.executeHandler(handler, resultType, res);
       }
     },
     
-    executeHandler: function(handler, resultType, args, context) {
+    executeHandler: function(handler, resultType, res, context) {
       var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
       var result = {};
       result[type] = {};
 
       try {
-        handler.apply(result).apply(context || {}, args);
+        handler.apply(result).call(context || {}, res);
       } catch (err) {
         return;
       }
 
+      var fromRes = res;
       result = result[type];
       Voc.fetchModels(resultType, {
         success: function() {
           var toVocModel =  G.typeToModel[resultType];
-          var res = args[0];
-          var fromVocModel = res.vocModel;
+          var fromVocModel = G.typeToModel[fromRes._type];
           
           // copy image props, if both are imageResources
-          debugger;
           if (U.isA(fromVocModel, "ImageResource") && U.isA(toVocModel, "ImageResource")) {
             var fromTo = {};
             for (var i = 0; i < U.imageResourceProps.length; i++) {
@@ -483,7 +482,7 @@ define([
             if (fromTo) {
               for (var from in fromTo) {
                 var to = fromTo[from];
-                from = res.get(from);
+                from = fromRes[from];
                 if (from)
                   result[to] = from;
               }
@@ -491,7 +490,7 @@ define([
           }
           
           var res = new toVocModel();
-          res.save(result, {silent: true});
+          res.save(result);
         }, 
         error: function() {
           debugger;
@@ -512,22 +511,21 @@ define([
     
       var typeName = type.slice(type.lastIndexOf('/') + 1);
       _.each(handlers, function(handler) {
-        with(handler) {
-          if (typeof script === 'string') {
-            script = script.replace(/(<([^>]+)>)/ig, '').trim();
-            try {
-              script = FunctionProxy(script);
-  //            eval("script = " + script); //(new Function("return {{0}}".format(script)))();
-            } catch (err) {
-              G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
-              return;          
-            }
+        var script = handler.script;
+        if (typeof script === 'string') {
+          script = script.replace(/(<([^>]+)>)/ig, '').trim();
+          try {
+            script = FunctionProxy(script);
+//            eval("script = " + script); //(new Function("return {{0}}".format(script)))();
+          } catch (err) {
+            G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
+            return;          
           }
-          else
-            return script; // is already a function
         }
+        else
+          return script; // is already a function
         
-        Events.on('add.' + type, Voc.prepareHandler(handler.script, handler.toDavClassUri));
+        Events.on('add.' + type, Voc.prepareHandler(script, handler.toDavClassUri));
 
 //        var events = script.events;
 //        if (events) {

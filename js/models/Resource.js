@@ -146,7 +146,7 @@ define([
       var props = options.validateAll ? this.constructor.properties : attrs;
       var values = attrs;
       for (var name in props) {
-        var error = this.validateProperty(name, attrs[name]);
+        var error = this.validateProperty(attrs, name, options);
         if (error !== true)
           errors[name] = typeof error === 'string' ? error : "Please enter a valid " + name;
       }
@@ -155,13 +155,14 @@ define([
         return errors;
     },
     
-    validateProperty: function(name, value) {
+    validateProperty: function(attrs, name, options) {
       var prop = this.constructor.properties[name];
       if (!prop || prop.readOnly || prop.backLink || prop.virtual || prop.propertyGroupList)
         return true;
       
+      var value = attrs[name];
       if (value == null || value === '') {
-        if (prop.required) {
+        if (options.validateAll && prop.required) {
           if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
             return U.getPropDisplayName(prop) + ' is a required field';
         }
@@ -186,12 +187,20 @@ define([
             return 'Please enter a valid ' + U.getPropDisplayName(prop);
         }
       }
+      else {
+        val = U.getTypedValue(this, name, value);
+        if (val == null || val !== val) // test for NaN
+          return 'Please enter a valid ' + U.getPropDisplayName(prop);
+        else
+          attrs[name] = val;
+      }
         
       var cloneOf = prop.cloneOf;
       if (cloneOf) {
         if (/^Address1?\.postalCode1?$/.test(cloneOf))
           return U.validateZip(value) || 'Please enter a valid Postal Code';
       }
+      
       
       return true;
     },
@@ -236,7 +245,9 @@ define([
         Events.trigger('resourcesChanged', [self]);
         var method = isNew ? 'add.' : 'edit.';
         if (!G.currentUser.guest) {
-          Events.trigger(method + self.vocModel.type, self);
+          var json = self.toJSON();
+          json._type = self.vocModel.type;
+          Events.trigger(method + self.vocModel.type, json);
           var sup = self.vocModel;
           while (sup = sup.superClass) {
             Events.trigger(method + sup.type, self);
