@@ -214,11 +214,8 @@ define('app', [
         }
         
         if (newModNames.length) {
-          debugger;
           G.loadBundle(newModNames, function() {
-            debugger;
             require(newModNames, function() {
-              debugger;
               for (var i = 0; i < newModNames.length; i++) {
                 G.modCache[newModNames[i]].resolve(arguments[i]);
               }          
