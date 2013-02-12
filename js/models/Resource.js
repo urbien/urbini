@@ -225,7 +225,7 @@ define([
       options = options || {};
       var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
       var isNew = this.isNew();
-      if (!data.$returnMade)
+      if (options.$returnMade !== false)
         data.$returnMade = 'y';
       if (!isNew)
         data._uri = this.getUri();

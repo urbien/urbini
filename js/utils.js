@@ -1120,6 +1120,7 @@ define([
       var prop = info.prop || propName && vocModel && vocModel.properties[propName];
       propName = propName || prop.shortName;
       var val = info.value || U.getValue(res, propName);
+      val = typeof val !== 'undefined' ? U.getTypedValue(res, propName, val) : val;
       var isDisplayName = info.isDisplayName || prop.displayNameElm;
       
       var cc = prop.colorCoding;
@@ -1147,16 +1148,20 @@ define([
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
-    makeEditProp: function(prop, values, formId) {
+    makeEditProp: function(res, prop, values, formId) {
       var p = prop.shortName;
       var val = values[p];
       var propTemplate = Templates.getPropTemplate(prop, true, val);
       if (typeof val === 'undefined')
         val = {};
-      else if (values[p + '.displayName'])
-        val = {value: val, displayName: values[p + '.displayName']};
-      else
-        val = {value: val};
+      else {
+        val = U.getTypedValue(res, p, val);
+        if (values[p + '.displayName'])
+          val = {value: val, displayName: values[p + '.displayName']};
+        else
+          val = {value: val};
+      }
+      
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
@@ -1308,7 +1313,9 @@ define([
       var p = U.primitiveTypes;
       var prop = vocModel.properties[prop];
       var range = prop.range || prop.facet;
-      if (p.dates.indexOf(range) != -1)
+      if (range === 'boolean')
+        return typeof value === 'boolean' ? value : value === 'true' || value === 'Yes' || value === '1' || value === 1; 
+      else if (p.dates.indexOf(range) != -1)
         return U.parseDate(value);
       else if (p.floats.indexOf(range) != -1)
         return parseFloat(value);
@@ -1499,7 +1506,11 @@ define([
         return true;
       
       var primitives = U.primitiveTypes;
-      if (_.contains(primitives.ints, range)) {
+      var valType = typeof val; 
+      if (range === 'boolean') {
+        return valType === 'boolean' ? !val : valType === 'string' ? ['true', 'Yes', '1'].indexOf(val) === -1 : valType === 'number' ? val === 0 : !val;
+      }
+      else if (_.contains(primitives.ints, range)) {
         try {
           return !!parseInt(val);
         } catch (err) {
@@ -1514,12 +1525,7 @@ define([
         }
       }
       
-      switch(range) {
-        case 'boolean':
-          return val === 'false' || val === false;
-        default:
-          return val === 'null' || !val; // val could be an empty string
-      }
+      return val === 'null' || !val; // val could be an empty string
     },
     
 

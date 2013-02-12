@@ -488,7 +488,7 @@ if (typeof JSON !== 'object') {
   
                     
 requirejs.exec = function(text) {
-  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
+//  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
   var nav = Lablz.navigator;
   if (nav.isChrome || nav.isSafari)
@@ -990,7 +990,7 @@ define('cache', function() {
     },
   
     trace: {
-      ON: true,
+      ON: G.minify === false,
       DEFAULT: {on: false},
       types : {
         error: {
