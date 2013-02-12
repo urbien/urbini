@@ -10,7 +10,7 @@ define('app', [
   'vocManager',
   'resourceManager',
   'router'
-], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {  
+], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
   Backbone.View.prototype.close = function() {
     this.remove();
     this.unbind();

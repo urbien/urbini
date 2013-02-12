@@ -490,7 +490,7 @@ define([
           }
           
           var res = new toVocModel();
-          res.save(result);
+          res.save(result, {'$returnMade': false});
         }, 
         error: function() {
           debugger;
