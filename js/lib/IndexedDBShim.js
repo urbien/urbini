@@ -856,15 +856,15 @@ var idbModules = window.idbModules = {};
         else 
             if (typeof mode === "string") {
                 switch (mode) {
-                    case "readonly":
-                        this.mode = READ_WRITE;
-                        break;
-                    case "readwrite":
-                        this.mode = READ;
-                        break;
-                    default:
-                        this.mode = READ;
-                        break;
+                  case "readwrite":
+                    this.mode = READ_WRITE;
+                    break;
+                  case "readonly":
+                    this.mode = READ;
+                    break;
+                  default:
+                    this.mode = READ;
+                    break;
                 }
             }
         

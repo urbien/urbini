@@ -1591,13 +1591,13 @@ require(['globals'], function(G) {
     require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
       G.finishedTask("loading modules");
       G.browser = $.browser;
+      G.startedTask('loading post-bundle');
+      G.loadBundle(G.bundles.post, function() {
+        G.finishedTask('loading post-bundle');
+      }, true);
       App.initialize();
-      setTimeout(function() {
-        G.startedTask('loading post-bundle');
-        G.loadBundle(G.bundles.post, function() {
-          G.finishedTask('loading post-bundle');
-        }, true);
-      }, 100);
+//      setTimeout(function() {
+//      }, 100);
     });
   });
 })

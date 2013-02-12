@@ -2,7 +2,6 @@
   // Set up Mapper appropriately for the environment.
   if (typeof define === 'function' && define.amd) {
     // AMD
-    'use strict';
 define(['jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function($, L) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Mapper.
@@ -14,7 +13,7 @@ define(['jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.
     }
     
     if (!window.$) {
-      var s = document.createElement('script');
+       var s = document.createElement('script');
       s.setAttribute('src', 'js/lib/jquery.min.js');
       s.setAttribute('type', 'text/javascript');
       document.getElementsByTagName('head')[0].appendChild(s);
