@@ -424,7 +424,7 @@ var idbModules = window.idbModules = {};
                           if (i < data.rows.length) {
                               try {
                                   var value = idbModules.Sca.decode(data.rows.item(i).value);
-                                  var indexKey = eval("value['" + keyPath + "']");
+                                  var indexKey = value[keyPath];
                                   tx.executeSql("UPDATE " + idbModules.util.quote(me.__idbObjectStore.name) + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
                                       initIndexForRow(i + 1);
                                   }, error);
@@ -627,7 +627,7 @@ var idbModules = window.idbModules = {};
                 }
                 if (value) {
                     try {
-                        var primaryKey = eval("value['" + props.keyPath + "']");
+                        var primaryKey = value[props.keyPath];
                         if (!primaryKey) {
                             if (props.autoInc === "true") {
                                 getNextAutoIncKey();
@@ -673,7 +673,7 @@ var idbModules = window.idbModules = {};
         var indexes = JSON.parse(this.__storeProps.indexList);
         for (var key in indexes) {
             try {
-                paramMap[indexes[key].columnName] = idbModules.Key.encode(eval("value['" + indexes[key].keyPath + "']"));
+                paramMap[indexes[key].columnName] = idbModules.Key.encode(value[indexes[key].keyPath]);
             } 
             catch (e) {
                 error(e);

@@ -1,9 +1,11 @@
 //'use strict';
 define([
   'globals',
+  'underscore',
+  'backbone',
   'templates',
   'jquery'
-], function(G, Templates, $) {
+], function(G, _, Backbone, Templates, $) {
   var ArrayProto = Array.prototype;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;

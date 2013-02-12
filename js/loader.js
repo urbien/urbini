@@ -560,7 +560,7 @@ define('globals', function() {
       case '.css':
 //        if (G.minify !== true)
         text += '\r\n/*//@ sourceURL=' + url + '*/';
-        text = G.addMinFlag(text);
+//        text = G.addMinFlag(text);
         G.appendCSS(text);
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
@@ -581,19 +581,25 @@ define('globals', function() {
           text += '\n//@ sourceURL=' + url;
           if (G.navigator.isIE) text += '*/\n';
 //        }
-        text = G.addMinFlag(text);
+//        text = G.addMinFlag(text);
         requirejs.exec(text);
         context.completeLoad(name); // JQM hack
         break;
     }        
   };
 
+  var orgRJSLoad = requirejs.load;
   requirejs.load = function (context, name, url, config) {
     var completeLoad = context.completeLoad,
         url = G.getCanonicalPath(url),
         config = config || (context && context.config) || {},
         cached;
 
+    if (name === 'jqueryMobile') {
+      orgRJSLoad.apply(this, arguments);
+      return;
+    }
+        
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
         
@@ -615,32 +621,32 @@ define('globals', function() {
     var mCache = G.modules;
     var inMemory = mCache && mCache[url];
     var loadedCached = false;
-    if (inMemory || hasLocalStorage) {
+    if (inMemory) {// || hasLocalStorage) {
       var loadSource = inMemory ? 'memory' : 'LS';
-      if (inMemory) {
+//      if (inMemory) {
         cached = mCache[url];
-      }
-      else if (hasLocalStorage) { // in build context, this will be false, too
-        try {
-          G.log(G.TAG, 'cache', "loading from localStorage: " + url);
-          cached = G.localStorage.get(url);
-          cached = cached && JSON.parse(cached);
-        } catch (err) {
-          G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-          G.localStorage.del(url);
-          cached = null;
-        }
-        
-        if (cached) {
-          var timestamp = G.files[name];
-          if (timestamp && timestamp <= cached.modified)
-            cached = cached.text;
-          else {
-            G.localStorage.del(url);
-            cached = null;
-          }
-        }
-      }
+//      }
+//      else if (hasLocalStorage) { // in build context, this will be false, too
+//        try {
+//          G.log(G.TAG, 'cache', "loading from localStorage: " + url);
+//          cached = G.localStorage.get(url);
+//          cached = cached && JSON.parse(cached);
+//        } catch (err) {
+//          G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
+//          G.localStorage.del(url);
+//          cached = null;
+//        }
+//        
+//        if (cached) {
+//          var timestamp = G.files[name];
+//          if (timestamp && timestamp <= cached.modified)
+//            cached = cached.text;
+//          else {
+//            G.localStorage.del(url);
+//            cached = null;
+//          }
+//        }
+//      }
 
       var loadedCached = cached;
       if (loadedCached) {            
@@ -831,15 +837,21 @@ define('cache', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    isMinifiable: function(url) {
+      return /\.(js|css)$/.test(url);
+    },
+    isMinified: function(url, text) {
+      if (!G.isMinifiable(url))
+        return false;
+      
+//      if (/\.min\.(js|css)$/.test(url))
+//        return true;
+//      else
+        return text.lastIndexOf('/*min*/') === text.length - 7;
+    },
+
     storedModelTypes: [],
     minifyByDefault: true,
-    FLAG_MIN: '/*//min*/',
-    FLAG_FULL: '/*//full*/',
-    addMinFlag: function(text) {
-//      return (G.minify ? G.FLAG_MIN : G.FLAG_FULL) + text;
-//      return text + (G.minify ? G.FLAG_MIN : G.FLAG_FULL);
-      return text;
-    },
     webWorkers: {},
     customHandlers: {},
     defaults: {
@@ -1202,9 +1214,7 @@ define('cache', function() {
         return modules;
       
       var minify = G.minify,
-          def = G.minifyByDefault,
-          mini = G.FLAG_MINI,
-          full = G.FLAG_full;
+          def = G.minifyByDefault;
 
       var pruned = [];
       for (var i = 0; i < modules.length; i++) {
@@ -1229,13 +1239,19 @@ define('cache', function() {
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
             var text = saved.text;
-//            if ((minify===true || typeof minify ==='undefined' && def && text.slice(text.length - mini.length) !== mini) || (minify===false || typeof minify ==='undefined' && !def && text.slice(text - full.length) !== full)) {
-//              // wrong minification mode on this file
-//            }
-//            else
-              G.modules[url] = text;
+            var skip = false;
+            if (G.isMinifiable(url)) {
+              if (((minify===true || (typeof minify ==='undefined' && def)) && !G.isMinified(url, text)) || 
+                  ((minify===false || (typeof minify ==='undefined' && !def)) && G.isMinified(url, text))) {
+                // wrong minification mode on this file
+                skip = true;
+              }
+            }
             
-            continue;
+            if (!skip) {
+              G.modules[url] = text;
+              continue;
+            }
           }
           else {
             if (!info)
@@ -1464,7 +1480,7 @@ define('cache', function() {
         G.setCookie(mCookie, p[1], 100000);
         if (p[1] != minified) {
           minified = p[1];
-          G.localStorage.nukeScripts();
+//          G.localStorage.nukeScripts();
         }
         
         break;

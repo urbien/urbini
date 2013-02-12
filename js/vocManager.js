@@ -97,7 +97,9 @@ define([
         return;
       }
 
-      var infos = Voc.getModelInfo(models);
+//      var infos = Voc.getModelInfo(models);
+      // TODO: undo HACK
+      var infos = models;
       var modelsCsv = JSON.stringify(infos);
       G.startedTask("ajax models");
 //      var useWorker = G.hasWebWorkers && !options.sync;

@@ -1,7 +1,8 @@
 //'use strict';
 define([
-  'globals'
-], function(G) {
+  'globals',
+  'backbone'
+], function(G, Backbone) {
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',
