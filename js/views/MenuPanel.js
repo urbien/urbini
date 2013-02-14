@@ -109,7 +109,12 @@ define([
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
       
-      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?" + $.param(params) }));        
+      var hash = window.location.hash;
+      hash = hash && hash.slice(1);
+      
+      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
+      if (!hash  ||  hash != url)
+        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + url }));        
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
@@ -126,11 +131,13 @@ define([
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
 
         pageUrl = 'view/profile';
-        var title = 'Profile';
-        U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
-        self.tabs[title] = pageUrl;
-
-        U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        if (!hash  ||  hash != pageUrl) {
+          var title = 'Profile';
+          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
+          self.tabs[title] = pageUrl;
+  
+          U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        }
       }
       U.addToFrag(frag, this.menuItemTemplate({title: "Home", pageUrl: G.serverName + '/' + G.pageRoot, icon: 'home'}));
 
