@@ -9,11 +9,12 @@ define([
   'vocManager',
   'views/HomePage', 
   'views/ListPage', 
-  'views/ViewPage'
-//  'views/EditPage' 
-], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
+  'views/ViewPage',
+  'views/EditView', 
+  'views/EditPage' 
+], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage, EditView, EditPage) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var MenuPage, EditPage, EditView;
+  var MenuPage; //, EditPage, EditView;
   var Router = Backbone.Router.extend({
     routes:{
       ""                : "home",
@@ -222,7 +223,7 @@ define([
     
     make: function(path) {
       if (!EditPage)
-        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
+        return this.loadViews(['EditView', 'EditPage'], this.make, arguments);
       
       var parts = path.split('?');
       var type = decodeURIComponent(parts[0]);
