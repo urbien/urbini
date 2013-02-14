@@ -120,7 +120,7 @@ define([
             var prop = vocModel.properties[p[0]];
             if (!prop  ||  !prop.containerMember) 
               continue;
-            var type = U.getLongUri(prop.range);
+            var type = U.getLongUri1(prop.range);
             var cM = G.typeToModel[type];
             if (!cM) 
               continue;
@@ -128,7 +128,7 @@ define([
             var bl = [];
             for (var p in blProps) {
               var b = blProps[p];
-              if (!b.readOnly  &&  U.getLongUri(b.range) == vocModel.type)
+              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
                 bl.push(b);
             }
             if (bl.length > 0)

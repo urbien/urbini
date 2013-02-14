@@ -79,8 +79,8 @@ define([
       var params = U.getQueryParams(href);
       var recipeShoppingList = new G.shortNameToModel.RecipeShoppingList();
       var props = {};
-      var shoppingList = props[params.backLink] = U.getLongUri(decodeURIComponent(params.on));
-      var recipe = props.recipe = U.getLongUri(this.resource.get('recipe'));
+      var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
+      var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
           self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
@@ -144,10 +144,10 @@ define([
           var isBContact;
           if (urbModel) {
             var idx = meta[a].range.lastIndexOf('/');
-            var aModel = G.typeToModel[U.getLongUri(meta[a].range)];
+            var aModel = G.typeToModel[U.getLongUri1(meta[a].range)];
             isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien', G.typeToModel);
             idx = meta[b].range.lastIndexOf('/');
-            var bModel = G.typeToModel[U.getLongUri(meta[b].range)];
+            var bModel = G.typeToModel[U.getLongUri1(meta[b].range)];
             isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien', G.typeToModel);
           }
           if (a  &&  qidx == -1) 
@@ -397,7 +397,7 @@ define([
 //        if (comments.length > 0) {
 //          var pMeta = meta[comments[0]];
 //          
-//          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//          tmpl_data.v_showCommentsFor = U.encode(U.getLongUri1(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
 //        }
 //      }
 //      if (U.isA(c, 'Votable')) {
@@ -406,13 +406,13 @@ define([
 //          votes = U.getCloneOf(meta, 'Votable.likes');
 //        if (votes.length > 0) {
 //          var pMeta = meta[votes[0]];
-//          tmpl_data.v_showVotesFor = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//          tmpl_data.v_showVotesFor = U.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
 //        }
 //      }  
 //      var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
 //      if (nabs.length > 0) {
 //        var pMeta = meta[nabs[0]];
-//        var uri = U.encode(U.getLongUri(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+//        var uri = U.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
 //        tmpl_data.v_showRenabFor = uri;
 //      }
       

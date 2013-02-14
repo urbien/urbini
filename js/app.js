@@ -57,8 +57,8 @@ define('app', [
       };
       
       Templates.loadTemplates();
-      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
-      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
+      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
+      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
       App.setupWorkers();
       Voc.checkUser();
       Voc.loadStoredModels();

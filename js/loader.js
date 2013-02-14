@@ -490,13 +490,19 @@ if (typeof JSON !== 'object') {
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval.call({}, text);  
-  else // Safari
-    return window.eval(text);
+  if (!G.evalStart)
+    G.evalStart = new Date().getTime();
+  try {
+    var nav = Lablz.navigator;
+    if (nav.isChrome || nav.isSafari)
+      Lablz.inject(text);
+    else if (nav.isFirefox)
+      return window.eval.call({}, text);  
+    else // Safari
+      return window.eval(text);
+  } finally {
+    G.evalEnd = new Date().getTime();
+  }
 //  return eval(text);
   
 //  return Lablz.inject(text);
@@ -585,7 +591,9 @@ define('globals', function() {
         requirejs.exec(text);
         context.completeLoad(name); // JQM hack
         break;
-    }        
+    }
+    
+    delete G.modules[url];
   };
 
   var orgRJSLoad = requirejs.load;
@@ -668,8 +676,9 @@ define('globals', function() {
     
     /// use 'sendXhr' instead of 'req' so we can store to localStorage
     G.loadBundle(name, function() {
-      if (G.modules[url])
+      if (G.modules[url]) {
         loadModule(G.modules[url], url, context, name);
+      }
       else
         G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
     });        

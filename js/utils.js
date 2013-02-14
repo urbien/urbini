@@ -123,7 +123,10 @@ define([
     extendAnnotations: function(subProp, superProp, superModel) {
       superProp = U.filterObj(superProp, function(name, val) {return !val.notinheritable});
       for (var annotation in subProp) {
-        var oldAnn = superProp[annotation];
+        if (annotation === 'primary')
+          continue;
+        
+        var oldAnn = superProp[annotation];        
         var newAnn = subProp[annotation];
         if (_.isUndefined(oldAnn))
           superProp[annotation] = newAnn;
@@ -153,7 +156,7 @@ define([
         }
       }
       else if (subPropertyOf && vocModel) // This only works if we have all superclass props on subclass
-        return U.isCloneOf(vocModel[U.getLongUri(subPropertyOf)], slice.call(arguments, 1));
+        return U.isCloneOf(vocModel[U.getLongUri1(subPropertyOf)], slice.call(arguments, 1));
       
       return false;
     },
@@ -187,6 +190,9 @@ define([
       return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
     
+    isResourceProp: function(prop) {
+      return prop.range.indexOf('/') != -1;
+    },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
 //      meta = meta || this.model.properties;
@@ -208,13 +214,14 @@ define([
     },
     
     getPrimaryKeys: function(model) {
-      var keys = [];
+      var keys = {};
       for (var p in model.myProperties) {
-        if (_.has(model.myProperties[p], 'primary'))
-          keys.push(p);
+        var prop = model.myProperties[p];
+        if (_.has(prop, 'primary'))
+          keys[prop.pkIndex] = p;
       }
       
-      return keys;
+      return _.values(keys);
     },
     
     getCloneOf: function(model) {
@@ -253,18 +260,27 @@ define([
       return _.size(results) === 1 ? results[U.getFirstProperty(results)] : results;
     },
     
+    getLongUri1: function(uri, vocModel) {
+      for (var pattern in U.uriPatternMap) {
+        var fn = U.uriPatternMap[pattern];
+        var match = uri.match(fn.regExp);
+        if (match && match.length) {
+          return fn(uri, match, vocModel);
+          break;
+        }
+      }
+      
+      throw new Error("couldn't parse uri: " + uri);
+    },
+    
     getLongUri: function(uri, hint) {
       var type, pk, snm;
       if (hint) {
         type = hint.type;
         pk = hint.primaryKeys;
-        snm = hint.shortNameToModel;
       }
       else
         snm = G.shortNameToModel;
-      
-//      var pattern1 = \Qhttp:\/\/\E?(.*)\Q\/sql\/\E?();
-//      uri.match(\Qhttp:\/\/\E?([^/]+))
       
       var serverName = G.serverName;
       var sqlUri = G.sqlUri;
@@ -288,7 +304,7 @@ define([
         if (!type)
           return null;
         
-        return U.getLongUri(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
+        return U.getLongUri1(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
       }
       
       if (uri.indexOf('sql') == 0) {
@@ -322,7 +338,7 @@ define([
           }      
         }
         
-        return U.getLongUri(longUri, {type: type});
+        return U.getLongUri1(longUri, {type: type});
       }
       else {
         // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?... or wf/Urbien/.....
@@ -1171,7 +1187,7 @@ define([
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = G.typeToEnum[U.getLongUri(facet)];
+        var eCl = G.typeToEnum[U.getLongUri1(facet)];
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
@@ -1238,7 +1254,7 @@ define([
 //    getMobileUrl: function(url) {
 //      var orgParams = U.getQueryParams(url);
 //      if (url.startsWith('v.html'))
-//        return 'view/' + U.encode(U.getLongUri(orgParams.uri));
+//        return 'view/' + U.encode(U.getLongUri1(orgParams.uri));
 //      
 //      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
 //      var type = orgParams.type;
@@ -1488,7 +1504,7 @@ define([
       var range = prop.range || '';
       if (typeof val !== 'object') {
         if (range.indexOf('/') != -1 && /^[a-z]+\//.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
-          return U.getLongUri(val);
+          return U.getLongUri1(val);
         
         return val;
       }      
@@ -1497,7 +1513,7 @@ define([
       if (value) {
         if (range.indexOf("/") === -1)
           return value;
-        return typeof value !== 'string' ? value : value.indexOf('/') === -1 ? value : U.getLongUri(value);
+        return typeof value !== 'string' ? value : value.indexOf('/') === -1 ? value : U.getLongUri1(value);
       }
       
       return val;
@@ -1697,5 +1713,65 @@ define([
     slice: slice
   };
 
+  var patterns = U.uriPatternMap = {};
+  // Tree/32000
+  patterns[/^[A-Z]+([^\?]*)$/] = function(uri, matches, vocModel) {
+    if (!vocModel)
+      throw new Error("Not enough information to create long uri");
+    
+    var parts = uri.split('/');
+    var type = vocModel.type;
+    var primaryKeys = U.getPrimaryKeys(vocModel);
+    if (primaryKeys.length !== parts.length + 1)
+      throw new Error("Incorrect number of primary keys in short uri: " + uri);
+    
+    var params = {};
+    for (var i = 0; i < primaryKeys.length; i++) {
+      params[primaryKeys[i]] = parts[i+1];
+    }
+    
+    return G.sqlUrl + "/" + type.slice(7) + '?' + $.param(params);
+  };
+  // Tree?id=32000
+  patterns[/^[A-Z]+\?.*$/] = function(uri, matches, vocModel) {
+    if (!vocModel)
+      throw new Error("Not enough information to create long uri");
+    
+    return G.sqlUrl + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
+  };
+  // wf/.... attachment url
+  patterns[/^wf\//] =  function(uri, matches, vocModel) {
+    return G.serverName + '/' + uri;
+  };
+  // sql/...?...
+  patterns[/^sql\/.*/] = function(uri, matches, vocModel) {
+    return G.serverName + '/' + uri;
+  };
+  // http://.../voc/... with query string or without
+  patterns[/^http:\/\/([^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
+    var sqlIdx = matches[1].indexOf(G.sqlUri);
+    if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
+      if (matches[2]) // has query string
+        return G.sqlUrl + '/' + uri.slice(7);
+      else
+        return uri;
+    }
+    else { // has sql
+      return uri;
+    }
+  };
+  // commerce/urbien/Tree?...
+  patterns[/^([a-z]+[^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
+    if (matches[2])
+      return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+    else
+      return G.defaultVocPath + uri;
+  };
+  
+  for (var pattern in patterns) {
+    var fn = patterns[pattern];
+    fn.regExp = new RegExp(pattern.slice(1, pattern.length - 1));
+  }
+  
   return (Lablz.U = U);
 });

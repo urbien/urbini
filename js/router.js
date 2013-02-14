@@ -330,7 +330,7 @@ define([
         return;
       }
       
-      uri = U.getLongUri(decodeURIComponent(uri));
+      uri = U.getLongUri1(decodeURIComponent(uri));
       var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;

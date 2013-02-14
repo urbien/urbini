@@ -110,7 +110,7 @@ define([
 //        var tmpC = [];
 //        for (var i = 0; i < respModels.length; i++) {
 //          var m = respModels[i];
-//          var type = U.getLongUri(m.s.type);
+//          var type = U.getLongUri1(m.s.type);
 //          if (models.indexOf(type) != -1)
 //            tmpC.push(type);
 //        }
@@ -121,12 +121,12 @@ define([
 //        
 //        return !!tmpC.length;
         models = _.filter(respModels, function(m) {
-          var type = U.getLongUri(m.s.type);
+          var type = U.getLongUri1(m.s.type);
           return models.indexOf(type) != -1;
         });
         
         if (changedAndNew)
-          Voc.changedModels = _.map(models, function(m) {return U.getLongUri(m.s.type)});
+          Voc.changedModels = _.map(models, function(m) {return U.getLongUri1(m.s.type)});
         
         return models.length;
 //        Voc.newModels = tmpN;
@@ -164,7 +164,7 @@ define([
           var more = data.linkedModelsMetadata;
           if (more) {
             G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
-              m.type = U.getLongUri(m.type);
+              m.type = U.getLongUri1(m.type);
               return m;
             }));
           }
@@ -310,7 +310,7 @@ define([
 //      G.linkedModelsMetadataMap = {};
       var l = G.linkedModelsMetadata;
       _.each(l, function(m) {
-        m.type = U.getLongUri(m.type);
+        m.type = U.getLongUri1(m.type);
       });
       
       for (var i = 0; i < l.length; i++) {
@@ -815,7 +815,7 @@ define([
           continue;
         
         G.modelsMetadataMap[m.type] = m;
-        m.type = U.getLongUri(m.type);
+        m.type = U.getLongUri1(m.type);
         U.pushUniq(G.modelsMetadata, m);
       }
       
@@ -846,9 +846,9 @@ define([
       for (var i = 0; i < models.length; i++) {
         var m = models[i];
         if (typeof m === 'string')
-          modelsMap[m] = models[i] = {type: U.getLongUri(m)};
+          modelsMap[m] = models[i] = {type: U.getLongUri1(m)};
         else {
-          var type = m.type = U.getLongUri(m.type);
+          var type = m.type = U.getLongUri1(m.type);
           modelsMap[type] = models[i] = m;
         }
       }
