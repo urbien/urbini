@@ -148,8 +148,10 @@ define([
             liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard', parentView: this});
           else if (isComment)
             liView = new CommentListItemView({model:res, parentView: this});
-          else
-            liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this}) : new ResourceListItemView({model:res, parentView: this});
+          else {
+            var swatch = res.get('swatch') || G.currentApp['theme.swatch'];
+            liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this, swatch: swatch}) : new ResourceListItemView({model:res, parentView: this, swatch: swatch});
+          }
           if (nextPage)  
             this.$el.append(liView.render().el);
           else {

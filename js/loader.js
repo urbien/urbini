@@ -492,12 +492,13 @@ requirejs.exec = function(text) {
   // Script Injection
   if (!G.evalStart)
     G.evalStart = new Date().getTime();
+  
   try {
     var nav = Lablz.navigator;
     if (nav.isChrome || nav.isSafari)
       Lablz.inject(text);
     else if (nav.isFirefox)
-      return window.eval.call({}, text);  
+      return window.eval(text);  
     else // Safari
       return window.eval(text);
   } finally {

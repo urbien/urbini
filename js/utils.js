@@ -1198,6 +1198,9 @@ define([
       }
       
       val.value = val.value || '';
+      if (prop.range == 'resource') 
+        val.uri = val.value;
+      
       if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
@@ -1211,6 +1214,8 @@ define([
         else if (facet.toLowerCase().endsWith('phone'))
           val.type = 'tel';
       }
+      if (prop.comment)
+        val.comment = prop.comment;
       
 //      var classes = [];
       var rules = prop.multiValue ? {} : {"data-formEl": true};
@@ -1224,8 +1229,9 @@ define([
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       _.extend(val, {U: U, G: G});
-      
-      return {value: _.template(Templates.get(propTemplate))(val), comment: prop.comment, U: U, G: G};
+      if (prop.comment)
+        val.comment = prop.comment;
+      return {value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
     },
     
     reduceObj: function(obj, func, memo, context) {

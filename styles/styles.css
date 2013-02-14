@@ -6,7 +6,8 @@
 
 span.comment {
   color: #888;
-  font-weight: normal;  
+  font-weight: normal;
+  font-size: 12px;  
 }
 
 label.req::before {
@@ -31,6 +32,7 @@ label.req::before {
   top: 5px;
 }
 
+.ui-field-contain div.ui-slider, .ui-field-contain div.ui-slider.ui-mini { margin:0.3em 0 }
 .map {
   width: 100%;
   height: 500px;
@@ -89,10 +91,12 @@ label.error {
 
 @media screen and (orientation: portrait) {
   label.error { margin-left: 0; display: block; }
+  .nab .anab .galleryItem_css3 img { min-width: 310px; margin-left: -20px;margin-top: -11px;} 
 }
 
 @media screen and (orientation: landscape) {
   label.error { display: inline-block; margin-left: 23%; }
+/*  #sidebarDiv {padding-left: 7px;} */ 
 }
 
 em { color: red; font-weight: bold; padding-right: .25em; }

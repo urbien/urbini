@@ -418,10 +418,17 @@
 <!-- script type="text/template" id="masonry-list-item">
   <div class="anab">
     <div class="galleryItem_css3">
+      <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+      {{ if (typeof creatorThumb != 'undefined') { }}
+         <img src="{{= creatorThumb }}" width="80" />
+      {{ } }}
+      </a>
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
          {{ if (typeof imgWidth != 'undefined') { }}
-           style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+           {{ if (imgWidth < 300) { }}
+             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+           {{ } }}
          {{ } }}
          ></img>
       </a>
@@ -450,6 +457,11 @@
 
 <script type="text/template" id="masonry-list-item">
   <div class="anab">
+      <!--a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+      {{ if (typeof creatorThumb != 'undefined') { }}
+         <img src="{{= creatorThumb }}" height="60" /><div style="display:inline;verical-align: top;">{{= creatorDisplayName }}</div>
+      {{ } }}
+      </a -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
@@ -573,7 +585,7 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="c">{{= name }}</label>
-    <{{= isInput ? 'input' : 'textarea rows="5" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
     <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
@@ -586,13 +598,23 @@
 </script>
 
 <script type="text/template" id="emailPET">
-<label for="{{= id }}">{{= name }}</label> 
-<input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement' }}" {{= rules }} data-mini="true" />
+  <label for="{{= id }}">{{= name }}</label> 
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement' }}" {{= rules }} data-mini="true" />
+</script>
+
+<script type="text/template" id="hiddenPET">
+  <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement' }}" {{= rules }} />
 </script>
 
 <script type="text/template" id="resourcePET">
-  <!--label for="{{= id }}" class="select">{{= name }}</label-->
-  <a target="#" name="{{= shortName }}" class="resourceProp" {{= rules }} >{{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? name : value) : displayName }}</a>
+  <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
+    <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
+<!--    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? name : value) : displayName }} -->
+    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
+
+    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+  </a>
+<!--  {{= typeof uri == 'undefined' ? '' : '<input type="hidden" name="' + shortName + '" value="' + uri +'"/>' }} -->
 </script>
 
 <script type="text/template" id="multivaluePET">
@@ -607,6 +629,7 @@
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
+  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }}
 </script>
 
 <script type="text/template" id="datePET">

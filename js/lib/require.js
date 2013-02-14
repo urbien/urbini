@@ -7,7 +7,6 @@
 //problems with requirejs.exec()/transpiler plugins that may not be strict.
 /*jslint regexp: true, nomen: true, sloppy: true */
 /*global window, navigator, document, importScripts, jQuery, setTimeout, opera */
-
 var requirejs, require, define;
 (function (global) {
     var req, s, head, baseElement, dataMain, src,

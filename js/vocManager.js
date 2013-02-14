@@ -255,7 +255,7 @@ define([
       return _.filter(_.map(models, function(m) {
         if (_.contains(G.storedModelTypes, m)) {
           var info = G.modelsMetadataMap[m];
-          if (info && info.stored || (info = G.oldModelsMetadataMap[m]))
+          if (info && info.stored) // || (info = G.oldModelsMetadataMap[m]))
             return {uri: info.type, lastModified: info.lastModified};
         }
         
@@ -932,6 +932,9 @@ define([
           return;
         }
         
+        var meta = G.modelsMetadataMap[model.type];
+        if (meta)
+          delete meta.stored;
         U.pushUniq(stale, model.type);
         return;
       });
