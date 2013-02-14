@@ -121,7 +121,7 @@
 </script>
 
 <script type="text/template" id="moneyPT">
-  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? 0 : value.value) }}</span>
+  <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? (typeof value === 'number' ? value : 0) : value.value) }}</span>
 </script>
 
 <!--script type="text/template" id="durationPT">

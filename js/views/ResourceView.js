@@ -39,22 +39,8 @@ define([
         if (collection != res.collection || !_.contains(modified, res.get('_uri')))
           return this;
       }
-  
-      if (this.$el.hasClass('ui-listview'))
-        this.$el.listview('refresh');
-      else
-        this.$el.trigger('create');
-      
-//      if (this.$el.hasClass('ui-listview')) {
-//        var lis = this.$('li').detach();
-//        this.render();
-//        this.$el.trigger('create');
-//        this.$el.listview('refresh');
-//      }
-//      else {
-//        this.$el.trigger('create');
-//        this.$el.listview().listview('refresh');
-//      }
+
+      this.render();
     },
 //    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
@@ -178,7 +164,10 @@ define([
   //    this.$el.html(html);
       this.rendered = true;
       this.$el.html(frag);      
-      this.$el.trigger('create');
+      this.$el.trigger('create');      
+      if (this.$el.hasClass('ui-listview'))
+        this.$el.listview('refresh');
+
       return this;
     }
   }, {

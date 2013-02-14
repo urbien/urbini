@@ -501,17 +501,17 @@ define([
         return this;
       } finally {
         this.checkErr();
-        if (this.removeFromView) {
-          this.previousView && this.previousView.remove();
-          var cache = this.previousViewsCache;
-          if (cache) {
-            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
-            if (_.size(c))
-              delete cache[U.getFirstProperty(cache)];
-          }
-          
-          delete this.previousView;
-        }
+//        if (this.removeFromView) {
+//          this.previousView && this.previousView.close();
+//          var cache = this.previousViewsCache;
+//          if (cache) {
+//            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
+//            if (_.size(c))
+//              delete cache[U.getFirstProperty(cache)];
+//          }
+//          
+//          this.previousView = null;
+//        }
           
       }
     },

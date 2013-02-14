@@ -249,7 +249,7 @@ define([
           json._type = self.vocModel.type;
           Events.trigger(method + self.vocModel.type, json);
           var sup = self.vocModel;
-          while (sup = sup.superClass) {
+          while (sup = sup.superClass && sup.shortName != 'Resource') {
             Events.trigger(method + sup.type, self);
           }
         }

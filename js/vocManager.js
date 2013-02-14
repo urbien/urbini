@@ -7,10 +7,6 @@ define([
   'models/Resource', 
   'collections/ResourceList' 
 ], function(G, U, Errors, Events, Resource, ResourceList) {
-  Backbone.Model.prototype._super = function(funcName){
-    return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
-  };
-
   // from http://www.bennadel.com/blog/1929-Using-The-WITH-Keyword-With-Javascript-s-Function-Constructor.htm
   var FunctionProxy = function(sourceCode) {
     

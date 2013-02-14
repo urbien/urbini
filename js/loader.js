@@ -490,8 +490,8 @@ if (typeof JSON !== 'object') {
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
-  if (!G.evalStart)
-    G.evalStart = new Date().getTime();
+  if (!Lablz.evalStart)
+    Lablz.evalStart = new Date().getTime();
   
   try {
     var nav = Lablz.navigator;
@@ -502,7 +502,7 @@ requirejs.exec = function(text) {
     else // Safari
       return window.eval(text);
   } finally {
-    G.evalEnd = new Date().getTime();
+    Lablz.evalEnd = new Date().getTime();
   }
 //  return eval(text);
   
@@ -999,7 +999,7 @@ define('cache', function() {
     },
   
     trace: {
-      ON: G.minify === false,
+      ON: true,
       DEFAULT: {on: false},
       types : {
         error: {
@@ -1601,6 +1601,7 @@ require(['globals'], function(G) {
     require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
       G.finishedTask("loading modules");
       G.browser = $.browser;
+      G.trace.ON = G.minify === false;
       App.initialize();
       setTimeout(function() {
         G.startedTask('loading post-bundle');

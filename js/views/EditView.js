@@ -275,6 +275,19 @@ define([
     },
     redirect: function(res, options) {
       var vocModel = this.vocModel;
+      if (res.isA('Redirectable')) {
+        var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
+        if (!redirect.length)
+          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
+        if (redirect.length) {
+          redirect = res.get(redirect);
+          if (redirect) {
+            window.location.href = redirect;
+            return;
+          }
+        }
+      }
+      
       var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE';
       var redirectTo = vocModel.onCreateRedirectTo;
       // check if we came here by backlink
@@ -379,8 +392,10 @@ define([
     submit: function(e) {
       Events.stopEvent(e);
       var isEdit = (this.action === 'edit');
-      var res = this.resource; 
-      if (!isEdit && res.getUri()) {
+      var res = this.resource, 
+          uri = res.getUri();
+      
+      if (!isEdit && uri) {
         this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
@@ -440,6 +455,23 @@ define([
           }
           
           var msg = json.error.details;
+          // TODO: undo this hack
+          if (msg && msg.startsWith("You don't have enough funds")) {
+            Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
+            var successUrl = window.location.href; 
+            setTimeout(function() {
+              var params = {
+                toAccount: G.currentUser._uri,
+                transactionType: 'Deposit',
+                successUrl: successUrl
+//                successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
+              };
+              
+              window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
+            }, 2000);
+            return;
+          }
+          
           switch (code) {
             case 401:
               Events.trigger('req-login');
@@ -468,7 +500,8 @@ define([
               return;
             }
             
-            $('.formElement').attr('disabled', false);
+            self.getInputs().attr('disabled', false);
+            res.lastFetchOrigin = null;
             self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           },
           
@@ -519,19 +552,7 @@ define([
           return this;
       }
       
-      if (this.$el.hasClass('ui-listview'))
-        this.$el.listview('refresh');
-      else
-        this.$el.trigger('create');
-
-//      if (this.$ul.hasClass('ui-listview')) {
-//        var lis = this.$('li').detach();
-//        this.render();
-//        this.$ul.trigger('create');
-//        this.$ul.listview('refresh');
-//      }
-//      else
-//      this.$ul.listview().listview('refresh');
+      this.render();
     },
     click: function(e) {
       if (e.target.tagName === 'select') {
@@ -688,6 +709,9 @@ define([
         
       (this.$ul = this.$('#fieldsList')).html(frag);
       this.$ul.trigger('create');
+      if (this.$ul.hasClass('ui-listview'))
+        this.$ul.listview('refresh');
+
 //        this.$ul.listview('refresh');
       
       var doc = document;

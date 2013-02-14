@@ -12,7 +12,6 @@ DOMReady.add( function () {
     div.style.display = 'none';
   }
   d.getElementById('page').appendChild(div);
-  debugger;  
   /*setTimeout(function() {*/
     var s = d.createElement('script'); 
     s.type = 'text/javascript';

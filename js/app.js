@@ -11,8 +11,13 @@ define('app', [
   'resourceManager',
   'router'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
+  Backbone.Model.prototype._super = function(funcName){
+    return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
+  };
+
   Backbone.View.prototype.close = function() {
-    this.remove();
+    this.$el.detach();
+    this.stopListening();
     this.unbind();
     if (this.onClose){
       this.onClose();
