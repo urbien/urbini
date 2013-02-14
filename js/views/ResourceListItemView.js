@@ -64,11 +64,8 @@ define([
       var args = arguments;
       if (!G.shortNameToModel.RecipeShoppingList) {
         Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
-        var allGood = Voc.fetchModels(null, { 
-           success: function() {
-             self.recipeShoppingListHack.apply(self, args);
-           },
-           sync: true
+        Voc.fetchModels(null, {sync: true}).done(function() {
+          self.recipeShoppingListHack.apply(self, args);
         });
         
         return;

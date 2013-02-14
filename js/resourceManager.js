@@ -7,7 +7,7 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, U, Events, TaskQueue, Voc, idbq) {
-  var useWebSQL = typeof window.webkitIndexedDB !== 'undefined' && window.shimIndexedDB;
+  var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
@@ -31,8 +31,9 @@ define([
 //      Backbone.defaultSync.apply(this, arguments);
 //      return;
 //    }
-    if (method !== 'read') {
-      Backbone.defaultSync.apply(this, arguments);
+    if (method === 'patch') {
+//      Backbone.defaultSync.apply(this, arguments);
+      RM.saveItem(data);
       return;
     }
     
@@ -203,6 +204,16 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
+    createRefStore: function() {
+      return $.Deferred(function(defer) {
+        if (RM.db && RM.db.objectStoreNames.contains(RM.REF_STORE)) {
+          defer.resolve();
+        }
+        else {
+          RM.upgradeDB({toMake: [RM.REF_STORE]}).done(defer.resolve).fail(defer.reject);
+        }
+      }).promise();
+    },
     useUpgradeNeeded: useWebSQL || !!window.IDBOpenDBRequest,
 //    useUpgradeNeeded: !!window.IDBOpenDBRequest,
     defaultSync: function(method, data, options) {
@@ -416,7 +427,7 @@ define([
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-            debugger;
+//            debugger;
             G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
             dbPromise.reject();
             RM.restartDB();
@@ -465,6 +476,11 @@ define([
       
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
+        if (type === RM.REF_STORE) {
+          trans.createObjectStore(type, {keyPath: 'id', autoIncrement: true});
+          continue;
+        }
+        
         if (G.typeToEnum[type] || G.typeToInline[type])
           continue;
         
@@ -524,62 +540,191 @@ define([
     },
     
     addItems: function(items, classUri) {
-      if (!items || !items.length)
-        return;
-      
-      if (!RM.db) {
-        var args = arguments;
-        setTimeout(function() {RM.addItems.apply(RM, arguments)}, 1000);
-        return;
-      }
-      
-      if (!classUri) {
-        var first = items[0];
-        if (U.isModel(first))
-          classUri = first.vocModel.type;
-        else
-          classUri = U.getTypeUri(items[0].type._uri);
-      }
-      
-      if (!RM.storeExists(classUri)) {
-        RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
-          RM.addItems(items, classUri);
-        });
+      return $.Deferred(function(defer) {
+        if (!items || !items.length) {
+          defer.reject();
+          return;
+        }
         
-        return;
-      }
-      
-      RM.runTask(function() {
-        return $.Deferred(function(defer) {
-          var vocModel = G.typeToModel[classUri];
-          for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            item = U.isModel(item) ? item.toJSON() : item;
-            items[i] = U.flattenModelJson(item, vocModel);
-          }
-          
-          G.log(RM.TAG, "db", 'Starting addItems Transaction');
-          RM.$db.transaction(classUri, IDBTransaction.READ_WRITE).promise().done(function() {
-            G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
-            defer.resolve();
-          }).fail(function(err, e){
-            defer.reject();
-            G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
-          }).progress(function(transaction) {
-            var store = transaction.objectStore(classUri);
-            for (var i = 0; i < items.length; i++) {
-              store.put(items[i]);
-            }
+        if (!RM.db) {
+          var args = arguments;
+          setTimeout(function() {
+            RM.addItems.apply(RM, arguments).then(defer.resolve, defer.reject);
+          }, 1000);
+          return;
+        }
+        
+        if (!classUri) {
+          var first = items[0];
+          if (U.isModel(first))
+            classUri = first.vocModel.type;
+          else
+            classUri = U.getTypeUri(items[0].type._uri);
+        }
+        
+        if (!RM.storeExists(classUri)) {
+          RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
+            var addPromise = RM.addItems(items, classUri);
+            if (addPromise)
+              defer.resolve();
+            else
+              defer.reject();
           });
-        }).promise()
-      }, {name: "Add Items"});
+          
+          return defer.promise();
+        }
+        
+        RM.runTask(function() {
+          return $.Deferred(function(defer) {
+            var vocModel = G.typeToModel[classUri];
+            for (var i = 0; i < items.length; i++) {
+              var item = items[i];
+              item = U.isModel(item) ? item.toJSON() : item;
+              items[i] = U.flattenModelJson(item, vocModel);
+            }
+            
+            G.log(RM.TAG, "db", 'Starting addItems Transaction');
+            RM.$db.transaction(classUri, IDBTransaction.READ_WRITE).promise().done(function() {
+              G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
+              defer.resolve();
+            }).fail(function(err, e){
+              defer.reject();
+              G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
+            }).progress(function(transaction) {
+              var store = transaction.objectStore(classUri);
+              for (var i = 0; i < items.length; i++) {
+                store.put(items[i]);
+              }
+            });
+          }).promise()
+        }, {name: "Add Items"}).done(defer.resolve).fail(defer.reject);
+      }).promise();      
     }, //.async(100),
     
-    addItem: function(item, classUri) {
+    syncQueue: new TaskQueue("sync with server"),
+    REF_STORE: "ref",
+    sync: function() {
+      if (RM.syncQueue.hasMoreTasks()) // already have a sync queued up
+        return;
+
+      RM.syncQueue.runTask(function() {
+        return $.Deferred(function(defer) {
+          debugger;
+          RM.$db.objectStore(RM.REF_STORE, 0).getAll().done(function(results) {
+            debugger;
+            if (!results.length) {
+              defer.resolve();
+              return;
+            }
+            
+            var types = [];
+            for (var i = 0; i < results.length; i++) {
+              var r = results[i];
+              if (!r.dirty) // already did this one
+                continue;
+              
+              types.push(r._tempUri.slice(0, uri.indexOf('?')));
+            }
+            
+            Voc.fetchModels(types).done(function() {
+              debugger;
+              RM.syncResources(results).done(defer.resolve).fail(defer.reject);
+            }).fail(defer.reject);            
+          }).fail(function(error, event) {
+            debugger;
+            defer.reject(error, event);
+          });
+        });
+      }, {name: 'sync with server', sequential: true});
+    },
+    
+    syncResources: function(resources) {
+      return $.Deferred(function(defer) {
+        debugger;
+        var dfds = [];
+        var q = new TaskQueue('syncing some resources');
+        _.each(resources, function(resource, idx) {
+          var res = resource;
+          var uri = res._uri || res._tempUri;
+          var id = res.id;
+          var type = uri.slice(0, uri.indexOf('?'));
+          var vocModel = RM.typeToModel[type];
+          var props = vocModel.properties;
+          q.runTask(function() {
+            return $.Deferred(function(dfd) {
+              dfds.push(dfd);
+              RM.$db.objectStore(type).get(uri, 0).done(function(item) {
+                debugger;
+                if (_.any(item), function(val) { return typeof val === 'string' && val.contains('?__tempId__='); }) {
+                  dfd.resolve();
+                  return;
+                }
+                
+                var method = uri.contains('?__tempId__=') ? 'm/' : 'e/';
+                delete item._uri; // in case API objects to us sending it
+                item.$returnMade = true;
+                G.ajax({method: 'POST', type: 'JSON', url: G.apiUrl + method + type, data: item, sync: false}).done(function(data, status, xhr) {
+                  debugger;
+                  if (status === 'success') {
+                    res._uri = data._uri;
+                    RM.$db.objectStore(type, 1).put(data).done(function() {
+                      debugger;
+                      Events.trigger('syncedResource', _.extend({resource: data}, _.pick(res, '_tempUri')));
+                      RM.$db.objectStore(RM.REF_STORE, 1).put(res).done(dfd.resolve).fail(function() {
+                        debugger;
+                      });
+                    });
+                  }
+                  else {
+                    debugger;
+                    dfd.resolve();
+                  }
+                }).fail(function() {
+                  debugger;
+                  dfd.resolve(); // resolve in any case, so sync operation can conclude
+                });
+              }).promise();
+            });
+          });
+          
+          $.when(dfds).then(defer.resolve);
+        });      
+      }).promise();
+    },
+    
+    saveItem: function(item, classUri) {
       var isModel = U.isModel(item);
       classUri = classUri ? classUri : isModel ? item.vocModel.type : U.getTypeUri(item.type._uri);
-      item = isModel ? item.toJSON() : item;
-      return RM.addItems([item], classUri);
+      var now = G.currentServerTime();
+      var uri = item.getUri();
+      var tempUri;
+      if (!uri) {
+        tempUri = classUri + '?__tempId__=' + now;
+        item.set({'_uri': tempUri}, {silent: true});
+      }
+
+      RM.createRefStore().done(function() {
+        var itemData = {id: now};
+        if (uri)
+          itemData._uri = uri;
+        else if (tempUri)
+          itemData._tempUri = tempUri;
+        
+        itemData.dirty = true;
+        RM.$db.objectStore(RM.REF_STORE).put(itemData).done(function() {            
+          RM.addItems([item], classUri).done(function() {
+            RM.sync();
+          }).fail(function() {
+            debugger;
+//            RM.$db.objectStore("ref")["delete"](now);
+          });
+        }).fail(function() {
+          debugger;
+        });
+      });
+
+//      else
+//        RM.addItems([item], classUri);
     },
     
     deleteItem: function(uri) {

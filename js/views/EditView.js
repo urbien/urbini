@@ -435,7 +435,7 @@ define([
               return;
             }
             
-            $('.formElement').attr('disabled', false);
+            self.getInputs().attr('disabled', false);
             self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           },
           

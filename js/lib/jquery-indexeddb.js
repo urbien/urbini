@@ -197,6 +197,41 @@ define(['globals', 'indexedDBShim'], function(G) {
 						}, callback);
 					};
 					
+          result.getAll = function(range, direction) {
+					  debugger;
+            return result._getAll(range, direction);
+          };
+          
+          result.getAllKeys = function(range, direction) {
+            debugger;
+            return result._getAll(range, direction, true);
+          };
+					
+					result._getAll = function(range, direction, keysOnly) {
+            debugger;
+            return $.Deferred(function(dfd) {
+              var results = [];
+              var callback = keysOnly ? function(result) {
+                results.push(this.result.primaryKey);
+              } : function(result) {
+                results.push(result.value);
+              }
+              
+              wrap.cursor(function() {
+                var op = keysOnly ? "openKeyCursor" : "openCursor";
+                if (direction) {
+                  return idbObjectStore[op](wrap.range(range), direction);
+                } else {
+                  return idbObjectStore[op](wrap.range(range));
+                }
+              }, callback).done(function() {
+                dfd.resolve(results);
+              }).fail(function() {
+                dfd.rejectWith(this, arguments);
+              });
+            }).promise();
+					};
+					
 					result.index = function(name){
 						return wrap.index(function(){
 							return idbObjectStore.index(name);
@@ -685,7 +720,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 						});
 					}
 					
-					var crud = ["add", "delete", "get", "put", "clear", "count", "each"];
+					var crud = ["add", "delete", "get", "put", "clear", "count", "each", "getAll", "getAllKeys"];
 					for (var i = 0; i < crud.length; i++) {
 						result[crud[i]] = (function(op){
 							return function(){

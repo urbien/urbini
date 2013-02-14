@@ -6,9 +6,8 @@ define([
   'templates',
   'events', 
   'utils',
-  'maps',
   'views/BasicView'
-], function(G, $, _, Templates, Events, U, Mapper, BasicView) {
+], function(G, $, _, Templates, Events, U, BasicView) {
   var MapView = BasicView.extend({
 //    css: [
 //      'leaflet.css', 
@@ -17,13 +16,12 @@ define([
 //    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
+      _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
       Events.on("changePage", this.resetMap);
       
-      L.Icon.Default.imagePath = 'images/leaflet';
-      var self = this;
+//      var self = this;
 //      csses = _.map(this.css, function(c) {return '../styles/leaflet/' + c});
 //      require(csses, function() {
 //        self.loadedCSS = true;
@@ -42,7 +40,13 @@ define([
     },
     click: Events.defaultClickHandler,  
     render: function (eventName) {
-      var self = this;
+      var self = this, args = arguments;
+      G.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {
+        self.render1.apply(self, arguments);
+      });
+    },
+    render1: function() {
+      L.Icon.Default.imagePath = 'images/leaflet';
 //      if (!this.loadedCSS) {
 //        this.cssListeners.push(self.render);
 //        return this;

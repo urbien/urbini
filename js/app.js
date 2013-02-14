@@ -91,16 +91,12 @@ define('app', [
         }
       };
       
-      Voc.fetchModels(null, {
-        success: function() {
-          if (RM.db)
-            self.startApp();
-          else
-            RM.restartDB().always(App.startApp);
-        },
-        error: error,
-        sync: true
-      });
+      Voc.fetchModels(null, {sync: true}).done(function() {
+        if (RM.db)
+          self.startApp();
+        else
+          RM.restartDB().always(App.startApp);
+      }).fail(error);
     },
     
     startApp: function() {
@@ -231,10 +227,12 @@ define('app', [
     
     setupWorkers: function() {
       var hasWebWorkers = G.hasWebWorkers;
-      G.ajax = function(options) {
+      Backbone.ajax = G.ajax = function(options) {
         var opts = _.clone(options);
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
+          if (opts.success) defer.done(opts.success);
+          if (opts.error) defer.fail(opts.error);
           if (useWorker) {
             G.log(App.TAG, 'xhr', 'webworker', opts.url);
             var xhrWorker = G.getXhrWorker();          
@@ -249,7 +247,7 @@ define('app', [
             };
             
             xhrWorker.onerror = function(err) {
-              debugger;
+//              debugger;
               defer.reject({}, "error", err);
             };
             

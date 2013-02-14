@@ -836,6 +836,13 @@ define('cache', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    postBundleListeners: [],
+    onPostBundleLoaded: function(fn) {
+      if (G.postBundleLoaded)
+        fn();
+      else
+        G.postBundleListeners.push(fn);
+    },
     isMinifiable: function(url) {
       return /\.(js|css)$/.test(url);
     },
@@ -989,7 +996,7 @@ define('cache', function() {
     },
   
     trace: {
-      ON: G.minify === false,
+      ON: true,
       DEFAULT: {on: false},
       types : {
         error: {
@@ -1489,6 +1496,7 @@ define('cache', function() {
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
   G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
+  G.trace.ON = G.minify === false;
   // END minify
   
   require.config({
@@ -1592,12 +1600,18 @@ require(['globals'], function(G) {
       G.finishedTask("loading modules");
       G.browser = $.browser;
       App.initialize();
-      setTimeout(function() {
+//      setTimeout(function() {
         G.startedTask('loading post-bundle');
         G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');
+          G.postBundleLoaded = true;
+          for (var i = 0; i < G.postBundleListeners.length; i++) {
+            G.postBundleListeners[i]();
+          }
+          
+          G.postBundleListeners.length = 0;
         }, true);
-      }, 100);
+//      }, 100);
     });
   });
 })

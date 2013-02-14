@@ -26,6 +26,14 @@ define([
 //      this.on('change', this.onchange);
       this.on('sync', this.onsync);
       this.vocModel = this.constructor;
+      var callback = function(info) {
+        if (info._tempUri === res.get('_tempUri') || info._uri === res.getUri()) {
+          res.set(info.resource);
+          Events.off('syncedResource', callback);
+        }
+      }
+      
+      Events.on('syncedResource', callback);
     },
     onsync: function() {
 //      debugger;
@@ -143,12 +151,12 @@ define([
         return;
       
       var errors = {};
-      var props = options.validateAll ? this.constructor.properties : attrs;
+      var props = options.validateAll ? this.vocModel.properties : attrs;
       var values = attrs;
       for (var name in props) {
         var error = this.validateProperty(attrs, name, options);
         if (error !== true)
-          errors[name] = typeof error === 'string' ? error : "Please enter a valid " + name;
+          errors[name] = typeof error === 'string' ? error : "Please enter a valid " + U.getPropDisplayName(props[name]);
       }
       
       if (_.size(errors))
@@ -161,8 +169,8 @@ define([
         return true;
       
       var value = attrs[name];
-      if (value == null || value === '') {
-        if (options.validateAll && prop.required) {
+      if (U.isNully(value)) {
+        if (options.validateAll && prop.required && U.isPropEditable(this, prop)) {
           if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
             return U.getPropDisplayName(prop) + ' is a required field';
         }
@@ -184,13 +192,13 @@ define([
         else { 
           var val = U.getTypedValue(this, name, value);
           if (val == null || val !== val) // test for NaN
-            return 'Please enter a valid ' + U.getPropDisplayName(prop);
+            return false;
         }
       }
       else {
         val = U.getTypedValue(this, name, value);
         if (val == null || val !== val) // test for NaN
-          return 'Please enter a valid ' + U.getPropDisplayName(prop);
+          return false;
         else
           attrs[name] = val;
       }
@@ -220,49 +228,54 @@ define([
       options.url = this.url();
       return Backbone.Model.prototype.fetch.call(this, options);
     },
-    
+
     save: function(attrs, options) {
       options = options || {};
-      var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
-      var isNew = this.isNew();
-      if (options.$returnMade !== false)
-        data.$returnMade = 'y';
-      if (!isNew)
-        data._uri = this.getUri();
-
-      var self = this;
-      var qs = U.getQueryString(data);
-      if (options.queryString)
-        qs += '&' + options.queryString;
-      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
-      
-      var success = options.success;
-      options.success = function(resource, response, opts) {
-        success && success.apply(this, arguments);
-        if (response.error)
-          return;
-        
-        Events.trigger('resourcesChanged', [self]);
-        var method = isNew ? 'add.' : 'edit.';
-        if (!G.currentUser.guest) {
-          var json = self.toJSON();
-          json._type = self.vocModel.type;
-          Events.trigger(method + self.vocModel.type, json);
-          var sup = self.vocModel;
-          while (sup = sup.superClass) {
-            Events.trigger(method + sup.type, self);
-          }
-        }
-      };
-      
-//      var error = options.error;
-//      options.error = function(reosurce, xhr, options) {
-//        
-//        error && error.apply(this, arguments);
-//      }
-      
+      options = _.extend({emulateHTTP: true, silent: true, patch: true}, options);      
       return Backbone.Model.prototype.save.call(this, attrs, options);
     }
+
+//    save: function(attrs, options) {
+//      options = options || {};
+//      var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
+//      var isNew = this.isNew();
+//      if (options.$returnMade !== false)
+//        data.$returnMade = 'y';
+//      if (!isNew)
+//        data._uri = this.getUri();
+//
+//      var self = this;
+//      var qs = U.getQueryString(data);
+//      if (options.queryString)
+//        qs += '&' + options.queryString;
+//      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
+//      
+//      var success = options.success;
+//      options.success = function(resource, response, opts) {
+//        success && success.apply(this, arguments);
+//        if (response.error)
+//          return;
+//        
+//        Events.trigger('resourcesChanged', [self]);
+//        var method = isNew ? 'add.' : 'edit.';
+//        if (!G.currentUser.guest) {
+//          var json = self.toJSON();
+//          json._type = self.vocModel.type;
+//          Events.trigger(method + self.vocModel.type, json);
+//          var sup = self.vocModel;
+//          while (sup = sup.superClass) {
+//            Events.trigger(method + sup.type, self);
+//          }
+//        }
+//      };
+//      
+////      var error = options.error;
+////      options.error = function(reosurce, xhr, options) {
+////        
+////        error && error.apply(this, arguments);
+////      }
+//      
+//      return Backbone.Model.prototype.save.call(this, attrs, options);
   },
   {
     type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
@@ -273,8 +286,7 @@ define([
       _uri: {type: "resource"},
       _shortUri: {type: "resource"}
     },
-    myInterfaces : {}
-  }, {
+    myInterfaces : {},
     displayName: 'Resource'
   });
   

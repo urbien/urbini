@@ -29,6 +29,10 @@ define(['globals'], function(G) {
       return dfd;
     }
     
+    this.hasMoreTasks = function() {
+      return q.seqQueue.length > 0;
+    }
+    
     /**
      * @param sequential - if true, this task will wait till all other running tasks are done, then when it runs, no tasks will be allowed to run till its finished
      * @param yield - if true, when it's time to run this SEQUENTIAL task, if there are non-sequential tasks queued up, it will let them run first  
@@ -98,7 +102,7 @@ define(['globals'], function(G) {
             q.runningTasks.remove(taskPromise);
             G.log(q.TAG, 'db', q.name, 'Finished sequential task:', name);
             q.blocked = false; // unblock to allow next task to start;
-            if (q.seqQueue.length) {
+            if (q.hasMoreTasks()) {
               var next = q.seqQueue.shift();
               var dfd = next.deferred;
               q.runTask(next.task, {name: next.name, sequential: true, yields: next.yields}).done(dfd.resolve).fail(dfd.reject);
