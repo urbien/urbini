@@ -36,6 +36,9 @@ define([
         else
           this.template = _.template(Templates.get('listItemTemplateNoImage'));
       }
+      if (options.swatch) {
+        this.$el.attr("data-theme", options.swatch);
+      }
         
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
