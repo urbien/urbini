@@ -139,6 +139,20 @@ define([
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
           link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
           $(link).data('uri', res.getUri());
+          if (U.isAssignableFrom(this.vocModel, "App", G.typeToModel)  &&  U.isAssignableFrom(res.vocModel, "Theme", G.typeToModel)) {
+            if (G.currentApp) {
+              var cUri = G.currentApp['_uri'];
+              if (cUri.indexOf('http') == -1) {
+                cUri = U.getLongUri(cUri, {type: type});
+                G.currentApp['_uri'] = cUri;
+              }
+              if (self.resource.get('_uri') == cUri) {
+                var themeSwatch = res.get('swatch');
+                if (!G.currentApp.swatch  ||  G.currentApp['theme.swatch'] != themeSwatch)
+                  G.currentApp['theme.swatch'] = themeSwatch;
+              }
+            }
+          }
         }
         self.router.navigate(hash, {trigger:true, replace: true});
 //        G.Router.changePage(self.parentView);
@@ -154,56 +168,49 @@ define([
 //        _.extend(params, U.parseWhere(pr.where));
 //      }
       
-      var domain = U.getLongUri(this.model.get('domain'));
       if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
         var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
 
+        params.$multiValue = prop;
+        params.$type = type;
+        if (this.action != 'make')
+          params.$forResource = uri;
+        
+        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
+      }
+      else if (U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel)) { 
+        var title = U.getQueryParams(window.location.hash)['$title'];
+        var t;
+        if (!title)
+          t = this.vocModel.displayName;
+        else {
+          var idx = title.indexOf('</span>');
+          t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
+        }
+        var domain = U.getLongUri(this.model.get('domain'));
         var rParams = {
-          $multiValue: prop,
+          $prop: pr.shortName,
+          $type:  this.vocModel.type,
           $title: t,
           $forResource: domain
         };
-        if (this.action == 'make')
-          rParams.$type = type;
-        else
-          rParams.$forResource = uri;
-//        
-//        var params = '$multiValue=' + prop + '&$' + prop + '=' + encodeURIComponent(e.target.innerHTML);
-//        if (this.action == 'make')
-//          params.$type = type;
-//        else
-//          params.$forResource = uri;
-//        
-//        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
-//        _.extend(params, {'$type': type, '$title': prName + ' for ' + vocModel.displayName});
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(rParams), {trigger: true});
-      }
-      else {
-        if (!U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel))
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
-        else {
-          var title = U.getQueryParams(window.location.hash)['$title'];
-          var t;
-          if (!title)
-            t = this.vocModel.displayName;
-          else {
-            var idx = title.indexOf('</span>');
-            t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
-          }
-          var rParams = {
-            $prop: pr.shortName,
-            $type:  this.vocModel.type,
-            $title: t,
-            $forResource: domain
-          };
 //          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
 //          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+      }
+      else  {
+        var w = pr.where;
+        if (!w)
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+        else {
+          w = w.replace(' ', '').replace('==', '=').replace('!=', '=!').replace('&&', '&');
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: true});
         }
       }
     },
