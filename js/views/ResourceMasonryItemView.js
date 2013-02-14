@@ -174,7 +174,7 @@ define([
         gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
       
       tmpl_data['rUri'] = resourceUri;
@@ -182,7 +182,7 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (m.isA('Votable')) {
@@ -191,13 +191,13 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -227,7 +227,7 @@ define([
       var forResourceUri = json[forResource];
       if (!forResourceUri)
         return this;
-      var rUri = U.getLongUri(forResourceUri);
+      var rUri = U.getLongUri1(forResourceUri);
       
       var img = U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
       if (!img)
@@ -251,7 +251,7 @@ define([
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var forResourceModel = G.typeToModel[U.getTypeUri(forResourceUri)];
       var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
@@ -259,7 +259,7 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -268,13 +268,13 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -330,7 +330,7 @@ define([
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
       var forResourceModel = type ? G.typeToModel[type] : null;
@@ -344,7 +344,7 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];          
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -353,13 +353,13 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -383,10 +383,10 @@ define([
       if (typeof json[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri(json[imgSrc]));
+      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc]));
       var tmpl_data = _.extend(json, {rUri: rUri});
   
-      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri(json.modifiedBy));
+      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json.modifiedBy));
       tmpl_data.modifiedBy = modBy;
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
@@ -400,15 +400,15 @@ define([
       
       var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri(json[commentsFor])); // + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri1(json[commentsFor])); // + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri(json[votesFor])); //+ '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri1(json[votesFor])); //+ '&m_p=votes&b_p=votable');
 
       var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data.v_showRenabFor = U.encode(U.getLongUri(json[renabFor]) + '&m_p=nabs&b_p=forResource');
+        tmpl_data.v_showRenabFor = U.encode(U.getLongUri1(json[renabFor]) + '&m_p=nabs&b_p=forResource');
       
       // set size of images included in the items to be able
       // to start masonry code before images downloading

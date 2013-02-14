@@ -258,7 +258,7 @@ define([
             if (dotIdx != -1) {
               var pName = redirectTo.slice(0, dotIdx);
               var prop = vocModel.properties[pName];
-              var range = U.getLongUri(prop.range);
+              var range = U.getLongUri1(prop.range);
               range = range && G.typeToModel[range];
               if (range) {
                 redirectParams[pName] = res.get(pName);

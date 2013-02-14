@@ -57,8 +57,8 @@ define('app', [
       };
       
       Templates.loadTemplates();
-      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
-      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri(m.type)});
+      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
+      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
       App.setupWorkers();
       Voc.checkUser();
       Voc.loadStoredModels();
@@ -262,12 +262,17 @@ define('app', [
                 return;
               }
               
-              if (data.error) {
-                debugger;
-                defer.reject(jqXHR, data.error, opts);
-              }
-              else
+              if (jqXHR.status === 200) {
                 defer.resolve(data, status, jqXHR);
+                return;
+              }
+              
+              if (data && data.error) {
+                defer.reject(jqXHR, data.error, opts);
+                return;
+              }
+              
+              defer.reject(jqXHR, {code: jqXHR.code}, opts);                  
             }, 
             function(jqXHR, status, err) {
               debugger;

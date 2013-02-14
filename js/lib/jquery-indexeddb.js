@@ -272,7 +272,7 @@ define(['globals', 'indexedDBShim'], function(G) {
               else
                 return IDBKeyRange.upperBound(upper, uOpen);
 						}
-					} else if (typeof r === "undefined") {
+					} else if (typeof r === "undefined" || r === null) {
 						return null;
 					} else {
 						return typeof r === IDBKeyRange ? r : IDBKeyRange.only(r);

@@ -640,12 +640,12 @@ define([
     
     syncResources: function(resources) {
       return $.Deferred(function(defer) {
-        debugger;
         var dfds = [];
         var q = new TaskQueue('syncing some resources');
-        _.each(resources, function(resource, idx) {
-          var res = resource;
-          var uri = res._uri || res._tempUri;
+        _.each(resources, function(resource, resIdx) {
+          debugger;
+          var res = resource, idx = resIdx;
+          var uri = res._uri;
           var id = res.id;
           var type = uri.slice(0, uri.indexOf('?'));
           var vocModel = RM.typeToModel[type];
@@ -653,10 +653,33 @@ define([
           q.runTask(function() {
             return $.Deferred(function(dfd) {
               dfds.push(dfd);
-              RM.$db.objectStore(type).get(uri, 0).done(function(item) {
+              RM.$db.objectStore(type, 0).get(uri).done(function(item) {
                 debugger;
-                if (_.any(item), function(val) { return typeof val === 'string' && val.contains('?__tempId__='); }) {
-                  dfd.resolve();
+                var updated = false, immature = false;
+                for (var p in item) {
+                  var val = item[p], prop = props[p];
+                  if (U.isResourceProp(prop) && val && val.contains('?__tempId__=')) {
+                    var match = _.filter(resources.slice(idx + 1), function(r) {
+                      return r._tempUri === val && r._uri;
+                    });
+                    
+                    if (match) {
+                      item[p] = r._uri;
+                      updated = true;
+                    }
+                    else {
+                      immature = true;
+                      break;
+                    }
+                  }
+                }
+                
+                if (immature) {
+                  if (updated)
+                    RM.$db.objectStore(type, 1).put(item).always(dfd.resolve);
+                  else
+                    dfd.resolve();
+                  
                   return;
                 }
                 
@@ -837,6 +860,13 @@ define([
         
         var op = RM.operatorMap[opVal[0]];
         var val = opVal[1];
+        if (U.isResourceProp(prop) && val === '_me') {
+          if (G.currentUser.guest)
+            Events.trigger('req-login');
+          else
+            val = G.currentUser._uri;
+        }
+
         val = U.getTypedValue(collection, name, val);
         var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
         subQuery.setPrimaryKey('_uri');
@@ -909,7 +939,15 @@ define([
         var op = opVal[0];
         op = op === '=' ? '==' : op; 
         var bound = opVal[1];
-        rules.push(RM.makeTest(vocModel.properties[name], op, bound));
+        var prop = vocModel.properties[name];
+        if (U.isResourceProp(prop) && bound === '_me') {
+          if (G.currentUser.guest)
+            Events.trigger('req-login');
+          else
+            bound = G.currentUser._uri;
+        }
+        
+        rules.push(RM.makeTest(prop, op, bound));
       });
       
       return function(val) {
