@@ -275,7 +275,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 					} else if (typeof r === "undefined") {
 						return null;
 					} else {
-						return r;
+						return typeof r === IDBKeyRange ? r : IDBKeyRange.only(r);
 					}
 				},
 				
