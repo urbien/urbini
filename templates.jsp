@@ -418,10 +418,17 @@
 <!-- script type="text/template" id="masonry-list-item">
   <div class="anab">
     <div class="galleryItem_css3">
+      <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+      {{ if (typeof creatorThumb != 'undefined') { }}
+         <img src="{{= creatorThumb }}" width="80" />
+      {{ } }}
+      </a>
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
          {{ if (typeof imgWidth != 'undefined') { }}
-           style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+           {{ if (imgWidth < 300) { }}
+             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+           {{ } }}
          {{ } }}
          ></img>
       </a>
@@ -450,6 +457,11 @@
 
 <script type="text/template" id="masonry-list-item">
   <div class="anab">
+      <!--a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+      {{ if (typeof creatorThumb != 'undefined') { }}
+         <img src="{{= creatorThumb }}" height="60" /><div style="display:inline;verical-align: top;">{{= creatorDisplayName }}</div>
+      {{ } }}
+      </a -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
