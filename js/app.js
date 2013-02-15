@@ -11,13 +11,8 @@ define('app', [
   'resourceManager',
   'router'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
-  Backbone.Model.prototype._super = function(funcName){
-    return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
-  };
-
   Backbone.View.prototype.close = function() {
-    this.$el.detach();
-    this.stopListening();
+    this.remove();
     this.unbind();
     if (this.onClose){
       this.onClose();
@@ -96,16 +91,12 @@ define('app', [
         }
       };
       
-      Voc.fetchModels(null, {
-        success: function() {
-          if (RM.db)
-            self.startApp();
-          else
-            RM.restartDB().always(App.startApp);
-        },
-        error: error,
-        sync: true
-      });
+      Voc.fetchModels(null, {sync: true}).done(function() {
+        if (RM.db)
+          self.startApp();
+        else
+          RM.restartDB().always(App.startApp);
+      }).fail(error);
     },
     
     startApp: function() {
@@ -236,10 +227,12 @@ define('app', [
     
     setupWorkers: function() {
       var hasWebWorkers = G.hasWebWorkers;
-      G.ajax = function(options) {
+      Backbone.ajax = G.ajax = function(options) {
         var opts = _.clone(options);
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
+          if (opts.success) defer.done(opts.success);
+          if (opts.error) defer.fail(opts.error);
           if (useWorker) {
             G.log(App.TAG, 'xhr', 'webworker', opts.url);
             var xhrWorker = G.getXhrWorker();          
@@ -254,10 +247,14 @@ define('app', [
             };
             
             xhrWorker.onerror = function(err) {
-              debugger;
+//              debugger;
               defer.reject({}, "error", err);
             };
             
+            defer.always(function() {
+              G.recycleWebWorker(xhrWorker);
+            });
+
             xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method']));
           }
           else {
@@ -269,12 +266,17 @@ define('app', [
                 return;
               }
               
-              if (data.error) {
-                debugger;
-                defer.reject(jqXHR, data.error, opts);
-              }
-              else
+              if (jqXHR.status === 200) {
                 defer.resolve(data, status, jqXHR);
+                return;
+              }
+              
+              if (data && data.error) {
+                defer.reject(jqXHR, data.error, opts);
+                return;
+              }
+              
+              defer.reject(jqXHR, {code: jqXHR.code}, opts);                  
             }, 
             function(jqXHR, status, err) {
               debugger;

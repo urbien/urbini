@@ -21,13 +21,16 @@ define([
         var type = err.type || err.statusText;
 //        var defaultDestination = G.Router.previousHash;
         if (options.sync) {
-          window.history.back();
           switch (code) {
+          case 204:
+            return;
           case 401: 
+            window.history.back();
             G.log(Errors.TAG, 'error', 'requesting user-login');
             Events.trigger('req-login', G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
+            window.history.back();
             G.log(Errors.TAG, "error", 'no results');
             var errMsg = err.details;
             if (!errMsg) {
@@ -46,12 +49,14 @@ define([
               case 'timeout':
 //                Events.trigger('error', err.details ? err : _.extend(err, {details: Errors.OFFLINE}));
 //                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Errors[G.online ? type : 'offline']});
+                window.history.back();
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
 //                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Errors.not_found});
+                window.history.back();
                 Errors.errDialog({msg: err.details || Errors.not_found, delay: 1000});
             }
             return;

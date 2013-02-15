@@ -170,19 +170,19 @@ define([
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
 
-//      if (this.initializedListView) {
-//        if (isModification  ||  isMasonry  ||  isMultiValueChooser)
-//          this.$el.trigger('create');
-//        else
-//          this.$el.listview('refresh');
-//      }
-//      else {
-//        this.initializedListView = true;
-//      }
+      if (this.initializedListView) {
+        if (isModification  ||  isMasonry  ||  isMultiValueChooser)
+          this.$el.trigger('create');
+        else
+          this.$el.listview('refresh');
+      }
+      else {
+        this.initializedListView = true;
+      }
     
-      this.$el.trigger('create');
-      if (this.$el.hasClass('ui-listview'))
-        this.$el.trigger('refresh');
+//      this.$el.trigger('create');
+//      if (this.$el.hasClass('ui-listview'))
+//        this.$el.trigger('refresh');
 
       return this;
       

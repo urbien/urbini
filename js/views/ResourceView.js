@@ -162,12 +162,12 @@ define([
       
   //    var j = {"props": json};
   //    this.$el.html(html);
-      this.rendered = true;
       this.$el.html(frag);      
       this.$el.trigger('create');      
       if (this.$el.hasClass('ui-listview'))
         this.$el.listview('refresh');
 
+      this.rendered = true;
       return this;
     }
   }, {

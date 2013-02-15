@@ -7,14 +7,13 @@ define([
   'models/Resource', 
   'collections/ResourceList', 
   'vocManager',
-  'views/HomePage', 
-  'views/ListPage', 
-  'views/ViewPage',
-  'views/EditView', 
-  'views/EditPage' 
-], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage, EditView, EditPage) {
+  'views/HomePage'
+//  , 
+//  'views/ListPage', 
+//  'views/ViewPage'
+//  'views/EditPage' 
+], function(G, U, Events, Errors, Resource, ResourceList, Voc, HomePage/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var MenuPage; //, EditPage, EditView;
   var Router = Backbone.Router.extend({
     routes:{
       ""                : "home",
@@ -126,14 +125,15 @@ define([
     choose: function(path) {
       this.list.call(this, path, G.LISTMODES.CHOOSER);
     },
-    
+
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
     list: function(oParams, mode) {
-      if (!ListPage)
+      if (!this.ListPage)
         return this.loadViews('ListPage', this.list, arguments);
       
+      var ListPage = this.ListPage;
       var self = this;
       var params = oParams.split("?");
       var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
@@ -196,6 +196,38 @@ define([
           Voc.fetchModelsForReferredResources(list);
           Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
+        },
+//        error: Errors.getDefaultErrorHandler()
+        error: function(collection, xhr, options) {
+          if (xhr.status === 204)
+            self.changePage(listView);
+          else
+            Errors.getDefaultErrorHandler().apply(this, arguments);
+//          var code, msg;
+//          if (xhr.responseText) {
+//            var json;
+//            try {
+//              json = JSON.parse(xhr.responseText), error = json.error;
+//              if (error) {
+//                code = error.code;
+//                msg = error.details;
+//              }
+//            } catch (err) {
+//            }
+//          }
+//          
+//          code = code || xhr.status;
+//          switch (code) {
+//          case 401:
+//            Events.trigger('req-login');
+//            return;
+//          case 400:
+//            Events.
+//          }
+//          
+//          self.changePage(listView); // show empty list
+//          debugger;
+//          Errors.getDefaultErrorHandler().apply(this, arguments);
         }
       });
       
@@ -205,14 +237,14 @@ define([
     loadViews: function(views, caller, args) {
       views = $.isArray(views) ? views : [views];
       var self = this;
-      var unloaded = _.filter(views, function(v) {return !eval(v)});
+      var unloaded = _.filter(views, function(v) {return !self[v]});
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        G.loadBundle(unloadedMods, function() {
+        G.onPostBundleLoaded(function() {
           G.require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
-              eval(unloaded[i] + '=a[i];');
+              self[unloaded[i]] = a[i];
             }
             
             caller.apply(self, args);
@@ -222,9 +254,10 @@ define([
     },
     
     make: function(path) {
-      if (!EditPage)
-        return this.loadViews(['EditView', 'EditPage'], this.make, arguments);
+      if (!this.EditPage)
+        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
       
+      var EditPage = this.EditPage; 
       var parts = path.split('?');
       var type = decodeURIComponent(parts[0]);
       if (!type.startsWith('http'))
@@ -251,58 +284,19 @@ define([
       this.changePage(mPage);
     },
 
-    make1: function(path) {
-      if (!EditPage)
-        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
-      
-      var parts = path.split('?');
-      var type = decodeURIComponent(parts[0]);
-      if (!type.startsWith('http'))
-        type = G.defaultVocPath + type;
-      
-      if (!this.isModelLoaded(type, 'make', arguments))
-        return;
-      
-      var params = U.getHashParams();
-      var makeId = params['-makeId'];
-      makeId = makeId ? parseInt(makeId) : G.nextId();
-      var backlinkModel = this.Models[params.on];
-      var mPage = this.MkResourceViews[makeId];
-      if (mPage && !mPage.model.get('_uri')) {
-        // all good, continue making ur mkresource
-        this.viewsCache = this.MkResourceViews;
-        this.currentModel = mPage.resource;
-        mPage.set({action: 'make'});
-        this.changePage(mPage);
-      }
-      else {
-        var res = this.currentModel = new Voc.typeToModel[type]({action: 'make', params: params });
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: res, action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
-        var self = this;
-        var success = function(data) {
-          self.changePage(mPage);
-//          Voc.fetchModelsForLinkedResources(res);
-    //      self.loadExtras(oParams);
-        }
-        
-        res.fetch({sync:true, success: success, forceFetch: this.forceFetch});
-      }
-      
-    },
-
     edit: function(path) {
-      if (!EditPage)
+      if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
       else
         this.view.call(this, path, true);
     },
     
     view: function (path, edit) {
-      if (!edit && !ViewPage)
+      if (!edit && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
       
       var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
-      var viewPageCl = edit ? EditPage : ViewPage;
+      var viewPageCl = edit ? this.EditPage : this.ViewPage;
 
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
@@ -475,22 +469,23 @@ define([
 
       var self = this;
       Voc.loadStoredModels({models: [type]});
-      var allGood = Voc.fetchModels(null, { 
-         success: function() {
-           self[method].apply(self, args);
-         },
-         sync: true,
-         skipSuccessIfUpToDate: true
-      });
-      
-      return allGood;
+      var fetchModels = Voc.fetchModels(null, {sync: true});
+      if (fetchModels.isResolved())
+        return true;
+      else {
+        fetchModels.done(function() {
+          self[method].apply(self, args);
+        });
+        
+        return false;
+      }
     },
     
     checkErr: function() {
       var q = U.getQueryParams();
       var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
       if (msg)
-        Error.errDialog({msg: msg});
+        Errors.errDialog({msg: msg});
       
       this.errMsg = null, this.info = null;
     },
@@ -501,17 +496,17 @@ define([
         return this;
       } finally {
         this.checkErr();
-//        if (this.removeFromView) {
-//          this.previousView && this.previousView.close();
-//          var cache = this.previousViewsCache;
-//          if (cache) {
-//            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
-//            if (_.size(c))
-//              delete cache[U.getFirstProperty(cache)];
-//          }
-//          
-//          this.previousView = null;
-//        }
+        if (this.removeFromView) {
+          this.previousView && this.previousView.close();
+          var cache = this.previousViewsCache;
+          if (cache) {
+            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
+            if (_.size(c))
+              delete cache[U.getFirstProperty(cache)];
+          }
+          
+          delete this.previousView;
+        }
           
       }
     },

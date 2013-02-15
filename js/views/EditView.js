@@ -14,7 +14,7 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp', 'dirtyBacklink'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -22,7 +22,7 @@ define([
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
-      this.backlinkModel = options.backlinkModel;
+      this.backlinkResource = options.backlinkResource;
       
       var params = U.getQueryParams();
       var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
@@ -39,6 +39,11 @@ define([
       'click .resourceProp': 'chooser',
       'click': 'click',
       'click input[data-datetime]': 'mobiscroll'
+    },
+    dirtyBacklink: function() {
+      var bl = this.backlinkResource;
+      if (bl) 
+        bl.dirty = true;
     },
     mobiscroll: function(e) {
       if (this.initializedScrollers)
@@ -396,6 +401,7 @@ define([
           uri = res.getUri();
       
       if (!isEdit && uri) {
+        this.dirtyBacklink();
         this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
@@ -502,6 +508,7 @@ define([
             
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
+            self.dirtyBacklink();
             self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           },
           

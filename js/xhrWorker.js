@@ -4,6 +4,7 @@ importScripts('io.js');
 onmessage = function(event) {
   var options = event.data;
   var type = options.type;
+  delete options.type;
   var xhr = sendXhr(options);
   var status = xhr.status;
   var text = xhr.responseText;

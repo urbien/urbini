@@ -202,7 +202,7 @@
 
 <script type="text/template" id="cpTemplate">
    <li>
-     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= encodeURIComponent(title) }}" data-icon="plus"></a>
+     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus"></a>
      {{ if (typeof comment != 'undentified') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
