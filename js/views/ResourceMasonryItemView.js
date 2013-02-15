@@ -15,7 +15,6 @@ define([
 //    className: 'pin',
 //    tagName: 'li',
     
-    IMG_MAX_WIDTH: 205, // value of CSS rule: ".nab .anab .galleryItem_css3 img"
     TAG: "ResourceMasonryItemView",
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
@@ -23,7 +22,7 @@ define([
       this.template = _.template(Templates.get('masonry-list-item'));
       this.modTemplate = _.template(Templates.get('masonry-mod-list-item'));
 
-      // resourceListView will call render on this element
+      this.IMG_MAX_WIDTH = $(window).height() > $(window).width() ? 320 : 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;
     },
@@ -104,7 +103,9 @@ define([
       
       var rUri = m.get('_uri');
       
-      var img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+      if (!img)
+        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
@@ -176,6 +177,14 @@ define([
       
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
+      if (m.isA('Submission')) { 
+        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy');
+        if (submittedBy.length) {
+          tmpl_data.creator = json[submittedBy[0]];
+          tmpl_data.creatorDisplayName = json[submittedBy[0] + '.displayName'];
+          tmpl_data.creatorThumb = json[submittedBy[0] + '.thumb'];
+        }
+      }
       
       tmpl_data['rUri'] = resourceUri;
       if (m.isA('CollaborationPoint')) { 

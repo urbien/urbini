@@ -885,9 +885,25 @@ define('cache', function() {
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
 //    xhrWorker: G.serverName + '/js/xhrWorker.js',
+    workerCache: [],
+    recycleWebWorker: function(worker) {
+      worker.onerror = undefined;
+      worker.onmessage = undefined;      
+    },
+    isWorkerAvailable: function(worker) {
+      return worker.onerror === undefined && worker.onmessage === undefined;
+    },
     getXhrWorker: function() {
-      G.xhrWorker = G.xhrWorker || new Worker(G.serverName + '/js/xhrWorker.js');
-      return G.xhrWorker;
+      var cache = G.workerCache;
+      for (var i = 0; i < cache.length; i++) {
+        var w = cache[i];
+        if (G.isWorkerAvailable(w))
+          return w;
+      }
+      
+      var w = new Worker(G.serverName + '/js/xhrWorker.js');
+      G.workerCache.push(w);
+      return w;
     },
     TAG: 'globals',
     checkpoints: [],
@@ -1079,26 +1095,29 @@ define('cache', function() {
       return keys;
     },
     
-    asyncLoop: function(obj, process, timeout, context) {
-      var isArray = obj.length === +obj.length;
-      var keys = isArray ? obj : G.keys(obj);
-      if (!keys.length) 
-        return;
-      
-      context = context || this;
-      timeout = timeout || 100;
-      setTimeout(function helper() {
-        var key = keys.shift();
-        var args = [key];
-        if (!isArray)
-          args.push(obj[key]);
-          
-        process.apply(context, args);
-        if (keys.length) { 
-          setTimeout(helper, timeout);
-        }
-      }, timeout);
-    },
+//    asyncLoop: function(obj, process, timeout, name, context) {
+//      var isArray = obj.length === +obj.length;
+//      var keys = isArray ? obj : G.keys(obj);
+//      if (!keys.length) 
+//        return;
+//      
+//      context = context || this;
+//      timeout = timeout || 100;
+//      setTimeout(function helper() {
+//        var key = keys.shift();
+//        var args = [key];
+//        if (!isArray)
+//          args.push(obj[key]);
+//          
+//        process.apply(context, args);
+//        if (keys.length) 
+//          setTimeout(helper, timeout);
+//        else {
+//          debugger;
+//          G.log(G.TAG, 'finished async loop', name);
+//        }
+//      }, timeout);
+//    },
 
     appendCSS: function(text) {
       var style = doc.createElement('style');
@@ -1211,12 +1230,15 @@ define('cache', function() {
 
           info = {};
           var path = G.getCanonicalPath(require.toUrl(name));
+          if (G.modules[path])
+            continue;
+          
           info[path] = timestamp; // || G.modules(G.bundles, path)[path];
           modules.push(info);
         }
       }
       
-      if (!hasLocalStorage)
+      if (!hasLocalStorage || !modules.length)
         return modules;
       
       var minify = G.minify,
@@ -1236,6 +1258,7 @@ define('cache', function() {
           try {
             saved = JSON.parse(saved);
           } catch (err) {
+            debugger;
             pruned.push(url);
             G.localStorage.del(url);
             continue;
@@ -1266,6 +1289,8 @@ define('cache', function() {
             G.localStorage.del(url);
           }
         }
+//        else
+//          debugger;
         
         pruned.push(url);
       }
@@ -1324,9 +1349,11 @@ define('cache', function() {
       
         if (hasLocalStorage) {
           setTimeout(function() {
-            G.asyncLoop(newModules, function(url, module) {
-              G.localStorage.put(url, G.prepForStorage(module, G.serverTime));
-            }, 100, this);
+//            G.asyncLoop(newModules, function(url, module) {
+            for (var url in newModules) {
+              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
+            }
+//            }, 100, "save modules", this);
 //            for (var url in newModules) {
 //              G.localStorage.putAsync(100, url, G.prepForStorage(newModules[url], G.serverTime), false, true); // don't force, but do async
 //              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime), false); // don't force
@@ -1338,14 +1365,17 @@ define('cache', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = G.getXhrWorker();
+        var xhrWorker = new Worker(G.serverName + '/js/xhrWorker.js'); //G.getXhrWorker();
         xhrWorker.onmessage = function(event) {
           G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
           complete(event.data);
+          G.recycleWebWorker(this);
         };
         
         xhrWorker.onerror = function(err) {
+          debugger;
           G.log(G.TAG, 'error', JSON.stringify(err));
+          G.recycleWebWorker(this);
         };
         
         getBundleReq.type = 'JSON';

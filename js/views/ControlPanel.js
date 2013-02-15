@@ -37,9 +37,14 @@ define([
       Events.stopEvent(e);
       var shortName = t.dataset.shortname;
       var prop = this.vocModel.properties[shortName];
-      var params = {};
+      var params = {
+        '$on': prop.backLink,
+        '-makeId': G.nextId(),
+        '$title': t.dataset.title
+      };
+      
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}&-makeId={2}&$title={3}'.format(encodeURIComponent(prop.range), $.param(params), G.nextId(), t.dataset.title), {trigger: true, replace: false});
+      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {
@@ -51,7 +56,11 @@ define([
           return this;
       }
       
-      this.$el.trigger('create');
+      this.render();
+      if (!this.$el.hasClass('ui-listview'))
+        this.$el.trigger('create');
+      else
+        this.$el.listview('refresh');
     },
 //    tap: Events.defaultTapHandler,  
     click: Events.defaultClickHandler,
@@ -219,10 +228,11 @@ define([
             U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
         }
       }
+      
       if (!options || options.setHTML)
         this.$el.html(frag);
-      var self = this;
-  
+      
+//      var self = this;  
       this.rendered = true;
       return this;
     }

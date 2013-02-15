@@ -251,6 +251,10 @@ define('app', [
               defer.reject({}, "error", err);
             };
             
+            defer.always(function() {
+              G.recycleWebWorker(xhrWorker);
+            });
+
             xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method']));
           }
           else {

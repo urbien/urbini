@@ -26,17 +26,32 @@ define([
 //      this.on('change', this.onchange);
       this.on('sync', this.onsync);
       this.vocModel = this.constructor;
-      var callback = function(info) {
-        if (info._tempUri === res.get('_tempUri') || info._uri === res.getUri()) {
-          res.set(info.resource);
-          Events.off('syncedResource', callback);
-        }
-      }
-      
-      Events.on('syncedResource', callback);
+      if (this.getUri())
+        this.subscribeToUpdates();
     },
     onsync: function() {
 //      debugger;
+    },
+    subscribeToUpdates: function() {
+      var resUri = this.getUri();
+      if (!resUri)
+        return;
+      
+      var self = this;
+      var callback = function(data) {
+        debugger;
+        var uri = res.getUri();
+        if (data._uri === uri) {
+          res.set(data);
+        }
+        else if (data._oldUri === uri) {
+          Events.off('synced.' + uri, callback);
+          Events.on('synced.' + data._uri, callback);
+        }
+      }
+      
+      Events.on('synced.' + resUri, callback);
+      this.subscribedToUpdates = true;
     },
     cancel: function(options) {
       var props = this.vocModel.properties;
@@ -133,6 +148,9 @@ define([
     },
     
     set: function(props, options) {
+      if (!this.subscribedToUpdates && this.getUri())
+        this.subscribeToUpdates();
+      
       var self = this;
       if (!options || !options.silent) {
         props = U.filterObj(props, function(name, val) {
@@ -230,7 +248,6 @@ define([
     },
 
     save: function(attrs, options) {
-      options = options || {};
       options = _.extend({emulateHTTP: true, silent: true, patch: true}, options);      
       return Backbone.Model.prototype.save.call(this, attrs, options);
     }

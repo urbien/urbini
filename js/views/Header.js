@@ -43,8 +43,12 @@ define([
               this.pageTitle = res.get('davDisplayName');
               if (!this.pageTitle) 
                 this.pageTitle = U.getDisplayName(res);
-              this.title = this.vocModel['displayName'] + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + this.pageTitle;
-              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
+              if (window.location.hash  &&  window.location.hash.indexOf('#make/') == 0)
+                this.title = this.pageTitle;
+              else {
+                this.title = this.vocModel['displayName'] + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + this.pageTitle;
+                this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
+              }
             }
           }
         }
@@ -86,7 +90,7 @@ define([
       r && this.makeWidgets(r, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
       var self = this;
       if (this.doPublish) {
-        require(['views/PublishButton'], function(PublishButton) {
+        G.require(['views/PublishButton'], function(PublishButton) {
           self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
         });
       }

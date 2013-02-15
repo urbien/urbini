@@ -7,11 +7,12 @@ define([
   'models/Resource', 
   'collections/ResourceList', 
   'vocManager',
-  'views/HomePage', 
-  'views/ListPage', 
-  'views/ViewPage'
+  'views/HomePage'
+//  , 
+//  'views/ListPage', 
+//  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Error, Resource, ResourceList, Voc, HomePage, ListPage, ViewPage) {
+], function(G, U, Events, Errors, Resource, ResourceList, Voc, HomePage/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
     routes:{
@@ -196,8 +197,12 @@ define([
           Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
         },
-        error: function() {
-          self.changePage(listView); // show empty list          
+//        error: Errors.getDefaultErrorHandler()
+        error: function(collection, xhr, options) {
+          if (xhr.status === 204)
+            self.changePage(listView);
+          else
+            Errors.getDefaultErrorHandler().apply(this, arguments);
         }
       });
       
@@ -455,7 +460,7 @@ define([
       var q = U.getQueryParams();
       var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
       if (msg)
-        Error.errDialog({msg: msg});
+        Errors.errDialog({msg: msg});
       
       this.errMsg = null, this.info = null;
     },
@@ -467,7 +472,7 @@ define([
       } finally {
         this.checkErr();
         if (this.removeFromView) {
-          this.previousView && this.previousView.remove();
+          this.previousView && this.previousView.close();
           var cache = this.previousViewsCache;
           if (cache) {
             var c = U.filterObj(cache, function(key, val) {return val === this.previousView});

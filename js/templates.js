@@ -85,7 +85,7 @@ define([
           return t.resource;
         template = t[prop.range];
       }
-      return template ? template : (prop.range.indexOf('/') == -1 ? t.string : t.resource);
+      return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' ? t.string : t.resource);
     }
   };
   

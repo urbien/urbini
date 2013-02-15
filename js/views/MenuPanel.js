@@ -27,7 +27,9 @@ define([
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
-      'click #subscribe': 'subscribe'
+      'click #subscribe': 'subscribe',
+      'click #logout': 'logout'
+
 //      'swipeleft': 'swipeleft',
 //      'swiperight': 'swiperight'
     },
@@ -42,6 +44,11 @@ define([
       Events.stopEvent(e);
       this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true, replace: true});
       return this;
+    },
+    logout: function(e) {
+      e.stopEvent();
+      Events.trigger('logout');
+      return;
     },
     click: function(e) {
       var t = e.target;
@@ -102,14 +109,19 @@ define([
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
       
-      U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + encodeURIComponent('model/social/App') + "?" + $.param(params) }));        
+      var hash = window.location.hash;
+      hash = hash && hash.slice(1);
+      
+      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
+      if (!hash  ||  hash != url)
+        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + url }));        
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
         var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-        if (!ch  ||  ch.length == 0)
+        if (!ch  ||  !ch.length)
           ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-        if (ch  &&  ch.length != 0  && !this.vocModel.properties[ch[0]].hidden) { 
+        if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
           var cnt = res.get(ch[0]) && res.get(ch[0]).count;
           if (cnt  &&  cnt > 0) 
             U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
@@ -119,11 +131,13 @@ define([
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
 
         pageUrl = 'view/profile';
-        var title = 'Profile';
-        U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
-        self.tabs[title] = pageUrl;
-
-        U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        if (!hash  ||  hash != pageUrl) {
+          var title = 'Profile';
+          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
+          self.tabs[title] = pageUrl;
+  
+          U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        }
       }
       U.addToFrag(frag, this.menuItemTemplate({title: "Home", pageUrl: G.serverName + '/' + G.pageRoot, icon: 'home'}));
 

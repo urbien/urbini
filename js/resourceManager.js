@@ -40,12 +40,13 @@ define([
     var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, fetchFromServer, numNow, shortPage, collection, resource,      
     defaultSuccess = options.success, 
     defaultError = options.error,
-    forceFetch = options.forceFetch,
+    forceFetch = options.forceFetch || data.dirty,
     synchronous = options.sync,
     now = G.currentServerTime(),
     isCollection = U.isCollection(data),
     vocModel = data.vocModel;
     
+    data.dirty = false;
     if (isCollection)
       collection = data;
     else {
@@ -102,6 +103,8 @@ define([
       shortPage = !!(numNow && numNow < collection.perPage);
       isUpdate = numNow >= end || shortPage;
       if (isUpdate) {
+        if (forceFetch)
+          return fetchFromServer(100);
         var lf = RM.getLastFetched(collection.resources, now);
         if (RM.isStale(lf, now))
           return fetchFromServer(100, lf); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
@@ -114,9 +117,12 @@ define([
         return; // no need to refetch from db, we already did
       }
     }
-    else {
+    else {      
       isUpdate = resource.loaded || resource.collection;
       if (isUpdate) {
+        if (forceFetch)
+          return fetchFromServer(100, ts);
+        
         var ts = resource.get('_lastFetchedOn');
         if (RM.isStale(ts, now))
           return fetchFromServer(100, ts);
@@ -228,7 +234,7 @@ define([
         success.apply(this, arguments);
       }
       
-      var err = options.error;
+//      var err = options.error;
       var req = Backbone.defaultSync(method, data, options);
 //      req.fail(function(jqXHR, status) {
 //        G.log(RM.TAG, 'sync', jqXHR, status);
