@@ -198,17 +198,14 @@ define(['globals', 'indexedDBShim'], function(G) {
 					};
 					
           result.getAll = function(range, direction) {
-					  debugger;
             return result._getAll(range, direction);
           };
           
           result.getAllKeys = function(range, direction) {
-            debugger;
             return result._getAll(range, direction, true);
           };
 					
 					result._getAll = function(range, direction, keysOnly) {
-            debugger;
             return $.Deferred(function(dfd) {
               var results = [];
               var callback = keysOnly ? function(result) {

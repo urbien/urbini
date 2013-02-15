@@ -538,12 +538,12 @@ define('globals', function() {
   G.online = !!navigator.onLine;
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
-    G.online = false;
+    G.setOnline(false);
   }, false);
 
   window.addEventListener("online", function(e) {
     // just came back online, enable links
-    G.online = true;
+    G.setOnline(true);
   }, false);
 
   var loadModule = function(text, url, contextOrOnLoad, name) {
@@ -836,6 +836,9 @@ define('cache', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    setOnline: function(online) {
+      G.online = online;
+    }, // will fill out in app.js
     postBundleListeners: [],
     onPostBundleLoaded: function(fn) {
       if (G.postBundleLoaded)

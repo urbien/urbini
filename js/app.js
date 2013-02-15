@@ -60,10 +60,11 @@ define('app', [
       _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
       _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
       App.setupWorkers();
+      App.setupNetworkEvents();
       Voc.checkUser();
       Voc.loadStoredModels();
       if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
-        RM.restartDB().always(this.startApp);
+        RM.restartDB().always(App.startApp);
         return;
       }
 
@@ -285,6 +286,16 @@ define('app', [
           }
         }).promise();
       }
+    },
+    
+    setupNetworkEvents: function() {
+      G.connectionListeners = [];
+      var fn = G.setOnline;
+      G.setOnline = function(online) {
+        debugger;
+        fn();
+        Events.trigger('online', online);
+      };      
     }
   };
   

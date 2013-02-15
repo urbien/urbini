@@ -191,7 +191,7 @@ define([
     },
     
     isResourceProp: function(prop) {
-      return prop.range.indexOf('/') != -1;
+      return prop.range && prop.range.indexOf('/') != -1;
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;

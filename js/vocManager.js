@@ -42,6 +42,7 @@ define([
     models: [Resource],
     fetchModels: function(models, options) {
       return $.Deferred(function(defer) {        
+        options = options || {};
         var changedAndNew = !models;
         models = changedAndNew ? Voc.changedModels : typeof models === 'string' ? [models] : models;
         models = _.filter(models, function(m) {
@@ -561,7 +562,10 @@ define([
       var c = G.currentUser;
       G.userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
       if (G.userChanged) {
-        if (!c.guest) {
+        if (c.guest) {
+          G.localStorage.del(Voc.contactKey);          
+        }
+        else {
           // no need to clear localStorage, it's only used to store models, which can be shared
           G.localStorage.put(Voc.contactKey, JSON.stringify(c));
         }

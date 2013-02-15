@@ -270,7 +270,7 @@ define(['jqueryIndexedDB'], function() {
         }).fail(function(err, event) {
           console.log("err: " + JSON.stringify(err));
           debugger;
-          defer.reject();
+          defer.reject.apply(arguments);
         });
       });      
     }
