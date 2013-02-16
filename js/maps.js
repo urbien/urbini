@@ -925,21 +925,21 @@
       this.shapeLayers[name] = newLayer;
     };
   
-    this.addDensityLayer = function(name, propsArr, self) {
+    this.addDensityLayer = function(name, propsArr) {
       var none = !propsArr || propsArr.length == 0;
-      self.shapeLayerInfos[name] = propsArr;
+      this.shapeLayerInfos[name] = propsArr;
       var minMax = none ? [0, 0] : this.getMinMaxDensityFromPropertiesArray(propsArr);
-      self.setMinMaxDensity(name, minMax);
-      if (self.userAskedFor[name]) {
-        self.currentLayerName = name;
-        self.currentLayerDensity = minMax;
-        self.addDensityLegend(minMax);
+      this.setMinMaxDensity(name, minMax);
+      if (this.userAskedFor[name]) {
+        this.currentLayerName = name;
+        this.currentLayerDensity = minMax;
+        this.addDensityLegend(minMax);
       }
       
-      self.buildGeoJsonShapeLayers(self.getLeafletDensityMapStyleFunction(), name);
+      this.buildGeoJsonShapeLayers(this.getLeafletDensityMapStyleFunction(), name);
     };
     
-    this.addPointsLayer = function(name, geoJsons, self) {
+    this.addPointsLayer = function(name, geoJsons) {
       var nameToGJ = {};
       nameToGJ[name] = geoJsons;
       this.addGeoJsonPoints(nameToGJ, name, {disableClusteringAtZoom: this.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: this.getNextColor()});      
@@ -982,7 +982,7 @@
         if (typeof callback == 'string')
           callback = self[callback];
         
-        callback.call(self, name, propsArr);
+        callback.apply(self, [name, propsArr]);
         if (self.userAskedFor)
           self.userAskedFor[name] = null;
         
