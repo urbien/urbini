@@ -1484,6 +1484,14 @@ define([
       return hash.length ? hash.slice(1) : hash;
     },
     
+    systemProps: ['davDisplayName', 'davGetLastModified'],
+    prepForSync: function(item, vocModel) {
+      item = U.flattenModelJson(item, vocModel);
+      return U.filterObj(item, function(key, val) {
+        return !_.contains(U.systemProps, key) && /^[a-zA-Z]+[^\.]*$/.test(key);
+      }); // starts with a letter and doesn't contain a '.'
+    },
+    
     flattenModelJson: function(m, vocModel) {
       var vocProps = vocModel.properties;
       var flat = {};

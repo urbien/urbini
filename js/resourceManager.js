@@ -697,7 +697,7 @@ define([
                 
                 var method = uri.indexOf('?__tempId__=') != -1 ? 'm/' : 'e/';
                 delete item._uri; // in case API objects to us sending it
-                item = U.flattenModelJson(item);
+                item = U.prepForSync(item, vocModel);
                 item.$returnMade = true;
                 G.ajax({method: 'POST', type: 'JSON', url: G.apiUrl + method + encodeURIComponent(type), data: item, sync: false}).done(function(data, status, xhr) {
                   debugger;
@@ -744,39 +744,48 @@ define([
       }
 
       RM.createRefStore().done(function() {
-        var itemData = {id: now};
+        var itemRef = {id: now, _uri: uri || tempUri};
         if (uri) {
           Index('_uri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
             if (!results.length)
-              RM.saveItemHelper({_uri: uri, dirty: true}, item, type);
-            else {
-              var r = results[0];
-              if (!r.dirty) // otherwise no need to save, it's already marked as dirty
-                RM.saveItemHelper(r, item, type);
-            }
+              RM.saveItemHelper(itemRef, item, type);
+            else
+              RM.saveItemHelper(results[0], item, type);
           }).fail(function() {            
-            RM.saveItemHelper({_uri: uri, dirty: true}, item, type);
+            RM.saveItemHelper(itemRef, item, type);
           });
         }
         else if (tempUri) {
           itemData._uri = tempUri;
-          RM.saveItemHelper(itemData, item, type);
+          RM.saveItemHelper(itemRef, item, type);
         }
       });
     },
     
     saveItemHelper: function(itemRef, item, type) {
-      itemRef.dirty = true;
-      RM.$db.objectStore(RM.REF_STORE).put(itemRef).done(function() {            
+      if (itemRef.dirty) {
+        // otherwise no need to save ref, it's already marked as dirty
+
         RM.addItems([item], type).done(function() {
           RM.sync();
         }).fail(function() {
           debugger;
 //          RM.$db.objectStore("ref")["delete"](now);
+        });        
+      }
+      else {
+        itemRef.dirty = true;
+        RM.$db.objectStore(RM.REF_STORE).put(itemRef).done(function() {            
+          RM.addItems([item], type).done(function() {
+            RM.sync();
+          }).fail(function() {
+            debugger;
+  //          RM.$db.objectStore("ref")["delete"](now);
+          });
+        }).fail(function() {
+          debugger;
         });
-      }).fail(function() {
-        debugger;
-      });
+      }
     },
     
     deleteItem: function(uri) {
