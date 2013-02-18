@@ -18,12 +18,12 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', /*'onchange',*/ 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
-//      this.on('change', this.onchange);
+      this.on('change', this.onchange);
       this.on('sync', this.onsync);
       this.vocModel = this.constructor;
       if (this.getUri())
@@ -33,21 +33,22 @@ define([
 //      debugger;
     },
     subscribeToUpdates: function() {
+      if (this.subscribedToUpdates)
+        return;
+      
       var resUri = this.getUri();
       if (!resUri)
         return;
       
       var self = this;
       var callback = function(data) {
-        debugger;
-        var uri = res.getUri();
-        if (data._uri === uri) {
-          res.set(data);
-        }
-        else if (data._oldUri === uri) {
+        var uri = self.getUri();
+        if (data._oldUri === uri) {
           Events.off('synced.' + uri, callback);
           Events.on('synced.' + data._uri, callback);
         }
+        
+        self.set(data);
       }
       
       Events.on('synced.' + resUri, callback);
@@ -73,12 +74,12 @@ define([
 
       this.save(props, options);
     },
-//    onchange: function(e) {
-//      if (this.lastFetchOrigin !== 'server')
-//        return;
-//      
-//      Events.trigger('resourcesChanged', [this]);
-//    },
+    onchange: function(e) {
+      if (this.lastFetchOrigin !== 'server')
+        return;
+      
+      Events.trigger('resourcesChanged', [this]);
+    },
     remove: function() {
       this.collection && this.collection.remove(this);
     },
@@ -102,10 +103,13 @@ define([
       }  
       return retUri;
     },
+    isNew: function() {
+      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri());
+    },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
       var isNew = this.isNew();
-      return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type) ;
+      return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type);
     },
     getKey: function() {
       return U.getLongUri1(this.get('_uri'));
@@ -248,13 +252,59 @@ define([
     },
 
     save: function(attrs, options) {
-      options = _.extend({emulateHTTP: true, silent: true, patch: true}, options);      
-      return Backbone.Model.prototype.save.call(this, attrs, options);
+      options = _.extend({emulateHTTP: true, silent: true, patch: true}, options || {});
+      var data = attrs || options.data || this.attributes;
+      if (options.sync) {
+        data = U.prepForSync(data, this.vocModel);
+        
+//        item = U.prepForSync(item, vocModel);
+        data.$returnMade = options.$returnMade !== false;
+        var isNew = this.isNew();
+        if (!isNew)
+          data._uri = this.getUri();
+        else
+          delete data._uri;
+  
+        var self = this;
+        var qs = U.getQueryString(data);
+        if (options.queryString)
+          qs += '&' + options.queryString;
+        
+        options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
+        var success = options.success;
+        options.success = function(resource, response, opts) {
+          success && success.apply(this, arguments);
+          if (response.error)
+            return;
+          
+          Events.trigger('resourcesChanged', [self]);
+          var method = isNew ? 'add.' : 'edit.';
+          if (!G.currentUser.guest) {
+            var json = self.toJSON();
+            json._type = self.vocModel.type;
+            Events.trigger(method + self.vocModel.type, json);
+            var sup = self.vocModel;
+            while (sup = sup.superClass) {
+              Events.trigger(method + sup.type, self);
+            }
+          }
+        };
+      }
+      
+      return Backbone.Model.prototype.save.call(this, data, options);
+
+      
+//      if (options.sync) {
+//        return Backbone.Model.prototype.save.call(this, attrs, options);
+//      }
+//      else {
+//        res.set(attrs, options);
+//      }
     }
 
 //    save: function(attrs, options) {
 //      options = options || {};
-//      var data = U.flattenModelJson(options.data || attrs || this.resource.attributes, this.vocModel);
+//      var data = U.flattenModelJson(options.data || attrs || this.attributes, this.vocModel);
 //      var isNew = this.isNew();
 //      if (options.$returnMade !== false)
 //        data.$returnMade = 'y';

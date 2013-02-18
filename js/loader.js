@@ -490,12 +490,12 @@ if (typeof JSON !== 'object') {
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
-  var nav = Lablz.navigator;
-  if (nav.isChrome || nav.isSafari)
-    Lablz.inject(text);
-  else if (nav.isFirefox)
-    return window.eval.call({}, text);  
-  else // Safari
+//  var nav = Lablz.navigator;
+//  if (nav.isChrome || nav.isSafari)
+//    Lablz.inject(text);
+//  else if (nav.isFirefox)
+//    return window.eval.call({}, text);  
+//  else // Safari
     return window.eval(text);
 //  return eval(text);
   
@@ -1060,7 +1060,11 @@ define('cache', function() {
       if (!G.trace.ON || !console || !console.log)
         return;
       
+      
       var types = typeof type == 'string' ? [type] : type;
+//      if (types.indexOf('error') != -1)
+//        debugger;
+      
       for (var i = 0; i < types.length; i++) {
         var t = types[i];
         var trace = G.trace.types[t] || G.trace.DEFAULT;
@@ -1312,7 +1316,7 @@ define('cache', function() {
         
       }
       
-      data = {modules: pruned.join(',')};
+      var data = {modules: pruned.join(',')};
       if (typeof G.minify !== 'undefined')
         data.minify = G.minify;
       

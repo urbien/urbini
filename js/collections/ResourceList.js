@@ -172,6 +172,7 @@ define([
         
         var code = xhr.status;
         var err = function() {
+          debugger;
           G.log(RM.TAG, 'error', code, options.url);
           error(resp && resp.error || {code: code}, status, xhr);            
         }

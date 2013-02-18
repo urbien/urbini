@@ -252,7 +252,7 @@ define(['jqueryIndexedDB'], function() {
         
         var index = store.index(indexName);
         var range = makeRange();
-        var request = range ? index[op](range, direction) : index[op](undefined, direction);
+        var request = typeof range !== 'undefined' ? index[op](range, direction) : index[op](undefined, direction);
         request.done(function(result, event) {
           if (!negate) {
             defer.resolve(arrayLimit(arrayOffset(result, qOffset), qLimit));

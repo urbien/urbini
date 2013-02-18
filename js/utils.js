@@ -64,7 +64,7 @@ define([
   var U = {
     TAG: 'Utils',    
     isPropVisible: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList)
+      if (U.isSystemProp(prop) || prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList)
         return false;
       
       userRole = userRole || U.getUserRole();
@@ -191,7 +191,7 @@ define([
     },
     
     isResourceProp: function(prop) {
-      return prop.range && prop.range.indexOf('/') != -1;
+      return prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -1484,12 +1484,14 @@ define([
       return hash.length ? hash.slice(1) : hash;
     },
     
-    systemProps: ['davDisplayName', 'davGetLastModified'],
     prepForSync: function(item, vocModel) {
-      item = U.flattenModelJson(item, vocModel);
-      return U.filterObj(item, function(key, val) {
-        return !_.contains(U.systemProps, key) && /^[a-zA-Z]+[^\.]*$/.test(key);
-      }); // starts with a letter and doesn't contain a '.'
+      var props = vocModel.properties;
+      var filtered = U.filterObj(item, function(key, val) {
+        var prop = props[key];
+        return !U.isSystemProp(key) && prop && !prop.backLink && (U.isResourceProp(prop) || !prop.readOnly) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
+      }); // is writeable, starts with a letter and doesn't contain a '.'
+      
+      return U.flattenModelJson(filtered, vocModel);
     },
     
     flattenModelJson: function(m, vocModel) {
@@ -1718,15 +1720,39 @@ define([
         return arrCopy;
       }
     },
-    
+    systemProps: {davDisplayName: {range: 'string', readOnly: true}, davGetLastModified: {range: 'long', readOnly: true}},
+    isSystemProp: function(p) {
+      p = typeof p === 'string' ? p : p.shortName;
+      return /^\_/.test(p) || !!U.systemProps[p];
+    },
     imageResourceProps: ['ImageResource.originalImage', 'ImageResource.smallImage', 'ImageResource.mediumImage', 'ImageResource.bigImage', 'ImageResource.bigMediumImage'],
     inlinedPropRegex: /model\/company\/Money|system\/primitiveTypes\/Duration|system\/fog\/ComplexDate$/,
     isInlined: function(prop) {
-      return U.inlinedPropRegex.test(prop.range) || U.inlinedPropRegex.test(prop.facet);
+      return (prop.range && U.inlinedPropRegex.test(prop.range)) || (prop.facet && U.inlinedPropRegex.test(prop.facet));
+    },
+    isTempUri: function(uri) {
+      return uri.indexOf("?__tempId__=") != -1;
+    },
+    makeTempUri: function(type, id) {
+      return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
     },
     slice: slice
+//    ,
+//    intersectObjects: function(array) {
+//      var rest = slice.call(arguments, 1);
+//      return _.filter(_.uniq(array), function(item) {
+//        return _.every(rest, function(other) {
+//          return _.any(other, function(element) { return _.isEqual(element, item); });
+//        });
+//      });
+//    }
   };
 
+  for (var p in U.systemProps) {
+    var prop = U.systemProps[p];
+    prop.shortName = p;
+  }
+  
   var patterns = U.uriPatternMap = {};
   // Tree/32000
   patterns[/^[A-Z]+([^\?]*)$/] = function(uri, matches, vocModel) {

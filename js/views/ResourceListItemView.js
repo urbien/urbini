@@ -237,10 +237,6 @@ define([
               continue;
             }
                   
-            if (p.charAt(0) == '_')
-              continue;
-            if (p == 'davDisplayName')
-              continue;
             if (prop1['displayNameElm'])
               continue;
             if (!U.isPropVisible(res, prop1))

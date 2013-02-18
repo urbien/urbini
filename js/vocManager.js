@@ -411,6 +411,7 @@ define([
       else
         m.properties = _.clone(myProps);
       
+      _.extend(m.properties, U.systemProps);
       var superInterfaces = m.superClass.interfaces;
       m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
       m.prototype.initialize = Voc.getInit.apply(m);

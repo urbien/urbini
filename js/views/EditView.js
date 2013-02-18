@@ -9,7 +9,7 @@ define([
 ], function(G, Templates, Events, Errors, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
-    return p.charAt(0) != '_' && p != 'davDisplayName' && U.isPropEditable(res, prop, role);
+    return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
     
   return BasicView.extend({
@@ -279,6 +279,9 @@ define([
       }
     },
     redirect: function(res, options) {
+      // TODO: fix this HACK
+      G.Router.Models[res.getUri()] = res;
+      
       var vocModel = this.vocModel;
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
@@ -447,6 +450,7 @@ define([
         
         // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         var onSaveError = function(resource, xhr, options) {
+          debugger;
           self.getInputs().attr('disabled', false);
           var code = xhr.code || xhr.status;
           if (xhr.statusText === 'error' || code === 0) {            
@@ -501,19 +505,13 @@ define([
         
         res.save(props, {
           success: function(resource, response, options) {
-            if (response.error) {
-              onSaveError(resource, response, options);
-              return;
-            }
-            
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
             self.dirtyBacklink();
             self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-          },
-          
+          }, 
           error: onSaveError
-        });        
+        });
       };
       
       var onError = function(errors) {
@@ -535,7 +533,7 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var errors = res.validate(_.extend(atts, this.initialParams), {validateAll: true, skipRefresh: true});
+      var errors = res.validate(_.extend({}, res.attributes, this.initialParams, atts), {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         onSuccess();

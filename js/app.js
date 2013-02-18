@@ -12,7 +12,7 @@ define('app', [
   'router'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
   Backbone.View.prototype.close = function() {
-    this.remove();
+    this.$el.detach();
     this.unbind();
     if (this.onClose){
       this.onClose();
@@ -73,19 +73,24 @@ define('app', [
     
     prepModels: function() {
       var self = this;
-      var error = function(info) {
+      var error = function(xhr, err, options) {
 //        debugger;
-        if (info.status === 0) {
-          if (G.online)
-            self.prepModels(); // keep trying
-          else {
-//            window.location.hash = '';
-//            window.location.reload();
-            Errors.offline();
+        if (!G.online) {
+          Errors.offline();
+        }
+        else if (xhr) {
+          if (xhr.status === 0) {
+            if (G.online)
+              self.prepModels(); // keep trying
+            else {
+  //            window.location.hash = '';
+  //            window.location.reload();
+              Errors.offline();
+            }
           }
         }
-        else if (info.error) {
-          throw new Error('failed to load app: ' + info.error.details);            
+        else if (err) {
+          throw new Error('failed to load app: ' + JSON.stringify(err));            
         }
         else {
           throw new Error('failed to load app');
@@ -117,6 +122,7 @@ define('app', [
       
       G.Router = new Router();
       Backbone.history.start();
+      setTimeout(RM.sync, 1000);
     },
     
     setupLoginLogout: function() {
@@ -230,6 +236,8 @@ define('app', [
       var hasWebWorkers = G.hasWebWorkers;
       Backbone.ajax = G.ajax = function(options) {
         var opts = _.clone(options);
+        opts.method = opts.method || opts.type;
+        opts.type = opts.dataType === 'json' ? 'JSON' : opts.type;
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
           if (opts.success) defer.done(opts.success);
@@ -256,7 +264,7 @@ define('app', [
               G.recycleWebWorker(xhrWorker);
             });
 
-            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method']));
+            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method', 'headers']));
           }
           else {
             G.log(App.TAG, 'xhr', '$.ajax', opts.url);
@@ -281,7 +289,15 @@ define('app', [
             }, 
             function(jqXHR, status, err) {
               debugger;
-              defer.reject(jqXHR, {code: jqXHR.status, details: err}, opts);
+              var text = jqXHR.responseText;
+              var error;
+              try {
+                error = JSON.parse(text).error;
+              } catch (err) {
+                error = {code: jqXHR.status, details: err};
+              }
+              
+              defer.reject(jqXHR, error, opts);
             });
           }
         }).promise();
@@ -292,8 +308,7 @@ define('app', [
       G.connectionListeners = [];
       var fn = G.setOnline;
       G.setOnline = function(online) {
-        debugger;
-        fn();
+        fn.apply(this, arguments);
         Events.trigger('online', online);
       };      
     }

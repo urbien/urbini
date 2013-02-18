@@ -256,14 +256,25 @@ define([
       this.viewsCache = this.MkResourceViews;
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
-      this.changePage(mPage);
+      try {
+        this.changePage(mPage);
+      } finally {
+        if (G.currentUser.guest)
+          Events.trigger('req-login');
+      }
     },
 
     edit: function(path) {
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
-      else
-        this.view.call(this, path, true);
+      else {
+        try {
+          this.view.call(this, path, true);
+        } finally {
+          if (G.currentUser.guest)
+            Events.trigger('req-login');
+        }
+      }
     },
     
     view: function (path, edit) {
@@ -348,12 +359,15 @@ define([
         this.Models[uri] = res;
         var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
         this.changePage(v);
-//        res.fetch({
-//          success: function() {Voc.fetchModelsForLinkedResources(res)}
-//        });
-//        setTimeout(function() {
-          res.fetch({forceFetch: forceFetch});
-//        }, 100);
+        res.fetch({
+          success: function() {
+            var newUri = res.getUri();
+            if (newUri !== uri) {
+              self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+            }
+          },
+          forceFetch: forceFetch
+        });
         
         return this;
       }
@@ -374,13 +388,20 @@ define([
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
-      var paintMap;
+//      var paintMap;
       var success = function(data) {
-        self.changePage(v);
-        Voc.fetchModelsForLinkedResources(res);
+        // in case we were at a temp uri, we want to clean up our history as best we can
+        var newUri = res.getUri();
+        if (newUri !== uri) {
+          self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+        }
+        else {
+          self.changePage(v);
+          Voc.fetchModelsForLinkedResources(res);
+        }
   //      self.loadExtras(oParams);
       }
-      
+    
       res.fetch({sync:true, success: success, forceFetch: forceFetch});
       return true;
     },
@@ -391,10 +412,18 @@ define([
      * @param uri: uri of a model
      */
     searchCollections: function(collections, uri) {
-      for (var query in collections) {
-        var m = collections[query].get(uri);
-        if (m) 
-          return {collection: collections[query], model: m};
+      if (arguments.length == 1) // if just uri is passed in, search all available collections
+        collections = this.Collections;
+      else
+        collections = [collections];
+      
+      for (var i = 0; i < collections.length; i++) {
+        var collectionsByQuery = collections[i];
+        for (var query in collectionsByQuery) {
+          var m = collectionsByQuery[query].get(uri);
+          if (m) 
+            return {collection: collectionsByQuery[query], model: m};
+        }
       }
       
       return null;
@@ -472,10 +501,14 @@ define([
       } finally {
         this.checkErr();
         if (this.removeFromView) {
+          var self = this;
           this.previousView && this.previousView.close();
           var cache = this.previousViewsCache;
           if (cache) {
-            var c = U.filterObj(cache, function(key, val) {return val === this.previousView});
+            var c = U.filterObj(cache, function(key, val) {
+              return val === self.previousView;
+            });
+            
             if (_.size(c))
               delete cache[U.getFirstProperty(cache)];
           }

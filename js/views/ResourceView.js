@@ -29,8 +29,8 @@ define([
     },
     refresh: function() {
       var res = this.resource;
-      if (res.lastFetchOrigin === 'edit')
-        return;
+//      if (res.lastFetchOrigin === 'edit')
+//        return;
       
       var collection, modified;
       if (U.isCollection(arguments[0])) {
@@ -122,10 +122,6 @@ define([
         }
         if (prop.autoincrement)
           continue;
-        if (p.charAt(0) == '_')
-          continue;
-        if (p == 'davDisplayName')
-          continue;
         if (prop.displayNameElm)
           continue;
         if (!U.isPropVisible(res, prop))
@@ -163,9 +159,12 @@ define([
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.$el.html(frag);      
-      this.$el.trigger('create');      
-      if (this.$el.hasClass('ui-listview'))
+      if (this.$el.hasClass('ui-listview')) {
+        this.$el.trigger('create');      
         this.$el.listview('refresh');
+      }
+      else
+        this.$el.trigger('create');      
 
       this.rendered = true;
       return this;

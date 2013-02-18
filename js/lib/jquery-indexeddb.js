@@ -25,18 +25,17 @@ define(['globals', 'indexedDBShim'], function(G) {
 //	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 	
 	function getDefaultTransaction(mode){
-		var result = null;
 		switch (mode) {
 			case 0:
+			  return usingShim ? mode : "readonly";
 			case 1:
+        return usingShim ? mode : "readwrite";
 			case "readwrite":
 			case "readonly":
-				result = mode;
-				break;
+				return mode;
 			default:
-				result = IDBTransaction.READ_WRITE || "readwrite";
+				return IDBTransaction.READ_WRITE || "readwrite";
 		}
-		return result;
 	}
 	
 	$.extend({
@@ -345,6 +344,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 					
 					return {
 						"each": function(callback, range, direction){
+					  debugger;
 							return wrap.cursor(function(){
 								if (direction) {
 									return idbIndex.openCursor(wrap.range(range), direction);
@@ -694,6 +694,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 										}
 									});
 								} else {
+								  debugger;
 									console.log("Error in transaction inside object store", err);
 									dfd.rejectWith(this, [err, e]);
 								}

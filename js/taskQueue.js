@@ -13,7 +13,7 @@ define(['globals'], function(G) {
 
     var runNonSeq = function(tasks, force) {
       tasks = tasks || q.nonseq;
-      var dfd = $.when.apply(null, _.map(_.pluck(tasks, "deferred"), function(m) {
+      var dfd = $.when.apply($, _.map(_.pluck(tasks, "deferred"), function(m) {
         return m.promise();
       })).promise();
       
@@ -91,9 +91,9 @@ define(['globals'], function(G) {
         q.nonseq.length = 0;
       }
       
-      $.when.apply(null, q.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
+      $.when.apply($, q.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
 //        var redefer = yields ? [runNonSeq(true)] : []; 
-        $.when.apply(null, yieldsFor.length ? [runNonSeq(yieldsFor, true)] : []).always(function() {  // if non-yielding, then run right away, otherwise force queued up non-sequentials to run first
+        $.when.apply($, yieldsFor.length ? [runNonSeq(yieldsFor, true)] : []).always(function() {  // if non-yielding, then run right away, otherwise force queued up non-sequentials to run first
           G.log(q.TAG, 'db', q.name, 'Running sequential task:', name);
           var taskPromise = task();
           taskPromise.name = name;

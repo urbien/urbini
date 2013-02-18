@@ -81,7 +81,7 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
-      var json = res.attributes;
+      var json = res.toJSON();
       json.viewId = this.cid;
       this.$el.html(this.template(json));
       

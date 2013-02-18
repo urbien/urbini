@@ -31,22 +31,36 @@ define([
 //      Backbone.defaultSync.apply(this, arguments);
 //      return;
 //    }
-    if (method === 'patch') {
+    if (_.contains(['patch', 'create'], method)) {
 //      Backbone.defaultSync.apply(this, arguments);
-      RM.saveItem(data);
+      if (options.sync)
+        Backbone.defaultSync.apply(this, arguments);
+      else
+        RM.saveItem(data, options);
+      
       return;
     }
     
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, fetchFromServer, numNow, shortPage, collection, resource,      
+    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
     defaultSuccess = options.success, 
     defaultError = options.error,
-    forceFetch = options.forceFetch || data.dirty,
+    forceFetch = options.forceFetch || data._dirty,
     synchronous = options.sync,
     now = G.currentServerTime(),
     isCollection = U.isCollection(data),
-    vocModel = data.vocModel;
+    vocModel = data.vocModel,
+    fetchFromServer = function(isUpdate, timeout) {
+      if (!isCollection && U.isTempUri(data.getUri())) {
+//        debugger;
+        options.error && options.error(data, {type: 'offline'}, options);
+        return;
+      }
+      
+      data.lastFetchOrigin = 'server';
+      return RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn);
+    }
     
-    data.dirty = false;
+    data._dirty = 0;
     if (isCollection)
       collection = data;
     else {
@@ -54,38 +68,8 @@ define([
       resource = data;
     }
     
-    var fetchFromServer = function(timeout, lastFetchedOn) {
-      data.lastFetchOrigin = 'server';
-      if (!forceFetch && lastFetchedOn && isUpdate) // && !shortPage)
-        RM.setLastFetched(lastFetchedOn, options);
-
-      var fetchHelper = function() {
-        if (options.sync || !G.hasWebWorkers)
-          return RM.defaultSync(method, data, options);
-        
-        G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers})
-          .done(function(data, status, xhr) {
-            options.success(data, status, xhr);
-          }).fail(function(xhr, status, msg) {
-            if (xhr.status === 304)
-              return;
-            
-            debugger;
-            G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
-            options.error(null, xhr, options);
-          });        
-      };
-      
-      if (timeout)
-        setTimeout(fetchHelper, timeout);
-      else
-        fetchHelper();
-    }
-
-
     if (isCollection) {
-      lastFetchedOn = collection._lastFetchedOn;
-      
+      lastFetchedOn = collection.resources.length && collection.resources[0].loaded && RM.getLastFetched(data, now);
       qMap = collection.queryMap;
       filter = U.getQueryParams(collection);
       isFilter = !!filter;
@@ -104,10 +88,9 @@ define([
       isUpdate = numNow >= end || shortPage;
       if (isUpdate) {
         if (forceFetch)
-          return fetchFromServer(100);
-        var lf = RM.getLastFetched(collection.resources, now);
-        if (RM.isStale(lf, now))
-          return fetchFromServer(100, lf); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
+          return fetchFromServer(isUpdate, 100);
+        if (RM.isStale(lastFetchedOn, now))
+          return fetchFromServer(isUpdate, 100); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
         else if (numNow) {
           defaultSuccess(null, 'success', {status: 304});
           return; // no need to fetch from db on update
@@ -118,23 +101,25 @@ define([
       }
     }
     else {      
+      lastFetchedOn = RM.getLastFetched(resource);
       isUpdate = resource.loaded || resource.collection;
       if (isUpdate) {
         if (forceFetch)
-          return fetchFromServer(100, ts);
+          return fetchFromServer(isUpdate, 100);
         
-        var ts = resource.get('_lastFetchedOn');
+        var ts = RM.getLastFetchedTimestamp(resource, now);
         if (RM.isStale(ts, now))
-          return fetchFromServer(100, ts);
+          return fetchFromServer(isUpdate, 100);
         else
           return;
       }
     }
+    
     var luri = window.location.hash;
     var key = luri &&  luri.indexOf('#make') == 0 ? null : this.getKey && this.getKey();
     if (!key) {
       if (G.online)
-        fetchFromServer();
+        fetchFromServer(isUpdate, 0);
       
       return;
     }
@@ -151,7 +136,7 @@ define([
     var dbPromise = RM.getItems(dbReqOptions);
     if (!dbPromise) {
       if (G.online)
-        fetchFromServer();
+        fetchFromServer(isUpdate, 0);
       else
         options.sync && options.error && options.error(data, {type: 'offline'}, options);
       
@@ -160,7 +145,7 @@ define([
     
     dbPromise.done(function(results) {
       if (!results || (isCollection && !results.length))
-        return fetchFromServer();
+        return fetchFromServer(isUpdate, 100);
     
       options.sync = false;
       // simulate a normal async network call
@@ -172,35 +157,37 @@ define([
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
-        if (forceFetch) {
-          fetchFromServer(0);
-          return;
-        }
+        if (forceFetch)
+          return fetchFromServer(isUpdate, 0);
         
         isUpdate = true;
         var lf = RM.getLastFetched(results, now);
-        if (RM.isStale(lf, now))
-          fetchFromServer(100, lf);
+        if (RM.isStale(lf, now)) {
+          data.lastFetchOrigin = 'server';
+          fetchFromServer(isUpdate, 100);
+        }
         
         return;
       }
       
       if (forceFetch) {
-        fetchFromServer(0);
-        return;
+        data.lastFetchOrigin = 'server';
+        return fetchFromServer(isUpdate, 0);
       }
       
       var numAfter = collection.resources.length;
       if (!isUpdate && numAfter === numBefore) // db results are useless
-        return fetchFromServer(100);
+        return fetchFromServer(isUpdate, 100);
       
       var lf = RM.getLastFetched(results, now);
-      if (RM.isStale(lf, now))
-        return fetchFromServer(100, lf);
+      if (RM.isStale(lf, now)) {
+        data.lastFetchOrigin = 'server';
+        return fetchFromServer(isUpdate, 100);
+      }
     }).fail(function(e) {
       if (e) 
         G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
-      fetchFromServer();
+      fetchFromServer(isUpdate, 0);
     }).progress(function(db, event) {
 //      debugger;
       error = error;
@@ -210,6 +197,40 @@ define([
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
+    fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
+      data.lastFetchOrigin = 'server';
+//      if (!forceFetch && isUpdate) // && !shortPage)
+      if (isUpdate) {
+        lastFetchedOn = lastFetchedOn || RM.getLastFetched(data);
+        RM.setLastFetched(lastFetchedOn, options);
+      }
+
+      if (timeout) {
+        var self = this, args = arguments;
+        setTimeout(function() {
+          RM._fetchHelper.apply(self, args);
+        }, timeout);
+      }
+      else
+        RM._fetchHelper.apply(this, arguments);
+    },
+    
+    _fetchHelper: function(method, data, options) {
+      if (options.sync || !G.hasWebWorkers)
+        return RM.defaultSync(method, data, options);
+      
+      G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers}).done(function(data, status, xhr) {
+        options.success(data, status, xhr);
+      }).fail(function(xhr, status, msg) {
+        if (xhr.status === 304)
+          return;
+        
+        debugger;
+        G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
+        options.error(null, xhr, options);
+      });      
+    },
+    
     createRefStore: function() {
       return $.Deferred(function(defer) {
         if (RM.db && RM.db.objectStoreNames.contains(RM.REF_STORE)) {
@@ -234,14 +255,7 @@ define([
         success.apply(this, arguments);
       }
       
-//      var err = options.error;
-      var req = Backbone.defaultSync(method, data, options);
-//      req.fail(function(jqXHR, status) {
-//        G.log(RM.TAG, 'sync', jqXHR, status);
-//        return (err || Error.getDefaultErrorHandler()).apply(this, [data, {type: status}]);
-//      });
-      
-      return req;
+      return Backbone.defaultSync(method, data, options);
     },
   
     /**
@@ -251,6 +265,10 @@ define([
     
     isStale: function(ts, now) {
       return !ts || (now || G.currentServerTime()) - ts > RM.maxDataAge;
+    },
+    
+    getLastFetchedTimestamp: function(resOrJson) {
+      return U.getValue(resOrJson, '_lastFetchedOn') || U.getValue(resOrJson, 'davGetLastModified');
     },
     
     getLastFetched: function(obj, now) {
@@ -263,12 +281,11 @@ define([
       switch (type) {
         case '[object array]':
           ts = _.reduce(obj, function(memo, next)  {
-            next = next.get ? next.get('_lastFetchedOn') : next._lastFetchedOn;
-            return Math.min(memo, next || 0);
+            return Math.min(memo, RM.getLastFetchedTimestamp(next) || 0);
           }, Infinity);
           break;
         case '[object object]':
-          ts = obj.get ? obj.get('_lastFetchedOn') : obj._lastFetchedOn;
+          ts = RM.getLastFetchedTimestamp(obj);
           break;
         case '[object number]':
           ts = obj;
@@ -357,11 +374,18 @@ define([
         return dfd;
       }
 
+      
       options = options || {};
       var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
+      if (toMake.indexOf('http://www.hudsonfog.com/voc/model/crm/SupportIssue') != -1)
+        debugger;
+      
+      if (RM.db && !RM.db.objectStoreNames.contains(RM.REF_STORE))
+        toMake.push(RM.REF_STORE);
+      
 //      toKill = _.union(toKill, Voc.changedModels); // , Voc.newModels);
-      var modelsChanged = function() {
-        return !!(toKill.length || toMake.length);
+      var needUpgrade = function() {
+        return !!(toKill.length || toMake.length) ;
       }
       
 //      if (toKill && toKill.length)
@@ -370,7 +394,7 @@ define([
       if (!version) {
         if (RM.db) {
           var currentVersion = isNaN(RM.db.version) ? 0 : parseInt(RM.db.version);
-          version = modelsChanged() ? currentVersion + 1 : currentVersion;
+          version = needUpgrade() ? currentVersion + 1 : currentVersion;
         }
       }
 
@@ -405,8 +429,13 @@ define([
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
         var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
+        if (!db.objectStoreNames.contains(RM.REF_STORE)) {
+          toMake.push(RM.REF_STORE);
+          version = currentVersion + 1;
+        }
+        
         if (!RM.db && !version) {
-          if (modelsChanged()) {
+          if (needUpgrade()) {
             G.log(RM.TAG, "db", "current db version: " + currentVersion + ", upgrading");
             version = currentVersion + 1;
           }
@@ -414,8 +443,8 @@ define([
             version = currentVersion;              
         }
         
+        RM.VERSION = version = typeof version === 'number' ? version : currentVersion; // just in case we want it later on, don't know for what yet 
         RM.db = db;
-        RM.VERSION = version; // just in case we want it later on, don't know for what yet
         if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
           dbPromise.resolve();
@@ -470,6 +499,7 @@ define([
     updateStores: function(trans, toMake, toKill) {
       toKill = _.union(_.intersection(toMake, toKill), toKill);
       for (var i = 0; i < toKill.length; i++) {
+        debugger;
         var type = toKill[i];
         if (RM.storeExists(type)) {
           try {
@@ -485,8 +515,10 @@ define([
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
         if (type === RM.REF_STORE) {
-          var store = trans.createObjectStore(type, {keyPath: 'id', autoIncrement: true});
-          store.createIndex('_uri', {unique: false, multiEntry: false});
+          var store = trans.createObjectStore(type, {keyPath: '_id', autoIncrement: true});
+          store.createIndex('_uri', {unique: true, multiEntry: false});
+          store.createIndex('_dirty', {unique: false, multiEntry: false});
+          store.createIndex('_tempUri', {unique: false, multiEntry: false}); // unique false because it might not be set at all
           continue;
         }
         
@@ -593,7 +625,7 @@ define([
             }
             
             G.log(RM.TAG, "db", 'Starting addItems Transaction');
-            RM.$db.transaction(classUri, IDBTransaction.READ_WRITE).promise().done(function() {
+            RM.$db.transaction(classUri, 1).promise().done(function() {
               G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
               defer.resolve();
             }).fail(function(err, e){
@@ -613,16 +645,17 @@ define([
     syncQueue: new TaskQueue("sync with server"),
     REF_STORE: "ref",
     sync: function() {
-      if (G.currentUser.guest || RM.syncQueue.hasMoreTasks()) // already have a sync queued up
+      if (!RM.db || G.currentUser.guest || RM.syncQueue.hasMoreTasks()) // already have a sync queued up
         return;
 
       if (!G.online) {
-        Events.once('online', RM.sync());
+        Events.once('online', RM.sync);
         return;
       }
         
       RM.syncQueue.runTask(function() {
         return $.Deferred(function(defer) {
+//          Index('dirty').eq(1).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
           RM.$db.objectStore(RM.REF_STORE, 0).getAll().done(function(results) {
             if (!results.length) {
               defer.resolve();
@@ -632,9 +665,6 @@ define([
             var types = [];
             for (var i = 0; i < results.length; i++) {
               var r = results[i];
-              if (!r.dirty) // already did this one
-                continue;
-              
               U.pushUniq(types, U.getTypeUri(r._uri));
             }
             
@@ -648,144 +678,261 @@ define([
         });
       }, {name: 'sync with server', sequential: true});
     },
-    
-    syncResources: function(resources) {
-      return $.Deferred(function(defer) {
-        var dfds = [];
-        var q = new TaskQueue('syncing some resources');
-        _.each(resources, function(resource, resIdx) {
-          var res = resource, idx = resIdx;
-          var uri = res._uri;
-          var id = res.id;
-          var type = U.getTypeUri(uri);
-          var vocModel = G.typeToModel[type];
-          var props = vocModel.properties;
-          q.runTask(function() {
-            return $.Deferred(function(dfd) {
-              dfds.push(dfd);
-              RM.$db.objectStore(type, 0).get(uri).done(function(item) {
-                debugger;
-                var updated = false, notReady = false;
-                for (var p in item) {
-                  var val = item[p], 
-                      prop = props[p];
-                  
-                  if (prop && U.isResourceProp(prop) && typeof val === 'string' && val.indexOf('?__tempId__=') != -1) {
-                    var match = _.filter(resources.slice(idx + 1), function(r) {
-                      return r._tempUri === val && r._uri;
-                    });
-                    
-                    if (match) {
-                      item[p] = r._uri;
-                      updated = true;
-                    }
-                    else {
-                      notReady = true;
-                      break;
-                    }
-                  }
-                }
-                
-                if (notReady) {
-                  if (updated)
-                    RM.$db.objectStore(type, 1).put(item).always(dfd.resolve);
-                  else
-                    dfd.resolve();
-                  
-                  return;
-                }
-                
-                var method = uri.indexOf('?__tempId__=') != -1 ? 'm/' : 'e/';
-                delete item._uri; // in case API objects to us sending it
-                item = U.prepForSync(item, vocModel);
-                item.$returnMade = true;
-                G.ajax({method: 'POST', type: 'JSON', url: G.apiUrl + method + encodeURIComponent(type), data: item, sync: false}).done(function(data, status, xhr) {
-                  debugger;
-                  if (status === 'success') {
-                    var newUri = res._uri = data._uri;
-                    if (newUri !== uri)
-                      data._oldUri = uri;
-                    
-                    RM.$db.objectStore(type, 1).put(data).done(function() {
-                      debugger;
-                      Events.trigger('synced.' + uri, data);
-                      res.dirty = false;
-                      RM.$db.objectStore(RM.REF_STORE, 1).put(res).done(dfd.resolve).fail(function() {
-                        debugger;
-                      });
-                    });
-                  }
-                  else {
-                    debugger;
-                    dfd.resolve();
-                  }
-                }).fail(function() {
-                  debugger;
-                  dfd.resolve(); // resolve in any case, so sync operation can conclude
-                });
-              }).promise();
-            });
-          }, {sequential: true});
+
+    saveToServer: function(updateInfo) {
+      return $.Deferred(function(dfd) {
+        var info = updateInfo,
+            resource = info.resource, 
+            ref = info.reference,
+            refs = info.references,
+            vocModel = resource.vocModel,
+            type = vocModel.type;
+        
+        var atts = _.omit(ref, '_tempUri', '_id', '_dirty');
+        atts.$returnMade = true;
+        resource.save(atts, { // ref has only the changes the user made
+          sync: true, 
+          success: function(model, data, options) {
+//            var diff = U.intersectObjects(data, atts);
+//            if (_.size(diff))
+//              debugger;
+            if (!data._uri) {
+              // TODO: handle errors
+              debugger;
+              dfd.resolve();
+            }
+            
+            var oldUri = ref._uri,
+                newUri = data._uri,
+                tempUri = ref._tempUri;
           
-          $.when(dfds).then(defer.resolve);
-        });      
+            ref = {
+              _uri: newUri, 
+              _dirty: 0, 
+              _id: ref._id
+            };
+            
+            tempUri = tempUri || (oldUri !== newUri && oldUri);
+            if (tempUri)
+              ref._tempUri = tempUri;
+            
+            RM.$db.transaction([type, RM.REF_STORE], 1).promise().done(function() {
+              Events.trigger('synced.' + oldUri, data);
+            }).fail(function() {
+              debugger;
+            }).progress(function(transaction) {
+              var resStore = transaction.objectStore(type, 1);
+              resStore.put(data);
+              transaction.objectStore(RM.REF_STORE, 1).put(ref);
+              if (newUri !== oldUri) {
+                resStore["delete"](oldUri);
+                data._oldUri = oldUri;
+              }              
+            }).always(dfd.resolve); // resolve in any case, so sync operation can conclude
+          },
+          error: function(model, xhr, options) {
+            debugger;
+            dfd.resolve(); // resolve in any case, so sync operation can conclude
+          }
+        });
       }).promise();
     },
     
-    saveItem: function(item, type) {
-      var isModel = U.isModel(item);
-      type = type ? type : isModel ? item.vocModel.type : U.getTypeUri(item.type._uri);
-      var now = G.currentServerTime();
-      var uri = item.getUri();
+    syncResource: function(ref, refs) {
+      return $.Deferred(function(dfd) {
+        var uri = ref._uri,
+            type = U.getTypeUri(uri),
+            id = ref.id,
+            vocModel = G.typeToModel[type],
+            props = vocModel.properties;
+
+        if (!RM.db.objectStoreNames.contains(type)) {
+          debugger;
+        }
+        
+//        RM.$db.objectStore(type, 0).get(uri).done(function(item) {
+          uri = ref._uri; // TODO: figure out why uri value gets lost
+          var updated = false, notReady = false;
+          for (var p in ref) {
+            if (/^_/.test(p)) // ignore props that start with an underscore
+              continue;
+            
+            var val = ref[p], 
+                prop = props[p];
+            
+            // check if we have any props pointing to temp uris, and if we do, check if we already uris for those resources. If yes, replace the temp uri with the real one
+            if (prop && U.isResourceProp(prop) && typeof val === 'string' && U.isTempUri(val)) {
+              // if the tempUri to which this resource points has already been sync'd with the server, and has a regular uri, we want to update this resource's pointer 
+              var match = _.filter(refs, function(r) {
+                return r._tempUri === val && r._uri; 
+              });
+              
+              if (match.length) {
+                ref[p] = match[0]._uri;
+                updated = true;
+              }
+              else {
+                notReady = true;
+                break;
+              }
+            }
+          }
+          
+          if (notReady) {
+            debugger;
+            if (updated) {
+              // not ready to sync with server, but we can update the item in its respective table
+              RM.$db.objectStore(RM.REF_STORE, 1).put(ref).done(function() {
+                var resStore = RM.$db.objectStore(type, 1);
+                resStore.get(uri).done(function(item) {
+                  debugger;
+                  resStore.put(_.extend(item, ref));
+                }).done(function() {
+                  debugger;
+                }).fail(function() {
+                  debugger;
+                }).always(dfd.resolve);                
+              }).fail(function() {
+                debugger;
+              }).always(function() {
+                dfd.resolve();
+                RM.sync(); // queue up another sync
+              });
+//              RM.$db.transaction([type, RM.REF_STORE], 1).progress(function(transaction) {
+//                var refStore = transaction.objectStore(RM.REF_STORE, 1);
+//                refStore.put(ref);
+//                
+//                var resStore = transaction.objectStore(type, 1);
+//                resStore.get(uri).done(function(item) {
+//                  debugger;
+//                  resStore.put(_.extend(item, ref));
+//                }).done(function() {
+//                  debugger;
+//                }).fail(function() {
+//                  debugger;
+//                }).always(dfd.resolve);
+//              });
+            }
+            else {
+              dfd.resolve();
+              RM.sync(); // queue up another sync
+            }
+            
+            return;
+          }
+          
+          var isMkResource = U.isTempUri(uri);
+          var method = isMkResource ? 'm/' : 'e/';
+  //          delete item._uri; // in case API objects to us sending it
+          
+          // TODO: remove HACK that uses G.router.Models to see if we have a model that we can save directly (without bypassing Backbone.sync and using ajax)
+          var router = G.Router;
+          var existingRes = router.Models[uri] || router.searchCollections(uri);
+          var existed = !!existingRes;
+          if (!existingRes)
+            existingRes = router.Models[uri] = new vocModel(ref);
+          
+          var info = {resource: existingRes, reference: ref, references: refs};
+          RM.saveToServer(info).always(dfd.resolve);
+//        });        
+      }).promise();
+    },
+    
+    syncResources: function(refs) {
+      return $.Deferred(function(defer) {
+        var dfds = [];
+        var q = new TaskQueue('syncing some refs');
+        _.each(refs, function(ref) {
+          if (ref._dirty) {
+            var dfd = q.runTask(function() {
+              return RM.syncResource(ref, refs);
+            }, {sequential: true});
+            
+            dfds.push(dfd);
+          }          
+        });
+        
+        $.when.apply($, dfds).always(function() {
+          defer.resolve();
+        });
+      }).promise();
+    },
+    
+    isSyncPostponable: function(vocModel) {
+      return vocModel && !U.isA(vocModel, "Buyable");
+    },
+    
+    saveItem: function(item, options) {
+      var vocModel = item.vocModel;
+      if (!RM.isSyncPostponable(vocModel)) {
+        item.save(undefined, _.extend(options, {sync: true}));
+        return;
+      }
+      
+      var now = G.currentServerTime(),
+        uri = item.getUri(),
+        type = vocModel.type;
+      
       var tempUri;
       if (!uri) {
-        tempUri = type + '?__tempId__=' + now;
+        tempUri = U.makeTempUri(type, now);
         item.set({'_uri': tempUri}, {silent: true});
       }
 
-      RM.createRefStore().done(function() {
-        var itemRef = {id: now, _uri: uri || tempUri};
-        if (uri) {
-          Index('_uri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
-            if (!results.length)
-              RM.saveItemHelper(itemRef, item, type);
-            else
-              RM.saveItemHelper(results[0], item, type);
-          }).fail(function() {            
-            RM.saveItemHelper(itemRef, item, type);
-          });
-        }
-        else if (tempUri) {
-          itemData._uri = tempUri;
-          RM.saveItemHelper(itemRef, item, type);
-        }
-      });
-    },
-    
-    saveItemHelper: function(itemRef, item, type) {
-      if (itemRef.dirty) {
-        // otherwise no need to save ref, it's already marked as dirty
-
-        RM.addItems([item], type).done(function() {
-          RM.sync();
+      var itemRef = _.extend({_id: now, _uri: uri || tempUri}, tempUri ? item.toJSON() : item.changed), 
+          done = options.success,
+          fail = options.error;
+      
+      if (uri) {
+        Index('_uri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
+          if (!results.length)
+            RM.saveItemHelper(itemRef, item, options);
+          else {
+            _.extend(itemRef, results[0]);
+            RM.saveItemHelper(results[0], item, options);
+          }
         }).fail(function() {
           debugger;
-//          RM.$db.objectStore("ref")["delete"](now);
-        });        
-      }
-      else {
-        itemRef.dirty = true;
-        RM.$db.objectStore(RM.REF_STORE).put(itemRef).done(function() {            
-          RM.addItems([item], type).done(function() {
-            RM.sync();
-          }).fail(function() {
-            debugger;
-  //          RM.$db.objectStore("ref")["delete"](now);
-          });
-        }).fail(function() {
-          debugger;
+          RM.saveItemHelper(itemRef, item, options);
         });
       }
+      else if (tempUri) {
+        itemRef._uri = tempUri;
+        RM.saveItemHelper(itemRef, item, options);
+      }
+    },
+    
+    saveItemHelper: function(itemRef, item, options) {
+      return $.Deferred(function(addDefer) {
+        var type = item.vocModel.type;
+        if (itemRef._dirty) {
+          // no need to save ref, it's already marked as dirty, just save the resource
+          RM.addItems([item], type).done(function() {
+            addDefer.resolve();
+            RM.sync();
+          }).fail(function() {
+            addDefer.reject();
+            debugger;
+  //          RM.$db.objectStore("ref")["delete"](now);
+          });        
+        }
+        else {
+          itemRef._dirty = 1;
+          RM.$db.objectStore(RM.REF_STORE).put(itemRef).done(function() {            
+            RM.addItems([item], type).done(function() {
+              addDefer.resolve();
+              RM.sync();
+            }).fail(function() {
+              addDefer.reject();
+              debugger;
+    //          RM.$db.objectStore("ref")["delete"](now);
+            });
+          }).fail(function() {
+            addDefer.reject();
+            debugger;
+          });
+        }
+      }).promise().done(options.success).fail(options.error);
     },
     
     deleteItem: function(uri) {
@@ -793,7 +940,7 @@ define([
 //      var type = U.getClassName(item._uri);
 //      var name = U.getClassName(type);
       var type = item._uri || item.vocModel.type;
-      var trans = RM.db.transaction([type], IDBTransaction.READ_WRITE);
+      var trans = RM.db.transaction([type], 1);
       var store = trans.objectStore(type);
       var request = store["delete"](uri);
     
@@ -1000,14 +1147,16 @@ define([
     },
     
     getItems: function(options) {
-      var type = U.getTypeUri(options.key);
-      var uri = options.uri;
-      var success = options.success;
-      var error = options.error;
-      var startAfter = options.startAfter;
-      var total = options.perPage;
-      var filter = options.filter;
-      var data = options.data;
+      var type = U.getTypeUri(options.key),
+          uri = options.uri,
+          isTemp = uri && U.isTempUri(uri),
+          success = options.success,
+          error = options.error,
+          startAfter = options.startAfter,
+          total = options.perPage,
+          filter = options.filter,
+          data = options.data;
+      
       if (!RM.storeExists(type)) {
         // don't upgrade here, upgrade when we add items to the db
         return false;
@@ -1016,7 +1165,7 @@ define([
       function queryWithoutIndex() {
         return $.Deferred(function(defer) {            
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
-          var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
+          var store = RM.$db.objectStore(type, 0);
           var valueTester = RM.buildValueTesterFunction(filter, data);
           var results = [];
           var filterResults = function(item) {
@@ -1040,8 +1189,52 @@ define([
       }
 
       return RM.runTask(function() {
-//        var store = $.indexedDB('lablz').objectStore(type, IDBTransaction.READ_ONLY);
         var results = [];
+        if (isTemp) {
+          var qDefer = $.Deferred();
+          Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
+            if (results.length) {
+              var item = results[0];
+              var realUri = item._uri;
+              if (realUri) {
+                RM.$db.objectStore(type, 0).get(realUri).done(qDefer.resolve).fail(qDefer.reject);
+                return;
+              }
+            }
+            
+            RM.$db.objectStore(type, 0).get(uri).done(qDefer.resolve).fail(qDefer.reject);
+          }).fail(function() {
+            debugger;
+            qDefer.reject();
+          })
+//          RM.$db.transaction([type, RM.REF_STORE], 0).progress(function(transaction) {
+//            var refStore = transaction.objectStore(RM.REF_STORE, 0),
+//                resStore = transaction.objectStore(type, 0);
+//            
+//            refStore.index('_tempUri').each(function(item) {
+//              item = item.value;
+//              var realUri = item._uri;
+//              if (realUri)
+//                resStore.get(realUri).done(qDefer.resolve).fail(qDefer.reject);
+//              else
+//                qDefer.resolve(item);
+//            }, uri).done(function() {
+//              if (!qDefer.isResolved())
+//                resStore.get(uri).done(qDefer.resolve).fail(qDefer.reject);
+//            }).fail(function() {
+//              debugger;
+//              !qDefer.isResolved() && qDefer.reject();
+//            });
+//          }).done(function() {
+//            !qDefer.isResolved() && qDefer.resolve();
+//          }).fail(function() {
+//            debugger;
+//            !qDefer.isResolved() && qDefer.reject();
+//          });
+          
+          return qDefer;
+        }
+        
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri)
           return store.get(uri).promise();
