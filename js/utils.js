@@ -1071,7 +1071,7 @@ define([
       if (!hasImgs)
         return null;
       
-      cloneOf = cloneOf[0];
+      cloneOf = cloneOf && cloneOf[0];
       hasImgs = false;
       for (var i = 0; !hasImgs  &&  i < models.length; i++) {
         var m = models[i];
@@ -1246,6 +1246,10 @@ define([
       });
       
       return memo;
+    },
+    
+    getPageUrl: function(mobileUrl) {
+      return G.pageRoot + '#' + mobileUrl;
     },
     
 //    /**

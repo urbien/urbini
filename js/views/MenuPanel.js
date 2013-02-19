@@ -130,17 +130,17 @@ define([
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
 
-        pageUrl = 'view/profile';
-        if (!hash  ||  hash != pageUrl) {
+        var mobileUrl = 'view/profile';
+        if (!hash  ||  hash != mobileUrl) {
           var title = 'Profile';
-          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb}));
-          self.tabs[title] = pageUrl;
+          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb}));
+          self.tabs[title] = U.getPageUrl(mobileUrl);
   
           U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
         }
       }
+      
       U.addToFrag(frag, this.menuItemTemplate({title: "Home", pageUrl: G.serverName + '/' + G.pageRoot, icon: 'home'}));
-
       ul.append(frag);
       
       this.rendered = true;

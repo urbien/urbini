@@ -159,7 +159,7 @@ define([
             }
           }
         }
-        self.router.navigate(hash, {trigger:true, replace: true});
+        self.router.navigate(hash, {trigger: true, replace: true});
 //        G.Router.changePage(self.parentView);
         // set text
       }
@@ -452,8 +452,8 @@ define([
         var onSaveError = function(resource, xhr, options) {
           debugger;
           self.getInputs().attr('disabled', false);
-          var code = xhr.code || xhr.status;
-          if (xhr.statusText === 'error' || code === 0) {            
+          var code = xhr ? xhr.code || xhr.status : 0;
+          if (!code || xhr.statusText === 'error') {            
             Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
             return;
           }
@@ -565,7 +565,7 @@ define([
         return;
       }
       
-      return Events.defaultClickHandler(e);
+//      return Events.defaultClickHandler(e);
     },
     onSelected: function(e) {
       var atts = {};

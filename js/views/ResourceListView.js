@@ -18,7 +18,7 @@ define([
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'click', 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
@@ -36,7 +36,7 @@ define([
       this.mode = mode;
     },
     events: {
-      'click': 'click'
+//      'click': 'click'
     },
     refresh: function(rl, modified) {
       if (rl && rl != this.collection)
@@ -242,7 +242,7 @@ define([
     },
     
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,
+//    click: Events.defaultClickHandler,
     swipe: function(e) {
       G.log(this.TAG, "info", "swipe");
     },

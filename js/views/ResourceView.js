@@ -15,7 +15,7 @@ define([
 
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
       this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
@@ -25,7 +25,7 @@ define([
       return this;
     },
     events: {
-      'click': 'click'
+//      'click': 'click'
     },
     refresh: function() {
       var res = this.resource;
@@ -43,7 +43,7 @@ define([
       this.render();
     },
 //    tap: Events.defaultTapHandler,  
-    click: Events.defaultClickHandler,
+//    click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
       var res = this.resource;

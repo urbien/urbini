@@ -13,6 +13,33 @@ define('app', [
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
+//  _.extend(Backbone.History.prototype, {
+//
+//    // react to a back/forward button, or an href click.  a "soft" route
+//   checkUrl: function(e) {
+//      var current = this.getFragment();
+//      if (current == this.fragment && this.iframe)
+//          current = this.getFragment(this.getHash(this.iframe));
+//      if (current == this.fragment) return false;
+//      if (this.iframe) this.navigate(current);
+//      // CHANGE: tell loadUrl this is a soft route
+//      this.loadUrl(undefined, true) || this.loadUrl(this.getHash(), true);
+//    },
+//
+//    // this is called in the whether a soft route or a hard Router.navigate call
+//    loadUrl: function(fragmentOverride, soft) {
+//      var fragment = this.fragment = this.getFragment(fragmentOverride);
+//      var matched = _.any(this.handlers, function(handler) {
+//        if (handler.route.test(fragment)) {
+//          // CHANGE: tell Router if this was a soft route
+//          handler.callback(fragment, soft);
+//          return true;
+//        }
+//      });
+//      return matched;
+//    }
+//  });
+  
   Backbone.View.prototype.close = function() {
     this.$el.detach();
     this.unbind();

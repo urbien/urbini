@@ -20,7 +20,7 @@ define([
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
+      _.bindAll(this, 'render', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('resourceEdit'));
@@ -38,7 +38,7 @@ define([
     },
     events: {
       'click #edit': 'edit',
-      'click': 'click',
+//      'click': 'click',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
@@ -73,10 +73,10 @@ define([
 //      return Events.defaultTapHandler.apply(this, arguments);
 //    },
 //    click: Events.defaultClickHandler,  
-    click: function(e) {
-      clicked = true;
-      Events.defaultClickHandler(e);  
-    },
+//    click: function(e) {
+//      clicked = true;
+//      Events.defaultClickHandler(e);  
+//    },
 
     render:function (eventName) {
       G.log(this.TAG, "render");

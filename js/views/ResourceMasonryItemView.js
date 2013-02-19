@@ -31,9 +31,10 @@ define([
     },
 //    tap: Events.defaultTapHandler,
     click: function(e) {
-      if (this.mvProp)
-        Events.defaultClickHandler(e);  
-      else {
+//      if (this.mvProp)
+//        Events.defaultClickHandler(e);  
+//      else {
+      if (!this.mvProp) {
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
