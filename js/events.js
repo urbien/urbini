@@ -2,8 +2,9 @@
 define([
   'globals', 
   'underscore',
-  'backbone'
-], function(G, _, Backbone) {
+  'backbone',
+  'jquery'
+], function(G, _, Backbone, $) {
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',
@@ -13,27 +14,31 @@ define([
       e.stopImmediatePropagation();
     },
     defaultClickHandler: function(e) {
-      G.log(this.TAG || Events.TAG, 'events', 'click');
+      _.debounce(function() {        
+        G.log(this.TAG || Events.TAG, 'events', 'click');
 //      var event = e.originalEvent;
-      var el = e.target;
-      var $el = $(el);
-      var p = $el;
-      var foundLink = false;
-      while (!(foundLink = p.prop('tagName') == 'A') && (p = p.parentNode)) {
-      }
-      
-      if (!foundLink)
-        return true;
-      
-      var href = $el.attr('href') || $el.attr('link');
-      if (href && href != '#') {
-        Events.stopEvent(e);
-        var hashIdx = href.indexOf('#');
-        var fragment = hashIdx == -1 ? href : href.slice(hashIdx + 1);
-        return G.Router.navigate(fragment, {trigger: true});
-      }
-      else
-        return true;
+        var el = e.target;
+        var $el = $(el);
+        var p = $el;
+        var foundLink = false;
+        while (!(foundLink = p.prop('tagName') == 'A') && (p = p.parentNode)) {
+        }
+        
+        if (!foundLink)
+          return true;
+        
+        var href = $el.attr('href') || $el.attr('link');
+        if (href && href != '#') {
+          Events.stopEvent(e);
+          var hashIdx = href.indexOf('#');
+          var fragment = hashIdx == -1 ? href : href.slice(hashIdx + 1);
+          debugger;
+          p.attr('disabled', true);
+          return G.Router.navigate(fragment, {trigger: true});
+        }
+        else
+          return true;
+      }, 500, true);
     }
   
   //  Events.defaultClickHandler = function(e) {
