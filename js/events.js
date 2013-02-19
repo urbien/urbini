@@ -30,7 +30,7 @@ define([
         Events.stopEvent(e);
         var hashIdx = href.indexOf('#');
         var fragment = hashIdx == -1 ? href : href.slice(hashIdx + 1);
-        return G.Router.navigate(fragment, true);
+        return G.Router.navigate(fragment, {trigger: true});
       }
       else
         return true;
@@ -48,7 +48,7 @@ define([
   //  
   //    event.preventDefault();
   //    var href = $el.prop('href');
-  //    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), true);
+  //    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), {trigger: true});
   //  };
   }, Backbone.Events);
   return Events;

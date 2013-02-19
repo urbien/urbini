@@ -61,20 +61,23 @@ define([
         });
       });      
     },
+    
+    defaultOptions: {
+      forceRefresh: false,
+      extraParams: {},
+      removeFromView: false
+    },
+    
     navigate: function(fragment, options) {
-      this.forceRefresh = options.forceRefresh;
-      this.removeFromView = options.removeFromView;
-      this.previousView = this.currentView;
-      this.previousFragment = U.getHash();
-      this.previousViewsCache = this.viewsCache;
-      if (options) {
-        this.errMsg = options.errMsg;
-        this.info = options.info;
-      }
-      
+      options = options || {};
+      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceRefresh', 'removeFromView', 'errMsg', 'info'), {
+        previousView: this.currentView, 
+        previousFragment: U.getHash(), 
+        previousViewsCache: this.viewsCache
+      });
+            
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-      this.forceRefresh = false;
-      this.removeFromView = false;
+      _.extend(this, this.defaultOptions);
       return ret;
     },
     
@@ -181,7 +184,7 @@ define([
         return this;
       
       var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
-      var listView = new ListPage({model: list});
+      var listView = new ListPage(_.extend(this.extraParams || {}, {model: list}));
       
       this.Collections[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
@@ -357,7 +360,7 @@ define([
       if (res) {
         this.currentModel = res;
         this.Models[uri] = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+        var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
         this.changePage(v);
         res.fetch({
           success: function() {
@@ -387,7 +390,7 @@ define([
 //        return this;
       
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
+      var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
 //      var paintMap;
       var success = function(data) {
         // in case we were at a temp uri, we want to clean up our history as best we can

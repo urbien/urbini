@@ -136,10 +136,9 @@ define([
         }
   
         var ajaxSettings = _.extend({
-          type: 'JSON', 
           url: G.modelsUrl, 
           data: {models: modelsCsv}, 
-          method: 'POST', 
+          type: 'POST', 
           timeout: 5000
         }, _.pick(options, 'sync'));
         
@@ -587,7 +586,7 @@ define([
         models = _.uniq(models).join(',');
       }
       
-      G.ajax({method: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
+      G.ajax({type: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
         debugger;
         Voc.setupHandlers(data);
       });

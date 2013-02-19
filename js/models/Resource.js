@@ -252,7 +252,7 @@ define([
     },
 
     save: function(attrs, options) {
-      options = _.extend({emulateHTTP: true, silent: true, patch: true}, options || {});
+      options = _.extend({silent: true, patch: true}, options || {});
       var data = attrs || options.data || this.attributes;
       if (options.sync) {
         data = U.prepForSync(data, this.vocModel);
@@ -266,11 +266,11 @@ define([
           delete data._uri;
   
         var self = this;
-        var qs = U.getQueryString(data);
-        if (options.queryString)
-          qs += '&' + options.queryString;
+//        var qs = U.getQueryString(data);
+//        if (options.queryString)
+//          qs += '&' + options.queryString;
         
-        options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
+        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
         var success = options.success;
         options.success = function(resource, response, opts) {
           success && success.apply(this, arguments);
@@ -315,7 +315,7 @@ define([
 //      var qs = U.getQueryString(data);
 //      if (options.queryString)
 //        qs += '&' + options.queryString;
-//      options = _.extend({url: this.saveUrl(attrs), emulateHTTP: true, silent: true, patch: true}, options, {data: qs});
+//      options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: qs});
 //      
 //      var success = options.success;
 //      options.success = function(resource, response, opts) {

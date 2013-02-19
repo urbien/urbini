@@ -32,7 +32,6 @@ define([
 //      return;
 //    }
     if (_.contains(['patch', 'create'], method)) {
-//      Backbone.defaultSync.apply(this, arguments);
       if (options.sync)
         Backbone.defaultSync.apply(this, arguments);
       else
@@ -219,7 +218,7 @@ define([
       if (options.sync || !G.hasWebWorkers)
         return RM.defaultSync(method, data, options);
       
-      G.ajax({type: 'JSON', url: options.url, method: 'GET', headers: options.headers}).done(function(data, status, xhr) {
+      G.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
         options.success(data, status, xhr);
       }).fail(function(xhr, status, msg) {
         if (xhr.status === 304)
@@ -889,7 +888,7 @@ define([
             RM.saveItemHelper(itemRef, item, options);
           else {
             _.extend(itemRef, results[0]);
-            RM.saveItemHelper(results[0], item, options);
+            RM.saveItemHelper(itemRef, item, options);
           }
         }).fail(function() {
           debugger;

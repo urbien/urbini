@@ -979,7 +979,7 @@ define('cache', function() {
 
     sendXhr: function (options) {
       var url = options.url;
-      var method = (options.method || 'GET').toUpperCase();      
+      var method = (options.type || 'GET').toUpperCase();      
       var xhr = G.createXhr();      
       var params = options.data;
       xhr.open(method, url, true);
@@ -1323,7 +1323,7 @@ define('cache', function() {
       var useWorker = G.hasWebWorkers && async;
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
-        method: 'POST',
+        type: 'POST',
         data: data
       };
       
@@ -1385,7 +1385,7 @@ define('cache', function() {
           G.recycleWebWorker(this);
         };
         
-        getBundleReq.type = 'JSON';
+        getBundleReq.dataType = 'JSON';
         xhrWorker.postMessage(getBundleReq);  
       }
       else {      

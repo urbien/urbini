@@ -3,8 +3,8 @@ if (typeof JSON === 'undefined' || !JSON.parse || !JSON.stringify)
 importScripts('io.js');
 onmessage = function(event) {
   var options = event.data;
-  var type = options.type;
-  delete options.type;
+  var dataType = options.dateType || 'JSON';
+  delete options.dataType;
   var xhr = sendXhr(options);
   var status = xhr.status;
   var text = xhr.responseText;
@@ -13,7 +13,7 @@ onmessage = function(event) {
     responseText: text
   };
   
-  if (text && type && type.toUpperCase() == 'JSON') {
+  if (text && dataType && dataType.toUpperCase() == 'JSON') {
     try {
       resp.data = JSON.parse(text);
       resp.responseText = null;

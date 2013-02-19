@@ -11,6 +11,8 @@ define('app', [
   'resourceManager',
   'router'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
+  Backbone.emulateHTTP = true;
+  Backbone.emulateJSON = true;
   Backbone.View.prototype.close = function() {
     this.$el.detach();
     this.unbind();
@@ -236,8 +238,8 @@ define('app', [
       var hasWebWorkers = G.hasWebWorkers;
       Backbone.ajax = G.ajax = function(options) {
         var opts = _.clone(options);
-        opts.method = opts.method || opts.type;
-        opts.type = opts.dataType === 'json' ? 'JSON' : opts.type;
+        opts.type = opts.method || opts.type;
+        opts.dataType = opts.dataType || 'JSON';
         var useWorker = hasWebWorkers && !opts.sync;
         return new $.Deferred(function(defer) {
           if (opts.success) defer.done(opts.success);
@@ -264,11 +266,11 @@ define('app', [
               G.recycleWebWorker(xhrWorker);
             });
 
-            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'method', 'headers']));
+            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
           }
           else {
             G.log(App.TAG, 'xhr', '$.ajax', opts.url);
-            $.ajax(_.pick(opts, ['timeout', 'method', 'url', 'headers', 'data'])).then(function(data, status, jqXHR) {
+            $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType'])).then(function(data, status, jqXHR) {
 //              debugger;
               if (status != 'success') {
                 defer.reject(jqXHR, status, opts);

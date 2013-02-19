@@ -1,6 +1,6 @@
 function sendXhr(options) {
   var url = options.url;
-  var method = (options.method || 'GET').toUpperCase();
+  var method = (options.type || 'GET').toUpperCase();
   var xhr;
   if (XMLHttpRequest) {              
     xhr = new XMLHttpRequest();              

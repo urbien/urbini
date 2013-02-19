@@ -31,9 +31,11 @@ define([
 //          }
 //          
 //          $('.formElement').attr('disabled', false);
-          self.router.navigate(window.location.href, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-        },
-        queryString: 'deploy=true'
+//          self.router.navigate(U.getHash(), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        window.location.reload();
+        }
+//      ,
+//        queryString: 'deploy=true'
 //        error: onSaveError
       });
       return this;
