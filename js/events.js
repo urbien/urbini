@@ -52,7 +52,7 @@ define([
   //  
   //    event.preventDefault();
   //    var href = $el.prop('href');
-  //    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), {trigger: true});
+  //    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), {trigger: false});
   //  };
   }, Backbone.Events);
   return Events;

@@ -52,7 +52,7 @@ define([
 //      // open menu
 //      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
 //      menuPanel.render();
-////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: false, replace: false});
     },
     submit: function(e) {
 //      Events.stopEvent(e);

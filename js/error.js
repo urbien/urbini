@@ -36,11 +36,11 @@ define([
             if (!errMsg) {
               if (originalModel && (U.isModel(originalModel) || U.isCollection(originalModel))) // && originalModel.queryMap.length == 0)))
                 errMsg = "No results were found for your query";
-  //              router.navigate(defaultDestination || originalModel.shortName || originalModel.constructor.shortName, {trigger: true, replace: true, errMsg: "No results were found for your query"});
+  //              router.navigate(defaultDestination || originalModel.shortName || originalModel.constructor.shortName, {trigger: false, replace: true, errMsg: "No results were found for your query"});
             else
                 errMsg = Errors.not_found;
             }
-//              router.navigate(defaultDestination || G.homePage, {trigger: true, replace: true, errMsg: Error.not_found});            
+//              router.navigate(defaultDestination || G.homePage, {trigger: false, replace: true, errMsg: Error.not_found});            
             Errors.errDialog({msg: errMsg, delay: 1000});
             return;
           default:
@@ -48,14 +48,14 @@ define([
               case 'offline':
               case 'timeout':
 //                Events.trigger('error', err.details ? err : _.extend(err, {details: Errors.OFFLINE}));
-//                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Errors[G.online ? type : 'offline']});
+//                router.navigate(defaultDestination, {trigger: false, replace: true, errMsg: err.details || Errors[G.online ? type : 'offline']});
                 window.history.back();
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
-//                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Errors.not_found});
+//                router.navigate(G.homePage, {trigger: false, replace: true, errMsg: err && err.details || Errors.not_found});
                 window.history.back();
                 Errors.errDialog({msg: err.details || Errors.not_found, delay: 1000});
             }

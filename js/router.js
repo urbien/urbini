@@ -368,7 +368,7 @@ define([
           success: function() {
             var newUri = res.getUri();
             if (newUri !== uri) {
-              self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+              self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
             }
           },
           forceFetch: forceFetch
@@ -398,7 +398,7 @@ define([
         // in case we were at a temp uri, we want to clean up our history as best we can
         var newUri = res.getUri();
         if (newUri !== uri) {
-          self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+          self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
         }
         else {
           self.changePage(v);
