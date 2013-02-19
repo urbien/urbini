@@ -30,7 +30,7 @@ define([
 //      });
     },
     events: {
-      'click': 'click',
+//      'click': 'click',
       'swipe': 'onSwipe',
       'swiperight': 'onSwipe',
       'swipeleft': 'onSwipe'
@@ -38,7 +38,7 @@ define([
     onSwipe: function(e) {
       Events.stopEvent(e);
     },
-    click: Events.defaultClickHandler,  
+//    click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this, args = arguments;
       G.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {

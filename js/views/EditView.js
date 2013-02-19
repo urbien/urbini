@@ -159,7 +159,7 @@ define([
             }
           }
         }
-        self.router.navigate(hash, {trigger:true, replace: true});
+        self.router.navigate(hash, {trigger: false, replace: true});
 //        G.Router.changePage(self.parentView);
         // set text
       }
@@ -185,7 +185,7 @@ define([
           params.$forResource = uri;
         
         params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: false});
       }
       else if (U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel)) { 
         var title = U.getQueryParams(window.location.hash)['$title'];
@@ -206,16 +206,16 @@ define([
 //          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
 //          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
-//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: false});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: false});
       }
       else  {
         var w = pr.where;
         if (!w)
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: false});
         else {
           w = w.replace(' ', '').replace('==', '=').replace('!=', '=!').replace('&&', '&');
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: true});
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: false});
         }
       }
     },
@@ -405,7 +405,7 @@ define([
       
       if (!isEdit && uri) {
         this.dirtyBacklink();
-        this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        this.redirect(res, {trigger: false, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
       
@@ -508,7 +508,7 @@ define([
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
             self.dirtyBacklink();
-            self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+            self.redirect(res, {trigger: false, replace: true, forceRefresh: true, removeFromView: true});
           }, 
           error: onSaveError
         });
@@ -565,7 +565,7 @@ define([
         return;
       }
       
-      return Events.defaultClickHandler(e);
+//      return Events.defaultClickHandler(e);
     },
     onSelected: function(e) {
       var atts = {};

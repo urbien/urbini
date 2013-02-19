@@ -42,7 +42,7 @@ define([
 //    },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: false, replace: true});
       return this;
     },
     logout: function(e) {
@@ -66,7 +66,7 @@ define([
         var href = idx == -1 ? href : href.slice(idx + 1)
         if (this.tabs[text] == href) {
           e.originalEvent.preventDefault();
-          this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
+          this.router.navigate(href, {trigger: false, replace: true, destinationTitle: text});
           return;
         }
       }

@@ -20,10 +20,10 @@ define([
       return this;
     },
     events: {
-      'click': 'click'
+//      'click': 'click'
     },
 //    tap: Events.defaultTapHandler,
-    click: Events.defaultClickHandler,  
+//    click: Events.defaultClickHandler,  
     render: function(event) {
       var json = this.resource.toJSON();
       var thumb = json['submitter.thumb'];

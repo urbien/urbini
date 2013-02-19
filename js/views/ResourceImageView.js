@@ -10,14 +10,14 @@ define([
   return BasicView.extend({
     TAG: "ResourceImageView",
     initialize: function(options) {
-      _.bindAll(this, 'render','click'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       return this;
     },
     events: {
-      'click': 'click'
+//      'click': 'click'
     },
-    click: Events.defaultClickHandler,
+//    click: Events.defaultClickHandler,
     refresh: function() {
       G.log(this.TAG, "info", "refresh resource");
       return this;

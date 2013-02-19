@@ -15,6 +15,7 @@ define([
 ], function(G, U, Events, Errors, Resource, ResourceList, Voc, HomePage/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
+    TAG: 'Router',
     routes:{
       ""                : "home",
       ":type"           : "list", 
@@ -68,23 +69,24 @@ define([
       removeFromView: false
     },
     
-    navigate: function(fragment, options) {
-      options = options || {};
-      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceRefresh', 'removeFromView', 'errMsg', 'info'), {
-        previousView: this.currentView, 
-        previousFragment: U.getHash(), 
-        previousViewsCache: this.viewsCache
-      });
-            
-      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-      _.extend(this, this.defaultOptions);
-      return ret;
-    },
-    
-    route: function() {
-      return Backbone.Router.prototype.route.apply(this, arguments);
-    },
-    
+//    navigate: function(fragment, options) {
+//      G.log(this.TAG, 'events', 'navigate', fragment);
+//      options = options || {};
+//      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceRefresh', 'removeFromView', 'errMsg', 'info'), {
+//        previousView: this.currentView, 
+//        previousFragment: U.getHash(), 
+//        previousViewsCache: this.viewsCache
+//      });
+//            
+//      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
+//      _.extend(this, this.defaultOptions);
+//      return ret;
+//    },
+//    
+//    route: function() {
+//      return Backbone.Router.prototype.route.apply(this, arguments);
+//    },
+//    
 //    navigateDone: function() {
 //      this.navigating = false;
 //      this.backClicked = false;
@@ -135,7 +137,7 @@ define([
     list: function(oParams, mode) {
       if (!this.ListPage)
         return this.loadViews('ListPage', this.list, arguments);
-      
+
       var ListPage = this.ListPage;
       var self = this;
       var params = oParams.split("?");
@@ -366,7 +368,7 @@ define([
           success: function() {
             var newUri = res.getUri();
             if (newUri !== uri) {
-              self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+              self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
             }
           },
           forceFetch: forceFetch
@@ -396,7 +398,7 @@ define([
         // in case we were at a temp uri, we want to clean up our history as best we can
         var newUri = res.getUri();
         if (newUri !== uri) {
-          self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+          self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
         }
         else {
           self.changePage(v);
@@ -585,7 +587,8 @@ define([
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
       // perform transition
-      $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
+      console.trace();
+      $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
       Events.trigger('changePage', view);
 //      if (this.backClicked)
 //        $(window).resize();

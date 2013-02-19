@@ -20,7 +20,7 @@ define([
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'home', 'submit', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
       this.template = _.template(Templates.get(this.template));
@@ -37,7 +37,7 @@ define([
         this.listView.setMode(mode);
     },
     events: {
-      'click': 'click',
+//      'click': 'click',
       'click #nextPage': 'getNextPage',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
@@ -52,7 +52,7 @@ define([
 //      // open menu
 //      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
 //      menuPanel.render();
-////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: false, replace: false});
     },
     submit: function(e) {
 //      Events.stopEvent(e);
@@ -93,10 +93,10 @@ define([
   //    Events.trigger('nextPage', this.resource);    
   //  },
 //    tap: Events.defaultTapHandler,
-    click: function(e) {
-      clicked = true;
-      Events.defaultClickHandler(e);  
-    },
+//    click: function(e) {
+//      clicked = true;
+//      Events.defaultClickHandler(e);  
+//    },
     
     render:function (eventName) {
       G.log(this.TAG, 'render');  

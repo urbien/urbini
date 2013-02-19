@@ -11,7 +11,7 @@ define([
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'refresh', 'add'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.cpTemplate = _.template(Templates.get('cpTemplate'));
@@ -22,8 +22,9 @@ define([
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add',
-      'click': 'click'
+      'click a[data-shortName]': 'add'
+//        ,
+//      'click': 'click'
     },
     add: function(e) {
       var t = e.target;
@@ -44,7 +45,7 @@ define([
       };
       
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
+      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: false, replace: false});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {
@@ -63,7 +64,7 @@ define([
         this.$el.listview('refresh');
     },
 //    tap: Events.defaultTapHandler,  
-    click: Events.defaultClickHandler,
+//    click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
       var res = this.resource;

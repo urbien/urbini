@@ -20,7 +20,7 @@ define([
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
+      _.bindAll(this, 'render', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('resourceEdit'));
@@ -38,7 +38,7 @@ define([
     },
     events: {
       'click #edit': 'edit',
-      'click': 'click',
+//      'click': 'click',
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
@@ -53,19 +53,19 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
+//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: false, replace: false});
 //      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
 //      menuPanel.render();
     },
     home: function() {
-//      this.router.navigate('', {trigger: true, replace: false});
+//      this.router.navigate('', {trigger: false, replace: false});
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: false, replace: true});
       return this;
     },
 //    tap: function() {
@@ -73,10 +73,10 @@ define([
 //      return Events.defaultTapHandler.apply(this, arguments);
 //    },
 //    click: Events.defaultClickHandler,  
-    click: function(e) {
-      clicked = true;
-      Events.defaultClickHandler(e);  
-    },
+//    click: function(e) {
+//      clicked = true;
+//      Events.defaultClickHandler(e);  
+//    },
 
     render:function (eventName) {
       G.log(this.TAG, "render");

@@ -83,7 +83,7 @@ define([
       var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
-          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
+          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: false, forceRefresh: true});
         }, 
         error: function(model, xhr, options) {
           var json;
@@ -100,9 +100,9 @@ define([
       });
     },
     click: function(e) {
-      if (this.mvProp)
-        Events.defaultClickHandler(e);  
-      else {
+//      if (this.mvProp)
+//        Events.defaultClickHandler(e);  
+      if (!this.mvProp) {
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
