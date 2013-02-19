@@ -38,7 +38,7 @@ define([
         }
         else
           return true;
-      }, 500, true);
+      }, 10, true);
     }
   
   //  Events.defaultClickHandler = function(e) {
