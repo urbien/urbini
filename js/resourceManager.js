@@ -727,6 +727,7 @@ define([
             
             RM.$db.transaction([type, RM.REF_STORE], 1).promise().done(function() {
               Events.trigger('synced.' + oldUri, data);
+              dfd.resolve(ref);
             }).fail(function() {
               debugger;
             }).progress(function(transaction) {
@@ -748,6 +749,7 @@ define([
     },
     
     syncResource: function(ref, refs) {
+      debugger;
       return $.Deferred(function(dfd) {
         var uri = ref._uri,
             type = U.getTypeUri(uri),
@@ -842,7 +844,14 @@ define([
             existingRes = router.Models[uri] = new vocModel(ref);
           
           var info = {resource: existingRes, reference: ref, references: refs};
-          RM.saveToServer(info).always(dfd.resolve);
+          RM.saveToServer(info).always(function(updatedRef) {
+            if (!_.isEqual(ref, updatedRef)) {
+              var idx = refs.indexOf(ref);
+              refs[idx] = updatedRef;
+            }
+            
+            dfd.resolve();
+          });
 //        });        
       }).promise();
     },

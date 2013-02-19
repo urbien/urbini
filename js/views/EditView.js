@@ -14,7 +14,7 @@ define([
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp', 'dirtyBacklink'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp', 'incrementBLCount'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -26,8 +26,12 @@ define([
       
       var params = U.getQueryParams();
       var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
-      if (params.backLink && params.on)
-        init[params.backLink] = params.on;      
+      var bl = params.$backLink;
+      if (bl) {
+        this.backLink = bl;
+        init[bl] = params[bl];
+      }
+      
       this.resource.set(init, {silent: true});
       this.originalResource = this.resource.toJSON();
       
@@ -40,10 +44,32 @@ define([
       'click': 'click',
       'click input[data-datetime]': 'mobiscroll'
     },
-    dirtyBacklink: function() {
-      var bl = this.backlinkResource;
-      if (bl) 
-        bl.dirty = true;
+    /**
+     * up the counter on the backlink
+     */
+    incrementBLCount: function() {
+      var bl = this.backlinkResource,
+          blPropName = this.backLink;
+      
+      if (bl && blPropName) {
+        var blModel = bl.vocModel;
+        if (blModel) {
+          var backlinks = U.getPropertiesWith(blModel.properties, "backLink");
+          for (var blName in backlinks) {
+            var prop = backlinks[blName];
+            if (prop && prop.backLink === blPropName) {
+              var val = bl.get(blName);
+              if (val) {
+                val.count++;
+                bl.set(blName, val);
+              }
+            }
+          }
+        }
+      }
+      
+//      if (bl) 
+//        bl.dirty = true;
     },
     mobiscroll: function(e) {
       if (this.initializedScrollers)
@@ -185,7 +211,7 @@ define([
           params.$forResource = uri;
         
         params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: false});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
       }
       else if (U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel)) { 
         var title = U.getQueryParams(window.location.hash)['$title'];
@@ -206,16 +232,16 @@ define([
 //          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
 //          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
-//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: false});
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: false});
+//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
       }
       else  {
         var w = pr.where;
         if (!w)
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: false});
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
         else {
           w = w.replace(' ', '').replace('==', '=').replace('!=', '=!').replace('&&', '&');
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: false});
+          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: true});
         }
       }
     },
@@ -404,8 +430,9 @@ define([
           uri = res.getUri();
       
       if (!isEdit && uri) {
-        this.dirtyBacklink();
-        this.redirect(res, {trigger: false, replace: true, forceRefresh: true, removeFromView: true});
+//        this.incrementBLCount();
+        debugger;
+        this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
       
@@ -507,8 +534,10 @@ define([
           success: function(resource, response, options) {
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
-            self.dirtyBacklink();
-            self.redirect(res, {trigger: false, replace: true, forceRefresh: true, removeFromView: true});
+            if (!isEdit)
+              self.incrementBLCount();
+            
+            self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           }, 
           error: onSaveError
         });

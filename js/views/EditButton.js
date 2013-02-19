@@ -19,7 +19,7 @@ define([
     edit: function(e) {
       Events.stopEvent(e);
       var hash = window.location.hash.slice(1);
-      (G.Router || Backbone.history).navigate('edit/' + encodeURIComponent(this.resource.get('_uri')), {trigger: false});
+      (G.Router || Backbone.history).navigate('edit/' + encodeURIComponent(this.resource.get('_uri')), {trigger: true});
       return this;
     },
     render: function(options) {

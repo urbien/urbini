@@ -246,16 +246,18 @@ define([
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
       
-      var params = U.getHashParams();
-      var makeId = params['-makeId'];
+      var params = U.getHashParams(),
+          backLink = params.$backLink, 
+          backlinkResource = backLink && this.Models[params[backLink]],
+          makeId = params['-makeId'];
+      
       makeId = makeId ? parseInt(makeId) : G.nextId();
-      var backlinkModel = this.Models[params.on];
       var mPage = this.MkResourceViews[makeId];
       if (mPage && !mPage.model.get('_uri')) {
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, backlinkModel: backlinkModel, source: this.previousFragment});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, backLink: backLink, backlinkResource: backlinkResource, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;
@@ -368,7 +370,7 @@ define([
           success: function() {
             var newUri = res.getUri();
             if (newUri !== uri) {
-              self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
+              self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
             }
           },
           forceFetch: forceFetch
@@ -398,7 +400,7 @@ define([
         // in case we were at a temp uri, we want to clean up our history as best we can
         var newUri = res.getUri();
         if (newUri !== uri) {
-          self.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
+          self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
         }
         else {
           self.changePage(v);

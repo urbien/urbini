@@ -1,5 +1,6 @@
 function sendXhr(options) {
   var url = options.url;
+  
   var method = (options.type || 'GET').toUpperCase();
   var isPOST = method === 'POST', 
       isGET = method === 'GET';

@@ -32,7 +32,7 @@ define([
 //          }
 //          
 //          $('.formElement').attr('disabled', false);
-//          self.router.navigate(U.getHash(), {trigger: false, replace: true, forceRefresh: true, removeFromView: true});
+//          self.router.navigate(U.getHash(), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         window.location.reload();
         }
 //      ,

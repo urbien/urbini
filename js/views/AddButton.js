@@ -24,7 +24,7 @@ define([
 //      window.history.back();
       var colParams = U.getQueryParams(this.collection);
       colParams['-makeId'] = G.nextId();
-      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: false, replace: false});
+      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true, replace: false});
       return this;
     },
     render: function(options) {

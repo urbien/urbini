@@ -53,19 +53,19 @@ define([
     swiperight: function(e) {
       // open menu
       G.log(this.TAG, 'events', 'swiperight');
-//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: false, replace: false});
+//      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(6)), {trigger: true, replace: false});
 //      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
 //      menuPanel.render();
     },
     home: function() {
-//      this.router.navigate('', {trigger: false, replace: false});
+//      this.router.navigate('', {trigger: true, replace: false});
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: false, replace: true});
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
       return this;
     },
 //    tap: function() {

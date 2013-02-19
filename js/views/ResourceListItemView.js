@@ -83,7 +83,7 @@ define([
       var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
-          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: false, forceRefresh: true});
+          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
         }, 
         error: function(model, xhr, options) {
           var json;

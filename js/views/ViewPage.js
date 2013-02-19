@@ -43,14 +43,14 @@ define([
       G.log(this.TAG, 'events', 'swiperight');
     },
     home: function() {
-//      this.router.navigate(G.homePage, {trigger: false, replace: false});
+//      this.router.navigate(G.homePage, {trigger: true, replace: false});
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: false, replace: false});
+      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: false});
       return this;
     },
 //    tap: function() {

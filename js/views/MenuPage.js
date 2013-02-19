@@ -41,7 +41,7 @@ define([
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: false, replace: true});
+      this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
     click: function(e) {
@@ -58,7 +58,7 @@ define([
         var href = t.href.slice(t.href.lastIndexOf('#') + 1)
         if (this.tabs[text] == href) {
           Events.stopEvent(e);
-          this.router.navigate(href, {trigger: false, replace: true, destinationTitle: text});
+          this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
           return;
         }
       }

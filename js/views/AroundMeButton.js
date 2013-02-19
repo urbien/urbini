@@ -25,7 +25,7 @@ define([
       this.active = !this.active;
       var vocModel = this.vocModel;
       if (!this.active) {
-        Backbone.history.navigate(vocModel.shortName, {trigger: false});
+        Backbone.history.navigate(vocModel.shortName, {trigger: true});
         return this;
       }
       
@@ -67,7 +67,7 @@ define([
           params = isCollection ? U.getQueryParams(this.model) : {};
 
       _.extend(params, {latitude: coords.latitude, longitude: coords.longitude, '-item': item || 'me', '$orderBy': 'distance'});
-      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?" + U.getQueryString(params), {trigger: false});
+      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?" + U.getQueryString(params), {trigger: true});
       return this;
     }
   },
