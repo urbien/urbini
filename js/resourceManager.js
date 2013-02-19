@@ -32,8 +32,15 @@ define([
 //      return;
 //    }
     if (_.contains(['patch', 'create'], method)) {
-      if (options.sync)
-        Backbone.defaultSync.apply(this, arguments);
+      if (options.sync) {
+        if (!G.online) {
+          options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'});
+          return;
+        }
+        else {
+          Backbone.defaultSync.apply(this, arguments);
+        }
+      }
       else
         RM.saveItem(data, options);
       
@@ -669,7 +676,10 @@ define([
             
             Voc.fetchModels(types, {sync: false}).done(function() {
               RM.syncResources(results).done(defer.resolve).fail(defer.reject);
-            }).fail(defer.reject);            
+            }).fail(function() {
+              debugger;
+              defer.reject();
+            });            
           }).fail(function(error, event) {
             debugger;
             defer.reject(error, event);

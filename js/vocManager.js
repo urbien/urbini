@@ -142,83 +142,84 @@ define([
           timeout: 5000
         }, _.pick(options, 'sync'));
         
-        G.ajax(ajaxSettings)
-          .done(function(data, status, xhr) {
-            if (!data) {
-              debugger;
-              defer.rejectWith(this, [xhr, status, options]);
-              return;
-            }
-            
-            if (data.error) {
+        G.ajax(ajaxSettings).done(function(data, status, xhr) {
+          if (!data) {
+            debugger;
+            defer.rejectWith(this, [xhr, status, options]);
+            return;
+          }
+          
+          if (data.error) {
 //              error(data);
-              defer.rejectWith(this, [xhr, data.error, options]);
-              return;
-            }
+            defer.rejectWith(this, [xhr, data.error, options]);
+            return;
+          }
+          
+          var mz = data.models || [];
+          var needUpgrade = checkInModels(mz);
+          var pkg = data.packages;
+          if (pkg)
+            U.deepExtend(Voc.packages, pkg);
+          
+          G.lastModified = data.lastModified;
+          G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
+          var more = data.linkedModelsMetadata;
+          if (more) {
+            G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
+              m.type = U.getLongUri1(m.type);
+              return m;
+            }));
+          }
+          
+          if (data.classMap)
+            _.extend(G.classMap, data.classMap)
+          
+          var newModels = [];
+          for (var i = 0; i < mz.length; i++) {
+            var newModelJson = mz[i];
+            var p = newModelJson.path;
+            var lastDot = p.lastIndexOf('.');
+            var path = p.slice(0, lastDot);
+            var name = p.slice(lastDot + 1);
+            var sup = newModelJson.sPath;
+            newModelJson.lastModified = newModelJson.s.lastModified ? Math.max(G.lastModified, newModelJson.s.lastModified) : G.lastModified;
             
-            var mz = data.models || [];
-            var needUpgrade = checkInModels(mz);
-            var pkg = data.packages;
-            if (pkg)
-              U.deepExtend(Voc.packages, pkg);
+            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
+            var newModel;
+            if (newModelJson.s.enumeration)
+              newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
+            else
+              newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
             
-            G.lastModified = data.lastModified;
-            G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
-            var more = data.linkedModelsMetadata;
-            if (more) {
-              G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
-                m.type = U.getLongUri1(m.type);
-                return m;
-              }));
-            }
-            
-            if (data.classMap)
-              _.extend(G.classMap, data.classMap)
-            
-            var newModels = [];
-            for (var i = 0; i < mz.length; i++) {
-              var newModelJson = mz[i];
-              var p = newModelJson.path;
-              var lastDot = p.lastIndexOf('.');
-              var path = p.slice(0, lastDot);
-              var name = p.slice(lastDot + 1);
-              var sup = newModelJson.sPath;
-              newModelJson.lastModified = newModelJson.s.lastModified ? Math.max(G.lastModified, newModelJson.s.lastModified) : G.lastModified;
-              
-              // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-              var newModel;
-              if (newModelJson.s.enumeration)
-                newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
-              else
-                newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
-              
-              U.pushUniq(newModels, newModel);
-            }
-            
-  //          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
-            Voc.models = _.union(Voc.models, newModels);
-    //        for (var i = 0; i < newModels.length; i++) {
-    //          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
-    //        }
-  
-            Voc.initModels(newModels);          
-            setTimeout(function() {
-              Voc.saveModelsToStorage(newModels);
-            }, 100);
-            G.finishedTask("ajax models");
-            Voc.setupHandlers(data.handlers);
+            U.pushUniq(newModels, newModel);
+          }
+          
+//          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
+          Voc.models = _.union(Voc.models, newModels);
+  //        for (var i = 0; i < newModels.length; i++) {
+  //          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
+  //        }
+
+          Voc.initModels(newModels);          
+          setTimeout(function() {
+            Voc.saveModelsToStorage(newModels);
+          }, 100);
+          G.finishedTask("ajax models");
+          Voc.setupHandlers(data.handlers);
 //            success && success();
-            defer.resolve();
-            if (needUpgrade)
-              Events.trigger('modelsChanged');//, {success: success, error: error});
-          }).fail(function(xhr, err, aOpts) {
-            if (xhr.status === 304) {
-              checkInModels([]);
+          defer.resolve();
+          if (needUpgrade)
+            Events.trigger('modelsChanged');//, {success: success, error: error});
+        }).fail(function(xhr, err, aOpts) {
+          if (xhr.status === 304) {
+            checkInModels([]);
 //              success && success({fetched: 0});
-              defer.resolve({fetched: 0});
-              return;
-            }
-          });
+            defer.resolve({fetched: 0});
+            return;
+          }
+          else
+            defer.reject();
+        });
       }).promise();
     },
     

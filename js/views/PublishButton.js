@@ -24,6 +24,7 @@ define([
       var props = {deploy: true};
       var self = this;
       res.save(props, {
+        sync: true,
         success: function(resource, response, options) {
 //          if (response.error) {
 //            onSaveError(resource, response, options);

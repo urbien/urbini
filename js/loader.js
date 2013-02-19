@@ -1324,7 +1324,8 @@ define('cache', function() {
       var getBundleReq = {
         url: G.serverName + "/backboneFiles", 
         type: 'POST',
-        data: data
+        data: data,
+        dataType: 'JSON'
       };
       
       var complete = function(resp) {
@@ -1385,7 +1386,6 @@ define('cache', function() {
           G.recycleWebWorker(this);
         };
         
-        getBundleReq.dataType = 'JSON';
         xhrWorker.postMessage(getBundleReq);  
       }
       else {      

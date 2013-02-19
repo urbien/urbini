@@ -3,7 +3,7 @@ if (typeof JSON === 'undefined' || !JSON.parse || !JSON.stringify)
 importScripts('io.js');
 onmessage = function(event) {
   var options = event.data;
-  var dataType = options.dateType || 'JSON';
+  var dataType = options.dataType || 'JSON';
   delete options.dataType;
   var xhr = sendXhr(options);
   var status = xhr.status;

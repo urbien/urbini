@@ -1,6 +1,22 @@
 function sendXhr(options) {
   var url = options.url;
   var method = (options.type || 'GET').toUpperCase();
+  var isPOST = method === 'POST', 
+      isGET = method === 'GET';
+  
+  var params = options.data;
+  if (typeof params !== 'undefined' && typeof params !== 'string') {
+    var tmp = [];
+    for (var name in params) {
+      tmp.push(encodeURIComponent(name) + '=' + encodeURIComponent(params[name]));
+    }
+    
+    params = tmp.join('&');
+  }
+  
+  if (params && isGET)
+    url = url + '?' + params;
+  
   var xhr;
   if (XMLHttpRequest) {              
     xhr = new XMLHttpRequest();              
@@ -8,7 +24,6 @@ function sendXhr(options) {
     xhr = new ActiveXObject("Microsoft.XMLHTTP");
   }
 
-  
   xhr.open(method, url, false);
   var headers = options.headers;
   if (headers) {
@@ -16,19 +31,9 @@ function sendXhr(options) {
       xhr.setRequestHeader(name, headers[name]);
   }
   
-  var params = options.data;
-  if (method === 'POST') {
+  if (isPOST)
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    if (typeof params !== 'string') {
-      var tmp = [];
-      for (var name in params) {
-        tmp.push(encodeURIComponent(name) + '=' + encodeURIComponent(params[name]));
-      }
-      
-      params = tmp.join('&');
-    }
-  }
-  
+    
   xhr.send(params);
   return xhr;
 }
