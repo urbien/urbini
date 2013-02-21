@@ -40,6 +40,14 @@ define([
     changedModels: [],
 //    newModels: [],
     models: [Resource],
+//    getModels: function(models, options) {
+//      return $.Deferred(function() {
+//        for (var model in models) {
+//          
+//        }
+//      }).promise();
+//    },
+    
     fetchModels: function(models, options) {
       return $.Deferred(function(defer) {        
         options = options || {};

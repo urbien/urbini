@@ -595,10 +595,15 @@ define('globals', function() {
         config = config || (context && context.config) || {},
         cached;
 
-    if (name === 'jqueryMobile') {
+    if (G.isInAppcacheBundle(url)) {      
       orgRJSLoad.apply(this, arguments);
       return;
     }
+
+//    if (name === 'jqueryMobile') {
+//      orgRJSLoad.apply(this, arguments);
+//      return;
+//    }
         
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
@@ -655,7 +660,7 @@ define('globals', function() {
           loadModule(cached, url, context, name);
           G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
         } catch (err) {
-//          debugger;
+          debugger;
           G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
           G.localStorage.del(url);
           loadedCached = false;
@@ -707,7 +712,8 @@ define('cache', function() {
       TAG: 'cache',
       load: function (name, req, onLoad, config) {
         // hack for jsp, otherwise define callback function will not get jsp text
-        if (name === 'jqueryMobile') {
+        var url = G.getCanonicalPath(req.toUrl(name));
+        if (G.isInAppcacheBundle(url)) {
           req([name], function() {
             onLoad(name);
           });
@@ -836,6 +842,14 @@ define('cache', function() {
 //    isJQM: function(url) {
 //      return /^jquery\.mobile.*\.js$/.test(url);
 //    },
+    isInAppcacheBundle: function(url) {
+      var appcacheBundle = G.bundles.appcache;
+      url = url.slice(url.indexOf('/') + 1);
+      if (/\.js$/.test(url)) 
+        url = url.slice(0, url.length - 3);
+      
+      return !!G.files.appcache[url];
+    },
     setOnline: function(online) {
       G.online = online;
     }, // will fill out in app.js
@@ -897,16 +911,18 @@ define('cache', function() {
       return worker.onerror === undefined && worker.onmessage === undefined;
     },
     getXhrWorker: function() {
-      var cache = G.workerCache;
-      for (var i = 0; i < cache.length; i++) {
-        var w = cache[i];
-        if (G.isWorkerAvailable(w))
-          return w;
-      }
-      
-      var w = new Worker(G.serverName + '/js/xhrWorker.js');
-      G.workerCache.push(w);
-      return w;
+//      G.require('cache!io, cache!xhrWorker, cache!lib/json2', function() {
+        var cache = G.workerCache;
+        for (var i = 0; i < cache.length; i++) {
+          var w = cache[i];
+          if (G.isWorkerAvailable(w))
+            return w;
+        }
+        
+        var w = new Worker(G.serverName + '/js/xhrWorker.js');
+        G.workerCache.push(w);
+        return w;
+//      });
     },
     TAG: 'globals',
     checkpoints: [],
@@ -1293,7 +1309,7 @@ define('cache', function() {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
               
-            G.localStorage.del(url);
+//            G.localStorage.del(url);
           }
         }
 //        else
@@ -1604,7 +1620,7 @@ define('cache', function() {
 
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
-  G.files = {};
+  G.files = {appcache: {}};
   for (var when in G.bundles) {
     var bundle = G.bundles[when];
     for (var type in bundle) {
@@ -1614,6 +1630,9 @@ require(['globals'], function(G) {
         for (var prop in info) {
           var val = info[prop];
           G.files[prop] = val;
+          if (when === 'appcache') {
+            G.files.appcache[prop] = true;
+          }
         }
       }
     }
@@ -1637,18 +1656,16 @@ require(['globals'], function(G) {
       G.finishedTask("loading modules");
       G.browser = $.browser;
       App.initialize();
-//      setTimeout(function() {
-        G.startedTask('loading post-bundle');
-        G.loadBundle(G.bundles.post, function() {
-          G.finishedTask('loading post-bundle');
-          G.postBundleLoaded = true;
-          for (var i = 0; i < G.postBundleListeners.length; i++) {
-            G.postBundleListeners[i]();
-          }
-          
-          G.postBundleListeners.length = 0;
-        }, true);
-//      }, 100);
+      G.startedTask('loading post-bundle');
+      G.loadBundle(G.bundles.post, function() {
+        G.finishedTask('loading post-bundle');
+        G.postBundleLoaded = true;
+        for (var i = 0; i < G.postBundleListeners.length; i++) {
+          G.postBundleListeners[i]();
+        }
+        
+        G.postBundleListeners.length = 0;
+      }, true);
     });
   });
 })

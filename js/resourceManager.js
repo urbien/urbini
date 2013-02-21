@@ -331,7 +331,7 @@ define([
     defaultOptions: {keyPath: '_uri', autoIncrement: false},
     DB_NAME: "lablz",
     runTask: function() {
-      return this.taskQueue.runTask.apply(this.taskManager, arguments);
+      return this.taskQueue.runTask.apply(this.taskQueue, arguments);
     },
     taskQueue: new TaskQueue("DB"),
     
@@ -440,7 +440,8 @@ define([
           version = currentVersion + 1;
         }
         
-        if (!RM.db && !version) {
+        // user refreshed the page
+        if (!RM.db && !version) { 
           if (needUpgrade()) {
             G.log(RM.TAG, "db", "current db version: " + currentVersion + ", upgrading");
             version = currentVersion + 1;
@@ -449,7 +450,7 @@ define([
             version = currentVersion;              
         }
         
-        RM.VERSION = version = typeof version === 'number' ? version : currentVersion; // just in case we want it later on, don't know for what yet 
+        RM.VERSION = version = typeof version === 'number' ? Math.max(version, currentVersion) : currentVersion; // just in case we want it later on, don't know for what yet 
         RM.db = db;
         if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
@@ -622,36 +623,38 @@ define([
         }
         
         RM.runTask(function() {
-          return $.Deferred(function(defer) {
-            var vocModel = G.typeToModel[classUri];
+          var dfd = this; 
+          var vocModel = G.typeToModel[classUri];
+          for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            item = U.isModel(item) ? item.toJSON() : item;
+            items[i] = U.flattenModelJson(item, vocModel);
+          }
+          
+          G.log(RM.TAG, "db", 'Starting addItems Transaction');
+          RM.$db.transaction(classUri, 1).promise().done(function() {
+            G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
+            dfd.resolve();
+          }).fail(function(err, e){
+            debugger;
+            dfd.reject();
+            G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
+          }).progress(function(transaction) {
+            var store = transaction.objectStore(classUri);
             for (var i = 0; i < items.length; i++) {
-              var item = items[i];
-              item = U.isModel(item) ? item.toJSON() : item;
-              items[i] = U.flattenModelJson(item, vocModel);
+              store.put(items[i]);
             }
-            
-            G.log(RM.TAG, "db", 'Starting addItems Transaction');
-            RM.$db.transaction(classUri, 1).promise().done(function() {
-              G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
-              defer.resolve();
-            }).fail(function(err, e){
-              defer.reject();
-              G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
-            }).progress(function(transaction) {
-              var store = transaction.objectStore(classUri);
-              for (var i = 0; i < items.length; i++) {
-                store.put(items[i]);
-              }
-            });
-          }).promise()
+          });
         }, {name: "Add Items"}).done(defer.resolve).fail(defer.reject);
       }).promise();      
     }, //.async(100),
     
-    syncQueue: new TaskQueue("sync with server"),
+//    syncQueue: new TaskQueue("sync with server"),
+    
     REF_STORE: "ref",
+    SYNC_TASK_NAME: 'sync with server',
     sync: function() {
-      if (!RM.db || G.currentUser.guest || RM.syncQueue.hasMoreTasks()) // already have a sync queued up
+      if (!RM.db || G.currentUser.guest)
         return;
 
       if (!G.online) {
@@ -659,33 +662,32 @@ define([
         return;
       }
         
-      RM.syncQueue.runTask(function() {
-        return $.Deferred(function(defer) {
+      RM.runTask(function() {
 //          Index('dirty').eq(1).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
-          RM.$db.objectStore(RM.REF_STORE, 0).getAll().done(function(results) {
-            if (!results.length) {
-              defer.resolve();
-              return;
-            }
-            
-            var types = [];
-            for (var i = 0; i < results.length; i++) {
-              var r = results[i];
-              U.pushUniq(types, U.getTypeUri(r._uri));
-            }
-            
-            Voc.fetchModels(types, {sync: false}).done(function() {
-              RM.syncResources(results).done(defer.resolve).fail(defer.reject);
-            }).fail(function() {
-              debugger;
-              defer.reject();
-            });            
-          }).fail(function(error, event) {
+        var defer = this; 
+        RM.$db.objectStore(RM.REF_STORE, 0).getAll().done(function(results) {
+          if (!results.length) {
+            defer.resolve();
+            return;
+          }
+          
+          var types = [];
+          for (var i = 0; i < results.length; i++) {
+            var r = results[i];
+            U.pushUniq(types, U.getTypeUri(r._uri));
+          }
+          
+          Voc.fetchModels(types, {sync: false}).done(function() {
+            RM.syncResources(results).done(defer.resolve).fail(defer.reject);
+          }).fail(function() {
             debugger;
-            defer.reject(error, event);
-          });
+            defer.reject();
+          });            
+        }).fail(function(error, event) {
+          debugger;
+          defer.reject(error, event);
         });
-      }, {name: 'sync with server', sequential: true});
+      }, {name: RM.SYNC_TASK_NAME, sequential: true, preventPileup: true});
     },
 
     saveToServer: function(updateInfo) {
@@ -809,20 +811,6 @@ define([
                 dfd.resolve();
                 RM.sync(); // queue up another sync
               });
-//              RM.$db.transaction([type, RM.REF_STORE], 1).progress(function(transaction) {
-//                var refStore = transaction.objectStore(RM.REF_STORE, 1);
-//                refStore.put(ref);
-//                
-//                var resStore = transaction.objectStore(type, 1);
-//                resStore.get(uri).done(function(item) {
-//                  debugger;
-//                  resStore.put(_.extend(item, ref));
-//                }).done(function() {
-//                  debugger;
-//                }).fail(function() {
-//                  debugger;
-//                }).always(dfd.resolve);
-//              });
             }
             else {
               dfd.resolve();
@@ -863,7 +851,7 @@ define([
         _.each(refs, function(ref) {
           if (ref._dirty) {
             var dfd = q.runTask(function() {
-              return RM.syncResource(ref, refs);
+              return RM.syncResource(ref, refs).always(this.resolve);
             }, {sequential: true});
             
             dfds.push(dfd);
@@ -1173,7 +1161,9 @@ define([
           startAfter = options.startAfter,
           total = options.perPage,
           filter = options.filter,
-          data = options.data;
+          data = options.data,
+          isCollection = U.isCollection(data),
+          vocModel = data.vocModel;
       
       if (!RM.storeExists(type)) {
         // don't upgrade here, upgrade when we add items to the db
@@ -1181,7 +1171,7 @@ define([
       }
 
       function queryWithoutIndex() {
-        return $.Deferred(function(defer) {            
+        return $.Deferred(function(defer) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
           var store = RM.$db.objectStore(type, 0);
           var valueTester = RM.buildValueTesterFunction(filter, data);
@@ -1203,13 +1193,13 @@ define([
             G.log(RM.TAG, "db", 'Finished getItems Transaction, got {0} itmes'.format(results.length));
             defer.resolve(results);
           });
-        });
+        }).promise();
       }
 
-      return RM.runTask(function() {
+      var queryWithIndex = function() {
+        var qDefer = this;
         var results = [];
         if (isTemp) {
-          var qDefer = $.Deferred();
           Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
             if (results.length) {
               var item = results[0];
@@ -1225,78 +1215,104 @@ define([
             debugger;
             qDefer.reject();
           })
-//          RM.$db.transaction([type, RM.REF_STORE], 0).progress(function(transaction) {
-//            var refStore = transaction.objectStore(RM.REF_STORE, 0),
-//                resStore = transaction.objectStore(type, 0);
-//            
-//            refStore.index('_tempUri').each(function(item) {
-//              item = item.value;
-//              var realUri = item._uri;
-//              if (realUri)
-//                resStore.get(realUri).done(qDefer.resolve).fail(qDefer.reject);
-//              else
-//                qDefer.resolve(item);
-//            }, uri).done(function() {
-//              if (!qDefer.isResolved())
-//                resStore.get(uri).done(qDefer.resolve).fail(qDefer.reject);
-//            }).fail(function() {
-//              debugger;
-//              !qDefer.isResolved() && qDefer.reject();
-//            });
-//          }).done(function() {
-//            !qDefer.isResolved() && qDefer.resolve();
-//          }).fail(function() {
-//            debugger;
-//            !qDefer.isResolved() && qDefer.reject();
-//          });
           
-          return qDefer;
+          return;// qDefer;
         }
         
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
-        if (uri)
-          return store.get(uri).promise();
+        if (uri) {
+          store.get(uri).always(qDefer.resolve);
+          return;
+        }
 
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
-          var qDefer = $.Deferred();
           query.getAll(store).done(qDefer.resolve).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
-            queryWithoutIndex().promise().done(qDefer.resolve).fail(qDefer.reject);
+            queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
           });
           
-          return qDefer.promise();
+//          return qDefer.promise();
         }
-        else
-          return queryWithoutIndex().promise();
-      }, {name: "Get Items"});
+        else {
+          queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
+//          return queryWithoutIndex().promise();
+        }
+      }
+      
+      var options = {name: 'Get Items: ' + (data.getUrl || data.url)()};
+      if (!isCollection)
+        return RM.runTask(queryWithIndex, options);
+      
+      filter = filter || U.getQueryParams(data);
+      var props = vocModel.properties;
+      var temps = {};
+      for (var key in filter) {
+        var val = filter[key];
+        if (U.isResourceProp(props[key]) && U.isTempUri(val)) {
+          temps[key] = val;
+        }
+      }
+      
+      if (!_.size(temps))
+        return RM.runTask(queryWithIndex, options);
+      
+      return RM.runTask(function() {
+        var defer = this;        
+        Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(RM.REF_STORE)).done(function(results) {
+          if (results.length)
+            defer.resolve(results);
+          else
+            defer.reject();
+        }).fail(function() {
+          debugger;
+          defer.reject();
+        });
+        
+        defer.done(function(results) {
+          debugger;
+          var tempUriToRef = {};
+          for (var i = 0; i < results.length; i++) {
+            var r = results[i];
+            if (r._uri) {
+              tempUriToRef[r._tempUri] = r._uri;
+            }
+          }
+          
+          for (var key in temps) {
+            var tempUri = temps[key];
+            var ref = tempUriToRef[tempUri];
+            if (ref) {
+              filter[key] = ref._uri;
+            }
+          }              
+        }).always(function() {
+          debugger;
+          RM.runTask(queryWithIndex, options);
+        });
+
+      }, options);
     },
 
     upgradeDB: function(options) {
       return RM.runTask(function() {
-        return $.Deferred(function(defer) {
-          if (RM.db && options) {
-            var toMake = options.toMake;
-            if (toMake && toMake.length) {
-              toMake = _.filter(toMake, function(m) {
-                return !RM.db.objectStoreNames.contains(m);
-              });
-            }
+        if (RM.db && options) {
+          var toMake = options.toMake;
+          if (toMake && toMake.length) {
+            toMake = _.filter(toMake, function(m) {
+              return !RM.db.objectStoreNames.contains(m);
+            });
           }
-          
-          RM.openDB(options).done(defer.resolve).fail(defer.reject);
-        }).promise();
+        }
+        
+        RM.openDB(options).done(this.resolve).fail(this.reject);
       }, {name: options && options.msg || "upgradeDB", sequential: true});      
     },
     
     restartDB: function() {
       return RM.runTask(function() {
-        return $.Deferred(function(defer) {
-//          $(document).ready(function() {
-            RM.openDB().done(defer.resolve).fail(defer.reject);
-//          }); 
-        }).promise();
+        RM.openDB().done(this.resolve).fail(this.reject);
       }, {name: "restartDB", sequential: true});
     }
 

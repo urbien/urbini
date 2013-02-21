@@ -11,10 +11,26 @@ define([
     var p = prop.shortName;
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
+
+  var scrollerTypes = ['datetime', 'duration']; //, 'enum'];
+//  var getScrollerModuleName = function(scrollerType) {
+//    switch (scrollerType) {
+//    case 'datetime':
+//      return 'mobiscroll-datetime';
+//    case 'duration':
+//      return 'mobiscroll-duration';
+//    case 'enum':
+//      return 'mobiscroll-enum';
+//      return
+//    }
+//    return 'mobiscroll-' + scrollerType;
+//  }
     
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getValue', 'addProp', 'incrementBLCount'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
+                      'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
+                      'incrementBLCount', 'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -41,9 +57,24 @@ define([
       'click .cancel': 'cancel',
       'submit form': 'submit',
       'click .resourceProp': 'chooser',
-      'click': 'click',
-      'click input[data-datetime]': 'mobiscroll'
+      'click input[data-duration]': 'scrollDuration',
+      'click input[data-datetime]': 'scrollDate',
+      'click select[data-enum]': 'scrollEnum',
+      'click': 'click'
     },
+    
+    scrollDate: function(e) {
+      this.mobiscroll(e, 'datetime');
+    },
+
+    scrollDuration: function(e) {
+      this.mobiscroll(e, 'duration');
+    },
+
+    scrollEnum: function(e) {
+      this.mobiscroll(e, 'enum');
+    },
+
     /**
      * up the counter on the backlink
      */
@@ -67,15 +98,14 @@ define([
           }
         }
       }
-      
-//      if (bl) 
-//        bl.dirty = true;
     },
-    mobiscroll: function(e) {
-      if (this.initializedScrollers)
+    
+    mobiscroll: function(e, scrollerType) {
+      var inits = this.initializedScrollers = this.initializedScrollers || {};
+      if (inits[scrollerType])
         return;
       
-      this.initializedScrollers = true, self = this;
+      inits[scrollerType] = true;
       $(e.target).blur(); // hack to suppress keyboard that would open on this input field
       Events.stopEvent(e);
       
@@ -84,16 +114,18 @@ define([
 //        $('.jqm, .dw-modal').remove();
 //      });
       
+      var self = this;
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
-      G.require(['mobiscroll', 'mobiscroll-duration'], function() {
-        var today = new Date();
-        var thisScroller;
-        form.find('.i-txt').each(function() {
-          var name = this.name;
+      var modules = ['mobiscroll'];
+      if (scrollerType === 'duration')
+        modules.push('mobiscroll-duration');
+      
+      G.require(modules, function() {
+        _.each(self.getScrollers(), function(input) {
+          var name = input.name;
           var prop = meta[name];
-          var isDate = U.isDateProp(prop);
-          var isTime = U.isTimeProp(prop);
+          // default to enum
           var settings = {
             theme: 'jqm',
             display: 'modal',
@@ -101,19 +133,41 @@ define([
             label: U.getPropDisplayName(prop),
             shortName: name,
             onSelect: self.onSelected,
-            input: this
+            input: input
           };
-          
-          if (isDate) 
-            settings.isDate = true;
-          else if (isTime)
-            settings.isTime = true;
-          
-          var scroller = $(this).mobiscroll()[isDate ? 'date' : 'duration'](settings);
+
+        
+          settings.__type = scrollerType;
+//          var scroller;
+//          if (scrollerType === 'enum') {
+//            var type = U.getLongUri(prop.facet),
+//                values = _.pluck(G.typeToEnum[type].values, 'displayName');
+//            
+//            scrollerModule.makeEnumScroller(type, values);
+//            scroller = $(this).mobiscroll()[type](settings);
+//          }
+//          else
+          var scroller;
 //          var scroller = $(this).mobiscroll()['duration'](settings);
-          var val = this.value && parseInt(this.value);
-          if (typeof val === 'number')
-            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+          switch (scrollerType) {
+            case 'datetime':
+            case 'duration':
+              scroller = $(input).mobiscroll()[scrollerType](settings);
+              var val = input.value && parseInt(input.value);
+              if (typeof val === 'number')
+                scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+              
+              break;
+//            default:
+//              var wheel = _.pluck(G.typeToEnum[U.getLongUri(prop.facet)].values, 'displayName');
+//              settings.wheels = [wheel];
+//              scroller = $(input).mobiscroll().select(settings);
+//              var val = input.value;
+//              if (val)
+//                scroller.mobiscroll('setValue', val, true);
+//              
+//              break;            
+          }
           
           if (name === thisName)
             scroller.click().focus();
@@ -262,6 +316,10 @@ define([
     getInputs: function() {
 //      return this.$form.find('.formElement,.resourceProp');
       return this.$form.find('[data-formEl]');
+    },
+    getScrollers: function() {
+//      return _.uniq(this.$form.find('.i-txt').add(this.$form.find('select')));
+      return this.$form.find('.i-txt');
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -416,11 +474,13 @@ define([
       if (_.contains(input.classList, 'boolean'))
         return val === 'Yes' ? true : false;
       else {
-        var date = jInput.data('data-datetime');
-        if (date)
-          return date;
-        else
-          return val;
+        for (var i = 0; i < scrollerTypes.length; i++) {
+          var data = jInput.data('data-' + scrollerTypes[i]);
+          if (data)
+            return data;
+        }
+        
+        return val;
       }
     },
     submit: function(e) {
@@ -594,6 +654,7 @@ define([
         return;
       }
       
+      return true;
 //      return Events.defaultClickHandler(e);
     },
     onSelected: function(e) {
@@ -604,16 +665,25 @@ define([
         var settings = scroller.settings;
         var name = settings.shortName,
             input = settings.input;
-        if (settings.isDate) {
-          var millis = atts[name] = new Date(val).getTime();
-          $(input).data('data-datetime', millis);
+        
+        switch (settings.__type) {
+          case 'datetime': {
+            var millis = atts[name] = new Date(val).getTime();
+            $(input).data('data-datetime', millis);
+            break;
+          }
+          case 'duration': {
+            var secs = atts[name] = scroller.getSeconds();
+            $(input).data('data-duration', secs);
+            break;
+          }
+          case 'enum': {
+            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
+            break;
+          }
+          default:
+            debugger;
         }
-        else if (settings.isTime) {
-          var secs = atts[name] = scroller.getSeconds();
-          $(input).data('data-datetime', secs);
-        }
-        else
-          debugger;
       }
       else {
         var t = e.target;
@@ -742,9 +812,10 @@ define([
       }        
         
       (this.$ul = this.$('#fieldsList')).html(frag);
-      this.$ul.trigger('create');
       if (this.$ul.hasClass('ui-listview'))
         this.$ul.listview('refresh');
+      else
+        this.$ul.trigger('create');
 
 //        this.$ul.listview('refresh');
       

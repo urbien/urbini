@@ -36,9 +36,9 @@ define(['jquery', 'mobiscroll'], function ($) {
       for (var i = 0; i < 61; i++)
         hours[i] = minutes[i] = seconds[i] = i;
   
-      var s = $.extend({}, defaults, inst.settings), 
+//      var s = $.extend({}, defaults, inst.settings), 
           // Extend settings with preset defaults
-          wheels = [{'Weeks': weeks}, {'Days': days}, {'Hours': hours}, {'Minutes': minutes}, {'Seconds': seconds}],
+      var wheels = [{'Weeks': weeks}, {'Days': days}, {'Hours': hours}, {'Minutes': minutes}, {'Seconds': seconds}],
           value = 0,
           // Create custom wheels
           elm = $(this);

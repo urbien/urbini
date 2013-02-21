@@ -546,7 +546,6 @@
 <script type="text/template" id="editRowTemplate">
   <li data-role="fieldcontain">{{= value }}
   {{= typeof comment === 'undefined' ? '' : '<br /><span class="comment">' + comment + '</span>' }}
-<!--  {{= typeof comment === 'undefined' ? '' : '<br /><span style="font-weight: normal">' + comment + '</span>'}} -->
   </li>
 </script>
 
@@ -557,9 +556,9 @@
 
 <script type="text/template" id="longEnumPET">
   {{ if (name && name.length > 0) { }}
-
   <label for="{{= id }}" class="select">{{= name }}</label>
-  {{ } }} 
+  {{ } }}
+  
   <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
     {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
     {{ for (var o in options) { }} 
@@ -570,16 +569,16 @@
   </select>
 </script>
 
-<!--script type="text/template" id="shortEnumPET">
+<script type="text/template" id="shortEnumPET">
   <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
     <legend>{{= name }}</legend>
     {{ for (var o in options) { }} 
-    {{   var p = options[o]; }}
-         <input type="radio" name="radio-choice-b" id="{{= id + '.' + p.shortName }}" {{= rules }} value="{{= p.shortName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
-         <label for="{{= id + '.' + p.shortName }}">{{= U.getPropDisplayName(p) }}</label>
+    {{   var p = options[o], displayName = U.getPropDisplayName(p); }}
+         <input type="radio" name="radio-choice-b" name="radio-choice-b" id="{{= id + '.' + displayName }}" {{= rules }} value="{{= displayName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
+         <label for="{{= id + '.' + displayName }}">{{= displayName }}</label>
     {{ } }}
   </fieldset>
-</script-->
+</script>
 
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
@@ -634,8 +633,13 @@
 
 <script type="text/template" id="datePET">
   <label for="{{= id }}">{{= name }}</label>
-  <input id="{{= id }}" class="i-txt" name="{{= shortName }}" {{= rules }} data-mini="true" />
+  <input id="{{= id }}" class="i-txt" name="{{= shortName }}" {{= rules }} data-mini="true" value="{{= value }}" />
   <!--input type="hidden" id="{{= id + '.hidden' }}" name="{{= shortName }}" {{= rules }} data-mini="true" /-->
+</script>
+
+<script type="text/template" id="scrollEnumPET">
+  <label for="{{= id }}">{{= name }}</label>
+  <input id="{{= id }}" class="i-txt" name="{{= shortName }}" {{= rules }} data-mini="true" value="{{= value }}" />
 </script>
 
 <!-- END EDIT TEMPLATES -->

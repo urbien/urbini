@@ -10,5 +10,8 @@
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/ViewPage', 'views/MenuPanel', 'views/MapView', 'views/PublishButton', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps', 
          'lib/mobiscroll-datetime-min', 'mobiscroll-duration'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css']
+  },
+  appcache: {
+    js: ['xhrWorker', 'io', 'lib/jquery.mobile-1.3.0-beta.1', 'lib/json2']
   }
 }

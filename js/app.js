@@ -210,44 +210,30 @@ define('app', [
       });
     },
     
-//    setupModuleCache: function() {
-//      G.require = function(modules, callback, context) {
-//        modules = $.isArray(modules) ? modules : [modules];
-//        for (var i = 0; i < modules.length; i++) {
-//          var m = modules[i];
-//          if (!G.modCache[m]) {
-//            G.modCache[m] = $.Deferred(function(defer) {
-//              require([m], function(mod) {
-//                defer.resolve(mod);
-//              });
-//            }).promise();
-//          }
-//          
-//          modules[i] = G.modCache[m];
-//        }
-//        
-//        return $.when.apply(null, modules).then(function() {
-//          callback.apply(context, arguments);
-//        }).promise();
-//      }
-//    }
     setupModuleCache: function() {
       G.require = function(modules, callback, context) {
         modules = $.isArray(modules) ? modules : [modules];
-        var mods = [], newModNames = [];
+        var mods = [], newModNames = [], newModFullNames = [];
         for (var i = 0; i < modules.length; i++) {
-          var m = modules[i];
-          if (!G.modCache[m]) {
-            G.modCache[m] = $.Deferred();
-            newModNames.push(m);
+          var fullName = modules[i], name = fullName;
+          var moduleViaPlugin = fullName.match(/\!(.*)$/);
+          if (moduleViaPlugin) {
+            name = moduleViaPlugin[1]; 
           }
           
-          mods.push(G.modCache[m]);
+          var mod = G.modCache[name];
+          if (!mod) {
+            mod = G.modCache[name] = $.Deferred();
+            newModFullNames.push(fullName);
+            newModNames.push(name);
+          }
+          
+          mods.push(mod);
         }
         
         if (newModNames.length) {
           G.loadBundle(newModNames, function() {
-            require(newModNames, function() {
+            require(newModFullNames, function() {
               for (var i = 0; i < newModNames.length; i++) {
                 G.modCache[newModNames[i]].resolve(arguments[i]);
               }          
@@ -317,7 +303,7 @@ define('app', [
               defer.reject(jqXHR, {code: jqXHR.code}, opts);                  
             }, 
             function(jqXHR, status, err) {
-              debugger;
+//              debugger;
               var text = jqXHR.responseText;
               var error;
               try {

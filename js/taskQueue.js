@@ -1,5 +1,5 @@
 //'use strict';
-define(['globals'], function(G) {
+define(['globals', 'utils'], function(G, U) {
   var TaskQueue = function(name) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
@@ -42,8 +42,7 @@ define(['globals'], function(G) {
           sequential = options.sequential,
           force = options.force,
           yields = options.yields,
-          name = options.name,
-          promise;
+          name = options.name;
       
       if (!sequential) {
         if (q.blocked && !force) {
@@ -54,20 +53,32 @@ define(['globals'], function(G) {
         }
         else {
           G.log(q.TAG, 'db', q.name, 'Running non-sequential task:', name);
-          promise = task();
+//          promise = task();
+          var promise = new $.Deferred(function() {
+            task.apply(this, []);
+          }).promise();
+
           promise.name = name;
           q.runningTasks.push(promise);
           promise.always(function() {
             G.log(q.TAG, 'db', q.name, 'Finished non-sequential task:', name);
-            q.runningTasks.remove(this);
-          }); 
+            if (q.runningTasks.indexOf(promise) === -1)
+              debugger;
+            
+            U.remove.apply(q.runningTasks, promise);
+          }.bind(q));
+          
+          return promise;
         }
-      
-        return promise;
       }
       
       // Sequential task - need to wait for all currently running tasks to finish
-      // and block any new tasks from starting until this one's done
+      // and block any new tasks from starting until this one's done.
+      
+      // The 'preventPileup' option prevents a sequential task from being queued more than once at any given time
+      if (options.preventPileup && _.filter(q.seqQueue.tasks, function(t) {return t.name === name}).length)
+        return;
+      
       if (q.blocked) {
         if (!q.runningTasks.length) {
           G.log(q.TAG, 'db', q.name, 'A sequential finished but failed to report');
@@ -95,11 +106,17 @@ define(['globals'], function(G) {
 //        var redefer = yields ? [runNonSeq(true)] : []; 
         $.when.apply($, yieldsFor.length ? [runNonSeq(yieldsFor, true)] : []).always(function() {  // if non-yielding, then run right away, otherwise force queued up non-sequentials to run first
           G.log(q.TAG, 'db', q.name, 'Running sequential task:', name);
-          var taskPromise = task();
+          var taskPromise = new $.Deferred(function() {
+            task.apply(this, []);
+          }).promise();
+          
           taskPromise.name = name;
           q.runningTasks.push(taskPromise);
           taskPromise.always(function() {
-            q.runningTasks.remove(taskPromise);
+            if (q.runningTasks.indexOf(taskPromise) === -1)
+              debugger;
+            
+            U.remove.apply(q.runningTasks, taskPromise);
             G.log(q.TAG, 'db', q.name, 'Finished sequential task:', name);
             q.blocked = false; // unblock to allow next task to start;
             if (q.hasMoreTasks()) {
@@ -114,9 +131,9 @@ define(['globals'], function(G) {
             }
             
             defer.resolve();
-          });
-        });
-      });
+          }.bind(q));
+        }.bind(q));
+      }.bind(q));
       
       return defer.promise();
     }

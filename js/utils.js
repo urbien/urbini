@@ -7,16 +7,17 @@ define([
   'jquery'
 ], function(G, _, Backbone, Templates, $) {
   var ArrayProto = Array.prototype;
-  ArrayProto.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-      what = a[--L];
-      while ((ax = this.indexOf(what)) !== -1) {
-        this.splice(ax, 1);
-      }
-    }
-    return this;
-  };
+//  ArrayProto.remove = function() {
+//    var what, a = arguments, L = a.length, ax;
+//    while (L && this.length) {
+//      what = a[--L];
+//      while ((ax = this.indexOf(what)) !== -1) {
+//        this.splice(ax, 1);
+//      }
+//    }
+//    
+//    return this;
+//  };
   
   var slice = ArrayProto.slice;
 
@@ -106,7 +107,9 @@ define([
             var selfUser = res.get(pName);
             if (me == selfUser) 
               return true;
-            else if (U.isCloneOf(vocModel.properties[pName], 'Submission.submittedBy'))
+            
+            var prop = vocModel.properties[pName];
+            if (prop && U.isCloneOf(prop, 'Submission.submittedBy'))
               return true;
           }
           
@@ -1192,6 +1195,7 @@ define([
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
         var valLength = _.pluck(eCl.values, "displayName").join('').length;
+//        propTemplate = 'scrollEnumPET';
         propTemplate = 'longEnumPET';
 //        propTemplate = valLength < 25 ? 'shortEnumPET' : 'longEnumPET';
         val.options = eCl.values;
@@ -1221,10 +1225,15 @@ define([
       var rules = prop.multiValue ? {} : {"data-formEl": true};
       if (prop.required)
         rules.required = 'required';
-      if (U.isDateOrTimeProp(prop))
-        rules['data-datetime'] = true;
-      if (prop.maxSize)
+      if (prop.maxSize)      
         rules.maxlength = prop.maxSize;
+      
+      if (U.isDateProp(prop))
+        rules['data-datetime'] = true;
+      else if (U.isTimeProp(prop))
+        rules['data-duration'] = true;
+      else if (U.isEnumProp(prop))
+        rules['data-enum'] = true;
       
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
@@ -1577,6 +1586,10 @@ define([
       return U.isDateProp(prop) || U.isTimeProp(prop);
     },
 
+    isEnumProp: function(prop) {
+      return prop.range === 'enum';
+    },
+    
     isDateProp: function(prop) {
       return U.isXProp(prop, U._dateProps);
     },
@@ -1740,7 +1753,17 @@ define([
     makeTempUri: function(type, id) {
       return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
     },
-    slice: slice
+    slice: slice,
+    remove: function(array, item) {
+      var what, a = arguments, L = a.length, ax;
+      while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+          this.splice(ax, 1);
+        }
+      }
+      return this;
+    }
 //    ,
 //    intersectObjects: function(array) {
 //      var rest = slice.call(arguments, 1);

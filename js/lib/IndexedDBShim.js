@@ -393,60 +393,59 @@ var idbModules = window.idbModules = {};
       var me = this;
       var transaction = me.__idbObjectStore.transaction;
       transaction.tq.runTask(function() {
-        return $.Deferred(function(defer) {
-          transaction.db.__db.transaction(function(tx){
-            me.__idbObjectStore.__getStoreProps(tx, function(){
-              function error(){
-                  idbModules.util.throwDOMException(0, "Could not create new index", arguments);
-                  defer.reject();
-              }
-              if (transaction.mode !== 2) {
-                  idbModules.util.throwDOMException(0, "Invalid State error, not a version transaction", me.transaction);
-              }
-              var idxList = JSON.parse(me.__idbObjectStore.__storeProps.indexList);
-              if (typeof idxList[indexName] !== "undefined") {
-                  idbModules.util.throwDOMException(0, "Index already exists on store", idxList);
-              }
-              var columnName = indexName;
-              idxList[indexName] = {
-                  "columnName": columnName,
-                  "keyPath": keyPath,
-                  "optionalParams": optionalParameters
-              };
-              // For this index, first create a column
-              me.__idbObjectStore.__storeProps.indexList = JSON.stringify(idxList);
-              var sql = ["ALTER TABLE", idbModules.util.quote(me.__idbObjectStore.name), "ADD", columnName, "BLOB"].join(" ");
-              idbModules.DEBUG && console.log(sql);
-              tx.executeSql(sql, [], function(tx, data){
-                  // Once a column is created, put existing records into the index
-                  tx.executeSql("SELECT * FROM " + idbModules.util.quote(me.__idbObjectStore.name), [], function(tx, data){
-                      (function initIndexForRow(i){
-                          if (i < data.rows.length) {
-                              try {
-                                  var value = idbModules.Sca.decode(data.rows.item(i).value);
-                                  var indexKey = value[keyPath];
-                                  tx.executeSql("UPDATE " + idbModules.util.quote(me.__idbObjectStore.name) + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
-                                      initIndexForRow(i + 1);
-                                  }, error);
-                              } 
-                              catch (e) {
-                                  // Not a valid value to insert into index, so just continue
-                                  initIndexForRow(i + 1);
-                              }
-                          }
-                          else {
-                              idbModules.DEBUG && console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
-                              tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
-                                  me.__idbObjectStore.__setReadyState("createIndex", true);
-                                  defer.resolve(me);
-                              }, error);
-                          }
-                      }(0));
-                  }, error);
-              }, error);
-            }, "createObjectStore");
-          });
-        }).promise();
+        var defer = this;
+        transaction.db.__db.transaction(function(tx){
+          me.__idbObjectStore.__getStoreProps(tx, function(){
+            function error(){
+                idbModules.util.throwDOMException(0, "Could not create new index", arguments);
+                defer.reject();
+            }
+            if (transaction.mode !== 2) {
+                idbModules.util.throwDOMException(0, "Invalid State error, not a version transaction", me.transaction);
+            }
+            var idxList = JSON.parse(me.__idbObjectStore.__storeProps.indexList);
+            if (typeof idxList[indexName] !== "undefined") {
+                idbModules.util.throwDOMException(0, "Index already exists on store", idxList);
+            }
+            var columnName = indexName;
+            idxList[indexName] = {
+                "columnName": columnName,
+                "keyPath": keyPath,
+                "optionalParams": optionalParameters
+            };
+            // For this index, first create a column
+            me.__idbObjectStore.__storeProps.indexList = JSON.stringify(idxList);
+            var sql = ["ALTER TABLE", idbModules.util.quote(me.__idbObjectStore.name), "ADD", columnName, "BLOB"].join(" ");
+            idbModules.DEBUG && console.log(sql);
+            tx.executeSql(sql, [], function(tx, data){
+                // Once a column is created, put existing records into the index
+                tx.executeSql("SELECT * FROM " + idbModules.util.quote(me.__idbObjectStore.name), [], function(tx, data){
+                    (function initIndexForRow(i){
+                        if (i < data.rows.length) {
+                            try {
+                                var value = idbModules.Sca.decode(data.rows.item(i).value);
+                                var indexKey = value[keyPath];
+                                tx.executeSql("UPDATE " + idbModules.util.quote(me.__idbObjectStore.name) + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
+                                    initIndexForRow(i + 1);
+                                }, error);
+                            } 
+                            catch (e) {
+                                // Not a valid value to insert into index, so just continue
+                                initIndexForRow(i + 1);
+                            }
+                        }
+                        else {
+                            idbModules.DEBUG && console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
+                            tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
+                                me.__idbObjectStore.__setReadyState("createIndex", true);
+                                defer.resolve(me);
+                            }, error);
+                        }
+                    }(0));
+                }, error);
+            }, error);
+          }, "createObjectStore");
+        });
       }, {name: "create index " + indexName});
     };
     
@@ -1008,31 +1007,30 @@ var idbModules = window.idbModules = {};
       
       var transaction = me.__versionTransaction;
       transaction.tq.runTask(function() {
-        return $.Deferred(function(defer) {
+        var defer = this;
 //          transaction.__addToTransactionQueue(function(tx, args, success, failure){
-          transaction.db.__db.transaction(function(tx){
-            function error(){
-              defer.reject();
-              idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
-            }
-            
-            if (!me.__versionTransaction) {
-              defer.reject();
-              idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
-            }
-            //key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
-            var sql = ["CREATE TABLE", idbModules.util.quote(storeName), "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
-            idbModules.DEBUG && console.log(sql);
-            tx.executeSql(sql, [], function(tx, data){
-                tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
-                    result.__setReadyState("createObjectStore", true);
-                    defer.resolve(result);
-                }, error);
-            }, error);
-//          });
+        transaction.db.__db.transaction(function(tx){
+          function error(){
+            defer.reject();
+            idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
+          }
           
-          });
-        }).promise();
+          if (!me.__versionTransaction) {
+            defer.reject();
+            idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
+          }
+          //key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
+          var sql = ["CREATE TABLE", idbModules.util.quote(storeName), "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
+          idbModules.DEBUG && console.log(sql);
+          tx.executeSql(sql, [], function(tx, data){
+              tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
+                  result.__setReadyState("createObjectStore", true);
+                  defer.resolve(result);
+              }, error);
+          }, error);
+//          });
+        
+        });
       }, {name: "create object store " + storeName, sequential: true});
         
       // The IndexedDB Specification needs us to return an Object Store immediately, but WebSQL does not create and return the store immediatly
@@ -1045,34 +1043,32 @@ var idbModules = window.idbModules = {};
       var me = this;
       var transaction = me.__versionTransaction;
       transaction.tq.runTask(function() {
-        return $.Deferred(function (defer) {
-          var error = function(){
-            defer.reject();
-            idbModules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
-          };
-          !me.objectStoreNames.contains(storeName) && error("Object Store does not exist");
-          me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
-          
-          var transaction = me.__versionTransaction;
-//          transaction.__addToTransactionQueue(function(tx, args, success, failure){
-          transaction.db.__db.transaction(function(tx){
-              if (!me.__versionTransaction) {
-                  idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
-              }
-              me.__db.transaction(function(tx){
-                  tx.executeSql("SELECT * FROM __sys__ where name = ?", [storeName], function(tx, data){
-                      if (data.rows.length > 0) {
-                          tx.executeSql("DROP TABLE " + idbModules.util.quote(storeName), [], function(){
-                              tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
-                                defer.resolve();
-                              }, error);
-                          }, error);
-                      }
-                  });
-              });
-          });
-//          });
-        }).promise();
+        var defer = this;
+//        return $.Deferred(function (defer) {
+        var error = function(){
+          defer.reject();
+          idbModules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
+        };
+        !me.objectStoreNames.contains(storeName) && error("Object Store does not exist");
+        me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
+        
+        var transaction = me.__versionTransaction;
+        transaction.db.__db.transaction(function(tx){
+            if (!me.__versionTransaction) {
+                idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
+            }
+            me.__db.transaction(function(tx){
+                tx.executeSql("SELECT * FROM __sys__ where name = ?", [storeName], function(tx, data){
+                    if (data.rows.length > 0) {
+                        tx.executeSql("DROP TABLE " + idbModules.util.quote(storeName), [], function(){
+                            tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
+                              defer.resolve();
+                            }, error);
+                        }, error);
+                    }
+                });
+            });
+        });
       }, {name: "delete object store " + storeName});
     };
     
@@ -1158,17 +1154,11 @@ var idbModules = window.idbModules = {};
                                         var trans = req.transaction = req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
                                         trans.tq = new TaskQueue("IDBShim upgrade to " + version);
                                         idbModules.util.callback("onupgradeneeded", req, e, function(){
-//                                            var oncomplete = trans.onupgradecomplete;
-//                                            if (oncomplete) {
-                                              trans.tq.runTask(function() {
-                                                return $.Deferred(function(defer) {
-                                                  var e = idbModules.Event("success");
-                                                  idbModules.util.callback("onsuccess", req, e);
-//                                                  oncomplete();
-                                                  defer.resolve();
-                                                }).promise();
-                                              }, {name: "Complete upgrade transaction", sequential: true, yields: true});
-//                                            }
+                                          trans.tq.runTask(function() {
+                                            var e = idbModules.Event("success");
+                                            idbModules.util.callback("onsuccess", req, e);
+                                            this.resolve();
+                                          }, {name: "Complete upgrade transaction", sequential: true, yields: true});
                                         });
                                         
                                     }, dbCreateError);
