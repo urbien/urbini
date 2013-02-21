@@ -44,7 +44,7 @@ define([
     },
     render: function(event) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification', G.typeToModel);
+      var isModification = U.isAssignableFrom(vocModel, 'Modification');
       if (isModification) 
         return this.renderModificationTile();
       var m = this.resource;

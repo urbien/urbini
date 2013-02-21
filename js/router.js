@@ -479,8 +479,8 @@ define([
         return m;
 
       var self = this;
-      Voc.loadStoredModels({models: [type]});
-      var fetchModels = Voc.fetchModels(null, {sync: true});
+//      Voc.loadStoredModels({models: [type]});
+      var fetchModels = Voc.getModels(type, {sync: true});
       if (fetchModels.isResolved())
         return true;
       else {

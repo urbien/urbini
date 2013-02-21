@@ -218,13 +218,13 @@ define([
           props[prop] = res.getUri();
           self.resource.set(props, {skipValidation: true, skipRefresh: true});
           var vocModel = this.vocModel;
-          var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
+          var pr = vocModel.properties[prop];
           var dn = pr.displayName;
           if (!dn)
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
           link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
           $(link).data('uri', res.getUri());
-          if (U.isAssignableFrom(this.vocModel, "App", G.typeToModel)  &&  U.isAssignableFrom(res.vocModel, "Theme", G.typeToModel)) {
+          if (U.isAssignableFrom(this.vocModel, "App")  &&  U.isAssignableFrom(res.vocModel, "Theme")) {
             if (G.currentApp) {
               var cUri = G.currentApp['_uri'];
               if (cUri.indexOf('http') == -1) {
@@ -245,7 +245,7 @@ define([
       }
       
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
-      var pr = vocModel.myProperties[prop]  ||  vocModel.properties[prop];
+      var pr = vocModel.properties[prop];
       Events.once('chooser', onChoose, this);
       var params = {};
 //      if (pr.where) {
@@ -267,7 +267,7 @@ define([
         params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
       }
-      else if (U.isAssignableFrom(this.vocModel, "WebProperty", G.typeToModel)) { 
+      else if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
         var title = U.getQueryParams(window.location.hash)['$title'];
         var t;
         if (!title)
@@ -411,7 +411,7 @@ define([
                 G.log(this.TAG, 'error', 'couldn\'t get model for range', prop.range);
             }
             
-            redirectPath = redirectPath || vocModel.properties[redirectTo].type._uri;
+            redirectPath = redirectPath || U.getTypeUri(vocModel.properties[redirectTo]._uri);
           }
           else  
             redirectPath = vocModel.type;

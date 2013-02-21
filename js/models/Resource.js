@@ -348,16 +348,14 @@ define([
     type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
     shortName: "Resource",
     displayName: "Resource",
-    myProperties: {
-      davDisplayName: {type: "string"},
-      _uri: {type: "resource"},
-      _shortUri: {type: "resource"}
+    properties: {
+      davDisplayName: {range: "string"},
+      davGetLastModified: {range: "long"},
+      _uri: {range: "Resource"},
+      _shortUri: {range: "Resource"}
     },
-    myInterfaces : {},
     displayName: 'Resource'
   });
   
-  Resource.properties = _.clone(Resource.myProperties);
-  Resource.interfaces = _.clone(Resource.myInterfaces);  
   return Resource;
 });

@@ -34,7 +34,7 @@ define([
     if (_.contains(['patch', 'create'], method)) {
       if (options.sync) {
         if (!G.online) {
-          options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'});
+          options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
           return;
         }
         else {
@@ -57,7 +57,7 @@ define([
     vocModel = data.vocModel,
     fetchFromServer = function(isUpdate, timeout) {
       if (!isCollection && U.isTempUri(data.getUri())) {
-//        debugger;
+        debugger;
         options.error && options.error(data, {type: 'offline'}, options);
         return;
       }
@@ -204,6 +204,11 @@ define([
   var ResourceManager = RM = {
     TAG: 'Storage',
     fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
+      if (!G.online) {
+        options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+        return;
+      }
+    
       data.lastFetchOrigin = 'server';
 //      if (!forceFetch && isUpdate) // && !shortPage)
       if (isUpdate) {
@@ -338,12 +343,10 @@ define([
     /**
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
-    updateDB: function() {
+    updateDB: function(types) {
       return $.Deferred(function(defer) {
 //        debugger;
-        var toKill = _.clone(Voc.changedModels);
-        Voc.changedModels.length = 0;
-//        Voc.newModels.length = 0;
+        var toKill = _.clone(types);
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
             return RM.db.objectStoreNames.contains(m);
@@ -535,7 +538,7 @@ define([
         var vocModel = G.typeToModel[type];
         if (!vocModel) {
           G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
-          continue;
+          throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
         }
         
         try {
@@ -607,10 +610,16 @@ define([
           if (U.isModel(first))
             classUri = first.vocModel.type;
           else
-            classUri = U.getTypeUri(items[0].type._uri);
+            classUri = U.getTypeUri(items[0]._uri);
         }
         
         if (!RM.storeExists(classUri)) {
+          if (!G.typeToModel[classUri]) {
+            return Voc.getModels(classUri).done(function() {
+              RM.addItems(items, classUri);
+            });
+          }
+          
           RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
             var addPromise = RM.addItems(items, classUri);
             if (addPromise)
@@ -677,7 +686,7 @@ define([
             U.pushUniq(types, U.getTypeUri(r._uri));
           }
           
-          Voc.fetchModels(types, {sync: false}).done(function() {
+          Voc.getModels(types, {sync: false}).done(function() {
             RM.syncResources(results).done(defer.resolve).fail(defer.reject);
           }).fail(function() {
             debugger;
@@ -1319,12 +1328,12 @@ define([
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
   };
   
-  Events.on('modelsChanged', function(options) {
-    var updatePromise = RM.updateDB();
-    if (options) {
-      options.success && updatePromise.done(options.success);
-      options.error && updatePromise.fail(options.error);
-    }
+  Events.on('modelsChanged', function(changedTypes) {
+    var updatePromise = RM.updateDB(changedTypes);
+//    if (options) {
+//      options.success && updatePromise.done(options.success);
+//      options.error && updatePromise.fail(options.error);
+//    }
   });
   
   Events.on('resourcesChanged', function(toAdd) {

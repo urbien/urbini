@@ -936,7 +936,13 @@ define('cache', function() {
       G.tasks[name] = {start: new Date()};
     },
     finishedTask: function(name, dontPrint) {
-      G.tasks[name].end = new Date();
+      var task = G.tasks[name];
+      if (!task) {
+        G.log(G.TAG, 'tasks', name, 'finished but starting point was not recorded');        
+        return;
+      }
+      
+      task.end = new Date();
       if (!dontPrint)
         G.printTask(name);
     },

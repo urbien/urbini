@@ -66,8 +66,8 @@ define([
       var self = this;
       var args = arguments;
       if (!G.shortNameToModel.RecipeShoppingList) {
-        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
-        Voc.fetchModels(null, {sync: true}).done(function() {
+//        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
+        Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
           self.recipeShoppingListHack.apply(self, args);
         });
         
@@ -145,10 +145,10 @@ define([
           if (urbModel) {
             var idx = meta[a].range.lastIndexOf('/');
             var aModel = G.typeToModel[U.getLongUri1(meta[a].range)];
-            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien', G.typeToModel);
+            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien');
             idx = meta[b].range.lastIndexOf('/');
             var bModel = G.typeToModel[U.getLongUri1(meta[b].range)];
-            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien', G.typeToModel);
+            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien');
           }
           if (a  &&  qidx == -1) 
             return this.renderIntersectionItem(a, 'Intersection.a');
@@ -174,7 +174,7 @@ define([
       var dn = U.getDisplayName(m);
       json.davDisplayName = dn;
       if (!viewCols.length) {
-        var isClass = U.isAssignableFrom(vocModel, 'WebClass', G.typeToModel);
+        var isClass = U.isAssignableFrom(vocModel, 'WebClass');
         viewCols = '<h3>' + dn + '</h3>';
         if (isClass) {
           var comment = json['comment'];

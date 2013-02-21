@@ -154,7 +154,7 @@ define([
       }).render();
   
       var models = rl.models;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification', G.typeToModel);
+      var isModification = U.isAssignableFrom(vocModel, 'Modification');
 
 //      var meta = models[0].__proto__.constructor.properties;
 //      meta = meta || models[0].properties;
@@ -172,7 +172,7 @@ define([
 //          isMasonry = false;
 //      }
       
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment', G.typeToModel);
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
       var isMV = window.location.hash  &&  window.location.hash.indexOf('$multiValue=') != -1;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');

@@ -120,6 +120,40 @@ define([
       return false;
     },
     
+    getCurrentType: function() {
+      var hash =  window.location.hash, 
+          route, type;
+      
+      hash = hash && hash.slice(1); 
+      if (!hash)
+        return;
+
+      var qIdx = hash.indexOf('?');
+      if (qIdx != -1)
+        hash = hash.slice(0, qIdx);
+      
+      hash = decodeURIComponent(hash);
+      route = hash.match('^view|menu|edit|make|chooser');
+      if (route) {
+        var sqlIdx = hash.indexOf(G.sqlUri);
+        if (sqlIdx == -1)
+          type = hash.slice(route[0].length + 1);
+        else
+          type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
+        
+        qIdx = type.indexOf('?');
+        if (qIdx != -1)
+          type = type.slice(0, qIdx);
+      }
+      else
+        type = hash;
+
+      if (type === 'profile')
+        return G.currentUser.guest ? null : U.getTypeUri(G.currentUser._uri);
+            
+      return U.getTypeUri(hash);
+    },
+    
     /**
      * Given a subproperty and a superproperty, get the combined annotations
      */
@@ -218,8 +252,8 @@ define([
     
     getPrimaryKeys: function(model) {
       var keys = {};
-      for (var p in model.myProperties) {
-        var prop = model.myProperties[p];
+      for (var p in model.properties) {
+        var prop = model.properties[p];
         if (_.has(prop, 'primary'))
           keys[prop.pkIndex] = p;
       }
@@ -231,17 +265,14 @@ define([
       cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
       var results = {};
       var meta = model.properties;
-      var myMeta = model.myProperties;
-      var m = myMeta ? myMeta : meta;
-
       for (var i = 0; i < cloneOf.length; i++) {
         var vals = [];
         var iProp = cloneOf[i];
         for (var j=0; j<2; j++) {
-          for (var p in m) {
-            if (!_.has(m[p], "cloneOf")) 
+          for (var p in meta) {
+            if (!_.has(meta[p], "cloneOf")) 
               continue;
-            var clones = m[p].cloneOf.split(",");
+            var clones = meta[p].cloneOf.split(",");
             for (var i=0; i<clones.length; i++) {
               if (clones[i].replace(' ', '') == iProp) { 
                 vals.push(p);
@@ -250,7 +281,7 @@ define([
             }
           }
           
-          if (vals.length  ||  !myMeta)
+          if (vals.length)
             break;
           
           m = meta;
@@ -413,7 +444,7 @@ define([
 //    },
     
     getShortUri: function(uri, model) {
-      if (model.myProperties._shortUri == 'unsupported')
+      if (model.properties._shortUri == 'unsupported')
         return uri;
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
@@ -590,12 +621,9 @@ define([
       params = params[1].split('&');
 
       var meta = vocModel.properties;
-      var myMeta = vocModel.myProperties;
-
-      var m = myMeta ? myMeta : meta;
       for (var i=0; i<params.length; i++) {
         var s = params[i].split('=')[0];
-        p = myMeta ? myMeta[s] : null;
+        p = meta[s];
         if (!p)
           p = meta[s];
         if (p  &&  (p.containerMember || p.notifyContainer))
@@ -603,6 +631,7 @@ define([
       }
       return null;
     },
+    
     /**
      * to be used for model constructors, not instances
      */
@@ -1113,22 +1142,26 @@ define([
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
-    isAssignableFrom: function(model, className, type2Model) {
+    isAssignableFrom: function(model, className) {
       if (U.isA(model, className))
         return true;
-//      var type2Model = G.typeToModel;
-      var m = model;
-      while (true) {
-        var subClassOf = m.subClassOf;
-        if (!subClassOf.startsWith(G.DEFAULT_VOC_BASE))
-          subClassOf = G.DEFAULT_VOC_BASE + subClassOf;
-        
-        if (m.shortName == className  ||  m.type == className)
-          return true;
-        if (m.subClassOf == 'Resource')
-          return false;
-        m = type2Model[subClassOf];
-      }
+      
+      var supers = model.superClasses;
+      return _.any(supers, function(s) {return s.endsWith("/" + className)});
+      
+//      var m = model;
+//      while (true) {
+//        var subClassOf = m.subClassOf;
+//        if (!subClassOf.startsWith(G.DEFAULT_VOC_BASE))
+//          subClassOf = G.DEFAULT_VOC_BASE + subClassOf;
+//        
+//        if (m.shortName == className  ||  m.type == className)
+//          return true;
+//        if (m.subClassOf == 'Resource')
+//          return false;
+//        
+//        m = G.typeToModel[subClassOf];
+//      }
     },
 
     getValue: function(modelOrJson, prop) {
@@ -1763,6 +1796,15 @@ define([
         }
       }
       return this;
+    },
+    
+    toObject: function(arr) {
+      var obj = {};
+      for (var i = 0; i < arr.length; i++) {
+        obj[arr[i]] = {};
+      }
+      
+      return obj;
     }
 //    ,
 //    intersectObjects: function(array) {

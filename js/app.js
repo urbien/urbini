@@ -77,6 +77,26 @@ define('app', [
     return false;
   };
 
+  function extendMetadataKeys() {
+    var extended = {};
+    var metadata = G.modelsMetadata;
+    for (var type in metadata) {
+      extended[U.getLongUri1(type)] = metadata[type];
+    }
+    
+    G.modelsMetadata = extended;
+    
+    metadata = G.linkedModelsMetadata;
+    if (metadata) {
+      extended = {};
+      for (var type in metadata) {
+        extended[U.getLongUri1(type)] = metadata[type];
+      }
+    
+      G.linkedModelsMetadata = extended;
+    }
+  }
+  
   var App = {
     TAG: 'App',
     initialize: function() {
@@ -86,53 +106,62 @@ define('app', [
       };
       
       Templates.loadTemplates();
-      _.each(G.modelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
-      _.each(G.linkedModelsMetadata, function(m) {m.type = U.getLongUri1(m.type)});
+      extendMetadataKeys();
+      
       App.setupWorkers();
       App.setupNetworkEvents();
       Voc.checkUser();
-      Voc.loadStoredModels();
-      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
+      Voc.loadEnums();
+      Voc.getModels().done(function() {
         RM.restartDB().always(App.startApp);
-        return;
-      }
-
-      this.prepModels();
-    },
-    
-    prepModels: function() {
-      var self = this;
-      var error = function(xhr, err, options) {
-//        debugger;
+      }).fail(function() {
         if (!G.online) {
           Errors.offline();
         }
-        else if (xhr) {
-          if (xhr.status === 0) {
-            if (G.online)
-              self.prepModels(); // keep trying
-            else {
-  //            window.location.hash = '';
-  //            window.location.reload();
-              Errors.offline();
-            }
-          }
-        }
-        else if (err) {
-          throw new Error('failed to load app: ' + JSON.stringify(err));            
-        }
-        else {
-          throw new Error('failed to load app');
-        }
-      };
+      });
       
-      Voc.fetchModels(null, {sync: true}).done(function() {
-        if (RM.db)
-          self.startApp();
-        else
-          RM.restartDB().always(App.startApp);
-      }).fail(error);
+//      Voc.loadStoredModels();
+//      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
+//        RM.restartDB().always(App.startApp);
+//        return;
+//      }
+//
+//      this.prepModels();
     },
+    
+//    prepModels: function() {
+//      var self = this;
+//      var error = function(xhr, err, options) {
+////        debugger;
+//        if (!G.online) {
+//          Errors.offline();
+//        }
+//        else if (xhr) {
+//          if (xhr.status === 0) {
+//            if (G.online)
+//              self.prepModels(); // keep trying
+//            else {
+//  //            window.location.hash = '';
+//  //            window.location.reload();
+//              Errors.offline();
+//            }
+//          }
+//        }
+//        else if (err) {
+//          throw new Error('failed to load app: ' + JSON.stringify(err));            
+//        }
+//        else {
+//          throw new Error('failed to load app');
+//        }
+//      };
+//      
+//      Voc.getModels(null, {sync: true}).done(function() {
+//        if (RM.db)
+//          self.startApp();
+//        else
+//          RM.restartDB().always(App.startApp);
+//      }).fail(error);
+//    },
     
     startApp: function() {
       if (App.started)
@@ -324,7 +353,7 @@ define('app', [
       var fn = G.setOnline;
       G.setOnline = function(online) {
         fn.apply(this, arguments);
-        Events.trigger('online', online);
+        Events.trigger(online ? 'online' : 'offline');
       };      
     }
   };

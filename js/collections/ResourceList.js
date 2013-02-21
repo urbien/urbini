@@ -150,11 +150,6 @@ define([
       return Backbone.Model.prototype.fetch.call(this, options);
     },
     fetch: function(options) {
-      if (!G.online) {
-        options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'});
-        return;
-      }
-      
       var self = this;
       options = _.extend({update: true, remove: false, parse: true}, options);
       this.queryMap = this.queryMap || {};

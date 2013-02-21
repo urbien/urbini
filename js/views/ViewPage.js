@@ -77,7 +77,7 @@ define([
           right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
-      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App", G.typeToModel)) {
+      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App")) {
         var user = G.currentUser._uri;
         var appOwner = U.getLongUri(res.get('creator'));
         if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))
