@@ -151,7 +151,7 @@ define([
       if (type === 'profile')
         return G.currentUser.guest ? null : U.getTypeUri(G.currentUser._uri);
             
-      return U.getTypeUri(hash);
+      return U.getTypeUri(type);
     },
     
     /**

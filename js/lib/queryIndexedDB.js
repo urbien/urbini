@@ -14,6 +14,7 @@
 //'use strict';
 define(['jqueryIndexedDB'], function() {
   var IDBCursor = $.indexedDB.IDBCursor;
+  var DEFAULT_PRIMARY_KEY = '_uri';
   function Index(name) {
     function queryMaker(op) {
       return function () {
@@ -180,6 +181,7 @@ define(['jqueryIndexedDB'], function() {
       
       setPrimaryKey: function(pKey) {
         this.primaryKey = pKey;
+        return this;
       },
       
       toString: toString
@@ -259,7 +261,7 @@ define(['jqueryIndexedDB'], function() {
             return;
           }
           
-          request = index[op];
+          request = index[op]();
           request.done(function(all, event) {
             defer.resolve(arrayLimit(arrayOffset(arraySub(all, result), qOffset), qLimit));
           }).fail(function(err, event) {
@@ -328,10 +330,12 @@ define(['jqueryIndexedDB'], function() {
     if (!minuend.length || !subtrahend.length)
       return minuend;
     
-    var minKeys = primaryKey ? primaryKeys(minuend, primaryKey) : minuend;
-    return subtrahend.filter(function(item) {
-      item = primaryKey ? item[primaryKey] : item;
-      return subtrahend.indexOf(item) == -1;
+    primaryKey = primaryKey || DEFAULT_PRIMARY_KEY;
+//    var minKeys = primaryKey ? primaryKeys(minuend, primaryKey) : minuend;
+    var subKeys = primaryKeys(subtrahend, primaryKey);
+    return minuend.filter(function(item) {
+      item = item[primaryKey]; //primaryKey ? item[primaryKey] : item;
+      return subKeys.indexOf(item) == -1;
     });
   }
 
@@ -377,10 +381,12 @@ define(['jqueryIndexedDB'], function() {
     if (!bar.length)
       return bar;
     
+    primaryKey = primaryKey || DEFAULT_PRIMARY_KEY;
 //    var fooKeys = primaryKey ? primaryKeys(foo, primaryKey) : foo;
-    var barKeys = primaryKey ? primaryKeys(bar, primaryKey) : bar;
+//    var barKeys = primaryKey ? primaryKeys(bar, primaryKey) : bar;
+    var barKeys = primaryKeys(bar, primaryKey);
     return foo.filter(function(item) {
-      item = primaryKey ? item[primaryKey] : item;
+      item = item[primaryKey]; //primaryKey ? item[primaryKey] : item;
       return barKeys.indexOf(item) != -1;
     });
   }

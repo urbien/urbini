@@ -16,7 +16,18 @@ define([
 //  var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
-  var Index = idbq.Index;
+  var Index = idbq.Index,
+      REF_STORE = {
+        name: 'ref',
+        indices: {
+          _uri: {unique: true, multiEntry: false},
+          _dirty: {unique: false, multiEntry: false},
+          _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
+          _problematic: {unique: false, multiEntry: false},
+          _alert: {unique: false, multiEntry: false}      
+        }
+      }
+
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
 //    if (method === 'patch') {
@@ -57,7 +68,7 @@ define([
     vocModel = data.vocModel,
     fetchFromServer = function(isUpdate, timeout) {
       if (!isCollection && U.isTempUri(data.getUri())) {
-        debugger;
+//        debugger;
         options.error && options.error(data, {type: 'offline'}, options);
         return;
       }
@@ -244,11 +255,11 @@ define([
     
     createRefStore: function() {
       return $.Deferred(function(defer) {
-        if (RM.db && RM.db.objectStoreNames.contains(RM.REF_STORE)) {
+        if (RM.db && RM.db.objectStoreNames.contains(REF_STORE.name)) {
           defer.resolve();
         }
         else {
-          RM.upgradeDB({toMake: [RM.REF_STORE]}).done(defer.resolve).fail(defer.reject);
+          RM.upgradeDB({toMake: [REF_STORE.name]}).done(defer.resolve).fail(defer.reject);
         }
       }).promise();
     },
@@ -383,14 +394,13 @@ define([
         return dfd;
       }
 
-      
       options = options || {};
       var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
       if (toMake.indexOf('http://www.hudsonfog.com/voc/model/crm/SupportIssue') != -1)
         debugger;
       
-      if (RM.db && !RM.db.objectStoreNames.contains(RM.REF_STORE))
-        toMake.push(RM.REF_STORE);
+      if (RM.db && !RM.db.objectStoreNames.contains(REF_STORE.name))
+        toMake.push(REF_STORE.name);
       
 //      toKill = _.union(toKill, Voc.changedModels); // , Voc.newModels);
       var needUpgrade = function() {
@@ -438,8 +448,8 @@ define([
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
         var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
-        if (!db.objectStoreNames.contains(RM.REF_STORE)) {
-          toMake.push(RM.REF_STORE);
+        if (!db.objectStoreNames.contains(REF_STORE.name)) {
+          toMake.push(REF_STORE.name);
           version = currentVersion + 1;
         }
         
@@ -524,11 +534,13 @@ define([
       
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
-        if (type === RM.REF_STORE) {
+        if (type === REF_STORE.name) {
           var store = trans.createObjectStore(type, {keyPath: '_id', autoIncrement: true});
-          store.createIndex('_uri', {unique: true, multiEntry: false});
-          store.createIndex('_dirty', {unique: false, multiEntry: false});
-          store.createIndex('_tempUri', {unique: false, multiEntry: false}); // unique false because it might not be set at all
+          var indices = REF_STORE.indices;
+          for (var index in indices) {
+            store.createIndex(index, indices[index]);
+          }
+          
           continue;
         }
         
@@ -660,7 +672,6 @@ define([
     
 //    syncQueue: new TaskQueue("sync with server"),
     
-    REF_STORE: "ref",
     SYNC_TASK_NAME: 'sync with server',
     sync: function() {
       if (!RM.db || G.currentUser.guest)
@@ -672,9 +683,9 @@ define([
       }
         
       RM.runTask(function() {
-//          Index('dirty').eq(1).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
+//          Index('dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
-        RM.$db.objectStore(RM.REF_STORE, 0).getAll().done(function(results) {
+        Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (!results.length) {
             defer.resolve();
             return;
@@ -708,14 +719,11 @@ define([
             vocModel = resource.vocModel,
             type = vocModel.type;
         
-        var atts = _.omit(ref, '_tempUri', '_id', '_dirty');
+        var atts = _.omit(ref, _.keys(REF_STORE.indices));
         atts.$returnMade = true;
         resource.save(atts, { // ref has only the changes the user made
           sync: true, 
           success: function(model, data, options) {
-//            var diff = U.intersectObjects(data, atts);
-//            if (_.size(diff))
-//              debugger;
             if (!data._uri) {
               // TODO: handle errors
               debugger;
@@ -736,7 +744,7 @@ define([
             if (tempUri)
               ref._tempUri = tempUri;
             
-            RM.$db.transaction([type, RM.REF_STORE], 1).promise().done(function() {
+            RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
               Events.trigger('synced.' + oldUri, data);
               dfd.resolve(ref);
             }).fail(function() {
@@ -744,7 +752,7 @@ define([
             }).progress(function(transaction) {
               var resStore = transaction.objectStore(type, 1);
               resStore.put(data);
-              transaction.objectStore(RM.REF_STORE, 1).put(ref);
+              transaction.objectStore(REF_STORE.name, 1).put(ref);
               if (newUri !== oldUri) {
                 resStore["delete"](oldUri);
                 data._oldUri = oldUri;
@@ -753,14 +761,36 @@ define([
           },
           error: function(model, xhr, options) {
             debugger;
-            dfd.resolve(); // resolve in any case, so sync operation can conclude
+            var code = xhr.status;
+            var problem = xhr.responseText;
+            if (problem) {
+              try {
+                problem = JSON.parse(problem);
+                ref._problem = problem;
+              } catch (err) {
+                problem = null;
+              }
+            }
+            
+            ref._problematic = 1;
+            ref._alert = problem;
+//            if (status > 399 && status < 600) {
+              RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {
+                debugger;
+              }).progress(function(transaction) {
+                transaction.objectStore(REF_STORE.name, 1).put(ref);
+              }).always(dfd.resolve); // resolve in any case, so sync operation can conclude
+//            }
+//            else {
+//              debugger;
+//              dfd.resolve(); // resolve in any case, so sync operation can conclude
+//            }
           }
         });
       }).promise();
     },
     
     syncResource: function(ref, refs) {
-      debugger;
       return $.Deferred(function(dfd) {
         var uri = ref._uri,
             type = U.getTypeUri(uri),
@@ -804,7 +834,7 @@ define([
             debugger;
             if (updated) {
               // not ready to sync with server, but we can update the item in its respective table
-              RM.$db.objectStore(RM.REF_STORE, 1).put(ref).done(function() {
+              RM.$db.objectStore(REF_STORE.name, 1).put(ref).done(function() {
                 var resStore = RM.$db.objectStore(type, 1);
                 resStore.get(uri).done(function(item) {
                   debugger;
@@ -899,7 +929,7 @@ define([
           fail = options.error;
       
       if (uri) {
-        Index('_uri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
+        Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (!results.length)
             RM.saveItemHelper(itemRef, item, options);
           else {
@@ -933,7 +963,8 @@ define([
         }
         else {
           itemRef._dirty = 1;
-          RM.$db.objectStore(RM.REF_STORE).put(itemRef).done(function() {            
+          itemRef._problematic = 0;
+          RM.$db.objectStore(REF_STORE.name).put(itemRef).done(function() {            
             RM.addItems([item], type).done(function() {
               addDefer.resolve();
               RM.sync();
@@ -1209,7 +1240,7 @@ define([
         var qDefer = this;
         var results = [];
         if (isTemp) {
-          Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(RM.REF_STORE, 0)).done(function(results) {
+          Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
             if (results.length) {
               var item = results[0];
               var realUri = item._uri;
@@ -1269,7 +1300,7 @@ define([
       
       return RM.runTask(function() {
         var defer = this;        
-        Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(RM.REF_STORE)).done(function(results) {
+        Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (results.length)
             defer.resolve(results);
           else

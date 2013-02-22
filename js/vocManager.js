@@ -50,9 +50,12 @@ define([
         if (c && !models[c])
           models[c] = {};
             
-        models = U.filterObj(models, function(type, info) {
-          return !G.typeToModel[type];
-        });
+        // In case we were offline and had to settle for stale models from localStaleage
+        if (!options.overwrite) {
+          models = U.filterObj(models, function(type, info) {
+            return !G.typeToModel[type];
+          });
+        }
       }
       else {
         switch (U.getObjectType(models)) {
@@ -72,7 +75,7 @@ define([
       if (!G.hasLocalStorage)
         return Voc.fetchModels(models, options);
         
-      var missingOrStale = [],
+      var missingOrStale = {},
           mightBeStale = {infos: {}, models: {}},
           willLoad = [];
       
@@ -85,7 +88,7 @@ define([
         
         var jModel = Voc.getModelFromLS(type);
         if (!jModel) {
-          missingOrStale[type] = info;
+          missingOrStale[type] = {};
           continue;
         }
         
@@ -94,7 +97,7 @@ define([
         } catch (err) {
           debugger;
           G.localStorage.del(type);
-          missingOrStale[type] = info;
+          missingOrStale[type] = {};
           continue;
         }
         
@@ -120,7 +123,7 @@ define([
           return Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, willLoad, options).done(defer.resolve).fail(defer.reject);
           
         Events.once('online', function(online) {
-          Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, [], _.extend({}, options, {sync:false}));
+          Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, [], _.extend({}, options, {sync: false, overwrite: true}));
         });
         
         Voc.loadModels(_.union(willLoad, _.values(mightBeStale.models))).done(defer.resolve).fail(defer.reject);
@@ -671,7 +674,6 @@ define([
     
     buildScript: function(script) {
       if (typeof script === 'string') {
-        script = script.replace(/(<([^>]+)>)/ig, '').trim();
         try {
           script = FunctionProxy(script);
         } catch (err) {
@@ -695,35 +697,21 @@ define([
     
       var typeName = type.slice(type.lastIndexOf('/') + 1);
       _.each(handlers, function(handler) {
-        var create = handler.createScript;
-        if (create) {
-          create = Voc.buildScript(create);
-          if (create === null)
-            G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
-        }
-        var edit = handler.editScript;
-        if (edit) {
-          edit = Voc.buildScript(edit);
-          if (edit === null)
-            G.log(Voc.TAG, 'error', 'bad custom editScript', handler.app, type);
-        }
+        var scripts = {
+          create: handler.createScript, 
+          edit: handler.editScript
+        };
         
-        if (create)
-          Events.on('add.' + type, Voc.prepareHandler(create, handler.toDavClassUri));
-        if (edit)
-          Events.on('edit.' + type, Voc.prepareHandler(edit, handler.toDavClassUri));
-
-//        var events = script.events;
-//        if (events) {
-//          for (var event in events) {
-//            try {
-//              var listener = script[events[event]];
-//              Events.on(event + '.' + type, listener, Voc.scriptContext);
-//            } catch (err) {
-//              G.log(Voc.TAG, 'error', 'bad custom script', handler.app, type);
-//            }
-//          }
-//        }
+        for (var action in scripts) {
+          var script = scripts[action];
+          if (script) {
+            script = Voc.buildScript(script);
+            if (script === null)
+              G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
+            else
+              Events.on(action + '.' + type, Voc.prepareHandler(script, handler.toDavClassUri));
+          }          
+        }        
       });
     },
     
