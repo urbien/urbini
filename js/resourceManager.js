@@ -745,7 +745,11 @@ define([
               ref._tempUri = tempUri;
             
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
+              debugger;
               Events.trigger('synced.' + oldUri, data);
+              if (model.collection)
+                Events.trigger('refresh', newUri);
+              
               dfd.resolve(ref);
             }).fail(function() {
               debugger;
@@ -891,7 +895,7 @@ define([
           if (ref._dirty) {
             var dfd = q.runTask(function() {
               return RM.syncResource(ref, refs).always(this.resolve);
-            }, {sequential: true});
+            }, {sequential: true, name: 'sync ref: ' + ref._uri});
             
             dfds.push(dfd);
           }          
@@ -1281,9 +1285,9 @@ define([
         }
       }
       
-      var options = {name: 'Get Items: ' + (data.getUrl || data.url)()};
+      var taskOptions = {name: 'Get Items: ' + (data.getUrl || data.url)()};
       if (!isCollection)
-        return RM.runTask(queryWithIndex, options);
+        return RM.runTask(queryWithIndex, taskOptions);
       
       filter = filter || U.getQueryParams(data);
       var props = vocModel.properties;
@@ -1296,7 +1300,7 @@ define([
       }
       
       if (!_.size(temps))
-        return RM.runTask(queryWithIndex, options);
+        return RM.runTask(queryWithIndex, taskOptions);
       
       return RM.runTask(function() {
         var defer = this;        
@@ -1332,7 +1336,7 @@ define([
           RM.runTask(queryWithIndex, options);
         });
 
-      }, options);
+      }, taskOptions);
     },
 
     upgradeDB: function(options) {

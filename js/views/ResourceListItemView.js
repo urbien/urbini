@@ -18,7 +18,7 @@ define([
       _.bindAll(this, 'render', 'click', 'recipeShoppingListHack', 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.resource.on('remove', this.remove, this);
-      this.resource.on('change', this.render, this);
+//      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
       if (this.template) 

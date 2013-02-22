@@ -42,6 +42,7 @@ define([
       if (rl && rl != this.collection)
         return this;
   
+      modified = typeof modified === 'string' ? [modified] : modified;
 //      if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
 //      var lis = this.$('li').detach();

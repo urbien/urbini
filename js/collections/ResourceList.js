@@ -256,6 +256,7 @@ define([
       }
       
       if (toAdd.length) {
+        debugger;
         Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
         Events.trigger('resourcesChanged', toAdd); 
       }
