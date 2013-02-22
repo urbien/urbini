@@ -16,7 +16,7 @@ define([
   'views/ResourceImageView',
   'views/ControlPanel'
 ], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
-  var editParams = ['action', 'viewId', 'backlinkResource'];
+  var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
@@ -105,7 +105,7 @@ define([
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
       this.imageView.render();
-      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res, backlinkResource: this.backlinkResource}, this.editOptions));
+      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
       if (this.editParams)
         this.editView.set(this.editParams);
       

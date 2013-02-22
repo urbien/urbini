@@ -5,8 +5,9 @@ define([
   'events', 
   'error', 
   'utils',
+  'vocManager',
   'views/BasicView'
-], function(G, Templates, Events, Errors, U, BasicView) {
+], function(G, Templates, Events, Errors, U, Voc, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
@@ -30,7 +31,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'incrementBLCount', 'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
@@ -38,15 +39,15 @@ define([
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
-      this.backlinkResource = options.backlinkResource;
+//      this.backlinkResource = options.backlinkResource;
       
       var params = U.getQueryParams();
       var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
-      var bl = params.$backLink;
-      if (bl) {
-        this.backLink = bl;
-        init[bl] = params[bl];
-      }
+//      var bl = params.$backLink;
+//      if (bl) {
+//        this.backLink = bl;
+//        init[bl] = params[bl];
+//      }
       
       this.resource.set(init, {silent: true});
       this.originalResource = this.resource.toJSON();
@@ -75,30 +76,30 @@ define([
       this.mobiscroll(e, 'enum');
     },
 
-    /**
-     * up the counter on the backlink
-     */
-    incrementBLCount: function() {
-      var bl = this.backlinkResource,
-          blPropName = this.backLink;
-      
-      if (bl && blPropName) {
-        var blModel = bl.vocModel;
-        if (blModel) {
-          var backlinks = U.getPropertiesWith(blModel.properties, "backLink");
-          for (var blName in backlinks) {
-            var prop = backlinks[blName];
-            if (prop && prop.backLink === blPropName) {
-              var val = bl.get(blName);
-              if (val) {
-                val.count++;
-                bl.set(blName, val);
-              }
-            }
-          }
-        }
-      }
-    },
+//    /**
+//     * up the counter on the backlink
+//     */
+//    incrementBLCount: function() {
+//      var bl = this.backlinkResource,
+//          blPropName = this.backLink;
+//      
+//      if (bl && blPropName) {
+//        var blModel = bl.vocModel;
+//        if (blModel) {
+//          var backlinks = U.getPropertiesWith(blModel.properties, "backLink");
+//          for (var blName in backlinks) {
+//            var prop = backlinks[blName];
+//            if (prop && prop.backLink === blPropName) {
+//              var val = bl.get(blName);
+//              if (val) {
+//                val.count++;
+//                bl.set(blName, val);
+//              }
+//            }
+//          }
+//        }
+//      }
+//    },
     
     mobiscroll: function(e, scrollerType) {
       var inits = this.initializedScrollers = this.initializedScrollers || {};
@@ -362,11 +363,17 @@ define([
         }, 1000);
       }
     },
-    redirect: function(res, options) {
+    redirect: function(options) {
       // TODO: fix this HACK
-      G.Router.Models[res.getUri()] = res;
+      var res = this.resource,
+          uri = res.getUri(),
+          vocModel = this.vocModel,
+          self = this;
       
-      var vocModel = this.vocModel;
+      if (uri)
+        Events.trigger('newResource', res);
+//      G.Router.Models[uri] = res;
+      
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
         if (!redirect.length)
@@ -394,21 +401,33 @@ define([
           if (redirectTo) { 
             var dotIdx = redirectTo.indexOf('.');
             if (dotIdx != -1) {
-              var pName = redirectTo.slice(0, dotIdx);
-              var prop = vocModel.properties[pName];
-              var range = U.getLongUri1(prop.range);
-              range = range && G.typeToModel[range];
-              if (range) {
+              var pName = redirectTo.slice(0, dotIdx),
+                  prop = vocModel.properties[pName],
+                  range = U.getLongUri1(prop.range),
+                  rangeCl = G.typeToModel[range];
+              
+              if (rangeCl) {
                 redirectParams[pName] = res.get(pName);
                 var bl = redirectTo.slice(dotIdx + 1);
-                var blProp = range.properties[bl];
+                var blProp = rangeCl.properties[bl];
                 if (blProp)
                   redirectPath = blProp.range;
-                else
-                  G.log(this.TAG, 'error', 'couldn\'t get model for range', prop.range);
+                else {
+                  G.log(this.TAG, 'error', 'couldn\'t create redirect', redirectTo);
+                  self.router.navigate("view/" + encodeURIComponent(uri), {trigger: true});
+                  return;
+                }
               }
-              else
-                G.log(this.TAG, 'error', 'couldn\'t get model for range', prop.range);
+              else {
+                var args = arguments;
+                Voc.getModels(range).done(function() {
+                  self.redirect.apply(self, args);
+                }).fail(function() {
+                  self.router.navigate("view/" + encodeURIComponent(uri), {trigger: true});
+                })
+                
+                return;
+              }
             }
             
             redirectPath = redirectPath || U.getTypeUri(vocModel.properties[redirectTo]._uri);
@@ -492,7 +511,7 @@ define([
       if (!isEdit && uri) {
 //        this.incrementBLCount();
         debugger;
-        this.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        this.redirect({trigger: true, replace: true, forceRefresh: true, removeFromView: true});
         return;
       }
       
@@ -595,9 +614,10 @@ define([
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
             if (!isEdit)
-              self.incrementBLCount();
+              Events.trigger('incBLs', res);
+//              self.incrementBLCount();
             
-            self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+            self.redirect({trigger: true, replace: true, forceRefresh: true, removeFromView: true});
           }, 
           error: onSaveError
         });

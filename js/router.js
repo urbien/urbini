@@ -49,7 +49,12 @@ define([
       Events.on('back', function() {
         self.backClicked = true;
       });
-      
+
+      Events.on('newResource', function(resource) {
+        var uri = resource.getUri();
+        self.Models[uri] = resource;
+      });
+
       // a hack to prevent browser address bar from dropping down
       // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
       $('[data-role="page"]').on('pagecreate',function(event) {
@@ -247,8 +252,6 @@ define([
         return;
       
       var params = U.getHashParams(),
-          backLink = params.$backLink, 
-          backlinkResource = backLink && this.Models[params[backLink]],
           makeId = params['-makeId'];
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
@@ -257,7 +260,7 @@ define([
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, backLink: backLink, backlinkResource: backlinkResource, source: this.previousFragment});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;

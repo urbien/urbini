@@ -23,6 +23,7 @@ define([
 //      Events.trigger('back');
 //      window.history.back();
       var colParams = U.getQueryParams(this.collection);
+      colParams = colParams ? _.clone(colParams) : {};
       colParams['-makeId'] = G.nextId();
       this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true, replace: false});
       return this;
