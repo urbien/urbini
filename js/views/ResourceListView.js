@@ -173,8 +173,10 @@ define([
       if (this.initializedListView) {
         if (isModification  ||  isMasonry  ||  isMultiValueChooser)
           this.$el.trigger('create');
-        else
+        else {
+          this.$el.trigger('create');
           this.$el.listview('refresh');
+        }
       }
       else {
         this.initializedListView = true;

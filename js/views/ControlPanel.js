@@ -60,8 +60,10 @@ define([
       this.render();
       if (!this.$el.hasClass('ui-listview'))
         this.$el.trigger('create');
-      else
+      else {
+        this.$el.trigger('create');
         this.$el.listview('refresh');
+      }
     },
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,

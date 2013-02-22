@@ -812,8 +812,10 @@ define([
       }        
         
       (this.$ul = this.$('#fieldsList')).html(frag);
-      if (this.$ul.hasClass('ui-listview'))
+      if (this.$ul.hasClass('ui-listview')) {
+        this.$ul.trigger('create');
         this.$ul.listview('refresh');
+      }
       else
         this.$ul.trigger('create');
 
