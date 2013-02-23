@@ -177,7 +177,7 @@ html { height: 100%; }
 .lc1 img {
   max-width: 32px;
 }
-.btn { text-align: center; padding-bottom: 3px; height: 32px; }
+.btn { text-align: center; padding-bottom: 3px; height: 25px; }
 .commentListDate {
   color: #999999;
   font-size: 11px;
@@ -228,80 +228,13 @@ html { height: 100%; }
 #headerUl .ui-btn-inner { font-size: 0px; }
 #headerUl .ui-btn { padding: 3px 0px; }
 
-
-#columns {
-    -moz-column-count: auto;
-    -moz-column-gap: 10px;
-    -moz-column-fill: auto;
-    -moz-column-width: 230px;
-    -webkit-column-count: auto;
-    -webkit-column-gap: 10px;
-    -webkit-column-fill: auto;
-    -webkit-column-width: 230px;
-    column-count: auto; 
-    column-gap: 10px;
-    column-fill: auto;
-    column-width: 230px;
-    list-style-type: none;
-    margin-left: -40px;
-}
-
-.pin { 
-  -moz-break-before: column;
-/*  -webkit-column-break-before: always;*/
-   break-before: column;
-   font-size: 11px; 
-   margin: 5px 2px 5px;
-   padding: 5px;
-   vertical-align: top;
-   min-width: 230px; 
- }
-
-.pin1 p {
-   display: inline-block;
-  -moz-break-before: column;
-/*  -webkit-column-break-before: always; */
-   break-before: column;
-}
-.pin1 {
-   display: inline-block;
-   
-   border: 1px solid #ddd;
-   box-shadow: 0 0px 1px #aaa;
-   background: #FEFEFE;
-   background-image: linear-gradient(45deg, #FFF, #F9F9F9);
-   width: 100%;
-  -moz-break-before: column;
-/*  -webkit-column-break-before: always; */
-   break-before: column;
-}         
-
-#columns .galleryItem_css3 img {max-width: 205px;}
-
-@media all and (min-width: 960px) {
-    #columns {
-      column-count: auto;
-    }
-}
 @media (max-width: 320px) {
   .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
   .nab .anab .galleryItem_css3 img {max-width: 265px;}
   .nabBoard {width: 282px !important; padding: 0 !important; cursor: pointer;}
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
-  #columns {column-count: 1;}
 }
 
-#columns .pin .nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
-#columns .pin .nabRL  { display: inline; }
-#columns .pin .nabRL div { padding: 0px 10px 10px 10px;}
-
-#columns .pin .nabRL .btn span {padding-right: 0; }
-
-#columns .pin .galleryItem_css3 img {max-width: 205px;}
-#columns .pin .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
-#columns .pin  a {text-decoration: none; color: #757575; }
-#columns  { box-shadow: none;}
-#columns .pin span { padding-right: 12px; }
 #resourceView { font-size: 16px; }
 /* login popup icon for Live social net (lack in awesome font currently) */
 .ui-icon-live-sign:before { content: url(../images/frame/white_bg/live-sign.png); border-radius: 4px; background-color: #aaa; padding: 2px; margin-left: 1px; }
@@ -310,6 +243,63 @@ html { height: 100%; }
 
 /* default images 'fitting' in RL in case when image dimensions are uknown. Use "max-height: none" only with processed images */
 .image_fitted .ui-li-thumb { max-width: none; max-height: none; min-width: 80px; min-height: 80px; clip: rect(0px, 80px, 80px, 0px); }
+.menu_image_fitted .ui-li-thumb { max-width: 42px; max-height: none; min-width: 42px; min-height: 42px; clip: rect(0px, 42px, 42px, 0px); }
 
-/* JQM toggle switch alignment in a listview */
+/* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
+.info {background: yellow; font-size: 16px; padding: 5px;color: #047907;}
+.buyButton { float:right; }
+
+*.ui-listview *.ui-btn-up-c,
+*.ui-listview *.ui-btn-down-c,
+*.ui-listview *.ui-btn-hover-c {
+  border: 1px solid     #ccc /*{c-bup-border}*/;
+  background:       #eee /*{c-bup-background-color}*/;
+  font-weight: bold;
+  color:          #222 /*{c-bup-color}*/;
+  text-shadow: 0 /*{c-bup-shadow-x}*/ 1px /*{c-bup-shadow-y}*/ 0 /*{c-bup-shadow-radius}*/ #fff /*{c-bup-shadow-color}*/;
+  background-image: -webkit-gradient(linear, left top, left bottom, from( #fff /*{c-bup-background-start}*/), to( #f1f1f1 /*{c-bup-background-end}*/)); /* Saf4+, Chrome */
+  background-image: -webkit-linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/); /* Chrome 10+, Saf5.1+ */
+  background-image:    -moz-linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/); /* FF3.6 */
+  background-image:     -ms-linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/); /* IE10 */
+  background-image:      -o-linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/); /* Opera 11.10+ */
+  background-image:         linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/);
+}
+.badge, .menuBadge, .appBadge {
+  background: radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+  background: -moz-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+  background: -ms-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+  background: -o-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+  background: -webkit-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+  background-color: red;
+  border: 2px solid white;
+  border-radius: 12px; /* must be 1/2 of ( border-width*2 + width ) */
+  box-shadow: 1px 1px 1px black;
+  color: white;
+  font: bold 17px/15px Helvetica, Verdana, Tahoma;
+  height: 18px; /* height + padding-top must equal width */
+  padding: 2px 2px 0 2px; /* height + padding-top must equal width */
+  text-align: center;
+  min-width: 16px;
+}
+
+
+.menuBadge {
+  position: absolute; 
+  top: -25px; 
+  left: 5px; 
+  font-size: 12px;
+}
+
+.appBadge {
+  background: radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
+  background: -moz-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
+  background: -ms-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
+  background: -o-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
+  background: -webkit-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
+  position: absolute; 
+  top: 0px; 
+  right: 5px; 
+  font-size: 12px;
+  background-color: blue;
+}
