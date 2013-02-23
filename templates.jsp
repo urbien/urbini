@@ -291,7 +291,7 @@
 <script type="text/template" id="menuButtonTemplate">
   <li id="menuBtn">
     <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-      {{= typeof newAlerts == 'undefined' ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+      {{= typeof newAlerts == 'undefined'  &&  newAlerts? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
     </a>
   </li>  
 </script>
