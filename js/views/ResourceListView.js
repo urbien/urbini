@@ -59,7 +59,7 @@ define([
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -150,7 +150,7 @@ define([
           else if (isComment)
             liView = new CommentListItemView({model:res, parentView: this});
           else {
-            var swatch = res.get('swatch') || G.currentApp['theme.swatch'];
+            var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
             liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this, swatch: swatch}) : new ResourceListItemView({model:res, parentView: this, swatch: swatch});
           }
           if (nextPage)  
