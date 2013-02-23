@@ -46,7 +46,7 @@ define([
               if (window.location.hash  &&  window.location.hash.indexOf('#make/') == 0)
                 this.title = this.pageTitle;
               else {
-                this.title = this.vocModel['displayName'] + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + this.pageTitle;
+                this.title = U.makeHeaderTitle(this.vocModel['displayName'], this.pageTitle);
                 this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
               }
             }
@@ -56,6 +56,9 @@ define([
       if (!this.title)
         this.title = this.pageTitle;
       this.$el.prevObject.attr('data-title', this.pageTitle);
+      var params = U.getHashParams();
+      this.info = params['-info='];
+      
       return this;
     },
     makeWidget: function(options) {
@@ -92,6 +95,16 @@ define([
       if (this.doPublish) {
         G.require(['views/PublishButton'], function(PublishButton) {
           self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
+        });
+      }
+      else if (this.doTry) {
+        G.require(['views/PublishButton'], function(PublishButton) {
+          self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
+        });
+      }
+      else if (this.forkMe) {
+        G.require(['views/PublishButton'], function(PublishButton) {
+          self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
         });
       }
       if (G.currentUser.guest) {
