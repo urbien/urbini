@@ -5,11 +5,11 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu}}"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="c"></ul>
+  <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= Lablz.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -25,7 +25,7 @@
     </form>  
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="d">
+  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <!-- nextPage button removed after endless page introduction -->
      <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
@@ -33,39 +33,40 @@
 </script>  
  
 <script type="text/template" id="resource">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu }}"></div> 
   <div id="headerDiv"></div>
-  <div id="resourceViewHolder" data-role="content">
+  <div id="resourceViewHolder"><!-- data-role="content" -->
     <div id="resourceImage"></div>
-    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list">
+    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="resourceView" class="action-list">
     </ul>
+    
     {{ if ($('#other')) { }}
       <br/>
       <br/>
     {{ } }}
-    <ul data-role="listview" data-theme="c" id="cpView" class="ui-listview">
+    
+    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="cpView" class="ui-listview">
     </ul>
   </div>
-
-  <div data-role="footer" class="ui-bar" data-theme="d">
+  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
 </script>  
 
 <script type="text/template" id="menuP">
-   <ul data-role="none" data-theme="a" id="menuItems">
+   <ul data-role="none" data-theme="{{= Lablz.theme.menu }}" id="menuItems">
    </ul>
 </script>  
 
 <script type="text/template" id="menu">
-  <div id="headerDiv" data-theme="a"></div>
-  <div id="menuHolder" data-role="content" data-theme="a">
-    <ul data-role="listview" data-theme="a" id="menuItems" class="action-list" data-inset="true">
+  <div id="headerDiv" data-theme="{{= Lablz.theme.menu }}"></div>
+  <div id="menuHolder" data-role="content" data-theme="{{= Lablz.theme.menu }}">
+    <ul data-role="listview" data-theme="{{= Lablz.theme.menu }}" id="menuItems" class="action-list" data-inset="true">
     </ul>
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="d">
+  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
 </script>  
@@ -165,9 +166,21 @@
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
-    />      
+    /> 
     {{= viewCols }}
   </a>
+  {{ if (this.resource.isA('Buyable')) { }}
+   <div class="buyButton" id="{{= Lablz.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+     {{ if (typeof price == 'object') { }} 
+       {{= price.currency + price.value }}
+       {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
+     {{ } }}
+     {{ if (typeof price != 'object') { }} 
+       {{= 'U$' + price }}
+       {{= price < 10 ? '&nbsp;&nbsp;&nbsp;' : price < 100 ? '&nbsp;&nbsp;' : price < 1000 ? '&nbsp;' : ''}}
+     {{ } }}
+   </div>
+  {{ } }}  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= distance }}</span>
   {{ } }}
@@ -175,24 +188,42 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
-    {{= viewCols }}
+  {{= viewCols }}
   </a>
+  {{ if (this.resource.isA('Buyable')) { }}
+   <div class="buyButton" id="{{= Lablz.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+     {{= price.currency + price.value }}
+     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
+   </div>
+  {{ } }}  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= distance }}</span>
   {{ } }}
 </script>
 
 <script type="text/template" id="menuItemTemplate">
-  {{ if (typeof icon == 'undefined') { }}
-    <li>
-  {{ } }}
-  {{ if (typeof icon != 'undefined') { }}
-    <li data-icon="{{= icon }}">
-  {{ } }}
-    <img style="max-height: 60px; max-width: 60px; float:left;" src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" />
-    <a id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}">  
-    <h3 style="color:#ccc">{{= title }}
-  </h3></a>
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}">
+      {{= title }}
+    </a>
+  </li>
+</script>
+
+<script type="text/template" id="menuItemNewAlertsTemplate">
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= pageUrl }}">
+      {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
+    </a>
+  </li>
+</script>
+
+<script type="text/template" id="homeMenuItemTemplate">
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+    <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="home123" target="#">
+      {{= title }}
+    </a>
   </li>
 </script>
 
@@ -210,7 +241,7 @@
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="c" data-icon="arrow-r"></a></li>
+   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= Lablz.theme.list }}" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -218,7 +249,7 @@
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">
-   <li data-theme="d" data-role="list-divider">{{= value }}</li>
+   <li data-theme="{{= Lablz.theme.footer }}" data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -259,7 +290,9 @@
 
 <script type="text/template" id="menuButtonTemplate">
   <li id="menuBtn">
-    <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu</a>
+    <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
+      {{= typeof newAlerts == 'undefined' ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+    </a>
   </li>  
 </script>
 
@@ -269,10 +302,22 @@
   </li>
 </script>
 
+<script type="text/template" id="buyPopupTemplate">
+  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= Lablz.theme.menu }}" class="ui-content">
+    <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= Lablz.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
+    <div data-role="content" data-theme="c" role="main">
+      <h4 id="buyMsg">{{= msg }}</h4>
+      <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">Buy<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">Try<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">Cancel</a> 
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= Lablz.theme.menu }}" class="ui-content">
     <h4 id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-rel="back" data-role="button" data-theme="{{= Lablz.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
 
     <a data-role="button" href="{{= net.url }}"> 
@@ -322,8 +367,16 @@
   <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">Your application has been changed please re-Publish</a>
 </script>
 
+<script type="text/template" id="tryButtonTemplate">
+  <a target="#" data-icon="check" id="try" data-role="button" date-position="notext">Try this application live</a>
+</script>
+
+<script type="text/template" id="forkButtonTemplate">
+  <a target="#" data-icon="copy" id="fork" data-role="button" date-position="notext">Fork me</a>
+</script>
+
 <script type="text/template" id="headerTemplate">
-  <div data-role="header" class="ui-header ui-bar-c">
+  <div data-role="header" class="ui-header" data-theme="{{= Lablz.theme.header}}">
     <div id="errMsg"></div>
     <div data-role="navbar">
       <ul id="headerUl"></ul>
@@ -333,9 +386,20 @@
       <h3 id="pageTitle">{{= this.title }}</h3>
       <div style="max-width:400px;" id="publishBtn">
         {{ if (typeof publish != 'undefined') { }}
-          {{= publish }}
+            {{= publish }}
         {{ } }}
       </div>
+      <div style="max-width:200px;" id="forkMeBtn">
+        {{ if (typeof forkMe != 'undefined') { }}
+            {{= forkMe }}
+        {{ } }}
+      </div>
+      <div style="max-width:200px;" id="tryBtn">
+        {{ if (typeof tryApp != 'undefined') { }}
+            {{= tryApp }}
+        {{ } }}
+      </div>
+       {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}
     </div>
   </div>
 </script>
@@ -420,7 +484,7 @@
     <div class="galleryItem_css3">
       <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
       {{ if (typeof creatorThumb != 'undefined') { }}
-         <img src="{{= creatorThumb }}" width="80" />
+         <img src="{{= creatorThumb }}" width="80"/>
       {{ } }}
       </a>
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -464,30 +528,27 @@
       </a -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-         {{ if (typeof imgWidth != 'undefined') { }}
-           style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
-         {{ } }}
-         ></img>
+        <img  src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+         {{= typeof imgWidth != 'undefined' ? 'style="border: 1px solid #ccc; width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : 'style="style="border: 1px solid #ccc;"' }}></img>
       </a>
     </div>
+    {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }}
+    {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
   <div class="nabRL">
     <div>
       {{= gridCols }}
     </div>
-{{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
-    <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
+    {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
+      <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
           <a style="float:left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= Lablz.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} ">
-              <span class="ui-icon-comment-alt"></span>&#160;{{= v_showCommentsFor.count }} 
-            </a>
+            <a style="float:right; font-size:12px;" href="{{= Lablz.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
           {{ } }}
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  style="float: left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a class="like" style="float: left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
@@ -495,13 +556,17 @@
           </a>
           {{ if (v_showVotesFor.count) { }}
           <div style="float:right; font-size:12px;"> 
-            <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>&#160;{{= v_showVotesFor.count }} 
-            </a>
+            <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
           </div>
           {{ } }}
         {{ } }}
+        <!--
+        {{ if (typeof tryApp != 'undefined') { }}
+            <a href="{{= tryApp }}" style="float:left;">&#160;&#160;&#8226;&#160;&#160;<span style="color:#f54416;">Try</span></a>
+        {{ } }}
+        -->
      </div>
-{{ } }}  
+    {{ } }}  
   </div>     
 </div>
 </script>
@@ -509,26 +574,26 @@
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu }}"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div><br/>
   <form data-ajax="false" id="editForm" action="#">
-    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <div name="errors" style="float:left"></div>
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="d" class="cancel">Cancel</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="a" class="submit">Submit</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= Lablz.theme.footer }}" class="cancel">Cancel</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= Lablz.theme.activeButton }}" class="submit">Submit</button></div>
       </fieldset>
     </div>
   </form>
 </div>
 
 
-  <div data-role="footer" class="ui-bar" data-theme="d">
+  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
 </script>
@@ -583,12 +648,17 @@
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
-  <label for="{{= id }}" data-theme="c">{{= name }}</label>
+  <label for="{{= id }}" data-theme="{{= Lablz.theme.list }}">{{= name }}</label>
     <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
     <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
+</script>
+
+<script type="text/template" id="moneyPET">
+  <label for="{{= id }}" data-theme="{{= Lablz.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value.value }}" {{= rules }} data-mini="true"></input>
 </script>
 
 <script type="text/template" id="telPET">
