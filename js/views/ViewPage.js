@@ -15,7 +15,6 @@ define([
   'views/ControlPanel'
 ], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
-    tagName: 'a',
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
@@ -80,8 +79,13 @@ define([
       if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App")) {
         var user = G.currentUser._uri;
         var appOwner = U.getLongUri(res.get('creator'));
-        if (user == appOwner  &&  (!res.get('lastDeployed')  ||  res.get('modified') > res.get('lastDeployed')))
+        if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
           this.hasPublish = true;
+        var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
+        var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
+        if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished))
+          this.hasTry = true;
+        this.forkMe = true;
       }
       
       this.header = new Header({
@@ -90,6 +94,8 @@ define([
         buttons: this.buttons,
         viewId: this.cid,
         doPublish: this.hasPublish,
+        doTry: this.hasTry,
+        forkMe: this.forkMe,
         el: $('#headerDiv', this.el)
       }).render();
       
