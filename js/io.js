@@ -34,7 +34,7 @@ function sendXhr(options) {
   
   if (isPOST)
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    
+        
   xhr.send(params);
   return xhr;
 }
