@@ -40,7 +40,8 @@ define([
       if (options.swatch) {
         this.$el.attr("data-theme", options.swatch);
       }
-        
+      if (this.resource.isA("Buyable"))
+        this.$el.attr("data-icon", "false");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;
@@ -103,13 +104,20 @@ define([
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
-      if (!this.mvProp) {
+      if (this.mvProp) 
+        return;
+      if (!U.isAssignableFrom(this.vocModel, 'Alert')) {
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
           Events.trigger('chooser', this.model);
         }
+        return;
       }
+      Events.stopEvent(e);
+      var atype = this.resource.get('alertType');
+      var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
+      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum') + '&-info=' + encodeURIComponent(this.resource.get('davDisplayName'))), {trigger: true, forceRefresh: true});
     },
     render: function(event) {
       var m = this.resource;
@@ -176,7 +184,7 @@ define([
       json.davDisplayName = dn;
       if (!viewCols.length) {
         var isClass = U.isAssignableFrom(vocModel, 'WebClass');
-        viewCols = '<h3>' + dn + '</h3>';
+        viewCols = dn;
         if (isClass) {
           var comment = json['comment'];
           if (comment) 
@@ -381,7 +389,7 @@ define([
 
       var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
         
-      var viewCols = '<h3>' + dn + '</h3>';
+      var viewCols = dn;
       
       tmpl_data['viewCols'] = viewCols;
       
