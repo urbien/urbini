@@ -741,6 +741,8 @@ define('cache', function() {
     var s = G.serverName;
     var comIdx = s.indexOf('.com');
     var dotIdx = s.lastIndexOf('.', comIdx - 1);
+    if (dotIdx === -1)
+      dotIdx = s.lastIndexOf('/', comIdx - 1)
     return s.slice(dotIdx + 1, comIdx + 4);
   })();
   
