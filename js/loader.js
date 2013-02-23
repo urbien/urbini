@@ -536,6 +536,7 @@ define('globals', function() {
   var G = Lablz;
   G.localTime = new Date().getTime();
   G.online = !!navigator.onLine;
+  
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
     G.setOnline(false);
@@ -1495,7 +1496,7 @@ define('cache', function() {
         mobiscroll: 'lib/mobiscroll-datetime-min',
         jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
-        jqueryMobile: 'lib/jquery.mobile-1.3.0-beta.1',
+        jqueryMobile: 'lib/jquery.mobile-1.3.0',
 //        validator: 'lib/jquery.validate',
         underscore: 'lib/underscore',
         backbone: 'lib/backbone',
@@ -1560,12 +1561,10 @@ define('cache', function() {
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
   G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
-  G.trace.ON = G.minify === false;
+//  G.trace.ON = G.minify === false;
   // END minify
   
-  
   require.config(G.requireConfig);
-
    
 //   var viewBundle = [
 //     'views/Header', 
