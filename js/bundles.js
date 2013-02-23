@@ -12,6 +12,6 @@
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css']
   },
   appcache: {
-    js: ['xhrWorker', 'io', 'lib/jquery.mobile-1.3.0-beta.1', 'lib/json2']
+    js: ['xhrWorker', 'io', 'lib/jquery.mobile-1.3.0-beta.1', 'lib/json2', 'loader', 'lib/require']
   }
 }

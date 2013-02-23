@@ -74,7 +74,7 @@ define([
       this.pager();
     },
     getUrl: function() {
-      var url = this.baseUrl + (this.queryMap ? "?$minify=y&" + $.param(this.queryMap) : '');
+      var url = this.baseUrl + (this.queryMap ? "?$minify=y&$mobile=y&" + $.param(this.queryMap) : '');
       if (this.queryMap  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
         url += '&$chooser=y';
       return url;
@@ -256,7 +256,6 @@ define([
       }
       
       if (toAdd.length) {
-        debugger;
         Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
         Events.trigger('resourcesChanged', toAdd); 
       }

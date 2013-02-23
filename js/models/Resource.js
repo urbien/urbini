@@ -95,7 +95,7 @@ define([
     url: function() {
       var uri = this.get('_uri');
       var type = this.vocModel.type;
-      var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y";
+      var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
       if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
         return retUri + "&_uri=" + U.encode(uri);

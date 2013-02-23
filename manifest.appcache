@@ -4,11 +4,6 @@ CACHE MANIFEST
 # Explicitly cached 'master entries'.
 CACHE:
 font/fontawesome-webfont.ttf
-js/lib/require.js
-js/loader.js
-js/xhrWorker.js
-js/io.js
-js/lib/jquery.mobile-1.3.0-beta.1.js
 lib/images/icons-18-white-pack.png
 images/ajax-loader.gif
 images/frame/white_bg/live-sign.png

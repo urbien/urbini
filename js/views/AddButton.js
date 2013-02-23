@@ -25,7 +25,7 @@ define([
       var colParams = U.getQueryParams(this.collection);
       colParams = colParams ? _.clone(colParams) : {};
       colParams['-makeId'] = G.nextId();
-      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true, replace: false});
+      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
       return this;
     },
     render: function(options) {

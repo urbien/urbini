@@ -45,7 +45,7 @@ define([
       };
 
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true, replace: false});
+      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     refresh: function() {

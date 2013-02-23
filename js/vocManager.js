@@ -622,22 +622,21 @@ define([
       }
     },
     
-    executeHandler: function(handler, resultType, res, context) {
+    executeHandler: function(handler, resultType, source, context) {
       var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
       var result = {};
       result[type] = {};
 
       try {
-        handler.apply(result).call(context || {}, res);
+        handler.apply(result).call(context || {}, source);
       } catch (err) {
         return;
       }
 
-      var fromRes = res;
       result = result[type];
       Voc.getModels(resultType).done(function() {
         var toVocModel =  G.typeToModel[resultType];
-        var fromVocModel = G.typeToModel[fromRes._type];
+        var fromVocModel = G.typeToModel[source._type];
         
         // copy image props, if both are imageResources
         if (U.isA(fromVocModel, "ImageResource") && U.isA(toVocModel, "ImageResource")) {
@@ -658,14 +657,17 @@ define([
           if (fromTo) {
             for (var from in fromTo) {
               var to = fromTo[from];
-              from = fromRes[from];
+              from = source[from];
               if (from)
                 result[to] = from;
             }
           }
         }
         
+        debugger;
         var res = new toVocModel();
+        if (toVocModel.properties.cause)
+          res.cause = source.getUri();
         res.save(result, {'$returnMade': false, sync: false});
       }).fail(function() {
         debugger;

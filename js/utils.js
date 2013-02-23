@@ -65,7 +65,7 @@ define([
   var U = {
     TAG: 'Utils',    
     isPropVisible: function(res, prop, userRole) {
-      if (U.isSystemProp(prop) || prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList || U.isSystemProp(prop))
         return false;
       
       userRole = userRole || U.getUserRole();

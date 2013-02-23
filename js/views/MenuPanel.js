@@ -60,21 +60,24 @@ define([
       if (typeof t === 'undefined' || !t)
         return;
       text = text.replace(/(<([^>]+)>)/ig, '').trim();
+      var href = $(t).attr('href') || $(t).attr('link');
+      var idx = href.lastIndexOf('#');
+      var href = idx == -1 ? href : href.slice(idx + 1)
+          
       if (this.tabs[text]) {
-        var href = $(t).attr('href') || $(t).attr('link');
-        var idx = href.lastIndexOf('#');
-        var href = idx == -1 ? href : href.slice(idx + 1)
         if (this.tabs[text] == href) {
           e.originalEvent.preventDefault();
-          this.router.navigate(href, {trigger: true, replace: true, destinationTitle: text});
+          this.router.navigate(href, {trigger: true, destinationTitle: text});
           return;
         }
       }
-      var link = $(t).attr('link');
-      if (link) {
-        $(t).removeAttr('link');
-        $(t).attr('href', link);
-      }
+      
+      this.router.navigate(href, {trigger: true});
+//      var link = $(t).attr('link');
+//      if (link) {
+//        $(t).removeAttr('link');
+//        $(t).attr('href', link);
+//      }
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
