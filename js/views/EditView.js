@@ -189,8 +189,11 @@ define([
       function onChoose(options) {
         var res;
         var checked;
-        var isMultiValue = options.model != null; 
-        if (isMultiValue) {
+        var isBuy = options.buy;
+        var isMultiValue = !isBuy  &&  options.model != null;
+        if (isBuy)
+          res =  options.model;
+        else if (isMultiValue) {
           res =  options.model;
           checked = options.checked;
         }
@@ -215,27 +218,55 @@ define([
           link.innerHTML = innerHtml;
           link.parentNode.innerHTML += set;
         }
+        else if (!isBuy  &&  res.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+          Events.stopEvent(e);
+//          Events.trigger('buy', this.model);
+          var popupTemplate = _.template(Templates.get('buyPopupTemplate'));
+          var $popup = $('#buy_popup');
+          var price = res.get('price');
+          var dn = U.getDisplayName(res);
+          var msg = 'Try ' + res.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+          var href = res.get('_uri');          
+          var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + res.vocModel.displayName});
+          if ($popup.length == 0) {
+            $($(document).find($('.ui-page-active'))[0]).append(html);
+            
+//            $('body').append(html);
+            $popup = $('#buy_popup');
+          }
+          else {
+            $('#buyMsg').html(msg);
+            $('#buyLink').attr('href', href);
+            $('#tryLink').attr('href', href);
+            $('#buyName').html(dn);
+          }
+          $popup.trigger('create');
+          $popup.popup().popup("open");
+          return;
+        }
         else {
-          props[prop] = res.getUri();
+          var uri = res.getUri();
+          props[prop] = uri;
           self.resource.set(props, {skipValidation: true, skipRefresh: true});
           var vocModel = this.vocModel;
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
           if (!dn)
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+          var name = res.get('davDisplayName');
           link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
-          $(link).data('uri', res.getUri());
+          $(link).data('uri', uri);
           if (U.isAssignableFrom(this.vocModel, "App")  &&  U.isAssignableFrom(res.vocModel, "Theme")) {
             if (G.currentApp) {
-              var cUri = G.currentApp['_uri'];
+              var cUri = G.currentApp._uri;
               if (cUri.indexOf('http') == -1) {
-                cUri = U.getLongUri(cUri, {type: type});
-                G.currentApp['_uri'] = cUri;
+                cUri = U.getLongUri1(cUri, G.typeToModel[type]);
+                G.currentApp._uri = cUri;
               }
               if (self.resource.get('_uri') == cUri) {
                 var themeSwatch = res.get('swatch');
-                if (!G.currentApp.swatch  ||  G.currentApp['theme.swatch'] != themeSwatch)
-                  G.currentApp['theme.swatch'] = themeSwatch;
+                if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+                  G.theme.swatch = themeSwatch;
               }
             }
           }
@@ -247,7 +278,8 @@ define([
       
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
       var pr = vocModel.properties[prop];
-      Events.once('chooser', onChoose, this);
+      Events.on('chooser', onChoose, this);
+
       var params = {};
 //      if (pr.where) {
 //        debugger;
@@ -258,14 +290,12 @@ define([
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
-        var t = this.vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
-
         params.$multiValue = prop;
         params.$type = type;
         if (this.action != 'make')
           params.$forResource = uri;
         
-        params.$title = vocModel.displayName + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + prName;
+        params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
       }
       else if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
@@ -291,13 +321,23 @@ define([
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
       }
       else  {
-        var w = pr.where;
-        if (!w)
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
-        else {
-          w = w.replace(' ', '').replace('==', '=').replace('!=', '=!').replace('&&', '&');
-          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?$and=' + encodeURIComponent(w), {trigger: true});
-        }
+        
+        var rParams = {
+            $prop: pr.shortName,
+            $type:  this.vocModel.type
+          };
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+//        var w = pr.where;
+//        var wOr =  pr.whereOr;
+//        if (!w  &&  !wOr)
+//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
+//        else {
+//          var s = w || wOr;
+//            
+//          s = w.replace(' ', '').replace('==', '=').replace('!=', '=!');
+//          s = w ? w.replace('&&', '&') : wOr; 
+//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?' + (w ? '$and=' : '$or=') + encodeURIComponent(s), {trigger: true});
+//        }
       }
     },
     set: function(params) {
