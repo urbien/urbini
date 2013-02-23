@@ -27,6 +27,7 @@ define([
       return this;
     },
     events: {
+      'click .like': 'click',
       'click': 'click'
     },
 //    tap: Events.defaultTapHandler,
@@ -34,13 +35,41 @@ define([
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
 //      else {
-      if (!this.mvProp) {
+      if (this.mvProp) 
+        return;
+      if (e.target.tagName != 'A'  &&  (!e.target.className  || e.target.className.indexOf('like') == -1)) {
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
           Events.trigger('chooser', this.model);
         }
       }
+      var likeModel = G.shortNameToModel['Vote'];
+      if (!likeModel) 
+        return;
+      Events.stopEvent(e);
+      var r = new likeModel();
+      self = this;
+      var props = {};
+      props.vote = 'Like';
+      props.votable = this.resource.get('_uri');
+      r.save(props, {
+        success: function(resource, response, options) {
+          self.router.navigate(window.location.hash, options);
+        }, 
+        error: function(model, xhr, options) {
+          var json;
+          try {
+            json = JSON.parse(xhr.responseText).error;
+          } catch (err) {
+            G.log(self.TAG, 'error', 'couldn\'t create like item, no error info from server');
+            return;
+          }
+          
+          Errors.errDialog({msg: json.details});
+          G.log(self.TAG, 'error', 'couldn\'t create like');
+        }
+      });
     },
     render: function(event) {
       var vocModel = this.vocModel;
@@ -205,7 +234,20 @@ define([
           votes = json[pMeta.shortName] || {count: 0};
           tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
-      }  
+      }
+      if (U.isAssignableFrom(vocModel, "App", G.typeToModel)) {
+        if ((json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
+          var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
+          tmpl_data.tryApp = uri;
+          tmpl_data.rUri = uri;
+        }
+        if (json['friendMe'].count) {
+          tmpl_data.friendMeCount = json['friendMe'].count;
+          tmpl_data.friendMeUri = G.pageRoot + '#' + encodeURIComponent(meta['friendMe'].range) + '?friend2=' + encodeURIComponent(json._uri);
+        }
+//        if (json['friends'].count) 
+//          tmpl_data.friends = json['friends'].count;   
+      }
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
