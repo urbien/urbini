@@ -117,7 +117,7 @@ define([
       Events.stopEvent(e);
       var atype = this.resource.get('alertType');
       var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum') + '&-info=' + encodeURIComponent(this.resource.get('davDisplayName'))), {trigger: true, forceRefresh: true});
+      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceRefresh: true});
     },
     render: function(event) {
       var m = this.resource;
