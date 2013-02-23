@@ -16,19 +16,22 @@ define([
   //    this.resource.on('change', this.render, this);
       this.template = _.template(Templates.get('menuP'));
       this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
+      this.homeMenuItemTemplate = _.template(Templates.get('homeMenuItemTemplate'));
       this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
+      this.menuItemNewAlertsTemplate = _.template(Templates.get('menuItemNewAlertsTemplate'));
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;
     },
     tabs: {},
     events: {
-      'click': 'click',
       'click #edit': 'edit',
       'click #add': 'add',
       'click #delete': 'delete',
       'click #subscribe': 'subscribe',
-      'click #logout': 'logout'
+      'click #logout': 'logout',
+      'click #home123': 'home',
+      'click': 'click'
 
 //      'swipeleft': 'swipeleft',
 //      'swiperight': 'swiperight'
@@ -46,9 +49,16 @@ define([
       return this;
     },
     logout: function(e) {
-      e.stopEvent();
+      Events.stopEvent(e);
       Events.trigger('logout');
       return;
+    },
+    home: function(e) {
+  //    this.router.navigate(G.homePage, {trigger: true, replace: false});
+      Events.stopEvent(e);
+      var here = window.location.href;
+      window.location.href = here.slice(0, here.indexOf('#'));
+      return this;
     },
     click: function(e) {
       var t = e.target;
@@ -100,15 +110,16 @@ define([
 //        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(G.tabs, function(t) {
 //          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
-          t.mobileUrl = t.hash;
+          t.pageUrl = t.hash;
           U.addToFrag(frag, self.menuItemTemplate(t));
 //          self.tabs[t.title] = t.mobileUrl;
         });
       }
       
-      var params = {lastDeployed: '!null'};
+      var params = {lastPublished: '!null'};
       if (!G.currentUser.guest) {
         params.creator = '_me';
+        params.webClassesCount = 'null';
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
       
@@ -118,6 +129,10 @@ define([
       var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
       if (!hash  ||  hash != url)
         U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + url }));        
+
+      var url = encodeURIComponent('model/social/Theme') + "?isTemplate=true";
+      if (!hash  ||  hash != url)
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: G.pageRoot + '#' + url }));        
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
@@ -132,18 +147,59 @@ define([
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
+        if (G.currentUser._uri == G.currentApp.creator) {
+          var uri = U.getLongUri1(G.currentApp._uri, G.shortNameToModel["App"]);
+          pageUrl = G.pageRoot + '#edit/' + encodeURIComponent(uri);
+          var title = 'Edit ' + G.currentApp.title;
+          var img = G.currentApp.smallImage;
+          if (!img) 
+            U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl}));
+          else {
+            if (typeof G.currentApp.originalWidth != 'undefined' &&
+                typeof G.currentApp.originalHeight != 'undefined') {
+              
+//              this.$el.addClass("image_fitted");
+              
+//              var dim = U.fitToFrame(60, 60, G.currentApp.originalWidth / G.currentApp.originalHeight);
+//              var width = dim.w;
+//              var height = dim.h;
+//              var top = dim.y;
+//              var right = dim.w - dim.x;
+//              var bottom = dim.h - dim.y;
+//              var left = dim.x;
+//              U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
+              U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, cssClass: 'menu_image_fitted'}));
+            }
+            else
+              U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
+          }
+        }
 
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
           var title = 'Profile';
-          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb}));
+//          var dim = U.fitToFrame(60, 60, G.currentUser.originalWidth / G.currentUser.originalHeight);
+//          var width = dim.w;
+//          var height = dim.h;
+//          var top = dim.y;
+//          var right = dim.w - dim.x;
+//          var bottom = dim.h - dim.y;
+//          var left = dim.x;
+//
+          
+//          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
+          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
           self.tabs[title] = U.getPageUrl(mobileUrl);
   
-          U.addToFrag(frag, this.menuItemTemplate({title: "Logout", pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
         }
+        if (G.currentUser.newAlertsCount) {
+          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: G.currentUser.newAlertsCount, pageUrl: G.pageRoot + '#' + pageUrl }));
+        }
+        U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
-      
-      U.addToFrag(frag, this.menuItemTemplate({title: "Home", pageUrl: G.serverName + '/' + G.pageRoot, icon: 'home'}));
+
+      U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'home'}));
       ul.append(frag);
       
       this.rendered = true;
