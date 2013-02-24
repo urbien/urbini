@@ -107,7 +107,6 @@ define([
             var selfUser = res.get(pName);
             if (me == selfUser) 
               return true;
-            
             var prop = vocModel.properties[pName];
             if (prop && U.isCloneOf(prop, 'Submission.submittedBy'))
               return true;
@@ -159,10 +158,7 @@ define([
      */
     extendAnnotations: function(subProp, superProp, superModel) {
       superProp = U.filterObj(superProp, function(name, val) {return !val.notinheritable});
-      for (var annotation in subProp) {
-        if (annotation === 'primary')
-          continue;
-        
+      for (var annotation in subProp) {        
         var oldAnn = superProp[annotation];        
         var newAnn = subProp[annotation];
         if (_.isUndefined(oldAnn))
@@ -174,6 +170,9 @@ define([
             superProp[annotation] = newAnn;
         }
       }
+      
+      if (superProp.primary && !subProp.primary)
+        delete superProp.primary;
       
       return superProp;
     },
@@ -1143,7 +1142,7 @@ define([
     },
     
     isAssignableFrom: function(model, className) {
-      if (U.isA(model, className))
+      if (U.isA(model, className)  ||  model.shortName == className)
         return true;
       
       var supers = model.superClasses;
@@ -1517,10 +1516,14 @@ define([
       var frmRatio = frmWidth / frmHeight;
       var w, h, x = 0, y = 0;
       if (srcRation > frmRatio) { // long
-        h = frmHeight; w = Math.floor(h * srcRation); x = Math.floor((w - frmWidth) / 2);
+        h = frmHeight; 
+        w = Math.floor(h * srcRation); 
+        x = Math.floor((w - frmWidth) / 2);
       } 
       else {
-        w = frmWidth; h = Math.floor(w / srcRation); y = Math.floor((h - frmHeight) / 2);
+        w = frmWidth; 
+        h = Math.floor(w / srcRation); 
+        y = Math.floor((h - frmHeight) / 2);
       }
       return {x: x, y: y, w: w, h: h};
     },
@@ -1736,6 +1739,9 @@ define([
       return params;
     },
     
+    makeHeaderTitle: function(pre, post) {
+      return pre + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + post;
+    },
 //    removeUnquotedWhitespace: function(text) {
 //      qStack = [];
 //      sqStack = [];
@@ -1831,7 +1837,7 @@ define([
     var parts = uri.split('/');
     var type = vocModel.type;
     var primaryKeys = U.getPrimaryKeys(vocModel);
-    if (primaryKeys.length !== parts.length + 1)
+    if (primaryKeys.length !== parts.length - 1)
       throw new Error("Incorrect number of primary keys in short uri: " + uri);
     
     var params = {};
