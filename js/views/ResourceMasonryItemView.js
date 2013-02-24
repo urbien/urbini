@@ -17,7 +17,7 @@ define([
     
     TAG: "ResourceMasonryItemView",
     initialize: function(options) {
-      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get('masonry-list-item'));
       this.modTemplate = _.template(Templates.get('masonry-mod-list-item'));
@@ -27,26 +27,10 @@ define([
       return this;
     },
     events: {
-      'click .like': 'click',
+      'click .like': 'like',
       'click': 'click'
     },
-//    tap: Events.defaultTapHandler,
-    click: function(e) {
-//      if (this.mvProp)
-//        Events.defaultClickHandler(e);  
-//      else {
-      if (this.mvProp) 
-        return;
-      if (e.target.tagName != 'A'  &&  (!e.target.className  || e.target.className.indexOf('like') == -1)) {
-        var p = this.parentView;
-        if (p && p.mode == G.LISTMODES.CHOOSER) {
-          Events.stopEvent(e);
-          Events.trigger('chooser', this.model);
-          return;
-        }
-        else if (e.target.className == 'appBadge')
-          return;
-      }
+    like: function(e) {
       var likeModel = G.shortNameToModel['Vote'];
       if (!likeModel) 
         return;
@@ -72,7 +56,25 @@ define([
           Errors.errDialog({msg: json.details});
           G.log(self.TAG, 'error', 'couldn\'t create like');
         }
-      });
+      });      
+    },
+//    tap: Events.defaultTapHandler,
+    click: function(e) {
+//      if (this.mvProp)
+//        Events.defaultClickHandler(e);  
+//      else {
+      if (this.mvProp) 
+        return;
+      if (e.target.tagName != 'A'  &&  (!e.target.className  || e.target.className.indexOf('like') == -1)) {
+        var p = this.parentView;
+        if (p && p.mode == G.LISTMODES.CHOOSER) {
+          Events.stopEvent(e);
+          Events.trigger('chooser', this.model);
+          return;
+        }
+        else if (e.target.className == 'appBadge')
+          return;
+      }
     },
     render: function(event) {
       var vocModel = this.vocModel;
