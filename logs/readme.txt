@@ -1,1 +1,0 @@
-this is the dir where Analog weblog analyzer will create a report.html

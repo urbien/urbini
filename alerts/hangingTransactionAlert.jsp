@@ -1,3 +1,0 @@
-<div>
-    <hangingTransaction />
-</div>
