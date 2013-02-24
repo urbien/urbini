@@ -291,7 +291,7 @@
 <script type="text/template" id="menuButtonTemplate">
   <li id="menuBtn">
     <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-      {{= typeof newAlerts == 'undefined'  &&  newAlerts? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+      {{= typeof newAlerts == 'undefined'  ||  !newAlerts? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
     </a>
   </li>  
 </script>
@@ -532,7 +532,7 @@
          {{= typeof imgWidth != 'undefined' ? 'style="border: 1px solid #ccc; width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : 'style="style="border: 1px solid #ccc;"' }}></img>
       </a>
     </div>
-    {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }}
+    <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
     {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
   <div class="nabRL">
     <div>
