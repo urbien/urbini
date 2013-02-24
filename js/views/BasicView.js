@@ -5,7 +5,7 @@ define([
   'templates'
 ], function(G, Backbone, Templates) {
   var basicOptions = ['source', 'parentView'];
-  return Backbone.View.extend({
+  var BasicView = Backbone.View.extend({
     initialize: function(options) {
       _.extend(this, _.pick(options, basicOptions));
       var res = this.data = this.model;
@@ -25,4 +25,25 @@ define([
   }, {
     displayName: 'BasicView'
   });
+
+//  BasicView.prototype.setActive = function(active) {
+//    this.active = active;
+//  }
+
+  BasicView.prototype.isActive = function() {
+    if (this.active)
+      return true;
+    
+    var view = this.parentView;
+    while (view) {
+      if (view.active)
+        return true;
+      
+      view = view.parentView;
+    }
+    
+    return false;
+  };
+  
+  return BasicView; 
 });

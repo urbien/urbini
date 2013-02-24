@@ -894,7 +894,7 @@ define('cache', function() {
     webWorkers: {},
     customHandlers: {},
     defaults: {
-      radius: 15 // km
+      radius: 2000 // km
     },
     modelsMetadataMap: {},
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for

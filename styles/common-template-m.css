@@ -286,8 +286,8 @@ html { height: 100%; }
 
 .menuBadge {
   position: absolute; 
-  top: -25px; 
-  left: 5px; 
+  top: -30px; 
+  left: 8px; 
   font-size: 12px;
 }
 

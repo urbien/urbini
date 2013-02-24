@@ -218,25 +218,35 @@ define([
         return;
       }
 
-      resources = this.parse(resources);
-      if (!_.size(resources))
+//      var isUpdate = options.isUpdate,
+//          currentUris = isUpdate ? _.map(this.resources, Resource.getUri) : [];
+          
+      resources = this.parse(resources);      
+      if (!_.size(resources)) {
+//        if (isUpdate)
+//          Events.trigger('delete', currentUris);
+        
         return false;
+      }
       
       // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
       // An alternative is to override Backbone.Collection.reset() method and do some magic there.
       
-      var toAdd = [];
-      var skipped = [];
-      var modified = [];
-      var now = G.currentServerTime();
+      var toAdd = [],
+          skipped = [],
+          modified = [],
+          now = G.currentServerTime();
+      
       for (var i = 0; i < resources.length; i++) {
         var r = resources[i];
         r._lastFetchedOn = now;
         var uri = r._uri;
-        var saved = this.get(uri);
+        var saved = this.get(uri);        
+//        if (isUpdate && saved)
+//          currentUris.remove(uri);
+          
         var ts = saved && saved.get(tsProp) || 0;
-        
         var newLastModified = r[tsProp];
         if (typeof newLastModified === "undefined") 
           newR = 0;

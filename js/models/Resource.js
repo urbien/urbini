@@ -50,11 +50,18 @@ define([
         return;
       
       var self = this;
+      
+      // the reason we need this little nasty instead of using model.set from elsewhere 
+      // is because that elsewhere is in the land of syncing the db with the server and 
+      // has no idea which resource the data it just got belongs to. Another option would
+      // be to have a central cache of resources by uri (like in G.Router), and look up 
+      // the resource there and use model.set
       var callback = function(data) {
         var uri = self.getUri();
         if (data._oldUri === uri) {
           Events.off('synced.' + uri, callback);
           Events.on('synced.' + data._uri, callback);
+//          self.trigger('uriChanged', {oldUri: uri, newUri: data._uri});
         }
         
         self.set(data);

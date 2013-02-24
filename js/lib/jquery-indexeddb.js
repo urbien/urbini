@@ -260,7 +260,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 						if (r.length === 1) {
 							return IDBKeyRange.only(r[0]);
 						} else {
-						  var lower = r[0], upper = r[1], lOpen = r[2] || true, uOpen = r[3] || true;
+						  var lower = r[0], upper = r[1], lOpen = typeof r[2] === 'boolean' ? r[2] : true, uOpen = typeof r[3] === 'boolean' ? r[3] : true;
 						  if (lower && upper)
 						    return IDBKeyRange.bound(lower, upper, lOpen, uOpen);
 						  else if (lower)

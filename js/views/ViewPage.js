@@ -63,8 +63,13 @@ define([
 //    },
 
     render:function (eventName) {
-      G.log(this.TAG, "render");
       var res = this.resource;
+      var commonParams = {
+        model: res,
+        parentView: this
+      }
+      
+      G.log(this.TAG, "render");
       var json = res.attributes;
       json.viewId = this.cid;
       this.$el.html(this.template(json));
@@ -78,7 +83,7 @@ define([
       };
       if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App")) {
         var user = G.currentUser._uri;
-        var appOwner = U.getLongUri(res.get('creator'));
+        var appOwner = U.getLongUri1(res.get('creator'));
         if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
           this.hasPublish = true;
         var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
@@ -88,8 +93,7 @@ define([
         this.forkMe = true;
       }
       
-      this.header = new Header({
-        model: res, 
+      this.header = new Header(_.extend(commonParams, {
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
@@ -97,14 +101,14 @@ define([
         doTry: this.hasTry,
         forkMe: this.forkMe,
         el: $('#headerDiv', this.el)
-      }).render();
+      })).render();
       
       this.header.$el.trigger('create');      
-      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
+      this.imageView = new ResourceImageView(_.extend(commonParams, {el: $('div#resourceImage', this.el)}));
       this.imageView.render();
-      this.view = new ResourceView({el: $('ul#resourceView', this.el), model: res});
+      this.view = new ResourceView(_.extend(commonParams, {el: $('ul#resourceView', this.el)}));
       this.view.render();
-      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
+      this.cp = new ControlPanel(_.extend(commonParams, {el: $('ul#cpView', this.el)}));
       this.cp.render();
       if (G.currentUser.guest) {
         this.$('#edit').hide();
