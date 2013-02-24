@@ -755,7 +755,7 @@ define([
         }
          
         G.localStorage.nukeHandlers();
-        Voc.fetchHandlers();
+//        Voc.fetchHandlers();
       }
     },
     
