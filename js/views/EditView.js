@@ -141,7 +141,7 @@ define([
           settings.__type = scrollerType;
 //          var scroller;
 //          if (scrollerType === 'enum') {
-//            var type = U.getLongUri(prop.facet),
+//            var type = U.getLongUri1(prop.facet),
 //                values = _.pluck(G.typeToEnum[type].values, 'displayName');
 //            
 //            scrollerModule.makeEnumScroller(type, values);
@@ -160,7 +160,7 @@ define([
               
               break;
 //            default:
-//              var wheel = _.pluck(G.typeToEnum[U.getLongUri(prop.facet)].values, 'displayName');
+//              var wheel = _.pluck(G.typeToEnum[U.getLongUri1(prop.facet)].values, 'displayName');
 //              settings.wheels = [wheel];
 //              scroller = $(input).mobiscroll().select(settings);
 //              var val = input.value;
@@ -307,7 +307,7 @@ define([
           var idx = title.indexOf('</span>');
           t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
         }
-        var domain = U.getLongUri(this.model.get('domain'));
+        var domain = U.getLongUri1(this.model.get('domain'));
         var rParams = {
           $prop: pr.shortName,
           $type:  this.vocModel.type,
@@ -771,7 +771,7 @@ define([
       if (info.params[p]  &&  prop.containerMember) {
         if (prop.required) {
           var rules = ' data-formEl="true"';
-          var longUri = U.getLongUri(info.params[p]);
+          var longUri = U.getLongUri1(info.params[p]);
           U.addToFrag(info.frag, this.hiddenPropTemplate({value: longUri, shortName: p, id: info.formId, rules: rules }));
         }
         

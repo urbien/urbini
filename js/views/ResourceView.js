@@ -22,13 +22,24 @@ define([
       this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
+      var uri = this.resource.getUri(), self = this;
+      if (U.isTempUri(uri)) {
+        Events.once('synced.' + uri, function(data) {
+          debugger;
+          if (self.isActive()) {
+            var newUri = data._uri;
+            self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
+          }
+        });
+      }
+      
       return this;
     },
     events: {
 //      'click': 'click'
     },
     refresh: function() {
-      var res = this.resource;
+      var res = this.resource;      
 //      if (res.lastFetchOrigin === 'edit')
 //        return;
       

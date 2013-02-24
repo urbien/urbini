@@ -102,7 +102,7 @@ define([
       options.end = end = start + numRequested;
       numNow = collection.resources.length;
       shortPage = !!(numNow && numNow < collection.perPage);
-      isUpdate = numNow >= end || shortPage;
+      isUpdate = options.isUpdate = numNow >= end || shortPage;
       if (isUpdate) {
         if (forceFetch)
           return fetchFromServer(isUpdate, 100);
@@ -119,7 +119,7 @@ define([
     }
     else {      
       lastFetchedOn = RM.getLastFetched(resource);
-      isUpdate = resource.loaded || resource.collection;
+      isUpdate = options.isUpdate = resource.loaded || resource.collection;
       if (isUpdate) {
         if (forceFetch)
           return fetchFromServer(isUpdate, 100);
@@ -177,7 +177,7 @@ define([
         if (forceFetch)
           return fetchFromServer(isUpdate, 0);
         
-        isUpdate = true;
+        isUpdate = options.isUpdate = true;
         var lf = RM.getLastFetched(results, now);
         if (RM.isStale(lf, now)) {
           data.lastFetchOrigin = 'server';
@@ -745,7 +745,6 @@ define([
               ref._tempUri = tempUri;
             
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
-              debugger;
               Events.trigger('synced.' + oldUri, data);
               if (model.collection)
                 Events.trigger('refresh', newUri);
@@ -1065,22 +1064,25 @@ define([
         return false;
 
       var positionProps = U.getPositionProps(vocModel);
-      var latLonQuery;
-      if (_.size(positionProps)) {
+      var latLonQuery, lat, lon, latProp, lonProp;
+      if (_.size(positionProps) && _.size(_.pick(filter, _.values(positionProps)))) {
         var radius = positionProps.radius && filter[positionProps.radius];
         radius = isNaN(radius) ? G.defaults.radius : parseFloat(radius); // km
           
-        var latProp = positionProps.latitude, lonProp = positionProps.longitude;
-        var lat = filter[latProp], lon = filter[lonProp];
+        latProp = positionProps.latitude, 
+        lonProp = positionProps.longitude;
+        lat = filter[latProp];
+        lon = filter[lonProp];
+        
         if (/^-?\d+/.test(lat)) {
           var latRadius = radius / 110; // 1 deg latitude is roughly 110 km 
           lat = parseFloat(lat);
-          latLonQuery = Index(latProp).gteq(lat - latRadius).and(Index(latProp).lteq(lat + latRadius));
+          latLonQuery = Index(latProp).betweeq(lat - latRadius, lat + latRadius);
         }
         if (/^-?\d+/.test(lon)) {
           var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate  
           lon = parseFloat(lon);          
-          latLonQuery = Index(lonProp).gteq(lon - lonRadius).and(Index(lonProp).lteq(lon + lonRadius));
+          latLonQuery = Index(lonProp).betweeq(lon - lonRadius, lon + lonRadius);
         }
         
         delete filter[latProp]; 
@@ -1105,16 +1107,35 @@ define([
 
         val = U.getTypedValue(collection, name, val);
         var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
-        subQuery.setPrimaryKey('_uri');
+//        subQuery.setPrimaryKey('_uri');
         query = query ? query.and(subQuery) : subQuery;
       }
       
       if (latLonQuery)
-        query = query.and(latLonQuery);
+        query = query ? query.and(latLonQuery) : latLonQuery;
       
       if (orderBy) {
 //        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
-        query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+        if (query) {              
+          if (orderBy === 'distance') {
+            query.sort(function(a, b) {
+              debugger;
+              // hackity hack - setting distance in sort function
+              a.distance = U.distance([a[latProp], a[lonProp]], [lat, lon]);
+              b.distance = distance([b[latProp], b[lonProp]], [lat, lon]);
+              return a.distance - b.distance;
+            });
+          }
+          else {
+            query.sort(orderBy, !asc);
+          }
+        }
+        else
+          query = Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+        
+//        }
+//        else
+//          query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
       }
       
       if (!_.isUndefined(qMap.$offset)) {

@@ -80,11 +80,15 @@ define('app', [
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;
-    for (var type in metadata) {
-      extended[U.getLongUri1(type)] = metadata[type];
+    if (metadata) {
+      for (var type in metadata) {
+        extended[U.getLongUri1(type)] = metadata[type];
+      }
+      
+      G.modelsMetadata = extended;
     }
-    
-    G.modelsMetadata = extended;
+    else
+      G.modelsMetadata = {};
     
     metadata = G.linkedModelsMetadata;
     if (metadata) {
@@ -95,6 +99,8 @@ define('app', [
     
       G.linkedModelsMetadata = extended;
     }
+    else
+      G.linkedModelsMetadata = {};
   }
   
   var App = {

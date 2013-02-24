@@ -7,17 +7,17 @@ define([
   'jquery'
 ], function(G, _, Backbone, Templates, $) {
   var ArrayProto = Array.prototype;
-//  ArrayProto.remove = function() {
-//    var what, a = arguments, L = a.length, ax;
-//    while (L && this.length) {
-//      what = a[--L];
-//      while ((ax = this.indexOf(what)) !== -1) {
-//        this.splice(ax, 1);
-//      }
-//    }
-//    
-//    return this;
-//  };
+  ArrayProto.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+      what = a[--L];
+      while ((ax = this.indexOf(what)) !== -1) {
+        this.splice(ax, 1);
+      }
+    }
+    
+    return this;
+  };
   
   var slice = ArrayProto.slice;
 
@@ -306,84 +306,84 @@ define([
       throw new Error("couldn't parse uri: " + uri);
     },
     
-    getLongUri: function(uri, hint) {
-      var type, pk, snm;
-      if (hint) {
-        type = hint.type;
-        pk = hint.primaryKeys;
-      }
-      else
-        snm = G.shortNameToModel;
-      
-      var serverName = G.serverName;
-      var sqlUri = G.sqlUri;
-      if (uri.indexOf('http') == 0) {
-        // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
-        if (uri.indexOf('?') == -1) // type uri
-          return uri;
-        
-        if (uri.indexOf(serverName + "/" + sqlUri) == 0)
-          return uri;
-        
-        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
-        return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : serverName + "/" + sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
-      }
-      
-      var sIdx = uri.indexOf('/');
-      var qIdx = uri.indexOf('?');
-      if (sIdx === -1) {
-        // uri is of form Tree?id=32000 or just Tree
-        type = !type || type.indexOf('/') == -1 ? U.getTypeUri(uri, hint) : type;
-        if (!type)
-          return null;
-        
-        return U.getLongUri1(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
-      }
-      
-      if (uri.indexOf('sql') == 0) {
-        // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
-        return serverName + "/" + uri;
-      }
-      else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
-        // uri is of form Tree/32000
-        var typeName = U.getClassName(uri);
-        type = U.getTypeUri(typeName, hint);
-        if (!type || type == typeName)
-          return null;
-        
-        var sIdx = uri.indexOf("/");
-        var longUri = uri.slice(0, sIdx) + "?";
-        var primaryKeys = hint.primaryKeys || (snm && snm[typeName] && U.getPrimaryKeys([typeName]));
-//        var model = snm[typeName];
-//        if (!model)
+//    getLongUri: function(uri, hint) {
+//      var type, pk, snm;
+//      if (hint) {
+//        type = hint.type;
+//        pk = hint.primaryKeys;
+//      }
+//      else
+//        snm = G.shortNameToModel;
+//      
+//      var serverName = G.serverName;
+//      var sqlUri = G.sqlUri;
+//      if (uri.indexOf('http') == 0) {
+//        // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
+//        if (uri.indexOf('?') == -1) // type uri
 //          return uri;
 //        
-//        var primaryKeys = U.getPrimaryKeys(model);
-        if (!primaryKeys  ||  primaryKeys.length == 0)
-          longUri += "id=" + U.encode(uri.slice(sIdx + 1));
-        else {
-          var vals = uri.slice(sIdx + 1).split('/');
-          if (vals.length != primaryKeys.length)
-            throw new Error('bad uri "' + uri + '" for type "' + type + '"');
-          
-          for (var i = 0; i < primaryKeys.length; i++) {
-            longUri += primaryKeys[i] + "=" + vals[i]; // shortUri primary keys are already encoded
-          }      
-        }
-        
-        return U.getLongUri1(longUri, {type: type});
-      }
-      else {
-        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?... or wf/Urbien/.....
-        if (qIdx !== -1)
-          return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
-        
-        if (uri.startsWith('wf/'))
-          return G.serverName + '/' + uri;
-        else
-          return G.defaultVocPath + uri;
-      }
-    },
+//        if (uri.indexOf(serverName + "/" + sqlUri) == 0)
+//          return uri;
+//        
+//        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
+//        return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : serverName + "/" + sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
+//      }
+//      
+//      var sIdx = uri.indexOf('/');
+//      var qIdx = uri.indexOf('?');
+//      if (sIdx === -1) {
+//        // uri is of form Tree?id=32000 or just Tree
+//        type = !type || type.indexOf('/') == -1 ? U.getTypeUri(uri, hint) : type;
+//        if (!type)
+//          return null;
+//        
+//        return U.getLongUri1(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
+//      }
+//      
+//      if (uri.indexOf('sql') == 0) {
+//        // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
+//        return serverName + "/" + uri;
+//      }
+//      else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
+//        // uri is of form Tree/32000
+//        var typeName = U.getClassName(uri);
+//        type = U.getTypeUri(typeName, hint);
+//        if (!type || type == typeName)
+//          return null;
+//        
+//        var sIdx = uri.indexOf("/");
+//        var longUri = uri.slice(0, sIdx) + "?";
+//        var primaryKeys = hint.primaryKeys || (snm && snm[typeName] && U.getPrimaryKeys([typeName]));
+////        var model = snm[typeName];
+////        if (!model)
+////          return uri;
+////        
+////        var primaryKeys = U.getPrimaryKeys(model);
+//        if (!primaryKeys  ||  primaryKeys.length == 0)
+//          longUri += "id=" + U.encode(uri.slice(sIdx + 1));
+//        else {
+//          var vals = uri.slice(sIdx + 1).split('/');
+//          if (vals.length != primaryKeys.length)
+//            throw new Error('bad uri "' + uri + '" for type "' + type + '"');
+//          
+//          for (var i = 0; i < primaryKeys.length; i++) {
+//            longUri += primaryKeys[i] + "=" + vals[i]; // shortUri primary keys are already encoded
+//          }      
+//        }
+//        
+//        return U.getLongUri1(longUri, {type: type});
+//      }
+//      else {
+//        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?... or wf/Urbien/.....
+//        if (qIdx !== -1)
+//          return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+//        
+//        if (uri.startsWith('wf/'))
+//          return G.serverName + '/' + uri;
+//        else
+//          return G.defaultVocPath + uri;
+//      }
+//    },
 
     phoneRegex: /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/,
     validatePhone: function(phone) {
@@ -412,7 +412,7 @@ define([
         if (typeName == 'Class')
           return 'http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Class';
         var vocModel = G.shortNameToModel[typeName];
-        return hint.type || vocModel && vocModel.type;
+        return (hint && hint.type) || (vocModel && vocModel.type);
       }
     },
     
@@ -860,17 +860,26 @@ define([
       }
       var first = true;
       for (var i=0; i<dnProps.length; i++) {
-        var value = resource.get(dnProps[i]);
+        var shortName = dnProps[i],
+            prop = meta[shortName],
+            value = resource.get(shortName);
+        
         if (value  &&  typeof value != 'undefined') {
           if (first)
             first = false;
           else
             dn += ' ';
-          dn += (value.displayName) ? value.displayName : value;
+          
+          if (U.isResourceProp(prop)) {
+            // get displayName somehow, maybe we need to move cached resources to G, instead of Router
+          }
+          else {
+            dn += value.displayName ? value.displayName : value;
+          }
         }
       }
       
-      return dn || vocModel.displayName;
+      return (dn || vocModel.displayName).trim();
     },
 
     getTypeTemplate: function(id, resource) {
@@ -1547,13 +1556,13 @@ define([
       var vocProps = vocModel.properties;
       var flat = {};
       for (var name in m) {
-        var prop = vocProps[name];
         if (name.indexOf(".") != -1) {
           flat[name] = m[name];
           continue;
         }
           
-        if (!prop)
+        var prop = vocProps[name];
+        if (!prop || prop.parameter || prop.virtual)
           continue;
         
         flat[name] = U.getFlatValue(prop, m[name]);
@@ -1792,17 +1801,35 @@ define([
     makeTempUri: function(type, id) {
       return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
     },
-    slice: slice,
-    remove: function(array, item) {
-      var what, a = arguments, L = a.length, ax;
-      while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-          this.splice(ax, 1);
-        }
-      }
-      return this;
+    sq: function(a) {
+      return a * a;
     },
+    getEarthRadius: function() {
+      return G.isMetric === false ? 3961 : 6373;
+    },
+    distance: function(aCoords, bCoords) {
+      var lat1 = aCoords[0], lat2 = bCoords[0], lon1 = aCoords[1], lon2 = bCoords[1];
+      dlon = lon2 - lon1;
+      dlat = lat2 - lat1;
+      var a = U.sq(Math.sin(dlat/2)) + Math.cos(lat1) * Math.cos(lat2) * U.sq(Math.sin(dlon/2)); 
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      return U.getEarthRadius() * c;
+          
+//      var x = aCoords[0] - bCoords[0];
+//      var y = aCoords[1] - bCoords[1];
+//      return Math.sqrt(x*x + y*y);
+    },
+    slice: slice,
+//    remove: function(array, item) {
+//      var what, a = arguments, L = a.length, ax;
+//      while (L && this.length) {
+//        what = a[--L];
+//        while ((ax = this.indexOf(what)) !== -1) {
+//          this.splice(ax, 1);
+//        }
+//      }
+//      return this;
+//    },
     
     toObject: function(arr) {
       var obj = {};

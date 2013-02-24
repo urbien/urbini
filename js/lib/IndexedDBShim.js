@@ -516,11 +516,34 @@ var idbModules = window.idbModules = {};
      * @param {Object} transaction
      */
     var IDBObjectStore = function(name, idbTransaction, ready){
-        this.name = name;
-        this.transaction = idbTransaction;
-        this.__ready = {};
-        this.__setReadyState("createObjectStore", typeof ready === "undefined" ? true : ready);
-        this.indexNames = new idbModules.util.StringList();
+      this.name = name;
+      this.transaction = idbTransaction;
+      this.__ready = {};
+      this.__setReadyState("createObjectStore", typeof ready === "undefined" ? true : ready);
+      this.indexNames = new idbModules.util.StringList();
+      
+//      // normal IndexDB Store returns with indexNames provided, so we fill here (would be synchronous task, but can't enforce)
+//      var objStore = this;
+//      this.transaction.__addToTransactionQueue(function(tx, args, success, failure){
+//        objStore.__getStoreProps(tx,function(props) {
+//          try{
+//            if(props && props.indexList) {
+//              var indexList = JSON.parse(props.indexList);
+//              for(var indexName in indexList){
+//                if(indexList.hasOwnProperty(indexName) && !objStore.indexNames.contains(indexName)){
+//                    objStore.indexNames.push(indexName);
+//                }
+//              }
+//              
+//              success(objStore.indexNames);
+//            } else {
+//              failure();
+//            }
+//          } catch(ex){ //JSON parse Error
+//            failure(ex);
+//          }
+//        }, "createObjectStore");
+//      });
     };
     
     /**

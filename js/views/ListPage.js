@@ -135,6 +135,10 @@ define([
     render:function (eventName) {
       G.log(this.TAG, 'render');  
       var rl = this.collection;
+      var commonParams = {
+        model: rl,
+        parentView: this
+      };
       
       var json = rl.toJSON();
       json.viewId = this.cid;
@@ -185,12 +189,11 @@ define([
         log: [LoginButtons]    
       };
       
-      this.header = new Header({
-        model: rl, 
+      this.header = new Header(_.extend(commonParams, {
         buttons: this.buttons,
         viewId: this.cid,
         el: $('#headerDiv', this.el)
-      }).render();
+      })).render();
   
       var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, 'Modification');
@@ -211,13 +214,13 @@ define([
       var isMV = window.location.hash  &&  window.location.hash.indexOf('$multiValue=') != -1;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
-      this.listView = new ResourceListView({el: $(containerTag, this.el), model: rl, mode: this.mode});
+      this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}));
       this.listView.render();
       if (isGeo) {
         var self = this;
         G.require(['views/MapView'], function(MV) {
           MapView = MV;
-          self.mapView = new MapView({model: rl, el: self.$('#mapHolder', self.el)});
+          self.mapView = new MapView(_.extend(commonParams, {el: self.$('#mapHolder', self.el)}));
           self.mapView.render();
         });
       }

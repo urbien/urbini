@@ -12,6 +12,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      this.isActive();
       return this;
     },
     events: {

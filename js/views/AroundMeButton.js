@@ -41,24 +41,26 @@ define([
   //    if (!props.distance || !props.latitude || !props.longitude)
   //      return;
       
-      var self = this;
+      var self = this, 
+          userLoc = G.currentUser.location;
+      
       navigator.geolocation.getCurrentPosition(
         function(position) {
           return self.fetchAroundPosition(position.coords);
         },
         function(error) {
-          var lastLocTime = G.userLocation.timestamp;
+          var lastLocTime = userLoc ? userLoc.timestamp : 0;
           if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
             self.fetchAroundPosition(G.userLocation.location);
           else
-            this.constructor.locationError(error);
+            self.constructor.locationError(error);
         }
       );
       
       return this;
     },
     fetchAroundPosition : function(coords, item) {
-      G.userLocation = {
+      G.currentUser.location = {
         location: coords,
         timestamp: new Date().getTime()
       };

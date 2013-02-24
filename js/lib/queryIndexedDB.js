@@ -161,7 +161,10 @@ define(['jqueryIndexedDB'], function() {
       },
       
       sort: function(column, reverse) {
-        return Index(column).all().setDirection(reverse ? IDBCursor.PREV : IDBCursor.NEXT).and(query);
+        if (typeof column === 'function')
+          this.sortFunction = column;
+        else
+          return Index(column).all().setDirection(reverse ? IDBCursor.PREV : IDBCursor.NEXT).and(query);
       },
 
       setDirection: function(direction) {
@@ -206,37 +209,35 @@ define(['jqueryIndexedDB'], function() {
       var range;
       switch (op) {
         case "all":
-//          range = values[0] ? IDBKeyRange.lowerBound(values[0], true) : undefined;
-          range = values[0] ? [values[0], null, false, true] : undefined;
+          range = values[0] ? [values[0], null] : undefined;
           break;
         case "eq":
-//          range = IDBKeyRange.only(values[0]);
           range = values[0];
           break;
         case "lt":
 //          range = IDBKeyRange.upperBound(values[0], true);
-          range = [null, values[0], true, false];
+          range = [null, values[0], true, true];
           break;
         case "lteq":
 //          range = IDBKeyRange.upperBound(values[0]);
-          range = [null, values[0], true, true];
+          range = [null, values[0], true, false];
           break;
         case "gt":
 //          range = IDBKeyRange.lowerBound(values[0], true);
-          range = [values[0], null, false, true];
+          range = [values[0], null, true, true];
           break;
         case "gteq":
 //          range = IDBKeyRange.lowerBound(values[0]);
 //          range.upperOpen = true;
-          range = [values[0], null, true, true];
+          range = [values[0], null, false, true];
           break;
         case "between":
 //          range = IDBKeyRange.bound(values[0], values[1], true, true);
-          range = [values[0], values[1], false, false];
+          range = [values[0], values[1], true, true];
           break;
         case "betweeq":
 //          range = IDBKeyRange.bound(values[0], values[1]);
-          range = [values[0], values[1], true, true];
+          range = [values[0], values[1], false, false];
           break;
       }
       
@@ -248,22 +249,26 @@ define(['jqueryIndexedDB'], function() {
      */
     function queryIndex(store, op) {
       return $.Deferred(function(defer) {
-        var qLimit = query.limit,
-            qOffset = query.offset,
-            direction = query.direction || direction;
+//        var qLimit = query.limit,
+        var qOffset = query.offset,
+            direction = query.direction || direction,
+            sort = query.sortFunction || function(items) {return items};
         
         var index = store.index(indexName);
         var range = makeRange();
         var request = typeof range !== 'undefined' ? index[op](range, direction) : index[op](undefined, direction);
         request.done(function(result, event) {
           if (!negate) {
-            defer.resolve(arrayLimit(arrayOffset(result, qOffset), qLimit));
+//            defer.resolve(arrayLimit(arrayOffset(result.sort(sort), qOffset), qLimit));
+            // we don't want to LIMIT every time, until we're done with the whole operation (this may be a subquery and by limiting now, we may not have enough later)
+            defer.resolve(arrayOffset(result.sort(sort), qOffset));
             return;
           }
           
           request = index[op]();
           request.done(function(all, event) {
-            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result), qOffset), qLimit));
+//            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result).sort(sort), qOffset), qLimit));
+            defer.resolve(arrayOffset(arraySub(all, result).sort(sort), qOffset));
           }).fail(function(err, event) {
             debugger;
             console.log("err: " + JSON.stringify(err));
@@ -289,12 +294,12 @@ define(['jqueryIndexedDB'], function() {
   var SetOps = {Intersection: {name: 'Intersection', op: arrayIntersect}, Union: {name: 'Union', op: arrayUnion}};
   function SetOperation(setOp) {
     return function(query1, query2) {
-//      if (!query1.indexed || !query2.indexed)
       var query;
       function queryFunc(store, op) {
         var dfd = $.Deferred();
         $.when(query1._queryFunc(store, op), query2._queryFunc(store, op)).then(function(results1, results2) {
-          dfd.resolve(arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey), query.offset), query.limit));
+          var sort = query.sortFunction || function(items) {return items};
+          dfd.resolve(arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey).sort(sort), query.offset), query.limit));
         }, function(err) {
           debugger;
         }, function(event) {

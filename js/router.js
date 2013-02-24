@@ -592,6 +592,9 @@ define([
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
       // perform transition
+      view.active = true;
+      if (this.previousView)
+        this.previousView.active = false;
       $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
       Events.trigger('changePage', view);
 //      if (this.backClicked)

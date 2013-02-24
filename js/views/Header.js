@@ -85,6 +85,7 @@ define([
     render: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
+      
       this.$el.html(this.template());
       var l = this.buttons.left;
       l && this.makeWidgets(l, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-left'});

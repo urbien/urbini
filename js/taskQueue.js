@@ -65,7 +65,7 @@ define(['globals', 'utils'], function(G, U) {
             if (q.runningTasks.indexOf(promise) === -1)
               debugger;
             
-            U.remove.apply(q.runningTasks, promise);
+            q.runningTasks.remove(promise);
           }.bind(q));
           
           return promise;
@@ -116,7 +116,7 @@ define(['globals', 'utils'], function(G, U) {
             if (q.runningTasks.indexOf(taskPromise) === -1)
               debugger;
             
-            U.remove.apply(q.runningTasks, taskPromise);
+            q.runningTasks.remove(taskPromise);
             G.log(q.TAG, 'db', q.name, 'Finished sequential task:', name);
             q.blocked = false; // unblock to allow next task to start;
             if (q.hasMoreTasks()) {

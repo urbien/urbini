@@ -138,20 +138,25 @@ define([
         if (canceled && res.get(canceled))
           continue;
         
+        var commonParams = {
+          model: res,
+          parentView: this
+        };
+        
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (isMultiValueChooser)
-            liView = new ResourceListItemView({model:res, mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, mvVals: mvVals});
+            liView = new ResourceListItemView(_.extend(commonParams, {mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, mvVals: mvVals}));
           else if (isMasonry  ||  isModification) 
 //            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
 //          else if (isModification)
-            liView = new ResourceMasonryItemView({model:res, className: 'nab nabBoard', parentView: this});
+            liView = new ResourceMasonryItemView(_.extend(commonParams, {className: 'nab nabBoard'}));
           else if (isComment)
-            liView = new CommentListItemView({model:res, parentView: this});
+            liView = new CommentListItemView(commonParams);
           else {
             var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-            liView = imageProperty != null ? new ResourceListItemView({model:res, imageProperty: imageProperty, parentView: this, swatch: swatch}) : new ResourceListItemView({model:res, parentView: this, swatch: swatch});
+            liView = imageProperty != null ? new ResourceListItemView(_.extend(commonParams, { imageProperty: imageProperty, parentView: this, swatch: swatch})) : new ResourceListItemView(_.extend(commonParams, {swatch: swatch}));
           }
           if (nextPage)  
             this.$el.append(liView.render().el);
@@ -228,7 +233,7 @@ define([
       };
       
       var error = function() { after(); };
-      if (rl.models.length % this.displayPerPage > 0) {
+      if (requested <= rl.models.length && rl.models.length % this.displayPerPage > 0) {
         this.refresh(rl);
         return;
       }
