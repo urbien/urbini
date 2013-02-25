@@ -57,7 +57,7 @@ define([
         this.title = this.pageTitle;
       this.$el.prevObject.attr('data-title', this.pageTitle);
       var params = U.getHashParams();
-      this.info = params['-info='];
+      this.info = params['-info'];
       
       return this;
     },
