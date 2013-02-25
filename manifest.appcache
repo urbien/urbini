@@ -4,8 +4,8 @@ CACHE MANIFEST
 # Explicitly cached 'master entries'.
 CACHE:
 font/fontawesome-webfont.ttf
-lib/images/icons-18-white-pack.png
-lib/images/ajax-loader.gif
+images/icons-18-white-pack.png
+images/ajax-loader.gif
 images/frame/white_bg/live-sign.png
 #<appImages>
 # cache-end
