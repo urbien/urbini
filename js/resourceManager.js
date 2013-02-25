@@ -625,14 +625,15 @@ define([
             classUri = U.getTypeUri(items[0]._uri);
         }
         
-        if (!RM.storeExists(classUri)) {
-          if (!G.typeToModel[classUri]) {
-            return Voc.getModels(classUri).done(function() {
-              RM.addItems(items, classUri);
-            });
-          }
-          
-          RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
+        var prerequisites = [];
+        if (!G.typeToModel[classUri])
+          prerequisites.push(Voc.getModels(classUri));
+        
+        if (!RM.storeExists(classUri))
+          prerequisites.push(RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}));
+        
+        if (prerequisites.length) {
+          $.when.apply($, prerequisites).done(function() {
             var addPromise = RM.addItems(items, classUri);
             if (addPromise)
               addPromise.done(defer.resolve).fail(defer.reject);
@@ -640,7 +641,7 @@ define([
               defer.reject();
           });
           
-          return defer.promise();
+          return;
         }
         
         RM.runTask(function() {
