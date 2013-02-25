@@ -70,10 +70,7 @@ define([
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
           Events.trigger('chooser', this.model);
-          return;
         }
-        else if (e.target.className == 'appBadge')
-          return;
       }
     },
     render: function(event) {
