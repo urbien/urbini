@@ -294,7 +294,7 @@ define([
             return;
           
           Events.trigger('resourcesChanged', [self]);
-          var method = isNew ? 'add.' : 'edit.';
+          var method = isNew ? 'create.' : 'edit.';
           if (!G.currentUser.guest) {
             var json = self.toJSON();
             json._type = self.vocModel.type;
@@ -303,6 +303,11 @@ define([
             while (sup = sup.superClass) {
               Events.trigger(method + sup.type, self);
             }
+            
+            // TODO: fix this hack, or move this to some place where we handle resources by type
+            var handlerModel = G.shortNameToModel.Handler;
+            if (handlerModel && self.vocModel.type === handlerModel.type)
+              Events.trigger("newHandler", self);
           }
         };
       }

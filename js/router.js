@@ -373,7 +373,8 @@ define([
           success: function() {
             var newUri = res.getUri();
             if (newUri !== uri) {
-              self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+              self.navigate(U.makeMobileUrl('view', newUri), {trigger: false, replace: true});
+              res.fetch();
             }
           },
           forceFetch: forceFetch
@@ -382,36 +383,21 @@ define([
         return this;
       }
       
-//      if (this.Collections[typeUri]) {
-//        var res = this.Models[uri] = this.Collections[typeUri].get(uri);
-//        if (res) {
-//          this.currentModel = res;
-//          var v = views[uri] = new viewPageCl({model: res});
-//          this.changePage(v);
-//          return this;
-//        }
-//      }
-//  
-//      var typeCl = G.shortNameToModel[className];
-//      if (!typeCl)
-//        return this;
-      
       var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
-//      var paintMap;
       var success = function(data) {
         // in case we were at a temp uri, we want to clean up our history as best we can
         var newUri = res.getUri();
         if (newUri !== uri) {
-          self.navigate('view/' + encodeURIComponent(newUri), {trigger: true, replace: true});
+          self.navigate(U.makeMobileUrl('view', newUri), {trigger: false, replace: true});
+          res.fetch();
         }
         else {
           self.changePage(v);
           Voc.fetchModelsForLinkedResources(res);
         }
-  //      self.loadExtras(oParams);
       }
-    
+
       res.fetch({sync:true, success: success, forceFetch: forceFetch});
       return true;
     },

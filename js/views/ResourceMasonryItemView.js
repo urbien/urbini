@@ -243,9 +243,10 @@ define([
           tmpl_data.tryApp = uri;
           tmpl_data.rUri = uri;
         }
-        if (json['friendMe'].count) {
-          tmpl_data.friendMeCount = json['friendMe'].count;
-          tmpl_data.friendMeUri = G.pageRoot + '#' + encodeURIComponent(meta['friendMe'].range) + '?friend2=' + encodeURIComponent(json._uri);
+        var followMeCount = json.followMe.count;
+        if (followMeCount) {
+          tmpl_data.friendMeCount = followMeCount;
+          tmpl_data.friendMeUri = U.getPageUrl('list', meta.followMe.range, {friend2: json._uri});
         }
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   

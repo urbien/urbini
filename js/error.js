@@ -16,13 +16,15 @@ define([
     },
     getDefaultErrorHandler: function(errorHandler) {
       var id = G.nextId();
-      return function(originalModel, err, options) {
+      var defaultErrorHandler = function(originalModel, err, options) {
         var code = err.code || err.status;
         var type = err.type || err.statusText;
-//        var defaultDestination = G.Router.previousHash;
         if (options.sync) {
           switch (code) {
           case 204:
+            if (originalModel && U.isModel(originalModel))
+              return defaultErrorHandler(originalModel, _.extend(err, {code: 404}), options);
+            
             return;
           case 401: 
             window.history.back();
@@ -34,28 +36,29 @@ define([
             G.log(Errors.TAG, "error", 'no results');
             var errMsg = err.details;
             if (!errMsg) {
-              if (originalModel && (U.isModel(originalModel) || U.isCollection(originalModel))) // && originalModel.queryMap.length == 0)))
-                errMsg = "No results were found for your query";
-  //              router.navigate(defaultDestination || originalModel.shortName || originalModel.constructor.shortName, {trigger: true, replace: true, errMsg: "No results were found for your query"});
-            else
-                errMsg = Errors.not_found;
+              if (originalModel) { 
+                if (U.isModel(originalModel)) {
+                  errMsg = "The item you're looking for doesn't exist";
+                }
+                else if (U.isCollection(originalModel)) {// && originalModel.queryMap.length == 0)))
+                  errMsg = "No results were found for your query";
+                }
+              }
             }
-//              router.navigate(defaultDestination || G.homePage, {trigger: true, replace: true, errMsg: Error.not_found});            
+            
+            errMsg = errMsg || Errors.not_found;
             Errors.errDialog({msg: errMsg, delay: 1000});
             return;
           default:
             switch (type) {
               case 'offline':
               case 'timeout':
-//                Events.trigger('error', err.details ? err : _.extend(err, {details: Errors.OFFLINE}));
-//                router.navigate(defaultDestination, {trigger: true, replace: true, errMsg: err.details || Errors[G.online ? type : 'offline']});
                 window.history.back();
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
-//                router.navigate(G.homePage, {trigger: true, replace: true, errMsg: err && err.details || Errors.not_found});
                 window.history.back();
                 Errors.errDialog({msg: err.details || Errors.not_found, delay: 1000});
             }
@@ -65,7 +68,9 @@ define([
         
         if (errorHandler)
           errorHandler.apply(this, arguments);
-      }
+      };
+      
+      return defaultErrorHandler;
     },
     errDialog: function(options) {
       var msg = options.msg;

@@ -52,8 +52,13 @@ define([
           Backbone.defaultSync.apply(this, arguments);
         }
       }
-      else
-        RM.saveItem(data, options);
+      else {
+        var dfd = RM.saveItem(data, options);
+        if (options.success)
+          dfd.done(options.success);
+        else if (options.error)
+          dfd.fail(options.error);
+      }
       
       return;
     }
@@ -549,7 +554,7 @@ define([
         
         var vocModel = G.typeToModel[type];
         if (!vocModel) {
-          G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
+//          G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
           throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
         }
         
@@ -625,15 +630,14 @@ define([
             classUri = U.getTypeUri(items[0]._uri);
         }
         
-        var prerequisites = [];
-        if (!G.typeToModel[classUri])
-          prerequisites.push(Voc.getModels(classUri));
+        if (!G.typeToModel[classUri]) {
+          return Voc.getModels(classUri).done(function() {
+            RM.addItems(items, classUri).done(defer.resolve).fail(defer.reject);
+          }).fail(defer.reject);
+        }
         
-        if (!RM.storeExists(classUri))
-          prerequisites.push(RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}));
-        
-        if (prerequisites.length) {
-          $.when.apply($, prerequisites).done(function() {
+        if (!RM.storeExists(classUri)) {
+          RM.upgradeDB({toMake: [classUri], msg: "Upgrade to make store: " + classUri}).done(function() {
             var addPromise = RM.addItems(items, classUri);
             if (addPromise)
               addPromise.done(defer.resolve).fail(defer.reject);
@@ -641,9 +645,9 @@ define([
               defer.reject();
           });
           
-          return;
+          return defer.promise();
         }
-        
+                
         RM.runTask(function() {
           var dfd = this; 
           var vocModel = G.typeToModel[classUri];
@@ -708,7 +712,7 @@ define([
           debugger;
           defer.reject(error, event);
         });
-      }, {name: RM.SYNC_TASK_NAME, sequential: true, preventPileup: true});
+      }, {name: RM.SYNC_TASK_NAME, sequential: false, preventPileup: true});
     },
 
     saveToServer: function(updateInfo) {
@@ -912,46 +916,49 @@ define([
     },
     
     saveItem: function(item, options) {
-      var vocModel = item.vocModel;
-      if (!RM.isSyncPostponable(vocModel)) {
-        item.save(undefined, _.extend(options, {sync: true}));
-        return;
-      }
-      
-      var now = G.currentServerTime(),
-        uri = item.getUri(),
-        type = vocModel.type;
-      
-      var tempUri;
-      if (!uri) {
-        tempUri = U.makeTempUri(type, now);
-        item.set({'_uri': tempUri}, {silent: true});
-      }
-
-      var itemRef = _.extend({_id: now, _uri: uri || tempUri}, tempUri ? item.toJSON() : item.changed), 
-          done = options.success,
-          fail = options.error;
-      
-      if (uri) {
-        Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-          if (!results.length)
-            RM.saveItemHelper(itemRef, item, options);
-          else {
-            _.extend(itemRef, results[0]);
-            RM.saveItemHelper(itemRef, item, options);
-          }
-        }).fail(function() {
-          debugger;
-          RM.saveItemHelper(itemRef, item, options);
-        });
-      }
-      else if (tempUri) {
-        itemRef._uri = tempUri;
-        RM.saveItemHelper(itemRef, item, options);
-      }
+      return $.Deferred(function(defer) {
+        var vocModel = item.vocModel;
+        if (!RM.isSyncPostponable(vocModel)) {
+          item.save(undefined, _.extend(options, {sync: true}));
+          defer.resolve();
+          return;
+        }
+        
+        var now = G.currentServerTime(),
+          uri = item.getUri(),
+          type = vocModel.type;
+        
+        var tempUri;
+        if (!uri) {
+          tempUri = U.makeTempUri(type, now);
+          item.set({'_uri': tempUri}, {silent: true});
+        }
+  
+        var itemRef = _.extend({_id: now, _uri: uri || tempUri}, tempUri ? item.toJSON() : item.changed), 
+            done = options.success,
+            fail = options.error;
+        
+        var dfd;
+        if (uri) {
+          Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+            if (!results.length)
+              RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+            else {
+              _.extend(itemRef, results[0]);
+              RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+            }
+          }).fail(function() {
+            RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+          });
+        }
+        else if (tempUri) {
+          itemRef._uri = tempUri;
+          RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+        }        
+      });
     },
     
-    saveItemHelper: function(itemRef, item, options) {
+    saveItemHelper: function(itemRef, item) {
       return $.Deferred(function(addDefer) {
         var type = item.vocModel.type;
         if (itemRef._dirty) {
@@ -961,7 +968,6 @@ define([
             RM.sync();
           }).fail(function() {
             addDefer.reject();
-            debugger;
   //          RM.$db.objectStore("ref")["delete"](now);
           });        
         }
@@ -982,7 +988,7 @@ define([
             debugger;
           });
         }
-      }).promise().done(options.success).fail(options.error);
+      }).promise();
     },
     
     deleteItem: function(uri) {
@@ -1265,29 +1271,44 @@ define([
       var queryWithIndex = function() {
         var qDefer = this;
         var results = [];
-        if (isTemp) {
-          Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-            if (results.length) {
-              var item = results[0];
-              var realUri = item._uri;
-              if (realUri) {
-                RM.$db.objectStore(type, 0).get(realUri).done(qDefer.resolve).fail(qDefer.reject);
-                return;
-              }
-            }
-            
-            RM.$db.objectStore(type, 0).get(uri).done(qDefer.resolve).fail(qDefer.reject);
-          }).fail(function() {
-            debugger;
-            qDefer.reject();
-          })
-          
-          return;// qDefer;
-        }
+//        if (isTemp) {
+//          RM.$db.objectStore(REF_STORE.name, 0).index('_tempUri').get(uri).done(function(result) {
+//            debugger;
+//            qDefer.resolve(result);
+//          Index('_tempUri').eq(uri).get(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+//            if (results.length) {
+//              var item = results[0];
+//              var realUri = item._uri;
+//              if (realUri) {
+//                RM.$db.objectStore(type, 0).get(realUri).done(function(realItem) {
+//                  if (realItem)
+//                    qDefer.resolve(realItem);
+//                  else
+//                    qDefer.resolve(item);
+//                }).fail(qDefer.reject);
+//                
+//                return;
+//              }
+//            }
+//            
+//            RM.$db.objectStore(type, 0).get(uri).done(qDefer.resolve).fail(qDefer.reject);
+//          }).fail(function() {
+//            debugger;
+//            qDefer.reject();
+//          })
+//          
+//          return;// qDefer;
+//        }
         
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri) {
           store.get(uri).always(qDefer.resolve);
+//          if (isTemp) {
+//            RM.$db.objectStore(REF_STORE.name, 0).index('_tempUri').get(uri).done(function(result) {
+//              
+//            });
+//          }
+          
           return;
         }
 

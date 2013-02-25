@@ -45,7 +45,7 @@ define([
 //    },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true, replace: true});
+      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
       return this;
     },
     logout: function(e) {
@@ -126,13 +126,13 @@ define([
       var hash = window.location.hash;
       hash = hash && hash.slice(1);
       
-      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
+//      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
       if (!hash  ||  hash != url)
-        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: G.pageRoot + '#' + url }));        
+        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: U.makePageUrl('list', 'model/social/App', params) }));        
 
-      var url = encodeURIComponent('model/social/Theme') + "?isTemplate=true";
+//      var url = encodeURIComponent('model/social/Theme') + "?isTemplate=true";
       if (!hash  ||  hash != url)
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: G.pageRoot + '#' + url }));        
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: U.makePageUrl('list', 'model/social/Theme', {isTemplate: true}) }));        
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
@@ -142,14 +142,15 @@ define([
         if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
           var cnt = res.get(ch[0]) && res.get(ch[0]).count;
           if (cnt  &&  cnt > 0) 
-            U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: G.pageRoot + '#' + encodeURIComponent('system/changeHistory/Modification') + '?forResource=' + encodeURIComponent(this.resource.get('_uri'))}));
+            U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})}));
         }
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {submittedBy: '_me'})}));
         if (G.currentUser._uri == G.currentApp.creator) {
-          var uri = U.getLongUri1(G.currentApp._uri, G.shortNameToModel["App"]);
-          pageUrl = G.pageRoot + '#edit/' + encodeURIComponent(uri);
+          var uri = U.getLongUri1(G.currentApp._uri);
+          pageUrl = U.makePageUrl('edit', uri);
           var title = 'Edit ' + G.currentApp.title;
           var img = G.currentApp.smallImage;
           if (!img) 
@@ -193,9 +194,10 @@ define([
   
         }
         if (G.currentUser.newAlertsCount) {
-          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: G.currentUser.newAlertsCount, pageUrl: G.pageRoot + '#' + pageUrl }));
+//          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: G.currentUser.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));
         }
+        
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 

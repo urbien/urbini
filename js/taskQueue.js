@@ -18,11 +18,7 @@ define(['globals', 'utils'], function(G, U) {
       })).promise();
       
       _.map(tasks, function(t) {
-        q.runTask(t.task, {name: t.name, force: force}).done(function() {
-          t.deferred.resolve();
-        }).fail(function() {
-          t.deferred.reject();
-        });                
+        q.runTask(t.task, {name: t.name, force: force}).done(t.deferred.resolve).fail(t.deferred.reject);
       });
       
       tasks.length = 0;
@@ -45,6 +41,9 @@ define(['globals', 'utils'], function(G, U) {
           name = options.name;
       
       if (!sequential) {
+        if (options.preventPileup && _.filter(q.runningTasks, function(t) {return t.name === name}).length)
+          return;
+
         if (q.blocked && !force) {
           G.log(q.TAG, 'db', q.name, 'Waiting for sequential task to finish, queueing non-sequential task:', name);
           var dfd = $.Deferred();

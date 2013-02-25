@@ -40,7 +40,8 @@ define([
   };
   
   String.prototype.startsWith = function(str) {
-    return (this.match("^"+str)==str);
+//    return (this.match("^"+str)==str);
+    return this.slice(0, str.length) === str;
   };
   
   String.prototype.camelize = function(capitalFirst) {
@@ -198,7 +199,7 @@ define([
     },
     
     isPropEditable: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
         return false;
       
       var roles = prop.allowRoles;
@@ -1212,6 +1213,40 @@ define([
       
       var propTemplate = Templates.getPropTemplate(prop);
       return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
+    },
+    
+    makePageUrl: function(action, typeOrUri, params) {
+      return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
+    },
+    
+    makeMobileUrl: function(action, typeOrUri, params) {
+      action = action || 'list';
+      if (U.isModel(typeOrUri))
+        typeOrUri = typeOrUri.getUri();
+      else if (U.isCollection(typeOrUri)) {
+        var col = typeOrUri;
+        typeOrUri = col.vocModel.type;
+        params = _.extend({}, col.queryMap, params);
+      }
+        
+      var url = '';
+      switch (action) {
+        case 'list':
+          break;
+        case 'make':
+        case 'view':
+        case 'edit':
+        case 'chooser':
+        default: 
+          url += action + '/';
+          break;
+      }
+      
+      url += encodeURIComponent(typeOrUri);
+      if (_.size(params))
+        url += '?' + $.param(params);
+      
+      return url;
     },
     
     makeEditProp: function(res, prop, values, formId) {

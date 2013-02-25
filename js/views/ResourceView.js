@@ -25,7 +25,6 @@ define([
       var uri = this.resource.getUri(), self = this;
       if (U.isTempUri(uri)) {
         Events.once('synced.' + uri, function(data) {
-          debugger;
           if (self.isActive()) {
             var newUri = data._uri;
             self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});

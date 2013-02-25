@@ -41,8 +41,19 @@ define([
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
       
+      var meta = this.vocModel.properties;
       var params = U.getQueryParams();
       var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
+      for (var shortName in init) {
+        var prop = meta[shortName];
+        if (U.isResourceProp(prop)) {
+          var uri = init[shortName];
+          var res = this.router.Models[uri] || this.router.searchCollections(uri);
+          if (res) {
+            init[shortName + '.displayName'] = U.getDisplayName(res);
+          }
+        }
+      }
 //      var bl = params.$backLink;
 //      if (bl) {
 //        this.backLink = bl;
@@ -255,7 +266,7 @@ define([
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
           var name = res.get('davDisplayName');
           link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
-          $(link).data('uri', uri);
+          self.setResourceInputValue(link, uri);
           if (U.isAssignableFrom(this.vocModel, "App")  &&  U.isAssignableFrom(res.vocModel, "Theme")) {
             if (G.currentApp) {
               var cUri = G.currentApp._uri;
@@ -285,8 +296,27 @@ define([
 //        debugger;
 //        _.extend(params, U.parseWhere(pr.where));
 //      }
-      
-      if (pr.multiValue) {
+
+      if (pr.where) {
+        params = U.getQueryParams(pr.where);
+        for (var p in params) {
+          var val = params[p];
+          if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
+            if (val === '$this')
+              params[p] = res.getUri();
+            else {
+              val = res.get(val.slice(6));
+              if (val)
+                params[p] = val;
+              else
+                delete params[p];
+            }
+          }
+        }
+        
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});        
+      }
+      else if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
@@ -318,15 +348,15 @@ define([
 //          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
       }
       else  {
-        
         var rParams = {
-            $prop: pr.shortName,
-            $type:  this.vocModel.type
-          };
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+          $prop: pr.shortName,
+          $type:  this.vocModel.type
+        };
+        
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        var w = pr.where;
 //        var wOr =  pr.whereOr;
 //        if (!w  &&  !wOr)
@@ -427,15 +457,15 @@ define([
         }
       }
       
-      var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE';
-      var redirectTo = vocModel.onCreateRedirectTo;
+      var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE',
+          redirectParams = {},
+          action = '',
+          redirectPath = '',
+          redirectTo = vocModel.onCreateRedirectTo;
       // check if we came here by backlink
       if (!redirectTo) 
         redirectTo = U.getContainerProperty(vocModel);
  
-      var redirectParams = {};      
-      var redirectRoute = '';
-      var redirectPath = '';
       switch (redirectAction) {
         case 'LIST':
           if (redirectTo) { 
@@ -454,7 +484,7 @@ define([
                   redirectPath = blProp.range;
                 else {
                   G.log(this.TAG, 'error', 'couldn\'t create redirect', redirectTo);
-                  self.router.navigate("view/" + encodeURIComponent(uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
                   return;
                 }
               }
@@ -463,7 +493,7 @@ define([
                 Voc.getModels(range).done(function() {
                   self.redirect.apply(self, args);
                 }).fail(function() {
-                  self.router.navigate("view/" + encodeURIComponent(uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
                 })
                 
                 return;
@@ -475,51 +505,52 @@ define([
           else  
             redirectPath = vocModel.type;
           
-          redirectPath = encodeURIComponent(redirectPath);
           options.forceRefresh = true;
           break;
         case 'PROPFIND':
         case 'PROPPATCH':
-          redirectPath = redirectAction === 'PROPFIND' ? 'view/' : 'edit/';
           if (!redirectTo || redirectTo === '-$this') {
-            redirectPath = encodeURIComponent(res.getUri());
+            redirectPath = uri;
           }
           else {
             var prop = vocModel.properties[redirectTo];
             if (prop.backLink) {
-              redirectPath = encodeURIComponent(res.getUri());
+              redirectPath = uri;
 //              redirectPath = 'make/'; //TODO: make this work for uploading images
             }
             else {
               var target = res.get(redirectTo);
-              target = target.value || target;
-              redirectPath = encodeURIComponent(target);
+              if (target) {
+                target = target.value || target;
+                redirectPath = target;
+              }
+              else
+                redirectPath = uri;
             }
           }
           
-          redirectRoute = 'view/';
+          action = redirectAction === 'PROPFIND' ? 'view' : 'edit';
           break;
         case 'SOURCE':
           redirectPath = this.source;
           if (_.isUndefined(redirectPath)) {
-            redirectPath = encodeURIComponent(this.resource.getUri());
-            redirectRoute = 'view/';
+            redirectPath = uri;
+            action = 'view';
           }
           options.forceRefresh = true;
           break;
         default:
           G.log(this.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
-          redirectPath = encodeURIComponent(vocModel.type);
+          redirectPath = vocModel.type;
           options.forceRefresh = true;
           break;
       }
       
       var redirectMsg = vocModel.onCreateRedirectToMessage;
       if (redirectMsg)
-        redirectParams['-info='] = redirectMsg;
+        redirectParams['-info'] = redirectMsg;
       
-      var redirect = redirectRoute + redirectPath + (_.size(redirectParams) ? '?' + $.param(redirectParams) : '');
-      this.router.navigate(redirect, options);
+      this.router.navigate(U.makeMobileUrl(action, redirectPath, redirectParams), options);
     },
     getValue: function(input) {
       var jInput = $(input);
@@ -529,7 +560,7 @@ define([
       if (p  &&  p.multiValue)
         val = input.innerHTML;
       else
-        val = input.tagName === 'A' ? jInput.data('uri') : input.value;
+        val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
       if (_.contains(input.classList, 'boolean'))
         return val === 'Yes' ? true : false;
       else {
@@ -686,6 +717,7 @@ define([
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         onSuccess();
+        self.getInputs().attr('disabled', false);
       }
       else
         onError(errors);
@@ -793,6 +825,14 @@ define([
       }
 
       U.addToFrag(info.frag, this.editRowTemplate(pInfo));
+    },
+    getResourceInputValue: function(input) {
+      input = input instanceof $ ? input : $(input);
+      return input.data('uri');
+    },
+    setResourceInputValue: function(input, value) {
+      input = input instanceof $ ? input : $(input);
+      input.data('uri', value);
     },
     render: function(options) {
       G.log(this.TAG, "render");
@@ -927,6 +967,12 @@ define([
           return true;
         }
       }); // end of function
+      
+      form.find('.resourceProp').each(function() {
+        var val = self.originalResource[this.name];
+        if (val)
+          self.setResourceInputValue(this, val);
+      });
       
 //      if (_.size(displayedProps) === 1) {
 //        var prop = meta[U.getFirstProperty(displayedProps)];
