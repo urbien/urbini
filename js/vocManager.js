@@ -625,15 +625,14 @@ define([
     executeHandler: function(handler, resultType, source, context) {
       var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
       var result = {};
-      result[type] = {};
 
+      debugger;
       try {
-        handler.apply(result).call(context || {}, source);
+        handler.apply({}).call(context || {}, source, result);
       } catch (err) {
         return;
       }
 
-      result = result[type];
       Voc.getModels(resultType).done(function() {
         var toVocModel =  G.typeToModel[resultType];
         var fromVocModel = G.typeToModel[source._type];
@@ -667,26 +666,38 @@ define([
         debugger;
         var res = new toVocModel();
         if (toVocModel.properties.cause)
-          res.cause = source.getUri();
+          res.cause = source._uri;
         res.save(result, {'$returnMade': false, sync: false});
       }).fail(function() {
         debugger;
       });
     },
     
-    buildScript: function(script) {
+    buildScript: function(script, from, to) {
+      from = from.slice(from.lastIndexOf('/') + 1).camelize();
+      to = to.slice(to.lastIndexOf('/') + 1).camelize();
       if (typeof script === 'string') {
-        try {
-          script = FunctionProxy(script);
-        } catch (err) {
-          script = null;
-        }
+        script = script.trim();
+        if (script.startsWith("function"))
+          script = script.slice(script.indexOf("{") + 1, script.lastIndexOf("}"));
+//          try {
+//            script = new Function("return " + script); //FunctionProxy(script);
+//          } catch (err) {
+//            script = null;
+//          }
+//        }
+//        else {
+//          script = new Function(from, to, script + "; return " + to);
+//        }
       }
       
-      return script;
+      return new Function("return " + new Function(from, to, script).toString());
     },
     
     initCustomHandlers: function(type) {
+      // TODO: turn off handlers as needed, instead of this massacre
+      Events.off('create.' + type);
+      Events.off('edit.' + type);
       var handlers = G.customHandlers[type];
       if (!handlers) {
         handlers = G.localStorage.get("handlers:" + type);
@@ -697,24 +708,28 @@ define([
       if (!handlers)
         return;
     
-      var typeName = type.slice(type.lastIndexOf('/') + 1);
+//      var typeName = type.slice(type.lastIndexOf('/') + 1);
       _.each(handlers, function(handler) {
-        var scripts = {
-          create: handler.createScript, 
-          edit: handler.editScript
-        };
-        
-        for (var action in scripts) {
-          var script = scripts[action];
-          if (script) {
-            script = Voc.buildScript(script);
-            if (script === null)
-              G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
-            else
-              Events.on(action + '.' + type, Voc.prepareHandler(script, handler.toDavClassUri));
-          }          
-        }        
+        Voc.initHandler(handler, type);
       });
+    },
+    
+    initHandler: function(handler, type) {
+      var scripts = {
+        create: handler.createScript, 
+        edit: handler.editScript
+      };
+      
+      for (var action in scripts) {
+        var script = scripts[action];
+        if (script) {
+          script = Voc.buildScript(script, handler.fromDavClassUri, handler.toDavClassUri);
+          if (script === null)
+            G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
+          else
+            Events.on(action + '.' + type, Voc.prepareHandler(script, handler.toDavClassUri));
+        }          
+      }
     },
     
     getInit: function() {
@@ -755,7 +770,7 @@ define([
         }
          
         G.localStorage.nukeHandlers();
-//        Voc.fetchHandlers();
+        Voc.fetchHandlers();
       }
     },
     
@@ -1121,5 +1136,15 @@ define([
   };
   
   Voc.snm = G.shortNameToModel;
+  Events.on('newHandler', function(handler) {
+    var handlers = {};
+    handler = handler.toJSON();
+    var type = handler.fromDavClassUri;
+    handlers[type] = [handler];
+    Voc.setupHandlers(handlers);
+    Voc.initCustomHandlers(type); // for now
+//    Voc.initHandler(handler, type);
+  });
+  
   return (G.Voc = Voc);
 });
