@@ -10,4 +10,4 @@ We have been solving all these problems and some more (e.g. MVC models creation 
 
 Please join us in this amazing journey of taking back the Web.
 
-Gene, Ellen, Jacob, Mark, Simon and the rest of Urbien team.
+Gene, Ellen, Jacob, Mark, Simon, Alex and the rest of Urbien team.
