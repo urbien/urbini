@@ -13,7 +13,7 @@ define([
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
 
-  var scrollerTypes = ['datetime', 'duration']; //, 'enum'];
+  var scrollerTypes = ['date', 'duration']; //, 'enum'];
 //  var getScrollerModuleName = function(scrollerType) {
 //    switch (scrollerType) {
 //    case 'datetime':
@@ -70,13 +70,13 @@ define([
       'submit form': 'submit',
       'click .resourceProp': 'chooser',
       'click input[data-duration]': 'scrollDuration',
-      'click input[data-datetime]': 'scrollDate',
+      'click input[data-date]': 'scrollDate',
       'click select[data-enum]': 'scrollEnum',
       'click': 'click'
     },
     
     scrollDate: function(e) {
-      this.mobiscroll(e, 'datetime');
+      this.mobiscroll(e, 'date');
     },
 
     scrollDuration: function(e) {
@@ -162,7 +162,7 @@ define([
           var scroller;
 //          var scroller = $(this).mobiscroll()['duration'](settings);
           switch (scrollerType) {
-            case 'datetime':
+            case 'date':
             case 'duration':
               scroller = $(input).mobiscroll()[scrollerType](settings);
               var val = input.value && parseInt(input.value);
@@ -759,9 +759,9 @@ define([
             input = settings.input;
         
         switch (settings.__type) {
-          case 'datetime': {
+          case 'date': {
             var millis = atts[name] = new Date(val).getTime();
-            $(input).data('data-datetime', millis);
+            $(input).data('data-date', millis);
             break;
           }
           case 'duration': {

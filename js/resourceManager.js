@@ -19,9 +19,11 @@ define([
 //  var useWebSQL = false;
 //  idbq.init();
   var parse = function(items) {
-    return $.Deferred(function(defer) {
-      defer.resolve(parseFromDB(items));
-    });
+    return parseFromDB(items);
+  },
+
+  hasIndex = function(indexNames, name) {
+    return _.contains(indexNames, prepPropNameForDB(name));
   },
   
   prepPropNameForDB = function(propName) {
@@ -29,7 +31,7 @@ define([
   },
   
   parsePropNameFromDB = function(propName) {
-    return propName.slice(1);
+    return propName.startsWith('_') ? propName.slice(1) : propNamee;
   },
     
   prepForDB = function(item) {
@@ -387,11 +389,6 @@ define([
       }
     },
   
-//    updateDB: function(res) {
-////      var self = this;
-//      if (res.lastFetchOrigin != 'db' && !res.collection) // if this resource is part of a collection, the collection will update the db in bulk
-//        setTimeout(function() {RM.addItem(res)}, 100);
-//    },
   
     /////////////////////////////////////////// START IndexedDB stuff ///////////////////////////////////////////
     db: null,
@@ -465,13 +462,9 @@ define([
       if (RM.db && !RM.db.objectStoreNames.contains(REF_STORE.name))
         toMake.push(REF_STORE.name);
       
-//      toKill = _.union(toKill, Voc.changedModels); // , Voc.newModels);
       var needUpgrade = function() {
         return !!(toKill.length || toMake.length) ;
       }
-      
-//      if (toKill && toKill.length)
-//        debugger;
       
       if (!version) {
         if (RM.db) {
@@ -491,10 +484,6 @@ define([
           G.log(RM.TAG, "db", 'upgrading...');
           G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
           newStores = RM.updateStores(transaction, toMake, toKill);
-//          transaction.onupgradecomplete(function() {
-//            debugger;
-//            dbPromise.resolve();
-//          });
         }
       };
       
@@ -582,7 +571,6 @@ define([
     updateStores: function(trans, toMake, toKill) {
       toKill = _.union(_.intersection(toMake, toKill), toKill);
       for (var i = 0; i < toKill.length; i++) {
-        debugger;
         var type = toKill[i];
         if (RM.storeExists(type)) {
           try {
@@ -645,24 +633,6 @@ define([
           return;
         }
       }
-      
-//      var updated = _.intersection(Voc.changedModels, _.union(toKill, toMake));
-//      if (!updated.length)
-//        return;
-//      
-//      debugger;
-//      Voc.changedModels = _.difference(Voc.changedModels, updated);
-//      var stillUnsaved = [], toSave = [];
-//      for (var i = 0; i < Voc.unsavedModels.length; i++) {
-//        var m = Voc.unsavedModels[i];
-//        if (updated.indexOf(m.type) == -1)
-//          stillUnsaved.push(m);
-//        else
-//          toSave.push(m);
-//      }
-//      
-//      Voc.saveModelsToStorage(toSave);
-//      Voc.unsavedModels = stillUnsaved;
     },
     
     addItems: function(items, classUri) {
@@ -675,7 +645,7 @@ define([
         if (!RM.db) {
           var args = arguments;
           setTimeout(function() {
-            RM.addItems.apply(RM, arguments).then(defer.resolve, defer.reject);
+            RM.addItems.apply(RM, arguments).done(defer.resolve).fail(defer.reject);
           }, 1000);
           return;
         }
@@ -749,12 +719,13 @@ define([
       RM.runTask(function() {
 //          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
-        RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
+        var getProblematic = RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (!results.length) {
             defer.resolve();
             return;
           }
           
+          results = parse(results);
           var types = [];
           for (var i = 0; i < results.length; i++) {
             var r = results[i];
@@ -818,7 +789,6 @@ define([
               debugger;
             }).progress(function(transaction) {
               var resStore = transaction.objectStore(type, 1);
-              debugger;
               RM.put(data, resStore);
               RM.put(ref, transaction.objectStore(REF_STORE.name, 1));
               if (newUri !== oldUri) {
@@ -872,92 +842,73 @@ define([
           debugger;
         }
         
-//        RM.$db.objectStore(type, 0).get(uri).done(function(item) {
-          uri = ref._uri; // TODO: figure out why uri value gets lost
-          var updated = false, notReady = false;
-          for (var p in ref) {
-            if (/^_/.test(p)) // ignore props that start with an underscore
-              continue;
-            
-            var val = ref[p], 
-                prop = props[p];
-            
-            // check if we have any props pointing to temp uris, and if we do, check if we already uris for those resources. If yes, replace the temp uri with the real one
-            if (prop && U.isResourceProp(prop) && typeof val === 'string' && U.isTempUri(val)) {
-              // if the tempUri to which this resource points has already been sync'd with the server, and has a regular uri, we want to update this resource's pointer 
-              var match = _.filter(refs, function(r) {
-                return r._tempUri === val && r._uri; 
-              });
-              
-              if (match.length) {
-                ref[p] = match[0]._uri;
-                updated = true;
-              }
-              else {
-                notReady = true;
-                break;
-              }
-            }
-          }
+        uri = ref._uri; // TODO: figure out why uri value gets lost
+        var updated = false, notReady = false;
+        for (var p in ref) {
+          if (/^_/.test(p)) // ignore props that start with an underscore
+            continue;
           
-          if (notReady) {
-            debugger;
-            if (updated) {
-              // not ready to sync with server, but we can update the item in its respective table
-              var refStore = RM.$db.objectStore(REF_STORE.name, 1);
-              RM.put(ref, refStore).done(function() {
-                var resStore = RM.$db.objectStore(type, 1);
-//                resStore.get(uri).done(function(item) {
-//                  RM.put(_.extend(item, ref), resStore);
-//                }).done(function() {
-//                  debugger;
-//                }).fail(function() {
-//                  debugger;
-//                }).always(dfd.resolve);
-                resStore.get(uri).then(parse).then(function(item) {
-                  RM.put(_.extend(item, ref), resStore);
-                }).done(function() {
-                  debugger;
-                }).fail(function() {
-                  debugger;
-                }).always(dfd.resolve);
-
-              }).fail(function() {
-                debugger;
-              }).always(function() {
-                dfd.resolve();
-                RM.sync(); // queue up another sync
-              });
+          var val = ref[p], 
+              prop = props[p];
+          
+          // check if we have any props pointing to temp uris, and if we do, check if we already uris for those resources. If yes, replace the temp uri with the real one
+          if (prop && U.isResourceProp(prop) && typeof val === 'string' && U.isTempUri(val)) {
+            // if the tempUri to which this resource points has already been sync'd with the server, and has a regular uri, we want to update this resource's pointer 
+            var match = _.filter(refs, function(r) {
+              return r._tempUri === val && r._uri; 
+            });
+            
+            if (match.length) {
+              ref[p] = match[0]._uri;
+              updated = true;
             }
             else {
-              dfd.resolve();
-              RM.sync(); // queue up another sync
+              notReady = true;
+              break;
             }
-            
-            return;
+          }
+        }
+        
+        if (notReady) {
+          debugger;
+          if (updated) {
+            // not ready to sync with server, but we can update the item in its respective table
+            var refStore = RM.$db.objectStore(REF_STORE.name, 1);
+            RM.put(ref, refStore).done(function() {
+              var resStore = RM.$db.objectStore(type, 1);
+              resStore.get(uri).done(function(item) {
+                RM.put(_.extend(parse(item), ref), resStore).always(dfd.resolve);
+              }).fail(dfd.resolve);
+            }).fail(dfd.resolve);
+          }
+          else {
+            dfd.resolve();
+            RM.sync(); // queue up another sync
           }
           
-          var isMkResource = U.isTempUri(uri);
-          var method = isMkResource ? 'm/' : 'e/';
-  //          delete item._uri; // in case API objects to us sending it
+          return;
+        }
+        
+        var isMkResource = U.isTempUri(uri);
+        var method = isMkResource ? 'm/' : 'e/';
+//          delete item._uri; // in case API objects to us sending it
+        
+        // TODO: remove HACK that uses G.router.Models to see if we have a model that we can save directly (without bypassing Backbone.sync and using ajax)
+        var router = G.Router;
+        var existingRes = router.Models[uri] || router.searchCollections(uri);
+        var existed = !!existingRes;
+        if (!existingRes)
+          existingRes = router.Models[uri] = new vocModel(ref);
+        
+        var info = {resource: existingRes, reference: ref, references: refs};
+        RM.saveToServer(info).always(function(updatedRef) {
+          if (!_.isEqual(ref, updatedRef)) {
+            var idx = refs.indexOf(ref);
+            refs[idx] = updatedRef;
+          }
           
-          // TODO: remove HACK that uses G.router.Models to see if we have a model that we can save directly (without bypassing Backbone.sync and using ajax)
-          var router = G.Router;
-          var existingRes = router.Models[uri] || router.searchCollections(uri);
-          var existed = !!existingRes;
-          if (!existingRes)
-            existingRes = router.Models[uri] = new vocModel(ref);
-          
-          var info = {resource: existingRes, reference: ref, references: refs};
-          RM.saveToServer(info).always(function(updatedRef) {
-            if (!_.isEqual(ref, updatedRef)) {
-              var idx = refs.indexOf(ref);
-              refs[idx] = updatedRef;
-            }
-            
-            dfd.resolve();
-          });
-//        });        
+          dfd.resolve();
+        });
       }).promise();
     },
     
@@ -1010,7 +961,8 @@ define([
         
         var dfd;
         if (uri) {
-          RM.Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
+          RM.Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+            results = parse(results);
             if (!results.length)
               RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
             else {
@@ -1083,6 +1035,7 @@ define([
     DEFAULT_OPERATOR: '=',
     operatorMap: {
       '=': 'eq',
+      '!': 'neq',
       '!=': 'neq',
       '<': 'lt',
       '>': 'gt',
@@ -1115,6 +1068,67 @@ define([
       return [op || RM.DEFAULT_OPERATOR, val];
     },
 
+    buildOrQuery: function(orClause, vocModel, indexNames) {
+      orClause = orClause.split('||');
+      indexNames = indexNames || RM.getIndexNames(vocModel);
+      
+      var query;
+      for (var i = 0; i < orClause.length; i++) {
+        var part = orClause[i],
+            pair = _.map(part.split('='), decodeURIComponent);
+        
+        if (pair.length != 2)
+          return null;
+        
+        var name = pair[0], 
+            val = pair[1], 
+            subQuery;
+        
+        if (name === '$or') { // TODO: parse $and inside $or
+          subQuery = RM.buildOrQuery(val, vocModel, indexNames);
+        }
+        else if (name.startsWith('$')){
+          debugger; // not supported yet...but what haven't be supported?
+        }
+        else {
+          if (!hasIndex(indexNames, name))
+            return null;
+            
+          subQuery = RM.buildSubQuery(name, val, vocModel);
+        }
+        
+        if (!subQuery)
+          return null;
+        
+        query = query ? query.or(subQuery) : subQuery;
+      }
+      
+      return query;
+    },
+    
+    /**
+     * @param val can be the value or a combination of operator and value, e.g. ">=7"
+     */
+    buildSubQuery: function(name, val, vocModel) {
+      var opVal = RM.parseOperatorAndValue(val);
+      if (opVal.length != 2)
+        return null;
+      
+      var op = RM.operatorMap[opVal[0]],
+          props = vocModel.properties;
+      val = opVal[1];
+      var prop = props[name];
+      if (prop && U.isResourceProp(prop) && val === '_me') {
+        if (G.currentUser.guest)
+          Events.trigger('req-login');
+        else
+          val = G.currentUser._uri;
+      }
+
+      val = U.getTypedValue(collection, name, val);
+      return RM.Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
+    },
+    
     buildDBQuery: function(store, data, filter) {
       if (U.isModel(data))
         return false;
@@ -1124,23 +1138,32 @@ define([
           collection = data,
           vocModel = collection.vocModel,
           qMap = collection.queryMap,
-          filter = filter || U.getQueryParams(collection);
+          filter = filter || U.getQueryParams(collection),
+          orClause = qMap && qMap.$or;
       
+      var indexNames = RM.getIndexNames(vocModel);
       if (qMap) {
         orderBy = qMap.$orderBy;
         asc = U.isTrue(qMap.$asc);
       }
       
-      if (!orderBy && !_.size(filter))
+      if (!orderBy && !_.size(filter) && !orClause)
         return false;
       
-      var indexNames = RM.getIndexNames(vocModel);
-      if (orderBy && orderBy !== 'distance' && !_.contains(indexNames, orderBy))
+      if (orderBy && orderBy !== 'distance' && !hasIndex(indexNames, orderBy))
         return false;
       
-      if (!_.all(_.keys(filter), function(name) {return _.contains(indexNames, name);}))
+      if (!_.all(_.keys(filter), function(name) {return hasIndex(indexNames, name);}))
         return false;
 
+      if (orClause) {
+        orClause = RM.buildOrQuery(orClause, vocModel, indexNames);
+        if (!orClause)
+          return false; // couldn't parse it
+        else
+          query = orClause;
+      }
+      
       var positionProps = U.getPositionProps(vocModel);
       var latLonQuery, lat, lon, latProp, lonProp;
       if (_.size(positionProps) && _.size(_.pick(filter, _.values(positionProps)))) {
@@ -1169,22 +1192,9 @@ define([
       
       for (var name in filter) {
 //        var name = modelParams[i];
-        var opVal = RM.parseOperatorAndValue(filter[name]);
-        if (opVal.length != 2)
+        var subQuery = RM.buildSubQuery(name, filter[name], vocModel);
+        if (!subQuery)
           return false;
-        
-        var op = RM.operatorMap[opVal[0]];
-        var val = opVal[1];
-        var prop = vocModel[name];
-        if (prop && U.isResourceProp(prop) && val === '_me') {
-          if (G.currentUser.guest)
-            Events.trigger('req-login');
-          else
-            val = G.currentUser._uri;
-        }
-
-        val = U.getTypedValue(collection, name, val);
-        var subQuery = RM.Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
 //        subQuery.setPrimaryKey('_uri');
         query = query ? query.and(subQuery) : subQuery;
       }
@@ -1273,6 +1283,10 @@ define([
     buildValueTesterFunction: function(params, data) {
       var rules = [];
       _.each(params, function(value, name) {
+//        if (name === '$or') {
+//          
+//        }
+        
         var opVal = RM.parseOperatorAndValue(value);
         if (opVal.length != 2)
           return null;
@@ -1379,7 +1393,12 @@ define([
         
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri) {
-          store.get(uri).then(parse).always(intDefer.resolve);
+          store.get(uri).always(function(result) {
+            if (result)
+              qDefer.resolve(parse(result));
+            else
+              qDefer.resolve();
+          });
 //          if (isTemp) {
 //            RM.$db.objectStore(REF_STORE.name, 0).index(prepPropNameForDB('_tempUri')).get(uri).done(function(result) {
 //              
@@ -1392,7 +1411,9 @@ define([
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
-          query.getAll(store).then(parse).done(qDefer.resolve).fail(function() {
+          query.getAll(store).done(function(results) {
+            qDefer.resolve(parse(results));
+          }).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
             queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
           });
@@ -1400,7 +1421,7 @@ define([
 //          return intDefer.promise();
         }
         else {
-          queryWithoutIndex().then(qDefer.resolve, qDefer.reject);
+          queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
 //          return queryWithoutIndex().promise();
         }
       }
@@ -1424,9 +1445,9 @@ define([
       
       return RM.runTask(function() {
         var defer = this;        
-        RM.Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
+        RM.Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (results.length)
-            defer.resolve(results);
+            defer.resolve(parse(results));
           else
             defer.reject();
         }).fail(function() {
@@ -1435,7 +1456,6 @@ define([
         });
         
         defer.done(function(results) {
-          debugger;
           var tempUriToRef = {};
           for (var i = 0; i < results.length; i++) {
             var r = results[i];

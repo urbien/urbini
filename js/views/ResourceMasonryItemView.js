@@ -243,10 +243,12 @@ define([
           tmpl_data.tryApp = uri;
           tmpl_data.rUri = uri;
         }
-        var followersCount = json.followers.count;
+        
+        var followers = json.followers || {count: 0};
+        var followersCount = followers.count;
         if (followersCount) {
-          tmpl_data.friendMeCount = followersCount;
-          tmpl_data.friendMeUri = U.getPageUrl('list', meta.followers.range, {friend2: json._uri});
+          tmpl_data.followersCount = followersCount;
+          tmpl_data.followersUri = U.getPageUrl('list', meta.followers.range, {friend2: json._uri});
         }
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   

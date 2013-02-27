@@ -81,9 +81,10 @@ define([
           right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
           log: [LoginButtons]
       };
+      
       if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App")) {
         var user = G.currentUser._uri;
-        var appOwner = U.getLongUri1(res.get('creator'));
+        var appOwner = U.getLongUri1(res.get('creator') || user);
         if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
           this.hasPublish = true;
         var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
