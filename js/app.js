@@ -217,7 +217,7 @@ define('app', [
           };
           
           net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
-          net.url = net.authEndpoint + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
+          net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
         var popupTemplate = _.template(Templates.get('loginPopupTemplate'));
