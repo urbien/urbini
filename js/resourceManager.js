@@ -320,7 +320,7 @@ define([
     
     createRefStore: function() {
       return $.Deferred(function(defer) {
-        if (RM.db && RM.db.objectStoreNames.contains(REF_STORE.name)) {
+        if (RM.db && RM.storeExists(REF_STORE.name)) {
           defer.resolve();
         }
         else {
@@ -420,7 +420,7 @@ define([
         var toKill = _.clone(types);
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
-            return RM.db.objectStoreNames.contains(m);
+            return RM.storeExists(m);
           });
           
           if (toKill.length)
@@ -459,7 +459,7 @@ define([
       if (toMake.indexOf('http://www.hudsonfog.com/voc/model/crm/SupportIssue') != -1)
         debugger;
       
-      if (RM.db && !RM.db.objectStoreNames.contains(REF_STORE.name))
+      if (RM.db && !RM.storeExists(REF_STORE.name))
         toMake.push(REF_STORE.name);
       
       var needUpgrade = function() {
@@ -499,8 +499,9 @@ define([
       var dbPromise = $.Deferred();
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
+        RM.db = db;
         var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
-        if (!db.objectStoreNames.contains(REF_STORE.name)) {
+        if (!RM.storeExists(REF_STORE.name)) {
           toMake.push(REF_STORE.name);
           version = currentVersion + 1;
         }
@@ -516,7 +517,6 @@ define([
         }
         
         RM.VERSION = version = typeof version === 'number' ? Math.max(version, currentVersion) : currentVersion; // just in case we want it later on, don't know for what yet 
-        RM.db = db;
         if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
           dbPromise.resolve();
@@ -605,7 +605,7 @@ define([
         }
         
         try {
-          if (RM.db && RM.db.objectStoreNames.contains(type))
+          if (RM.db && RM.storeExists(type))
             continue;
           
           var store = trans.createObjectStore(type, RM.defaultOptions);
@@ -839,7 +839,7 @@ define([
             vocModel = G.typeToModel[type],
             props = vocModel.properties;
 
-        if (!RM.db.objectStoreNames.contains(type)) {
+        if (!RM.storeExists(type)) {
           debugger;
         }
         
@@ -1486,7 +1486,7 @@ define([
           var toMake = options.toMake;
           if (toMake && toMake.length) {
             toMake = _.filter(toMake, function(m) {
-              return !RM.db.objectStoreNames.contains(m);
+              return !RM.storeExists(m);
             });
           }
         }
