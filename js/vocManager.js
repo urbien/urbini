@@ -23,11 +23,13 @@ define([
    // function. I put it in there simply because it makes me
    // feel a little more comfortable with the use of the
    // WITH keyword.
-    return Function(
-      "with (this) {" +
-        "return " + sourceCode + ";" +
-      "};"
-    );
+    debugger;
+    var args = slice.call(arguments, 1);
+    args[args.length] = "with (this) {" +
+      "return " + sourceCode + ";" +
+    "};";
+ 
+    return Function.apply({}, args);
   }
 
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
@@ -244,191 +246,7 @@ define([
             defer.reject();
         });
       }).promise();
-    },
-    
-//    fetchModels: function(models, options) {
-//      return $.Deferred(function(defer) {        
-//        options = options || {};
-//        var changedAndNew = !models;
-//        models = changedAndNew ? Voc.changedModels : typeof models === 'string' ? [models] : models;
-//        models = _.filter(models, function(m) {
-//          return !G.typeToModel[m]; // we may have loaded some already, e.g. the urgently needed one
-//        });
-//        
-//  //      models = changedAndNew ? _.union(Voc.changedModels, Voc.newModels) : typeof models === 'string' ? [models] : models;      
-//  //      options = options || {};
-//  //      var success = options.success;
-//  //      var error = options.error || Errors.getDefaultErrorHandler();
-//        
-//        function earlyExit() {
-////          if (success && !options.skipSuccessIfUpToDate)
-////            success({fetched: 0});
-//          defer.resolve({fetched: 0});
-//          return true;
-//        }
-//        
-//        if (!models.length)
-//          return earlyExit();
-//        
-//        var c = Voc.currentModel;
-//        var urgent = options.sync && models.length > 1 && c && !G.typeToModel[c] && c;
-//        if (urgent) {
-//  //        urgent = urgent[0];        
-//          Voc.fetchModels([urgent], options).done(function() {
-//            defer.resolve();
-////            if (success)
-////              success();
-//            
-////            options.sync = false;
-////            options.success = success;
-//            if (changedAndNew)
-//              Voc.fetchModels(null, options);
-//            else {
-//              models = _.filter(models, function(m) {
-//                return (m.type || m) != urgent;
-//              });
-//              
-//              Voc.fetchModels(models, options);
-//            }
-//          });
-//          
-//          return;
-//        }
-//        
-//        if (!models.length)
-//          return earlyExit();
-//        
-//        if (!G.online) {
-////          if (error)
-////            error(null, {type: 'offline'}, options);
-//          defer.rejectWith(this, [null, {type: 'offline'}, options]);
-//          return;
-//        }
-//  
-//  //      var infos = Voc.getModelInfo(models);
-//        // TODO: undo HACK
-//        var infos = models;
-//        var modelsCsv = JSON.stringify(infos);
-//        G.startedTask("ajax models");
-//  //      var useWorker = G.hasWebWorkers && !options.sync;
-//        var checkInModels = function(respModels) {
-//          if (!changedAndNew)
-//            return;
-//          
-//  //        var tmpC = [];
-//  //        for (var i = 0; i < respModels.length; i++) {
-//  //          var m = respModels[i];
-//  //          var type = U.getLongUri1(m.s.type);
-//  //          if (models.indexOf(type) != -1)
-//  //            tmpC.push(type);
-//  //        }
-//  //        
-//  //        models = tmpC;
-//  //        if (changedAndNew)
-//  //          Voc.changedModels = tmpC;
-//  //        
-//  //        return !!tmpC.length;
-//          models = _.filter(respModels, function(m) {
-//            var type = U.getLongUri1(m.s.type);
-//            return models.indexOf(type) != -1;
-//          });
-//          
-//          if (changedAndNew)
-//            Voc.changedModels = _.map(models, function(m) {return U.getLongUri1(m.s.type)});
-//          
-//          return models.length;
-//  //        Voc.newModels = tmpN;
-//  //        return tmpC.length || tmpN.length;
-//        }
-//  
-//        var ajaxSettings = _.extend({
-//          url: G.modelsUrl, 
-//          data: {models: modelsCsv}, 
-//          type: 'POST', 
-//          timeout: 5000
-//        }, _.pick(options, 'sync'));
-//        
-//        G.ajax(ajaxSettings).done(function(data, status, xhr) {
-//          if (!data) {
-//            debugger;
-//            defer.rejectWith(this, [xhr, status, options]);
-//            return;
-//          }
-//          
-//          if (data.error) {
-////              error(data);
-//            defer.rejectWith(this, [xhr, data.error, options]);
-//            return;
-//          }
-//          
-//          var mz = data.models || [];
-//          var needUpgrade = checkInModels(mz);
-//          var pkg = data.packages;
-//          if (pkg)
-//            U.deepExtend(Voc.packages, pkg);
-//          
-//          G.lastModified = data.lastModified;
-//          G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
-//          var more = data.linkedModelsMetadata;
-//          if (more) {
-//            G.linkedModelsMetadata = _.union(G.linkedModelsMetadata, _.map(more, function(m) {
-//              m.type = U.getLongUri1(m.type);
-//              return m;
-//            }));
-//          }
-//          
-//          if (data.classMap)
-//            _.extend(G.classMap, data.classMap)
-//          
-//          var newModels = [];
-//          for (var i = 0; i < mz.length; i++) {
-//            var newModelJson = mz[i];
-//            var p = newModelJson.path;
-//            var lastDot = p.lastIndexOf('.');
-//            var path = p.slice(0, lastDot);
-//            var name = p.slice(lastDot + 1);
-//            var sup = newModelJson.sPath;
-//            newModelJson.lastModified = newModelJson.s.lastModified ? Math.max(G.lastModified, newModelJson.s.lastModified) : G.lastModified;
-//            
-//            // mz[i].p and mz[i].s are the private and static members of the Backbone.Model being created
-//            var newModel;
-//            if (newModelJson.s.enumeration)
-//              newModel = Backbone.Model.extend(newModelJson.p, newModelJson.s);
-//            else
-//              newModel = U.leaf(Voc.packages, path)[name] = U.leaf(Voc.packages, sup).extend(newModelJson.p, newModelJson.s);
-//            
-//            U.pushUniq(newModels, newModel);
-//          }
-//          
-////          Voc.unsavedModels = _.union(Voc.unsavedModels, newModels);
-//          Voc.models = _.union(Voc.models, newModels);
-//  //        for (var i = 0; i < newModels.length; i++) {
-//  //          U.pushUniq(Voc.models, newModels[i]); // preserve order of Voc.models
-//  //        }
-//
-//          Voc.initModels(newModels);          
-//          setTimeout(function() {
-//            Voc.saveModelsToStorage(newModels);
-//          }, 100);
-//          G.finishedTask("ajax models");
-//          Voc.setupHandlers(data.handlers);
-////            success && success();
-//          defer.resolve();
-//          if (needUpgrade)
-//            Events.trigger('modelsChanged');//, {success: success, error: error});
-//        }).fail(function(xhr, err, aOpts) {
-//          if (xhr.status === 304) {
-//            checkInModels([]);
-////              success && success({fetched: 0});
-//            defer.resolve({fetched: 0});
-//            return;
-//          }
-//          else
-//            defer.reject();
-//        });
-//      }).promise();
-//    },
-    
+    },    
     setupHandlers: function(handlers) {
       if (handlers) {
         _.extend(G.customHandlers, handlers);
@@ -436,35 +254,6 @@ define([
       }
     },
     
-//    getModelInfo: function(models) {
-//      var now = G.currentServerTime();
-//      return _.filter(_.map(models, function(m) {
-//        if (_.contains(G.storedModelTypes, m)) {
-//          var info = G.modelsMetadataMap[m];
-//          if (info && info.stored || (info = G.oldModelsMetadataMap[m]))
-//            return {uri: info.type, lastModified: info.lastModified};
-//        }
-//        
-//        return m;
-////        if (info)
-////          return info;
-//        
-////        var model = Voc.snm[U.getShortName(m)];
-////        if (model) {
-////          // staleness should have already been detected in loadStoredModels
-//////          if (lm && now - lm < 360000) // consider model stale after 1 hour
-//////            return null;          
-////          var info = {uri: m};
-////          if (model._dateStored)
-////            info.lastModified = lm;
-////          
-////          return info;
-////        }
-////        else
-////          return m;
-//      }), function (m) {return m}); // filter out nulls
-//    },
-
     fetchModelsForLinkedResources: function(model) {
       var isResource = typeof model !== 'function';
       var ctr = isResource ? model.constructor : model;
@@ -554,18 +343,13 @@ define([
     },
 
     loadModel: function(m) {
-//      m = U.leaf(Voc.packages, path)[m.shortName] = Backbone.Model.extend({}, m);
       m = Resource.extend({}, m);
       var sn = m.shortName;
-//      if (G.shortNameToModel[sn])
-//        return;
-
       var type = m.type = U.getTypeUri(m.type);
       if (_.contains(G.classUsage, type)) {
         G.usedModels[type] = true;
       }
         
-//      Voc.scriptContext[sn] = m;
       if (m.enumeration) {
         G.shortNameToEnum[sn] = m;
         G.typeToEnum[type] = m;
@@ -585,31 +369,7 @@ define([
       m.prototype.validate = Resource.prototype.validate;
       _.extend(m.properties, Resource.properties);
       m.superClasses = _.map(m.superClasses, U.getLongUri1);
-      
-//      m.superClass = m.__super__.constructor;
-//      var superProps = m.superClass.properties;
-//      var myProps = m.myProperties;
-//      var hidden = m.hiddenProperties ? m.hiddenProperties.replace(/\ /g, '').split(',') : [];
-//      if (superProps) {
-//        superProps = U.filterObj(superProps, function(name, prop) {return !_.contains(hidden, name)});
-//        for (var p in myProps) {
-//          var subProp = myProps[p];
-//          var superPropUri = subProp.subPropertyOf;
-//          if (superPropUri) {
-//            var superProp = superProps[superPropUri.slice(superPropUri.lastIndexOf('/') + 1)];
-//            myProps[p] = U.extendAnnotations(subProp, superProp);
-//            delete superProps[superPropUri];
-//          }
-//        }
-//        
-//        m.properties = _.extend(superProps, myProps);
-//      }
-//      else
-//        m.properties = _.clone(myProps);
-      
       _.extend(m.properties, U.systemProps);
-//      var superInterfaces = m.superClass.interfaces;
-//      m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
       m.prototype.initialize = Voc.getInit.apply(m);
       setTimeout(function() {
         Voc.initCustomHandlers(type);
@@ -622,33 +382,130 @@ define([
       }
     },
     
-    executeHandler: function(handler, resultType, source, context) {
-      var type = resultType.slice(resultType.lastIndexOf("/") + 1).camelize();
-      var result = {};
-
-      debugger;
-      try {
-        handler.apply({}).call(context || {}, source, result);
-      } catch (err) {
-        return;
-      }
-
-      Voc.getModels(resultType).done(function() {
-        var toVocModel =  G.typeToModel[resultType];
-        var fromVocModel = G.typeToModel[source._type];
+    handlerTools: {
+      /**
+       * @param fn should take in two arguments, from and to, with names corresponding to class names
+       * @param backlink backlink property on a property of the newly created resource. 
+       *        For example, the currently created resource may be RecipeShoppingList (a cross between a Recipe and a ShoppingList),
+       *        and backlink may be recipe.ingredients, where recipe is a property of RecipeShoppingList. 
+       *        This function can be used to mirror the ingredients backlink into ShoppingListItem resources
+       */
+      each: function(backlink, resultType, fn) {
+        var parts = backlink.split('.');
+        if (parts.length != 2)
+          return; // longer not supported yet, shorter can't be an existing backlink
         
-        // copy image props, if both are imageResources
-        if (U.isA(fromVocModel, "ImageResource") && U.isA(toVocModel, "ImageResource")) {
-          var fromTo = {};
+        var propName = backlink[0],     // recipe in the example
+            prop = fromModel[propName],         // RecipeShoppingList model in the example
+            propVal = from[propName];   // recipe uri in the example
+        
+        if (!prop || !propVal)
+          return;
+        
+        var propType = U.getTypeUri(prop.range),
+            backlinkName = backlink[1]; // ingredients in the example
+        
+        Voc.getModels([propType, resultType]).done(function() {
+          var propModel = G.typeToModel[propType],     // Recipe in the example
+              resultModel = G.typeToModel[resultType]; // ShoppingListItem in the example
+              
+          if (!propModel || !resultModel) {
+            debugger; // should never happen
+            return;
+          }
+          
+          var backlinkProp = propModel[backlinkName]; 
+          if (!backlinkProp) {
+            G.log(Voc.TAG, 'error', 'class {0} doesn\'t have a property {1}'.format(propType, backlinkName)); 
+            return;
+          }
+          
+          var backlinkType = U.getTypeUri(backlinkProp.range);
+          Voc.getModels(backlinkType).done(function() { 
+            var backlinkModel = G.typeToModel[backlinkType]; // Ingredient in the example
+            if (!backlinkModel) {
+              debugger; // should never happen
+              return;
+            }
+            
+            var params = {};
+            params[backlinkProp.backLink] = propVal;         
+            // backlinkProp.backLink is "recipe" in the example (the backlink being Recipe._ingredients). 
+            // We want all ingredients where the value of the property Ingredient._recipe is our recipe  
+            var backlinkCollection = new ResourceList({model: backlinkModel, queryMap: params});
+            backlinkCollection.fetch({
+              success: function() {
+                debugger;
+                fn = Voc.prepareHandler(fn, effectType);
+                var json = this.toJSON();
+                for (var i = 0; i < json.length; i++) {
+                  fn(json[i]);
+                  if (aborted) // need to make sure this is our context
+                    break;
+                }
+              },
+              error: function() {
+                debugger;
+              }
+            });
+          });
+        });
+      },
+      
+      abort: function() {
+        this.aborted = true;
+      }
+    },
+
+    /**
+     * prepackage all the built in handler functions like "each" with the resources and models needed for a given operation
+     */
+    getHandlerToolSuite: function(cause, causeModel, effect, effectModel) {
+      var handlerTools = _.clone(Voc.handlerTools);
+//      var context = {cause: cause, causeModel: causeModel, effect: effect, effectModel: effectModel};
+      _.each(handlerTools, function(fn, name) {
+        var orgFn = fn;
+        handlerTools[name] = function() {
+          orgFn.apply(this, arguments); // give fn access to cause, causeModel, effect, effectModel
+        };
+//        .bind(context);
+//        fn.bind(context);
+      });
+      
+      return handlerTools;
+    },
+    
+    /**
+     * @param handler a function that takes in two parameters: from and to, a.k.a. cause and effect
+     */
+    executeHandler: function(handler, effectType, cause) {
+      var type = resultType.slice(effectType.lastIndexOf("/") + 1).camelize();
+      var effect = {};
+
+      Voc.getModels(effectType).done(function() {
+        debugger;
+        var effectModel =  G.typeToModel[effectType],
+            causeModel = G.typeToModel[cause._type],
+            toolSuite = Voc.getHandlerToolSuite(cause, causeModel, effect, toTypeModel);
+        
+        try {
+          handler.apply(toolSuite).call({}, cause, effect);
+        } catch (err) {
+          return;
+        }
+        
+        // copy image props, if both are imageResources. Add more crap like this here (and then make them all separate methods
+        if (U.isA(causeModel, "ImageResource") && U.isA(effectModel, "ImageResource")) {
+          var propMap = {};
           for (var i = 0; i < U.imageResourceProps.length; i++) {
             var iProp = U.imageResourceProps[i];
-            var to = U.getCloneOf(toVocModel, iProp);
-            if (!to || result[to]) {
+            var to = U.getCloneOf(effectModel, iProp);
+            if (!to || effect[to]) {
               fromTo = null;
               break;
             }
             
-            var from = U.getCloneOf(fromVocModel, iProp);
+            var from = U.getCloneOf(causeModel, iProp);
             if (from)
               fromTo[from] = to;
           }
@@ -656,30 +513,35 @@ define([
           if (fromTo) {
             for (var from in fromTo) {
               var to = fromTo[from];
-              from = source[from];
+              from = cause[from];
               if (from)
-                result[to] = from;
+                effect[to] = from;
             }
           }
         }
         
         debugger;
-        var res = new toVocModel();
-        if (toVocModel.properties.cause)
-          res.cause = source._uri;
-        res.save(result, {'$returnMade': false, sync: false});
+        var res = new effectModel();
+        if (effectTypeModel.properties.cause)
+          res.cause = cause._uri;
+        res.save(effect, {'$returnMade': false, sync: false});
       }).fail(function() {
         debugger;
       });
     },
     
-    buildScript: function(script, from, to) {
-      from = from.slice(from.lastIndexOf('/') + 1).camelize();
-      to = to.slice(to.lastIndexOf('/') + 1).camelize();
-      if (typeof script === 'string') {
+    buildScript: function(script) {
+      if (typeof script === 'function') {
+        debugger; 
+        return script;
+      }
+      
+//      from = from.slice(from.lastIndexOf('/') + 1).camelize();
+//      to = to.slice(to.lastIndexOf('/') + 1).camelize();
+//      if (typeof script === 'string') {
         script = script.trim();
-        if (script.startsWith("function"))
-          script = script.slice(script.indexOf("{") + 1, script.lastIndexOf("}"));
+//        if (script.startsWith("function"))
+//          script = script.slice(script.indexOf("{") + 1, script.lastIndexOf("}"));
 //          try {
 //            script = new Function("return " + script); //FunctionProxy(script);
 //          } catch (err) {
@@ -689,9 +551,9 @@ define([
 //        else {
 //          script = new Function(from, to, script + "; return " + to);
 //        }
-      }
+//      }
       
-      return new Function("return " + new Function(from, to, script).toString());
+      return FunctionProxy(script);
     },
     
     initCustomHandlers: function(type) {
@@ -708,7 +570,6 @@ define([
       if (!handlers)
         return;
     
-//      var typeName = type.slice(type.lastIndexOf('/') + 1);
       _.each(handlers, function(handler) {
         Voc.initHandler(handler, type);
       });
@@ -736,7 +597,6 @@ define([
       var self = this;
       return function() { 
         self.__super__.initialize.apply(this, arguments); 
-//        this.on('change', Voc.updateDB);
       }
     },
 
@@ -832,91 +692,6 @@ define([
       }
     },
 
-//    loadModel: function(modelJson, sUri, superName) {
-////      superName = superName || sUri.slice(sUri.lastIndexOf('/') + 1); 
-//      var pkgPath = U.getPackagePath(modelJson.type);
-////      var sPath = U.getPackagePath(sUri);
-//      var pkg = U.addPackage(Voc.packages, pkgPath);
-//      var sName = modelJson.shortName;
-//      if (Voc.snm[sName]) {
-////        delete Voc.snm[sName];
-//        // TODO: nuke table in DB
-//      }
-//      
-////      var model = pkg[sName] = U.leaf(Voc, (sPath ? sPath + '.' : '') + superName).extend({}, modelJson);
-//      Voc.initModel(model);
-//    },
-//
-//    getModelChain: function(model, have) {
-//      if (have)
-//        have[model.type] = model;
-//      
-//      if (!G.hasLocalStorage)
-//        return null;
-//      
-//      var sup = model.subClassOf;
-//      if (!sup)
-//        throw new Error('every model except Resource must be a subClassOf of another model');
-//      
-//      if (sup == 'Resource')
-//        return [model];
-//        
-//      sup = sup.startsWith('http') ? sup : 'http://www.hudsonfog.com/voc/' + sup;
-//      var savedSModel = have && have[sup];
-//      sModel = savedSModel || Voc.getModelFromLS(sup);
-//      if (!sModel)
-//        return null;
-//      
-//      sModel = savedSModel || JSON.parse(sModel);
-//      if (!savedSModel && have)
-//        have[sup] = sModel;
-//      
-//      var sChain = Voc.getModelChain(sModel, have);
-//      return sChain == null ? null : sChain.concat(model);
-//    },
-//    
-//    initStoredModels: function(models) {
-//      models = _.filter(models, function(model) {
-//        if (model.subClassOf != null || model.type.endsWith("#Resource"))
-//          return true;
-//        else {
-//          U.pushUniq(Voc.changedModels, model.type);
-//          return false;
-//        }
-//      });
-//      
-//      if (!models.length)
-//        return models;
-//      
-//      var unloaded = [];
-//      for (var i = 0; i < models.length; i++) {
-//        var m = models[i];
-//        var sUri = m.subClassOf;
-//        var sIdx = sUri.lastIndexOf('/');
-//        var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
-//        if (!Voc.snm[superName]) {
-//          if (_.contains(unloaded, m))
-//            continue;
-//          
-//          var chain = Voc.getModelChain(m, null);
-//          if (chain) {
-//            var fresh = [], stale = [];
-//            Voc.filterExpired(null, chain, fresh, stale);
-//            if (stale.length)
-//              unloaded.push(m);
-//          }
-//          else
-//            unloaded.push(m);
-//          
-//          continue;
-//        }
-//        
-//        Voc.loadModel(m, sUri, superName);
-//      }
-//      
-//      return unloaded;
-//    },
-
     getEnumsFromLS: function() {
       return G.localStorage.get('enumerations');
     },
@@ -939,40 +714,6 @@ define([
       }, 100);
     },
 
-//    detectCurrentModel: function() {
-//      var hash =  window.location.hash && window.location.hash.slice(1);
-//      if (!hash)
-//        return;
-//      
-//      var qIdx = hash.indexOf('?');
-//      if (qIdx != -1)
-//        hash = hash.slice(0, qIdx);
-//      
-//      hash = decodeURIComponent(hash);
-//      var type;
-//      var route = hash.match('^view|menu|edit|make|chooser');
-//      if (route) {
-//        route = route[0].length;
-//        var sqlIdx = hash.indexOf(G.sqlUri);
-//        if (sqlIdx == -1)
-//          type = hash.slice(route + 1);
-//        else
-//          type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
-//        
-//        qIdx = type.indexOf('?');
-//        if (qIdx != -1)
-//          type = type.slice(0, qIdx);
-//      }
-//      else
-//        type = hash;
-//
-//      if (type === 'profile')
-//        return (G.currentUser.guest ? null : G.currentUser.type._uri);
-//            
-//      type = type.startsWith('http://') ? type : G.defaultVocPath + type;
-//      Voc.currentModel = type;
-//    },
-    
     loadEnums: function() {
       var enums = Voc.getEnumsFromLS();
       if (!enums)
@@ -983,156 +724,6 @@ define([
         Voc.loadModel(Backbone.Model.extend({}, enums[type]));
       }
     }
-//    ,
-//    
-//    loadStoredModels: function(options) {
-//      Voc.detectCurrentModel();
-//      G.storedModelTypes = _.size(G.storedModelTypes) ? G.storedModelTypes : _.map(_.filter(_.keys(localStorage), function(m) {return m.startsWith('model:')}), function(m) {return m.slice(6)});
-//      if (G.userChanged) {
-//        if (options && options.models)
-//          Voc.changedModels = U.getObjectType(options.models) === '[object String]' ? [options.models] : options.models;
-//        if (Voc.currentModel)
-//          U.pushUniq(Voc.changedModels, Voc.currentModel);
-//        return;
-//      }
-//
-//      // for easy lookup by type
-//      if (!_.size(G.modelsMetadataMap)) {
-//        G.modelsMetadataMap = {};
-//        for (var i = 0; i < G.modelsMetadata.length; i++) {
-//          var m = G.modelsMetadata[i];
-//          G.modelsMetadataMap[m.type] = m;
-//        }
-//      }
-//      
-//      var r = {models: _.clone(options && options.models || G.modelsMetadata)};
-//      for (var i = 0; i < G.linkedModelsMetadata.length; i++) {
-//        var m = G.linkedModelsMetadata[i];
-//        if (G.modelsMetadataMap[m.type])
-//          continue;
-//        
-//        G.modelsMetadataMap[m.type] = m;
-//        m.type = U.getLongUri1(m.type);
-//        U.pushUniq(G.modelsMetadata, m);
-//      }
-//      
-//      var models = r.models;
-//      var added = Voc.currentModel;
-//      if (added && !G.typeToModel[added] && !_.filter(models, function(m) {return (m.type || m).endsWith(added)}).length) {
-//        models.push(added);
-////        U.pushUniq(Voc.newModels, added); // We can't know whether it's been changed on the server or not, so we have to call to find out
-//        U.pushUniq(Voc.changedModels, added);
-//      }
-//
-//      if (!G.hasLocalStorage) {
-//        if (r) {
-//          _.forEach(models, function(model) {
-//            G.log(Voc.TAG, 'db', "1. newModel: " + model);
-////            U.pushUniq(Voc.newModels, model);
-//            U.pushUniq(Voc.changedModels, model);
-//          });
-//        }
-//        
-//        return; // TODO: use indexedDB
-//      }
-//      
-//      if (!_.size(G.shortNameToEnum))
-//        Voc.loadEnums();
-//      
-//      var modelsMap = {};
-//      for (var i = 0; i < models.length; i++) {
-//        var m = models[i];
-//        if (typeof m === 'string')
-//          modelsMap[m] = models[i] = {type: U.getLongUri1(m)};
-//        else {
-//          var type = m.type = U.getLongUri1(m.type);
-//          modelsMap[type] = models[i] = m;
-//        }
-//      }
-//
-//      var extraModels;
-//      var typeToJSON = {};
-//      var expanded = [];
-//      for (var i = models.length - 1; i > -1; i--) {
-//        var model = models[i];
-//        var uri = model.type;
-//        if (typeToJSON[uri] || G.typeToModel[uri])
-//          continue;
-//        
-//        var jm;
-//        if (model._dateStored)
-//          jm = model;
-//        else {
-//          jm = Voc.getModelFromLS(uri);
-//          if (!jm) {
-////            U.pushUniq(Voc.newModels, uri);
-//            U.pushUniq(Voc.changedModels, uri);
-//            continue;
-//          }
-//        
-//          var meta = G.modelsMetadataMap[uri];
-//          if (meta)
-//            meta.stored = true;
-//          
-//          jm = JSON.parse(jm);
-//        }
-//        
-//        if (jm) {
-//          var chain = Voc.getModelChain(jm, typeToJSON);
-//          if (chain) {
-//            for (var j = 0; j < chain.length; j++) {
-//              var m = chain[j];
-//              var info = G.modelsMetadataMap[m.type];
-//              if (!info) {
-//                G.oldModelsMetadataMap[m.type] = {lastModified: m.lastModified, superName: m.superName, type: m.type};
-//                delete m.lastModified; // can't trust this date, as it's not up to date
-//                continue;
-//              }
-//              
-//              info && _.extend(m, info);
-//            }
-//            
-//            expanded = expanded.concat(chain);
-//          }
-//          else {
-////            Voc.newModels.push(jm.type);
-//            U.pushUniq(Voc.changedModels, jm.type);
-//          }
-//        }
-//      }
-//      
-//      delete typeToJSON;
-//      
-//      var stale = []
-//      var fresh = [];
-//      Voc.filterExpired(expanded, fresh, stale);
-//      _.each(stale, function(s) {
-//        U.pushUniq(Voc.changedModels, s)
-//      });
-//      
-//      if (fresh.length) {
-//        var unloaded = Voc.initStoredModels(fresh);
-//        _.each(unloaded, function (m) {
-//          debugger;
-//          U.pushUniq(Voc.changedModels, m.type);
-//        });
-//      }
-//    },
-//    
-//    filterExpired: function(models, fresh, stale) {
-//      var baseDate = G.lastModified;
-//      _.each(models, function(model) {
-//        var date = typeof model.lastModified === 'undefined' ? model.lastModified : Math.max(baseDate, model.lastModified);
-//        var storedDate = model._dateStored;
-//        if (date && storedDate && storedDate >= date) {
-//          fresh.push(model);
-//          return;
-//        }
-//        
-//        U.pushUniq(stale, model.type);
-//        return;
-//      });
-//    }
   };
   
   Voc.snm = G.shortNameToModel;
@@ -1142,7 +733,7 @@ define([
     var type = handler.fromDavClassUri;
     handlers[type] = [handler];
     Voc.setupHandlers(handlers);
-    Voc.initCustomHandlers(type); // for now
+    Voc.initCustomHandlers(type); // for now, later make it more fine-grained
 //    Voc.initHandler(handler, type);
   });
   

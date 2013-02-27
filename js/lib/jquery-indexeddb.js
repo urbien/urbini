@@ -652,7 +652,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 								// Nothing to do when transaction is complete
 							}, function(err, e){
 								// If transaction fails, CrudOp fails
-								if (err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
+								if (err && err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
 									//console.log("Object Not found, so will try to create one now");
 									var db = this.result;
 									db.close();
