@@ -326,7 +326,7 @@ define([
             }
           }
           
-          options.error.apply(this, arguments);
+          error && error.apply(this, arguments);
         };
       }
       
