@@ -147,7 +147,7 @@ define([
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {submittedBy: '_me'})}));
+        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
         if (G.currentUser._uri == G.currentApp.creator) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('edit', uri);
