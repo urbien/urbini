@@ -119,7 +119,10 @@ define('app', [
       Voc.checkUser();
       Voc.loadEnums();
       Voc.getModels().done(function() {
-        RM.restartDB().always(App.startApp);
+        if (RM.db)
+          App.startApp();
+        else
+          RM.restartDB().always(App.startApp);
       }).fail(function() {
         if (!G.online) {
           Errors.offline();
