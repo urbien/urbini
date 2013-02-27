@@ -68,12 +68,6 @@ define(['globals', 'indexedDBShim'], function(G) {
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
 							idbRequest.onsuccess = function(e) {
-//							  if (usingShim) {
-//  							  var trans = idbRequest.transaction;
-//  							  if (trans && trans.mode === 2) // version transaction (see IndexedDBShim)
-//  							    return; // wait for trans.onupgradecomplete
-//							  }
-							  
 						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
@@ -93,23 +87,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 								};
 							}
 							if (typeof idbRequest.onupgradeneeded !== "undefined" && idbRequest.onupgradeneeded === null) {
-								idbRequest.onupgradeneeded = function(e){
-									//console.log("Upgrade", idbRequest, e, this);
-//								  var trans = idbRequest.transaction;
-//								  if (trans) {
-//  								  if (usingShim) {
-//    								  trans.onupgradecomplete = function() {
-//  							        console.log("WebSQL upgrade transaction complete");
-//    								    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
-//    								  }
-//  								  }
-//  								  else {
-//  								    trans.oncomplete = function(e) {
-//  //								      debugger;
-//  								    }
-//  								  }
-//								  }
-								  
+								idbRequest.onupgradeneeded = function(e){								  
 									dfd.notifyWith(idbRequest, [idbRequest.result, e]);
 								};
 							}
@@ -122,7 +100,6 @@ define(['globals', 'indexedDBShim'], function(G) {
 				// Wraps the IDBTransaction to return promises, and other dependent methods
 				"transaction": function(idbTransaction){
 					return {
-//					  __callbacks: {},
 						"objectStore": function(storeName){
 							try {
 								return wrap.objectStore(idbTransaction.objectStore(storeName));
@@ -148,28 +125,6 @@ define(['globals', 'indexedDBShim'], function(G) {
 						"abort": function(){
 							idbTransaction.abort();
 						}
-//						__addCallbacks: function(key, callback) {
-//              var callbacks = this.__callbacks[key] = this.__callbacks[key] || [];
-//              if (callback)
-//                callbacks.push(callback);
-//              
-//              idbTransaction[key] = idbTransaction[key] || function() {
-//                debugger;
-//                for (var i = 0; i < callbacks.length; i++) {
-//                  callbacks[i]();
-//                }
-//              }
-//              
-//              return this;
-//						},
-//            "onupgradecomplete": function(callback) {
-//						  debugger;
-//						  return this.__addCallbacks("onupgradecomplete", callback);
-//            },
-//						"oncomplete": function(callback) {
-//              return this.__addCallbacks("oncomplete", callback);
-//						}
-//					}.__addCallbacks("onupgradecomplete").__addCallbacks("oncomplete");
 					};
 				},
 				"objectStore": function(idbObjectStore) {
@@ -413,7 +368,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			var openReqShim = function(dbName, version){
+			var openReqShim = function(dbName, version) {
 				var me = this;
 				var IDBRequest = function(){
 					this.onsuccess = this.onerror = this.onblocked = this.onupgradeneeded = null;
@@ -652,7 +607,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 								// Nothing to do when transaction is complete
 							}, function(err, e){
 								// If transaction fails, CrudOp fails
-								if (err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
+								if (err && err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
 									//console.log("Object Not found, so will try to create one now");
 									var db = this.result;
 									db.close();

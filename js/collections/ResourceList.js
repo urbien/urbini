@@ -12,14 +12,15 @@ define([
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
       
-      _.extend(this,   {
+      options = options || {};
+      _.extend(this, {
         page: 0,
         perPage: 45, // 30,
         offset: 0,
         firstPage: 0,
         offsetParam: "$offset",
         limitParam: "$limit",
-        queryMap: {},
+        queryMap: options.queryMap || {},
         model: options.model || models[0].model,
         rUri: options._rUri
       });

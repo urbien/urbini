@@ -29,6 +29,11 @@ define([
       this.vocModel = this.constructor;
       if (this.getUri())
         this.subscribeToUpdates();
+      
+//      var type = this.vocModel.type;
+//      if (type.startsWith('http://urbien.com/voc/dev/')) {
+////        Events.trigger('installApp', );
+//      }
     },
     
     /**
@@ -271,7 +276,7 @@ define([
       options = _.extend({silent: true, patch: true}, options || {});
       var data = attrs || options.data || this.attributes;
       if (options.sync) {
-        data = U.prepForSync(data, this.vocModel);
+        data = U.prepForSync(data, this.vocModel, ['parameter']);
         
 //        item = U.prepForSync(item, vocModel);
         data.$returnMade = options.$returnMade !== false;
@@ -287,7 +292,7 @@ define([
 //          qs += '&' + options.queryString;
         
         options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
-        var success = options.success;
+        var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
           success && success.apply(this, arguments);
           if (response.error)
@@ -309,6 +314,20 @@ define([
             if (handlerModel && self.vocModel.type === handlerModel.type)
               Events.trigger("newHandler", self);
           }
+        };
+        
+        options.error = function(originalModel, err, opts) {
+          var code = err.code || err.status;
+          if (code === 409 && err.error) {
+            var conflict = err.error.conflict;
+            if (conflict) { // conflict is the json for the conflicting resource
+              // TODO: handle this case
+              debugger;
+//              return;
+            }
+          }
+          
+          options.error.apply(this, arguments);
         };
       }
       

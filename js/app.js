@@ -106,29 +106,18 @@ define('app', [
   var App = {
     TAG: 'App',
     initialize: function() {
-      var error = function(e) {
-        G.log('init', 'error', "failed to init app, not starting");
-        throw new Error('failed to load app');
-      };
+//      var error = function(e) {
+//        G.log('init', 'error', "failed to init app, not starting");
+//        throw new Error('failed to load app');
+//      };
       
-      Templates.loadTemplates();
-      extendMetadataKeys();
       
-      App.setupWorkers();
-      App.setupNetworkEvents();
-      Voc.checkUser();
-      Voc.loadEnums();
-      Voc.getModels().done(function() {
-        if (RM.db)
-          App.startApp();
-        else
-          RM.restartDB().always(App.startApp);
-      }).fail(function() {
-        if (!G.online) {
-          Errors.offline();
-        }
+      var self = this;
+      self.doPreStartTasks().always(function() {
+        self.startApp().always(function() {
+          self.doPostStartTasks();
+        });
       });
-      
 //      Voc.loadStoredModels();
 //      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
 //        RM.restartDB().always(App.startApp);
@@ -136,6 +125,32 @@ define('app', [
 //      }
 //
 //      this.prepModels();
+    },
+
+    doPreStartTasks: function() {
+      return $.Deferred(function(defer) {
+        Templates.loadTemplates();
+        extendMetadataKeys();
+        App.setupWorkers();
+        App.setupNetworkEvents();
+        Voc.checkUser();
+        Voc.loadEnums();
+        var loadModels = function() {
+          Voc.getModels().done(function() {
+            if (RM.db)
+              defer.resolve();
+            else
+              RM.restartDB().always(defer.resolve);
+          }).fail(function() {
+            if (!G.online) {
+              Errors.offline();
+              Events.on('online', loadModels);
+            }
+          });          
+        };
+        
+        loadModels();
+      }).promise();
     },
     
 //    prepModels: function() {
@@ -173,23 +188,34 @@ define('app', [
 //    },
     
     startApp: function() {
-      if (App.started)
-        return;
-      
-      App.setupModuleCache();
-      App.setupLoginLogout();
-      
-      G.app = App;
-      App.started = true;
-      if (window.location.hash == '#_=_') {
-//        debugger;
-        G.log(App.TAG, "info", "hash stripped");
-        window.location.hash = '';
+      return $.Deferred(function(dfd) {        
+        if (App.started)
+          return dfd.resolve();
+        
+        App.setupModuleCache();
+        App.setupLoginLogout();
+        
+        G.app = App;
+        App.started = true;
+        if (window.location.hash == '#_=_') {
+  //        debugger;
+          G.log(App.TAG, "info", "hash stripped");
+          window.location.hash = '';
+        }
+        
+        G.Router = new Router();
+        Backbone.history.start();
+        dfd.resolve();
+//        setTimeout(RM.sync, 1000);
+      }).promise();
+    },
+    
+    doPostStartTasks: function() {
+      for (var type in G.typeToModel) {
+        Voc.initCustomHandlers(type);
       }
       
-      G.Router = new Router();
-      Backbone.history.start();
-      setTimeout(RM.sync, 1000);
+      RM.sync();
     },
     
     setupLoginLogout: function() {
@@ -204,21 +230,21 @@ define('app', [
         _.each(G.socialNets, function(net) {
           var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, {sort: true}); // sorted alphabetically
           var params = net.oAuthVersion == 1 ?
-              {
-            episode: 1, 
-            socialNet: net.socialNet,
-            actionType: 'Login'
-              }
-          : 
-          {
-            scope: net.settings,
-            display: 'page', 
-            state: state, 
-            redirect_uri: G.serverName + '/social/socialsignup', 
-            response_type: 'code', 
-            client_id: net.appId || net.appKey
-          };
-          
+            {
+              episode: 1, 
+              socialNet: net.socialNet,
+              actionType: 'Login'
+            }
+            : 
+            {
+              scope: net.settings,
+              display: 'page', 
+              state: state, 
+              redirect_uri: G.serverName + '/social/socialsignup', 
+              response_type: 'code', 
+              client_id: net.appId || net.appKey
+            };
+            
           net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });

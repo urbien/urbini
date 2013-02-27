@@ -9,6 +9,8 @@ define([
 ], function(G, U, Events, TaskQueue, Voc, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
+//  var SQL_WORDS = 'a,abort,abs,absolute,access,action,ada,add,admin,after,aggregate,alias,all,allocate,also,alter,always,analyse,analyze,and,any,are,array,as,asc,asensitive,assertion,assignment,asymmetric,at,atomic,attribute,attributes,audit,authorization,auto_increment,avg,avg_row_length,backup,backward,before,begin,bernoulli,between,bigint,binary,bit,bit_length,bitvar,blob,bool,boolean,both,breadth,break,browse,bulk,by,c,cache,call,called,cardinality,cascade,cascaded,case,cast,catalog,catalog_name,ceil,ceiling,chain,change,char,char_length,character,character_length,character_set_catalog,character_set_name,character_set_schema,characteristics,characters,check,checked,checkpoint,checksum,class,class_origin,clob,close,cluster,clustered,coalesce,cobol,collate,collation,collation_catalog,collation_name,collation_schema,collect,column,column_name,columns,command_function,command_function_code,comment,commit,committed,completion,compress,compute,condition,condition_number,connect,connection,connection_name,constraint,constraint_catalog,constraint_name,constraint_schema,constraints,constructor,contains,containstable,continue,conversion,convert,copy,corr,corresponding,count,covar_pop,covar_samp,create,createdb,createrole,createuser,cross,csv,cube,cume_dist,current,current_date,current_default_transform_group,current_path,current_role,current_time,current_timestamp,current_transform_group_for_type,current_user,cursor,cursor_name,cycle,data,database,databases,date,datetime,datetime_interval_code,datetime_interval_precision,day,day_hour,day_microsecond,day_minute,day_second,dayofmonth,dayofweek,dayofyear,dbcc,deallocate,dec,decimal,declare,default,defaults,deferrable,deferred,defined,definer,degree,delay_key_write,delayed,delete,delimiter,delimiters,dense_rank,deny,depth,deref,derived,desc,describe,descriptor,destroy,destructor,deterministic,diagnostics,dictionary,disable,disconnect,disk,dispatch,distinct,distinctrow,distributed,div,do,domain,double,drop,dual,dummy,dump,dynamic,dynamic_function,dynamic_function_code,each,element,else,elseif,enable,enclosed,encoding,encrypted,end,end-exec,enum,equals,errlvl,escape,escaped,every,except,exception,exclude,excluding,exclusive,exec,execute,existing,exists,exit,exp,explain,external,extract,false,fetch,fields,file,fillfactor,filter,final,first,float,float4,float8,floor,flush,following,for,force,foreign,fortran,forward,found,free,freetext,freetexttable,freeze,from,full,fulltext,function,fusion,g,general,generated,get,global,go,goto,grant,granted,grants,greatest,group,grouping,handler,having,header,heap,hierarchy,high_priority,hold,holdlock,host,hosts,hour,hour_microsecond,hour_minute,hour_second,identified,identity,identity_insert,identitycol,if,ignore,ilike,immediate,immutable,implementation,implicit,in,include,including,increment,index,indicator,infile,infix,inherit,inherits,initial,initialize,initially,inner,inout,input,insensitive,insert,insert_id,instance,instantiable,instead,int,int1,int2,int3,int4,int8,integer,intersect,intersection,interval,into,invoker,is,isam,isnull,isolation,iterate,join,k,key,key_member,key_type,keys,kill,lancompiler,language,large,last,last_insert_id,lateral,leading,least,leave,left,length,less,level,like,limit,lineno,lines,listen,ln,load,local,localtime,localtimestamp,location,locator,lock,login,logs,long,longblob,longtext,loop,low_priority,lower,m,map,match,matched,max,max_rows,maxextents,maxvalue,mediumblob,mediumint,mediumtext,member,merge,message_length,message_octet_length,message_text,method,middleint,min,min_rows,minus,minute,minute_microsecond,minute_second,minvalue,mlslabel,mod,mode,modifies,modify,module,month,monthname,more,move,multiset,mumps,myisam,name,names,national,natural,nchar,nclob,nesting,new,next,no,no_write_to_binlog,noaudit,nocheck,nocompress,nocreatedb,nocreaterole,nocreateuser,noinherit,nologin,nonclustered,none,normalize,normalized,nosuperuser,not,nothing,notify,notnull,nowait,null,nullable,nullif,nulls,number,numeric,object,octet_length,octets,of,off,offline,offset,offsets,oids,old,on,online,only,open,opendatasource,openquery,openrowset,openxml,operation,operator,optimize,option,optionally,options,or,order,ordering,ordinality,others,out,outer,outfile,output,over,overlaps,overlay,overriding,owner,pack_keys,pad,parameter,parameter_mode,parameter_name,parameter_ordinal_position,parameter_specific_catalog,parameter_specific_name,parameter_specific_schema,parameters,partial,partition,pascal,password,path,pctfree,percent,percent_rank,percentile_cont,percentile_disc,placing,plan,pli,position,postfix,power,preceding,precision,prefix,preorder,prepare,prepared,preserve,primary,print,prior,privileges,proc,procedural,procedure,process,processlist,public,purge,quote,raid0,raiserror,range,rank,raw,read,reads,readtext,real,recheck,reconfigure,recursive,ref,references,referencing,regexp,regr_avgx,regr_avgy,regr_count,regr_intercept,regr_r2,regr_slope,regr_sxx,regr_sxy,regr_syy,reindex,relative,release,reload,rename,repeat,repeatable,replace,replication,require,reset,resignal,resource,restart,restore,restrict,result,return,returned_cardinality,returned_length,returned_octet_length,returned_sqlstate,returns,revoke,right,rlike,role,rollback,rollup,routine,routine_catalog,routine_name,routine_schema,row,row_count,row_number,rowcount,rowguidcol,rowid,rownum,rows,rule,save,savepoint,scale,schema,schema_name,schemas,scope,scope_catalog,scope_name,scope_schema,scroll,search,second,second_microsecond,section,security,select,self,sensitive,separator,sequence,serializable,server_name,session,session_user,set,setof,sets,setuser,share,show,shutdown,signal,similar,simple,size,smallint,some,soname,source,space,spatial,specific,specific_name,specifictype,sql,sql_big_result,sql_big_selects,sql_big_tables,sql_calc_found_rows,sql_log_off,sql_log_update,sql_low_priority_updates,sql_select_limit,sql_small_result,sql_warnings,sqlca,sqlcode,sqlerror,sqlexception,sqlstate,sqlwarning,sqrt,ssl,stable,start,starting,state,statement,static,statistics,status,stddev_pop,stddev_samp,stdin,stdout,storage,straight_join,strict,string,structure,style,subclass_origin,sublist,submultiset,substring,successful,sum,superuser,symmetric,synonym,sysdate,sysid,system,system_user,table,table_name,tables,tablesample,tablespace,temp,template,temporary,terminate,terminated,text,textsize,than,then,ties,time,timestamp,timezone_hour,timezone_minute,tinyblob,tinyint,tinytext,to,toast,top,top_level_count,trailing,tran,transaction,transaction_active,transactions_committed,transactions_rolled_back,transform,transforms,translate,translation,treat,trigger,trigger_catalog,trigger_name,trigger_schema,trim,true,truncate,trusted,tsequal,type,uescape,uid,unbounded,uncommitted,under,undo,unencrypted,union,unique,unknown,unlisten,unlock,unnamed,unnest,unsigned,until,update,updatetext,upper,usage,use,user,user_defined_type_catalog,user_defined_type_code,user_defined_type_name,user_defined_type_schema,using,utc_date,utc_time,utc_timestamp,vacuum,valid,validate,validator,value,values,var_pop,var_samp,varbinary,varchar,varchar2,varcharacter,variable,variables,varying,verbose,view,volatile,waitfor,when,whenever,where,while,width_bucket,window,with,within,without,work,write,writetext,x509,xor,year,year_month,zerofill,zone'.split(',');
+//  
 //  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
 //  useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = true;
@@ -16,17 +18,60 @@ define([
 //  var IDBCursor = $.indexedDB.IDBCursor;
 //  var useWebSQL = false;
 //  idbq.init();
-  var Index = idbq.Index,
-      REF_STORE = {
-        name: 'ref',
-        indices: {
-          _uri: {unique: true, multiEntry: false},
-          _dirty: {unique: false, multiEntry: false},
-          _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
-          _problematic: {unique: false, multiEntry: false},
-          _alert: {unique: false, multiEntry: false}      
-        }
+  var parse = function(items) {
+    return $.Deferred(function(defer) {
+      defer.resolve(parseFromDB(items));
+    });
+  },
+  
+  prepPropNameForDB = function(propName) {
+    return '_' + propName;
+  },
+  
+  parsePropNameFromDB = function(propName) {
+    return propName.slice(1);
+  },
+    
+  prepForDB = function(item) {
+    var _item = {};
+    for (var prop in item) {
+      _item[prepPropNameForDB(prop)] = item[prop];
+    }
+
+    return _item;
+  },
+  
+  parseFromDB = function(_items) {
+    if (!_items)
+      return _items;
+    
+    var returnObj = U.getObjectType(_items) === '[object Object]';
+    if (returnObj)
+      _items = [_items];
+    
+    var items = _.map(_items, function(_item) {
+      var item = {};
+      for (var prop in _item) {
+        item[parsePropNameFromDB(prop)] = _item[prop];
       }
+      
+      return item;
+    });
+    
+    return returnObj ? items[0] : items;
+  },
+  
+  Index = idbq.Index,
+  REF_STORE = {
+    name: 'ref',
+    indices: prepForDB({
+      _uri: {unique: true, multiEntry: false},
+      _dirty: {unique: false, multiEntry: false},
+      _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
+      _problematic: {unique: false, multiEntry: false},
+      _alert: {unique: false, multiEntry: false}      
+    })
+  };
 
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
@@ -258,6 +303,19 @@ define([
       });      
     },
     
+    put: function(items, store) {
+      if (U.getObjectType(items) === '[object Object]')
+        items = [items];
+      
+      return $.when.apply($, _.map(items, function(item) {
+        return store.put(prepForDB(item));
+      }));
+    },
+
+    Index: function(propName) {
+      return Index(prepPropNameForDB(propName));
+    },
+    
     createRefStore: function() {
       return $.Deferred(function(defer) {
         if (RM.db && RM.db.objectStoreNames.contains(REF_STORE.name)) {
@@ -338,7 +396,7 @@ define([
     /////////////////////////////////////////// START IndexedDB stuff ///////////////////////////////////////////
     db: null,
     VERSION: 1,
-    modelStoreOptions: {keyPath: 'type'},
+//    modelStoreOptions: {keyPath: 'type'},
     dbPaused: false,
     storeExists: function(name) {
       var db = RM.db;
@@ -349,7 +407,7 @@ define([
       return names._items ? _.contains(names._items, name) : names.contains(name);
     },
     
-    defaultOptions: {keyPath: '_uri', autoIncrement: false},
+    defaultOptions: {keyPath: prepPropNameForDB('_uri'), autoIncrement: false},
     DB_NAME: "lablz",
     runTask: function() {
       return this.taskQueue.runTask.apply(this.taskQueue, arguments);
@@ -515,10 +573,10 @@ define([
       var props = vocModel.properties;
       cols = _.filter(cols, function(c) {
         var p = props[c];
-        return p && !p.backLink;
-      })
+        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+      });
       
-      return cols;
+      return _.map(cols, prepPropNameForDB);
     },
     
     updateStores: function(trans, toMake, toKill) {
@@ -540,7 +598,7 @@ define([
       for (var i = 0; i < toMake.length; i++) {
         var type = toMake[i];
         if (type === REF_STORE.name) {
-          var store = trans.createObjectStore(type, {keyPath: '_id', autoIncrement: true});
+          var store = trans.createObjectStore(type, {keyPath: prepPropNameForDB('_id'), autoIncrement: true});
           var indices = REF_STORE.indices;
           for (var index in indices) {
             store.createIndex(index, indices[index]);
@@ -667,9 +725,10 @@ define([
             G.log(RM.TAG, ['db', 'error'], 'Transaction NOT completed, data not inserted', err, e);
           }).progress(function(transaction) {
             var store = transaction.objectStore(classUri);
-            for (var i = 0; i < items.length; i++) {
-              store.put(items[i]);
-            }
+            RM.put(items, store);
+//            for (var i = 0; i < items.length; i++) {
+//              store.put(items[i]);
+//            }
           });
         }, {name: "Add Items"}).done(defer.resolve).fail(defer.reject);
       }).promise();      
@@ -688,9 +747,9 @@ define([
       }
         
       RM.runTask(function() {
-//          Index('dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+//          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
-        Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+        RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
           if (!results.length) {
             defer.resolve();
             return;
@@ -759,8 +818,9 @@ define([
               debugger;
             }).progress(function(transaction) {
               var resStore = transaction.objectStore(type, 1);
-              resStore.put(data);
-              transaction.objectStore(REF_STORE.name, 1).put(ref);
+              debugger;
+              RM.put(data, resStore);
+              RM.put(ref, transaction.objectStore(REF_STORE.name, 1));
               if (newUri !== oldUri) {
                 resStore["delete"](oldUri);
                 data._oldUri = oldUri;
@@ -786,7 +846,7 @@ define([
               RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {
                 debugger;
               }).progress(function(transaction) {
-                transaction.objectStore(REF_STORE.name, 1).put(ref);
+                RM.put(ref, transaction.objectStore(REF_STORE.name, 1));
               }).always(dfd.resolve); // resolve in any case, so sync operation can conclude
 //            }
 //            else {
@@ -797,6 +857,8 @@ define([
         });
       }).promise();
     },
+    
+    
     
     syncResource: function(ref, refs) {
       return $.Deferred(function(dfd) {
@@ -842,16 +904,24 @@ define([
             debugger;
             if (updated) {
               // not ready to sync with server, but we can update the item in its respective table
-              RM.$db.objectStore(REF_STORE.name, 1).put(ref).done(function() {
+              var refStore = RM.$db.objectStore(REF_STORE.name, 1);
+              RM.put(ref, refStore).done(function() {
                 var resStore = RM.$db.objectStore(type, 1);
-                resStore.get(uri).done(function(item) {
-                  debugger;
-                  resStore.put(_.extend(item, ref));
+//                resStore.get(uri).done(function(item) {
+//                  RM.put(_.extend(item, ref), resStore);
+//                }).done(function() {
+//                  debugger;
+//                }).fail(function() {
+//                  debugger;
+//                }).always(dfd.resolve);
+                resStore.get(uri).then(parse).then(function(item) {
+                  RM.put(_.extend(item, ref), resStore);
                 }).done(function() {
                   debugger;
                 }).fail(function() {
                   debugger;
-                }).always(dfd.resolve);                
+                }).always(dfd.resolve);
+
               }).fail(function() {
                 debugger;
               }).always(function() {
@@ -940,7 +1010,7 @@ define([
         
         var dfd;
         if (uri) {
-          Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+          RM.Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
             if (!results.length)
               RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
             else {
@@ -974,7 +1044,8 @@ define([
         else {
           itemRef._dirty = 1;
           itemRef._problematic = 0;
-          RM.$db.objectStore(REF_STORE.name).put(itemRef).done(function() {            
+          var refStore = RM.$db.objectStore(REF_STORE.name);
+          RM.put(itemRef, refStore).done(function() {            
             RM.addItems([item], type).done(function() {
               addDefer.resolve();
               RM.sync();
@@ -1084,12 +1155,12 @@ define([
         if (/^-?\d+/.test(lat)) {
           var latRadius = radius / 110; // 1 deg latitude is roughly 110 km 
           lat = parseFloat(lat);
-          latLonQuery = Index(latProp).betweeq(lat - latRadius, lat + latRadius);
+          latLonQuery = RM.Index(latProp).betweeq(lat - latRadius, lat + latRadius);
         }
         if (/^-?\d+/.test(lon)) {
           var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate  
           lon = parseFloat(lon);          
-          latLonQuery = Index(lonProp).betweeq(lon - lonRadius, lon + lonRadius);
+          latLonQuery = RM.Index(lonProp).betweeq(lon - lonRadius, lon + lonRadius);
         }
         
         delete filter[latProp]; 
@@ -1113,7 +1184,7 @@ define([
         }
 
         val = U.getTypedValue(collection, name, val);
-        var subQuery = Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
+        var subQuery = RM.Index(name)[op](val);// Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
 //        subQuery.setPrimaryKey('_uri');
         query = query ? query.and(subQuery) : subQuery;
       }
@@ -1138,11 +1209,11 @@ define([
           }
         }
         else
-          query = Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+          query = RM.Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
         
 //        }
 //        else
-//          query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+//          query = query ? query.sort(orderBy, !asc) : RM.Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
       }
       
       if (!_.isUndefined(qMap.$offset)) {
@@ -1175,6 +1246,12 @@ define([
         case 'date':
         case 'dateTime':
         case 'ComplexDate':
+          if (bound === 'null') {
+            return function(res) {
+              return !U.isFalsy(res[name], range);
+            }
+          }
+          
           try {
             bound = U.parseDate(bound);
           } catch (err) {
@@ -1249,7 +1326,7 @@ define([
           var valueTester = RM.buildValueTesterFunction(filter, data);
           var results = [];
           var filterResults = function(item) {
-            var val = item.value;
+            var val = parseFromDB(item.value);
             if (!valueTester || valueTester(val))
               results.push(val);
           };
@@ -1269,42 +1346,42 @@ define([
       }
 
       var queryWithIndex = function() {
-        var qDefer = this;
+        var qDefer = this; // we're inside a $.Deferred() as this function only gets run via RM.runTask();        
         var results = [];
 //        if (isTemp) {
-//          RM.$db.objectStore(REF_STORE.name, 0).index('_tempUri').get(uri).done(function(result) {
+//          RM.$db.objectStore(REF_STORE.name, 0).index(prepPropNameForDB('_tempUri')).get(uri).done(function(result) {
 //            debugger;
 //            qDefer.resolve(result);
-//          Index('_tempUri').eq(uri).get(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+//          RM.Index('_tempUri').eq(uri).get(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
 //            if (results.length) {
 //              var item = results[0];
 //              var realUri = item._uri;
 //              if (realUri) {
 //                RM.$db.objectStore(type, 0).get(realUri).done(function(realItem) {
 //                  if (realItem)
-//                    qDefer.resolve(realItem);
+//                    intDefer.resolve(realItem);
 //                  else
-//                    qDefer.resolve(item);
-//                }).fail(qDefer.reject);
+//                    intDefer.resolve(item);
+//                }).fail(intDefer.reject);
 //                
 //                return;
 //              }
 //            }
 //            
-//            RM.$db.objectStore(type, 0).get(uri).done(qDefer.resolve).fail(qDefer.reject);
+//            RM.$db.objectStore(type, 0).get(uri).done(intDefer.resolve).fail(intDefer.reject);
 //          }).fail(function() {
 //            debugger;
-//            qDefer.reject();
+//            intDefer.reject();
 //          })
 //          
-//          return;// qDefer;
+//          return;// intDefer;
 //        }
         
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri) {
-          store.get(uri).always(qDefer.resolve);
+          store.get(uri).then(parse).always(intDefer.resolve);
 //          if (isTemp) {
-//            RM.$db.objectStore(REF_STORE.name, 0).index('_tempUri').get(uri).done(function(result) {
+//            RM.$db.objectStore(REF_STORE.name, 0).index(prepPropNameForDB('_tempUri')).get(uri).done(function(result) {
 //              
 //            });
 //          }
@@ -1315,15 +1392,15 @@ define([
         var query = RM.buildDBQuery(store, data, filter);
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
-          query.getAll(store).done(qDefer.resolve).fail(function() {
+          query.getAll(store).then(parse).done(qDefer.resolve).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
             queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
           });
           
-//          return qDefer.promise();
+//          return intDefer.promise();
         }
         else {
-          queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
+          queryWithoutIndex().then(qDefer.resolve, qDefer.reject);
 //          return queryWithoutIndex().promise();
         }
       }
@@ -1347,7 +1424,7 @@ define([
       
       return RM.runTask(function() {
         var defer = this;        
-        Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+        RM.Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).then(parse).done(function(results) {
           if (results.length)
             defer.resolve(results);
           else

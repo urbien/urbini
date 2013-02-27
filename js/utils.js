@@ -66,7 +66,7 @@ define([
   var U = {
     TAG: 'Utils',    
     isPropVisible: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.propertyGroupList || U.isSystemProp(prop))
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop))
         return false;
       
       userRole = userRole || U.getUserRole();
@@ -1305,7 +1305,7 @@ define([
         rules.maxlength = prop.maxSize;
       
       if (U.isDateProp(prop))
-        rules['data-datetime'] = true;
+        rules['data-date'] = true;
       else if (U.isTimeProp(prop))
         rules['data-duration'] = true;
       else if (U.isEnumProp(prop))
@@ -1577,17 +1577,18 @@ define([
       return hash.length ? hash.slice(1) : hash;
     },
     
-    prepForSync: function(item, vocModel) {
+    prepForSync: function(item, vocModel, preserve) {
+      preserve = preserve || [];
       var props = vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
         var prop = props[key];
-        return !U.isSystemProp(key) && prop && !prop.backLink && (U.isResourceProp(prop) || !prop.readOnly) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
+        return !U.isSystemProp(key) && prop && (_.contains('backLink') || !prop.backLink) && (U.isResourceProp(prop) || (_.contains('readOnly') || !prop.readOnly)) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
       }); // is writeable, starts with a letter and doesn't contain a '.'
       
-      return U.flattenModelJson(filtered, vocModel);
+      return U.flattenModelJson(filtered, vocModel, preserve);
     },
     
-    flattenModelJson: function(m, vocModel) {
+    flattenModelJson: function(m, vocModel, preserve) {
       var vocProps = vocModel.properties;
       var flat = {};
       for (var name in m) {
@@ -1597,7 +1598,7 @@ define([
         }
           
         var prop = vocProps[name];
-        if (!prop || prop.parameter || prop.virtual)
+        if (!prop || (prop.parameter && !_.contains(preserve, 'parameter')) || (prop.virtual && !_.contains(preserve, 'virtual')))
           continue;
         
         flat[name] = U.getFlatValue(prop, m[name]);
@@ -1643,14 +1644,14 @@ define([
       }
       else if (_.contains(primitives.ints, range)) {
         try {
-          return !!parseInt(val);
+          return !parseInt(val);
         } catch (err) {
           return true;
         }
       }
       else if (_.contains(primitives.floats, range)) {
         try {
-          return !!parseFloat(val);
+          return !parseFloat(val);
         } catch (err) {
           return true;
         }
@@ -1707,6 +1708,12 @@ define([
       if (!isNaN(date))
         return parseInt(date);
       
+      try {
+        var d = new Date(date);
+        return d.getTime();
+      } catch (err) {
+      }
+            
       var startOfDay = new Date();
       startOfDay.setHours(0,0,0,0);
       startOfDay = startOfDay.getTime();

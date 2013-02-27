@@ -23,8 +23,7 @@ define([
    // function. I put it in there simply because it makes me
    // feel a little more comfortable with the use of the
    // WITH keyword.
-    debugger;
-    var args = slice.call(arguments, 1);
+    var args = U.slice.call(arguments, 1);
     args[args.length] = "with (this) {" +
       "return " + sourceCode + ";" +
     "};";
@@ -104,7 +103,8 @@ define([
         }
         
         if (info.lastModified) {
-          if (info.lastModified > jModel.lastModified)
+          var lm = Math.max(info.lastModified, G.lastModified);
+          if (lm > jModel.lastModified)
             missingOrStale[type] = {};
           else
             willLoad.push(jModel);
@@ -169,8 +169,8 @@ define([
             U.pushUniq(newModels, newModel);
           }
           
-          var notStale = _.map(_.values(mightBeStale.models), function(model) {
-            return !loadedTypes[model.type];
+          var notStale = _.filter(_.values(mightBeStale.models), function(model) {
+            return !_.contains(loadedTypes, model.type);
           });
           
           var changedModels = _.union(newModels, notStale),
@@ -376,9 +376,9 @@ define([
       }, 1000);
     },
     
-    prepareHandler: function(handler, resultType) {
+    prepareHandler: function(handlerFn, handler) {
       return function(res) {
-        return Voc.executeHandler(handler, resultType, res);
+        return Voc.executeHandler(handlerFn, handler, res);
       }
     },
     
@@ -390,7 +390,7 @@ define([
        *        and backlink may be recipe.ingredients, where recipe is a property of RecipeShoppingList. 
        *        This function can be used to mirror the ingredients backlink into ShoppingListItem resources
        */
-      each: function(backlink, resultType, fn) {
+      each: function(backlink, effectType, fn) {
         var parts = backlink.split('.');
         if (parts.length != 2)
           return; // longer not supported yet, shorter can't be an existing backlink
@@ -405,9 +405,9 @@ define([
         var propType = U.getTypeUri(prop.range),
             backlinkName = backlink[1]; // ingredients in the example
         
-        Voc.getModels([propType, resultType]).done(function() {
+        Voc.getModels([propType, effectType]).done(function() {
           var propModel = G.typeToModel[propType],     // Recipe in the example
-              resultModel = G.typeToModel[resultType]; // ShoppingListItem in the example
+              resultModel = G.typeToModel[effectType]; // ShoppingListItem in the example
               
           if (!propModel || !resultModel) {
             debugger; // should never happen
@@ -436,7 +436,7 @@ define([
             backlinkCollection.fetch({
               success: function() {
                 debugger;
-                fn = Voc.prepareHandler(fn, effectType);
+                fn = Voc.prepareHandler(fn, handler);
                 var json = this.toJSON();
                 for (var i = 0; i < json.length; i++) {
                   fn(json[i]);
@@ -475,22 +475,36 @@ define([
       return handlerTools;
     },
     
+    nukeHandler: function(handler, handlerFn) {
+      var causeType = handler.causeDavClassUri;
+      delete G.customHandlers[causeType];
+      if (handlerFn == null) {
+        Voc.initCustomHandlers(causeType);
+        return;
+      }
+      
+      _each(Voc.scriptActions, function(action) {        
+        Events.off(action + '.' + causeType, handlerFn);
+      });
+    },
+    
     /**
      * @param handler a function that takes in two parameters: from and to, a.k.a. cause and effect
      */
-    executeHandler: function(handler, effectType, cause) {
-      var type = resultType.slice(effectType.lastIndexOf("/") + 1).camelize();
+    executeHandler: function(handlerFn, handler, cause) {
+      var effectType = handler.effectDavClassUri;
+      var type = effectType.slice(effectType.lastIndexOf("/") + 1).camelize();
       var effect = {};
 
       Voc.getModels(effectType).done(function() {
-        debugger;
         var effectModel =  G.typeToModel[effectType],
             causeModel = G.typeToModel[cause._type],
-            toolSuite = Voc.getHandlerToolSuite(cause, causeModel, effect, toTypeModel);
+            toolSuite = Voc.getHandlerToolSuite(cause, causeModel, effect, effectModel);
         
         try {
-          handler.apply(toolSuite).call({}, cause, effect);
+          handlerFn.apply(toolSuite).call({}, cause, effect);
         } catch (err) {
+          Voc.nukeHandler(handler, handlerFn);
           return;
         }
         
@@ -520,10 +534,10 @@ define([
           }
         }
         
-        debugger;
         var res = new effectModel();
-        if (effectTypeModel.properties.cause)
-          res.cause = cause._uri;
+        effect.plugin = handler._uri;
+        if (effectModel.properties.cause)
+          effect.cause = cause._uri;
         res.save(effect, {'$returnMade': false, sync: false});
       }).fail(function() {
         debugger;
@@ -575,20 +589,22 @@ define([
       });
     },
     
+    scriptActions: ['create', 'edit'],
+    
     initHandler: function(handler, type) {
-      var scripts = {
-        create: handler.createScript, 
-        edit: handler.editScript
-      };
+      var scripts = {};
+      _.each(Voc.scriptActions, function(action) {        
+        scripts[action] = handler[action + 'Script'];
+      });
       
       for (var action in scripts) {
         var script = scripts[action];
         if (script) {
-          script = Voc.buildScript(script, handler.fromDavClassUri, handler.toDavClassUri);
+          script = Voc.buildScript(script, handler.causeDavClassUri, handler.causeDavClassUri);
           if (script === null)
             G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
           else
-            Events.on(action + '.' + type, Voc.prepareHandler(script, handler.toDavClassUri));
+            Events.on(action + '.' + type, Voc.prepareHandler(script, handler));
         }          
       }
     },
@@ -730,7 +746,7 @@ define([
   Events.on('newHandler', function(handler) {
     var handlers = {};
     handler = handler.toJSON();
-    var type = handler.fromDavClassUri;
+    var type = handler.causeDavClassUri;
     handlers[type] = [handler];
     Voc.setupHandlers(handlers);
     Voc.initCustomHandlers(type); // for now, later make it more fine-grained
