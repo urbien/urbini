@@ -56,6 +56,8 @@ define([
       if (!this.title)
         this.title = this.pageTitle;
       this.$el.prevObject.attr('data-title', this.pageTitle);
+      
+      this.$el.prevObject.attr('data-theme', G.theme.list);
       var params = U.getHashParams();
       this.info = params['-info'];
       
