@@ -12,15 +12,26 @@ define([
     events: {
       'click #publish': 'publish',
       'click #try': 'tryApp',
-      'click #fork': 'forkApp'
+      'click #fork': 'forkApp',
+      'click #testHandler': 'testHandler'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'publish', 'tryApp');
+      _.bindAll(this, 'render', 'publish', 'tryApp', 'testHandler', 'forkApp');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get(this.template));
       this.tryTemplate = _.template(Templates.get('tryButtonTemplate'));
       this.forkTemplate = _.template(Templates.get('forkButtonTemplate'));
+      this.testHandlerTemplate = _.template(Templates.get('testHandlerTemplate'));
       return this;
+    },
+    testHandler: function(e) {
+      Events.stopEvent(e);
+      var res = this.resource;
+      var cause = res.get('causeDavClassUri');
+      var effect = res.get('effectDavClassUri');
+//      window.location.href = G.serverName + '/app/' + res.get('appPath');
+      var effectList = U.makeMobileUrl('list', effect, {plugin: res.getUri()});
+      this.router.navigate(U.makeMobileUrl('make', cause, {$returnUri: effectList}), {trigger: true});
     },
     tryApp: function(e) {
       Events.stopEvent(e);
@@ -42,8 +53,17 @@ define([
 //          }
 //          
 //          $('.formElement').attr('disabled', false);
-//          self.router.navigate(U.getHash(), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
-        window.location.reload();
+//          debugger;
+          var query = U.getQueryParams();
+          var hash = window.location.href;
+          hash = hash.slice(hash.indexOf('#') + 1);
+          if (_.size(query))
+            hash = hash.slice(0, hash.indexOf('?'));
+          
+          query.$nonce = new Date().getTime();
+          hash = hash + '?' + $.param(query);
+          self.router.navigate(hash, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+//        window.location.reload();
         }
 //      ,
 //        queryString: 'publish=true'
@@ -54,8 +74,7 @@ define([
     forkApp: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
-//      window.location.href = G.serverName + '/app/' + res.get('appPath');      
-      this.router.navigate('make/model%2Fsocial%2FApp?basedOnTemplate='  + encodeURIComponent(res.get('_uri')), {trigger: true});
+      this.router.navigate(U.makeMobileUrl('make', 'model/social/App', {basedOnTemplate: res.getUri()}), {trigger: true});
     },
 
     render: function(options) {
@@ -64,8 +83,12 @@ define([
           this.$el.html(this.forkTemplate());
           this.$el.trigger('create');
         }
-        if (options  &&  options.tryApp) {
+        if (options.tryApp) {
           this.$el.html(this.tryTemplate());
+          this.$el.trigger('create');
+        }
+        if (options.testHandler) {
+          this.$el.html(this.testHandlerTemplate());
           this.$el.trigger('create');
         }
       }

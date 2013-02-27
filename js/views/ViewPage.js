@@ -82,27 +82,33 @@ define([
           log: [LoginButtons]
       };
       
-      if (!G.currentUser.guest  &&  U.isAssignableFrom(res.vocModel, "App")) {
+      if (!G.currentUser.guest) {
         var user = G.currentUser._uri;
-        var appOwner = U.getLongUri1(res.get('creator') || user);
-        if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
-          this.hasPublish = true;
-        var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
-        var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
-        if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished))
-          this.hasTry = true;
-        this.forkMe = true;
+        if (U.isAssignableFrom(res.vocModel, "App")) {
+          var appOwner = U.getLongUri1(res.get('creator') || user);
+          if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
+            this.hasPublish = true;
+          
+          var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
+          var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
+          if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished))
+            this.hasTry = true;
+          
+          this.forkMe = true;
+        }
+        else if (U.isAssignableFrom(res.vocModel, "Handler")) {
+          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);
+          if (user == handlerOwner)
+            this.testHandler = true;            
+        }
       }
       
       this.header = new Header(_.extend(commonParams, {
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
-        doPublish: this.hasPublish,
-        doTry: this.hasTry,
-        forkMe: this.forkMe,
         el: $('#headerDiv', this.el)
-      })).render();
+      }, _.pick(this, ['doTry', 'doPublish', 'testHandler', 'forkMe']))).render();
       
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView(_.extend(commonParams, {el: $('div#resourceImage', this.el)}));

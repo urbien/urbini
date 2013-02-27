@@ -271,14 +271,31 @@ define([
       options.url = this.url();
       return Backbone.Model.prototype.fetch.call(this, options);
     },
+    
+    triggerHandlers: function(options) {
+      if (!G.currentUser.guest && !options.fromDB) {
+        var isNew = this.isNew();
+        var method = isNew ? 'create.' : 'edit.';
+        var json = this.toJSON();
+        json._type = this.vocModel.type;
+        Events.trigger(method + json._type, json);
+        var sup = this.vocModel;
+        while (sup = sup.superClass) {
+          Events.trigger(method + sup.type, this);
+        }
+        
+        // TODO: fix this hack, or move this to some place where we handle resources by type
+        var handlerModel = G.shortNameToModel.Handler;
+        if (handlerModel && this.vocModel.type === handlerModel.type)
+          Events.trigger("newHandler", self);
+      }
+    },
 
     save: function(attrs, options) {
       options = _.extend({silent: true, patch: true}, options || {});
       var data = attrs || options.data || this.attributes;
       if (options.sync) {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
-        
-//        item = U.prepForSync(item, vocModel);
         data.$returnMade = options.$returnMade !== false;
         var isNew = this.isNew();
         if (!isNew)
@@ -287,10 +304,6 @@ define([
           delete data._uri;
   
         var self = this;
-//        var qs = U.getQueryString(data);
-//        if (options.queryString)
-//          qs += '&' + options.queryString;
-        
         options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
         var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
@@ -299,21 +312,7 @@ define([
             return;
           
           Events.trigger('resourcesChanged', [self]);
-          var method = isNew ? 'create.' : 'edit.';
-          if (!G.currentUser.guest) {
-            var json = self.toJSON();
-            json._type = self.vocModel.type;
-            Events.trigger(method + self.vocModel.type, json);
-            var sup = self.vocModel;
-            while (sup = sup.superClass) {
-              Events.trigger(method + sup.type, self);
-            }
-            
-            // TODO: fix this hack, or move this to some place where we handle resources by type
-            var handlerModel = G.shortNameToModel.Handler;
-            if (handlerModel && self.vocModel.type === handlerModel.type)
-              Events.trigger("newHandler", self);
-          }
+          self.triggerHandlers(options);
         };
         
         options.error = function(originalModel, err, opts) {
@@ -331,8 +330,9 @@ define([
         };
       }
       
-      return Backbone.Model.prototype.save.call(this, data, options);
-
+      var ret = Backbone.Model.prototype.save.call(this, data, options);
+      this.triggerHandlers(options);
+      return ret;
       
 //      if (options.sync) {
 //        return Backbone.Model.prototype.save.call(this, attrs, options);

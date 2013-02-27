@@ -140,7 +140,9 @@ define([
             // missingOrStale should be empty
             if (_.size(missingOrStale)) {
               debugger;
-              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
+              defer.reject();
+              return;
+//              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
             }
             
             return Voc.loadModels(mightBeStale.models).done(defer.resolve).fail(defer.reject);            
@@ -186,10 +188,7 @@ define([
           if (changedTypes.length)
             Events.trigger('modelsChanged', changedTypes);
           
-        }, function() {
-          debugger;
-          defer.reject();
-        });
+        }, defer.reject);
       }).promise();
     },
 

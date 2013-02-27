@@ -135,14 +135,22 @@ define('app', [
         App.setupNetworkEvents();
         Voc.checkUser();
         Voc.loadEnums();
+        var waitTime = 50;
         var loadModels = function() {
           Voc.getModels().done(function() {
             if (RM.db)
               defer.resolve();
             else
               RM.restartDB().always(defer.resolve);
-          }).fail(function() {
-            if (!G.online) {
+          }).fail(function()  {
+            if (G.online) {
+              Errors.timeout();
+              setTimeout(function() {
+                loadModels();
+                waitTime *= 2;
+              }, waitTime);
+            }
+            else {
               Errors.offline();
               Events.on('online', loadModels);
             }

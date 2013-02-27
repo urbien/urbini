@@ -110,8 +110,9 @@ define([
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
-          Events.trigger('chooser', this.model);
+          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         }
+        
         return;
       }
       Events.stopEvent(e);

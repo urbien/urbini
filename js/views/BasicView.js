@@ -4,7 +4,7 @@ define([
   'backbone',
   'templates'
 ], function(G, Backbone, Templates) {
-  var basicOptions = ['source', 'parentView'];
+  var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
       _.extend(this, _.pick(options, basicOptions));

@@ -74,20 +74,20 @@ define([
       removeFromView: false
     },
     
-//    navigate: function(fragment, options) {
-//      G.log(this.TAG, 'events', 'navigate', fragment);
-//      options = options || {};
-//      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceRefresh', 'removeFromView', 'errMsg', 'info'), {
-//        previousView: this.currentView, 
-//        previousFragment: U.getHash(), 
-//        previousViewsCache: this.viewsCache
-//      });
-//            
-//      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-//      _.extend(this, this.defaultOptions);
-//      return ret;
-//    },
-//    
+    navigate: function(fragment, options) {
+      G.log(this.TAG, 'events', 'navigate', fragment);
+      options = options || {};
+      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceRefresh', 'removeFromView', 'errMsg', 'info'), {
+        previousView: this.currentView, 
+        previousFragment: U.getHash(), 
+        previousViewsCache: this.viewsCache
+      });
+            
+      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
+      _.extend(this, this.defaultOptions);
+      return ret;
+    },
+    
 //    route: function() {
 //      return Backbone.Router.prototype.route.apply(this, arguments);
 //    },
@@ -200,6 +200,7 @@ define([
       list.fetch({
 //        update: true,
         sync: true,
+        forceFetch: forceFetch,
         _rUri: oParams,
         success: function() {
           self.changePage(listView);
@@ -475,6 +476,9 @@ define([
       else {
         fetchModels.done(function() {
           self[method].apply(self, args);
+        }).fail(function() {
+          debugger;
+          Errors.getDefaultErrorHandler();
         });
         
         return false;
@@ -496,21 +500,21 @@ define([
         return this;
       } finally {
         this.checkErr();
-        if (this.removeFromView) {
-          var self = this;
-          this.previousView && this.previousView.close();
-          var cache = this.previousViewsCache;
-          if (cache) {
-            var c = U.filterObj(cache, function(key, val) {
-              return val === self.previousView;
-            });
-            
-            if (_.size(c))
-              delete cache[U.getFirstProperty(cache)];
-          }
-          
-          delete this.previousView;
-        }
+//        if (this.removeFromView) {
+//          var self = this;
+//          this.previousView && this.previousView.close();
+//          var cache = this.previousViewsCache;
+//          if (cache) {
+//            var c = U.filterObj(cache, function(key, val) {
+//              return val === self.previousView;
+//            });
+//            
+//            if (_.size(c))
+//              delete cache[U.getFirstProperty(cache)];
+//          }
+//          
+//          delete this.previousView;
+//        }
           
       }
     },

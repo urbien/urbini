@@ -187,17 +187,11 @@ define([
       });
     },
 
-    chooser: function(e) {
-      Events.stopEvent(e);
-      var el = e.target;
-      var prop = e.target.name;
-//      if (!prop)
-//        return;
-      
-      var self = this;
+    onChoose: function(e, prop) {
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
-      function onChoose(options) {
+      
+      return function(options) {
         var res;
         var checked;
         var isBuy = options.buy;
@@ -210,14 +204,15 @@ define([
         }
         else
           res = options;
-        G.log(self.TAG, 'testing', res.attributes);
+        
+        G.log(this.TAG, 'testing', res.attributes);
         var props = {};
         var link = e.target;
         if (isMultiValue) {
           var set = '';
           var innerHtml = '';
           for (var i=0; i<checked.length; i++) {
-//            var val = $('label[for="' + checked[i].id + '"]')[0].value;
+  //          var val = $('label[for="' + checked[i].id + '"]')[0].value;
             var style = checked[i].style;
             if (style  &&  style.display  == 'none')
               continue;
@@ -231,7 +226,7 @@ define([
         }
         else if (!isBuy  &&  res.isA('Buyable')  &&  this.$el.find('.buyButton')) {
           Events.stopEvent(e);
-//          Events.trigger('buy', this.model);
+  //        Events.trigger('buy', this.model);
           var popupTemplate = _.template(Templates.get('buyPopupTemplate'));
           var $popup = $('#buy_popup');
           var price = res.get('price');
@@ -242,7 +237,7 @@ define([
           if ($popup.length == 0) {
             $($(document).find($('.ui-page-active'))[0]).append(html);
             
-//            $('body').append(html);
+  //          $('body').append(html);
             $popup = $('#buy_popup');
           }
           else {
@@ -258,7 +253,7 @@ define([
         else {
           var uri = res.getUri();
           props[prop] = uri;
-          self.resource.set(props, {skipValidation: true, skipRefresh: true});
+          this.resource.set(props, {skipValidation: true, skipRefresh: true});
           var vocModel = this.vocModel;
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
@@ -266,7 +261,7 @@ define([
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
           var name = res.get('davDisplayName');
           link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
-          self.setResourceInputValue(link, uri);
+          this.setResourceInputValue(link, uri);
           if (U.isAssignableFrom(this.vocModel, "App")  &&  U.isAssignableFrom(res.vocModel, "Theme")) {
             if (G.currentApp) {
               var cUri = G.currentApp._uri;
@@ -274,7 +269,7 @@ define([
                 cUri = U.getLongUri1(cUri, G.typeToModel[type]);
                 G.currentApp._uri = cUri;
               }
-              if (self.resource.get('_uri') == cUri) {
+              if (this.resource.get('_uri') == cUri) {
                 var themeSwatch = res.get('swatch');
                 if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
                   G.theme.swatch = themeSwatch;
@@ -282,15 +277,23 @@ define([
             }
           }
         }
-        self.router.navigate(hash, {trigger: true, replace: true});
-//        G.Router.changePage(self.parentView);
-        // set text
-      }
+        this.router.navigate(hash, {trigger: true, replace: true});
+      }.bind(this);
+//      G.Router.changePage(self.parentView);
+      // set text
+    },
+
+    chooser: function(e) {
+      Events.stopEvent(e);
+      var el = e.target;
+      var prop = e.target.name;
+//      if (!prop)
+//        return;
       
+      var self = this;
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
       var pr = vocModel.properties[prop];
-      Events.on('chooser', onChoose, this);
-
+      Events.on('chooser:' + prop, this.onChoose(e, prop), this);
       var params = {};
 //      if (pr.where) {
 //        debugger;
@@ -314,6 +317,7 @@ define([
           }
         }
         
+        params.$prop = prop;
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});        
       }
       else if (pr.multiValue) {
@@ -434,12 +438,16 @@ define([
       }
     },
     redirect: function(options) {
-      // TODO: fix this HACK
+      var qMap = U.getQueryParams();
+      if (qMap.$returnUri)
+        return this.router.navigate(qMap.$returnUri, {trigger: true, replace: false, forceRefresh: true});
+      
       var res = this.resource,
           uri = res.getUri(),
           vocModel = this.vocModel,
           self = this;
       
+      // TODO: fix this HACK
       if (uri)
         Events.trigger('newResource', res);
 //      G.Router.Models[uri] = res;

@@ -110,6 +110,12 @@ define([
           self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
         });
       }
+      else if (this.testHandler) {
+        G.require(['views/PublishButton'], function(PublishButton) {
+          self.testHandler = new PublishButton({el: $('div#testHandlerBtn', self.el), model: self.resource}).render({testHandler: true});
+        });
+      }
+
       if (G.currentUser.guest) {
         var log = this.buttons.log;
         log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});

@@ -375,6 +375,10 @@
   <a target="#" data-icon="copy" id="fork" data-role="button" date-position="notext">Fork me</a>
 </script>
 
+<script type="text/template" id="testHandlerTemplate">
+  <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plugin</a>
+</script>
+
 <script type="text/template" id="headerTemplate">
   <div data-role="header" class="ui-header" data-theme="{{= Lablz.theme.header}}">
     <div id="errMsg"></div>
@@ -397,6 +401,11 @@
       <div style="max-width:200px;" id="tryBtn">
         {{ if (typeof tryApp != 'undefined') { }}
             {{= tryApp }}
+        {{ } }}
+      </div>
+      <div style="max-width:200px;" id="testHandlerBtn">
+        {{ if (typeof testHandler != 'undefined') { }}
+            {{= testHandler }}
         {{ } }}
       </div>
        {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}

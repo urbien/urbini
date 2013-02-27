@@ -264,8 +264,9 @@ define(['jqueryIndexedDB'], function() {
             defer.resolve(arrayOffset(result.sort(sort), qOffset));
             return;
           }
-          
-          request = index[op]();
+
+          request = store.getAll();
+//          request = index[op]();
           request.done(function(all, event) {
 //            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result).sort(sort), qOffset), qLimit));
             defer.resolve(arrayOffset(arraySub(all, result).sort(sort), qOffset));

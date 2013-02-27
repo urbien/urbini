@@ -274,7 +274,7 @@ define([
     
       data.lastFetchOrigin = 'server';
 //      if (!forceFetch && isUpdate) // && !shortPage)
-      if (isUpdate) {
+      if (isUpdate && !options.forceFetch) {
         lastFetchedOn = lastFetchedOn || RM.getLastFetched(data);
         RM.setLastFetched(lastFetchedOn, options);
       }
@@ -719,7 +719,7 @@ define([
       RM.runTask(function() {
 //          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
-        var getProblematic = RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+        RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           if (!results.length) {
             defer.resolve();
             return;
@@ -758,6 +758,7 @@ define([
         atts.$returnMade = true;
         resource.save(atts, { // ref has only the changes the user made
           sync: true, 
+          fromDB: true,
           success: function(model, data, options) {
             if (!data._uri) {
               // TODO: handle errors
