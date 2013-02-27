@@ -138,7 +138,7 @@ define([
           continue;
   
         if (numDisplayed  &&  !groupNameDisplayed) {
-          otherLi = '<li data-role="collapsible" data-inset="false" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin-bottom:0px;">Other</h3><ul data-role="listview">';
+          otherLi = '<li data-role="collapsible" data-inset="false" style="border:0px" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin:0px;">Other</h3><ul data-role="listview" style="margin: -10px 0px;">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }

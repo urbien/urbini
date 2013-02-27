@@ -40,8 +40,8 @@ label.req::before {
 }
 
 #other {
-  padding:0;
-/*  border:0;border-collapse:collapse */
+  padding:0; 
+  border:0;border-collapse:collapse 
 }
 
 .ui-icon-facebook {
