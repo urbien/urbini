@@ -14,7 +14,7 @@
 //'use strict';
 define(['jqueryIndexedDB'], function() {
   var IDBCursor = $.indexedDB.IDBCursor;
-  var DEFAULT_PRIMARY_KEY = '_uri';
+  var DEFAULT_PRIMARY_KEY = '__uri';
   function Index(name) {
     function queryMaker(op) {
       return function () {
