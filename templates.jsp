@@ -14,7 +14,7 @@
     </div>
     <!-- ul id="columns">
     </ul -->
-    <table data-role="table" data-mode="reflow" class="table-stroke" width="100%" id="comments">
+    <table class="table-stroke" width="100%" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
       <input type="submit" id="mvSubmit" value="Submit" />
@@ -37,7 +37,7 @@
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div id="resourceImage"></div>
-    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="resourceView" class="action-list">
+    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="resourceView">
     </ul>
     
     {{ if ($('#other')) { }}
@@ -420,17 +420,16 @@
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
-<td class="cl" valign="top">
+<td width="99%" class="cl" valign="top">
+  <span class="commentListDate" style="float:right;">{{= Lablz.U.getFormattedDate(submitTime, true) }}</span>
   <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
     {{= obj['submitter.displayName'] }}
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
-  <br/><br/>
-  <!-- span class="commentListDate">{{= obj['submitTime.displayName'] }}</span -->
-  <span class="commentListDate">{{= Lablz.U.getFormattedDate(submitTime, true) }}</span>
   <br/>
-  <a data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'mkResource.html?.vote=Like&amp;-changeInplace=y&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Vote&amp;bUri=' + encodeURIComponent('sql?uri=' + encodeURIComponent(_uri)) }}">
+  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('aspects/tags/Vote') + '?vote=Like&amp;votable=' + encodeURIComponent(_uri) + '&amp;-makeId=' + Lablz.nextId() }}">
   </a>
+  <span>{{= typeof votes.count == 'undefined' ? '' : votes.count }}</span>
 </td>
 </script>
 

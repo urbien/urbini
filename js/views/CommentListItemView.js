@@ -11,7 +11,7 @@ define([
     tagName: 'tr',
     className: 'commentList',
     initialize: function(options) {
-      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', "like"); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = _.template(Templates.get('comment-item'));
       
@@ -20,8 +20,37 @@ define([
       return this;
     },
     events: {
-//      'click': 'click'
+      'click .like': 'like'
     },
+    like: function(e) {
+      var likeModel = G.shortNameToModel['Vote'];
+      if (!likeModel) 
+        return;
+      Events.stopEvent(e);
+      var r = new likeModel();
+      self = this;
+      var props = {};
+      props.vote = 'Like';
+      props.votable = this.resource.get('_uri');
+      r.save(props, {
+        success: function(resource, response, options) {
+          self.router.navigate(window.location.hash, options);
+        }, 
+        error: function(model, xhr, options) {
+          var json;
+          try {
+            json = JSON.parse(xhr.responseText).error;
+          } catch (err) {
+            G.log(self.TAG, 'error', 'couldn\'t create like item, no error info from server');
+            return;
+          }
+          
+          Errors.errDialog({msg: json.details});
+          G.log(self.TAG, 'error', 'couldn\'t create like');
+        }
+      });      
+    },
+
 //    tap: Events.defaultTapHandler,
 //    click: Events.defaultClickHandler,  
     render: function(event) {
