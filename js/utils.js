@@ -1595,8 +1595,8 @@ define([
       for (var i = 0; i < U.plural.length; i++) {
         var regex          = U.plural[i][0];
         var replace_string = U.plural[i][1];
-        if (regex.test(word)) {
-          return word.replace(regex, replace_string);
+        if (regex.test(p)) {
+          return p.replace(regex, replace_string);
         }
       }
       
