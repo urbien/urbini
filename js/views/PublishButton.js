@@ -30,7 +30,18 @@ define([
       var cause = res.get('causeDavClassUri');
       var effect = res.get('effectDavClassUri');
 //      window.location.href = G.serverName + '/app/' + res.get('appPath');
-      var effectList = U.makeMobileUrl('list', effect, {plugin: res.getUri()});
+      var params = {};
+      params.plugin = res.getUri();
+      if (!G.currentUser.guest) {
+        var vocModel = res.vocModel;
+        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy');
+        if (submittedBy.length) {
+          submittedBy = submittedBy[0];
+          params[submittedBy] = '_me';
+        }
+      }
+      
+      var effectList = U.makeMobileUrl('list', effect, params);
       this.router.navigate(U.makeMobileUrl('make', cause, {$returnUri: effectList}), {trigger: true});
     },
     tryApp: function(e) {
