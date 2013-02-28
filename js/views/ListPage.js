@@ -143,6 +143,7 @@ define([
       var json = rl.toJSON();
       json.viewId = this.cid;
       var vocModel = this.vocModel;
+      var type = vocModel.type;
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
@@ -152,9 +153,9 @@ define([
       
       var isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       var hash = window.location.hash;
-      var idx;
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
-      var showAddButton = !isChooser  &&  vocModel.type.endsWith('/App'); 
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type);
+      var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
         if (s && s.length > 0) {

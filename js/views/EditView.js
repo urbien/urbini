@@ -721,7 +721,8 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var errors = res.validate(_.extend({}, res.attributes, this.initialParams, atts), {validateAll: true, skipRefresh: true});
+      var atts = _.extend({}, res.attributes, this.initialParams, atts);
+      var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         onSuccess();

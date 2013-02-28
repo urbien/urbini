@@ -77,6 +77,10 @@ define([
       return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
 
+    isAnAppClass: function(type) {
+      return type.indexOf("/voc/dev/") != -1;
+    },
+    
     getUserRole: function() {
       return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
     },
@@ -1294,8 +1298,8 @@ define([
         else if (facet.toLowerCase().endsWith('phone'))
           val.type = 'tel';
       }
-      if (prop.comment)
-        val.comment = prop.comment;
+//      if (prop.comment)
+//        val.comment = prop.comment;
       
 //      var classes = [];
       var rules = prop.multiValue ? {} : {"data-formEl": true};
@@ -1314,9 +1318,13 @@ define([
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       _.extend(val, {U: U, G: G});
+//      if (prop.comment)
+//        val.comment = prop.comment;
+      var propInfo = {value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
       if (prop.comment)
-        val.comment = prop.comment;
-      return {value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
+        propInfo.comment = prop.comment;
+      
+      return propInfo;
     },
     
     reduceObj: function(obj, func, memo, context) {
@@ -1425,11 +1433,18 @@ define([
       floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
     },
+    
+    /**
+     * @param res Resource (Backbone.Model) instance
+     * @param prop name of the property
+     * @param property value 
+     */
     getTypedValue: function(res, prop, value) {
       var vocModel = res.vocModel;
       var p = U.primitiveTypes;
       var prop = vocModel.properties[prop];
       var range = prop.range || prop.facet;
+      var isNumber = !isNaN(value);
       if (range === 'boolean')
         return typeof value === 'boolean' ? value : value === 'true' || value === 'Yes' || value === '1' || value === 1; 
       else if (p.dates.indexOf(range) != -1)
@@ -1438,6 +1453,10 @@ define([
         return parseFloat(value);
       else if (p.ints.indexOf(range) != -1)
         return parseInt(value);
+//      else if (p.floats.indexOf(range) != -1)
+//        return !isNumber ? null : parseFloat(value);
+//      else if (p.ints.indexOf(range) != -1)
+//        return !isNumber ? null : parseInt(value);
 //      else if (range.startsWith(p.uri)) {
 //        range = range.slice(pt.length + 1);
 //        if (p.floats.indexOf(range) != -1)
@@ -1956,6 +1975,14 @@ define([
     var fn = patterns[pattern];
     fn.regExp = new RegExp(pattern.slice(1, pattern.length - 1));
   }
+  
+  U.invalid = {};
+  (function() {
+    var common = 'Please enter a';
+    var i = U.invalid;
+    i['int'] = common + 'n integer';
+    i['float'] = i['double'] = common + ' number';
+  })();
   
   return (Lablz.U = U);
 });

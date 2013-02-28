@@ -140,13 +140,25 @@ define([
     },
     parse: function (resp) {
       var lf;
-      if (this.lastFetchOrigin) {
-        if (this.lastFetchOrigin === 'db') {
+      switch (this.lastFetchOrigin) {
+        case 'db':
           if (this.loaded)
             return resp;
-        }
-        else
+        case 'edit':
+          break;
+        default:
           lf = G.currentServerTime();
+          break;
+          
+//        else if (this.lastFetchOrigin === 'edit') {
+//          debugger;
+//          var meta = this.vocModel.properties;
+//          for (var pName in resp) {
+//            var prop = meta[pName];
+//            if (prop)
+//              resp[pName] = U.getTypedValue(this, pName, resp[pName]);
+//          }
+//        }
       }
       
       if (!resp || resp.error)
@@ -228,20 +240,23 @@ define([
       
       var facet = prop.facet;
       if (facet) {
+        facet = facet.slice(facet.lastIndexOf('/') + 1);
         if (facet.endsWith('emailAddress'))
           return U.validateEmail(value) || 'Please enter a valid email';
         else if (facet.toLowerCase().endsWith('phone'))
           return U.validatePhone(value) || 'Please enter a valid phone number';
         else { 
           var val = U.getTypedValue(this, name, value);
-          if (val == null || val !== val) // test for NaN
-            return false;
+          if (val == null || val !== val) { // test for NaN
+            return U.invalid[facet] || 'Invalid value';
+          }
         }
       }
       else {
         val = U.getTypedValue(this, name, value);
-        if (val == null || val !== val) // test for NaN
-          return false;
+        if (val == null || val !== val) { // test for NaN
+          return U.invalid[prop.range] || 'Invalid value';
+        }
         else
           attrs[name] = val;
       }
@@ -251,7 +266,6 @@ define([
         if (/^Address1?\.postalCode1?$/.test(cloneOf))
           return U.validateZip(value) || 'Please enter a valid Postal Code';
       }
-      
       
       return true;
     },
@@ -292,9 +306,14 @@ define([
     },
 
     save: function(attrs, options) {
-      options = _.extend({silent: true, patch: true}, options || {});
+      options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
-      if (options.sync) {
+      var saved;
+      if (!options.sync) {
+        saved = Backbone.Model.prototype.save.call(this, data, options);
+        this.triggerHandlers(options);
+      }
+      else {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
         data.$returnMade = options.$returnMade !== false;
         var isNew = this.isNew();
@@ -328,11 +347,11 @@ define([
           
           error && error.apply(this, arguments);
         };
+        
+        saved = Backbone.Model.prototype.save.call(this, data, options);
       }
       
-      var ret = Backbone.Model.prototype.save.call(this, data, options);
-      this.triggerHandlers(options);
-      return ret;
+      return saved;
       
 //      if (options.sync) {
 //        return Backbone.Model.prototype.save.call(this, attrs, options);

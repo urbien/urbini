@@ -689,7 +689,7 @@
 <!--    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? name : value) : displayName }} -->
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
 
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+<!--    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} -->
   </a>
 <!--  {{= typeof uri == 'undefined' ? '' : '<input type="hidden" name="' + shortName + '" value="' + uri +'"/>' }} -->
 </script>
@@ -706,7 +706,7 @@
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
-  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }}
+<!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </script>
 
 <script type="text/template" id="datePET">

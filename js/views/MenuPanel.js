@@ -122,18 +122,18 @@ define([
         params.webClassesCount = 'null';
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
-      params.dashboard = '!null';
       
+      params.dashboard = '!=null';
       var hash = window.location.hash;
       hash = hash && hash.slice(1);
       
 //      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
-      if (!hash  ||  hash != url)
-        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: U.makePageUrl('list', 'model/social/App', params) }));        
-
-//      var url = encodeURIComponent('model/social/Theme') + "?isTemplate=true";
-      if (!hash  ||  hash != url)
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: U.makePageUrl('list', 'model/social/Theme', {isTemplate: true}) }));        
+      if (!hash  ||  hash != url) {
+        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: U.makePageUrl('list', 'model/social/App', params) }));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: U.makePageUrl('list', 'model/social/Theme', {isTemplate: true}) }));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Idea gallery', pageUrl: U.makePageUrl('list', 'model/social/AppIdea') }));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: U.makePageUrl('list', 'model/social/NominationForConnection')}));
+      }
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {

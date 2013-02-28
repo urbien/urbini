@@ -362,6 +362,17 @@ define([
       else {
         G.shortNameToModel[sn] = m;
         G.typeToModel[type] = m;
+        if (U.isAnAppClass(type)) {
+          var meta = m.properties;
+          for (var p in meta) {
+            var prop = meta[p];
+            if (prop.displayName) {
+              var sn = prop.shortName = prop.displayName.camelize();
+              delete meta[p];
+              meta[sn] = prop;
+            }
+          }
+        }
       }
       
       m.prototype.parse = Resource.prototype.parse;
@@ -476,13 +487,16 @@ define([
     
     nukeHandler: function(handler, handlerFn) {
       var causeType = handler.causeDavClassUri;
-      delete G.customHandlers[causeType];
+      G.customHandlers[causeType] = _.filter(G.customHandlers[causeType], function(h) {
+        return h._uri != handler._uri;
+      });
+      
       if (handlerFn == null) {
         Voc.initCustomHandlers(causeType);
         return;
       }
       
-      _each(Voc.scriptActions, function(action) {        
+      _.each(Voc.scriptActions, function(action) {        
         Events.off(action + '.' + causeType, handlerFn);
       });
     },
@@ -535,8 +549,7 @@ define([
         
         var res = new effectModel();
         effect.plugin = handler._uri;
-        if (effectModel.properties.cause)
-          effect.cause = cause._uri;
+//        effect.cause = cause._uri;
         res.save(effect, {'$returnMade': false, sync: false});
       }).fail(function() {
         debugger;
