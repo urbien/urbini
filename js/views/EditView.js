@@ -690,6 +690,7 @@ define([
         
         res.save(props, {
           success: function(resource, response, options) {
+            res.notifyContainers();
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
             if (!isEdit)

@@ -40,6 +40,7 @@ define([
       this.url = this.baseUrl;      
       this.queryMap[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
+      this.belongsInCollection = U.buildValueTester(this.queryMap, this.vocModel);
 //      this.sync = this.constructor.sync;
       
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");

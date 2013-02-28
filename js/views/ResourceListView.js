@@ -331,10 +331,16 @@ define([
       var self = this;
       setTimeout(function() { self.alignBricks(); }, 50);
     },
-    alignBricks: function() {
+    alignBricks: function(loaded) {
       // masonry is hidden
-      if (this.$el.width() == 0)
-        return;
+      if (this.$el.width() == 0) {
+        debugger;
+        if (!loaded)
+          this.$el.load(function() {alignBricks(true)});
+        else
+          return;
+      }
+      
       var self = this;
       var needToReload = false;
       // all bricks in masonry

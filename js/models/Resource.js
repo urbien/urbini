@@ -305,7 +305,56 @@ define([
       }
     },
 
+    notifyContainers: function() {
+      var meta = this.vocModel.properties;
+      var props = this.attributes;
+      for (var p in props) {
+        var prop = meta[p];
+        if (prop.containerMember || prop.notifyContainer) {
+          var val = props[p];
+          if (!val) // might have gotten unset
+            continue;
+          
+          var existing = this.router.Models[val] || this.router.searchCollections(val);
+          if (existing)
+            existing.updateCounts(this, isNew);
+        }
+      }
+    },
+    
+    updateCounts: function(res, isNew) {
+      if (!isNew)
+        return; // for now
+      
+      var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
+      var props = this.attributes;
+      var blRange = res.vocModel.type;
+      for (var bl in meta) {
+        var blProp = meta[bl];
+        var range = U.getTypeUri(bl.range);
+        if (range !== blRange)
+          continue;
+        
+        if (blProp.where) {
+          var testFunction = U.buildValueTester(blProp.where, vocModel);
+          if (!testFunction || !testFunction(res))
+            continue;
+        }
+        
+        if (blProp.whereOr) {
+          debugger;
+          var where = {$or: blProp.whereOr};
+          var testFunction = U.buildValueTester($.param(where), vocModel);
+          if (!testFunction || !testFunction(res))
+            continue;
+        }
+        
+        props[bl].count++;
+      }
+    },
+    
     save: function(attrs, options) {
+      var isNew = this.isNew();
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
       var saved;
@@ -332,6 +381,7 @@ define([
           
           Events.trigger('resourcesChanged', [self]);
           self.triggerHandlers(options);
+          self.notifyContainers(isNew);
         };
         
         options.error = function(originalModel, err, opts) {

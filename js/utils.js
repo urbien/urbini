@@ -1816,27 +1816,6 @@ define([
       
       return positionProps;
     },
-
-    parseWhere: function(where) {
-                    // nuke whitespace outside of single and double quotes
-      where = where.replace(/\s+(?=([^']*'[^']*')*[^']*$)/g, '')
-                    // convert to API params
-                   .replace(/==/g, '=')
-                   .replace(/(>=|<=)/, '=$1')
-                    // replace self with user uri
-                   .replace(/\'self\'|\\"self\\"|\\\'self\\\'|\\\"self\\\"/g, G.currentUser._uri);
-                       
-      // TODO: support OR
-      where = where.split(/&&/);
-      var params = {};
-      for (var i = 0; i < where.length; i++) {
-        // TODO: support <=, >=, etc.
-        var pair = where[i].split('=');
-        params[pair.shift()] = pair.join('=');
-      }
-      
-      return params;
-    },
     
     makeHeaderTitle: function(pre, post) {
       return pre + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + post;
@@ -1928,9 +1907,215 @@ define([
       }
       
       return obj;
-    }
-//    ,
+    },
     
+    DEFAULT_WHERE_OPERATOR: '==',
+    whereParams: {
+      $or: '||', 
+      $like: '&', 
+      $in: ',', 
+      $and: '&'
+    },
+    
+    parseAPIClause: function(clause) {
+      var name, opVal, op, val;
+      if (arguments.length == 2) {
+        name = clause;
+        opVal = arguments[1];
+      }
+      else {
+        clause = clause.split('=');
+        name = decodeURIComponent(clause[0]);
+        opVal = decodeURIComponent(clause[1]);
+      }
+      
+      opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
+      if (!opVal || opVal.length != 3)
+        return null;
+      
+      var op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
+      var whereParam = U.filterObj(U.whereParams, function(p) {
+        return val.startsWith(p);
+      });
+      
+      if (_.size(whereParam)) {
+        whereParam = U.getFirstProperty(whereParam);
+        var subClause = val.split('=')[1];
+        if (subClause.length == 2 && subClause[0] === whereParam) {
+          debugger;
+          subClause = U.parseAPIQuery(subClause[1], U.whereParams[whereParam]);
+          var sVal = {};
+          sVal[whereParam] = subClause;
+          val = sVal;
+        }
+      }
+        
+      return {
+        name: name, 
+        op: op || U.DEFAULT_WHERE_OPERATOR, 
+        value: val
+      };
+    },
+
+    parseAPIQuery: function(query, delimiter) {
+      var result = [];
+      var type = U.getObjectType(query);
+      switch (type) {
+        case '[object Object]':
+          var q = [];
+          for (var p in query) {
+            var one = {};
+            one[p] = query[p];
+            q.push($.param(one));
+          }
+          
+          query = q;
+          break;
+        case '[object String]':
+          query = query.split(delimiter || '&');
+          break;
+        default:
+          throw new Error('query must be either a query string or a parameter map');
+      }
+      
+      for (var i = 0; i < query.length; i++) {
+        var clause = U.parseAPIClause(query[i]);
+        if (!clause) {
+          G.log(U.TAG, 'error', 'bad query: ' + query[i]);          
+          return null;
+        }
+        
+        result.push(clause);
+      }
+      
+      return result;
+    },
+    
+    buildValueTester: function(params, vocModel) {
+      debugger;
+      var rules = [], meta = vocModel.properties;
+      var query = U.parseAPIQuery(params);
+      _.each(query, function(clause) {
+        var param = clause.name;
+        switch (param) {
+        case '$or':
+        case '$and':
+          debugger;
+          var chainFn = param === '$or' ? _.any : _.all;
+          var tests = _.map(clause.value, function(subClause) {
+            return U.buildValueTester(subClause, vocModel)
+          });
+          
+          rules.push(function(val) {
+            return chainFn(orTests, function(test) {
+              return test(val);
+            });
+          });
+          
+          break;
+        case '$in':
+          debugger;
+          var or = {}, propName = clauses[0];
+          for (var i = 1; i < clauses.length; i++) {
+            or[propName] = clauses[i];
+          }
+          
+          rules.push(U.buildValueTester($.param({$or: $.param(or)}), vocModel));
+          break;
+        default:
+          if (param.startsWith('$'))
+            break;
+          
+          debugger;
+          var prop = meta[param];
+          if (!prop || typeof clauses !== 'string') {
+            debugger;
+            return function() {
+              return false;
+            }
+          }
+          
+          if (U.isResourceProp(prop) && bound === '_me') {
+            if (G.currentUser.guest) {
+              Events.trigger('req-login'); // exit search?
+              break;
+            }
+            else
+              bound = G.currentUser._uri;
+          }
+
+          rules.push(U.makeTest(param, RM.operatorMap[clause.op], clause.value));          
+          break;
+        }
+      });
+      
+      return function(val) {
+        for (var i = 0; i < rules.length; i++) {
+          if (!rules[i](val))
+            return false;
+        }
+        
+        return true;
+      }
+    },
+    
+    makeTest: function(prop, op, bound) {
+      var range = prop.range;
+      var name = prop.shortName;
+      switch (range) {        
+        case 'boolean':
+          var falsy = function(res) {
+            return U.isFalsy(res[name], range);
+          }
+          var truthy = function(res) {
+            return !U.isFalsy(res[name], range);
+          }
+          
+          if (op === '==')
+            return U.isFalsy(bound, range) ? falsy : truthy;
+          else
+            return U.isFalsy(bound, range) ? truthy : falsy;
+        case 'date':
+        case 'dateTime':
+        case 'ComplexDate':
+          if (bound === 'null') {
+            return function(res) {
+              return !U.isFalsy(res[name], range);
+            }
+          }
+          
+          try {
+            bound = U.parseDate(bound);
+          } catch (err) {
+            return function() {return false};
+          }
+          // fall through to default
+        default: {
+          return function(res) {
+            try {
+              return new Function("a", "b", "return a {0} b".format(op))(res[name], bound);
+            } catch (err){
+              return false;
+            }
+          };
+        }
+      }
+    }
+    
+//    where: function(res, where) {
+//      where = where.split('&');
+//      for (var i = 0; i < where.length; i++) {
+//        var clause = U.parseAPIClause(where[i]);
+//        if (!clause) {
+//          G.log(U.TAG, 'error', 'bad where clause: ' + where[i]);
+//          return false;
+//        }
+//      }
+//      
+//      return true;
+//    }
+//    
+//    ,
 //    getProp: function(meta, name) {
 //      var org = meta[name];
 //      if (org)
