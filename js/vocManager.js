@@ -368,6 +368,7 @@ define([
             var prop = meta[p];
             if (prop.displayName) {
               var sn = prop.shortName = prop.displayName.camelize();
+              props.altName = p;
               delete meta[p];
               meta[sn] = prop;
             }

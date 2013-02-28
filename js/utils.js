@@ -1565,13 +1565,42 @@ define([
       }
     },
     
+    // https://gist.github.com/boo1ean/3878870
+    plural: [
+       [/(quiz)$/i,               "$1zes"  ],
+       [/^(ox)$/i,                "$1en"   ],
+       [/([m|l])ouse$/i,          "$1ice"  ],
+       [/(matr|vert|ind)ix|ex$/i, "$1ices" ],
+       [/(x|ch|ss|sh)$/i,         "$1es"   ],
+       [/([^aeiouy]|qu)y$/i,      "$1ies"  ],
+       [/(hive)$/i,               "$1s"    ],
+       [/(?:([^f])fe|([lr])f)$/i, "$1$2ves"],
+       [/sis$/i,                  "ses"    ],
+       [/([ti])um$/i,             "$1a"    ],
+       [/(buffal|tomat)o$/i,      "$1oes"  ],
+       [/(bu)s$/i,                "$1ses"  ],
+       [/(alias|status)$/i,       "$1es"   ],
+       [/(octop|vir)us$/i,        "$1i"    ],
+       [/(ax|test)is$/i,          "$1es"   ],
+       [/s$/i,                    "s"      ],
+       [/$/,                      "s"      ]
+    ],
+         
     getPlural: function(res) {
       var p = res.vocModel.pluralName;
       if (p)
         return p;
       
       p = res.displayName;
-      return p.endsWith('y') ? p.slice(0, p.length - 1) + 'ies' : p + 's';
+      for (var i = 0; i < U.plural.length; i++) {
+        var regex          = U.plural[i][0];
+        var replace_string = U.plural[i][1];
+        if (regex.test(word)) {
+          return word.replace(regex, replace_string);
+        }
+      }
+      
+      return p + 's';
     },
     // helps to fit images in listview (RL)
     // note: margins in DOM should be: -left and -top 
@@ -1900,6 +1929,25 @@ define([
       
       return obj;
     }
+//    ,
+    
+//    getProp: function(meta, name) {
+//      var org = meta[name];
+//      if (org)
+//        return org;
+//      
+//      var alt = U.getAltName(meta, name);
+//      return alt ? meta[alt] : null;
+//    },
+//    
+//    getAltName: function(props, name) {
+//      var alt = U.filterObj(meta, function(prop) {
+//        return prop.altName == name;
+//      });
+//      
+//      return _.size(alt) ? U.getFirstProperty(alt) : null;
+//    }
+//    
 //    ,
 //    intersectObjects: function(array) {
 //      var rest = slice.call(arguments, 1);
