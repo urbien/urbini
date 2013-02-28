@@ -97,8 +97,8 @@ define([
           this.forkMe = true;
         }
         else if (U.isAssignableFrom(res.vocModel, "Handler")) {
-          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);
-          if (user == handlerOwner)
+//          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);
+//          if (user == handlerOwner)
             this.testHandler = true;            
         }
       }
