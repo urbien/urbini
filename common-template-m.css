@@ -185,7 +185,7 @@ html { height: 100%; }
 #comments {padding-top: 12px; padding-bottom: 12px;}
 .commentList {
   background-color: &[PrimaryColor_4];; 
-  border-bottom-color: #757575; 
+  border-bottom: #ccc; 
   border-bottom-style: solid; 
   border-bottom-width: 1px; 
   padding-top: 12px; 
