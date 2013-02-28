@@ -122,6 +122,7 @@ define([
         params.webClassesCount = 'null';
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
+      params.dashboard = '!null';
       
       var hash = window.location.hash;
       hash = hash && hash.slice(1);
