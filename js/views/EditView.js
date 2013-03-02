@@ -48,7 +48,7 @@ define([
         var prop = meta[shortName];
         if (U.isResourceProp(prop)) {
           var uri = init[shortName];
-          var res = this.router.Models[uri] || this.router.searchCollections(uri);
+          var res = G.getCachedResource(uri);
           if (res) {
             init[shortName + '.displayName'] = U.getDisplayName(res);
           }
@@ -450,7 +450,6 @@ define([
       // TODO: fix this HACK
       if (uri)
         Events.trigger('newResource', res);
-//      G.Router.Models[uri] = res;
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
@@ -582,6 +581,12 @@ define([
       }
     },
     submit: function(e) {
+      if (G.currentUser.guest) {
+        // TODO; save to db before making them login? To prevent losing data entry
+        Events.trigger('req-login', {returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes)});
+        return;
+      }
+      
       Events.stopEvent(e);
       var isEdit = (this.action === 'edit');
       var res = this.resource, 
@@ -722,7 +727,7 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var atts = _.extend({}, res.attributes, this.initialParams, atts);
+      var atts = _.extend({}, res.attributes, this.initialParams);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});

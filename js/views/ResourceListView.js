@@ -25,9 +25,15 @@ define([
       Events.on('changePage', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
       this.collection.on('reset', this.render, this);
+      this.collection.on('add', this.onadd, this);
+//      this.collection.on('add', this.add, this);
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       return this;
+    },
+    onadd: function(resources, options) {
+      if (options && options.refresh)
+        this.refresh(resources);
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])

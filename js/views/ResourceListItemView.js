@@ -134,12 +134,11 @@ define([
         if (this.mvVals  &&  $.inArray(json.davDisplayName, this.mvVals) != -1)
           json['checked'] = 'checked';
       }
-      var distance = m.get('distance');
-      if (typeof distance != 'undefined') {
-        var meta = this.vocModel.properties;
-        var prop = meta['distance'];
-        var d = U.getCloneOf(this.vocModel, 'Distance.distance');
-        if (d)
+
+      var distanceProp = U.getCloneOf('Distance.distance', m.vocModel)[0];
+      if (distanceProp) {
+        var distance = m.get(distanceProp.shortName);
+        if (distance)
           json.distance = distance + ' mi';
       }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);

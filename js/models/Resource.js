@@ -96,6 +96,9 @@ define([
       this.save(props, options);
     },
     onchange: function(e) {
+//      if (this.vocModel.type.contains('hudsonfog.com/voc/system/designer/'))
+//        Events.trigger('modelUpdate', this.get('davClassUri'));
+      
       if (this.lastFetchOrigin !== 'server')
         return;
       
@@ -305,18 +308,19 @@ define([
       }
     },
 
-    notifyContainers: function() {
+    notifyContainers: function(isNew) {
+      isNew = isNew || this.isNew();
       var meta = this.vocModel.properties;
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (prop.containerMember || prop.notifyContainer) {
+        if (prop && (prop.containerMember || prop.notifyContainer)) {
           var val = props[p];
           if (!val) // might have gotten unset
             continue;
           
-          var existing = this.router.Models[val] || this.router.searchCollections(val);
-          if (existing)
+          var existing = G.getCachedResource(val);
+          if (existing) 
             existing.updateCounts(this, isNew);
         }
       }
@@ -331,7 +335,7 @@ define([
       var blRange = res.vocModel.type;
       for (var bl in meta) {
         var blProp = meta[bl];
-        var range = U.getTypeUri(bl.range);
+        var range = U.getTypeUri(blProp.range);
         if (range !== blRange)
           continue;
         
@@ -349,7 +353,11 @@ define([
             continue;
         }
         
-        props[bl].count++;
+        var blVal = _.clone(props[bl]);
+        blVal.count++;
+        var atts = {};
+        atts[bl] = blVal;
+        this.set(atts, {skipValidation: true});
       }
     },
     
@@ -360,10 +368,16 @@ define([
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);
+        G.cacheResource(this);
         this.triggerHandlers(options);
       }
       else {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
+        if (_.size(data) == 0) {
+          debugger;
+          return; 
+        }
+        
         data.$returnMade = options.$returnMade !== false;
         var isNew = this.isNew();
         if (!isNew)
@@ -379,9 +393,10 @@ define([
           if (response.error)
             return;
           
+          G.cacheResource(self);
           Events.trigger('resourcesChanged', [self]);
           self.triggerHandlers(options);
-          self.notifyContainers(isNew);
+          self.notifyContainers();
         };
         
         options.error = function(originalModel, err, opts) {

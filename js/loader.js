@@ -906,6 +906,38 @@ define('cache', function() {
     typeToInline: {},
     modCache: {},
     usedModels: {},
+    Resources: {},
+    ResourceLists: {},
+    cacheResource: function(resource, uri) {
+      uri = uri || resource.getUri();
+      G.Resources[uri] = resource;
+      return resource;
+    },
+    getCachedResource: function(uri) {
+      return G.Resources[uri] || G.searchCollections(uri);
+    },
+    /**
+     * search a collection map for a collection with a given model
+     * @return {collection: collection, model: model}, where collection is the first one found containing a model where model.get('_uri') == uri, or null otherwise
+     * @param uri: uri of a model
+     */
+    searchCollections: function(collections, uri) {
+      if (arguments.length == 1) // if just uri is passed in, search all available collections
+        collections = G.ResourceLists;
+      else
+        collections = [collections];
+      
+      for (var i = 0; i < collections.length; i++) {
+        var collectionsByQuery = collections[i];
+        for (var query in collectionsByQuery) {
+          var m = collectionsByQuery[query].get(uri);
+          if (m) 
+            return {collection: collectionsByQuery[query], model: m};
+        }
+      }
+      
+      return null;
+    },
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
     sqlUrl: G.serverName + '/' + G.sqlUri,
@@ -1560,7 +1592,10 @@ define('cache', function() {
   }
   
 //  G.minify = G.getCookie(mCookie) !== 'n';
-  G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
+  if (typeof minified === 'undefined')
+    G.minify = G.minifyByDefault;
+  else
+    G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
 //  G.trace.ON = G.minify === false;
   // END minify
   

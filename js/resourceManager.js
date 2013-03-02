@@ -892,12 +892,10 @@ define([
         var method = isMkResource ? 'm/' : 'e/';
 //          delete item._uri; // in case API objects to us sending it
         
-        // TODO: remove HACK that uses G.router.Models to see if we have a model that we can save directly (without bypassing Backbone.sync and using ajax)
-        var router = G.Router;
-        var existingRes = router.Models[uri] || router.searchCollections(uri);
+        var existingRes = G.getCachedResource(uri);
         var existed = !!existingRes;
         if (!existingRes)
-          existingRes = router.Models[uri] = new vocModel(ref);
+          existingRes = G.cacheResource(new vocModel(ref), uri);
         
         var info = {resource: existingRes, reference: ref, references: refs};
         RM.saveToServer(info).always(function(updatedRef) {
@@ -1090,7 +1088,6 @@ define([
       if (!clause)
         return null;
       
-      debugger;
       var op = RM.operatorMap[clause.op],
           props = vocModel.properties;
       
@@ -1128,7 +1125,7 @@ define([
       if (!orderBy && !_.size(filter) && !orClause)
         return false;
       
-      if (orderBy && orderBy !== 'distance' && !hasIndex(indexNames, orderBy))
+      if (orderBy && U.isCloneOf(orderBy, 'Distance.distance', vocModel) && !hasIndex(indexNames, orderBy))
         return false;
       
       if (!_.all(_.keys(filter), function(name) {return hasIndex(indexNames, name);}))
@@ -1273,7 +1270,7 @@ define([
         return $.Deferred(function(defer) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
           var store = RM.$db.objectStore(type, 0);
-          var valueTester = U.buildValueTester(U.parseAPIQuery(filter), vocModel);
+          var valueTester = data.belongsInCollection; //U.buildValueTester(filter, vocModel);
           var results = [];
           var filterResults = function(item) {
             var val = parseFromDB(item.value);

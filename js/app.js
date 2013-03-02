@@ -233,10 +233,9 @@ define('app', [
           Errors.offline();
           return;
         }
-        
-        var here = window.location.href;
+
         _.each(G.socialNets, function(net) {
-          var state = U.getQueryString({socialNet: net.socialNet, returnUri: here, actionType: 'Login'}, {sort: true}); // sorted alphabetically
+          var state = U.getQueryString({socialNet: net.socialNet, returnUri: options.returnUri || window.location.href, actionType: 'Login'}, {sort: true}); // sorted alphabetically
           var params = net.oAuthVersion == 1 ?
             {
               episode: 1, 

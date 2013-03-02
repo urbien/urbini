@@ -27,7 +27,7 @@ define([
       
       this.vocModel = vocModel = this.model;
       this.resources = this.models;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'add'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -260,7 +260,7 @@ define([
             modified.push(uri);
           }
           else {
-            this.add(new this.vocModel(r));            
+            this.add(new this.vocModel(r));
           }
         }
         else

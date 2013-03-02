@@ -232,7 +232,7 @@ define([
     },
     
     isResourceProp: function(prop) {
-      return prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
+      return prop && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -296,6 +296,13 @@ define([
       }
       
       return _.size(results) === 1 ? results[U.getFirstProperty(results)] : results;
+    },
+    
+    isCloneOf: function(propName, iPropName, vocModel) {
+      var clone = U.getCloneOf(iPropName, vocModel);
+      return _.any(clone, function(iProp) {
+        return iProp.shortName === propName;
+      })
     },
     
     getLongUri1: function(uri, vocModel) {
@@ -756,7 +763,7 @@ define([
       
       var filtered = {};
       for (var p in qMap) {
-        if (model.properties[p])
+        if (model.properties[p] || U.whereParams[p])
           filtered[p] = qMap[p];
       }
   
@@ -1155,6 +1162,16 @@ define([
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
+//    isAllowed: function(action, type) {
+//      if (!U.isAnAppClass(type))
+//        return true; // for now
+//      
+//      if (action === 'edit')
+//        return true; // for now;
+//      
+//      var app = type.slice(type.indexOf(''));
+//    },
+    
     isAssignableFrom: function(model, className) {
       if (U.isA(model, className)  ||  model.shortName == className)
         return true;
@@ -1216,13 +1233,27 @@ define([
         val = {value: val};
       
       var propTemplate = Templates.getPropTemplate(prop);
-      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
+      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
     },
     
     makePageUrl: function(action, typeOrUri, params) {
       return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
     },
     
+    /**
+     * @return the value of the app's App._appPath property, sth like AppName
+     */
+    getAppPath: function(type) {
+      return type.slice(type.lastIndexOf('/') + 1);
+    },
+
+    /**
+     * @return the value of the app's App._name property, sth like urbien/voc/dev/AppName 
+     */
+    getAppName: function(type) {
+      return 'urbien/voc/dev' + type.slice(type.lastIndexOf('/'));
+    },
+
     makeMobileUrl: function(action, typeOrUri, params) {
       action = action || 'list';
       if (U.isModel(typeOrUri))
@@ -1317,10 +1348,9 @@ define([
       
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
-      _.extend(val, {U: U, G: G});
 //      if (prop.comment)
 //        val.comment = prop.comment;
-      var propInfo = {value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
+      var propInfo = {value: U.template(Templates.get(propTemplate))(val)};
       if (prop.comment)
         propInfo.comment = prop.comment;
       
@@ -1917,40 +1947,63 @@ define([
       $and: '&'
     },
     
-    parseAPIClause: function(clause) {
-      var name, opVal, op, val;
-      if (arguments.length == 2) {
-        name = clause;
-        opVal = arguments[1];
-      }
-      else {
+    parseAPIClause: function(clause, vocModel) {
+      var name, opVal, op, val, numArgs = arguments.length;
+      switch (numArgs) {
+      case 1:
         clause = clause.split('=');
         name = decodeURIComponent(clause[0]);
         opVal = decodeURIComponent(clause[1]);
+        break;
+      case 2:
+        name = clause;
+        opVal = arguments[1];
+        break;
+      case 3:
+        name = arguments[0];
+        op = arguments[1];
+        val = arguments[2];
+        break;
+      }
+        
+      if (numArgs != 3) {
+        opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
+        if (!opVal || opVal.length != 3)
+          return null;
+      
+        op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
+        val = opVal[2];
       }
       
-      opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
-      if (!opVal || opVal.length != 3)
-        return null;
-      
-      var op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
-      var whereParam = U.filterObj(U.whereParams, function(p) {
-        return val.startsWith(p);
-      });
-      
-      if (_.size(whereParam)) {
-        whereParam = U.getFirstProperty(whereParam);
-        var subClause = val.split('=')[1];
-        if (subClause.length == 2 && subClause[0] === whereParam) {
+      if (op === '!')
+        op = '!=';
+      else if (op === '=')
+        op = '==';
+        
+      if (name.startsWith('$')) {
+        var whereParam = U.filterObj(U.whereParams, function(delimiter, param) {
+          return name.startsWith(param);
+        });
+        
+        if (_.size(whereParam)) {
+          whereParam = U.getFirstProperty(whereParam);
+          var subClause = val.split('=')[1];
+          if (subClause.length == 2 && subClause[0] === whereParam) {
+            debugger;
+            subClause = U.parseAPIQuery(subClause[1], U.whereParams[whereParam]);
+            var sVal = {};
+            sVal[whereParam] = subClause;
+            val = sVal;
+          }
+        }
+        else if (name.startsWith('$this.')) {
           debugger;
-          subClause = U.parseAPIQuery(subClause[1], U.whereParams[whereParam]);
-          var sVal = {};
-          sVal[whereParam] = subClause;
-          val = sVal;
+          name = name.slice(6);
         }
       }
         
       return {
+        ___query___: true,
         name: name, 
         op: op || U.DEFAULT_WHERE_OPERATOR, 
         value: val
@@ -1992,7 +2045,6 @@ define([
     },
     
     buildValueTester: function(params, vocModel) {
-      debugger;
       var rules = [], meta = vocModel.properties;
       var query = U.parseAPIQuery(params);
       _.each(query, function(clause) {
@@ -2000,14 +2052,14 @@ define([
         switch (param) {
         case '$or':
         case '$and':
-          debugger;
           var chainFn = param === '$or' ? _.any : _.all;
-          var tests = _.map(clause.value, function(subClause) {
-            return U.buildValueTester(subClause, vocModel)
+          var subq = U.parseAPIQuery(clause.value, U.whereParams[param]);
+          var tests = _.map(subq, function(subClause) {
+            return U.makeTest(meta[subClause.name], subClause.op, subClause.value);
           });
           
           rules.push(function(val) {
-            return chainFn(orTests, function(test) {
+            return chainFn(tests, function(test) {
               return test(val);
             });
           });
@@ -2015,36 +2067,33 @@ define([
           break;
         case '$in':
           debugger;
-          var or = {}, propName = clauses[0];
-          for (var i = 1; i < clauses.length; i++) {
-            or[propName] = clauses[i];
+          var or = {}, propName = clause[0];
+          var chain = [];
+          for (var i = 1; i < clause.length; i++) {
+            var test = U.makeTest(meta[param], U.DEFAULT_WHERE_PARAMETER, clause[i]);
+            chain.push(test);
           }
           
-          rules.push(U.buildValueTester($.param({$or: $.param(or)}), vocModel));
+          rules.push(function(val) {
+            return _.any(chain, function(test) {
+              return test(val);
+            });
+          });
+          
           break;
         default:
           if (param.startsWith('$'))
             break;
           
-          debugger;
           var prop = meta[param];
-          if (!prop || typeof clauses !== 'string') {
+          if (!prop || U.getObjectType(clause) !== '[object Object]') {
             debugger;
             return function() {
               return false;
             }
           }
           
-          if (U.isResourceProp(prop) && bound === '_me') {
-            if (G.currentUser.guest) {
-              Events.trigger('req-login'); // exit search?
-              break;
-            }
-            else
-              bound = G.currentUser._uri;
-          }
-
-          rules.push(U.makeTest(param, RM.operatorMap[clause.op], clause.value));          
+          rules.push(U.makeTest(meta[param], clause.op, clause.value));          
           break;
         }
       });
@@ -2060,30 +2109,42 @@ define([
     },
     
     makeTest: function(prop, op, bound) {
+      if (arguments.length == 1) {
+        op = prop.op;
+        bound = prop.value;
+        prop = prop.name;
+      }
+      
+      if (!prop)
+        return function() {return true};
+        
+      if (U.isResourceProp(prop) && bound === '_me') {
+        if (G.currentUser.guest) {
+          Events.trigger('req-login'); // exit search?
+          return function() {return true};
+        }
+        else
+          bound = G.currentUser._uri;
+      }
+
       var range = prop.range;
       var name = prop.shortName;
+      var falsy = function(res) {
+        return U.isFalsy(res[name], range);
+      }
+      var truthy = function(res) {
+        return !U.isFalsy(res[name], range);
+      }
+      
+      if (bound === 'null')
+        return (op === '==') ^ U.isFalsy(bound, range) ? truthy : falsy; // XOR
+      
       switch (range) {        
         case 'boolean':
-          var falsy = function(res) {
-            return U.isFalsy(res[name], range);
-          }
-          var truthy = function(res) {
-            return !U.isFalsy(res[name], range);
-          }
-          
-          if (op === '==')
-            return U.isFalsy(bound, range) ? falsy : truthy;
-          else
-            return U.isFalsy(bound, range) ? truthy : falsy;
+          return (op === '==') ^ U.isFalsy(bound, range) ? truthy : falsy; // XOR
         case 'date':
         case 'dateTime':
-        case 'ComplexDate':
-          if (bound === 'null') {
-            return function(res) {
-              return !U.isFalsy(res[name], range);
-            }
-          }
-          
+        case 'ComplexDate':    
           try {
             bound = U.parseDate(bound);
           } catch (err) {
@@ -2093,15 +2154,21 @@ define([
         default: {
           return function(res) {
             try {
-              return new Function("a", "b", "return a {0} b".format(op))(res[name], bound);
+              return new Function("a", "b", "return a {0} b".format(op))(U.getValue(res, name), bound);
             } catch (err){
               return false;
             }
           };
         }
       }
-    }
+    },
     
+    template: function(templateName) {
+      var template = _.template(Templates.get(templateName));
+      return function(json) {
+        return _.template(_.extend(json, {U: U, G: G}));
+      };
+    }
 //    where: function(res, where) {
 //      where = where.split('&');
 //      for (var i = 0; i < where.length; i++) {

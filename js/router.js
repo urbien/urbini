@@ -31,8 +31,8 @@ define([
     MenuViews: {},
     Views: {},
     EditViews: {},
-    Models: {},
-    Collections: {},
+//    Models: {},
+//    Collections: {},
     Paginator: {},
     backClicked: false,
     forceRefresh: false,
@@ -52,7 +52,16 @@ define([
 
       Events.on('newResource', function(resource) {
         var uri = resource.getUri();
-        self.Models[uri] = resource;
+        G.Resources[uri] = resource;
+        for (var colType in G.ResourceLists) {
+          var cols = G.ResourceLists[colType];
+          for (var colQuery in cols) {
+            var col = cols[colQuery];
+            if (col.belongsInCollection(resource)) {
+              col.add(resource, {refresh: true});
+            }
+          }
+        }
       });
 
       // a hack to prevent browser address bar from dropping down
@@ -170,9 +179,9 @@ define([
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
-      this.Collections[typeUri] = this.Collections[typeUri] || {};
+      G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {};
       this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
-      var c = this.Collections[typeUri][key];
+      var c = G.ResourceLists[typeUri][key];
       if (c && !c._lastFetchedOn)
         c = null;
       
@@ -193,7 +202,7 @@ define([
       var list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
       var listView = new ListPage(_.extend(this.extraParams || {}, {model: list}));
       
-      this.Collections[typeUri][key] = list;
+      G.ResourceLists[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
       listView.setMode(mode || G.LISTMODES.LIST);
       
@@ -251,7 +260,19 @@ define([
       
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
-      
+
+      if (edit && U.isAnAppClass(this.vocModel.type)) {
+        var appPath = U.getAppPath(this.vocModel.type);
+        if (!G.installedApps[appPath]) {
+          if (!this.isAppLoaded(this.vocModel.app, 'make', arguments))
+            return;
+          
+          var here = U.getHash();
+          this.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', {application: this.vocModel.app, user: G.currentUser._uri, $returnUri: here}), {trigger: true});
+          return;
+        }
+      }
+
       var params = U.getHashParams(),
           makeId = params['-makeId'];
       
@@ -347,7 +368,7 @@ define([
 //        }
 //      }
       
-      var res = this.Models[uri];
+      var res = G.Resources[uri];
       if (res && !res.loaded)
         res = null;
       
@@ -355,19 +376,19 @@ define([
       var self = this;
       var collection;
       if (!res) {
-        var collections = this.Collections[typeUri];
+        var collections = G.ResourceLists[typeUri];
         if (collections) {
-          var result = this.searchCollections(collections, uri);
+          var result = G.searchCollections(collections, uri);
           if (result) {
             collection = result.collection;
-            res = this.Models[uri] = result.model;
+            res = G.Resources[uri] = result.model;
           }
         }
       }
       
       if (res) {
         this.currentModel = res;
-        this.Models[uri] = res;
+        G.Resources[uri] = res;
         var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
         this.changePage(v);
         res.fetch({
@@ -384,7 +405,7 @@ define([
         return this;
       }
       
-      var res = this.Models[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
+      var res = G.Resources[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
       var success = function(data) {
         // in case we were at a temp uri, we want to clean up our history as best we can
@@ -403,28 +424,6 @@ define([
       return true;
     },
     
-    /**
-     * search a collection map for a collection with a given model
-     * @return {collection: collection, model: model}, where collection is the first one found containing a model where model.get('_uri') == uri, or null otherwise
-     * @param uri: uri of a model
-     */
-    searchCollections: function(collections, uri) {
-      if (arguments.length == 1) // if just uri is passed in, search all available collections
-        collections = this.Collections;
-      else
-        collections = [collections];
-      
-      for (var i = 0; i < collections.length; i++) {
-        var collectionsByQuery = collections[i];
-        for (var query in collectionsByQuery) {
-          var m = collectionsByQuery[query].get(uri);
-          if (m) 
-            return {collection: collectionsByQuery[query], model: m};
-        }
-      }
-      
-      return null;
-    },
 /*    
     login: function() {
       console.log("#login page");
@@ -483,6 +482,32 @@ define([
         
         return false;
       }
+    },
+
+    loadApp: function(appUri, method, args) {
+      var app = G.getCachedResource(appUri);
+      if (app)
+        return app;
+
+      var self = this, appType = U.getTypeUri(appUri);
+      Voc.getModels(appType, {sync: true}).done(function() {
+        app = new G.typeToModel[appType]();
+        app.fetch({
+          sync: true,
+          success: function() {
+//            G.cacheResource(app);
+            self[method].apply(self, args);
+          },
+          error: function() {
+            
+          }
+        });
+      }).fail(function() {
+        debugger;
+        Errors.getDefaultErrorHandler();
+      });
+      
+      return false;
     },
     
     checkErr: function() {
