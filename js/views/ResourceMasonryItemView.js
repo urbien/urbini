@@ -19,8 +19,8 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get('masonry-list-item'));
-      this.modTemplate = _.template(Templates.get('masonry-mod-list-item'));
+      this.template = this.makeTemplate('masonry-list-item');
+      this.modTemplate = this.makeTemplate('masonry-mod-list-item');
 
       this.IMG_MAX_WIDTH = $(window).height() > $(window).width() ? 320 : 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);

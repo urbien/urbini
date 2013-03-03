@@ -14,7 +14,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'mapIt');
       BasicView.prototype.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get(this.template));
+      this.template = this.makeTemplate(this.template);
       return this;
     },
     mapIt: function(e) {

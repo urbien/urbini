@@ -3,11 +3,10 @@ define([
   'globals',
   'jquery', 
   'underscore', 
-  'templates',
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Templates, Events, U, BasicView) {
+], function(G, $, _, Events, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return p.charAt(0) != '_' && p != 'davDisplayName' && !prop.displayNameElm && U.isPropVisible(res, prop, role);
@@ -17,9 +16,9 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propRowTemplate = _.template(Templates.get('propRowTemplate'));
-      this.propRowTemplate2 = _.template(Templates.get('propRowTemplate2'));
-      this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
+      this.propRowTemplate = this.makeTemplate('propRowTemplate');
+      this.propRowTemplate2 = this.makeTemplate('propRowTemplate2');
+      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;

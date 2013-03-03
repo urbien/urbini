@@ -33,9 +33,9 @@ define([
                       'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.editRowTemplate = _.template(Templates.get('editRowTemplate'));
-      this.hiddenPropTemplate = _.template(Templates.get('hiddenPET'));
+      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
+      this.editRowTemplate = this.makeTemplate('editRowTemplate');
+      this.hiddenPropTemplate = this.makeTemplate('hiddenPET');
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
@@ -227,7 +227,7 @@ define([
         else if (!isBuy  &&  res.isA('Buyable')  &&  this.$el.find('.buyButton')) {
           Events.stopEvent(e);
   //        Events.trigger('buy', this.model);
-          var popupTemplate = _.template(Templates.get('buyPopupTemplate'));
+          var popupTemplate = this.makeTemplate('buyPopupTemplate');
           var $popup = $('#buy_popup');
           var price = res.get('price');
           var dn = U.getDisplayName(res);

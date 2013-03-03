@@ -57,7 +57,7 @@ define([
   
       if (propVal.indexOf('Image/') == 0)
         propVal = propVal.slice(6);
-  //          var iTemplate = _.template(Templates.get('imagePT'));
+  //          var iTemplate = this.makeTemplate('imagePT');
   //          li += '<div><a href="#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;

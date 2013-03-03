@@ -1,10 +1,10 @@
 //'use strict';
 define([
   'underscore', 
-  'templates',
+  'utils',
   'events', 
   'views/BasicView' 
-], function(_, Templates, Events, BasicView) {
+], function(_, U, Events, BasicView) {
   return BasicView.extend({
     template: 'backButtonTemplate',
     events: {
@@ -13,7 +13,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get(this.template));
+      this.template = this.makeTemplate(this.template);
       return this;
     },
     back: function(e) {

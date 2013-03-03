@@ -2,8 +2,9 @@
 define([
   'globals',
   'backbone',
+  'utils',
   'templates'
-], function(G, Backbone, Templates) {
+], function(G, Backbone, U, Templates) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
@@ -29,7 +30,11 @@ define([
 //  BasicView.prototype.setActive = function(active) {
 //    this.active = active;
 //  }
+  BasicView.prototype.makeTemplate = function(templateName) {
+    return U.template(templateName, this);
+  };
 
+  
   BasicView.prototype.isActive = function() {
     if (this.active)
       return true;

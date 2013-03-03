@@ -19,8 +19,6 @@ define([
     return this;
   };
   
-  var slice = ArrayProto.slice;
-
   String.prototype.format = function() {
     var args = arguments;
     return this.replace(/{(\d+)}/g, function(match, number) { 
@@ -1233,7 +1231,7 @@ define([
         val = {value: val};
       
       var propTemplate = Templates.getPropTemplate(prop);
-      return {name: U.getPropDisplayName(prop), value: _.template(Templates.get(propTemplate))(val)};
+      return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val)};
     },
     
     makePageUrl: function(action, typeOrUri, params) {
@@ -1350,7 +1348,7 @@ define([
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
 //      if (prop.comment)
 //        val.comment = prop.comment;
-      var propInfo = {value: U.template(Templates.get(propTemplate))(val)};
+      var propInfo = {value: U.template(propTemplate)(val)};
       if (prop.comment)
         propInfo.comment = prop.comment;
       
@@ -1918,7 +1916,7 @@ define([
 //      var y = aCoords[1] - bCoords[1];
 //      return Math.sqrt(x*x + y*y);
     },
-    slice: slice,
+    slice: ArrayProto.slice,
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -2162,13 +2160,21 @@ define([
         }
       }
     },
-    
-    template: function(templateName) {
+
+    template: function(templateName, context) {
       var template = _.template(Templates.get(templateName));
+      context = context || this;
       return function(json) {
-        return _.template(_.extend(json, {U: U, G: G}));
+        json = json || {};
+        if (!_.has(json, 'U'))
+          json.U = U;
+        if (!_.has(json, 'G'))
+          json.G = G;
+        
+        return template.call(context, json);
       };
     }
+
 //    where: function(res, where) {
 //      where = where.split('&');
 //      for (var i = 0; i < where.length; i++) {

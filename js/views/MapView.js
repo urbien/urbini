@@ -169,13 +169,13 @@ define([
           medImg = {value: U.decode(medImg)};
           width && (medImg.width = width);
           height && (medImg.height = height);
-          data.image = _.template(Templates.get("imagePT"))(medImg);
+          data.image = this.makeTemplate("imagePT")(medImg);
 //          _.extend(data, {U: U, G: G});
-          return _.template(Templates.get("mapItemTemplate"))(data);
+          return this.makeTemplate("mapItemTemplate")(data);
         }
       }
       
-      return _.template(Templates.get("mapItemTemplate"))(data);
+      return this.makeTemplate("mapItemTemplate")(data);
     },
     collectionToGeoJSON: function(model, metadata) {
       var gj = [];

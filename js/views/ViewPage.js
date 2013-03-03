@@ -20,7 +20,7 @@ define([
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.model.on('change', this.render, this);
-      this.template = _.template(Templates.get('resource'));
+      this.template = this.makeTemplate('resource');
       this.TAG = "ViewPage";
       this.router = G.Router || Backbone.History;
       this.viewId = options.viewId;

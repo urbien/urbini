@@ -13,7 +13,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', "like"); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get('comment-item'));
+      this.template = this.makeTemplate('comment-item');
       
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);

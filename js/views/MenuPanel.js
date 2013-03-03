@@ -14,11 +14,11 @@ define([
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.template = _.template(Templates.get('menuP'));
-      this.menuItemTemplate = _.template(Templates.get('menuItemTemplate'));
-      this.homeMenuItemTemplate = _.template(Templates.get('homeMenuItemTemplate'));
-      this.groupHeaderTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.menuItemNewAlertsTemplate = _.template(Templates.get('menuItemNewAlertsTemplate'));
+      this.template = this.makeTemplate('menuP');
+      this.menuItemTemplate = this.makeTemplate('menuItemTemplate');
+      this.homeMenuItemTemplate = this.makeTemplate('homeMenuItemTemplate');
+      this.groupHeaderTemplate = this.makeTemplate('propGroupsDividerTemplate');
+      this.menuItemNewAlertsTemplate = this.makeTemplate('menuItemNewAlertsTemplate');
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;

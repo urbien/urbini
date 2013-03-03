@@ -15,7 +15,7 @@ define([
     initialize: function(options) {      
       _.bindAll(this, 'render', 'toggleAroundMe', 'isActive');
       BasicView.prototype.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get(this.template));        
+      this.template = this.makeTemplate(this.template);        
       return this;
     },
     isActive: function() {

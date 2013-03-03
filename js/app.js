@@ -256,7 +256,7 @@ define('app', [
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
-        var popupTemplate = _.template(Templates.get('loginPopupTemplate'));
+        var popupTemplate = U.template('loginPopupTemplate');
         var $popup = $('.ui-page-active #login_popup');
         var html = popupTemplate({nets: G.socialNets, msg: options.online});
         if ($popup.length == 0) {

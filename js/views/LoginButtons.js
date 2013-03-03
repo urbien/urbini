@@ -28,9 +28,9 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'showPopup', 'logout');
       this.constructor.__super__.initialize.apply(this, arguments);
-//      this.popupTemplate = _.template(Templates.get(this.popupTemplate));
-      this.loginTemplate = _.template(Templates.get(this.loginTemplate));
-      this.logoutTemplate = _.template(Templates.get(this.logoutTemplate));
+//      this.popupTemplate = this.makeTemplate(this.popupTemplate);
+      this.loginTemplate = this.makeTemplate(this.loginTemplate);
+      this.logoutTemplate = this.makeTemplate(this.logoutTemplate);
       return this;
     },
 
@@ -39,7 +39,7 @@ define([
       var method = options && options.append ? 'append' : 'html';
       var loginBtn = this.template();
       if (!_.size(G.socialNets)) {
-        this.$el[method](_.template(Templates.get('logoutButtonTemplate'))());
+        this.$el[method](this.makeTemplate('logoutButtonTemplate')());
         return this;
       }
             

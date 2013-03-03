@@ -23,7 +23,7 @@ define([
       _.bindAll(this, 'render', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.template = _.template(Templates.get('resourceEdit'));
+      this.template = this.makeTemplate('resourceEdit');
       this.TAG = "EditPage";
       this.editOptions = _.extend({action: 'edit'}, _.pick(options, editParams));
       _.extend(this, this.editOptions);

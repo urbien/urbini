@@ -14,7 +14,7 @@ define([
       
       var res = this.resource || this.collection;
       _.extend(this, options);
-      this.template = _.template(Templates.get(this.template));
+      this.template = this.makeTemplate(this.template);
       if (typeof this.pageTitle === 'undefined') {
         var hash = window.location.hash && window.location.hash.slice(1);
         if (hash && G.tabs) {

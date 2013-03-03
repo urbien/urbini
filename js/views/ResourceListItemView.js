@@ -25,17 +25,17 @@ define([
         this.isCommonTemplate = false;
       else {
         if (options.mv) {
-          this.template = _.template(Templates.get('mvListItem'));
+          this.template = this.makeTemplate('mvListItem');
           this.$el.attr("data-role", "controlgroup");
           this.mvProp = options.mvProp;
           this.mvVals = options.mvVals;
         }
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
-          this.template = _.template(Templates.get('listItemTemplate'));
+          this.template = this.makeTemplate('listItemTemplate');
         }
         else
-          this.template = _.template(Templates.get('listItemTemplateNoImage'));
+          this.template = this.makeTemplate('listItemTemplateNoImage');
       }
       if (options.swatch) {
         this.$el.attr("data-theme", options.swatch);

@@ -18,10 +18,10 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'publish', 'tryApp', 'testHandler', 'forkApp');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = _.template(Templates.get(this.template));
-      this.tryTemplate = _.template(Templates.get('tryButtonTemplate'));
-      this.forkTemplate = _.template(Templates.get('forkButtonTemplate'));
-      this.testHandlerTemplate = _.template(Templates.get('testHandlerTemplate'));
+      this.template = this.makeTemplate(this.template);
+      this.tryTemplate = this.makeTemplate('tryButtonTemplate');
+      this.forkTemplate = this.makeTemplate('forkButtonTemplate');
+      this.testHandlerTemplate = this.makeTemplate('testHandlerTemplate');
       return this;
     },
     testHandler: function(e) {

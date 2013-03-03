@@ -23,7 +23,7 @@ define([
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
-      this.template = _.template(Templates.get(this.template));
+      this.template = this.makeTemplate(this.template);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.TAG = "ListPage";
       this.viewId = options.viewId;

@@ -13,9 +13,9 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propGroupsDividerTemplate = _.template(Templates.get('propGroupsDividerTemplate'));
-      this.cpTemplate = _.template(Templates.get('cpTemplate'));
-      this.cpTemplateNoAdd = _.template(Templates.get('cpTemplateNoAdd'));
+      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
+      this.cpTemplate = this.makeTemplate('cpTemplate');
+      this.cpTemplateNoAdd = this.makeTemplate('cpTemplateNoAdd');
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
   //    Globals.Events.on('refresh', this.refresh);
