@@ -87,14 +87,14 @@ define([
         if (U.isAssignableFrom(res.vocModel, "App")) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           if (user == appOwner  &&  (res.get('lastPublished')  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
-            this.hasPublish = true;
+            this.doPublish = true;
           
-          var noWebClasses = !res.get('lastPublished')  &&  !res.get('webClassesCount');
+          var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
-          if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished))
-            this.hasTry = true;
-          
-          this.forkMe = true;
+          if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished)) {
+            this.doTry = true;
+            this.forkMe = true;
+          }
         }
         else if (U.isAssignableFrom(res.vocModel, "Handler")) {
 //          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);

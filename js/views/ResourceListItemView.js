@@ -135,11 +135,10 @@ define([
           json['checked'] = 'checked';
       }
 
-      var distanceProp = U.getCloneOf('Distance.distance', m.vocModel)[0];
+      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
       if (distanceProp) {
-        var distance = m.get(distanceProp.shortName);
-        if (distance)
-          json.distance = distance + ' mi';
+//        var distance = m.get(distanceProp);
+        json.distanceUnits = 'mi';
       }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
       if (m.isA('Intersection')) {
@@ -210,6 +209,7 @@ define([
       }
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
+      _.extend(json, {U:U, G:G, Math:Math});
       this.$el.html(this.template(json));
       return this;
     },

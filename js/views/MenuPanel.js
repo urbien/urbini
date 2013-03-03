@@ -119,21 +119,29 @@ define([
       var params = {lastPublished: '!null'};
       if (!G.currentUser.guest) {
         params.creator = '_me';
-        params.webClassesCount = 'null';
+//        params.webClassesCount = 'null';
         params = {'$or': U.getQueryString(params, {delimiter: '||'})};
       }
       
       params.dashboard = '!=null';
       var hash = window.location.hash;
-      hash = hash && hash.slice(1);
+      hash = G.pageRoot + hash;
       
 //      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
-      if (!hash  ||  hash != url) {
-        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: U.makePageUrl('list', 'model/social/App', params) }));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: U.makePageUrl('list', 'model/social/Theme', {isTemplate: true}) }));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Idea gallery', pageUrl: U.makePageUrl('list', 'model/social/AppIdea') }));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: U.makePageUrl('list', 'model/social/NominationForConnection')}));
-      }
+      var url = U.makePageUrl('list', 'model/social/App', params);
+      if (!hash  ||  hash != url) 
+        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: url }));
+      url = U.makePageUrl('list', 'model/social/Theme', {isTemplate: true});
+      if (!hash  ||  hash != url) 
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: url }));
+      url = U.makePageUrl('list', 'model/social/AppIdea');
+      if (!hash  ||  hash != url) 
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Idea gallery', pageUrl: url }));
+      url = U.makePageUrl('list', 'model/social/NominationForConnection');
+      if (!hash  ||  hash != url) 
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: url}));    
+        
+      
       
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
@@ -148,7 +156,23 @@ define([
       }
       if (!G.currentUser.guest) {
         U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
+        var mobileUrl = 'view/profile';
+        if (!hash  ||  hash != mobileUrl) {
+          var title = 'Profile';
+//          var dim = U.fitToFrame(60, 60, G.currentUser.originalWidth / G.currentUser.originalHeight);
+//          var width = dim.w;
+//          var height = dim.h;
+//          var top = dim.y;
+//          var right = dim.w - dim.x;
+//          var bottom = dim.h - dim.y;
+//          var left = dim.x;
+//
+          
+//          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
+          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
+          self.tabs[title] = U.getPageUrl(mobileUrl);
+  
+        }
         if (G.currentUser._uri == G.currentApp.creator) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('edit', uri);
@@ -176,24 +200,8 @@ define([
               U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
           }
         }
+        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
-        var mobileUrl = 'view/profile';
-        if (!hash  ||  hash != mobileUrl) {
-          var title = 'Profile';
-//          var dim = U.fitToFrame(60, 60, G.currentUser.originalWidth / G.currentUser.originalHeight);
-//          var width = dim.w;
-//          var height = dim.h;
-//          var top = dim.y;
-//          var right = dim.w - dim.x;
-//          var bottom = dim.h - dim.y;
-//          var left = dim.x;
-//
-          
-//          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
-          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
-          self.tabs[title] = U.getPageUrl(mobileUrl);
-  
-        }
         if (G.currentUser.newAlertsCount) {
 //          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
           U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: G.currentUser.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));

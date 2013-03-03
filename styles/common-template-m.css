@@ -21,7 +21,8 @@ html { height: 100%; }
   border-width: 0px;
   padding: 0px;
   border-spacing: 0px;
-  margin: 10px 10px 6px 10px;
+/*  margin: 10px 10px 6px 10px; */
+  margin: 8px 10px 6px 8px;
 }
 .galleryItem_css3 img { float: left;}
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }

@@ -100,20 +100,22 @@ define([
           self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
         });
       }
-      else if (this.doTry) {
-        G.require(['views/PublishButton'], function(PublishButton) {
-          self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
-        });
-      }
-      else if (this.forkMe) {
-        G.require(['views/PublishButton'], function(PublishButton) {
-          self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
-        });
-      }
-      else if (this.testHandler) {
-        G.require(['views/PublishButton'], function(PublishButton) {
-          self.testHandler = new PublishButton({el: $('div#testHandlerBtn', self.el), model: self.resource}).render({testHandler: true});
-        });
+      else {
+        if (this.doTry) {
+          G.require(['views/PublishButton'], function(PublishButton) {
+            self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
+          });
+        }
+        if (this.forkMe) {
+          G.require(['views/PublishButton'], function(PublishButton) {
+            self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
+          });
+        }
+        if (this.testHandler) {
+          G.require(['views/PublishButton'], function(PublishButton) {
+            self.testHandler = new PublishButton({el: $('div#testHandlerBtn', self.el), model: self.resource}).render({testHandler: true});
+          });
+        }
       }
 
       if (G.currentUser.guest) {

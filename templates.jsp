@@ -182,7 +182,7 @@
    </div>
   {{ } }}  
   {{ if (typeof distance != 'undefined') { }}
-    <span class="ui-li-count">{{= distance }}</span>
+    <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
   {{ } }}
 </script>
 
@@ -197,7 +197,7 @@
    </div>
   {{ } }}  
   {{ if (typeof distance != 'undefined') { }}
-    <span class="ui-li-count">{{= distance }}</span>
+    <span class="ui-li-count">{{= distance + ' ' + distanceUnits }}</span>
   {{ } }}
 </script>
 
@@ -233,10 +233,11 @@
 
 <script type="text/template" id="cpTemplate">
    <li>
-     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus"></a>
+     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
      {{ if (typeof comment != 'undentified') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
+     </a>
    </li>
 </script>
 
@@ -376,7 +377,7 @@
 </script>
 
 <script type="text/template" id="testHandlerTemplate">
-  <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plugin</a>
+  <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plug / Socket</a>
 </script>
 
 <script type="text/template" id="headerTemplate">
@@ -394,8 +395,8 @@
         {{ } }}
       </div>
       <div style="max-width:200px;" id="forkMeBtn">
-        {{ if (typeof forkMe != 'undefined') { }}
-            {{= forkMe }}
+        {{ if (typeof forkMeApp != 'undefined') { }}
+            {{= forkMeApp }}
         {{ } }}
       </div>
       <div style="max-width:200px;" id="tryBtn">
@@ -529,15 +530,27 @@
 
 <script type="text/template" id="masonry-list-item">
   <div class="anab">
-      <!--a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
-      {{ if (typeof creatorThumb != 'undefined') { }}
-         <img src="{{= creatorThumb }}" height="60" /><div style="display:inline;verical-align: top;">{{= creatorDisplayName }}</div>
-      {{ } }}
-      </a -->
+  <!--
+    {{ if (typeof creatorThumb != 'undefined') { }}
+       <div style="padding: 5px; float:left;">
+        <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+           <img src="{{= creatorThumb }}" height="60" />
+        </a>
+      </div>
+       <div style="padding: 5px; float:left;">
+        <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+          {{= creatorDisplayName }}
+        </a>
+        {{= typeof dateSubmitted == 'undefined' ? '' : '<p style="color:#aaa">' + Lablz.U.getFormattedDate(dateSubmitted) + '</p>'}}
+      </div>
+      
+    {{ } }}
+   -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img  src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-         {{= typeof imgWidth != 'undefined' ? 'style="border: 1px solid #ccc; width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : 'style="style="border: 1px solid #ccc;"' }}></img>
+         {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
+        ></img>
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -618,7 +631,7 @@
 
 <script type="text/template" id="editRowTemplate">
   <li data-role="fieldcontain">{{= value }}
-  {{= typeof comment === 'undefined' ? '' : '<br /><span class="comment">' + comment + '</span>' }}
+<!--  {{= typeof comment === 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
   </li>
 </script>
 
@@ -689,7 +702,7 @@
 <!--    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? name : value) : displayName }} -->
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
 
-<!--    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} -->
+    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   </a>
 <!--  {{= typeof uri == 'undefined' ? '' : '<input type="hidden" name="' + shortName + '" value="' + uri +'"/>' }} -->
 </script>
@@ -702,7 +715,7 @@
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}">{{= name }}</label>
   {{ } }}
-  <select name="{{= shortName }}" id="{{= id }}" data-role="slider" class="formElement boolean" data-mini="true">
+  <select name="{{= shortName }}" id="{{= id }}" {{= rules }} data-role="slider" class="formElement boolean" data-mini="true">
     <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
     <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
   </select>
