@@ -829,11 +829,16 @@ define('cache', function() {
     
     nukeHandlers: function() {
       var length = localStorage.length;
+      var types = [], handlers;
       for (var i = length - 1; i > -1; i--) {
         var key = localStorage.key(i);
-        if (/^handlers/.test(key))
+        if (/^handlers/.test(key)) {
+          types.push(key.slice(9));
           G.localStorage.del(key);
+        }
       }
+      
+      return types;
     }
   };
   

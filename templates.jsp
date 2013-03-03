@@ -5,11 +5,11 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu}}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= Lablz.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -25,7 +25,7 @@
     </form>  
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
+  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <!-- nextPage button removed after endless page introduction -->
      <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
@@ -33,11 +33,11 @@
 </script>  
  
 <script type="text/template" id="resource">
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu }}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div id="resourceImage"></div>
-    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="resourceView">
+    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     
     {{ if ($('#other')) { }}
@@ -45,28 +45,28 @@
       <br/>
     {{ } }}
     
-    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="cpView" class="ui-listview">
+    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview">
     </ul>
   </div>
-  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
+  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
 </script>  
 
 <script type="text/template" id="menuP">
-   <ul data-role="none" data-theme="{{= Lablz.theme.menu }}" id="menuItems">
+   <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems">
    </ul>
 </script>  
 
 <script type="text/template" id="menu">
-  <div id="headerDiv" data-theme="{{= Lablz.theme.menu }}"></div>
-  <div id="menuHolder" data-role="content" data-theme="{{= Lablz.theme.menu }}">
-    <ul data-role="listview" data-theme="{{= Lablz.theme.menu }}" id="menuItems" class="action-list" data-inset="true">
+  <div id="headerDiv" data-theme="{{= G.theme.menu }}"></div>
+  <div id="menuHolder" data-role="content" data-theme="{{= G.theme.menu }}">
+    <ul data-role="listview" data-theme="{{= G.theme.menu }}" id="menuItems" class="action-list" data-inset="true">
     </ul>
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
+  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
 </script>  
@@ -94,11 +94,11 @@
 </script>
 
 <script type="text/template" id="datePT">
-  <span>{{= Lablz.U.getFormattedDate(value) }}</span>
+  <span>{{= G.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="durationPT">
-  <span>{{= typeof displayName !== 'undefined' ? displayName : Lablz.U.getFormattedDuration(value) }}</span>
+  <span>{{= typeof displayName !== 'undefined' ? displayName : G.U.getFormattedDuration(value) }}</span>
 </script>
 
 <!--script type="text/template" id="datePT">
@@ -126,29 +126,29 @@
 </script>
 
 <!--script type="text/template" id="durationPT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : G.U.getFormattedDate(value) }}</span>
 </script-->
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : Lablz.U.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : G.U.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
-  <span><a style="text-decoration:none" href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a style="text-decoration:none" href="{{= G.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
-<span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{= G.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
   <ul style="list-style-type:none">
-    <li><span><a href="{{= (Lablz.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
+    <li><span><a href="{{= (G.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
     {{ _.forEach(rows, function(val, key) { }} 
       <li>{{= key }}: {{= val.value }}</li>
     {{ }); }}
     {{ if (typeof image != 'undefined') { }}
-    <span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
+    <span><a href="{{= G.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
     {{ } }}
   </ul>
 </script>
@@ -158,7 +158,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
@@ -170,7 +170,7 @@
     {{= viewCols }}
   </a>
   {{ if (this.resource.isA('Buyable')) { }}
-   <div class="buyButton" id="{{= Lablz.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{ if (typeof price == 'object') { }} 
        {{= price.currency + price.value }}
        {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
@@ -187,24 +187,25 @@
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
   {{= viewCols }}
   </a>
   {{ if (this.resource.isA('Buyable')) { }}
-   <div class="buyButton" id="{{= Lablz.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{= price.currency + price.value }}
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ if (typeof distance != 'undefined') { }}
-    <span class="ui-li-count">{{= distance + ' ' + distanceUnits }}</span>
+  {{ var distanceProp = U.getCloneOf(this.vocModel.properties, 'Distance.distance')[0]; }}
+  {{ if (typeof distanceProp != 'undefined') { }}
+    <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
   {{ } }}
 </script>
 
 <script type="text/template" id="menuItemTemplate">
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? Lablz.pageRoot + '#' + mobileUrl : pageUrl }}">
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
       {{= title }}
     </a>
   </li>
@@ -212,7 +213,7 @@
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? Lablz.nextId() : id}}" link="{{= pageUrl }}">
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= pageUrl }}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
     </a>
   </li>
@@ -233,7 +234,7 @@
 
 <script type="text/template" id="cpTemplate">
    <li>
-     <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
+     <a href="{{= G.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
      {{ if (typeof comment != 'undentified') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -242,7 +243,7 @@
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= Lablz.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= Lablz.theme.list }}" data-icon="arrow-r"></a></li>
+   <li><a href="{{= G.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -250,7 +251,7 @@
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">
-   <li data-theme="{{= Lablz.theme.footer }}" data-role="list-divider">{{= value }}</li>
+   <li data-theme="{{= G.theme.footer }}" data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -304,8 +305,8 @@
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
-  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= Lablz.theme.menu }}" class="ui-content">
-    <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= Lablz.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
+  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
+    <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-role="content" data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
       <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">Buy<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
@@ -316,9 +317,9 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= Lablz.theme.menu }}" class="ui-content">
+  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
     <h4 id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-rel="back" data-role="button" data-theme="{{= Lablz.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
 
     <a data-role="button" href="{{= net.url }}"> 
@@ -381,7 +382,7 @@
 </script>
 
 <script type="text/template" id="headerTemplate">
-  <div data-role="header" class="ui-header" data-theme="{{= Lablz.theme.header}}">
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
     <div id="errMsg"></div>
     <div data-role="navbar">
       <ul id="headerUl"></ul>
@@ -417,18 +418,18 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
+  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
 <td width="99%" class="cl" valign="top">
-  <span class="commentListDate" style="float:right;">{{= Lablz.U.getFormattedDate(submitTime, true) }}</span>
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
+  <span class="commentListDate" style="float:right;">{{= G.U.getFormattedDate(submitTime, true) }}</span>
+  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
     {{= obj['submitter.displayName'] }}
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
   <br/>
-  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('aspects/tags/Vote') + '?vote=Like&amp;votable=' + encodeURIComponent(_uri) + '&amp;-makeId=' + Lablz.nextId() }}">
+  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('aspects/tags/Vote') + '?vote=Like&amp;votable=' + encodeURIComponent(_uri) + '&amp;-makeId=' + G.nextId() }}">
   </a>
   <span>{{= typeof votes.count == 'undefined' ? '' : votes.count }}</span>
 </td>
@@ -457,7 +458,7 @@
         <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
         <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
         <br/><br/>&#160;
-        <span class="commentListDate">{{= Lablz.U.getFormattedDate(dateModified) }}</span>
+        <span class="commentListDate">{{= G.U.getFormattedDate(dateModified) }}</span>
       </td>
     </tr>
   </table>
@@ -466,11 +467,11 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + G.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri  + '&amp;-makeId=' + Lablz.nextId() }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri  + '&amp;-makeId=' + G.nextId() }}"> 
           </a>
           {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
@@ -512,11 +513,11 @@
     </div>
     <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + G.nextId() }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + G.nextId() }}"> 
           </a>
         {{ } }}
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -541,7 +542,7 @@
         <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
           {{= creatorDisplayName }}
         </a>
-        {{= typeof dateSubmitted == 'undefined' ? '' : '<p style="color:#aaa">' + Lablz.U.getFormattedDate(dateSubmitted) + '</p>'}}
+        {{= typeof dateSubmitted == 'undefined' ? '' : '<p style="color:#aaa">' + G.U.getFormattedDate(dateSubmitted) + '</p>'}}
       </div>
       
     {{ } }}
@@ -562,14 +563,14 @@
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
       <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a style="float:left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">Comment
+          <a style="float:left" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + G.nextId() }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= Lablz.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+            <a style="float:right; font-size:12px;" href="{{= G.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
           {{ } }}
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a class="like" style="float: left" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
+          <a class="like" style="float: left" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + G.nextId() }}">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
@@ -577,7 +578,7 @@
           </a>
           {{ if (v_showVotesFor.count) { }}
           <div style="float:right; font-size:12px;"> 
-            <a href="{{= Lablz.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+            <a href="{{= G.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
           </div>
           {{ } }}
         {{ } }}
@@ -595,26 +596,26 @@
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= Lablz.theme.menu }}"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div><br/>
   <form data-ajax="false" id="editForm" action="#">
-    <ul data-role="listview" data-theme="{{= Lablz.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <div name="errors" style="float:left"></div>
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= Lablz.theme.footer }}" class="cancel">Cancel</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= Lablz.theme.activeButton }}" class="submit">Submit</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">Cancel</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">Submit</button></div>
       </fieldset>
     </div>
   </form>
 </div>
 
 
-  <div data-role="footer" class="ui-bar" data-theme="{{= Lablz.theme.footer }}">
+  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
   </div>
 </script>
@@ -669,7 +670,7 @@
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
-  <label for="{{= id }}" data-theme="{{= Lablz.theme.list }}">{{= name }}</label>
+  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
     <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
@@ -678,7 +679,7 @@
 </script>
 
 <script type="text/template" id="moneyPET">
-  <label for="{{= id }}" data-theme="{{= Lablz.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value.value }}" {{= rules }} data-mini="true"></input>
 </script>
 

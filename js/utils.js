@@ -6,7 +6,7 @@ define([
   'templates',
   'jquery'
 ], function(G, _, Backbone, Templates, $) {
-  var ArrayProto = Array.prototype;
+  var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -1915,7 +1915,7 @@ define([
 //      var y = aCoords[1] - bCoords[1];
 //      return Math.sqrt(x*x + y*y);
     },
-    slice: ArrayProto.slice,
+    slice: slice,
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -2169,6 +2169,8 @@ define([
           json.U = U;
         if (!_.has(json, 'G'))
           json.G = G;
+        if (!_.has(json, '$'))
+          json.$ = $;
         
         return template.call(context, json);
       };

@@ -1112,6 +1112,7 @@ define([
           defOp = 'eq',
           collection = data,
           vocModel = collection.vocModel,
+          meta = vocModel.properties,
           qMap = collection.queryMap,
           filter = filter || U.getQueryParams(collection),
           orClause = qMap && qMap.$or;
@@ -1122,10 +1123,20 @@ define([
         asc = U.isTrue(qMap.$asc);
       }
       
-      if (!orderBy && !_.size(filter) && !orClause)
+      if (!orderBy) {
+        orderBy = [];
+        var ordered = U.getPropertiesWith(meta, "sortAscending");
+        for (var p in ordered) {
+          orderBy.push(p);
+        }
+      }
+      else
+        orderBy = [orderBy];
+      
+      if (!orderBy.length && !_.size(filter) && !orClause)
         return false;
       
-      if (orderBy && U.isCloneOf(orderBy, 'Distance.distance', vocModel) && !hasIndex(indexNames, orderBy))
+      if (orderBy && U.isCloneOf(orderBy, 'Distance.distance', vocModel) && _.any(orderBy, function(p) {return !hasIndex(p)}))
         return false;
       
       if (!_.all(_.keys(filter), function(name) {return hasIndex(indexNames, name);}))
@@ -1179,18 +1190,22 @@ define([
       
       if (orderBy) {
 //        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
-        if (query) {              
-          if (orderBy === 'distance') {
-            query.sort(function(a, b) {
-              debugger;
-              // hackity hack - setting distance in sort function
-              a.distance = U.distance([a[latProp], a[lonProp]], [lat, lon]);
-              b.distance = distance([b[latProp], b[lonProp]], [lat, lon]);
-              return a.distance - b.distance;
-            });
-          }
-          else {
-            query.sort(orderBy, !asc);
+        if (query) {  
+          var distanceProp = positionProps.distance;
+          for (var i = 0; i < orderBy.length; i++) {
+            var oProp = orderBy[i];
+            if (oProp === distanceProp) {
+              query.sort(function(a, b) {
+                debugger;
+                // hackity hack - setting distance in sort function
+                var ad = a[distanceProp] = U.distance([a[latProp], a[lonProp]], [lat, lon]);
+                var bd = b[distanceProp] = U.distance([b[latProp], b[lonProp]], [lat, lon]);
+                return ad - bd;
+              });
+            }
+            else {
+              query = query.sort(oProp, !asc);
+            }
           }
         }
         else

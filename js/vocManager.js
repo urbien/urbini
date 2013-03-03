@@ -658,22 +658,23 @@ define([
           G.localStorage.put(Voc.contactKey, JSON.stringify(c));
         }
          
-        G.localStorage.nukeHandlers();
-        Voc.fetchHandlers();
+        var handlerTypes = G.localStorage.nukeHandlers();
+        Voc.fetchHandlers(handlerTypes);
       }
     },
     
     fetchHandlers: function(models) {
+      debugger;
       if (!models) {
-        models = _.keys(G.typeToModel);
-        for (var key in localStorage) {
-          if (key.startsWith('model:'))
-            models.push(key.slice(6));
-        }
-        
-        models = _.uniq(models).join(',');
+        models = _.compact(_.map(_.keys(localStorage), function(key) {
+          return key.startsWith("model:") && key.slice(7);
+        }));
       }
       
+      if (!models.length)
+        return;
+      
+      models = typeof models === 'string' ? models : _.uniq(models).join(',');
       G.ajax({type: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
         debugger;
         Voc.setupHandlers(data);

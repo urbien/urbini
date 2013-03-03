@@ -150,11 +150,11 @@ define([
 //              var uri = U.getShortUri(res.get('_uri'), vocModel); 
               var uri = res.getUri();
               var t = U.makeHeaderTitle(title, n);
-              var comment = prop.comment;
+              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment};
               if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate({range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
+                U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
               else
-                U.addToFrag(frag, this.cpTemplateNoAdd({range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: comment}));
+                U.addToFrag(frag, this.cpTemplateNoAdd(common));
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
 //              else

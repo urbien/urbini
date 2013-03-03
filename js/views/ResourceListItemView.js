@@ -135,11 +135,11 @@ define([
           json['checked'] = 'checked';
       }
 
-      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
-      if (distanceProp) {
+//      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
+//      if (distanceProp) {
 //        var distance = m.get(distanceProp);
-        json.distanceUnits = 'mi';
-      }
+//        json.distanceUnits = 'mi';
+//      }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
       if (m.isA('Intersection')) {
         var href = window.location.href;
