@@ -1004,6 +1004,7 @@ define([
         
         if (absDiff >= 60)
           str = pre + str + post;
+        return str;
       }
       else if (absDayDiff == 1)
         return future ? "Tomorrow" : "Yesterday";
@@ -1318,8 +1319,8 @@ define([
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       _.extend(val, {U: U, G: G});
-//      if (prop.comment)
-//        val.comment = prop.comment;
+      if (prop.comment)
+        val.comment = prop.comment;
       var propInfo = {value: _.template(Templates.get(propTemplate))(val), U: U, G: G};
       if (prop.comment)
         propInfo.comment = prop.comment;

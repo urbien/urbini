@@ -140,7 +140,7 @@ define([
         var prop = meta['distance'];
         var d = U.getCloneOf(this.vocModel, 'Distance.distance');
         if (d)
-          json.distance = distance + ' mi';
+          json.distanceUnits = 'mi';
       }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
       if (m.isA('Intersection')) {
@@ -211,6 +211,7 @@ define([
       }
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
+      _.extend(json, {U:U, G:G, Math:Math});
       this.$el.html(this.template(json));
       return this;
     },
