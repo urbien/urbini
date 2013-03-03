@@ -1212,42 +1212,6 @@ define([
       return query;
     },
     
-//    buildValueTests: function(name, val, data) {
-//      var rules = [];
-//      switch (name) {
-//      case '$or': {
-//        val = val.split('||');
-//        var orTests = RM.buildValueTests(name, val, data);
-//        return function(val) {
-//          return _.any(orTests, function(test) {
-//            return test(val);
-//          });
-//        }
-//      }
-//      case '$and': {
-//        
-//      }
-//      }
-//      
-//      var query = U.parseAPIQuery(name, value, data.vocModel);
-//      if (!query)
-//        return null;
-//      
-//      debugger;
-//      var op = RM.operatorMap(clause.op);
-//      var bound = clause.value;
-//      var prop = vocModel.properties[clause.name];
-//      if (U.isResourceProp(prop) && bound === '_me') {
-//        if (G.currentUser.guest)
-//          Events.trigger('req-login');
-//        else
-//          bound = G.currentUser._uri;
-//      }
-//      
-//      rules.push(RM.makeTest(prop, op, bound));
-//      return rules;
-//    },
-    
     getItems: function(options) {
       var type = U.getTypeUri(options.key),
           uri = options.uri,
@@ -1270,7 +1234,7 @@ define([
         return $.Deferred(function(defer) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
           var store = RM.$db.objectStore(type, 0);
-          var valueTester = data.belongsInCollection; //U.buildValueTester(filter, vocModel);
+          var valueTester = data.belongsInCollection;
           var results = [];
           var filterResults = function(item) {
             var val = parseFromDB(item.value);

@@ -2172,6 +2172,24 @@ define([
         
         return template.call(context, json);
       };
+    },
+    
+    getOrderByProps: function(collection) {
+      var orderBy = collection.queryMap.$orderBy;
+      if (orderBy)
+        return [orderBy];
+        
+      var props = U.getPropertiesWith(meta, [{name: "sortAscending"}]);
+      if (props) {
+        props = U.filterObj(props, function(name, prop) {
+          return !prop.backLink;
+        });
+        
+        if (props)
+          return _.keys(props);
+      }
+      
+      return null;
     }
 
 //    where: function(res, where) {
