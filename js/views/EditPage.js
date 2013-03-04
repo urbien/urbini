@@ -65,7 +65,7 @@ define([
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true, replace: true});
+      this.router.navigate(U.makeMobileUrl('edit', this.resource), {trigger: true, replace: true});
       return this;
     },
 //    tap: function() {
