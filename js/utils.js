@@ -106,7 +106,7 @@ define([
           }
           else if (r.endsWith('self')){
             r = r.split('==');
-            var pName = r[0];
+            var pName = r[0].trim();
             var selfUser = res.get(pName);
             if (me == selfUser) 
               return true;
@@ -180,25 +180,26 @@ define([
       return superProp;
     },
     
-    /**
-     * @param prop
-     * @param iProp sth like "Submission.submittedBy"
-     */
-    isCloneOf: function(prop, iPropName, vocModel) {
-      var cloneOf = prop.cloneOf;
-      var subPropertyOf = prop.subPropertyOf;
-      if (cloneOf) {
-        cloneOf = cloneOf.split(',');
-        for (var i = 0; i < cloneOf.length; i++) {
-          if (cloneOf[i] === iPropName)
-            return true;
-        }
-      }
-      else if (subPropertyOf && vocModel) // This only works if we have all superclass props on subclass
-        return U.isCloneOf(vocModel[U.getLongUri1(subPropertyOf)], slice.call(arguments, 1));
-      
-      return false;
-    },
+//    /**
+//     * @param prop
+//     * @param iProp sth like "Submission.submittedBy"
+//     */
+//    isCloneOf: function(prop, iPropName) {//, vocModel) {
+//      var cloneOf = prop.cloneOf;
+//      return _.contains(cloneOf.split(','), iPropName);
+//      var subPropertyOf = prop.subPropertyOf;
+//      if (cloneOf) {
+//        cloneOf = cloneOf.split(',');
+//        for (var i = 0; i < cloneOf.length; i++) {
+//          if (cloneOf[i] === iPropName)
+//            return true;
+//        }
+//      }
+//      else if (subPropertyOf && vocModel) // This only works if we have all superclass props on subclass
+//        return U.isCloneOf(vocModel[U.getLongUri1(subPropertyOf)], slice.call(arguments, 1));
+//      
+//      return false;
+//    },
     
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
@@ -1243,7 +1244,8 @@ define([
      * @return the value of the app's App._appPath property, sth like AppName
      */
     getAppPath: function(type) {
-      return type.slice(type.lastIndexOf('/') + 1);
+      var sIdx = type.lastIndexOf('/');
+      return type.slice(type.lastIndexOf('/', sIdx - 1) + 1, sIdx);
     },
 
     /**
