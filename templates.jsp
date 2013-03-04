@@ -158,7 +158,12 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ if (typeof v_submitToTournament == 'undefined') { }}
+    <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ } }}
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) + '?-tournament=' + encodeURIComponent(v_submitToTournament.uri) + '&-tournamentName=' + encodeURIComponent(v_submitToTournament.name) }}">
+  {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
@@ -184,10 +189,21 @@
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
   {{ } }}
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a class="b" href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="star" data-theme="e" data-iconpos="notext">Submit to {{= v_submitToTournament.name }}</a>
+  {{ } }}
+  -->
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ if (typeof v_submitToTournament == 'undefined') { }}
+    <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ } }}
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) + '?-tournament=' + encodeURIComponent(v_submitToTournament.uri) + '&-tournamentName=' + encodeURIComponent(v_submitToTournament.name) }}">
+  {{ } }}
+  
   {{= viewCols }}
   </a>
   {{ if (this.resource.isA('Buyable')) { }}
@@ -199,6 +215,11 @@
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= distance + ' ' + distanceUnits }}</span>
   {{ } }}
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
+  {{ } }}
+  
 </script>
 
 <script type="text/template" id="menuItemTemplate">
@@ -376,6 +397,10 @@
   <a target="#" data-icon="copy" id="fork" data-role="button" date-position="notext">Fork me</a>
 </script>
 
+<script type="text/template" id="enterTournamentTemplate">
+  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" date-position="notext">Enter: {{= name }}</a>
+</script>
+
 <script type="text/template" id="testHandlerTemplate">
   <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plug / Socket</a>
 </script>
@@ -407,6 +432,11 @@
       <div style="max-width:200px;" id="testHandlerBtn">
         {{ if (typeof testHandler != 'undefined') { }}
             {{= testHandler }}
+        {{ } }}
+      </div>
+      <div style="max-width:320px;" id="enterTournamentBtn">
+        {{ if (typeof enterTournament != 'undefined') { }}
+            {{= enterTournament }}
         {{ } }}
       </div>
        {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}
@@ -488,46 +518,6 @@
   </table>
 </script>
 
-<!-- script type="text/template" id="masonry-list-item">
-  <div class="anab">
-    <div class="galleryItem_css3">
-      <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
-      {{ if (typeof creatorThumb != 'undefined') { }}
-         <img src="{{= creatorThumb }}" width="80"/>
-      {{ } }}
-      </a>
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-         {{ if (typeof imgWidth != 'undefined') { }}
-           {{ if (imgWidth < 300) { }}
-             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
-           {{ } }}
-         {{ } }}
-         ></img>
-      </a>
-    </div>
-  <div class="nabRL">
-    <div>
-      {{= gridCols }}
-    </div>
-    <div class="btn">
-        {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + Lablz.nextId() }}">
-          </a>
-        {{ } }}
-        {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= Lablz.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + Lablz.nextId() }}"> 
-          </a>
-        {{ } }}
-        {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-          </a>
-        {{ } }}
-     </div>
-  </div>     
-</div>
-</script -->
-
 <script type="text/template" id="masonry-list-item">
   <div class="anab">
   <!--
@@ -587,11 +577,13 @@
         {{ } }}
         -->
      </div>
-    {{ } }}  
+    {{ } }}
+    {{ if (typeof v_submitForTournament != 'undefined') { }}
+      <a class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a>
+    {{ } }}
   </div>     
 </div>
 </script>
-
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
