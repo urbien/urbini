@@ -127,17 +127,23 @@ define([
       if (!meta)
         return this;
       
-//      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
-//      if (img == null)
-//        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
-//      if (img == null)
+      var img;
+//      if ($(window).width() > $(window).height()) {
+//        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+//        if (!img)
+//          img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+//      }
+//      else {
+        img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+        if (!img)
+          img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       var json = m.attributes;
       
       var rUri = m.get('_uri');
       
-      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-      if (!img)
-        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+//      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+//      if (!img)
+//        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
@@ -253,6 +259,9 @@ define([
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
       }
+      if (U.isAssignableFrom(vocModel, "Tournament", G.typeToModel)) 
+        tmpl_data.v_submitForTournament = G.pageRoot + "#media%2fpublishing%2fVideo?-tournament=" + encodeURIComponent(rUri) + '&-tournamentName=' + encodeURIComponent(dn);
+
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
