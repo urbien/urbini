@@ -18,14 +18,13 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'incBLs'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
       this.on('sync', this.onsync);
-      this.on('incBLs', this.incBLs);
       this.vocModel = this.constructor;
       if (this.getUri())
         this.subscribeToUpdates();
@@ -36,13 +35,6 @@ define([
 //      }
     },
     
-    /**
-     * increment backlinks that a newly made resource fits under
-     */
-    incBLs: function(backlinkedResource) {
-      var res = backlinkedResource;
-      // check which backlinks this fits under and increment them
-    },
     onsync: function() {
 //      debugger;
     },
@@ -99,6 +91,7 @@ define([
 //      if (this.vocModel.type.contains('hudsonfog.com/voc/system/designer/'))
 //        Events.trigger('modelUpdate', this.get('davClassUri'));
       
+      G.cacheResource(this);
       if (this.lastFetchOrigin !== 'server')
         return;
       
