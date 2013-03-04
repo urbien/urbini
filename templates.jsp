@@ -220,7 +220,7 @@
   {{ if (typeof v_submitToTournament != 'undefined') { }}
     <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
   {{ } }}
-  
+  -->  
 </script>
 
 <script type="text/template" id="menuItemTemplate">
