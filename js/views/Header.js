@@ -116,6 +116,11 @@ define([
             self.testHandler = new PublishButton({el: $('div#testHandlerBtn', self.el), model: self.resource}).render({testHandler: true});
           });
         }
+        if (this.enterTournament) {
+          G.require(['views/PublishButton'], function(PublishButton) {
+            self.enterTournament = new PublishButton({el: $('div#enterTournamentBtn', self.el), model: self.resource}).render({enterTournament: true});
+          });
+        }
       }
 
       if (G.currentUser.guest) {

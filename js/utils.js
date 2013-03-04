@@ -292,8 +292,8 @@ define([
         if (vals.length)
           results[iProp] = vals;
       }
-      
-      return _.size(results) === 1 ? results[U.getFirstProperty(results)] : results;
+      var size = _.size(results);
+      return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
     },
     
     isCloneOf: function(propName, iPropName, vocModel) {
@@ -998,7 +998,7 @@ define([
       var absDiff = Math.abs(diff);
       var absDayDiff = Math.abs(day_diff);
       var pre = future ? "In " : "";
-      var post = future ? "" : " ago";
+      var post = ""; //future ? "" : " ago";
       
       if (day_diff == 0) {
         var str = (absDiff < 60 && "just now" ||

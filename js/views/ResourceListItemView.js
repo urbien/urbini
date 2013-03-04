@@ -21,6 +21,7 @@ define([
 //      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
+//      this.likesAndComments = _.template(Templates.get('likesAndComments'));
       if (this.template) 
         this.isCommonTemplate = false;
       else {
@@ -177,20 +178,10 @@ define([
         this.$el.html(this.template(json));
         return this;
       }
-      
+
       var viewCols = this.getViewCols(json);
       var dn = U.getDisplayName(m);
       json.davDisplayName = dn;
-      if (!viewCols.length) {
-        var isClass = U.isAssignableFrom(vocModel, 'WebClass');
-        viewCols = dn;
-        if (isClass) {
-          var comment = json['comment'];
-          if (comment) 
-            viewCols += '<p>' + comment + "</p>";
-        }
-      }
-      json.viewCols = viewCols;
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
@@ -207,6 +198,12 @@ define([
         json.bottom = dim.h - dim.y;
         json.left = dim.x;
       }
+      var params = U.getParamMap(window.location.hash);
+      if (U.isAssignableFrom(vocModel, "Video", G.typeToModel)  &&  params['-tournament'])
+        json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
+
+      this.addCommonBlock(viewCols, json);
+      
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
       _.extend(json, {U:U, G:G, Math:Math});
@@ -214,6 +211,63 @@ define([
       return this;
     },
     
+    addCommonBlock: function(viewCols, json) {
+      if (!viewCols.length) {
+        viewCols = '';
+        var isSubmission = this.resource.isA('Submission');
+        if (isSubmission) {
+          var d = U.getCloneOf(this.vocModel, 'Submission.dateSubmitted');
+          var dateSubmitted = d  &&  d.length ? json[d[0]] : null;
+          if (dateSubmitted)
+            viewCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
+        }
+        
+        var isClass = U.isAssignableFrom(vocModel, 'WebClass');
+        
+        viewCols += '<div class="commonLI">' + json.davDisplayName;
+        if (isClass) {
+          var comment = json['comment'];
+          if (comment) 
+            viewCols += '<p>' + comment + "</p>";
+        }
+        if (isSubmission) {
+          var d = U.getCloneOf(this.vocModel, 'Submission.submittedBy');
+          var submittedBy = d  &&  d.length ? json[d[0]] : null;
+          if (submittedBy) {
+//            viewCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
+            var thumb = json[d[0] + '.thumb'];
+            viewCols += '<div style="padding-top:3px;">';
+            if (thumb)
+              viewCols += '<img src="' + thumb + '" />';
+//            viewCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
+            viewCols += '<div class="submitter">&#160;&#160;' + json[d[0] + '.displayName'] + '</div>'
+            viewCols += '</div>';
+          }
+        }
+        viewCols += '</div>';
+      }
+      var meta = this.vocModel.properties;
+      meta = meta || m.properties;
+
+      if (this.resource.isA('CollaborationPoint')) { 
+        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
+        if (comments.length > 0) {
+          var pMeta = meta[comments[0]];
+          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+        }
+      }
+      if (this.resource.isA('Votable')) {
+        var votes = U.getCloneOf(vocModel, 'Votable.likes');
+        if (votes.length == 0)
+          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
+        if (votes.length > 0) {
+          var pMeta = meta[votes[0]];
+          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+        }
+      }  
+      json.viewCols = viewCols;
+//      json.likesAndComments = this.$el.html(this.likesAndComments(json));
+    },
     getViewCols: function(json) {
       var res = this.resource;
       var meta = this.vocModel.properties;
@@ -402,6 +456,7 @@ define([
         meta = meta || m.properties;
       }
       tmpl_data['rUri'] = resourceUri;
+      
 //      if (U.isA(c, 'CollaborationPoint')) { 
 //        var comments = U.getCloneOf(meta, 'CollaborationPoint.comments');
 //        if (comments.length > 0) {

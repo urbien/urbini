@@ -20,7 +20,7 @@ define([
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode', 'orientationchange');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
       this.template = this.makeTemplate(this.template);
@@ -43,7 +43,8 @@ define([
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft',
       'pageshow': 'pageshow',
-      'submit': 'submit'
+      'submit': 'submit',
+      'orientationchange': 'orientationchange'  
     },
     swipeleft: function(e) {
       // open backlinks
@@ -53,6 +54,14 @@ define([
 //      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
 //      menuPanel.render();
 ////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
+    },
+    orientationchange: function(e) {
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      if (isMasonry) {
+        Events.stopEvent(e);
+        Events.trigger('refresh', {model: this.model, checked: checked});
+      } 
     },
     submit: function(e) {
 //      Events.stopEvent(e);
@@ -147,7 +156,7 @@ define([
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       _.extend(json, {isMasonry: isMasonry});  
       this.$el.html(this.template(json));
       

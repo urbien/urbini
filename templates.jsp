@@ -134,21 +134,21 @@
 </script>
 
 <script type="text/template" id="resourcePT">
-  <span><a style="text-decoration:none" href="{{= G.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a style="text-decoration:none" href="{{= U.makePageUrl('view', value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
-<span><a href="{{= G.pageRoot + '#view/' + encodeURIComponent(value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{= U.makePageUrl('view', value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
   <ul style="list-style-type:none">
-    <li><span><a href="{{= (G.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
+    <li><span><a href="{{= U.makePageUrl('view', uri) }}"> {{= resourceLink }} </a></span></li>
     {{ _.forEach(rows, function(val, key) { }} 
       <li>{{= key }}: {{= val.value }}</li>
     {{ }); }}
     {{ if (typeof image != 'undefined') { }}
-    <span><a href="{{= G.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
+    <span><a href="{{= U.makePageUrl('view', uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>
     {{ } }}
   </ul>
 </script>
@@ -158,7 +158,12 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ if (typeof v_submitToTournament == 'undefined') { }}
+    <a href="{{= U.makePageUrl('view', _uri) }}">
+  {{ } }}
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= U.makePageUrl('view', _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+  {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
@@ -184,10 +189,21 @@
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
   {{ } }}
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a class="b" href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="star" data-theme="e" data-iconpos="notext">Submit to {{= v_submitToTournament.name }}</a>
+  {{ } }}
+  -->
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(_uri) }}">
+  {{ if (typeof v_submitToTournament == 'undefined') { }}
+    <a href="{{= U.makePageUrl('view', _uri) }}">
+  {{ } }}
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= U.makePageUrl('view', _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+  {{ } }}
+  
   {{= viewCols }}
   </a>
   {{ if (this.resource.isA('Buyable')) { }}
@@ -200,6 +216,11 @@
   {{ if (typeof distanceProp != 'undefined') { }}
     <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
   {{ } }}
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
+  {{ } }}
+  
 </script>
 
 <script type="text/template" id="menuItemTemplate">
@@ -234,7 +255,9 @@
 
 <script type="text/template" id="cpTemplate">
    <li>
-     <a href="{{= G.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
+     {{ var params = {}; }}
+     {{ params[backlink] = _uri; }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title: title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
      {{ if (typeof comment != 'undentified') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -243,7 +266,11 @@
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li><a href="{{= G.pageRoot + '#' + encodeURIComponent(range) + '?' + backlink + '=' + encodeURIComponent(_uri) + '&$title=' + encodeURIComponent(title)}}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a></li>
+   <li>
+     {{ var params = {}; }}
+     {{ params[backlink] = _uri; }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title: title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a>
+   </li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
@@ -377,6 +404,10 @@
   <a target="#" data-icon="copy" id="fork" data-role="button" date-position="notext">Fork me</a>
 </script>
 
+<script type="text/template" id="enterTournamentTemplate">
+  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" date-position="notext">Enter: {{= name }}</a>
+</script>
+
 <script type="text/template" id="testHandlerTemplate">
   <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plug / Socket</a>
 </script>
@@ -408,6 +439,11 @@
       <div style="max-width:200px;" id="testHandlerBtn">
         {{ if (typeof testHandler != 'undefined') { }}
             {{= testHandler }}
+        {{ } }}
+      </div>
+      <div style="max-width:320px;" id="enterTournamentBtn">
+        {{ if (typeof enterTournament != 'undefined') { }}
+            {{= enterTournament }}
         {{ } }}
       </div>
        {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}
@@ -489,46 +525,6 @@
   </table>
 </script>
 
-<!-- script type="text/template" id="masonry-list-item">
-  <div class="anab">
-    <div class="galleryItem_css3">
-      <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
-      {{ if (typeof creatorThumb != 'undefined') { }}
-         <img src="{{= creatorThumb }}" width="80"/>
-      {{ } }}
-      </a>
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
-         {{ if (typeof imgWidth != 'undefined') { }}
-           {{ if (imgWidth < 300) { }}
-             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
-           {{ } }}
-         {{ } }}
-         ></img>
-      </a>
-    </div>
-  <div class="nabRL">
-    <div>
-      {{= gridCols }}
-    </div>
-    <div class="btn">
-        {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comment" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + G.nextId() }}">
-          </a>
-        {{ } }}
-        {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?.vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + G.nextId() }}"> 
-          </a>
-        {{ } }}
-        {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?-inPage=y&amp;originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-          </a>
-        {{ } }}
-     </div>
-  </div>     
-</div>
-</script -->
-
 <script type="text/template" id="masonry-list-item">
   <div class="anab">
   <!--
@@ -588,11 +584,13 @@
         {{ } }}
         -->
      </div>
-    {{ } }}  
+    {{ } }}
+    {{ if (typeof v_submitForTournament != 'undefined') { }}
+      <a class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a>
+    {{ } }}
   </div>     
 </div>
 </script>
-
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">

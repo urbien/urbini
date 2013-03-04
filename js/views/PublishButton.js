@@ -5,23 +5,26 @@ define([
   'templates',
   'utils',
   'events',
+  'vocManager',
   'views/BasicView'
-], function(G, _, Templates, U, Events, BasicView) {
+], function(G, _, Templates, U, Events, Voc, BasicView) {
   return BasicView.extend({
     template: 'publishButtonTemplate',
     events: {
       'click #publish': 'publish',
       'click #try': 'tryApp',
+      'click #enterTournament': 'enterTournament',
       'click #fork': 'forkApp',
       'click #testHandler': 'testHandler'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'publish', 'tryApp', 'testHandler', 'forkApp');
+      _.bindAll(this, 'render', 'publish', 'tryApp', 'testHandler', 'forkApp', 'enterTournament');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = this.makeTemplate(this.template);
       this.tryTemplate = this.makeTemplate('tryButtonTemplate');
       this.forkTemplate = this.makeTemplate('forkButtonTemplate');
       this.testHandlerTemplate = this.makeTemplate('testHandlerTemplate');
+      this.enterTournamentTemplate = this.makeTemplate('enterTournamentTemplate');
       return this;
     },
     testHandler: function(e) {
@@ -82,6 +85,36 @@ define([
       });
       return this;
     },
+    enterTournament: function(e) {
+      Events.stopEvent(e);
+      var res = this.resource;
+      
+      var model = G.shortNameToModel['TournamentEntry'];
+      if (model != null) 
+        resource = new model();
+      else {
+        Voc.fetchModels('http://www.hudsonfog.com/voc/commerce/urbien/TournamentEntry', 
+          {success: function() {
+            self.view.apply(self, [path]);
+          },
+          sync: true}
+        );
+        resource = new (G.shortNameToModel['TournamentEntry'])();
+      }
+      var params = U.getParamMap(window.location.hash);
+      var props = {tournament: params['-tournament'], entry: res.get('_uri')};
+      var self = this;
+      resource.save(props, {
+        sync: true,
+        success: function(resource, response, options) {
+          var uri = window.location.hash;
+          var idx = uri.indexOf('?');
+          
+          self.router.navigate(uri.substring(1, idx + 1) + '-info=' + encodeURIComponent("You successfully added '" + U.getDisplayName(self.resource) + "'"), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        }
+      });
+      return this;
+    },
     forkApp: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
@@ -100,6 +133,11 @@ define([
         }
         if (options.testHandler) {
           this.$el.html(this.testHandlerTemplate());
+          this.$el.trigger('create');
+        }
+        if (options.enterTournament) {
+          var params = U.getParamMap(window.location.href);
+          this.$el.html(this.enterTournamentTemplate({name: params['-tournamentName']}));
           this.$el.trigger('create');
         }
       }
