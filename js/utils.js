@@ -1283,16 +1283,17 @@ define([
       return url;
     },
     
-    makeEditProp: function(res, prop, values, formId) {
+    makeEditProp: function(res, prop, formId) {
       var p = prop.shortName;
-      var val = values[p];
+      var val = res.get(p); //values[p];
       var propTemplate = Templates.getPropTemplate(prop, true, val);
       if (typeof val === 'undefined')
         val = {};
       else {
         val = U.getTypedValue(res, p, val);
-        if (values[p + '.displayName'])
-          val = {value: val, displayName: values[p + '.displayName']};
+        var dn = res.get(p + '.displayName');
+        if (dn)
+          val = {value: val, displayName: dn};
         else
           val = {value: val};
       }
@@ -2192,8 +2193,24 @@ define([
       }
       
       return null;
+    },
+    
+    synchronousTypes: [
+      'aspects/commerce/Transaction', 
+      'commerce/coupon/Deposit', 
+      'model/social/AppInstall'
+    ],
+    
+    canAsync: function(type) {
+      if (typeof type !== 'string')
+        type = type.type; // if it's vocModel
+      
+      if (type.startsWith('http://'))
+        type = type.slice(type.indexOf('voc/') + 4);
+      
+      return !_.contains(U.synchronousTypes, type);
     }
-
+    
 //    where: function(res, where) {
 //      where = where.split('&');
 //      for (var i = 0; i < where.length; i++) {
