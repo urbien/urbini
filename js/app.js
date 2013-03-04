@@ -220,7 +220,7 @@ define('app', [
     
     doPostStartTasks: function() {
       for (var type in G.typeToModel) {
-        Voc.initCustomHandlers(type);
+        Voc.initHandlers(type);
       }
       
       RM.sync();
@@ -234,8 +234,16 @@ define('app', [
           return;
         }
 
+        var returnUri = options.returnUri || window.location.href;
+        var signupUrl = "{0}/social/socialsignup".format(G.serverName);
+        if (returnUri.startsWith(signupUrl)) {
+          debugger;
+          G.log(App.TAG, 'error', 'avoiding redirect loop and scrapping returnUri -- 1');
+          returnUri = G.pageRoot;
+        }
+        
         _.each(G.socialNets, function(net) {
-          var state = U.getQueryString({socialNet: net.socialNet, returnUri: options.returnUri || window.location.href, actionType: 'Login'}, {sort: true}); // sorted alphabetically
+          var state = U.getQueryString({socialNet: net.socialNet, returnUri: returnUri, actionType: 'Login'}, {sort: true}); // sorted alphabetically
           var params = net.oAuthVersion == 1 ?
             {
               episode: 1, 
@@ -245,7 +253,7 @@ define('app', [
             : 
             {
               scope: net.settings,
-              display: 'page', 
+              display: 'touch', // 'page', 
               state: state, 
               redirect_uri: G.serverName + '/social/socialsignup', 
               response_type: 'code', 
