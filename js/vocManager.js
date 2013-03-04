@@ -246,10 +246,17 @@ define([
         });
       }).promise();
     },    
+    
     setupHandlers: function(handlers) {
       if (handlers) {
         _.extend(G.customHandlers, handlers);
         Voc.saveHandlersToStorage(handlers);
+        for (var type in handlers) {
+          var typeHandlers = handlers[type];
+          for (var i = 0; i < typeHandlers.length; i++) {
+            Voc.initHandler(typeHandlers[i], type);
+          }
+        }
       }
     },
     
@@ -383,7 +390,7 @@ define([
       _.extend(m.properties, U.systemProps);
       m.prototype.initialize = Voc.getInit.apply(m);
       setTimeout(function() {
-        Voc.initCustomHandlers(type);
+        Voc.initHandlers(type);
       }, 1000);
     },
     
@@ -493,7 +500,7 @@ define([
       });
       
       if (handlerFn == null) {
-        Voc.initCustomHandlers(causeType);
+        Voc.initHandlers(causeType);
         return;
       }
       
@@ -583,7 +590,7 @@ define([
       return FunctionProxy(script);
     },
     
-    initCustomHandlers: function(type) {
+    initHandlers: function(type) {
       // TODO: turn off handlers as needed, instead of this massacre
       Events.off('create.' + type);
       Events.off('edit.' + type);
@@ -674,7 +681,7 @@ define([
       if (!models.length)
         return;
       
-      models = typeof models === 'string' ? models : _.uniq(models).join(',');
+      models = JSON.stringify(_.uniq(models));
       G.ajax({type: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
         debugger;
         Voc.setupHandlers(data);
@@ -763,8 +770,6 @@ define([
     var type = handler.causeDavClassUri;
     handlers[type] = [handler];
     Voc.setupHandlers(handlers);
-    Voc.initCustomHandlers(type); // for now, later make it more fine-grained
-//    Voc.initHandler(handler, type);
   });
   
   return (G.Voc = Voc);
