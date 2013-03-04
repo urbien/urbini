@@ -952,7 +952,8 @@ define([
           item.set({'_uri': tempUri}, {silent: true});
         }
   
-        var itemRef = _.extend({_id: now, _uri: uri || tempUri}, tempUri ? item.toJSON() : item.changed), 
+        var itemJson = tempUri ? item.toJSON() : item.changed,
+            itemRef = _.extend({_id: now, _uri: uri || tempUri}, itemJson), 
             done = options.success,
             fail = options.error;
         
@@ -963,7 +964,7 @@ define([
             if (!results.length)
               RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
             else {
-              _.extend(itemRef, results[0]);
+              _.extend(results[0], itemJson);
               RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
             }
           }).fail(function() {
@@ -1123,24 +1124,29 @@ define([
         asc = U.isTrue(qMap.$asc);
       }
       
-      if (!orderBy) {
-        orderBy = [];
+      if (orderBy)
+        orderBy = [meta[orderBy]];
+      else {
         var ordered = U.getPropertiesWith(meta, "sortAscending");
-        for (var p in ordered) {
-          orderBy.push(p);
+        if (ordered.length) {
+          orderBy = [];
+          for (var p in ordered) {
+            orderBy.push(ordered[p]);
+          }
         }
       }
-      else
-        orderBy = [orderBy];
       
-      if (!orderBy.length && !_.size(filter) && !orClause)
+      if (!orderBy && !_.size(filter) && !orClause)
         return false;
-      
-      if (orderBy && U.isCloneOf(orderBy, 'Distance.distance', vocModel) && _.any(orderBy, function(p) {return !hasIndex(p)}))
+
+      var neededIndices = _.filter(_.union(_.keys(filter), _.pluck(orderBy, 'shortName')), function(p) {return /^[a-zA-Z]+/.test(p)});
+      if (!_.all(neededIndices, function(name) {return hasIndex(indexNames, name);}))
         return false;
-      
-      if (!_.all(_.keys(filter), function(name) {return hasIndex(indexNames, name);}))
-        return false;
+//      if (orderBy && U.isCloneOf(orderBy, 'Distance.distance') && _.any(orderBy, function(p) {return !hasIndex(p.shortName)}))
+//        return false;
+//      
+//      if (!_.all(_.keys(filter), function(name) {return hasIndex(indexNames, name);}))
+//        return false;
 
       if (orClause) {
         orClause = RM.buildOrQuery(orClause, vocModel, indexNames);
@@ -1189,7 +1195,6 @@ define([
         query = query ? query.and(latLonQuery) : latLonQuery;
       
       if (orderBy) {
-//        var bound = startAfter ? (orderBy == '_uri' ? startAfter : collection.get(startAfter).get(orderBy)) : null;
         if (query) {  
           var distanceProp = positionProps.distance;
           for (var i = 0; i < orderBy.length; i++) {
@@ -1248,17 +1253,30 @@ define([
       function queryWithoutIndex() {
         return $.Deferred(function(defer) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query with valueTester');
-          var store = RM.$db.objectStore(type, 0);
-          var valueTester = data.belongsInCollection;
-          var results = [];
+          var store = RM.$db.objectStore(type, 0),
+              valueTester = data.belongsInCollection,
+              results = [],
+              qMap = data.queryMap,
+              orderBy = qMap.$orderBy,
+              asc = qMap.$asc,
+              limit = qMap.$limit,
+              direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+              iterationPromise;
+          
           var filterResults = function(item) {
+            if (limit) {
+              if (results.length == limit)
+                return defer.resolve(results);
+              else if (results.length > limit)
+                return;
+            }
+            
             var val = parseFromDB(item.value);
             if (!valueTester || valueTester(val))
               results.push(val);
           };
-          
-          var direction = U.isTrue(data.queryMap.$asc) ? IDBCursor.NEXT : IDBCursor.PREV;
-          var iterationPromise;
+
+              
           if (startAfter)
             iterationPromise = store.each(filterResults, IDBKeyRange.lowerBound(startAfter, true), direction);
           else
