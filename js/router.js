@@ -261,17 +261,9 @@ define([
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
 
-      if (edit && U.isAnAppClass(this.vocModel.type)) {
-        var appPath = U.getAppPath(this.vocModel.type);
-        if (!G.installedApps[appPath]) {
-          if (!this.isAppLoaded(this.vocModel.app, 'make', arguments))
-            return;
-          
-          var here = U.getHash();
-          this.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', {application: this.vocModel.app, user: G.currentUser._uri, $returnUri: here}), {trigger: true});
-          return;
-        }
-      }
+      var vocModel = G.typeToModel[type];
+      if (!this.isAppLoaded(type, 'make', arguments))
+        return;
 
       var params = U.getHashParams(),
           makeId = params['-makeId'];
@@ -484,22 +476,48 @@ define([
       }
     },
 
-    loadApp: function(appUri, method, args) {
+    isAppLoaded: function(type, method, args) {
+      if (!U.isAnAppClass(type))
+        return true;
+      
+      var appPath = U.getAppPath(type);
+      var user = G.currentUser;
+      if (user.guest) {
+        Events.trigger('req-login', {msg: 'Please login before you use this app'});
+        return false;
+      }
+      
+      var APP_TERMS = 'Before you use this app, you need to agree to its terms and conditions';
+      var appInfo = user.installedApps && user.installedApps[appPath];
+      if (appInfo) {
+        if (!appInfo.installed) {
+          this.navigate('edit', app.install, {'-info': APP_TERMS, returnUri: window.location.href});
+          return false;
+        }
+      
+        return true;
+      }
+
+      // theoretically, we can only be in G.currentApp, and it's not installed
+      var appUri = G.currentApp._uri;
+      var installOptions = {'-info': APP_TERMS, returnUri: window.location.href, application: appUri};
       var app = G.getCachedResource(appUri);
-      if (app)
-        return app;
+      if (app) {
+        self.navigate('make', 'model/social/AppInstall', installOptions);              
+        return;
+      }
 
       var self = this, appType = U.getTypeUri(appUri);
       Voc.getModels(appType, {sync: true}).done(function() {
-        app = new G.typeToModel[appType]();
+        app = new G.typeToModel[appType]({_uri: appUri});
         app.fetch({
           sync: true,
           success: function() {
-//            G.cacheResource(app);
-            self[method].apply(self, args);
+            self.navigate('make', 'model/social/AppInstall', installOptions);              
+//              self[method].apply(self, args);
           },
           error: function() {
-            
+            debugger;
           }
         });
       }).fail(function() {
