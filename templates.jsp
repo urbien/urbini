@@ -257,7 +257,7 @@
    <li>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title: title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
      {{ if (typeof comment != 'undentified') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -269,7 +269,7 @@
    <li>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title: title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a>
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a>
    </li>
 </script>
 

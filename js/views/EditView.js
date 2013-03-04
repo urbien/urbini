@@ -190,7 +190,7 @@ define([
     onChoose: function(e, prop) {
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
-      
+      var self = this;
       return function(options) {
         var res;
         var checked;
@@ -204,6 +204,11 @@ define([
         }
         else
           res = options;
+        
+//        var isIntersection = self.vocModel;
+//        if (isIntersection) {
+//          
+//        }
         
         G.log(this.TAG, 'testing', res.attributes);
         var props = {};
@@ -694,6 +699,7 @@ define([
         };
         
         res.save(props, {
+          sync: !U.canAsync(this.vocModel),
           success: function(resource, response, options) {
             res.notifyContainers();
             self.getInputs().attr('disabled', false);
@@ -706,14 +712,14 @@ define([
           }, 
           error: onSaveError
         });
-      };
+      }.bind(this);
       
       var onError = function(errors) {
-        res.off('change', onSuccess, self);
-        self.fieldError.apply(self, arguments);
+        res.off('change', onSuccess, this);
+        this.fieldError.apply(this, arguments);
         inputs.attr('disabled', false);
 //        alert('There are errors in the form, please review');
-      };
+      }.bind(this);
 //
       switch (action) {
         case 'make':
@@ -727,7 +733,7 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
-      var atts = _.extend({}, res.attributes, this.initialParams);
+      atts = _.extend({}, res.attributes, this.initialParams, atts);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
@@ -833,7 +839,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(this.resource, prop, info.values, info.formId);
+      var pInfo = U.makeEditProp(this.resource, prop, info.formId);
       if (!info.groupNameDisplayed) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
