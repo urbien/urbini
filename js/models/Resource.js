@@ -367,7 +367,12 @@ define([
       else {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
         if (_.size(data) == 0) {
-          debugger;
+//          debugger;
+          if (!isNew) {
+            if (options.error)
+              options.error(this, {code: 304, details: "unmodified"}, options);
+          }
+          
           return; 
         }
         
