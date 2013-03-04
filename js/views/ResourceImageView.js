@@ -29,13 +29,27 @@ define([
       
       if (!this.resource.isA('ImageResource')) 
         return this;
+      var json = this.resource.attributes;
+      if (U.isAssignableFrom(this.vocModel, 'Video')) {
+        var v = json.videoHtml5 || json.description;  
+        if (v) {
+          var frag = document.createDocumentFragment();
+          var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+          U.addToFrag(frag, video);
+          if (json.videoHtml5)
+            delete json['videoHtml5'];
+          else
+            delete json['description'];
+          this.$el.html(frag);
+          return;
+        }
+      }
   //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
       var oWidth;
       var oHeight;
-      var json = this.resource.attributes;
       if (props.length) {
         oWidth = json.originalWidth;
         oHeight = json.originalHeight;
