@@ -806,6 +806,33 @@ define([
       return U.getPropertiesWith(props, {name: annotations}, true);
     },
     
+   getCurrentAppProps: function(meta) {
+      var app = U.getArrayOfPropertiesWith(meta, "app"); // last param specifies to return array
+      if (!app  ||  !app.length) 
+        return null;
+//    var appGroups;
+      var currentAppProps;
+      for (var j=0; j<app.length; j++) {
+        var appNames = app[j].app;
+        var s = appNames.split(',');
+        for (var i=0; i<s.length; i++) {
+  //        var a;
+  //        if (!appGroups) 
+  //          appGroups = {};
+  //        a = appGroups[s[i]];
+  //        if (!a)
+  //          appGroups[s[i]] = [];
+  //        a = appGroups[s[i]];
+  //        a.push(app[j].shortName);
+          if (s[i] == G.appName) {
+            if (!currentAppProps)
+              currentAppProps = [];
+            currentAppProps.push(app[j].shortName);      
+          }
+        }
+      }
+      return currentAppProps;
+    },
     getPropertiesWith: function(props, annotations, returnArray) {
       var type = U.getObjectType(annotations);
       switch (type) {
