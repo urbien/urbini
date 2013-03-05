@@ -596,7 +596,7 @@ define([
       Events.off('edit.' + type);
       var handlers = G.customHandlers[type];
       if (!handlers) {
-        handlers = G.localStorage.get("handlers:" + type);
+        handlers = G.localStorage.get(Voc.HANDLERS_PREFIX + type);
         if (handlers)
           handlers = JSON.parse(handlers);
       }
@@ -670,11 +670,14 @@ define([
       }
     },
     
+    MODEL_PREFIX: 'model:',
+    ENUMERATIONS_KEY: 'enumerations',
+    HANDLERS_PREFIX: 'handlers:',
     fetchHandlers: function(models) {
-      debugger;
+      var modelPrefix = Voc.MODEL_PREFIX + G.DEV_PACKAGE_PATH + G.currentApp.appPath;
       if (!models) {
         models = _.compact(_.map(_.keys(localStorage), function(key) {
-          return key.startsWith("model:") && key.slice(7);
+          return key.startsWith(modelPrefix) && key.slice(7);
         }));
       }
       
@@ -683,7 +686,6 @@ define([
       
       models = JSON.stringify(_.uniq(models));
       G.ajax({type: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
-        debugger;
         Voc.setupHandlers(data);
       });
     },
@@ -725,28 +727,28 @@ define([
         return;
     
       for (var type in handlers) {
-        G.localStorage.putAsync('handlers:' + type, handlers[type]);
+        G.localStorage.putAsync(Voc.HANDLERS_PREFIX + type, handlers[type]);
       }
     },
 
     getEnumsFromLS: function() {
-      return G.localStorage.get('enumerations');
+      return G.localStorage.get(Voc.ENUMERATIONS_KEY);
     },
 
     storeEnumsInLS: function(enums) {
       setTimeout(function() {
-        G.localStorage.putAsync('enumerations', JSON.stringify(enums));
+        G.localStorage.putAsync(Voc.ENUMERATIONS_KEY, JSON.stringify(enums));
       }, 100);
     },
 
     getModelFromLS: function(uri) {
-      return G.localStorage.get('model:' + uri);
+      return G.localStorage.get(Voc.MODEL_PREFIX + uri);
     },
 
     storeModel: function(modelJson) {
       setTimeout(function() {
         var type = modelJson.type;
-        G.localStorage.putAsync('model:' + type, JSON.stringify(modelJson));
+        G.localStorage.putAsync(Voc.MODEL_PREFIX + type, JSON.stringify(modelJson));
         U.pushUniq(G.storedModelTypes, type);
       }, 100);
     },
