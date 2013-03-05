@@ -597,12 +597,9 @@ define('globals', function() {
         cached;
 
     if (G.isInAppcacheBundle(url)) {  
-      if (G.minify) {
-        var path = G.requireConfig.paths[name];
-        var realPath = G.files[path].name;
-        arguments[2] = url.replace(path, realPath);
-      }
-        
+      var path = G.requireConfig.paths[name];
+      var realPath = G.files[path].name;
+      arguments[2] = url.replace(path, realPath);
       orgRJSLoad.apply(this, arguments);
       return;
     }

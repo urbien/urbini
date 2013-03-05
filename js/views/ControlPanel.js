@@ -3,11 +3,10 @@ define([
   'globals',
   'jquery', 
   'underscore', 
-  'templates',
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Templates, Events, U, BasicView) {
+], function(G, $, _, Events, U, BasicView) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {

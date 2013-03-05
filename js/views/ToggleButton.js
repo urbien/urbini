@@ -2,10 +2,9 @@
 define([
   'jquery', 
   'underscore', 
-  'templates',
   'events',
   'views/BasicView'
-], function($, _, Templates, Events, BasicView) {
+], function($, _, Events, BasicView) {
   return BasicView.extend({
     btnId: null,
     initialize: function(options) {

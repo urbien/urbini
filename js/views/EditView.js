@@ -1,13 +1,12 @@
 //'use strict';
 define([
   'globals',
-  'templates',
   'events', 
   'error', 
   'utils',
   'vocManager',
   'views/BasicView'
-], function(G, Templates, Events, Errors, U, Voc, BasicView) {
+], function(G, Events, Errors, U, Voc, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);

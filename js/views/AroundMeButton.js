@@ -1,11 +1,10 @@
 //'use strict';
 define([
   'globals',
-  'templates',
   'views/ToggleButton', 
   'views/BasicView',
   'utils'
-], function(G, Templates, ToggleButton, BasicView, U) {
+], function(G, ToggleButton, BasicView, U) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
     template: 'aroundMeButtonTemplate',

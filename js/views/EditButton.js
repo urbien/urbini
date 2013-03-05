@@ -1,10 +1,9 @@
 //'use strict';
 define([
   'globals',
-  'templates',
   'events',
   'views/BasicView'
-], function(G, Templates, Events, BasicView) {
+], function(G, Events, BasicView) {
   return BasicView.extend({
     template: 'editButtonTemplate',
     events: {

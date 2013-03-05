@@ -1,11 +1,10 @@
 //'use strict';
 define([
   'globals',
-  'templates',
   'events', 
   'utils',
   'views/BasicView'
-], function(G, Templates, Events, U, BasicView) {
+], function(G, Events, U, BasicView) {
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {

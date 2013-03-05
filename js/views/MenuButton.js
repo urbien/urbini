@@ -2,11 +2,10 @@
 define([
   'globals',
   'underscore', 
-  'templates',
   'utils',
   'events',
   'views/BasicView'
-], function(G, _, Templates, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
   var MenuPanel;
   return BasicView.extend({
     template: 'menuButtonTemplate',

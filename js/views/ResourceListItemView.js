@@ -5,11 +5,10 @@ define([
   'underscore', 
   'events', 
   'error', 
-  'templates', 
   'utils',
   'views/BasicView',
   'vocManager'
-], function(G, $, _, Events, Errors, Templates, U, BasicView, Voc) {
+], function(G, $, _, Events, Errors, U, BasicView, Voc) {
   return BasicView.extend({
     TAG: 'ResourceListItemView',
     tagName:"li",
@@ -21,7 +20,7 @@ define([
 //      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
       this.template = U.getTypeTemplate('list-item', this.resource);
-//      this.likesAndComments = _.template(Templates.get('likesAndComments'));
+//      this.likesAndComments = this.makeTemplate('likesAndComments');
       if (this.template) 
         this.isCommonTemplate = false;
       else {

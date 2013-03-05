@@ -3,7 +3,6 @@ define([
   'globals',
   'utils',
   'events',
-  'templates',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
@@ -13,7 +12,7 @@ define([
   'views/ResourceView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
+], function(G, U, Events, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, ResourceImageView, ControlPanel) {
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {

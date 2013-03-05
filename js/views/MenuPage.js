@@ -3,13 +3,12 @@ define([
   'globals',
   'utils',
   'events',
-  'templates',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
   'views/LoginButtons',
   'views/ResourceView'
-], function(G, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, ResourceView) {
+], function(G, U, Events, BasicView, Header, BackButton, LoginButtons, ResourceView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');

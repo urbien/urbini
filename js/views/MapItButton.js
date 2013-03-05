@@ -1,6 +1,5 @@
 //'use strict';
 define([
-  'templates',
   'events', 
   'views/ToggleButton', 
   'views/BasicView' 

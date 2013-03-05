@@ -5,7 +5,6 @@ define([
   'underscore',
   'utils',
   'events',
-  'templates',
   'views/BasicView',
   'views/Header',
   'views/BackButton',
@@ -15,7 +14,7 @@ define([
   'views/EditView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, Templates, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     clicked: false,

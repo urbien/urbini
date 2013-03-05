@@ -5,11 +5,10 @@ define([
   'underscore',
   'utils',
   'events',
-  'templates',
   'views/BasicView',
   'jqueryMasonry',
   'jqueryImagesloaded'
-], function(G, $, _, U, Events, Templates, BasicView) {
+], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',

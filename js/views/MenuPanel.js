@@ -3,9 +3,8 @@ define([
   'globals',
   'utils',
   'events',
-  'templates',
   'views/BasicView'
-], function(G, U, Events, Templates, BasicView) {
+], function(G, U, Events, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',

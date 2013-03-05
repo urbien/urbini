@@ -3,11 +3,10 @@ define([
   'globals',
   'jquery', 
   'underscore', 
-  'templates',
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Templates, Events, U, BasicView) {
+], function(G, $, _, Events, U, BasicView) {
   var MapView = BasicView.extend({
 //    css: [
 //      'leaflet.css', 

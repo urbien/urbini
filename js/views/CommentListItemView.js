@@ -4,9 +4,8 @@ define([
   'jquery', 
   'underscore', 
   'events', 
-  'templates',
   'views/BasicView'
-], function(G, $, _, Events, Templates, BasicView) {
+], function(G, $, _, Events, BasicView) {
   return BasicView.extend({
     tagName: 'tr',
     className: 'commentList',

@@ -2,12 +2,11 @@
 define([
   'globals',
   'underscore', 
-  'templates',
   'utils',
   'events',
   'vocManager',
   'views/BasicView'
-], function(G, _, Templates, U, Events, Voc, BasicView) {
+], function(G, _, U, Events, Voc, BasicView) {
   return BasicView.extend({
     template: 'publishButtonTemplate',
     events: {

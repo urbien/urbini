@@ -1,7 +1,6 @@
 //'use strict';
 define([
   'globals',
-  'templates',
   'events', 
   'utils',
   'error',
@@ -14,7 +13,7 @@ define([
   'views/AroundMeButton', 
   'views/MapItButton',
   'views/MenuButton'
-], function(G, Templates, Events, U, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+], function(G, Events, U, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
