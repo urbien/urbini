@@ -322,21 +322,24 @@ define([
         }
         
         params.$prop = prop;
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});        
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
+        return;
       }
-      else if (pr.multiValue) {
+      if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
-        params.$multiValue = prop;
+//        var url = U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), {$multiValue: prop, $type: type, $forResource: uri});
         params.$type = type;
+        params.$multiValue = prop;
         if (this.action != 'make')
           params.$forResource = uri;
         
         params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
         this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
+        return;
       }
-      else if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
+      if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
         var title = U.getQueryParams(window.location.hash)['$title'];
         var t;
         if (!title)
@@ -357,14 +360,20 @@ define([
 
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+        return;
       }
-      else  {
-        var rParams = {
-          $prop: pr.shortName,
-          $type:  this.vocModel.type
-        };
-        
+      if (U.isCloneOf(pr, "ImageResource.originalImage")) {
+        var rParams = { forResource: res.get('_uri'), $prop: pr.shortName };
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+        return;
+      }
+      
+      var rParams = {
+        $prop: pr.shortName,
+        $type: this.vocModel.type
+      };
+      
+      this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        var w = pr.where;
 //        var wOr =  pr.whereOr;
 //        if (!w  &&  !wOr)
@@ -376,7 +385,6 @@ define([
 //          s = w ? w.replace('&&', '&') : wOr; 
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?' + (w ? '$and=' : '$or=') + encodeURIComponent(s), {trigger: true});
 //        }
-      }
     },
     set: function(params) {
       _.extend(this, params);
