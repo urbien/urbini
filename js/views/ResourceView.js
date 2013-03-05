@@ -9,7 +9,7 @@ define([
 ], function(G, $, _, Events, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
-    return p.charAt(0) != '_' && p != 'davDisplayName' && !prop.displayNameElm && U.isPropVisible(res, prop, role);
+    return p.charAt(0) != '_' && p != 'davDisplayName' && !prop.displayNameElm  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
   };
 
   return BasicView.extend({
@@ -61,8 +61,10 @@ define([
       var userRole = U.getUserRole();
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
-  
-      var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
+
+      var currentAppProps = U.getCurrentAppProps(meta);
+      
+      var propGroups = U.getPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
 //      propGroups = propGroups.length ? propGroups : U.getPropertiesWith(vocModel.properties, "propertyGRoupsList", true);
       propGroups = _.sortBy(propGroups, function(pg) {
         return pg.index;
@@ -95,6 +97,8 @@ define([
             if (!willShow(res, prop, userRole))
               continue;
   
+            if (prop['app']  &&  (!currentAppProps || !currentAppProps[p]))
+              continue;
             displayedProps[p] = true;
             var val = U.makeProp({resource: res, prop: prop, value: json[p]});
             if (!groupNameDisplayed) {
@@ -129,11 +133,13 @@ define([
 //          delete json[p];
           continue;
         }
+        if (prop['app']  &&  (!currentAppProps || !currentAppProps[p]))
+          continue;
         if (prop.autoincrement)
           continue;
-        if (prop.displayNameElm)
-          continue;
-        if (!U.isPropVisible(res, prop))
+//        if (prop.displayNameElm)
+//          continue;
+        if (!willShow(res, prop)) //(!U.isPropVisible(res, prop))
           continue;
   
         if (numDisplayed  &&  !groupNameDisplayed) {
