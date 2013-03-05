@@ -95,10 +95,16 @@ define([
             this.forkMe = true;
           }
         }
+
         else if (U.isAssignableFrom(res.vocModel, "Handler")) {
 //          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);
 //          if (user == handlerOwner)
             this.testHandler = true;            
+        }
+        else {
+          var params = U.getParamMap(window.location.hash);
+          if (U.isAssignableFrom(res.vocModel, "Video", G.typeToModel)  &&  params['-tournament'])
+            this.enterTournament = true;
         }
       }
       
@@ -107,7 +113,7 @@ define([
         buttons: this.buttons,
         viewId: this.cid,
         el: $('#headerDiv', this.el)
-      }, _.pick(this, ['doTry', 'doPublish', 'testHandler', 'forkMe']))).render();
+      }, _.pick(this, ['doTry', 'doPublish', 'testHandler', 'forkMe', 'enterTournament']))).render();
       
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView(_.extend(commonParams, {el: $('div#resourceImage', this.el)}));

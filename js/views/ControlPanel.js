@@ -89,7 +89,9 @@ define([
       var groupNameDisplayed;
       var maxChars = 30;
       var first;
-      
+
+      var currentAppProps = U.getCurrentAppProps(meta);
+
       var title = U.getDisplayName(res, meta);
 //      if (title)
 //        title = ' for ' + title;
@@ -107,7 +109,8 @@ define([
             var prop = meta[p];
             if (displayedProps[p] || !_.has(backlinks, p))
               continue;
-
+            if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
+              continue;
             if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
 //              delete json[p];
               continue;
@@ -171,6 +174,8 @@ define([
         
         var prop = meta[p];
         if (_.has(displayedProps, p))  
+          continue;
+        if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
           continue;
         var count = -1;
         if (!_.has(backlinks, p)) {
