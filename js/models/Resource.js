@@ -221,7 +221,7 @@ define([
       
       var value = attrs[name];
       if (U.isNully(value)) {
-        if (options.validateAll && prop.required && U.isPropEditable(this, prop)) {
+        if (options.validateAll && prop.required && U.isPropEditable(this, prop) && !(this.isNew() && prop.avoidDisplayingOnCreate)) {
           if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
             return U.getPropDisplayName(prop) + ' is a required field';
         }
@@ -363,6 +363,9 @@ define([
         saved = Backbone.Model.prototype.save.call(this, data, options);
         G.cacheResource(this);
         this.triggerHandlers(options);
+        if (isNew) {
+          Events.trigger('newResource', this);
+        }
       }
       else {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
@@ -393,6 +396,10 @@ define([
           
           G.cacheResource(self);
           Events.trigger('resourcesChanged', [self]);
+          if (self.isNew()) {
+            Events.trigger('newResource', self);
+          }
+
           self.triggerHandlers(options);
           self.notifyContainers();
         };
