@@ -220,7 +220,11 @@ define([
 //      }
       
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
-      var isMV = window.location.hash  &&  window.location.hash.indexOf('$multiValue=') != -1;
+
+      var hash = window.location.hash;
+      var params = hash ? U.getParamMap(hash) : null;
+
+      var isMV = params  &&  params['$multiValue'] != null;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
       this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}));
