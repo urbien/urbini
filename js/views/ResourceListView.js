@@ -28,6 +28,7 @@ define([
 //      this.collection.on('add', this.add, this);
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
+      this.fileUploadTemplate = this.makeTemplate('fileUpload');
       return this;
     },
     onadd: function(resources, options) {
@@ -95,27 +96,18 @@ define([
 //        }
 //      }
       var hash = window.location.hash;
-      var idx;
-      var isMultiValueChooser = hash  &&  (idx = hash.indexOf('$multiValue=')) != -1;
+      var params = hash ? U.getParamMap(hash) : null;
+      var isMultiValueChooser = params != null;
+      
       var mvProp; // = isMultiValueChooser ? hash.substring(idx + 12) : null;
       var mvVals = [];
       if (isMultiValueChooser) {
-        idx += 12;
-        var idx1 = hash.indexOf('&', idx);
-        if (idx1 == -1)
-          mvProp = hash.substring(idx);
-        else {
-          mvProp = hash.substring(idx, idx1);
-          var pr = '&$' + mvProp + '=';
-          idx = hash.indexOf(pr);
-          if (idx != -1) {
-            var p = hash.substring(idx + pr.length);
-            var s = decodeURIComponent(p);
-            s = s.split(',');
-            for (var i=0; i<s.length; i++)
-              mvVals.push(s[i].trim());
-          }
-        }
+        mvProp = params['$multiValue'];
+        var pr = '$' + mvProp;
+        var s = params[pr];
+        s = s.split(',');
+        for (var i=0; i<s.length; i++)
+          mvVals.push(s[i].trim());
       }
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var imageProperty = U.getImageProperty(rl);
@@ -174,6 +166,18 @@ define([
           frag.appendChild(lis[i]);
       }
 
+      if (isChooser) {
+        var params = U.getParamMap(window.location.href, '&');
+        var prop = params['$prop'];
+        var forResource = params['forResource'];
+        if (prop  &&  forResource) {
+          var type = U.getTypeUri(forResource);      
+          var cModel = G.typeToModel[type];
+          
+          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage")) 
+            frag.appendChild(fileUploadTemplate({name: prop}));          
+        }
+      }
       if (!nextPage) {
         this.$el.html(frag);
       }
@@ -192,6 +196,7 @@ define([
       else {
         this.initializedListView = true;
       }
+      
     
 //      this.$el.trigger('create');
 //      if (this.$el.hasClass('ui-listview'))
