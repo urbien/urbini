@@ -110,9 +110,9 @@ define([
             self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
           });
         }
-        if (this.testHandler) {
+        if (this.testPlug) {
           G.require(['views/PublishButton'], function(PublishButton) {
-            self.testHandler = new PublishButton({el: $('div#testHandlerBtn', self.el), model: self.resource}).render({testHandler: true});
+            self.testPlug = new PublishButton({el: $('div#testPlugBtn', self.el), model: self.resource}).render({testPlug: true});
           });
         }
         if (this.enterTournament) {

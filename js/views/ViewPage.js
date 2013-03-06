@@ -97,9 +97,9 @@ define([
         }
 
         else if (U.isAssignableFrom(res.vocModel, "Handler")) {
-//          var handlerOwner = U.getLongUri1(res.get('submittedBy') || user);
-//          if (user == handlerOwner)
-            this.testHandler = true;            
+//          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
+//          if (user == plugOwner)
+            this.testPlug = true;            
         }
         else {
           var params = U.getParamMap(window.location.hash);
@@ -113,7 +113,7 @@ define([
         buttons: this.buttons,
         viewId: this.cid,
         el: $('#headerDiv', this.el)
-      }, _.pick(this, ['doTry', 'doPublish', 'testHandler', 'forkMe', 'enterTournament']))).render();
+      }, _.pick(this, ['doTry', 'doPublish', 'testPlug', 'forkMe', 'enterTournament']))).render();
       
       this.header.$el.trigger('create');      
       this.imageView = new ResourceImageView(_.extend(commonParams, {el: $('div#resourceImage', this.el)}));

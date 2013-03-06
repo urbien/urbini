@@ -16,6 +16,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'recipeShoppingListHack', 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      this.checked = options.checked;
       this.resource.on('remove', this.remove, this);
 //      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
@@ -28,7 +29,7 @@ define([
           this.template = this.makeTemplate('mvListItem');
           this.$el.attr("data-role", "controlgroup");
           this.mvProp = options.mvProp;
-          this.mvVals = options.mvVals;
+//          this.mvVals = options.mvVals;
         }
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
@@ -126,13 +127,14 @@ define([
       meta = meta || m.properties;
       if (!meta)
         return this;
+      
       var json = m.toJSON();
-      _.extend(json, {U:U, G:G});
-
       if (this.mvProp) {  
         json['chkId'] = G.nextId() + '.' + this.mvProp;
-        if (this.mvVals  &&  $.inArray(json.davDisplayName, this.mvVals) != -1)
-          json['checked'] = 'checked';
+        if (this.checked)
+          json['_checked'] = 'checked';
+//        if (this.mvVals  &&  $.inArray(json.davDisplayName, this.mvVals) != -1)
+//          json['checked'] = 'checked';
       }
 
 //      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
@@ -141,7 +143,7 @@ define([
 //        json.distanceUnits = 'mi';
 //      }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
-      if (m.isA('Intersection')) {
+      if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
         var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
@@ -159,16 +161,16 @@ define([
             isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien');
           }
           if (a  &&  qidx == -1) 
-            return this.renderIntersectionItem(a, 'Intersection.a');
+            return this.renderIntersectionItem(json, a, 'Intersection.a');
           var p = href.substring(qidx + 1).split('=')[0];
           if (a  &&  p == a)
-            return this.renderIntersectionItem(b, 'Intersection.b');
+            return this.renderIntersectionItem(json, b, 'Intersection.b');
           else if (b  &&  p == b)   
-            return this.renderIntersectionItem(a, 'Intersection.a');
+            return this.renderIntersectionItem(json, a, 'Intersection.a');
           if (isBContact)
-            return this.renderIntersectionItem(b, 'Intersection.b');
+            return this.renderIntersectionItem(json, b, 'Intersection.b');
           else          
-            return this.renderIntersectionItem(a, 'Intersection.a');
+            return this.renderIntersectionItem(json, a, 'Intersection.a');
         }
       }
       if (!this.isCommonTemplate) {
@@ -205,7 +207,7 @@ define([
       
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
-      _.extend(json, {U:U, G:G, Math:Math});
+      _.extend(json);
       this.$el.html(this.template(json));
       return this;
     },
@@ -348,7 +350,7 @@ define([
       
       return viewCols;
     },
-    renderIntersectionItem: function(delegateTo, cloneOf) {
+    renderIntersectionItem: function(json, delegateTo, cloneOf) {
       var m = this.resource;
       var meta = this.vocModel.properties;
       if (!meta)
@@ -357,7 +359,6 @@ define([
       var img;
       var dn;
       var rUri;
-      var json = m.attributes;
       var h = '', w = '';
       if (cloneOf == 'Intersection.a') {
         var imageP = U.getCloneOf(this.vocModel, 'Intersection.aThumb');

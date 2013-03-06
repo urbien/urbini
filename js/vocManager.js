@@ -32,8 +32,8 @@ define([
   }
 
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
-  G.shortNameToModel.Resource = Resource;
-  G.typeToModel.Resource = Resource;
+//  G.shortNameToModel.Resource = Resource;
+//  G.typeToModel.Resource = Resource;
   var Voc = {
 //    packages: {Resource: Resource},
 //    scriptContext: {},
@@ -80,7 +80,13 @@ define([
           mightBeStale = {infos: {}, models: {}},
           willLoad = [];
       
+      var force = options.force;
       for (var type in models) {
+        if (force) {
+          missingOrStale[type] = {};
+          continue;
+        }
+        
         var info = models[type];
         // check if we have any timestamp info on this model
         if (!info.lastModified) {
@@ -131,11 +137,12 @@ define([
         Voc.loadModels(_.union(willLoad, _.values(mightBeStale.models))).done(defer.resolve).fail(defer.reject);
       }).promise();
     },
-    
+        
     __fetchAndLoadModels: function(missingOrStale, mightBeStale, willLoad, options) {
       return $.Deferred(function(defer) {
         var need = _.extend({}, missingOrStale, mightBeStale.infos);
         $.when(Voc.fetchModels(need, options), Voc.loadModels(willLoad)).then(function(data) {
+          G.checkVersion(data);
           if (!data) {
             // missingOrStale should be empty
             if (_.size(missingOrStale)) {
@@ -184,7 +191,7 @@ define([
             Voc.saveModelsToStorage(newModels);
           }, 100);
           
-          Voc.setupHandlers(data.handlers);
+          Voc.setupPlugs(data.plugs);
           if (changedTypes.length)
             Events.trigger('modelsChanged', changedTypes);
           
@@ -247,14 +254,14 @@ define([
       }).promise();
     },    
     
-    setupHandlers: function(handlers) {
-      if (handlers) {
-        _.extend(G.customHandlers, handlers);
-        Voc.saveHandlersToStorage(handlers);
-        for (var type in handlers) {
-          var typeHandlers = handlers[type];
-          for (var i = 0; i < typeHandlers.length; i++) {
-            Voc.initHandler(typeHandlers[i], type);
+    setupPlugs: function(plugs) {
+      if (plugs) {
+        _.extend(G.customPlugs, plugs);
+        Voc.savePlugsToStorage(plugs);
+        for (var type in plugs) {
+          var typePlugs = plugs[type];
+          for (var i = 0; i < typePlugs.length; i++) {
+            Voc.initPlug(typePlugs[i], type);
           }
         }
       }
@@ -390,17 +397,17 @@ define([
       _.extend(m.properties, U.systemProps);
       m.prototype.initialize = Voc.getInit.apply(m);
       setTimeout(function() {
-        Voc.initHandlers(type);
+        Voc.initPlugs(type);
       }, 1000);
     },
     
-    prepareHandler: function(handlerFn, handler) {
+    preparePlug: function(plugFn, plug) {
       return function(res) {
-        return Voc.executeHandler(handlerFn, handler, res);
+        return Voc.executePlug(plugFn, plug, res);
       }
     },
     
-    handlerTools: {
+    plugTools: {
       /**
        * @param fn should take in two arguments, from and to, with names corresponding to class names
        * @param backlink backlink property on a property of the newly created resource. 
@@ -450,11 +457,11 @@ define([
             params[backlinkProp.backLink] = propVal;         
             // backlinkProp.backLink is "recipe" in the example (the backlink being Recipe._ingredients). 
             // We want all ingredients where the value of the property Ingredient._recipe is our recipe  
-            var backlinkCollection = new ResourceList({model: backlinkModel, queryMap: params});
+            var backlinkCollection = G.newResourceList(ResourceList, null, {model: backlinkModel, queryMap: params});
             backlinkCollection.fetch({
               success: function() {
                 debugger;
-                fn = Voc.prepareHandler(fn, handler);
+                fn = Voc.preparePlug(fn, plug);
                 var json = this.toJSON();
                 for (var i = 0; i < json.length; i++) {
                   fn(json[i]);
@@ -476,56 +483,56 @@ define([
     },
 
     /**
-     * prepackage all the built in handler functions like "each" with the resources and models needed for a given operation
+     * prepackage all the built in plug functions like "each" with the resources and models needed for a given operation
      */
-    getHandlerToolSuite: function(cause, causeModel, effect, effectModel) {
-      var handlerTools = _.clone(Voc.handlerTools);
+    getPlugToolSuite: function(cause, causeModel, effect, effectModel) {
+      var plugTools = _.clone(Voc.plugTools);
 //      var context = {cause: cause, causeModel: causeModel, effect: effect, effectModel: effectModel};
-      _.each(handlerTools, function(fn, name) {
+      _.each(plugTools, function(fn, name) {
         var orgFn = fn;
-        handlerTools[name] = function() {
+        plugTools[name] = function() {
           orgFn.apply(this, arguments); // give fn access to cause, causeModel, effect, effectModel
         };
 //        .bind(context);
 //        fn.bind(context);
       });
       
-      return handlerTools;
+      return plugTools;
     },
     
-    nukeHandler: function(handler, handlerFn) {
-      var causeType = handler.causeDavClassUri;
-      G.customHandlers[causeType] = _.filter(G.customHandlers[causeType], function(h) {
-        return h._uri != handler._uri;
+    nukePlug: function(plug, plugFn) {
+      var causeType = plug.causeDavClassUri;
+      G.customPlugs[causeType] = _.filter(G.customPlugs[causeType], function(h) {
+        return h._uri != plug._uri;
       });
       
-      if (handlerFn == null) {
-        Voc.initHandlers(causeType);
+      if (plugFn == null) {
+        Voc.initPlugs(causeType);
         return;
       }
       
       _.each(Voc.scriptActions, function(action) {        
-        Events.off(action + '.' + causeType, handlerFn);
+        Events.off(action + '.' + causeType, plugFn);
       });
     },
     
     /**
-     * @param handler a function that takes in two parameters: from and to, a.k.a. cause and effect
+     * @param plug a function that takes in two parameters: from and to, a.k.a. cause and effect
      */
-    executeHandler: function(handlerFn, handler, cause) {
-      var effectType = handler.effectDavClassUri;
+    executePlug: function(plugFn, plug, cause) {
+      var effectType = plug.effectDavClassUri;
       var type = effectType.slice(effectType.lastIndexOf("/") + 1).camelize();
       var effect = {};
 
       Voc.getModels(effectType).done(function() {
         var effectModel =  G.typeToModel[effectType],
             causeModel = G.typeToModel[cause._type],
-            toolSuite = Voc.getHandlerToolSuite(cause, causeModel, effect, effectModel);
+            toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel);
         
         try {
-          handlerFn.apply(toolSuite).call({}, cause, effect);
+          plugFn.apply(toolSuite).call({}, cause, effect);
         } catch (err) {
-          Voc.nukeHandler(handler, handlerFn);
+          Voc.nukePlug(plug, plugFn);
           return;
         }
         
@@ -556,7 +563,7 @@ define([
         }
         
         var res = new effectModel();
-        effect.plugin = handler._uri;
+        effect.plugin = plug._uri;
 //        effect.cause = cause._uri;
         res.save(effect, {'$returnMade': false, sync: false});
       }).fail(function() {
@@ -590,41 +597,41 @@ define([
       return FunctionProxy(script);
     },
     
-    initHandlers: function(type) {
-      // TODO: turn off handlers as needed, instead of this massacre
+    initPlugs: function(type) {
+      // TODO: turn off plugs as needed, instead of this massacre
       Events.off('create.' + type);
       Events.off('edit.' + type);
-      var handlers = G.customHandlers[type];
-      if (!handlers) {
-        handlers = G.localStorage.get(Voc.HANDLERS_PREFIX + type);
-        if (handlers)
-          handlers = JSON.parse(handlers);
+      var plugs = G.customPlugs[type];
+      if (!plugs) {
+        plugs = G.localStorage.get(Voc.PLUGS_PREFIX + type);
+        if (plugs)
+          plugs = JSON.parse(plugs);
       }
       
-      if (!handlers)
+      if (!plugs)
         return;
     
-      _.each(handlers, function(handler) {
-        Voc.initHandler(handler, type);
+      _.each(plugs, function(plug) {
+        Voc.initPlug(plug, type);
       });
     },
     
     scriptActions: ['create', 'edit'],
     
-    initHandler: function(handler, type) {
+    initPlug: function(plug, type) {
       var scripts = {};
       _.each(Voc.scriptActions, function(action) {        
-        scripts[action] = handler[action + 'Script'];
+        scripts[action] = plug[action + 'Script'];
       });
       
       for (var action in scripts) {
         var script = scripts[action];
         if (script) {
-          script = Voc.buildScript(script, handler.causeDavClassUri, handler.causeDavClassUri);
+          script = Voc.buildScript(script, plug.causeDavClassUri, plug.causeDavClassUri);
           if (script === null)
-            G.log(Voc.TAG, 'error', 'bad custom createScript', handler.app, type);
+            G.log(Voc.TAG, 'error', 'bad custom createScript', plug.app, type);
           else
-            Events.on(action + '.' + type, Voc.prepareHandler(script, handler));
+            Events.on(action + '.' + type, Voc.preparePlug(script, plug));
         }          
       }
     },
@@ -655,8 +662,9 @@ define([
       var p = G.localStorage.get(Voc.contactKey);
       p = p && JSON.parse(p);
       var c = G.currentUser;
-      G.userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
-      if (G.userChanged) {
+      var userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
+      if (userChanged) {
+        G.databaseCompromised = true;
         if (c.guest) {
           G.localStorage.del(Voc.contactKey);          
         }
@@ -665,28 +673,35 @@ define([
           G.localStorage.put(Voc.contactKey, JSON.stringify(c));
         }
          
-        var handlerTypes = G.localStorage.nukeHandlers();
-        Voc.fetchHandlers(handlerTypes);
+        var plugTypes = G.localStorage.nukePlugs();
+        Voc.fetchPlugs(plugTypes);
       }
     },
     
     MODEL_PREFIX: 'model:',
     ENUMERATIONS_KEY: 'enumerations',
-    HANDLERS_PREFIX: 'handlers:',
-    fetchHandlers: function(models) {
-      var modelPrefix = Voc.MODEL_PREFIX + G.DEV_PACKAGE_PATH + G.currentApp.appPath;
+    PLUGS_PREFIX: 'plugs:',
+    fetchPlugs: function(models) {
       if (!models) {
+        var modelPrefix = Voc.MODEL_PREFIX + G.DEV_PACKAGE_PATH + G.currentApp.appPath;
         models = _.compact(_.map(_.keys(localStorage), function(key) {
           return key.startsWith(modelPrefix) && key.slice(7);
         }));
       }
       
-      if (!models.length)
+      if (!_.size(models))
         return;
       
-      models = JSON.stringify(_.uniq(models));
-      G.ajax({type: 'POST', url: G.modelsUrl, data: {models: models, handlersOnly: true}}).done(function(data, status, xhr) {
-        Voc.setupHandlers(data);
+      var viaInstall = !!models.appInstall;
+      var params = {plugsOnly: true};
+      if (viaInstall)
+        params = $.param(_.extend(params, models));
+      else
+        _.extend(params, {models: JSON.stringify(models)});
+      
+      G.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
+        G.checkVersion(data);
+        Voc.setupPlugs(data.plugs);
       });
     },
     
@@ -701,8 +716,8 @@ define([
       var now = G.currentServerTime();
       var enumModels = {};
       _.each(models, function(model) {
-        if (model.type.endsWith('#Resource'))
-          return;
+//        if (model.type.endsWith('#Resource'))
+//          return;
         
         var modelJson = U.toJSON(model);
         modelJson._dateStored = now;
@@ -722,12 +737,12 @@ define([
       }
     },
 
-    saveHandlersToStorage: function(handlers) {
-      if (!localStorage || !_.size(handlers))
+    savePlugsToStorage: function(plugs) {
+      if (!localStorage || !_.size(plugs))
         return;
     
-      for (var type in handlers) {
-        G.localStorage.putAsync(Voc.HANDLERS_PREFIX + type, handlers[type]);
+      for (var type in plugs) {
+        G.localStorage.putAsync(Voc.PLUGS_PREFIX + type, plugs[type]);
       }
     },
 
@@ -762,17 +777,53 @@ define([
       for (var type in enums) {
         Voc.loadModel(Backbone.Model.extend({}, enums[type]));
       }
+    },
+    
+    clearCache: function() {
+      G.shortNameToModel = {};
+      G.typeToModel = {};
+      G.shortNameToEnum = {};
+      G.typeToEnum = {};
+      G.shortNameToInline = {};
+      G.typeToInline = {};
+      Voc.models = [];
+      Voc.mightBeStale = {};
     }
   };
   
   Voc.snm = G.shortNameToModel;
-  Events.on('newHandler', function(handler) {
-    var handlers = {};
-    handler = handler.toJSON();
-    var type = handler.causeDavClassUri;
-    handlers[type] = [handler];
-    Voc.setupHandlers(handlers);
+  Events.on('newPlug', function(plug) {
+    var plugs = {};
+    plug = plug.toJSON();
+    var type = plug.causeDavClassUri;
+    plugs[type] = [plug];
+    Voc.setupPlugs(plugs);
+  });
+
+  Events.on('appInstall', function(appInstall) {
+    debugger;
+    if (!appInstall.get('allow'))
+      return;
+    
+    if (!U.isTempResource(appInstall)) {
+      debugger;
+      Voc.fetchPlugs({appInstall: appInstall.getUri()});
+    }
   });
   
+  Events.on('VERSION.Models', function(init) {
+    debugger;
+    G.localStorage.clean(function(key) {
+      return _.any([Voc.MODEL_PREFIX], function(prefix) {
+        return key.startsWith(prefix);
+      });
+    });
+    
+    if (!init) {
+      var currentModels = _.keys(G.modelsMetadata);
+      Voc.getModels(currentModels, {force: true});
+    }
+  });
+
   return (G.Voc = Voc);
 });

@@ -50,5 +50,9 @@ define([
     return false;
   };
   
+  BasicView.prototype.assign = function (view, selector) {
+    view.setElement(this.$(selector)).render();
+  }
+  
   return BasicView; 
 });

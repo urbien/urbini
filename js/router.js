@@ -17,13 +17,13 @@ define([
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
-      ""                : "home",
-      ":type"           : "list", 
-      "view/*path"      : "view",  
-      "edit/*path"      : "edit", 
-      "make/*path"      : "make", 
-      "chooser/*path"   : "choose", 
-      ":type/:backlink" : "list"
+      ""                                                       : "home",
+      ":type"                                                  : "list", 
+      "view/*path"                                             : "view",  
+      "edit/*path"                                             : "edit", 
+      "make/*path"                                             : "make", 
+      "chooser/*path"                                          : "choose", 
+      ":type/:backlink"                                        : "list"
     },
 
     CollectionViews: {},
@@ -141,8 +141,8 @@ define([
       }
     },
     
-    choose: function(path) {
-      this.list.call(this, path, G.LISTMODES.CHOOSER);
+    choose: function(path) { //, checked, props) {
+      this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
     /**
@@ -181,9 +181,8 @@ define([
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
-      G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {};
       this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
-      var c = G.ResourceLists[typeUri][key];
+      var c = G.getCachedResourceList(typeUri, key);
       if (c && !c._lastFetchedOn)
         c = null;
       
@@ -199,8 +198,8 @@ define([
         return this;
       }      
       
-      c = this.currentModel = G.ResourceLists[typeUri][key] = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
-      var listView = new ListPage(_.extend(this.extraParams || {}, {model: list}));
+      c = this.currentModel = G.newResourceList(ResourceList, null, {model: model, _query: query, _rType: className, _rUri: oParams });    
+      var listView = new ListPage(_.extend(this.extraParams || {}, {model: c}));
       
 //      G.ResourceLists[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
@@ -228,19 +227,19 @@ define([
     },
     
     monitorCollection: function(collection) {
-      var qMap = c.queryMap;
+      var qMap = collection.queryMap;
       if (!qMap)
         return;
       
-      var vocModel = c.vocModel,
+      var vocModel = collection.vocModel,
           meta = vocModel.properties;
       
-      debugger;
-      for (var param in c.queryMap) {
+      for (var param in qMap) {
         var prop = meta[param];
         if (prop && U.isResourceProp(prop)) {
           var uri = qMap[param];
           if (U.isTempUri(uri)) {
+            debugger;
             Events.on('synced.' + uri, function(data) {
               debugger;
               qMap[param] = data._uri;
@@ -528,44 +527,40 @@ define([
       }
 
       // theoretically, we can only be in G.currentApp, and it's not installed
-//      var appUri = G.currentApp._uri;
-//      var self = this, 
-//          appType = U.getTypeUri(appUri), 
-//          friendAppType = U.getTypeUri('model/social/FriendApp');
-//      
-//      Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
-//        var plugsList = new G.typeToModel[friendAppType]({friend1: appUri}); // FriendApp list representing apps this app follows
-//        var fetchPlugs = plugsList.fetch({sync: true}).promise();
-//        var installOptions = {'-info': APP_TERMS, returnUri: window.location.href, application: appUri, plugs: plugs};
-//        var fetchApp = $.Deferred(function(defer) {
-//          var app = G.getCachedResource(appUri);
-//          if (app) {
-//            defer.resolve(app);
-//            return;
-//          }
-//          
-//          app = new G.typeToModel[appType]({_uri: appUri});
-//          app.fetch({sync: true}).done(defer.resolve).fail(defer.reject);
-////            success: function() {
-////              self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', installOptions), {trigger: true});
-////              //            self[method].apply(self, args);
-////            },
-////            error: function() {
-////              debugger;
-////            }
-////          });          
-//        }).promise();
-//
-//        $.when.apply($, [fetchPlugs, fetchApp]).done(function(plugs, app) {
-//          var plugList = _.pluck(plugs, '');
+      var appUri = G.currentApp._uri;
+      var self = this, 
+          appType = U.getTypeUri(appUri), 
+          friendAppType = U.getTypeUri('model/social/FriendApp');
+      
+      Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
+        var followsList = G.newResourceList(ResourceList, null, {model: G.typeToModel[friendAppType], queryMap: {friend1: appUri}}); // FriendApp list representing apps this app follows
+        var fetchFollows = followsList.fetch({sync: true}).promise();
+        var fetchFollowsPipe = $.Deferred();
+        fetchFollows.always(fetchFollowsPipe.resolve);
+        var installOptions = {'-info': APP_TERMS, returnUri: window.location.href, application: appUri};
+        var fetchApp = $.Deferred(function(defer) {
+          var app = G.getCachedResource(appUri);
+          if (app) {
+            defer.resolve(app);
+            return;
+          }
+          
+          app = new G.typeToModel[appType]({_uri: appUri});
+          app.fetch({sync: true}).done(defer.resolve).fail(defer.reject);
+        }).promise();
+
+        $.when.apply($, [fetchFollowsPipe, fetchApp]).done(function() {
+          debugger;
+          var followsNames = followsList.pluck('davDisplayName');
+          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, {appPlugs: followsNames.join(','), allow: true, $returnUri: U.getHash()})), {trigger: true}); // check all appPlugs by default
 //          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', installOptions), {trigger: true});
-//        }).fail() {
-//          
-//        });
-//      }).fail(function() {
-//        debugger;
-//        Errors.getDefaultErrorHandler();
-//      });
+        }).fail(function() {
+          debugger;
+        });
+      }).fail(function() {
+        debugger;
+        Errors.getDefaultErrorHandler().apply(this, arguments);
+      });
       
       return false;
     },

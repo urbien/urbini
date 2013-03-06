@@ -24,6 +24,7 @@ define([
       Events.on('changePage', this.pageChanged);
       this.template = this.makeTemplate(this.template);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
+//      this.options = _.pick(options, 'checked', 'props');
       this.TAG = "ListPage";
       this.viewId = options.viewId;
     },
@@ -67,9 +68,9 @@ define([
 //      var isEdit = (this.action === 'edit');
 //      if (p && p.mode == G.LISTMODES.CHOOSER) {
       Events.stopEvent(e);
-      var checked = $('input:checked');
+      var checked = this.$('input:checked');
       if (checked.length)
-        Events.trigger('chooser', {model: this.model, checked: checked});
+        Events.trigger('chooser:' + U.getQueryParams().$multiValue, {model: this.model, checked: checked});
       else
         Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
 //      }
@@ -227,7 +228,7 @@ define([
       var isMV = params  &&  params['$multiValue'] != null;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
-      this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}));
+      this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}, this.options));
       this.listView.render();
       if (isGeo) {
         var self = this;

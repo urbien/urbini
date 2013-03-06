@@ -223,7 +223,7 @@ define([
             if (i != 0)
               innerHtml += ', ';
             innerHtml += checked[i].name;
-            set += '<input type="checkbox" checked="true" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
+            set += '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
           }
           link.innerHTML = innerHtml;
           link.parentNode.innerHTML += set;
@@ -291,19 +291,12 @@ define([
       Events.stopEvent(e);
       var el = e.target;
       var prop = e.target.name;
-//      if (!prop)
-//        return;
-      
       var self = this;
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
       var pr = vocModel.properties[prop];
+      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
       Events.on('chooser:' + prop, this.onChoose(e, prop), this);
       var params = {};
-//      if (pr.where) {
-//        debugger;
-//        _.extend(params, U.parseWhere(pr.where));
-//      }
-
       if (pr.where) {
         params = U.getQueryParams(pr.where);
         for (var p in params) {
@@ -321,10 +314,12 @@ define([
           }
         }
         
-        params.$prop = prop;
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
-        return;
+        if (!pr.multiValue) {
+          params.$prop = prop;
+          return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
+        }
       }
+      
       if (pr.multiValue) {
         var prName = pr.displayName;
         if (!prName)
@@ -332,11 +327,19 @@ define([
 //        var url = U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), {$multiValue: prop, $type: type, $forResource: uri});
         params.$type = type;
         params.$multiValue = prop;
-        if (this.action != 'make')
+        if (this.action == 'make') {
+//          if (U.isAssignableFrom(vocModel, 'AppInstall')) {
+//            params.$checked = 'y'; // check all by default
+//          }
+        }
+        else
           params.$forResource = uri;
         
         params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.lookupFrom)) + "?" + $.param(params) + "&$" + prop + "=" + encodeURIComponent(e.target.innerHTML), {trigger: true});
+        var mvList = e.target.innerText;
+        mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
+        params['$' + prop] = mvList;
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), params), {trigger: true});
         return;
       }
       if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
@@ -458,10 +461,18 @@ define([
           uri = res.getUri(),
           vocModel = this.vocModel,
           self = this;
+
+      if (U.isAssignableFrom(vocModel, 'InterfaceImplementor'))
+        return this.router.navigate(U.makeMobileUrl('list', 'system/designer/WebProperty', {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, replace: false, forceRefresh: true});        
+      else if (U.isAssignableFrom(vocModel, 'WebProperty')) {
+        window.location.back();
+//        var cloneOf = res.get('cloneOf');
+//        if (cloneOf && cloneOf.count > 0)
+      }
       
       // TODO: fix this HACK
-      if (uri)
-        Events.trigger('newResource', res);
+//      if (uri)
+//        Events.trigger('newResource', res);
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
@@ -740,6 +751,10 @@ define([
       this.resetResource();
 //      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
+      atts = U.mapObj(atts, function(att, val) {
+        return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
+      });
+      
       atts = _.extend({}, res.attributes, this.initialParams, atts);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {

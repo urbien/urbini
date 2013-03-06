@@ -282,7 +282,7 @@ define([
       return Backbone.Model.prototype.fetch.call(this, options);
     },
     
-    triggerHandlers: function(options) {
+    triggerPlugs: function(options) {
       if (!G.currentUser.guest && !options.fromDB) {
         var isNew = this.isNew();
         var method = isNew ? 'create.' : 'edit.';
@@ -295,9 +295,9 @@ define([
         }
         
         // TODO: fix this hack, or move this to some place where we handle resources by type
-        var handlerModel = G.shortNameToModel.Handler;
-        if (handlerModel && this.vocModel.type === handlerModel.type)
-          Events.trigger("newHandler", self);
+        var plugModel = G.shortNameToModel.Handler;
+        if (plugModel && this.vocModel.type === plugModel.type)
+          Events.trigger("newPlug", self);
       }
     },
 
@@ -360,9 +360,13 @@ define([
       var data = attrs || options.data || this.attributes;
       var saved;
       if (!options.sync) {
-        saved = Backbone.Model.prototype.save.call(this, data, options);
+        saved = Backbone.Model.prototype.save.call(this, data, options);        
         G.cacheResource(this);
-        this.triggerHandlers(options);
+        if (U.isAssignableFrom(this.vocModel, 'AppInstall')) {
+          Events.trigger('appInstall', this);
+        }
+        
+        this.triggerPlugs(options);
         if (isNew) {
           Events.trigger('newResource', this);
         }
@@ -396,11 +400,17 @@ define([
           
           G.cacheResource(self);
           Events.trigger('resourcesChanged', [self]);
-          if (self.isNew()) {
+          if (self.isNew()) // was a synchronous mkresource operation
             Events.trigger('newResource', self);
+//          else if (isNew) { // completed sync with db
+//          }
+          
+          if (U.isAssignableFrom(self.vocModel, 'AppInstall')) {
+//            if (isNew || self.isNew()) // completed sync with server, whether via db or directly
+            Events.trigger('appInstall', self);
           }
-
-          self.triggerHandlers(options);
+          
+          self.triggerPlugs(options);
           self.notifyContainers();
         };
         
@@ -474,9 +484,9 @@ define([
 //      return Backbone.Model.prototype.save.call(this, attrs, options);
   },
   {
-    type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
-    shortName: "Resource",
-    displayName: "Resource",
+//    type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
+//    shortName: "Resource",
+//    displayName: "Resource",
     properties: {
       davDisplayName: {range: "string"},
       davGetLastModified: {range: "long"},

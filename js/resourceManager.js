@@ -75,232 +75,260 @@ define([
 
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
-//    if (method === 'patch') {
-//      options = options || {};
-//      var success = options.success;
-//      options.success = function() {
-//        Events.trigger('refresh', data, data.get('_uri'));
-//        setTimeout(function() {RM.addItem(data)}, 100);
-//        success && success.apply(this, arguments);
-//      }
-//      
-//      Backbone.defaultSync.apply(this, arguments);
-//      return;
-//    }
-    if (_.contains(['patch', 'create'], method)) {
-      if (options.sync) {
-        if (!G.online) {
-          options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
-          return;
+    var args = arguments;
+    return $.Deferred(function(defer) {
+      options = options || {};
+      if (options.success)
+        defer.done(options.success);
+      if (options.error)
+        defer.fail(options.error);
+        
+  //    if (method === 'patch') {
+  //      options = options || {};
+  //      var success = options.success;
+  //      options.success = function() {
+  //        Events.trigger('refresh', data, data.get('_uri'));
+  //        setTimeout(function() {RM.addItem(data)}, 100);
+  //        success && success.apply(this, arguments);
+  //      }
+  //      
+  //      Backbone.defaultSync.apply(this, arguments);
+  //      return;
+  //    }
+      if (_.contains(['patch', 'create'], method)) {
+        if (options.sync) {
+          if (!G.online) {
+//            options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+            defer.reject(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+            return;
+          }
+          else {
+            U.pipe(Backbone.defaultSync.apply(this, args), defer);
+          }
         }
         else {
-          Backbone.defaultSync.apply(this, arguments);
+          U.pipe(RM.saveItem(data, options), defer);
+//          if (options.success)
+//            dfd.done(options.success);
+//          else if (options.error)
+//            dfd.fail(options.error);          
         }
-      }
-      else {
-        var dfd = RM.saveItem(data, options);
-        if (options.success)
-          dfd.done(options.success);
-        else if (options.error)
-          dfd.fail(options.error);
-      }
-      
-      return;
-    }
-    
-    var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
-    defaultSuccess = options.success, 
-    defaultError = options.error,
-    forceFetch = options.forceFetch || data._dirty,
-    synchronous = options.sync,
-    now = G.currentServerTime(),
-    isCollection = U.isCollection(data),
-    vocModel = data.vocModel,
-    fetchFromServer = function(isUpdate, timeout) {
-      if (!isCollection && U.isTempUri(data.getUri())) {
-//        debugger;
-        options.error && options.error(data, {type: 'offline'}, options);
+        
         return;
       }
       
-      data.lastFetchOrigin = 'server';
-      return RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn);
-    }
-    
-    data._dirty = 0;
-    if (isCollection)
-      collection = data;
-    else {
-      collection = data.collection;
-      resource = data;
-    }
-    
-    if (isCollection) {
-      lastFetchedOn = collection.resources.length && collection.resources[0].loaded && RM.getLastFetched(data, now);
-      qMap = collection.queryMap;
-      filter = U.getQueryParams(collection);
-      isFilter = !!filter;
-      if (isCollection && options.startAfter) {
-        start = qMap.$offset; // not a jQuery thing
-        options.start = start = start && parseInt(start);
+      var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
+      defaultSuccess = options.success, 
+      defaultError = options.error,
+      forceFetch = options.forceFetch || data._dirty,
+      synchronous = options.sync,
+      now = G.currentServerTime(),
+      isCollection = U.isCollection(data),
+      vocModel = data.vocModel,
+      fetchFromServer = function(isUpdate, timeout) {
+        return $.Deferred(function(dfd) {          
+          if (!isCollection && U.isTempUri(data.getUri())) {
+    //        debugger;
+  //          options.error && options.error(data, {type: 'offline'}, options);
+            dfd.reject(data, {code: 0, type: 'offline'}, options);
+            return;
+          }
+          
+          data.lastFetchOrigin = 'server';
+          U.pipe(RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn), dfd);
+        })
       }
-      else
-        options.start = start = 0;
-
-      numRequested = qMap.$limit ? parseInt(qMap.$limit) : collection.perPage;
-      start = start || 0;
-      options.end = end = start + numRequested;
-      numNow = collection.resources.length;
-      shortPage = !!(numNow && numNow < collection.perPage);
-      isUpdate = options.isUpdate = numNow >= end || shortPage;
-      if (isUpdate) {
-        if (forceFetch)
-          return fetchFromServer(isUpdate, 100);
-        if (RM.isStale(lastFetchedOn, now))
-          return fetchFromServer(isUpdate, 100); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
-        else if (numNow) {
-          defaultSuccess(null, 'success', {status: 304});
-          return; // no need to fetch from db on update
+      
+      data._dirty = 0;
+      if (isCollection)
+        collection = data;
+      else {
+        collection = data.collection;
+        resource = data;
+      }
+      
+      if (isCollection) {
+        lastFetchedOn = collection.resources.length && collection.resources[0].loaded && RM.getLastFetched(data, now);
+        qMap = collection.queryMap;
+        filter = U.getQueryParams(collection);
+        isFilter = !!filter;
+        if (isCollection && options.startAfter) {
+          start = qMap.$offset; // not a jQuery thing
+          options.start = start = start && parseInt(start);
+        }
+        else
+          options.start = start = 0;
+  
+        numRequested = qMap.$limit ? parseInt(qMap.$limit) : collection.perPage;
+        start = start || 0;
+        options.end = end = start + numRequested;
+        numNow = collection.resources.length;
+        shortPage = !!(numNow && numNow < collection.perPage);
+        isUpdate = options.isUpdate = numNow >= end || shortPage;
+        if (isUpdate) {
+          if (forceFetch)
+            return U.pipe(fetchFromServer(isUpdate, 100), defer);
+          if (RM.isStale(lastFetchedOn, now))
+            return U.pipe(fetchFromServer(isUpdate, 100), defer); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
+          else if (numNow) {
+            defer.resolve([null, 'success', {status: 304}]);
+//            defaultSuccess(null, 'success', {status: 304});
+            return; // no need to fetch from db on update
+          }
+        }
+        else if (start < numNow) {
+          return; // no need to refetch from db, we already did
         }
       }
-      else if (start < numNow) {
-        return; // no need to refetch from db, we already did
-      }
-    }
-    else {      
-      lastFetchedOn = RM.getLastFetched(resource);
-      isUpdate = options.isUpdate = resource.loaded || resource.collection;
-      if (isUpdate) {
-        if (forceFetch)
-          return fetchFromServer(isUpdate, 100);
-        
-        var ts = RM.getLastFetchedTimestamp(resource, now);
-        if (RM.isStale(ts, now))
-          return fetchFromServer(isUpdate, 100);
-        else
+      else {      
+        lastFetchedOn = RM.getLastFetched(resource);
+        isUpdate = options.isUpdate = resource.loaded || resource.collection;
+        if (isUpdate) {
+          if (forceFetch)
+            return U.pipe(fetchFromServer(isUpdate, 100), defer);
+          
+          var ts = RM.getLastFetchedTimestamp(resource, now);
+          if (RM.isStale(ts, now))
+            U.pipe(fetchFromServer(isUpdate, 100), defer);
+          else  
+            defer.resolve();
+            
           return;
+        }
       }
-    }
-    
-    var luri = window.location.hash;
-    var key = luri &&  luri.indexOf('#make') == 0 ? null : this.getKey && this.getKey();
-    if (!key) {
-      if (G.online)
-        fetchFromServer(isUpdate, 0);
       
-      return;
-    }
-    
-    var dbReqOptions = {key: key, data: data};
-    if (isCollection) {
-      dbReqOptions.startAfter = options.startAfter,
-      dbReqOptions.perPage = collection.perPage;
-      dbReqOptions.filter = isFilter && filter;
-    }
-    else
-      dbReqOptions.uri = key;
-
-    var dbPromise = RM.getItems(dbReqOptions);
-    if (!dbPromise) {
-      if (G.online)
-        fetchFromServer(isUpdate, 0);
+      var luri = window.location.hash;
+      var key = luri &&  luri.indexOf('#make') == 0 ? null : this.getKey && this.getKey();
+      if (!key) {
+        if (G.online)
+          U.pipe(fetchFromServer(isUpdate, 0), defer);
+        else
+          defer.reject(null, {code: 0, type: 'offline'}, options);
+	      
+        return;
+      }
+      
+      var dbReqOptions = {key: key, data: data};
+      if (isCollection) {
+        dbReqOptions.startAfter = options.startAfter,
+        dbReqOptions.perPage = collection.perPage;
+        dbReqOptions.filter = isFilter && filter;
+      }
       else
-        options.sync && options.error && options.error(data, {type: 'offline'}, options);
-      
-      return;
-    }
-    
-    dbPromise.done(function(results) {
-      if (!results || (isCollection && !results.length))
-        return fetchFromServer(isUpdate, 100);
-    
-      options.sync = false;
-      // simulate a normal async network call
-      data.lastFetchOrigin = 'db';
-      G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
-      results = U.getObjectType(results) === '[object Object]' ? [results] : results;
-      var resp = {data: results, metadata: {offset: start}};
-      var numBefore = isCollection && collection.resources.length;
-      defaultSuccess(resp, 'success', null); // add to / update collection
-
-      if (!isCollection) {
-        if (forceFetch)
-          return fetchFromServer(isUpdate, 0);
+        dbReqOptions.uri = key;
+  
+      var dbPromise = RM.getItems(dbReqOptions);
+      if (!dbPromise) {
+        if (G.online)
+          U.pipe(fetchFromServer(isUpdate, 0), defer);
+        else
+          defer.reject(data, {type: 'offline'}, options);
+//          options.sync && options.error && options.error(data, {type: 'offline'}, options);
         
-        isUpdate = options.isUpdate = true;
+        return;
+      }
+      
+      dbPromise.done(function(results) {
+        if (!results || (isCollection && !results.length))
+          return U.pipe(fetchFromServer(isUpdate, 100), defer);
+      
+        options.sync = false;
+        // simulate a normal async network call
+        data.lastFetchOrigin = 'db';
+        G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
+        results = U.getObjectType(results) === '[object Object]' ? [results] : results;
+        var resp = {data: results, metadata: {offset: start}};
+        var numBefore = isCollection && collection.resources.length;
+        defer.resolve(resp, 'success', null); // add to / update collection
+  
+        if (!isCollection) {
+          if (forceFetch)
+            return U.pipe(fetchFromServer(isUpdate, 0), defer);
+          
+          isUpdate = options.isUpdate = true;
+          var lf = RM.getLastFetched(results, now);
+          if (RM.isStale(lf, now)) {
+            data.lastFetchOrigin = 'server';
+            U.pipe(fetchFromServer(isUpdate, 100), defer);
+          }
+          
+          return;
+        }
+        
+        if (forceFetch) {
+          data.lastFetchOrigin = 'server';
+          return U.pipe(fetchFromServer(isUpdate, 0));
+        }
+        
+        var numAfter = collection.resources.length;
+        if (!isUpdate && numAfter === numBefore) // db results are useless
+          return U.pipe(fetchFromServer(isUpdate, 100));
+        
         var lf = RM.getLastFetched(results, now);
         if (RM.isStale(lf, now)) {
           data.lastFetchOrigin = 'server';
-          fetchFromServer(isUpdate, 100);
+          return U.pipe(fetchFromServer(isUpdate, 100), defer);
         }
-        
-        return;
-      }
-      
-      if (forceFetch) {
-        data.lastFetchOrigin = 'server';
-        return fetchFromServer(isUpdate, 0);
-      }
-      
-      var numAfter = collection.resources.length;
-      if (!isUpdate && numAfter === numBefore) // db results are useless
-        return fetchFromServer(isUpdate, 100);
-      
-      var lf = RM.getLastFetched(results, now);
-      if (RM.isStale(lf, now)) {
-        data.lastFetchOrigin = 'server';
-        return fetchFromServer(isUpdate, 100);
-      }
-    }).fail(function(e) {
-      if (e) 
-        G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
-      fetchFromServer(isUpdate, 0);
-    }).progress(function(db, event) {
-//      debugger;
-      error = error;
-    });
+      }).fail(function(e) {
+        if (e) 
+          G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
+        U.pipe(fetchFromServer(isUpdate, 0), defer);
+      }).progress(function(db, event) {
+  //      debugger;
+        error = error;
+      });
+    }).promise();
   };
   
   Lablz.idbq = idbq;
   var ResourceManager = RM = {
     TAG: 'Storage',
     fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
-      if (!G.online) {
-        options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
-        return;
-      }
-    
-      data.lastFetchOrigin = 'server';
-//      if (!forceFetch && isUpdate) // && !shortPage)
-      if (isUpdate && !options.forceFetch) {
-        lastFetchedOn = lastFetchedOn || RM.getLastFetched(data);
-        RM.setLastFetched(lastFetchedOn, options);
-      }
-
-      if (timeout) {
-        var self = this, args = arguments;
-        setTimeout(function() {
-          RM._fetchHelper.apply(self, args);
-        }, timeout);
-      }
-      else
-        RM._fetchHelper.apply(this, arguments);
+      var self = this, args = arguments;
+      return $.Deferred(function(defer) {        
+        if (!G.online) {
+          defer.reject(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+//          options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+          return;
+        }
+      
+        data.lastFetchOrigin = 'server';
+  //      if (!forceFetch && isUpdate) // && !shortPage)
+        if (isUpdate && !options.forceFetch) {
+          lastFetchedOn = lastFetchedOn || RM.getLastFetched(data);
+          RM.setLastFetched(lastFetchedOn, options);
+        }
+  
+        if (timeout) {
+          setTimeout(function() {
+            U.pipe(RM._fetchHelper.apply(self, args), defer);
+          }, timeout);
+        }
+        else
+          U.pipe(RM._fetchHelper.apply(self, args), defer);
+      }).promise();
     },
     
     _fetchHelper: function(method, data, options) {
-      if (options.sync || !G.hasWebWorkers)
-        return RM.defaultSync(method, data, options);
-      
-      G.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
-        options.success(data, status, xhr);
-      }).fail(function(xhr, status, msg) {
-        if (xhr.status === 304)
-          return;
+      return $.Deferred(function(defer) {        
+        if (options.sync || !G.hasWebWorkers)
+          return U.pipe(RM.defaultSync(method, data, options), defer);
         
-        debugger;
-        G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
-        options.error(null, xhr, options);
-      });      
+        G.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
+//          options.success(data, status, xhr);
+          defer.resolve(data, status, xhr);
+        }).fail(function(xhr, status, msg) {
+          if (xhr.status === 304) {
+            defer.resolve([], "unmodified", xhr);
+            return;
+          }
+          
+          debugger;
+          G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
+//          options.error(null, xhr, options);
+          defer.reject(null, xhr, options);
+        });      
+      }).promise();
     },
     
     put: function(items, store) {
@@ -435,11 +463,11 @@ define([
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
     openDB: function(options) {
-      if (G.userChanged) {
+      if (G.databaseCompromised) {
         G.log(RM.TAG, 'db', 'user changed, deleting database');
         var dfd = $.Deferred();
         var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
-          G.userChanged = false;
+          G.databaseCompromised = false;
           G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
           RM.openDB(options).done(dfd.resolve).fail(dfd.reject);
         }).fail(function(error, event) {
@@ -799,6 +827,11 @@ define([
           error: function(model, xhr, options) {
             debugger;
             var code = xhr.status;
+            if (code == 0) { // timeout
+              RM.sync();
+              return;
+            }
+            
             var problem = xhr.responseText;
             if (problem) {
               try {
@@ -1445,5 +1478,28 @@ define([
     setTimeout(function() {RM.addItems(toAdd)}, 100);
   });
 
+  Events.on('VERSION.Models', function(init) {
+    var dbOpen = RM.db;
+    var settings = {sequential: true, preventPileup: true};
+    RM.runTask(function() { // take over the queue
+      debugger;
+      RM.taskQueue = new TaskQueue("DB");
+      RM.runTask(function() {
+        var defer = this;
+        var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
+          G.databaseCompromised = false;
+          G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
+          if (dbOpen)
+            RM.openDB().done(defer.resolve).fail(defer.reject);
+          else
+            defer.resolve();
+        }).fail(function() {
+          debugger;
+          defer.reject();
+        });
+      }, settings);
+    }, settings);
+  });
+  
   return (Lablz.ResourceManager = ResourceManager);
 });

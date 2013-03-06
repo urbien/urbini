@@ -26,6 +26,7 @@ define([
       this.collection.on('reset', this.render, this);
       this.collection.on('add', this.onadd, this);
 //      this.collection.on('add', this.add, this);
+//      this.options = _.pick(options, 'checked', 'props') || {};
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.fileUploadTemplate = this.makeTemplate('fileUpload');
@@ -96,19 +97,18 @@ define([
 //        }
 //      }
       var hash = window.location.hash;
-      var params = hash ? U.getParamMap(hash) : null;
-      var isMultiValueChooser = params != null;
-      
-      var mvProp; // = isMultiValueChooser ? hash.substring(idx + 12) : null;
+      var params = hash ? U.getParamMap(hash) : {};
+      var mvProp = params.$multiValue;
+      var isMultiValueChooser = !!mvProp;
       var mvVals = [];
-      if (isMultiValueChooser) {
-        mvProp = params['$multiValue'];
+      if (mvProp) {
         var pr = '$' + mvProp;
         var s = params[pr];
         s = s.split(',');
         for (var i=0; i<s.length; i++)
           mvVals.push(s[i].trim());
       }
+      
       var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
       var imageProperty = U.getImageProperty(rl);
       var curNum = lis.length;
@@ -130,6 +130,7 @@ define([
         frag = document.createDocumentFragment();
       }
       
+//      var defaultUnchecked = params.$checked !== 'y';
       for (; i < num; i++) {
         var res = resources[i];
         if (canceled && res.get(canceled))
@@ -143,8 +144,11 @@ define([
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
-          if (isMultiValueChooser)
-            liView = new ResourceListItemView(_.extend(commonParams, {mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, mvVals: mvVals}));
+          if (isMultiValueChooser) {
+            var isListed =  _.contains(mvVals, res.get('davDisplayName'));
+//            var isChecked = defaultUnchecked === isListed;
+            liView = new ResourceListItemView(_.extend(commonParams, {mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}));
+          }
           else if (isMasonry  ||  isModification) 
 //            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
 //          else if (isModification)

@@ -129,9 +129,11 @@ define('app', [
 
     doPreStartTasks: function() {
       return $.Deferred(function(defer) {
+        App.setupWorkers();
+        App.setupCleaner();
+        G.checkVersion();
         Templates.loadTemplates();
         extendMetadataKeys();
-        App.setupWorkers();
         App.setupNetworkEvents();
         Voc.checkUser();
         Voc.loadEnums();
@@ -200,6 +202,14 @@ define('app', [
         if (App.started)
           return dfd.resolve();
         
+        Events.on("event", function() {
+          console.log("event");
+        });
+
+        Events.on("event:a", function() {
+          console.log("event:a");
+        });
+
         App.setupModuleCache();
         App.setupLoginLogout();
         
@@ -220,7 +230,7 @@ define('app', [
     
     doPostStartTasks: function() {
       for (var type in G.typeToModel) {
-        Voc.initHandlers(type);
+        Voc.initPlugs(type);
       }
       
       RM.sync();
@@ -286,6 +296,48 @@ define('app', [
           window.location.hash = options.returnUri;
           window.location.reload();
         });        
+      });
+    },
+   
+    setupCleaner: function() {
+      G.checkVersion = function(data) {
+        var init = data === true;
+        var newV = data ? data.VERSION : G.getVersion();
+        var oldV = G.getVersion(!data); // get old
+        if (newV.All > oldV.All) {
+          debugger;
+          G.setVersion(newV);
+          for (var key in newV) {
+            Events.trigger('VERSION.' + key, init);
+          }
+          
+          return;
+        }
+        
+        for (var key in newV) {
+          var setVersion = false;
+          if (newV[key] > oldV[key]) {
+            if (!setVersion) {
+              debugger;
+              G.setVersion(newV);
+              setVersion = true;
+            }
+            
+            Events.trigger('VERSION.' + key, init);              
+          }
+        }
+      };
+
+      _.each(['.js', '.css', '.jsp'], function(ext) {
+        Events.on("VERSION" + ext.toUpperCase(), function() {
+          debugger;
+          var keys = _.keys(localStorage);
+          for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            if (key.endsWith(ext))
+              G.localStorage.del(key);
+          }
+        });
       });
     },
     
@@ -379,7 +431,7 @@ define('app', [
                 return;
               }
               
-              defer.reject(jqXHR, {code: jqXHR.code}, opts);                  
+              defer.reject(jqXHR, {code: jqXHR.status}, opts);                  
             }, 
             function(jqXHR, status, err) {
 //              debugger;

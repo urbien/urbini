@@ -489,8 +489,8 @@ define([
     },
     
     getPackagePath: function(type) {
-      if (type == 'Resource' || type.endsWith('#Resource'))
-        return 'packages';
+//      if (type == 'Resource' || type.endsWith('#Resource'))
+//        return 'packages';
       
       var start = "http://www.";
       var path = type.startsWith(start) ? type.slice(start.length, type.lastIndexOf("/")) : !type.startsWith('hudsonfog') ? 'hudsonfog/voc/' + type : type;
@@ -790,7 +790,8 @@ define([
       var map = {};
       _.each(str.split(delimiter || "&"), function(nv) {
         nv = nv.split("=");
-        map[U.decode(nv[0])] = U.decode(nv[1]);
+        if (nv.length == 2)
+          map[U.decode(nv[0])] = U.decode(nv[1]);
       });
       
       return map;
@@ -1921,6 +1922,9 @@ define([
     isInlined: function(prop) {
       return (prop.range && U.inlinedPropRegex.test(prop.range)) || (prop.facet && U.inlinedPropRegex.test(prop.facet));
     },
+    isTempResource: function(res) {
+      return U.isTempUri(res.getUri());
+    },
     isTempUri: function(uri) {
       return uri.indexOf("?__tempId__=") != -1;
     },
@@ -2116,7 +2120,7 @@ define([
           if (!prop || U.getObjectType(clause) !== '[object Object]') {
             debugger;
             return function() {
-              return false;
+              return true;
             }
           }
           
@@ -2171,11 +2175,12 @@ define([
           return (op === '==') ^ U.isFalsy(bound, range) ? truthy : falsy; // XOR
         case 'date':
         case 'dateTime':
-        case 'ComplexDate':    
+        case 'ComplexDate':
           try {
             bound = U.parseDate(bound);
           } catch (err) {
-            return function() {return false};
+            G.log(U.TAG, 'error', "couldn't parse date bound: " + bound);
+            return function() {return true};
           }
           // fall through to default
         default: {
@@ -2231,6 +2236,9 @@ define([
     ],
     
     canAsync: function(type) {
+//      if (true)
+//        return true; // till we decide if this is really necessary
+      
       if (typeof type !== 'string')
         type = type.type; // if it's vocModel
       
@@ -2238,6 +2246,11 @@ define([
         type = type.slice(type.indexOf('voc/') + 4);
       
       return !_.contains(U.synchronousTypes, type);
+    },
+    
+    pipe: function(defer1, defer2) {
+      defer1.done(defer2.resolve).fail(defer2.reject);
+      return defer2.promise();
     }
     
 //    where: function(res, where) {

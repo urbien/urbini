@@ -14,19 +14,19 @@ define([
       'click #try': 'tryApp',
       'click #enterTournament': 'enterTournament',
       'click #fork': 'forkApp',
-      'click #testHandler': 'testHandler'
+      'click #testPlug': 'testPlug'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'publish', 'tryApp', 'testHandler', 'forkApp', 'enterTournament');
+      _.bindAll(this, 'render', 'publish', 'tryApp', 'testPlug', 'forkApp', 'enterTournament');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.template = this.makeTemplate(this.template);
       this.tryTemplate = this.makeTemplate('tryButtonTemplate');
       this.forkTemplate = this.makeTemplate('forkButtonTemplate');
-      this.testHandlerTemplate = this.makeTemplate('testHandlerTemplate');
+      this.testPlugTemplate = this.makeTemplate('testPlugTemplate');
       this.enterTournamentTemplate = this.makeTemplate('enterTournamentTemplate');
       return this;
     },
-    testHandler: function(e) {
+    testPlug: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
       var cause = res.get('causeDavClassUri');
@@ -130,8 +130,8 @@ define([
           this.$el.html(this.tryTemplate());
           this.$el.trigger('create');
         }
-        if (options.testHandler) {
-          this.$el.html(this.testHandlerTemplate());
+        if (options.testPlug) {
+          this.$el.html(this.testPlugTemplate());
           this.$el.trigger('create');
         }
         if (options.enterTournament) {

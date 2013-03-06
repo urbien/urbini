@@ -764,8 +764,10 @@ define('cache', function() {
       } catch(e) {
         debugger;
         if(['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
-          // reset to make space
-          ls.reset(force && function() {
+          // clean to make space
+          ls.clean(function(key) {
+            return key.indexOf('model:') == 0;
+          }, force && function() {
             ls.put(key, value)
           });
         } else {
@@ -776,14 +778,14 @@ define('cache', function() {
       }
     },
     
-    reset: function(after) {
+    clean: function(test, after) {
 //      debugger;
-      var resetting = this.resetting;
-      this.resetting = true;
+      var cleaning = this.cleaning;
+      this.cleaning = true;
       G.storedModelTypes = [];
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
-        if (key.indexOf('model:') == 0)
+        if (!test || test(key))
           G.localStorage.del(key);
       }
       
@@ -791,7 +793,7 @@ define('cache', function() {
       if (after) 
         after();
       
-      if (!resetting)
+      if (!cleaning)
         G.Voc && G.Voc.saveModelsToStorage();
     },
     
@@ -824,12 +826,12 @@ define('cache', function() {
       console.log("nuking scripts took", new Date().getTime() - start, "ms");
     },
     
-    nukeHandlers: function() {
+    nukePlugs: function() {
       var length = localStorage.length;
-      var types = [], handlers;
+      var types = [], plugs;
       for (var i = length - 1; i > -1; i--) {
         var key = localStorage.key(i);
-        if (/^handlers/.test(key)) {
+        if (/^plugs/.test(key)) {
           types.push(key.slice(9));
           G.localStorage.del(key);
         }
@@ -845,7 +847,7 @@ define('cache', function() {
   
   
   G.localStorage.putAsync = G.localStorage.put.async(100);
-  G.localStorage.resetAsync = G.localStorage.reset.async(100);
+  G.localStorage.cleanAsync = G.localStorage.clean.async(100);
   var n = G.navigator = {
     isOpera: !!(window.opera && window.opera.version),  // Opera 8.0+
     isFirefox: testCSS('MozBoxSizing'),                 // FF 0.8+
@@ -857,9 +859,28 @@ define('cache', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
-//    isJQM: function(url) {
-//      return /^jquery\.mobile.*\.js$/.test(url);
-//    },
+    getVersion: function(old) {
+      if (!old && G.VERSION)
+        return G.VERSION;
+      
+      var v = G.localStorage.get((old ? 'OLD_' : '') + 'VERSION');
+      try {
+        v = JSON.parse(v);
+      } catch (err) {
+        v = {All: 0, Models: 0, JS: 0, CSS: 0};
+      }
+      
+      return v;
+    },
+    
+    setVersion: function(version) {
+      var oldV = G.VERSION;
+      var newV = G.VERSION = version;
+      G.localStorage.put("OLD_VERSION", JSON.stringify(oldV));
+      G.localStorage.put("VERSION", JSON.stringify(newV));
+    },
+    
+    DEV_PACKAGE_PATH: 'http://urbien.com/voc/dev/',
     isInAppcacheBundle: function(url) {
       var appcacheBundle = G.bundles.appcache;
       url = url.slice(url.indexOf('/') + 1);
@@ -894,7 +915,7 @@ define('cache', function() {
     storedModelTypes: [],
     minifyByDefault: true,
     webWorkers: {},
-    customHandlers: {},
+    customPlugs: {},
     defaults: {
       radius: 2000 // km
     },
@@ -912,11 +933,35 @@ define('cache', function() {
     ResourceLists: {},
     cacheResource: function(resource, uri) {
       uri = uri || resource.getUri();
-      G.Resources[uri] = resource;
-      return resource;
+      return G.Resources[uri] = resource;
     },
     getCachedResource: function(uri) {
       return G.Resources[uri] || G.searchCollections(uri);
+    },
+    getCachedResourceList: function(typeUri, key) {
+      return (G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {})[key];
+    },
+    newResourceList: function(listType, models, options) {
+      var qs = options._query;
+      if (!qs) {
+        var qMap = options.queryMap;
+        if (qMap) {
+          qs = '';
+          for (var p in qMap) {
+            qs += p + '=' + encodeURIComponent(qMap[p]) + '&';
+          }
+          
+          qs = qs.length ? qs.slice(0, qs.length - 1) : null;
+        }
+      }
+      
+      if (!qs)
+        qs = options.model.type;
+      
+      return G.cacheResourceList(new listType(models, options), options.model.type, qs);
+    },
+    cacheResourceList: function(list, typeUri, key) {      
+      return (G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {})[key] = list;
     },
     /**
      * search a collection map for a collection with a given model

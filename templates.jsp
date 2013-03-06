@@ -408,8 +408,8 @@
   <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" date-position="notext">Enter: {{= name }}</a>
 </script>
 
-<script type="text/template" id="testHandlerTemplate">
-  <a target="#" data-icon="bolt" id="testHandler" data-role="button" date-position="notext">Test this Plug / Socket</a>
+<script type="text/template" id="testPlugTemplate">
+  <a target="#" data-icon="bolt" id="testPlug" data-role="button" date-position="notext">Test this Plug / Socket</a>
 </script>
 
 <script type="text/template" id="headerTemplate">
@@ -436,9 +436,9 @@
             {{= tryApp }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="testHandlerBtn">
-        {{ if (typeof testHandler != 'undefined') { }}
-            {{= testHandler }}
+      <div style="max-width:200px;" id="testPlugBtn">
+        {{ if (typeof testPlug != 'undefined') { }}
+            {{= testPlug }}
         {{ } }}
       </div>
       <div style="max-width:320px;" id="enterTournamentBtn">
@@ -631,8 +631,9 @@
 </script>
 
 <script type="text/template" id="mvListItem">
-  <input type="checkbox" name="{{= davDisplayName }}" id="{{= chkId }}" value="{{= _uri }}" {{= typeof checked === 'undefined' ? '' : checked }} />
-  <label for="{{= chkId }}">{{= davDisplayName }}</label>
+  {{ var id = G.nextId() }}
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+  <label for="{{= id }}">{{= davDisplayName }}</label>
 </script>
 
 <script type="text/template" id="emailPET">
