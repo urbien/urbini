@@ -257,7 +257,7 @@ define([
     
     setupPlugs: function(plugs) {
       if (plugs) {
-        _.extend(G.customPlugs, plugs);
+        _.extend(C.plugs, plugs);
         Voc.savePlugsToStorage(plugs);
         for (var type in plugs) {
           var typePlugs = plugs[type];
@@ -401,14 +401,21 @@ define([
        *        and backlink may be recipe.ingredients, where recipe is a property of RecipeShoppingList. 
        *        This function can be used to mirror the ingredients backlink into ShoppingListItem resources
        */
-      each: function(backlink, effectType, fn) {
-        var parts = backlink.split('.');
-        if (parts.length != 2)
+      each: function(backlink, fn) {
+        var cause = this.cause,
+            effect = this.effect,
+            causeModel = this.causeModel,
+            effectModel = this.effectModel,  // ShoppingListItem in the example
+            plug = this.plug,
+            self = this;
+        
+        backlink = backlink.split('.');
+        if (backlink.length != 2)
           return; // longer not supported yet, shorter can't be an existing backlink
         
         var propName = backlink[0],     // recipe in the example
-            prop = fromModel[propName],         // RecipeShoppingList model in the example
-            propVal = from[propName];   // recipe uri in the example
+            prop = causeModel.properties[propName],         // RecipeShoppingList model in the example
+            propVal = cause[propName];   // recipe uri in the example
         
         if (!prop || !propVal)
           return;
@@ -416,16 +423,14 @@ define([
         var propType = U.getTypeUri(prop.range),
             backlinkName = backlink[1]; // ingredients in the example
         
-        Voc.getModels([propType, effectType]).done(function() {
-          var propModel = U.getModel(propType),     // Recipe in the example
-              resultModel = U.getModel(effectType); // ShoppingListItem in the example
-              
-          if (!propModel || !resultModel) {
+        Voc.getModels([propType]).done(function() {
+          var propModel = U.getModel(propType);     // Recipe in the example
+          if (!propModel) {
             debugger; // should never happen
             return;
           }
           
-          var backlinkProp = propModel[backlinkName]; 
+          var backlinkProp = propModel.properties[backlinkName]; 
           if (!backlinkProp) {
             G.log(Voc.TAG, 'error', 'class {0} doesn\'t have a property {1}'.format(propType, backlinkName)); 
             return;
@@ -444,20 +449,21 @@ define([
             // backlinkProp.backLink is "recipe" in the example (the backlink being Recipe._ingredients). 
             // We want all ingredients where the value of the property Ingredient._recipe is our recipe  
             var backlinkCollection = new ResourceList(null, {model: backlinkModel, queryMap: params});
-            backlinkCollection.fetch({
-              success: function() {
-                debugger;
-                fn = Voc.preparePlug(fn, plug);
-                var json = this.toJSON();
-                for (var i = 0; i < json.length; i++) {
-                  fn(json[i]);
-                  if (aborted) // need to make sure this is our context
-                    break;
-                }
-              },
-              error: function() {
-                debugger;
+            backlinkCollection.fetch().done(function() {
+              var subPlug = _.extend({}, plug, {
+                causeDavClassUri: backlinkType
+              });
+              
+              fn = Voc.buildScript(fn.toString(), backlinkType, effectModel.type);
+              fn = Voc.preparePlug(fn, subPlug);
+              var json = backlinkCollection.toJSON();
+              for (var i = 0; i < json.length; i++) {
+                fn(json[i]);
+                if (self.aborted) // need to make sure this is our context
+                  break;
               }
+            }).fail(function() {
+              debugger;
             });
           });
         });
@@ -471,13 +477,13 @@ define([
     /**
      * prepackage all the built in plug functions like "each" with the resources and models needed for a given operation
      */
-    getPlugToolSuite: function(cause, causeModel, effect, effectModel) {
+    getPlugToolSuite: function(cause, causeModel, effect, effectModel, plug) {
       var plugTools = _.clone(Voc.plugTools);
-//      var context = {cause: cause, causeModel: causeModel, effect: effect, effectModel: effectModel};
+      var context = {cause: cause, causeModel: causeModel, effect: effect, effectModel: effectModel, plug: plug};
       _.each(plugTools, function(fn, name) {
         var orgFn = fn;
         plugTools[name] = function() {
-          orgFn.apply(this, arguments); // give fn access to cause, causeModel, effect, effectModel
+          orgFn.apply(context, arguments); // give fn access to cause, causeModel, effect, effectModel
         };
 //        .bind(context);
 //        fn.bind(context);
@@ -488,7 +494,7 @@ define([
     
     nukePlug: function(plug, plugFn) {
       var causeType = plug.causeDavClassUri;
-      G.customPlugs[causeType] = _.filter(G.customPlugs[causeType], function(h) {
+      C.plugs[causeType] = _.filter(C.plugs[causeType], function(h) {
         return h._uri != plug._uri;
       });
       
@@ -512,8 +518,8 @@ define([
 
       Voc.getModels(effectType).done(function() {
         var effectModel =  U.getModel(effectType),
-            causeModel = U.getModel(cause._type),
-            toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel);
+            causeModel = U.getModel(plug.causeDavClassUri),
+            toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel, plug);
         
         try {
           plugFn.apply(toolSuite).call({}, cause, effect);
@@ -521,6 +527,9 @@ define([
           Voc.nukePlug(plug, plugFn);
           return;
         }
+        
+        if (!_.size(effect))
+          return;
         
         // copy image props, if both are imageResources. Add more crap like this here (and then make them all separate methods
         if (U.isA(causeModel, "ImageResource") && U.isA(effectModel, "ImageResource")) {
@@ -587,7 +596,7 @@ define([
       // TODO: turn off plugs as needed, instead of this massacre
       Events.off('create.' + type);
       Events.off('edit.' + type);
-      var plugs = G.customPlugs[type];
+      var plugs = C.plugs[type];
       if (!plugs) {
         plugs = G.localStorage.get(Voc.PLUGS_PREFIX + type);
         if (plugs)
@@ -768,9 +777,10 @@ define([
   
   Events.on('newPlug', function(plug) {
     var plugs = {};
-    plug = plug.toJSON();
+    plug = U.isModel(plug) ? plug.toJSON() : plug;
     var type = plug.causeDavClassUri;
     plugs[type] = [plug];
+//    C.savePlugs(plugs);
     Voc.setupPlugs(plugs);
   });
 

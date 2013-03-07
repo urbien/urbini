@@ -737,7 +737,6 @@ define('fileCache', function() {
     clean: function(test, after) {
       var cleaning = this.cleaning;
       this.cleaning = true;
-      G.storedModelTypes = [];
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
         if (!test || test(key))
@@ -748,8 +747,8 @@ define('fileCache', function() {
       if (after) 
         after();
       
-      if (!cleaning)
-        G.Voc && G.Voc.saveModelsToStorage();
+      if (!cleaning) // TODO: unhack this garbage
+        G.Cache && G.Voc && G.Cache.storeModels(G.Voc.models);
     },
     
     nukeScripts: function() {

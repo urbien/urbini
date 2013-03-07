@@ -113,12 +113,22 @@ define([
           var xhrWorker = G.getXhrWorker();          
           xhrWorker.onmessage = function(event) {
             var xhr = event.data;
-            if (xhr.status === 304) {
+            var code = xhr.status;
+            if (code === 304) {
 //              debugger;
               defer.reject(xhr, "unmodified", "unmodified");
             }
-            else
+            else if (code > 399 && code < 600) {
+              var text = xhr.responseText;
+              try {
+                defer.reject(xhr, JSON.parse(xhr.responseText), opts);
+              } catch (err) {
+                defer.reject(xhr, "error", opts);
+              }                
+            }
+            else {
               defer.resolve(xhr.data, xhr.status, xhr);
+            }
           };
           
           xhrWorker.onerror = function(err) {
@@ -1047,7 +1057,7 @@ define([
       
       var key = dataType + '-' + id;
       var tmpl = appTemplates[key];
-      return (tmpl) ? _.template(tmpl) : null;
+      return (tmpl) ? U.template(_.template(tmpl)) : null;
     },
     /// String prototype extensions
     
@@ -2332,7 +2342,7 @@ define([
     },
 
     template: function(templateName, context) {
-      var template = _.template(Templates.get(templateName));
+      var template = typeof templateName === 'string' ? _.template(Templates.get(templateName)) : templateName;
       context = context || this;
       return function(json) {
         json = json || {};

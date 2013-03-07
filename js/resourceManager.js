@@ -79,8 +79,10 @@ define([
     var context = this, args = arguments;
     return $.Deferred(function(defer) {
       options = options || {};
-      if (options.success)
-        defer.done(options.success);
+      if (options.success) {
+        defer.progress(options.success); // results from DB
+        defer.done(options.success);     // results from server
+      }
       if (options.error)
         defer.fail(options.error);
         
@@ -119,10 +121,7 @@ define([
       }
       
       var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
-      defaultSuccess = options.success, 
-      defaultError = options.error,
       forceFetch = options.forceFetch || data._dirty,
-      synchronous = options.sync,
       now = G.currentServerTime(),
       isCollection = U.isCollection(data),
       vocModel = data.vocModel,
@@ -173,7 +172,6 @@ define([
             return U.pipe(fetchFromServer(isUpdate, 100), defer); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
           else if (numNow) {
             defer.resolve(null, 'success', {status: 304});
-//            defaultSuccess(null, 'success', {status: 304});
             return; // no need to fetch from db on update
           }
         }
@@ -229,6 +227,7 @@ define([
         return;
       }
       
+      // $.Deferred.notify with results, then if we need to call the server, let the fetch from the server resolve the deferred, otherwise resolve the deferred with same results
       dbPromise.done(function(results) {
         if (!results || (isCollection && !results.length))
           return U.pipe(fetchFromServer(isUpdate, 100), defer);
@@ -240,7 +239,7 @@ define([
         results = U.getObjectType(results) === '[object Object]' ? [results] : results;
         var resp = {data: results, metadata: {offset: start}};
         var numBefore = isCollection && collection.resources.length;
-        defer.resolve(resp, 'success', {code: 200}); // add to / update collection
+        defer.notify(resp, 'success', {code: 200}); // add to / update collection
   
         if (!isCollection) {
           if (forceFetch)
@@ -252,6 +251,8 @@ define([
             data.lastFetchOrigin = 'server';
             U.pipe(fetchFromServer(isUpdate, 100), defer);
           }
+          else
+            defer.resolve(resp, 'success', {code: 200}); // add to / update collection
           
           return;
         }
@@ -270,6 +271,8 @@ define([
           data.lastFetchOrigin = 'server';
           return U.pipe(fetchFromServer(isUpdate, 100), defer);
         }
+        
+        defer.resolve(resp, 'success', {code: 200});
       }).fail(function(e) {
         if (e) 
           G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
@@ -1145,7 +1148,7 @@ define([
       return RM.Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
     },
     
-    buildDBQuery: function(store, data, filter) {
+    buildDBQuery: function(data, filter) {
       if (U.isModel(data))
         return false;
       
@@ -1386,7 +1389,7 @@ define([
           return;
         }
 
-        var query = RM.buildDBQuery(store, data, filter);
+        var query = RM.buildDBQuery(data, filter);
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
           query.getAll(store).done(function(results) {

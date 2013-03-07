@@ -192,17 +192,33 @@ define([
       this.CollectionViews[typeUri][key] = listView;
       listView.setMode(mode || G.LISTMODES.LIST);
       
+      var changedPage = false;
+      var after = function(fromDB) {
+        if (!changedPage) {
+          self.changePage(listView);
+          changedPage = true;
+        }
+        
+        if (fromDB) {
+          Events.trigger('navigateToList.' + c.listId);
+        }
+        else { // only after fetch from server, otherwise assume we already have linked stuff from when we first fetched this sucker
+          Voc.fetchModelsForReferredResources(c);
+          Voc.fetchModelsForLinkedResources(c.vocModel);
+        }
+      };
+
       c.fetch({
         sync: true,
         forceFetch: forceFetch,
         _rUri: oParams
+      }).progress(function() {
+        after(true);
       }).done(function() {
-        self.changePage(listView);
-        Events.trigger('navigateToList.' + c.listId);
-        Voc.fetchModelsForReferredResources(c);
-        Voc.fetchModelsForLinkedResources(c.vocModel);
+        if (c.lastFetchOrigin == 'server')
+          after(false);
 //          self.loadExtras(oParams);
-      }).fail(function(collection, xhr, options) {
+      }).fail(function(xhr, err, options) {
         if (xhr.status === 204)
           self.changePage(listView);
         else
@@ -233,9 +249,9 @@ define([
           continue;
         
         Events.once('synced.' + uri, function(data) {
-          debugger;
           qMap[param] = data._uri;
           var updateHash = function() {
+            debugger;
             self.navigate(U.makeMobileUrl('list', vocModel.type, qMap), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
           }
           
@@ -371,7 +387,6 @@ define([
 
       if (U.isTempUri(uri)) {
         Events.once('synced.' + uri, function() {
-          debugger;
           var currentView = self.currentView;
           var updateHash = function() {
             self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
@@ -403,33 +418,30 @@ define([
         var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
         this.changePage(v);
         Events.trigger('navigateToResource.' + res.resourceId, res);
-        res.fetch({forceFetch: forceFetch}).done(function() {
-//          var newUri = res.getUri();
-//          if (newUri !== uri) {
-//            self.navigate(U.makeMobileUrl('view', newUri), {trigger: false, replace: true});
-//            res.fetch();
-//          }
-        }).fail(function() {
-          debugger;
-        });
-                
+        res.fetch({forceFetch: forceFetch});                
         return this;
       }
       
       var res = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
-      res.fetch({sync: true, forceFetch: forceFetch}).done(function(data) {
-        // in case we were at a temp uri, we want to clean up our history as best we can
-//        var newUri = res.getUri();
-//        if (newUri !== uri) {
-//          self.navigate(U.makeMobileUrl('view', newUri), {trigger: false, replace: true});
-//          res.fetch();
-//        }
-//        else {
+      var changedPage = false;
+      var after = function(fromDB) {
+        if (!changedPage) {
+          changedPage = true;
           self.changePage(v);
+        }
+        
+        if (fromDB)
           Events.trigger('navigateToResource.' + res.resourceId, res);
+        else // only after fetch from server, otherwise assume we already have linked stuff from when we first fetched this sucker
           Voc.fetchModelsForLinkedResources(res);
-//        }
+      };
+      
+      res.fetch({sync: true, forceFetch: forceFetch}).progress(function() { // from DB
+        after(true);
+      }).done(function() {
+        if (res.lastFetchOrigin == 'server')
+          after(false);
       }).fail(function() {
         debugger;
       });

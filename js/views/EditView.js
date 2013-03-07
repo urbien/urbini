@@ -463,17 +463,13 @@ define([
           vocModel = this.vocModel,
           self = this;
 
-      if (U.isAssignableFrom(vocModel, 'InterfaceImplementor'))
-        return this.router.navigate(U.makeMobileUrl('list', 'system/designer/WebProperty', {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, replace: false, forceRefresh: true});        
-      else if (U.isAssignableFrom(vocModel, 'WebProperty')) {
-        window.location.back();
-//        var cloneOf = res.get('cloneOf');
-//        if (cloneOf && cloneOf.count > 0)
-      }
-      
-      // TODO: fix this HACK
-//      if (uri)
-//        Events.trigger('newResource', res);
+//      if (U.isAssignableFrom(vocModel, 'InterfaceImplementor'))
+//        return this.router.navigate(U.makeMobileUrl('list', 'system/designer/WebProperty', {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, replace: false, forceRefresh: true});        
+//      else if (U.isAssignableFrom(vocModel, 'WebProperty')) {
+//        window.history.back();
+////        var cloneOf = res.get('cloneOf');
+////        if (cloneOf && cloneOf.count > 0)
+//      }
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');

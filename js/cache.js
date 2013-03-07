@@ -1,6 +1,8 @@
 define(['globals', 'jquery', 'events'], function(G, $, Events) {
   var cache = C = {
     // Models
+//    MODEL_PREFIX: 'model:',
+//    ENUMERATIONS_KEY: 'enumerations',
     shortNameToModel: {},
     typeToModel: {},
     shortNameToEnum: {},
@@ -8,6 +10,7 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
     shortNameToInline: {},
     typeToInline: {},
     modCache: {},
+
 //    usedModels: {},
 
     // Resources and ResourceLists
@@ -68,6 +71,22 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
       return null;
     },
     
+    // Plugs
+    plugs: {},
+//    PLUGS_PREFIX: 'plugs:',
+//    savePlugs: function(plugs) {
+//      for (var type in plugs) {
+//        C.plugs[type] = C.plugs[type] || plugs[type];
+//      }
+//      
+//      if (!G.hasLocalStorage)
+//        return;
+//      
+//      for (var type in plugs) {
+//        G.localStorage.putAsync(C.PLUGS_PREFIX + type, plugs[type]);
+//      }
+//    },
+
     clearCache: function() {
       C.shortNameToModel = {};
       C.typeToModel = {};
@@ -94,6 +113,11 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
     }
   });
 
+//  Events.on('newPlug', function(plug) {
+//    var plugs = {};
+//    plugs[plug.fromDavClassUri] = [plug];
+//    C.savePlugs(plugs); 
+//  });
 
-  return cache;
+  return G.Cache = cache;
 });
