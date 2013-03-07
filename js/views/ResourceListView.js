@@ -176,7 +176,7 @@ define([
         var forResource = params['forResource'];
         if (prop  &&  forResource) {
           var type = U.getTypeUri(forResource);      
-          var cModel = G.typeToModel[type];
+          var cModel = U.getModel(type);
           
           if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage")) 
             frag.appendChild(fileUploadTemplate({name: prop}));          

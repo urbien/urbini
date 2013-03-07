@@ -95,28 +95,28 @@ define([
       r && this.makeWidgets(r, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
       var self = this;
       if (this.doPublish) {
-        G.require(['views/PublishButton'], function(PublishButton) {
+        U.require(['views/PublishButton'], function(PublishButton) {
           self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
         });
       }
       else {
         if (this.doTry) {
-          G.require(['views/PublishButton'], function(PublishButton) {
+          U.require(['views/PublishButton'], function(PublishButton) {
             self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
           });
         }
         if (this.forkMe) {
-          G.require(['views/PublishButton'], function(PublishButton) {
+          U.require(['views/PublishButton'], function(PublishButton) {
             self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
           });
         }
         if (this.testPlug) {
-          G.require(['views/PublishButton'], function(PublishButton) {
+          U.require(['views/PublishButton'], function(PublishButton) {
             self.testPlug = new PublishButton({el: $('div#testPlugBtn', self.el), model: self.resource}).render({testPlug: true});
           });
         }
         if (this.enterTournament) {
-          G.require(['views/PublishButton'], function(PublishButton) {
+          U.require(['views/PublishButton'], function(PublishButton) {
             self.enterTournament = new PublishButton({el: $('div#enterTournamentBtn', self.el), model: self.resource}).render({enterTournament: true});
           });
         }

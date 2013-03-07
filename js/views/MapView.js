@@ -40,7 +40,7 @@ define([
 //    click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this, args = arguments;
-      G.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {
+      U.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {
         self.render1.apply(self, arguments);
       });
     },

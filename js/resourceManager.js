@@ -4,9 +4,10 @@ define([
   'utils', 
   'events', 
   'taskQueue',
+  'cache',
   'vocManager',
   'queryIndexedDB'
-], function(G, U, Events, TaskQueue, Voc, idbq) {
+], function(G, U, Events, TaskQueue, C, Voc, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
@@ -75,7 +76,7 @@ define([
 
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
-    var args = arguments;
+    var context = this, args = arguments;
     return $.Deferred(function(defer) {
       options = options || {};
       if (options.success)
@@ -103,7 +104,7 @@ define([
             return;
           }
           else {
-            U.pipe(Backbone.defaultSync.apply(this, args), defer);
+            U.pipe(Backbone.defaultSync.apply(context, args), defer);
           }
         }
         else {
@@ -198,7 +199,7 @@ define([
       }
       
       var luri = window.location.hash;
-      var key = luri &&  luri.indexOf('#make') == 0 ? null : this.getKey && this.getKey();
+      var key = luri &&  luri.indexOf('#make') == 0 ? null : data.getKey && data.getKey();
       if (!key) {
         if (G.online)
           U.pipe(fetchFromServer(isUpdate, 0), defer);
@@ -284,7 +285,7 @@ define([
   var ResourceManager = RM = {
     TAG: 'Storage',
     fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
-      var self = this, args = arguments;
+      var context = this, args = arguments;
       return $.Deferred(function(defer) {        
         if (!G.online) {
           defer.reject(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
@@ -301,11 +302,11 @@ define([
   
         if (timeout) {
           setTimeout(function() {
-            U.pipe(RM._fetchHelper.apply(self, args), defer);
+            U.pipe(RM._fetchHelper.apply(context, args), defer);
           }, timeout);
         }
         else
-          U.pipe(RM._fetchHelper.apply(self, args), defer);
+          U.pipe(RM._fetchHelper.apply(context, args), defer);
       }).promise();
     },
     
@@ -314,7 +315,7 @@ define([
         if (options.sync || !G.hasWebWorkers)
           return U.pipe(RM.defaultSync(method, data, options), defer);
         
-        G.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
+        U.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
 //          options.success(data, status, xhr);
           defer.resolve(data, status, xhr);
         }).fail(function(xhr, status, msg) {
@@ -459,6 +460,13 @@ define([
       }).promise();
     },
     
+    deleteDatabase: function() {
+      return $.indexedDB(RM.DB_NAME).deleteDatabase().done(function() {
+        RM.databaseCompromised = false;
+        RM.db = null;
+      });
+    },
+    
     /**
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
@@ -466,8 +474,7 @@ define([
       if (G.databaseCompromised) {
         G.log(RM.TAG, 'db', 'user changed, deleting database');
         var dfd = $.Deferred();
-        var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
-          G.databaseCompromised = false;
+        var dbPromise = RM.deleteDatabase().done(function(crap, event) {
           G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
           RM.openDB(options).done(dfd.resolve).fail(dfd.reject);
         }).fail(function(error, event) {
@@ -621,10 +628,10 @@ define([
           continue;
         }
         
-        if (G.typeToEnum[type] || G.typeToInline[type])
+        if (U.getEnumModel(type) || U.getInlineResourceModel(type))
           continue;
         
-        var vocModel = G.typeToModel[type];
+        var vocModel = U.getModel(type);
         if (!vocModel) {
 //          G.log(RM.TAG, 'db', 'missing model for', type, 'not creating store');
           throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
@@ -684,7 +691,7 @@ define([
             classUri = U.getTypeUri(items[0]._uri);
         }
         
-        if (!G.typeToModel[classUri]) {
+        if (!U.getModel(classUri)) {
           return Voc.getModels(classUri).done(function() {
             RM.addItems(items, classUri).done(defer.resolve).fail(defer.reject);
           }).fail(defer.reject);
@@ -704,7 +711,7 @@ define([
                 
         RM.runTask(function() {
           var dfd = this; 
-          var vocModel = G.typeToModel[classUri];
+          var vocModel = U.getModel(classUri);
           for (var i = 0; i < items.length; i++) {
             var item = items[i];
             item = U.isModel(item) ? item.toJSON() : item;
@@ -867,7 +874,7 @@ define([
         var uri = ref._uri,
             type = U.getTypeUri(uri),
             id = ref.id,
-            vocModel = G.typeToModel[type],
+            vocModel = U.getModel(type),
             props = vocModel.properties;
 
         if (!RM.storeExists(type)) {
@@ -925,10 +932,10 @@ define([
         var method = isMkResource ? 'm/' : 'e/';
 //          delete item._uri; // in case API objects to us sending it
         
-        var existingRes = G.getCachedResource(uri);
+        var existingRes = C.getResource(uri);
         var existed = !!existingRes;
         if (!existingRes)
-          existingRes = G.cacheResource(new vocModel(ref), uri);
+          existingRes = new vocModel(ref);
         
         var info = {resource: existingRes, reference: ref, references: refs};
         RM.saveToServer(info).always(function(updatedRef) {
@@ -1476,6 +1483,10 @@ define([
   
   Events.on('resourcesChanged', function(toAdd) {
     setTimeout(function() {RM.addItems(toAdd)}, 100);
+  });
+
+  Events.on('userChanged', function() {
+    RM.databaseCompromised = true;
   });
 
   Events.on('VERSION.Models', function(init) {

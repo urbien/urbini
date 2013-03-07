@@ -2,15 +2,16 @@
 define('app', [
   'globals',
   'backbone',
-  'cache!jqueryMobile',
+  'fileCache!jqueryMobile',
   'templates', 
   'utils', 
   'events',
   'error',
+  'cache',
   'vocManager',
   'resourceManager',
   'router'
-], function(G, Backbone, jqm, Templates, U, Events, Errors, Voc, RM, Router) {
+], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
 //  _.extend(Backbone.History.prototype, {
@@ -229,7 +230,7 @@ define('app', [
     },
     
     doPostStartTasks: function() {
-      for (var type in G.typeToModel) {
+      for (var type in C.typeToModel) {
         Voc.initPlugs(type);
       }
       
@@ -342,112 +343,12 @@ define('app', [
     },
     
     setupModuleCache: function() {
-      G.require = function(modules, callback, context) {
-        modules = $.isArray(modules) ? modules : [modules];
-        var mods = [], newModNames = [], newModFullNames = [];
-        for (var i = 0; i < modules.length; i++) {
-          var fullName = modules[i], name = fullName;
-          var moduleViaPlugin = fullName.match(/\!(.*)$/);
-          if (moduleViaPlugin) {
-            name = moduleViaPlugin[1]; 
-          }
-          
-          var mod = G.modCache[name];
-          if (!mod) {
-            mod = G.modCache[name] = $.Deferred();
-            newModFullNames.push(fullName);
-            newModNames.push(name);
-          }
-          
-          mods.push(mod);
-        }
-        
-        if (newModNames.length) {
-          G.loadBundle(newModNames, function() {
-            require(newModFullNames, function() {
-              for (var i = 0; i < newModNames.length; i++) {
-                G.modCache[newModNames[i]].resolve(arguments[i]);
-              }          
-            });
-          });
-        }
-        
-        return $.when.apply(null, mods).then(function() {
-          callback.apply(context, arguments);
-        }).promise();
-      }
+//      var originalRequire = window.require;
+//      window.require = function(modules, callback, context) {
     },
     
     setupWorkers: function() {
-      var hasWebWorkers = G.hasWebWorkers;
-      Backbone.ajax = G.ajax = function(options) {
-        var opts = _.clone(options);
-        opts.type = opts.method || opts.type;
-        opts.dataType = opts.dataType || 'JSON';
-        var useWorker = hasWebWorkers && !opts.sync;
-        return new $.Deferred(function(defer) {
-          if (opts.success) defer.done(opts.success);
-          if (opts.error) defer.fail(opts.error);
-          if (useWorker) {
-            G.log(App.TAG, 'xhr', 'webworker', opts.url);
-            var xhrWorker = G.getXhrWorker();          
-            xhrWorker.onmessage = function(event) {
-              var xhr = event.data;
-              if (xhr.status === 304) {
-//                debugger;
-                defer.reject(xhr, "unmodified", "unmodified");
-              }
-              else
-                defer.resolve(xhr.data, xhr.status, xhr);
-            };
-            
-            xhrWorker.onerror = function(err) {
-//              debugger;
-              defer.reject({}, "error", err);
-            };
-            
-            defer.always(function() {
-              G.recycleWebWorker(xhrWorker);
-            });
-
-            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
-          }
-          else {
-            G.log(App.TAG, 'xhr', '$.ajax', opts.url);
-            $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType'])).then(function(data, status, jqXHR) {
-//              debugger;
-              if (status != 'success') {
-                defer.reject(jqXHR, status, opts);
-                return;
-              }
-              
-              if (jqXHR.status === 200) {
-                defer.resolve(data, status, jqXHR);
-                return;
-              }
-              
-              if (data && data.error) {
-                defer.reject(jqXHR, data.error, opts);
-                return;
-              }
-              
-              defer.reject(jqXHR, {code: jqXHR.status}, opts);                  
-            }, 
-            function(jqXHR, status, err) {
-//              debugger;
-              var text = jqXHR.responseText;
-              var error;
-              try {
-                error = JSON.parse(text).error;
-              } catch (err) {
-                error = {code: jqXHR.status, details: err};
-              }
-              
-              defer.reject(jqXHR, error, opts);
-            });
-          }
-        }).promise();
-      }
+      Backbone.ajax = U.ajax;
     },
     
     setupNetworkEvents: function() {

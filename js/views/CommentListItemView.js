@@ -22,7 +22,7 @@ define([
       'click .like': 'like'
     },
     like: function(e) {
-      var likeModel = G.shortNameToModel['Vote'];
+      var likeModel = U.getModel('Vote');
       if (!likeModel) 
         return;
       Events.stopEvent(e);

@@ -1,6 +1,6 @@
 {
   pre: {
-    js: ['lib/jquery', 'jqm-config', 'lib/underscore', 'lib/backbone', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
+    js: ['lib/jquery', 'jqm-config', 'lib/underscore', 'lib/backbone', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'cache', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
      'views/HomePage', 'vocManager', 'resourceManager', 'router', 'app'],
     css: ['lib/jquery.mobile-1.3.0.min.css', 'lib/jquery.mobile.theme-1.3.0.min.css', 'lib/jquery.mobile.structure-1.3.0.min.css', 'lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
     html: ['../templates.jsp']

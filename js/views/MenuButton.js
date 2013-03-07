@@ -21,7 +21,7 @@ define([
     },
     menu: function(e) {
       Events.stopEvent(e);
-      G.require('views/MenuPanel', function(MenuPanel) {
+      U.require('views/MenuPanel', function(MenuPanel) {
         var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model});
         menuPanel.render();        
       }, this);

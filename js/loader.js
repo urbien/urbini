@@ -559,9 +559,7 @@ define('globals', function() {
       
     switch (ext) {
       case '.css':
-//        if (G.minify !== true)
         text += '\r\n/*//@ sourceURL=' + url + '*/';
-//        text = G.addMinFlag(text);
         G.appendCSS(text);
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
@@ -569,20 +567,17 @@ define('globals', function() {
         break;
       case '.html':
       case '.jsp':
-//        debugger;
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         onLoad(text);
         G.log(G.TAG, 'cache', 'end cache.get: ' + url);
         break;
       default:
-//        text += '\n//@ sourceURL=' + url.slice(0, -2) + 'min.js';
-//        if (G.minify !== true) {
-          if (G.navigator.isIE) text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          text += '\n//@ sourceMappingURL=' + url + '.map';
-          text += '\n//@ sourceURL=' + url;
-          if (G.navigator.isIE) text += '*/\n';
-//        }
-//        text = G.addMinFlag(text);
+        if (G.navigator.isIE) 
+          text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+        text += '\n//@ sourceMappingURL=' + url + '.map';
+        text += '\n//@ sourceURL=' + url;
+        if (G.navigator.isIE) 
+          text += '*/\n';
         requirejs.exec(text);
         context.completeLoad(name); // JQM hack
         break;
@@ -604,25 +599,9 @@ define('globals', function() {
       return;
     }
 
-//    if (name === 'jqueryMobile') {
-//      orgRJSLoad.apply(this, arguments);
-//      return;
-//    }
-        
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
         
-    // TODO: unhack
-//    if (name == 'jqueryMobile') {
-//      localRequire([name], function(mod) {
-//        G.log(G.TAG, 'cache', 'Loading jq: ' + url);
-//        completeLoad(mod);
-//        G.log(G.TAG, 'cache', 'End loading jq: ' + url);
-//      });
-//      
-//      return;
-//    }
-    
     var isText = ext = name.match(/\.[a-zA-Z]+$/g);
     if (ext)
       ext = ext[0].slice(1).toLowerCase();
@@ -631,31 +610,8 @@ define('globals', function() {
     var inMemory = mCache && mCache[url];
     var loadedCached = false;
     if (inMemory) {// || hasLocalStorage) {
-      var loadSource = inMemory ? 'memory' : 'LS';
-//      if (inMemory) {
-        cached = mCache[url];
-//      }
-//      else if (hasLocalStorage) { // in build context, this will be false, too
-//        try {
-//          G.log(G.TAG, 'cache', "loading from localStorage: " + url);
-//          cached = G.localStorage.get(url);
-//          cached = cached && JSON.parse(cached);
-//        } catch (err) {
-//          G.log(G.TAG, ['error', 'cache'], "failed to parse cached file: " + url);
-//          G.localStorage.del(url);
-//          cached = null;
-//        }
-//        
-//        if (cached) {
-//          var timestamp = G.files[name];
-//          if (timestamp && timestamp <= cached.modified)
-//            cached = cached.text;
-//          else {
-//            G.localStorage.del(url);
-//            cached = null;
-//          }
-//        }
-//      }
+      var loadSource = inMemory ? 'memory' : 'LS',
+          cached = mCache[url];
 
       var loadedCached = cached;
       if (loadedCached) {            
@@ -711,9 +667,9 @@ define('globals', function() {
         return supported;
       })();
 
-define('cache', function() {
+define('fileCache', function() {
     var cache = {
-      TAG: 'cache',
+      TAG: 'fileCache',
       load: function (name, req, onLoad, config) {
         // hack for jsp, otherwise define callback function will not get jsp text
         var url = G.getCanonicalPath(req.toUrl(name));
@@ -779,7 +735,6 @@ define('cache', function() {
     },
     
     clean: function(test, after) {
-//      debugger;
       var cleaning = this.cleaning;
       this.cleaning = true;
       G.storedModelTypes = [];
@@ -801,19 +756,6 @@ define('cache', function() {
       var start = new Date().getTime();
       var length = localStorage.length;
       console.log("nuking scripts, localStorage has", length, "keys", start);
-//      var cache = {};
-//      for (var i = length - 1; i > -1; i--) {
-//        var key = localStorage.key(i);
-//        if (!/\.(?:js|css|jsp)$/.test(key))
-//          cache[key] = G.localStorage.get(key);
-//      }
-//      
-//      localStorage.clear();
-//      for (var key in cache) {
-//        G.localStorage.put(key, cache[key]);
-//      }
-//      
-//      delete cache;
       for (var i = length - 1; i > -1; i--) {
         var key = localStorage.key(i);
         if (/\.(?:js|css|jsp)$/.test(key)) {          
@@ -921,70 +863,6 @@ define('cache', function() {
     },
     modelsMetadataMap: {},
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
-    shortNameToModel: {},
-    typeToModel: {},
-    shortNameToEnum: {},
-    typeToEnum: {},
-    shortNameToInline: {},
-    typeToInline: {},
-    modCache: {},
-    usedModels: {},
-    Resources: {},
-    ResourceLists: {},
-    cacheResource: function(resource, uri) {
-      uri = uri || resource.getUri();
-      return G.Resources[uri] = resource;
-    },
-    getCachedResource: function(uri) {
-      return G.Resources[uri] || G.searchCollections(uri);
-    },
-    getCachedResourceList: function(typeUri, key) {
-      return (G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {})[key];
-    },
-    newResourceList: function(listType, models, options) {
-      var qs = options._query;
-      if (!qs) {
-        var qMap = options.queryMap;
-        if (qMap) {
-          qs = '';
-          for (var p in qMap) {
-            qs += p + '=' + encodeURIComponent(qMap[p]) + '&';
-          }
-          
-          qs = qs.length ? qs.slice(0, qs.length - 1) : null;
-        }
-      }
-      
-      if (!qs)
-        qs = options.model.type;
-      
-      return G.cacheResourceList(new listType(models, options), options.model.type, qs);
-    },
-    cacheResourceList: function(list, typeUri, key) {      
-      return (G.ResourceLists[typeUri] = G.ResourceLists[typeUri] || {})[key] = list;
-    },
-    /**
-     * search a collection map for a collection with a given model
-     * @return {collection: collection, model: model}, where collection is the first one found containing a model where model.get('_uri') == uri, or null otherwise
-     * @param uri: uri of a model
-     */
-    searchCollections: function(collections, uri) {
-      if (arguments.length == 1) // if just uri is passed in, search all available collections
-        collections = G.ResourceLists;
-      else
-        collections = [collections];
-      
-      for (var i = 0; i < collections.length; i++) {
-        var collectionsByQuery = collections[i];
-        for (var query in collectionsByQuery) {
-          var m = collectionsByQuery[query].get(uri);
-          if (m) 
-            return {collection: collectionsByQuery[query], model: m};
-        }
-      }
-      
-      return null;
-    },
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
     sqlUrl: G.serverName + '/' + G.sqlUri,
@@ -996,28 +874,6 @@ define('cache', function() {
     },
     hasLocalStorage: hasLocalStorage,
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    workerCache: [],
-    recycleWebWorker: function(worker) {
-      worker.onerror = null;
-      worker.onmessage = null;      
-    },
-    isWorkerAvailable: function(worker) {
-      return !worker.onerror && !worker.onmessage;
-    },
-    getXhrWorker: function() {
-//      G.require('cache!io, cache!xhrWorker, cache!lib/json2', function() {
-        var cache = G.workerCache;
-        for (var i = 0; i < cache.length; i++) {
-          var w = cache[i];
-          if (G.isWorkerAvailable(w))
-            return w;
-        }
-        
-        var w = new Worker('{0}/js/{1}.js'.format(G.serverName, G.files.xhrWorker.name));
-        G.workerCache.push(w);
-        return w;
-//      });
-    },
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1198,11 +1054,6 @@ define('cache', function() {
 
         var txt = t + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-//      var h = d.getUTCHours();
-//      var m = d.getUTCMinutes();
-//      var s = d.getUTCSeconds();
-//      var ms = d.getUTCMilliseconds();
-//      [h,m,s,ms].join(':')
         console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(" ") + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
       }
     },
@@ -1218,30 +1069,6 @@ define('cache', function() {
       return keys;
     },
     
-//    asyncLoop: function(obj, process, timeout, name, context) {
-//      var isArray = obj.length === +obj.length;
-//      var keys = isArray ? obj : G.keys(obj);
-//      if (!keys.length) 
-//        return;
-//      
-//      context = context || this;
-//      timeout = timeout || 100;
-//      setTimeout(function helper() {
-//        var key = keys.shift();
-//        var args = [key];
-//        if (!isArray)
-//          args.push(obj[key]);
-//          
-//        process.apply(context, args);
-//        if (keys.length) 
-//          setTimeout(helper, timeout);
-//        else {
-//          debugger;
-//          G.log(G.TAG, 'finished async loop', name);
-//        }
-//      }, timeout);
-//    },
-
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
@@ -1254,44 +1081,7 @@ define('cache', function() {
       div.id = G.nextId();
       div.innerHTML = html;
       (element || body).appendChild(div);
-    },
-    
-//    inject: function(module, text, callback) {
-//      var d = document;
-//      var script = d.createElement("script");
-//      var id = "script" + (new Date).getTime();
-//      var root = d.documentElement;
-//      script.type = "text/javascript";
-////      script.innerHtml = text;
-//      try {
-//        script.appendChild(d.createTextNode(text));
-//      } catch(e) {
-//        script.text = text; // IE
-//      }
-//      
-//      var parent = d.head || d.body;
-//      parent.appendChild(script);
-//      parent.removeChild(script);
-//      callback(text);
-//    },
-//    inject: function(module, text, callback) {
-//      var d = document;
-//      var script = d.createElement("script");
-//      var id = "script" + (new Date).getTime();
-//      var root = d.documentElement;
-//      script.type = "text/javascript";
-////      script.innerHtml = text;
-//      try {
-//        script.appendChild(d.createTextNode(text));
-//      } catch(e) {
-//        script.text = text; // IE
-//      }
-//      
-//      var parent = d.head || d.body;
-//      parent.appendChild(script);
-//      parent.removeChild(script);
-//      callback(module);
-//    },
+    },    
 
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
@@ -1316,6 +1106,27 @@ define('cache', function() {
       separator = separator || '.';
       var dIdx = path.indexOf(separator);
       return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
+    },
+
+    workerCache: [],
+    recycleWebWorker: function(worker) {
+      worker.onerror = null;
+      worker.onmessage = null;      
+    },
+    isWorkerAvailable: function(worker) {
+      return !worker.onerror && !worker.onmessage;
+    },
+    getXhrWorker: function() {
+      var cache = G.workerCache;
+      for (var i = 0; i < cache.length; i++) {
+        var w = cache[i];
+        if (G.isWorkerAvailable(w))
+          return w;
+      }
+      
+      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, G.files.xhrWorker.name));
+      G.workerCache.push(w);
+      return w;
     },
 
     pruneBundle: function(bundle) {
@@ -1478,15 +1289,9 @@ define('cache', function() {
       
         if (hasLocalStorage) {
           setTimeout(function() {
-//            G.asyncLoop(newModules, function(url, module) {
             for (var url in newModules) {
               G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
             }
-//            }, 100, "save modules", this);
-//            for (var url in newModules) {
-//              G.localStorage.putAsync(100, url, G.prepForStorage(newModules[url], G.serverTime), false, true); // don't force, but do async
-//              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime), false); // don't force
-//            }
           }, 100);
         }
         
@@ -1543,14 +1348,6 @@ define('cache', function() {
       var script = doc.createElement("script");
       script.type = "text/javascript";
       script.async = true;
-//      if (context) {
-//        if (script.attachEvent && !(script.attachEvent.toString && script.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
-//          script.attachEvent('onreadystatechange', context.onScriptLoad);
-//        } else {
-//          script.addEventListener('load', context.onScriptLoad, false);
-//          script.addEventListener('error', context.onScriptError, false);
-//        }
-//      }
 
       // Make sure that the execution of code works by injecting a script
       // tag with appendChild/createTextNode
@@ -1567,22 +1364,15 @@ define('cache', function() {
     
     requireConfig: {
       paths: {
-//        cache: 'lib/requirejs.cache',
-//        mobiscroll: 'lib/mobiscroll-core',
-//        mobiscrollDate: 'lib/mobiscroll-datetime',
-//        mobiscrollJQM: 'lib/mobiscroll-jqm',
-//        mobiscrollJQMW: 'lib/mobiscroll-jqmwidget',
         mobiscroll: 'lib/mobiscroll-datetime-min',
         jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.0',
-//        validator: 'lib/jquery.validate',
         underscore: 'lib/underscore',
         backbone: 'lib/backbone',
         indexedDBShim: 'lib/IndexedDBShim',
         jqueryIndexedDB: 'lib/jquery-indexeddb',
         queryIndexedDB: 'lib/queryIndexedDB',
-//        priorityQueue: 'lib/priorityQueue',
         leaflet: 'lib/leaflet',
         leafletMarkerCluster: 'lib/leaflet.markercluster',
         jqueryImagesloaded: 'lib/jquery.imagesloaded',
@@ -1591,17 +1381,10 @@ define('cache', function() {
       shim: {
         leafletMarkerCluster: ['leaflet'],
         jqueryMasonry: ['jquery'],
-//        validator: ['jquery'],
         jqueryImagesloaded: ['jquery'],
         mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
         jqueryIndexedDB: ['jquery', 'indexedDBShim'],
         indexedDBShim: ['taskQueue']
-//            ,
-//        mobiscrollDate: ['jquery', 'jqueryMobile', 'mobiscroll'],
-//        mobiscrollJQM: ['jquery', 'jqueryMobile', 'mobiscroll'],
-//        mobiscrollJQMW: ['jquery', 'jqueryMobile', 'mobiscroll']
-//        mobiscroll: ['jquery', 'mobiscroll.core', 'mobiscroll.jqm', 'mobiscroll.jqmwidget', '../styles/mobiscroll.core.css', '../styles/mobiscroll.jqm.css']
-//        mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css']
       }
     }
   }; 
@@ -1638,39 +1421,14 @@ define('cache', function() {
     }
   }
   
-//  G.minify = G.getCookie(mCookie) !== 'n';
   if (typeof minified === 'undefined')
     G.minify = G.minifyByDefault;
   else
     G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
-//  G.trace.ON = G.minify === false;
-  // END minify
   
   require.config(G.requireConfig);
    
-//   var viewBundle = [
-//     'views/Header', 
-//     'views/BackButton', 
-//     'views/LoginButtons', 
-//     'views/AroundMeButton', 
-//     'views/ResourceView', 
-//     'views/ResourceImageView', 
-//     'views/ViewPage' 
-//   ];
-//      
-//   var listBundle = [
-//     'views/ResourceListItemView', 
-//     'views/ResourceListView', 
-//     'views/Header', 
-//     'views/BackButton', 
-//     'views/AddButton', 
-//     'views/LoginButtons', 
-//     'views/AroundMeButton', 
-//     'views/MapItButton', 
-//     'views/ListPage' 
-//   ];
-
-   return Lablz;
+  return Lablz;
 });
 
 require(['globals'], function(G) {
@@ -1693,14 +1451,12 @@ require(['globals'], function(G) {
     }
   }
   
-//  G.files = G.flattenObject(G.bundles);
   G.loadBundle(G.bundles.pre, function() {
     G.finishedTask("loading pre-bundle");
     var css = G.bundles.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       var cssObj = css[i];
       for (var name in cssObj) {
-//        css[i] = 'cache!' + name;
         css[i] = name;
         break;
       }

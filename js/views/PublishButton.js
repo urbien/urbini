@@ -88,7 +88,7 @@ define([
       Events.stopEvent(e);
       var res = this.resource;
       
-      var model = G.shortNameToModel['TournamentEntry'];
+      var model = U.getModel('TournamentEntry');
       if (model != null) 
         resource = new model();
       else {
@@ -98,7 +98,7 @@ define([
           },
           sync: true}
         );
-        resource = new (G.shortNameToModel['TournamentEntry'])();
+        resource = new (U.getModel('TournamentEntry'))();
       }
       var params = U.getParamMap(window.location.hash);
       var props = {tournament: params['-tournament'], entry: res.get('_uri')};

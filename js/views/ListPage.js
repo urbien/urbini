@@ -122,7 +122,7 @@ define([
         Events.trigger('chooser', {model: res, buy: true});
         return;
       }
-      var newRes = new G.typeToModel[this.vocModel.type]();
+      var newRes = new this.vocModel();
       var p = U.getCloneOf(this.vocModel, 'Buyable.template');
       var props = {};
       props[p[0]] = uri;
@@ -174,7 +174,7 @@ define([
             if (!prop  ||  !prop.containerMember) 
               continue;
             var type = U.getLongUri1(prop.range);
-            var cM = G.typeToModel[type];
+            var cM = U.getModel(type);
             if (!cM) 
               continue;
             var blProps = U.getPropertiesWith(cM.properties, 'backLink');
@@ -232,7 +232,7 @@ define([
       this.listView.render();
       if (isGeo) {
         var self = this;
-        G.require(['views/MapView'], function(MV) {
+        U.require(['views/MapView'], function(MV) {
           MapView = MV;
           self.mapView = new MapView(_.extend(commonParams, {el: self.$('#mapHolder', self.el)}));
           self.mapView.render();

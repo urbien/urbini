@@ -22,7 +22,8 @@ define([
         limitParam: "$limit",
         queryMap: options.queryMap || {},
         model: options.model || models[0].model,
-        rUri: options._rUri
+        rUri: options._rUri,
+        listId: G.nextId()
       });
       
       this.vocModel = vocModel = this.model;
@@ -39,10 +40,12 @@ define([
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;      
       this.queryMap[this.limitParam] = this.perPage;
-      this.parseQuery(options._query);
+      this.query = options._query;
+      this.parseQuery(this.query);
       this.belongsInCollection = U.buildValueTester(this.queryMap, this.vocModel);
 //      this.sync = this.constructor.sync;
       
+      Events.trigger('newResourceList', this);
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
     getNextPage: function(options) {

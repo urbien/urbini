@@ -29,6 +29,7 @@ define([
       if (this.getUri())
         this.subscribeToUpdates();
       
+      this.resourceId = G.nextId();
 //      var type = this.vocModel.type;
 //      if (type.startsWith('http://urbien.com/voc/dev/')) {
 ////        Events.trigger('installApp', );
@@ -58,13 +59,15 @@ define([
         if (data._oldUri === uri) {
           Events.off('synced.' + uri, callback);
           Events.on('synced.' + data._uri, callback);
-//          self.trigger('uriChanged', {oldUri: uri, newUri: data._uri});
+          Events.off('updateBacklinkCounts.' + uri, self.updateCounts);
+          Events.on('updateBacklinkCounts.' + data._uri, self.updateCounts);
         }
         
         self.set(data);
       }
       
       Events.on('synced.' + resUri, callback);
+      Events.on('updateBacklinkCounts' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
     cancel: function(options) {
@@ -91,7 +94,8 @@ define([
 //      if (this.vocModel.type.contains('hudsonfog.com/voc/system/designer/'))
 //        Events.trigger('modelUpdate', this.get('davClassUri'));
       
-      G.cacheResource(this);
+//      G.cacheResource(this);
+      Events.trigger('newResource', this);
       if (this.lastFetchOrigin !== 'server')
         return;
       
@@ -295,7 +299,7 @@ define([
         }
         
         // TODO: fix this hack, or move this to some place where we handle resources by type
-        var plugModel = G.shortNameToModel.Handler;
+        var plugModel = U.getModel('Handler');
         if (plugModel && this.vocModel.type === plugModel.type)
           Events.trigger("newPlug", self);
       }
@@ -312,14 +316,13 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          var existing = G.getCachedResource(val);
-          if (existing) 
-            existing.updateCounts(this, isNew);
+          Events.trigger('updateBacklinkCounts.' + val, this, isNew);
         }
       }
     },
     
     updateCounts: function(res, isNew) {
+      debugger;
       if (!isNew)
         return; // for now
       
@@ -361,7 +364,7 @@ define([
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);        
-        G.cacheResource(this);
+//        G.cacheResource(this);
         if (U.isAssignableFrom(this.vocModel, 'AppInstall')) {
           Events.trigger('appInstall', this);
         }
@@ -398,7 +401,7 @@ define([
           if (response.error)
             return;
           
-          G.cacheResource(self);
+//          G.cacheResource(self);
           Events.trigger('resourcesChanged', [self]);
           if (self.isNew()) // was a synchronous mkresource operation
             Events.trigger('newResource', self);

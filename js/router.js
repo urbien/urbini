@@ -5,14 +5,15 @@ define([
   'events', 
   'error', 
   'models/Resource', 
-  'collections/ResourceList', 
+  'collections/ResourceList',
+  'cache',
   'vocManager',
   'views/HomePage'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, Voc, HomePage/*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
     TAG: 'Router',
@@ -48,20 +49,6 @@ define([
       var self = this;
       Events.on('back', function() {
         self.backClicked = true;
-      });
-
-      Events.on('newResource', function(resource) {
-        var uri = resource.getUri();
-        G.Resources[uri] = resource;
-        for (var colType in G.ResourceLists) {
-          var cols = G.ResourceLists[colType];
-          for (var colQuery in cols) {
-            var col = cols[colQuery];
-            if (col.belongsInCollection(resource)) {
-              col.add(resource, {refresh: true});
-            }
-          }
-        }
       });
 
       // a hack to prevent browser address bar from dropping down
@@ -176,13 +163,13 @@ define([
       if (!this.isModelLoaded(typeUri, 'list', arguments))
         return;
       
-      var model = G.typeToModel[typeUri];
+      var model = U.getModel(typeUri);
       
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
-      var c = G.getCachedResourceList(typeUri, key);
+      var c = C.getResourceList(typeUri, key);
       if (c && !c._lastFetchedOn)
         c = null;
       
@@ -192,16 +179,16 @@ define([
         this.currentModel = c;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
+        Events.trigger('navigateToList.' + c.listId, c);
         c.fetch({page: page, forceFetch: forceFetch});
         this.monitorCollection(c);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }      
       
-      c = this.currentModel = G.newResourceList(ResourceList, null, {model: model, _query: query, _rType: className, _rUri: oParams });    
+      c = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
       var listView = new ListPage(_.extend(this.extraParams || {}, {model: c}));
       
-//      G.ResourceLists[typeUri][key] = list;
       this.CollectionViews[typeUri][key] = listView;
       listView.setMode(mode || G.LISTMODES.LIST);
       
@@ -211,6 +198,7 @@ define([
         _rUri: oParams
       }).done(function() {
         self.changePage(listView);
+        Events.trigger('navigateToList.' + c.listId);
         Voc.fetchModelsForReferredResources(c);
         Voc.fetchModelsForLinkedResources(c.vocModel);
 //          self.loadExtras(oParams);
@@ -232,21 +220,31 @@ define([
         return;
       
       var vocModel = collection.vocModel,
-          meta = vocModel.properties;
+          meta = vocModel.properties,
+          self = this;
       
       for (var param in qMap) {
         var prop = meta[param];
-        if (prop && U.isResourceProp(prop)) {
-          var uri = qMap[param];
-          if (U.isTempUri(uri)) {
-            debugger;
-            Events.on('synced.' + uri, function(data) {
-              debugger;
-              qMap[param] = data._uri;
-              self.navigate(U.makeMobileUrl('list', vocModel.type, qMap), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server 
-            });
+        if (!prop || !U.isResourceProp(prop))
+          continue;
+        
+        var uri = qMap[param];
+        if (!U.isTempUri(uri))
+          continue;
+        
+        Events.once('synced.' + uri, function(data) {
+          debugger;
+          qMap[param] = data._uri;
+          var updateHash = function() {
+            self.navigate(U.makeMobileUrl('list', vocModel.type, qMap), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
           }
-        }
+          
+          var currentView = self.currentView;
+          if (currentView && currentView.collection === collection)
+            updateHash();
+          else
+            Events.once('navigateToList.' + collection.listId, updateHash);
+        });
       }
     },
     
@@ -257,7 +255,7 @@ define([
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
         G.onPostBundleLoaded(function() {
-          G.require(unloadedMods, function() {
+          U.require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
               self[unloaded[i]] = a[i];
@@ -282,7 +280,7 @@ define([
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
 
-      var vocModel = G.typeToModel[type];
+      var vocModel = U.getModel(type);
       if (!this.isAppLoaded(type, 'make', arguments))
         return;
 
@@ -295,7 +293,8 @@ define([
         // all good, continue making ur mkresource
       }
       else {
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new G.typeToModel[type](), action: 'make', makeId: makeId, source: this.previousFragment});
+        var model = U.getModel(type);
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousFragment});
       }
       
       this.viewsCache = this.MkResourceViews;
@@ -362,33 +361,26 @@ define([
         return;
       
       var className = U.getClassName(typeUri);
-      var typeCl = G.shortNameToModel[className] || G.typeToModel[typeUri];
+      var typeCl = U.getModel(className) || U.getModel(typeUri);
       if (!typeCl)
         return this;
 
-//      if (!uri || !G.shortNameToModel[className]) {
-//        Voc.loadStoredModels({models: [typeUri || className]});
-//          
-//        if (!uri || !G.shortNameToModel[className]) {
-//          Voc.fetchModels(typeUri, 
-//            {success: function() {
-//              self.view.apply(self, [path]);
-//            },
-//            sync: true}
-//          );
-//          
-//          return;
-//        }
-//      }
-            
-      var res = G.Resources[uri];
+      var res = C.getResource(uri);
       if (res && !res.loaded)
         res = null;
 
       if (U.isTempUri(uri)) {
-        Events.on('synced.' + uri, function() {
+        Events.once('synced.' + uri, function() {
           debugger;
-          self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
+          var currentView = self.currentView;
+          var updateHash = function() {
+            self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
+          }
+          
+          if (currentView && currentView.resource === res)
+            updateHash();
+          else
+            Events.once('navigateToResource.' + res.resourceId, updateHash);
         });
       }
 
@@ -396,21 +388,21 @@ define([
       var self = this;
       var collection;
       if (!res) {
-        var collections = G.ResourceLists[typeUri];
+        var collections = C.getResourceList(typeUri);
         if (collections) {
-          var result = G.searchCollections(collections, uri);
+          var result = C.searchCollections(collections, uri);
           if (result) {
             collection = result.collection;
-            res = G.Resources[uri] = result.model;
+            res = result.model;
           }
         }
       }
       
       if (res) {
         this.currentModel = res;
-        G.Resources[uri] = res;
         var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
         this.changePage(v);
+        Events.trigger('navigateToResource.' + res.resourceId, res);
         res.fetch({forceFetch: forceFetch}).done(function() {
 //          var newUri = res.getUri();
 //          if (newUri !== uri) {
@@ -424,9 +416,9 @@ define([
         return this;
       }
       
-      var res = G.Resources[uri] = this.currentModel = new typeCl({_uri: uri, _query: query});
+      var res = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
-      res.fetch({sync:true, forceFetch: forceFetch}).done(function(data) {
+      res.fetch({sync: true, forceFetch: forceFetch}).done(function(data) {
         // in case we were at a temp uri, we want to clean up our history as best we can
 //        var newUri = res.getUri();
 //        if (newUri !== uri) {
@@ -435,6 +427,7 @@ define([
 //        }
 //        else {
           self.changePage(v);
+          Events.trigger('navigateToResource.' + res.resourceId, res);
           Voc.fetchModelsForLinkedResources(res);
 //        }
       }).fail(function() {
@@ -483,7 +476,7 @@ define([
 //    },
     
     isModelLoaded: function(type, method, args) {
-      var m = G.typeToModel[type];
+      var m = U.getModel(type);
       if (m)
         return m;
 
@@ -533,19 +526,20 @@ define([
           friendAppType = U.getTypeUri('model/social/FriendApp');
       
       Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
-        var followsList = G.newResourceList(ResourceList, null, {model: G.typeToModel[friendAppType], queryMap: {friend1: appUri}}); // FriendApp list representing apps this app follows
+        var followsList = G.newResourceList(ResourceList, null, {model: U.getModel(friendAppType), queryMap: {friend1: appUri}}); // FriendApp list representing apps this app follows
         var fetchFollows = followsList.fetch({sync: true}).promise();
         var fetchFollowsPipe = $.Deferred();
         fetchFollows.always(fetchFollowsPipe.resolve);
         var installOptions = {'-info': APP_TERMS, returnUri: window.location.href, application: appUri};
         var fetchApp = $.Deferred(function(defer) {
-          var app = G.getCachedResource(appUri);
+          var app = C.getResource(appUri);
           if (app) {
             defer.resolve(app);
             return;
           }
           
-          app = new G.typeToModel[appType]({_uri: appUri});
+          var model = U.getModel(appType);
+          app = new model({_uri: appUri});
           app.fetch({sync: true}).done(defer.resolve).fail(defer.reject);
         }).promise();
 

@@ -68,7 +68,8 @@ define([
       Events.stopEvent(e);
       var self = this;
       var args = arguments;
-      if (!G.shortNameToModel.RecipeShoppingList) {
+      var rslModel = U.getModel('RecipeShoppingList');
+      if (!rslModel) {
 //        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
         Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
           self.recipeShoppingListHack.apply(self, args);
@@ -80,7 +81,7 @@ define([
       var a = $(e.target).parent('a');
       var href = a.attr('href') || a.attr('link');
       var params = U.getQueryParams(href);
-      var recipeShoppingList = new G.shortNameToModel.RecipeShoppingList();
+      var recipeShoppingList = new rlsModel();
       var props = {};
       var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
       var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
@@ -149,15 +150,15 @@ define([
         var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
         var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
         if (a  ||  b) {
-          var urbModel = G.shortNameToModel['Urbien'];
+          var urbModel = U.getModel('Urbien');
           var isAContact;
           var isBContact;
           if (urbModel) {
             var idx = meta[a].range.lastIndexOf('/');
-            var aModel = G.typeToModel[U.getLongUri1(meta[a].range)];
+            var aModel = U.getModel(U.getLongUri1(meta[a].range));
             isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien');
             idx = meta[b].range.lastIndexOf('/');
-            var bModel = G.typeToModel[U.getLongUri1(meta[b].range)];
+            var bModel = U.getModel(U.getLongUri1(meta[b].range));
             isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien');
           }
           if (a  &&  qidx == -1) 
@@ -200,7 +201,7 @@ define([
         json.left = dim.x;
       }
       var params = U.getParamMap(window.location.hash);
-      if (U.isAssignableFrom(vocModel, "Video", G.typeToModel)  &&  params['-tournament'])
+      if (U.isAssignableFrom(vocModel, "Video")  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
       this.addCommonBlock(viewCols, json);
@@ -449,7 +450,7 @@ define([
       
       var type = rUri ? U.getTypeUri(rUri) : null;
       
-      var forResourceModel = type ? G.typeToModel[type] : null;
+      var forResourceModel = type ? U.getModel(type) : null;
       var c =  forResourceModel ? forResourceModel : m.constructor;
       if (forResourceModel) {
         var meta = c.properties;

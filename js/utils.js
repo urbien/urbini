@@ -4,8 +4,9 @@ define([
   'underscore',
   'backbone',
   'templates',
-  'jquery'
-], function(G, _, Backbone, Templates, $) {
+  'jquery',
+  'cache'
+], function(G, _, Backbone, Templates, $, C) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -54,7 +55,7 @@ define([
   };
 
   String.prototype.endsWith = function(str) {
-    return (this.match(str+"$")==str);
+    return this.slice(this.length - str.length) === str;
   };
   // extends jQuery to check if selected collection is empty or not
   $.fn.exist = function(){
@@ -62,7 +63,112 @@ define([
   };
 
   var U = {
-    TAG: 'Utils',    
+    TAG: 'Utils',
+    require: function(modules, callback, context) {
+      modules = $.isArray(modules) ? modules : [modules];
+      var mods = [], newModNames = [], newModFullNames = [];
+      for (var i = 0; i < modules.length; i++) {
+        var fullName = modules[i], name = fullName;
+        var moduleViaPlugin = fullName.match(/\!(.*)$/);
+        if (moduleViaPlugin) {
+          name = moduleViaPlugin[1]; 
+        }
+        
+        var mod = C.modCache[name];
+        if (!mod) {
+          mod = C.modCache[name] = $.Deferred();
+          newModFullNames.push(fullName);
+          newModNames.push(name);
+        }
+        
+        mods.push(mod);
+      }
+      
+      if (newModNames.length) {
+        G.loadBundle(newModNames, function() {
+          require(newModFullNames, function() {
+            for (var i = 0; i < newModNames.length; i++) {
+              C.modCache[newModNames[i]].resolve(arguments[i]);
+            }          
+          });
+        });
+      }
+      
+      return $.when.apply($, mods).then(function() {
+        callback.apply(context, arguments);
+      }).promise();
+    },
+    
+    ajax: function(options) {
+      var hasWebWorkers = G.hasWebWorkers;
+      var opts = _.clone(options);
+      opts.type = opts.method || opts.type;
+      opts.dataType = opts.dataType || 'JSON';
+      var useWorker = hasWebWorkers && !opts.sync;
+      return new $.Deferred(function(defer) {
+        if (opts.success) defer.done(opts.success);
+        if (opts.error) defer.fail(opts.error);
+        if (useWorker) {
+          G.log(U.TAG, 'xhr', 'webworker', opts.url);
+          var xhrWorker = G.getXhrWorker();          
+          xhrWorker.onmessage = function(event) {
+            var xhr = event.data;
+            if (xhr.status === 304) {
+//              debugger;
+              defer.reject(xhr, "unmodified", "unmodified");
+            }
+            else
+              defer.resolve(xhr.data, xhr.status, xhr);
+          };
+          
+          xhrWorker.onerror = function(err) {
+//            debugger;
+            defer.reject({}, "error", err);
+          };
+          
+          defer.always(function() {
+            G.recycleWebWorker(xhrWorker);
+          });
+
+          xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
+        }
+        else {
+          G.log(U.TAG, 'xhr', '$.ajax', opts.url);
+          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType'])).then(function(data, status, jqXHR) {
+//            debugger;
+            if (status != 'success') {
+              defer.reject(jqXHR, status, opts);
+              return;
+            }
+            
+            if (jqXHR.status === 200) {
+              defer.resolve(data, status, jqXHR);
+              return;
+            }
+            
+            if (data && data.error) {
+              defer.reject(jqXHR, data.error, opts);
+              return;
+            }
+            
+            defer.reject(jqXHR, {code: jqXHR.status}, opts);                  
+          }, 
+          function(jqXHR, status, err) {
+//            debugger;
+            var text = jqXHR.responseText;
+            var error;
+            try {
+              error = JSON.parse(text).error;
+            } catch (err) {
+              error = {code: jqXHR.status, details: err};
+            }
+            
+            defer.reject(jqXHR, error, opts);
+          });
+        }
+      }).promise();
+    },
+    
     isPropVisible: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop))
         return false;
@@ -422,7 +528,7 @@ define([
       else {
         if (typeName == 'Class')
           return 'http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Class';
-        var vocModel = G.shortNameToModel[typeName];
+        var vocModel = U.getModel(typeName);
         return (hint && hint.type) || (vocModel && vocModel.type);
       }
     },
@@ -484,7 +590,7 @@ define([
 //      if (!superCl || superCl.endsWith('#Resource'))
 //        return false;
 //      
-//      var m = G.typeToModel[superCl];
+//      var m = U.getModel(superCl);
 //      return m ? U.isA(m, leftOver) : impl;
     },
     
@@ -735,8 +841,8 @@ define([
      *         if getQueryParams(collection), return map of query params from collection.queryMap that correspond to collection's model's properties
      */
     getQueryParams: function() {
-      var args = arguments;
-      var model = collection = qMap = url = args.length && args[0];
+      var args = arguments, model, collection, qMap, url;
+      model = collection = qMap = url = args.length && args[0];
       if (!url || typeof url === 'string') {
         qMap = U.getParamMap(url || window.location.href);
         return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
@@ -1111,8 +1217,36 @@ define([
       return res instanceof Backbone.Model;
     },
 
-    getModel: function(resOrCol) {
-      return U.isCollection(resOrCol) ? resOrCol.model : resOrCol.constructor;
+    getInlineResourceModel: function(type) {
+      return C.shortNameToInline[type] || C.typeToInline[type];      
+    },
+
+    getEnumModel: function(type) {
+      return C.shortNameToEnum[type] || C.typeToEnum[type];      
+    },
+    
+    getModel: function() {
+      var arg0 = arguments[0];
+      var argType = U.getObjectType(arg0);
+      switch (argType) {
+      case '[object String]':
+        var model = C.shortNameToModel[arg0] || C.typeToModel[arg0];
+        if (model != null)
+          return model;
+        
+        if (arg0.indexOf('/') != -1) {
+          var longUri = U.getLongUri1(arg0);
+          if (longUri !== arg0)
+            return U.getModel(longUri);
+        }
+        
+        return null;
+//            throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
+      case '[object Object]':
+        return U.isCollection(arg0) ? arg0.model : arg0.constructor;
+      default:
+        throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");
+      }
     },
     
     getImageProperty: function(resOrCol) {
@@ -1218,7 +1352,7 @@ define([
 //        if (m.subClassOf == 'Resource')
 //          return false;
 //        
-//        m = G.typeToModel[subClassOf];
+//        m = U.getModel(subClassOf);
 //      }
     },
 

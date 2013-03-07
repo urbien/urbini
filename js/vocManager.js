@@ -5,8 +5,9 @@ define([
   'error', 
   'events', 
   'models/Resource', 
-  'collections/ResourceList' 
-], function(G, U, Errors, Events, Resource, ResourceList) {
+  'collections/ResourceList',
+  'cache'
+], function(G, U, Errors, Events, Resource, ResourceList, C) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -54,7 +55,7 @@ define([
         // In case we were offline and had to settle for stale models from localStaleage
         if (!options.overwrite) {
           models = U.filterObj(models, function(type, info) {
-            return !G.typeToModel[type];
+            return !U.getModel(type);
           });
         }
       }
@@ -211,7 +212,7 @@ define([
         }
 
         var c = Voc.currentModel;
-        var urgent = options.sync && numModels > 1 && c && !G.typeToModel[c] && c;
+        var urgent = options.sync && numModels > 1 && c && !U.getModel(c) && c;
         if (urgent) {
           Voc.fetchModels(urgent, options).done(function(data) {
             defer.resolve(data);
@@ -231,7 +232,7 @@ define([
           timeout: 5000
         }, _.pick(options, 'sync'));
         
-        G.ajax(ajaxSettings).done(function(data, status, xhr) {
+        U.ajax(ajaxSettings).done(function(data, status, xhr) {
           if (!data) {
             defer.rejectWith(this, [xhr, status, options]);
             return;
@@ -291,7 +292,7 @@ define([
         return !range ? null : isResource ? range : _.contains(G.classUsage, range) ? range : null;
       })), function(m) {
         // no need to reload known types
-        return m && !G.typeToModel[m];
+        return m && !U.getModel(m);
       }); 
   
       var linkedModels = {};
@@ -317,7 +318,7 @@ define([
       
       var tmp = [];
 
-      var l = _.keys(G.typeToModel);
+      var l = _.keys(C.typeToModel);
       var modelsToFetch = [];
 
       for (var propName in meta) {
@@ -357,25 +358,10 @@ define([
 
     loadModel: function(m) {
       m = Resource.extend({}, m);
-      var sn = m.shortName;
       var type = m.type = U.getTypeUri(m.type);
-      if (_.contains(G.classUsage, type)) {
-        G.usedModels[type] = true;
-      }
-        
-      if (m.enumeration) {
-        G.shortNameToEnum[sn] = m;
-        G.typeToEnum[type] = m;
-        return;
-      }
-      else if (m.alwaysInlined) {
-        G.shortNameToInline[sn] = m;
-        G.typeToInline[type] = m;
-        return;
-      }
-      else {
-        G.shortNameToModel[sn] = m;
-        G.typeToModel[type] = m;
+      C.cacheModel(m);
+      
+      if (!m.enumeration && !m.alwaysInlined) {
         if (U.isAnAppClass(type)) {
           var meta = m.properties;
           for (var p in meta) {
@@ -431,8 +417,8 @@ define([
             backlinkName = backlink[1]; // ingredients in the example
         
         Voc.getModels([propType, effectType]).done(function() {
-          var propModel = G.typeToModel[propType],     // Recipe in the example
-              resultModel = G.typeToModel[effectType]; // ShoppingListItem in the example
+          var propModel = U.getModel(propType),     // Recipe in the example
+              resultModel = U.getModel(effectType); // ShoppingListItem in the example
               
           if (!propModel || !resultModel) {
             debugger; // should never happen
@@ -447,7 +433,7 @@ define([
           
           var backlinkType = U.getTypeUri(backlinkProp.range);
           Voc.getModels(backlinkType).done(function() { 
-            var backlinkModel = G.typeToModel[backlinkType]; // Ingredient in the example
+            var backlinkModel = U.getModel(backlinkType); // Ingredient in the example
             if (!backlinkModel) {
               debugger; // should never happen
               return;
@@ -457,7 +443,7 @@ define([
             params[backlinkProp.backLink] = propVal;         
             // backlinkProp.backLink is "recipe" in the example (the backlink being Recipe._ingredients). 
             // We want all ingredients where the value of the property Ingredient._recipe is our recipe  
-            var backlinkCollection = G.newResourceList(ResourceList, null, {model: backlinkModel, queryMap: params});
+            var backlinkCollection = new ResourceList(null, {model: backlinkModel, queryMap: params});
             backlinkCollection.fetch({
               success: function() {
                 debugger;
@@ -525,8 +511,8 @@ define([
       var effect = {};
 
       Voc.getModels(effectType).done(function() {
-        var effectModel =  G.typeToModel[effectType],
-            causeModel = G.typeToModel[cause._type],
+        var effectModel =  U.getModel(effectType),
+            causeModel = U.getModel(cause._type),
             toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel);
         
         try {
@@ -664,7 +650,7 @@ define([
       var c = G.currentUser;
       var userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
       if (userChanged) {
-        G.databaseCompromised = true;
+        Events.trigger('userChanged')
         if (c.guest) {
           G.localStorage.del(Voc.contactKey);          
         }
@@ -699,7 +685,7 @@ define([
       else
         _.extend(params, {models: JSON.stringify(models)});
       
-      G.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
+      U.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
         G.checkVersion(data);
         Voc.setupPlugs(data.plugs);
       });
@@ -777,21 +763,9 @@ define([
       for (var type in enums) {
         Voc.loadModel(Backbone.Model.extend({}, enums[type]));
       }
-    },
-    
-    clearCache: function() {
-      G.shortNameToModel = {};
-      G.typeToModel = {};
-      G.shortNameToEnum = {};
-      G.typeToEnum = {};
-      G.shortNameToInline = {};
-      G.typeToInline = {};
-      Voc.models = [];
-      Voc.mightBeStale = {};
-    }
+    }    
   };
   
-  Voc.snm = G.shortNameToModel;
   Events.on('newPlug', function(plug) {
     var plugs = {};
     plug = plug.toJSON();
@@ -821,7 +795,7 @@ define([
     
     if (!init) {
       var currentModels = _.keys(G.modelsMetadata);
-      Voc.getModels(currentModels, {force: true});
+      Voc.getModels(currentModels, {force: true, overwrite: true});
     }
   });
 

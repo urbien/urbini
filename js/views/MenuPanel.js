@@ -159,7 +159,7 @@ define([
         U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: url}));    
       
       this.buildActionsMenu(frag);      
-      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory', G.typeToModel)) {
+      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
         var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
         if (!ch  ||  !ch.length)
           ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');

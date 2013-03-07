@@ -4,9 +4,10 @@ define([
   'events', 
   'error', 
   'utils',
+  'cache',
   'vocManager',
   'views/BasicView'
-], function(G, Events, Errors, U, Voc, BasicView) {
+], function(G, Events, Errors, U, C, Voc, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
@@ -47,7 +48,7 @@ define([
         var prop = meta[shortName];
         if (U.isResourceProp(prop)) {
           var uri = init[shortName];
-          var res = G.getCachedResource(uri);
+          var res = C.getResource(uri);
           if (res) {
             init[shortName + '.displayName'] = U.getDisplayName(res);
           }
@@ -132,7 +133,7 @@ define([
       if (scrollerType === 'duration')
         modules.push('mobiscroll-duration');
       
-      G.require(modules, function() {
+      U.require(modules, function() {
         _.each(self.getScrollers(), function(input) {
           var name = input.name;
           var prop = meta[name];
@@ -270,7 +271,7 @@ define([
             if (G.currentApp) {
               var cUri = G.currentApp._uri;
               if (cUri.indexOf('http') == -1) {
-                cUri = U.getLongUri1(cUri, G.typeToModel[type]);
+                cUri = U.getLongUri1(cUri);
                 G.currentApp._uri = cUri;
               }
               if (this.resource.get('_uri') == cUri) {
@@ -504,7 +505,7 @@ define([
               var pName = redirectTo.slice(0, dotIdx),
                   prop = vocModel.properties[pName],
                   range = U.getLongUri1(prop.range),
-                  rangeCl = G.typeToModel[range];
+                  rangeCl = U.getModel(range);
               
               if (rangeCl) {
                 redirectParams[pName] = res.get(pName);

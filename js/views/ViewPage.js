@@ -103,7 +103,7 @@ define([
         }
         else {
           var params = U.getParamMap(window.location.hash);
-          if (U.isAssignableFrom(res.vocModel, "Video", G.typeToModel)  &&  params['-tournament'])
+          if (U.isAssignableFrom(res.vocModel, "Video")  &&  params['-tournament'])
             this.enterTournament = true;
         }
       }

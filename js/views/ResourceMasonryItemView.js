@@ -30,7 +30,7 @@ define([
       'click': 'click'
     },
     like: function(e) {
-      var likeModel = G.shortNameToModel['Vote'];
+      var likeModel = U.getModel('Vote');
       if (!likeModel) 
         return;
       Events.stopEvent(e);
@@ -242,7 +242,7 @@ define([
           tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }
-      if (U.isAssignableFrom(vocModel, "App", G.typeToModel)) {
+      if (U.isAssignableFrom(vocModel, "App")) {
         if ((json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
           tmpl_data.tryApp = uri;
@@ -258,7 +258,7 @@ define([
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
       }
-      if (U.isAssignableFrom(vocModel, "Tournament", G.typeToModel)) 
+      if (U.isAssignableFrom(vocModel, "Tournament")) 
         tmpl_data.v_submitForTournament = G.pageRoot + "#media%2fpublishing%2fVideo?-tournament=" + encodeURIComponent(rUri) + '&-tournamentName=' + encodeURIComponent(dn);
 
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -319,7 +319,7 @@ define([
       tmpl_data['gridCols'] = gridCols;
       
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
-      var forResourceModel = G.typeToModel[U.getTypeUri(forResourceUri)];
+      var forResourceModel = U.getModel(U.getTypeUri(forResourceUri));
       var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
       if (U.isA(c, 'CollaborationPoint')) { 
@@ -400,7 +400,7 @@ define([
 //      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
-      var forResourceModel = type ? G.typeToModel[type] : null;
+      var forResourceModel = type ? U.getModel(type) : null;
       var c =  forResourceModel ? forResourceModel : m.constructor;
       if (forResourceModel) {
         var meta = c.properties;
