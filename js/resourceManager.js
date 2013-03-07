@@ -172,7 +172,7 @@ define([
           if (RM.isStale(lastFetchedOn, now))
             return U.pipe(fetchFromServer(isUpdate, 100), defer); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
           else if (numNow) {
-            defer.resolve([null, 'success', {status: 304}]);
+            defer.resolve(null, 'success', {status: 304});
 //            defaultSuccess(null, 'success', {status: 304});
             return; // no need to fetch from db on update
           }
@@ -192,7 +192,7 @@ define([
           if (RM.isStale(ts, now))
             U.pipe(fetchFromServer(isUpdate, 100), defer);
           else  
-            defer.resolve();
+            defer.resolve(null, 'success', {status: 304});
             
           return;
         }
@@ -240,7 +240,7 @@ define([
         results = U.getObjectType(results) === '[object Object]' ? [results] : results;
         var resp = {data: results, metadata: {offset: start}};
         var numBefore = isCollection && collection.resources.length;
-        defer.resolve(resp, 'success', null); // add to / update collection
+        defer.resolve(resp, 'success', {code: 200}); // add to / update collection
   
         if (!isCollection) {
           if (forceFetch)
@@ -1141,7 +1141,7 @@ define([
           val = G.currentUser._uri;
       }
 
-      val = U.getTypedValue(collection, name, val);
+      val = U.getTypedValue(vocModel, name, val);
       return RM.Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
     },
     
@@ -1287,6 +1287,14 @@ define([
       
       if (!RM.storeExists(type)) {
         // don't upgrade here, upgrade when we add items to the db
+//        var dfd = $.Deferred();
+//        var getModels = Voc.getModels(type).done(function() {
+//          RM.runTask(function() {
+//            
+//          }).done(dfd.resolve).fail(dfd.reject);          
+//        }).fail()
+//        
+//        return dfd.promise();
         return false;
       }
 

@@ -1395,8 +1395,8 @@ define([
         val = {value: val};
       
       var propTemplate = Templates.getPropTemplate(prop);
-      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)
-        propTemplate = 'longStringPT';
+//      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)
+//        propTemplate = 'longStringPT';
       return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val)};
     },
     
@@ -1629,12 +1629,12 @@ define([
     },
     
     /**
-     * @param res Resource (Backbone.Model) instance
+     * @param res Resource (Backbone.Model) instance or model
      * @param prop name of the property
      * @param property value 
      */
     getTypedValue: function(res, prop, value) {
-      var vocModel = res.vocModel;
+      var vocModel = res.vocModel || res;
       var p = U.primitiveTypes;
       var prop = vocModel.properties[prop];
       var range = prop.range || prop.facet;
