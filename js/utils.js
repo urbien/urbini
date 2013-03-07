@@ -1261,6 +1261,8 @@ define([
         val = {value: val};
       
       var propTemplate = Templates.getPropTemplate(prop);
+      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)
+        propTemplate = 'longStringPT';
       return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val)};
     },
     
