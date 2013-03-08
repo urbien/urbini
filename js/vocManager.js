@@ -454,7 +454,7 @@ define([
                 causeDavClassUri: backlinkType
               });
               
-              fn = Voc.buildScript(fn.toString(), backlinkType, effectModel.type);
+//              fn = Voc.buildScript(fn.toString(), backlinkType, effectModel.type);
               fn = Voc.preparePlug(fn, subPlug);
               var json = backlinkCollection.toJSON();
               for (var i = 0; i < json.length; i++) {
@@ -478,15 +478,12 @@ define([
      * prepackage all the built in plug functions like "each" with the resources and models needed for a given operation
      */
     getPlugToolSuite: function(cause, causeModel, effect, effectModel, plug) {
-      var plugTools = _.clone(Voc.plugTools);
+      var plugTools = {};
       var context = {cause: cause, causeModel: causeModel, effect: effect, effectModel: effectModel, plug: plug};
-      _.each(plugTools, function(fn, name) {
-        var orgFn = fn;
+      _.each(Voc.plugTools, function(fn, name) {
         plugTools[name] = function() {
-          orgFn.apply(context, arguments); // give fn access to cause, causeModel, effect, effectModel
+          fn.apply(context, arguments); // give fn access to cause, causeModel, effect, effectModel
         };
-//        .bind(context);
-//        fn.bind(context);
       });
       
       return plugTools;
@@ -522,7 +519,10 @@ define([
             toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel, plug);
         
         try {
-          plugFn.apply(toolSuite).call({}, cause, effect);
+          if (plugFn.proxy)
+            plugFn.apply(toolSuite).call({}, cause, effect);
+          else
+            plugFn.call({}, cause, effect);
         } catch (err) {
           Voc.nukePlug(plug, plugFn);
           return;
@@ -572,24 +572,9 @@ define([
         return script;
       }
       
-//      from = from.slice(from.lastIndexOf('/') + 1).camelize();
-//      to = to.slice(to.lastIndexOf('/') + 1).camelize();
-//      if (typeof script === 'string') {
-        script = script.trim();
-//        if (script.startsWith("function"))
-//          script = script.slice(script.indexOf("{") + 1, script.lastIndexOf("}"));
-//          try {
-//            script = new Function("return " + script); //FunctionProxy(script);
-//          } catch (err) {
-//            script = null;
-//          }
-//        }
-//        else {
-//          script = new Function(from, to, script + "; return " + to);
-//        }
-//      }
-      
-      return FunctionProxy(script);
+      var proxy = FunctionProxy(script.trim());
+      proxy.proxy = true;
+      return proxy;
     },
     
     initPlugs: function(type) {
@@ -622,7 +607,9 @@ define([
       for (var action in scripts) {
         var script = scripts[action];
         if (script) {
-          script = Voc.buildScript(script, plug.causeDavClassUri, plug.causeDavClassUri);
+          script = script.trim();
+          script = Voc.buildScript(script); //, plug.causeDavClassUri, plug.causeDavClassUri);
+//          script = new Function(script.startsWith("function") ? script.slice(script.indexOf("{") + 1, script.lastIndexOf("}")) : script); //, plug.causeDavClassUri, plug.causeDavClassUri);
           if (script === null)
             G.log(Voc.TAG, 'error', 'bad custom createScript', plug.app, type);
           else

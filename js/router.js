@@ -376,8 +376,7 @@ define([
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;
       
-      var className = U.getClassName(typeUri);
-      var typeCl = U.getModel(className) || U.getModel(typeUri);
+      var typeCl = U.getModel(typeUri);
       if (!typeCl)
         return this;
 
@@ -443,7 +442,7 @@ define([
         if (res.lastFetchOrigin == 'server')
           after(false);
       }).fail(function() {
-        debugger;
+//        debugger;
       });
   
       return true;
@@ -501,8 +500,8 @@ define([
         fetchModels.done(function() {
           self[method].apply(self, args);
         }).fail(function() {
-          debugger;
-          Errors.getDefaultErrorHandler();
+//          debugger;
+          Errors.getDefaultErrorHandler().apply(this, arguments);
         });
         
         return false;
@@ -556,7 +555,7 @@ define([
         }).promise();
 
         $.when.apply($, [fetchFollowsPipe, fetchApp]).done(function() {
-          debugger;
+//          debugger;
           var followsNames = followsList.pluck('davDisplayName');
           self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, {appPlugs: followsNames.join(','), allow: true, $returnUri: U.getHash()})), {trigger: true}); // check all appPlugs by default
 //          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', installOptions), {trigger: true});
