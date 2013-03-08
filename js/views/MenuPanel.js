@@ -18,6 +18,7 @@ define([
       this.homeMenuItemTemplate = this.makeTemplate('homeMenuItemTemplate');
       this.groupHeaderTemplate = this.makeTemplate('propGroupsDividerTemplate');
       this.menuItemNewAlertsTemplate = this.makeTemplate('menuItemNewAlertsTemplate');
+//      this.filterTemplate = this.makeTemplate('filterTemplate');
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;
@@ -30,6 +31,7 @@ define([
       'click #subscribe': 'subscribe',
       'click #logout': 'logout',
       'click #home123': 'home',
+      'click #urbien123': 'home',
       'click': 'click'
 
 //      'swipeleft': 'swipeleft',
@@ -56,7 +58,10 @@ define([
   //    this.router.navigate(G.homePage, {trigger: true, replace: false});
       Events.stopEvent(e);
       var here = window.location.href;
-      window.location.href = here.slice(0, here.indexOf('#'));
+      if (e.target.id == 'home123')
+        window.location.href = here.slice(0, here.indexOf('#'));
+      else
+        window.location.href = G.serverName + '/app/UrbienApp';
       return this;
     },
     click: function(e) {
@@ -104,20 +109,11 @@ define([
 
       var ul = this.$('#menuItems');
       var frag = document.createDocumentFragment();
+
       if (!G.currentUser.guest) {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
           var title = 'Profile';
-//          var dim = U.fitToFrame(60, 60, G.currentUser.originalWidth / G.currentUser.originalHeight);
-//          var width = dim.w;
-//          var height = dim.h;
-//          var top = dim.y;
-//          var right = dim.w - dim.x;
-//          var bottom = dim.h - dim.y;
-//          var left = dim.x;
-//
-          
-//          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
           U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
           self.tabs[title] = U.getPageUrl(mobileUrl);
         } 
@@ -145,6 +141,11 @@ define([
       hash = G.pageRoot + hash;
       
 //      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
+      if (G.pageRoot != 'app/UrbienApp') {
+        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'home', id: 'urbien123'}));
+        ul.append(frag);
+      }
+/*      
       var url = U.makePageUrl('list', 'model/social/App', params);
       if (!hash  ||  hash != url) 
         U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: url }));
@@ -157,7 +158,7 @@ define([
       url = U.makePageUrl('list', 'model/social/NominationForConnection');
       if (!hash  ||  hash != url) 
         U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: url}));    
-      
+*/      
       this.buildActionsMenu(frag);      
       if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
         var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
@@ -225,7 +226,7 @@ define([
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 
-      U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'home'}));
+      U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'home', id: 'home123'}));
       ul.append(frag);
       
       this.rendered = true;
