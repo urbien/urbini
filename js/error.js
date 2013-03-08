@@ -15,7 +15,6 @@ define([
       timeout: 'Slow internet connection, please try again'
     },
     getDefaultErrorHandler: function(errorHandler) {
-      var id = G.nextId();
       var defaultErrorHandler = function(originalModel, err, options) {
         var code = err.code || err.status;
         var type = err.type || err.statusText;

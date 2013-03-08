@@ -35,7 +35,9 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
       typeCache[model.type] = model;
     },
     cacheResource: function(resource) {
-      return C.Resources[resource.getUri()] = resource;
+      var uri = resource.getUri();
+      if (uri)
+        return C.Resources[uri] = resource;
     },
     getResource: function(uri) {
       return C.Resources[uri] || C.searchCollections(uri);

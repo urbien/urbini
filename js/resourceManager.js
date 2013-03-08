@@ -327,7 +327,7 @@ define([
             return;
           }
           
-          debugger;
+//          debugger;
           G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
 //          options.error(null, xhr, options);
           defer.reject(null, xhr, options);

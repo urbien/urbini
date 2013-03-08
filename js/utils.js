@@ -413,11 +413,13 @@ define([
       return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
     },
     
-    isCloneOf: function(propName, iPropName, vocModel) {
-      var clone = U.getCloneOf(iPropName, vocModel);
-      return _.any(clone, function(iProp) {
-        return iProp.shortName === propName;
-      })
+    isCloneOf: function(prop, iPropName, vocModel) {
+      if (typeof prop === 'string')
+        prop = vocModel.properties[prop];
+      
+      return prop.cloneOf && _.any(prop.cloneOf.split(','), function(name) {
+        return name == iPropName;
+      });
     },
     
     getLongUri1: function(uri, vocModel) {
