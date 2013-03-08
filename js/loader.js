@@ -491,13 +491,16 @@ requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
 //  var nav = Lablz.navigator;
-//  if (nav.isChrome || nav.isSafari)
-//    Lablz.inject(text);
-//  else if (nav.isFirefox)
-//    return window.eval.call({}, text);  
-//  else // Safari
+  if (Lablz.minify) {
+    if (nav.isChrome) // || nav.isSafari)
+      Lablz.inject(text);
+    else if (nav.isFirefox)
+      return window.eval.call({}, text);  
+    else // Safari
+      return window.eval(text);
+  } 
+  else
     return window.eval(text);
-//  return eval(text);
   
 //  return Lablz.inject(text);
   

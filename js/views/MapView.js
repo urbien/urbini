@@ -168,9 +168,9 @@ define([
           medImg = {value: U.decode(medImg)};
           width && (medImg.width = width);
           height && (medImg.height = height);
-          data.image = this.makeTemplate("imagePT")(medImg);
+          data.image = MapView.prototype.makeTemplate("imagePT")(medImg);
 //          _.extend(data, {U: U, G: G});
-          return this.makeTemplate("mapItemTemplate")(data);
+          return MapView.prototype.makeTemplate("mapItemTemplate")(data);
         }
       }
       

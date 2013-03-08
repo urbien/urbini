@@ -404,9 +404,9 @@ define([
     },
     
     isCloneOf: function(propName, iPropName, vocModel) {
-      var clone = U.getCloneOf(iPropName, vocModel);
-      return _.any(clone, function(iProp) {
-        return iProp.shortName === propName;
+      var prop = typeof propName === 'string' ? vocModel.properties[propName] : propName;
+      return prop.cloneOf && _.any(prop.cloneOf.split(','), function(clone) {
+        return clone === iPropName;
       })
     },
     
@@ -416,7 +416,6 @@ define([
         var match = uri.match(fn.regExp);
         if (match && match.length) {
           return fn(uri, match, vocModel);
-          break;
         }
       }
       
@@ -1243,7 +1242,7 @@ define([
         return null;
 //            throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
       case '[object Object]':
-        return U.isCollection(arg0) ? arg0.model : arg0.constructor;
+        return arg0.vocModel; //U.isCollection(arg0) ? arg0.model : arg0.constructor;
       default:
         throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");
       }
@@ -1467,7 +1466,7 @@ define([
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = G.typeToEnum[U.getLongUri1(facet)];
+        var eCl = C.getEnumModel(U.getLongUri1(facet));
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
