@@ -404,9 +404,10 @@ define([
     },
     
     isCloneOf: function(propName, iPropName, vocModel) {
-      var clone = U.getCloneOf(iPropName, vocModel);
+      var clone = U.getCloneOf(vocModel, iPropName);
       return _.any(clone, function(iProp) {
-        return iProp.shortName === propName;
+//        return iProp.shortName === propName;
+        return iProp === propName;
       })
     },
     
@@ -1467,7 +1468,7 @@ define([
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = G.typeToEnum[U.getLongUri1(facet)];
+        var eCl = U.getEnumModel(U.getLongUri1(facet));
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
