@@ -366,12 +366,23 @@ define([
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      if (U.isCloneOf(pr, "ImageResource.originalImage")) {
-        var rParams = { forResource: res.get('_uri'), $prop: pr.shortName };
+      
+      var range = U.getLongUri1(pr.range);
+      var prModel = U.getModel(range);
+      var isImage = prModel  &&  U.isAssignableFrom(this.prModel, "Image");
+      if (!isImage  &&  !prModel) {
+        var idx = range.indexOf('/Image');
+        isImage = idx != -1  &&  idx == range.length - 6;
+      }
+      if (isImage) {
+        var prName = pr.displayName;
+        if (!prName)
+          prName = pr.shortName;
+        var rParams = { forResource: res.get('_uri'), $prop: pr.shortName, $title: U.makeHeaderTitle(vocModel.displayName, prName) };
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      
+
       var rParams = {
         $prop: pr.shortName,
         $type: this.vocModel.type
@@ -853,7 +864,7 @@ define([
         
         return;
       }
-      if (_.has(info.backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled"))
+      if (_.has(info.backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel))
         return;
 
       _.extend(prop, {shortName: p});
