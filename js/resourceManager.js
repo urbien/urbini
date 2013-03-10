@@ -79,8 +79,10 @@ define([
     var context = this, args = arguments;
     return $.Deferred(function(defer) {
       options = options || {};
-      if (options.success)
-        defer.done(options.success);
+      if (options.success) {
+        defer.progress(options.success); // results from DB
+        defer.done(options.success);     // results from server
+      }
       if (options.error)
         defer.fail(options.error);
         
@@ -118,11 +120,8 @@ define([
         return;
       }
       
-      var isUpdate, filter, isFilter, start, end, qMap, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
-      defaultSuccess = options.success, 
-      defaultError = options.error,
+      var isUpdate, filter, isFilter, start, end, params, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,      
       forceFetch = options.forceFetch || data._dirty,
-      synchronous = options.sync,
       now = G.currentServerTime(),
       isCollection = U.isCollection(data),
       vocModel = data.vocModel,
@@ -150,17 +149,17 @@ define([
       
       if (isCollection) {
         lastFetchedOn = collection.resources.length && collection.resources[0].loaded && RM.getLastFetched(data, now);
-        qMap = collection.queryMap;
+        params = collection.params;
         filter = U.getQueryParams(collection);
         isFilter = !!filter;
         if (isCollection && options.startAfter) {
-          start = qMap.$offset; // not a jQuery thing
+          start = params.$offset; // not a jQuery thing
           options.start = start = start && parseInt(start);
         }
         else
           options.start = start = 0;
   
-        numRequested = qMap.$limit ? parseInt(qMap.$limit) : collection.perPage;
+        numRequested = params.$limit ? parseInt(params.$limit) : collection.perPage;
         start = start || 0;
         options.end = end = start + numRequested;
         numNow = collection.resources.length;
@@ -173,7 +172,6 @@ define([
             return U.pipe(fetchFromServer(isUpdate, 100), defer); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
           else if (numNow) {
             defer.resolve(null, 'success', {status: 304});
-//            defaultSuccess(null, 'success', {status: 304});
             return; // no need to fetch from db on update
           }
         }
@@ -229,6 +227,7 @@ define([
         return;
       }
       
+      // $.Deferred.notify with results, then if we need to call the server, let the fetch from the server resolve the deferred, otherwise resolve the deferred with same results
       dbPromise.done(function(results) {
         if (!results || (isCollection && !results.length))
           return U.pipe(fetchFromServer(isUpdate, 100), defer);
@@ -240,7 +239,7 @@ define([
         results = U.getObjectType(results) === '[object Object]' ? [results] : results;
         var resp = {data: results, metadata: {offset: start}};
         var numBefore = isCollection && collection.resources.length;
-        defer.resolve(resp, 'success', {code: 200}); // add to / update collection
+        defer.notify(resp, 'success', {code: 200}); // add to / update collection
   
         if (!isCollection) {
           if (forceFetch)
@@ -252,6 +251,8 @@ define([
             data.lastFetchOrigin = 'server';
             U.pipe(fetchFromServer(isUpdate, 100), defer);
           }
+          else
+            defer.resolve(resp, 'success', {code: 200}); // add to / update collection
           
           return;
         }
@@ -270,6 +271,8 @@ define([
           data.lastFetchOrigin = 'server';
           return U.pipe(fetchFromServer(isUpdate, 100), defer);
         }
+        
+        defer.resolve(resp, 'success', {code: 200});
       }).fail(function(e) {
         if (e) 
           G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
@@ -324,7 +327,7 @@ define([
             return;
           }
           
-          debugger;
+//          debugger;
           G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
 //          options.error(null, xhr, options);
           defer.reject(null, xhr, options);
@@ -1089,6 +1092,9 @@ define([
         if (name === '$or') { // TODO: parse $and inside $or
           subQuery = RM.buildOrQuery(val, vocModel, indexNames);
         }
+        else if (name === '$and') {
+          subQuery = RM.buildSubQuery(name, val, vocModel);
+        }
         else if (name.startsWith('$')){
           debugger; // not supported yet...but what haven't be supported?
         }
@@ -1129,9 +1135,30 @@ define([
       if (!clause)
         return null;
       
-      var op = RM.operatorMap[clause.op],
-          props = vocModel.properties;
+      switch (name) {
+      case '$or':
+      case '$and':
+        var query, qOp = name.slice(1);
+        var apiQuery = U.parseAPIQuery(val, U.whereParams[name]);
+        if (!apiQuery)
+          return null;
+        
+        _.each(apiQuery, function(param) {
+          var subq = RM.buildSubQuery(param.name, param.value, vocModel);
+          query = query ? query[qOp](subq) : subq;
+        });
+        
+        return query;
+      case '$in':
+        var commaIdx = val.indexOf(',');
+        name = val.slice(0, commaIdx);
+        val = val.slice(commaIdx + 1);
+        break;
+      }
       
+      
+      var op = RM.operatorMap[clause.op];      
+      var props = vocModel.properties;
       val = clause.value;
       var prop = props[name];
       if (prop && U.isResourceProp(prop) && val === '_me') {
@@ -1145,7 +1172,7 @@ define([
       return RM.Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
     },
     
-    buildDBQuery: function(store, data, filter) {
+    buildDBQuery: function(data, filter) {
       if (U.isModel(data))
         return false;
       
@@ -1154,14 +1181,14 @@ define([
           collection = data,
           vocModel = collection.vocModel,
           meta = vocModel.properties,
-          qMap = collection.queryMap,
+          params = collection.params,
           filter = filter || U.getQueryParams(collection),
-          orClause = qMap && qMap.$or;
+          orClause = params && params.$or;
       
       var indexNames = RM.getIndexNames(vocModel);
-      if (qMap) {
-        orderBy = qMap.$orderBy;
-        asc = U.isTrue(qMap.$asc);
+      if (params) {
+        orderBy = params.$orderBy;
+        asc = U.isTrue(params.$asc);
       }
       
       if (orderBy)
@@ -1192,8 +1219,10 @@ define([
         orClause = RM.buildOrQuery(orClause, vocModel, indexNames);
         if (!orClause)
           return false; // couldn't parse it
-        else
+        else {
           query = orClause;
+          delete filter.$or;
+        }
       }
       
       var positionProps = U.getPositionProps(vocModel);
@@ -1261,12 +1290,12 @@ define([
 //          query = query ? query.sort(orderBy, !asc) : RM.Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
       }
       
-      if (!_.isUndefined(qMap.$offset)) {
-        query.setOffset(parseInt(qMap.$offset));
+      if (!_.isUndefined(params.$offset)) {
+        query.setOffset(parseInt(params.$offset));
       }
       
-      if (!_.isUndefined(qMap.$limit)) {
-        query.setLimit(parseInt(qMap.$limit));
+      if (!_.isUndefined(params.$limit)) {
+        query.setLimit(parseInt(params.$limit));
       }
       
       return query;
@@ -1304,10 +1333,10 @@ define([
           var store = RM.$db.objectStore(type, 0),
               valueTester = data.belongsInCollection,
               results = [],
-              qMap = data.queryMap,
-              orderBy = qMap.$orderBy,
-              asc = qMap.$asc,
-              limit = qMap.$limit,
+              params = data.params,
+              orderBy = params.$orderBy,
+              asc = params.$asc,
+              limit = params.$limit,
               direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
               iterationPromise;
           
@@ -1386,7 +1415,7 @@ define([
           return;
         }
 
-        var query = RM.buildDBQuery(store, data, filter);
+        var query = RM.buildDBQuery(data, filter);
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
           query.getAll(store).done(function(results) {

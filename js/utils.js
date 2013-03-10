@@ -95,7 +95,7 @@ define([
       }
       
       return $.when.apply($, mods).then(function() {
-        callback.apply(context, arguments);
+        callback && callback.apply(context, arguments);
       }).promise();
     },
     
@@ -113,12 +113,22 @@ define([
           var xhrWorker = G.getXhrWorker();          
           xhrWorker.onmessage = function(event) {
             var xhr = event.data;
-            if (xhr.status === 304) {
+            var code = xhr.status;
+            if (code === 304) {
 //              debugger;
               defer.reject(xhr, "unmodified", "unmodified");
             }
-            else
+            else if (code > 399 && code < 600) {
+              var text = xhr.responseText;
+              try {
+                defer.reject(xhr, JSON.parse(xhr.responseText), opts);
+              } catch (err) {
+                defer.reject(xhr, "error", opts);
+              }                
+            }
+            else {
               defer.resolve(xhr.data, xhr.status, xhr);
+            }
           };
           
           xhrWorker.onerror = function(err) {
@@ -403,11 +413,13 @@ define([
       return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
     },
     
-    isCloneOf: function(propName, iPropName, vocModel) {
-      var prop = typeof propName === 'string' ? vocModel.properties[propName] : propName;
-      return prop.cloneOf && _.any(prop.cloneOf.split(','), function(clone) {
-        return clone === iPropName;
-      })
+    isCloneOf: function(prop, iPropName, vocModel) {
+      if (typeof prop === 'string')
+        prop = vocModel.properties[prop];
+      
+      return prop.cloneOf && _.any(prop.cloneOf.split(','), function(name) {
+        return name == iPropName;
+      });
     },
     
     getLongUri1: function(uri, vocModel) {
@@ -812,9 +824,9 @@ define([
       return d >= 0 && string.indexOf(pattern, d) === d;
     },
     
-    //U.toQueryString: function(queryMap) {
+    //U.toQueryString: function(params) {
     //  var qStr = '';
-    //  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
+    //  _.forEach(params, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
     //    qStr += key + '=' + U.encode(val) + '&';
     //  });
     //  
@@ -836,19 +848,19 @@ define([
     /**
      * @return if getQueryParams(url), return map of query params, 
      *         if getQueryParams(url, model), return map of query params that are model properties
-     *         if getQueryParams(queryMap, model), return filtered map of query params that are model properties
-     *         if getQueryParams(collection), return map of query params from collection.queryMap that correspond to collection's model's properties
+     *         if getQueryParams(params, model), return filtered map of query params that are model properties
+     *         if getQueryParams(collection), return map of query params from collection.params that correspond to collection's model's properties
      */
     getQueryParams: function() {
-      var args = arguments, model, collection, qMap, url;
-      model = collection = qMap = url = args.length && args[0];
+      var args = arguments, model, collection, params, url;
+      model = collection = params = url = args.length && args[0];
       if (!url || typeof url === 'string') {
-        qMap = U.getParamMap(url || window.location.href);
-        return args.length > 1 ? U.getQueryParams(qMap, slice.call(args, 1)) : qMap;
+        params = U.getParamMap(url || window.location.href);
+        return args.length > 1 ? U.getQueryParams(params, slice.call(args, 1)) : params;
       }
 
       if (U.isCollection(model)) { // if it's a collection
-        qMap = collection.queryMap;
+        params = collection.params;
         model = collection.model;
       }
       else if (model instanceof Backbone.Model) {
@@ -858,7 +870,7 @@ define([
         if (args.length > 1)
           model = typeof args[1] === 'function' ? args[1] : args[1].constructor;
         else {
-          return U.filterObj(qMap, function(name, val) {
+          return U.filterObj(params, function(name, val) {
             return name.match(/^[a-zA-Z]+/);
           });
 //          throw new Error('missing parameter "model"');
@@ -866,9 +878,9 @@ define([
       }
       
       var filtered = {};
-      for (var p in qMap) {
+      for (var p in params) {
         if (model.properties[p] || U.whereParams[p])
-          filtered[p] = qMap[p];
+          filtered[p] = params[p];
       }
   
       return filtered;
@@ -1046,7 +1058,7 @@ define([
       
       var key = dataType + '-' + id;
       var tmpl = appTemplates[key];
-      return (tmpl) ? _.template(tmpl) : null;
+      return (tmpl) ? U.template(_.template(tmpl)) : null;
     },
     /// String prototype extensions
     
@@ -1323,6 +1335,10 @@ define([
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
+    makeOrGroup: function() {
+      return slice.call(arguments).join('||');
+    },
+    
 //    isAllowed: function(action, type) {
 //      if (!U.isAnAppClass(type))
 //        return true; // for now
@@ -1333,12 +1349,16 @@ define([
 //      var app = type.slice(type.indexOf(''));
 //    },
     
+    /**
+     * @param className: class name or uri
+     */
     isAssignableFrom: function(model, className) {
-      if (U.isA(model, className)  ||  model.shortName == className)
+      model = U.isModel(model) || U.isCollection(model) ? model.vocModel : model;
+      if (model.type == className ||  model.shortName == className || U.isA(model, className))
         return true;
       
       var supers = model.superClasses;
-      return _.any(supers, function(s) {return s.endsWith("/" + className)});
+      return _.any(supers, function(s) {return s == className || s.endsWith("/" + className)});
       
 //      var m = model;
 //      while (true) {
@@ -1386,6 +1406,10 @@ define([
         val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
       }
       
+      if (prop.script) {
+        val = '<blockquote><pre><code>{0}</code></pre></blockquote>'.format(val);
+      }
+      
       val = val || res.get(propName) || '';
       var displayName = res.get(propName + '.displayName');
       if (displayName)
@@ -1399,8 +1423,12 @@ define([
       return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val)};
     },
     
-    makePageUrl: function(action, typeOrUri, params) {
+    makePageUrl: function() {
       return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
+    },
+    
+    getAppPath: function(title) {
+      return title.replace(/-/g, '_').replace(/[^a-z_1-9eA-Z]/g, '');
     },
     
     /**
@@ -1420,12 +1448,15 @@ define([
 
     makeMobileUrl: function(action, typeOrUri, params) {
       action = action || 'list';
+      if (U.isModel(action))
+        return U.makeMobileUrl('view', action.getUri());
+        
       if (U.isModel(typeOrUri))
         typeOrUri = typeOrUri.getUri();
       else if (U.isCollection(typeOrUri)) {
         var col = typeOrUri;
         typeOrUri = col.vocModel.type;
-        params = _.extend({}, col.queryMap, params);
+        params = _.extend({}, col.params, params);
       }
         
       var url = '';
@@ -1779,21 +1810,27 @@ define([
        [/$/,                      "s"      ]
     ],
          
-    getPlural: function(res) {
-      var p = res.vocModel.pluralName;
-      if (p)
-        return p;
+    /**
+     * @param name: name or resource
+     */
+    getPlural: function(name) {
+      if (U.isModel(name) || U.isCollection(name)) {
+        var pName = name.vocModel.pluralName;
+        if (pName)
+          return pName;
+        
+        name = name.displayName;
+      }
       
-      p = res.displayName;
       for (var i = 0; i < U.plural.length; i++) {
         var regex          = U.plural[i][0];
         var replace_string = U.plural[i][1];
-        if (regex.test(p)) {
-          return p.replace(regex, replace_string);
+        if (regex.test(name)) {
+          return name.replace(regex, replace_string);
         }
       }
       
-      return p + 's';
+      return name + 's';
     },
     // helps to fit images in listview (RL)
     // note: margins in DOM should be: -left and -top 
@@ -2061,7 +2098,7 @@ define([
       return U.isTempUri(res.getUri());
     },
     isTempUri: function(uri) {
-      return uri.indexOf("?__tempId__=") != -1;
+      return uri && uri.indexOf("?__tempId__=") != -1;
     },
     makeTempUri: function(type, id) {
       return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
@@ -2147,22 +2184,23 @@ define([
         op = '==';
         
       if (name.startsWith('$')) {
-        var whereParam = U.filterObj(U.whereParams, function(delimiter, param) {
-          return name.startsWith(param);
-        });
-        
-        if (_.size(whereParam)) {
-          whereParam = U.getFirstProperty(whereParam);
-          var subClause = val.split('=')[1];
-          if (subClause.length == 2 && subClause[0] === whereParam) {
-            debugger;
-            subClause = U.parseAPIQuery(subClause[1], U.whereParams[whereParam]);
-            var sVal = {};
-            sVal[whereParam] = subClause;
-            val = sVal;
-          }
-        }
-        else if (name.startsWith('$this.')) {
+//        var whereParam = U.filterObj(U.whereParams, function(param, delimiter) {
+//          return name.startsWith(param);
+//        });
+//        
+//        if (_.size(whereParam)) {
+//          whereParam = U.getFirstProperty(whereParam);
+//          var subClause = val.split('=');
+//          if (subClause.length == 2 && subClause[0] === whereParam) {
+//            debugger;
+//            subClause = U.parseAPIQuery(subClause[1], U.whereParams[whereParam]);
+//            var sVal = {};
+//            sVal[whereParam] = subClause;
+//            val = sVal;
+//          }
+//        }
+//        else 
+        if (name.startsWith('$this.')) {
           debugger;
           name = name.slice(6);
         }
@@ -2221,6 +2259,20 @@ define([
           var chainFn = param === '$or' ? _.any : _.all;
           var subq = U.parseAPIQuery(clause.value, U.whereParams[param]);
           var tests = _.map(subq, function(subClause) {
+            switch (subClause.name) {
+              case '$or':
+              case '$and':
+              case '$in':
+                var prms = {};
+                prms[subClause.name] = subClause.value;
+                return U.buildValueTester(prms, vocModel);
+            }
+            
+            if (subClause.name.startsWith('$')) {
+              debugger;
+              return function() {return true};
+            }
+            
             return U.makeTest(meta[subClause.name], subClause.op, subClause.value);
           });
           
@@ -2331,7 +2383,7 @@ define([
     },
 
     template: function(templateName, context) {
-      var template = _.template(Templates.get(templateName));
+      var template = typeof templateName === 'string' ? _.template(Templates.get(templateName)) : templateName;
       context = context || this;
       return function(json) {
         json = json || {};
@@ -2347,7 +2399,7 @@ define([
     },
     
     getOrderByProps: function(collection) {
-      var orderBy = collection.queryMap.$orderBy;
+      var orderBy = collection.params.$orderBy;
       if (orderBy)
         return [orderBy];
         

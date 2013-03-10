@@ -75,7 +75,7 @@ define([
           
           query.$nonce = new Date().getTime();
           hash = hash + '?' + $.param(query);
-          self.router.navigate(hash, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+          self.router.navigate(hash, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
 //        window.location.reload();
         }
 //      ,
@@ -109,7 +109,7 @@ define([
           var uri = window.location.hash;
           var idx = uri.indexOf('?');
           
-          self.router.navigate(uri.substring(1, idx + 1) + '-info=' + encodeURIComponent("You successfully added '" + U.getDisplayName(self.resource) + "'"), {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+          self.router.navigate(uri.substring(1, idx + 1) + '-info=' + encodeURIComponent("You successfully added '" + U.getDisplayName(self.resource) + "'"), {trigger: true, replace: true, forceFetch: true, removeFromView: true});
         }
       });
       return this;

@@ -190,27 +190,30 @@ define([
     onChoose: function(e, prop) {
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
-      var self = this;
+      var self = this, 
+          commonTypes = G.commonTypes,
+          vocModel = this.vocModel;
+      
       return function(options) {
-        var res;
+        var chosenRes;
         var checked;
         var isBuy = options.buy;
         var isMultiValue = !isBuy  &&  options.model != null;
         if (isBuy)
-          res =  options.model;
+          chosenRes =  options.model;
         else if (isMultiValue) {
-          res =  options.model;
+          chosenRes =  options.model;
           checked = options.checked;
         }
         else
-          res = options;
+          chosenRes = options;
         
 //        var isIntersection = self.vocModel;
 //        if (isIntersection) {
 //          
 //        }
         
-        G.log(this.TAG, 'testing', res.attributes);
+        G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
         if (isMultiValue) {
@@ -229,16 +232,16 @@ define([
           link.innerHTML = innerHtml;
           link.parentNode.innerHTML += set;
         }
-        else if (!isBuy  &&  res.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+        else if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
           Events.stopEvent(e);
   //        Events.trigger('buy', this.model);
           var popupTemplate = this.makeTemplate('buyPopupTemplate');
           var $popup = $('#buy_popup');
-          var price = res.get('price');
-          var dn = U.getDisplayName(res);
-          var msg = 'Try ' + res.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-          var href = res.get('_uri');          
-          var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + res.vocModel.displayName});
+          var price = chosenRes.get('price');
+          var dn = U.getDisplayName(chosenRes);
+          var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+          var href = chosenRes.get('_uri');          
+          var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
           if ($popup.length == 0) {
             $($(document).find($('.ui-page-active'))[0]).append(html);
             
@@ -256,18 +259,17 @@ define([
           return;
         }
         else {
-          var uri = res.getUri();
+          var uri = chosenRes.getUri();
           props[prop] = uri;
           this.resource.set(props, {skipValidation: true, skipRefresh: true});
-          var vocModel = this.vocModel;
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
           if (!dn)
             dn = prop.charAt(0).toUpperCase() + prop.slice(1);
-          var name = res.get('davDisplayName');
-          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + res.get('davDisplayName');
+          var name = chosenRes.get('davDisplayName');
+          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
           this.setResourceInputValue(link, uri);
-          if (U.isAssignableFrom(this.vocModel, "App")  &&  U.isAssignableFrom(res.vocModel, "Theme")) {
+          if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
             if (G.currentApp) {
               var cUri = G.currentApp._uri;
               if (cUri.indexOf('http') == -1) {
@@ -275,13 +277,14 @@ define([
                 G.currentApp._uri = cUri;
               }
               if (this.resource.get('_uri') == cUri) {
-                var themeSwatch = res.get('swatch');
+                var themeSwatch = chosenRes.get('swatch');
                 if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
                   G.theme.swatch = themeSwatch;
               }
             }
           }
         }
+        
         this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
@@ -343,19 +346,19 @@ define([
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), params), {trigger: true});
         return;
       }
-      if (U.isAssignableFrom(this.vocModel, "WebProperty")) { 
+      if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
         var title = U.getQueryParams(window.location.hash)['$title'];
         var t;
         if (!title)
-          t = this.vocModel.displayName;
+          t = vocModel.displayName;
         else {
           var idx = title.indexOf('</span>');
-          t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + this.vocModel.displayName;
+          t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + vocModel.displayName;
         }
-        var domain = U.getLongUri1(this.model.get('domain'));
+        var domain = U.getLongUri1(res.get('domain'));
         var rParams = {
           $prop: pr.shortName,
-          $type:  this.vocModel.type,
+          $type:  vocModel.type,
           $title: t,
           $forResource: domain
         };
@@ -374,7 +377,7 @@ define([
       
       var rParams = {
         $prop: pr.shortName,
-        $type: this.vocModel.type
+        $type: vocModel.type
       };
       
       this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
@@ -454,26 +457,27 @@ define([
       }
     },
     redirect: function(options) {
-      var qMap = U.getQueryParams();
-      if (qMap.$returnUri)
-        return this.router.navigate(qMap.$returnUri, {trigger: true, replace: false, forceRefresh: true});
+      var params = U.getQueryParams();
+      if (params.$returnUri)
+        return this.router.navigate(params.$returnUri, {trigger: true, replace: false, forceFetch: true});
       
+      if (this.action === 'edit')
+        return this.router.navigate(U.makeMobileUrl(this.resource), {trigger: true, replace: true});
+        
       var res = this.resource,
           uri = res.getUri(),
           vocModel = this.vocModel,
+          webPropType = G.commonTypes.WebProperty,
           self = this;
-
-      if (U.isAssignableFrom(vocModel, 'InterfaceImplementor'))
-        return this.router.navigate(U.makeMobileUrl('list', 'system/designer/WebProperty', {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, replace: false, forceRefresh: true});        
-      else if (U.isAssignableFrom(vocModel, 'WebProperty')) {
-        window.location.back();
+      
+      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor')))
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, forceFetch: true});        
+      else if (U.isAssignableFrom(vocModel, webPropType)) {
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: uri}), {trigger: true, forceFetch: true});        
+//        window.history.back();
 //        var cloneOf = res.get('cloneOf');
 //        if (cloneOf && cloneOf.count > 0)
       }
-      
-      // TODO: fix this HACK
-//      if (uri)
-//        Events.trigger('newResource', res);
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
@@ -536,7 +540,7 @@ define([
           else  
             redirectPath = vocModel.type;
           
-          options.forceRefresh = true;
+          options.forceFetch = true;
           break;
         case 'PROPFIND':
         case 'PROPPATCH':
@@ -568,12 +572,12 @@ define([
             redirectPath = uri;
             action = 'view';
           }
-          options.forceRefresh = true;
+          options.forceFetch = true;
           break;
         default:
           G.log(this.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
           redirectPath = vocModel.type;
-          options.forceRefresh = true;
+          options.forceFetch = true;
           break;
       }
       
@@ -619,7 +623,7 @@ define([
       if (!isEdit && uri) {
 //        this.incrementBLCount();
         debugger;
-        this.redirect({trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+        this.redirect({trigger: true, replace: true, forceFetch: true, removeFromView: true});
         return;
       }
       
@@ -664,7 +668,13 @@ define([
         
         // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         var onSaveError = function(resource, xhr, options) {
-          debugger;
+          var err;
+          if (resource.status) {
+            err = xhr;
+            xhr = resource;
+            resource = null;
+          }
+          
           self.getInputs().attr('disabled', false);
           var code = xhr ? xhr.code || xhr.status : 0;
           if (!code || xhr.statusText === 'error') {            
@@ -720,14 +730,9 @@ define([
         res.save(props, {
           sync: !U.canAsync(this.vocModel),
           success: function(resource, response, options) {
-            res.notifyContainers();
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
-            if (!isEdit)
-              Events.trigger('incBLs', res);
-//              self.incrementBLCount();
-            
-            self.redirect({trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+            self.redirect({trigger: true, replace: true, removeFromView: true});
           }, 
           error: onSaveError
         });
@@ -966,7 +971,7 @@ define([
 //        this.$ul.listview('refresh');
       
       var doc = document;
-      this.$form = form = this.$('form');
+      var form = this.$form = this.$('form');
       var inputs = this.getInputs(); //form.find('input');
       var view = this;
       

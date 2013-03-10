@@ -36,7 +36,10 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
-    <div id="resourceImage"></div>
+    <div id="resourceImage"></div>    
+    <div id="resourceImageGrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
+    <div id="photogrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     
@@ -602,6 +605,27 @@
   <!-- div data-role="fieldcontain">
     <input {{= rules }} type="file" name="{{= shortName }}" id="file" value="" />
   </div -->   
+</script>
+
+<script type="text/template" id="photogridTemplate">
+<!--  {{= typeof title !== 'undefined' && title ? '<div data-role="footer" data-theme="{0}"><h3>{1}</h3></div>'.format(G.theme.photogrid, title) : ''}} -->
+    
+<!--  <div class="grid-listview">
+    <div data-role="footer" data-theme="{{= G.theme.photogrid }}"><h3>{{= typeof photogridTitle === 'undefined' ? 'Blah blah blah' : photogridTitle }}</h3></div> -->
+    
+    <ul data-role="listview" data-inset="true">
+    {{ for (var i = 0; i < items.length; i++) { }}
+    {{   var item = items[i];                   }}
+      <li>
+        <a href="{{= item.target }}">
+          {{= item.image ? '<img src="{0}">'.format(item.image) : '' }}
+          {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
+          {{= item.note ? '<p>{0}</p>'.format(item.note) : '' }}
+          {{= item.superscript ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
+        </a> 
+      </li>
+    {{ } }}
+    </ul>
 </script>
 
 <!-- EDIT TEMPLATES -->

@@ -58,7 +58,7 @@ define([
       rl = this.collection;
       var resources = rl.models;
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
       canceled = canceled.length ? canceled[0] : null;
@@ -77,7 +77,7 @@ define([
 //        if (litemplate)
 //          isMasonry = false;
 //      }
-      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
 //        if (U.isA(vocModel, 'Intersection')) {
 //          var href = window.location.href;

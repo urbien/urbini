@@ -74,7 +74,7 @@ define([
     },
     render: function(event) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (isModification) 
         return this.renderModificationTile();
       var m = this.resource;
@@ -242,7 +242,8 @@ define([
           tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }
-      if (U.isAssignableFrom(vocModel, "App")) {
+      
+      if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
         if ((json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
           tmpl_data.tryApp = uri;
@@ -258,7 +259,7 @@ define([
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
       }
-      if (U.isAssignableFrom(vocModel, "Tournament")) 
+      if (U.isAssignableFrom(vocModel, U.getLongUri1("commerce/urbien/Tournament"))) 
         tmpl_data.v_submitForTournament = G.pageRoot + "#media%2fpublishing%2fVideo?-tournament=" + encodeURIComponent(rUri) + '&-tournamentName=' + encodeURIComponent(dn);
 
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');

@@ -87,7 +87,7 @@ define([
       var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
       recipeShoppingList.save(props, {
         success: function(model, response, options) {
-          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceRefresh: true});
+          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceFetch: true});
         }, 
         error: function(model, xhr, options) {
           var json;
@@ -108,7 +108,7 @@ define([
 //        Events.defaultClickHandler(e);  
       if (this.mvProp) 
         return;
-      if (!U.isAssignableFrom(this.vocModel, 'Alert')) {
+      if (!U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
         var p = this.parentView;
         if (p && p.mode == G.LISTMODES.CHOOSER) {
           Events.stopEvent(e);
@@ -120,11 +120,12 @@ define([
       Events.stopEvent(e);
       var atype = this.resource.get('alertType');
       var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceRefresh: true});
+      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
     },
     render: function(event) {
       var m = this.resource;
-      var meta = this.vocModel.properties;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       meta = meta || m.properties;
       if (!meta)
         return this;
@@ -144,6 +145,7 @@ define([
 //        json.distanceUnits = 'mi';
 //      }
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
+      var urbienType = G.commonTypes.Urbien;
       if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
@@ -156,10 +158,10 @@ define([
           if (urbModel) {
             var idx = meta[a].range.lastIndexOf('/');
             var aModel = U.getModel(U.getLongUri1(meta[a].range));
-            isAContact = aModel  &&  U.isAssignableFrom(aModel, 'Urbien');
+            isAContact = aModel  &&  U.isAssignableFrom(aModel, urbienType);
             idx = meta[b].range.lastIndexOf('/');
             var bModel = U.getModel(U.getLongUri1(meta[b].range));
-            isBContact = bModel  &&  U.isAssignableFrom(bModel, 'Urbien');
+            isBContact = bModel  &&  U.isAssignableFrom(bModel, urbienType);
           }
           if (a  &&  qidx == -1) 
             return this.renderIntersectionItem(json, a, 'Intersection.a');
@@ -201,7 +203,7 @@ define([
         json.left = dim.x;
       }
       var params = U.getParamMap(window.location.hash);
-      if (U.isAssignableFrom(vocModel, "Video")  &&  params['-tournament'])
+      if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
       this.addCommonBlock(viewCols, json);
@@ -214,17 +216,18 @@ define([
     },
     
     addCommonBlock: function(viewCols, json) {
+      var vocModel = this.vocModel;
       if (!viewCols.length) {
         viewCols = '';
         var isSubmission = this.resource.isA('Submission');
         if (isSubmission) {
-          var d = U.getCloneOf(this.vocModel, 'Submission.dateSubmitted');
+          var d = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
           var dateSubmitted = d  &&  d.length ? json[d[0]] : null;
           if (dateSubmitted)
             viewCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
         }
         
-        var isClass = U.isAssignableFrom(vocModel, 'WebClass');
+        var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
         
         viewCols += '<div class="commonLI">' + json.davDisplayName;
         if (isClass) {
@@ -233,7 +236,7 @@ define([
             viewCols += '<p>' + comment + "</p>";
         }
         if (isSubmission) {
-          var d = U.getCloneOf(this.vocModel, 'Submission.submittedBy');
+          var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
           var submittedBy = d  &&  d.length ? json[d[0]] : null;
           if (submittedBy) {
 //            viewCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
@@ -248,7 +251,7 @@ define([
         }
         viewCols += '</div>';
       }
-      var meta = this.vocModel.properties;
+      var meta = vocModel.properties;
       meta = meta || m.properties;
 
       if (this.resource.isA('CollaborationPoint')) { 
@@ -272,6 +275,7 @@ define([
     },
     getViewCols: function(json) {
       var res = this.resource;
+      var vocModel = res.vocModel;
       var meta = this.vocModel.properties;
       
       var viewCols = '';
@@ -353,55 +357,57 @@ define([
     },
     renderIntersectionItem: function(json, delegateTo, cloneOf) {
       var m = this.resource;
-      var meta = this.vocModel.properties;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
+      var type = vocModel.type;
       var img;
       var dn;
       var rUri;
       var h = '', w = '';
       if (cloneOf == 'Intersection.a') {
-        var imageP = U.getCloneOf(this.vocModel, 'Intersection.aThumb');
+        var imageP = U.getCloneOf(vocModel, 'Intersection.aThumb');
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
           img = json[imageP[0]];
           hasAImageProps = true;
         }
         if (!img) {
-          imageP = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+          imageP = U.getCloneOf(vocModel, 'Intersection.aFeatured');
           if (imageP  &&  imageP.length != 0) { 
             img = json[imageP[0]];
             hasAImageProps = true;
           }
         }
-        if (!img  &&  !hasAImageProps  &&  U.isA(this.vocModel, 'Intersection')) {
-          imageP = U.getCloneOf(this.vocModel, 'ImageResource.smallImage');
+        if (!img  &&  !hasAImageProps  &&  U.isA(vocModel, 'Intersection')) {
+          imageP = U.getCloneOf(vocModel, 'ImageResource.smallImage');
           if (imageP  &&  imageP.length != 0) {
             img = json[imageP[0]];
           }
         }
-    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.aThumb')];
+    //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
         if (img) {
-          w = json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalWidth')];
-          h = json[U.getCloneOf(this.vocModel, 'Intersection.aOriginalHeight')];
+          w = json[U.getCloneOf(vocModel, 'Intersection.aOriginalWidth')];
+          h = json[U.getCloneOf(vocModel, 'Intersection.aOriginalHeight')];
         }
       }
       else {
-        var imageP = U.getCloneOf(this.vocModel, 'Intersection.bThumb');
+        var imageP = U.getCloneOf(vocModel, 'Intersection.bThumb');
         if (imageP  &&  imageP.length != 0)
           img = json[imageP[0]]; 
         if (!img) {
-          imageP = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
+          imageP = U.getCloneOf(vocModel, 'Intersection.bFeatured');
         
           if (imageP) 
             img = json[imageP[0]];
         }
-    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
-    //        img = json[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(this.vocModel, 'Intersection.bThumb')];
+    //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
+    //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
         if (img) {
-          w = json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalWidth')];
-          h = json[U.getCloneOf(this.vocModel, 'Intersection.bOriginalHeight')];
+          w = json[U.getCloneOf(vocModel, 'Intersection.bOriginalWidth')];
+          h = json[U.getCloneOf(vocModel, 'Intersection.bOriginalHeight')];
         }
       }
       if (img  &&  !this.isCommonTemplate) {
@@ -425,13 +431,16 @@ define([
         json.left = dim.x;
       }
       if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
-        dn = json[U.getCloneOf(this.vocModel, 'Reference.resourceDisplayName')];
+        dn = json[U.getCloneOf(vocModel, 'Reference.resourceDisplayName')];
       else
         dn = json[delegateTo + '.displayName'];
       
-      rUri = json[delegateTo];
-      if (rUri)
-        json['_uri'] = rUri;
+      if (type !== G.commonTypes.Handler) {
+        rUri = json[delegateTo];
+        if (rUri)
+          json['_uri'] = rUri;
+      }
+      
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 //      tmpl_data['_uri'] = rUri;
       if (typeof img != 'undefined') {

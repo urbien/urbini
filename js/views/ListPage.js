@@ -134,7 +134,7 @@ define([
           }
           
           res.lastFetchOrigin = null;
-          self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+          self.redirect(res, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
         }
         
       });
@@ -206,7 +206,7 @@ define([
       })).render();
   
       var models = rl.models;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
 
 //      var meta = models[0].__proto__.constructor.properties;
 //      meta = meta || models[0].properties;
@@ -220,7 +220,7 @@ define([
 //          isMasonry = false;
 //      }
       
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
       var hash = window.location.hash;
       var params = hash ? U.getParamMap(hash) : null;

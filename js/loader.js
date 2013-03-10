@@ -740,7 +740,6 @@ define('fileCache', function() {
     clean: function(test, after) {
       var cleaning = this.cleaning;
       this.cleaning = true;
-      G.storedModelTypes = [];
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
         if (!test || test(key))
@@ -751,8 +750,8 @@ define('fileCache', function() {
       if (after) 
         after();
       
-      if (!cleaning)
-        G.Voc && G.Voc.saveModelsToStorage();
+      if (!cleaning) // TODO: unhack this garbage
+        G.Cache && G.Voc && G.Cache.storeModels(G.Voc.models);
     },
     
     nukeScripts: function() {
@@ -871,6 +870,17 @@ define('fileCache', function() {
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
+    commonTypes: {
+      App: 'model/social/App',
+      Urbien: 'commerce/urbien/Urbien',
+      Friend: 'model/company/Friend',
+      FriendApp: 'model/social/FriendApp',
+      Theme: 'model/social/Theme',
+      WebClass: 'system/designer/WebClass',
+      WebProperty: 'system/designer/WebProperty',
+      Handler: 'system/designer/Handler',
+      AppInstall: 'model/social/AppInstall'
+    },
     timeOffset: G.localTime - G.serverTime,
     currentServerTime: function() {
       return new Date().getTime() - G.timeOffset;
@@ -1398,6 +1408,11 @@ define('fileCache', function() {
   
   
   G.apiUrl = G.serverName + '/api/v1/';
+  var c = G.commonTypes, d = G.defaultVocPath;
+  for (var type in c) {
+    c[type] = G.defaultVocPath + c[type];
+  }
+  
   
   // Determine whether we want the server to minify stuff
   // START minify

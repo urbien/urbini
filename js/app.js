@@ -304,7 +304,7 @@ define('app', [
       G.checkVersion = function(data) {
         var init = data === true;
         var newV = data ? data.VERSION : G.getVersion();
-        var oldV = G.getVersion(!data); // get old
+        var oldV = G.getVersion(!data) || newV; // get old
         if (newV.All > oldV.All) {
           debugger;
           G.setVersion(newV);
