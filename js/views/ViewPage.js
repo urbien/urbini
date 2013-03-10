@@ -158,16 +158,18 @@ define([
               title: U.getDisplayName(res) + "'s" + U.getPlural(friendName)
             });
             
-            friends.fetch().done(function() {
-              if (friends.size()) {
-                var pHeader = self.$('div#photogridHeader');
-                var h3 = pHeader.find('h3');
-                h3[0].innerHTML = friends.title;
-                pHeader.removeClass('hidden');
-                self.photogrid = new PhotogridView({model: friends, parentView: self, el: self.$('div#photogrid', self.el), source: uri});
-                self.photogrid.render();
-//                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
-//                header.insertBefore(self.photogrid.el);
+            friends.fetch({
+              success: function() {
+                if (friends.size()) {
+                  var pHeader = self.$('div#photogridHeader');
+                  var h3 = pHeader.find('h3');
+                  h3[0].innerHTML = friends.title;
+                  pHeader.removeClass('hidden');
+                  self.photogrid = new PhotogridView({model: friends, parentView: self, el: self.$('div#photogrid', self.el), source: uri});
+                  self.photogrid.render();
+  //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
+  //                header.insertBefore(self.photogrid.el);
+                }
               }
             });
           });        

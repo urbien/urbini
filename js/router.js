@@ -169,63 +169,50 @@ define([
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
-      var c = C.getResourceList(typeUri, key);
-      if (c && !c._lastFetchedOn)
-        c = null;
+      var list = C.getResourceList(typeUri, key);
+      if (list && !list._lastFetchedOn)
+        list = null;
       
       var meta = model.properties;      
       var cView = this.CollectionViews[typeUri][key];
-      if (c && cView) {
-        this.currentModel = c;
+      if (list && cView) {
+        this.currentModel = list;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, {page: page});
-        Events.trigger('navigateToList.' + c.listId, c);
-        c.fetch({page: page, forceFetch: forceFetch});
-        this.monitorCollection(c);
+        Events.trigger('navigateToList.' + list.listId, list);
+        list.fetch({page: page, forceFetch: forceFetch});
+        this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }      
       
-      c = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
-      var listView = new ListPage(_.extend(this.extraParams || {}, {model: c}));
+      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
+      var listView = new ListPage(_.extend(this.extraParams || {}, {model: list}));
       
       this.CollectionViews[typeUri][key] = listView;
       listView.setMode(mode || G.LISTMODES.LIST);
       
-      var changedPage = false;
-      var after = function(fromDB) {
-        if (!changedPage) {
-          self.changePage(listView);
-          changedPage = true;
-        }
-        
-        if (fromDB) {
-          Events.trigger('navigateToList.' + c.listId);
-        }
-        else { // only after fetch from server, otherwise assume we already have linked stuff from when we first fetched this sucker
-          Voc.fetchModelsForReferredResources(c);
-          Voc.fetchModelsForLinkedResources(c.vocModel);
-        }
-      };
-
-      c.fetch({
+      list.fetch({
+//        update: true,
         sync: true,
         forceFetch: forceFetch,
-        _rUri: oParams
-      }).progress(function() {
-        after(true);
-      }).done(function() {
-        if (c.lastFetchOrigin == 'server')
-          after(false);
-//          self.loadExtras(oParams);
-      }).fail(function(xhr, err, options) {
-        if (xhr.status === 204)
+        _rUri: oParams,
+        success: function() {
           self.changePage(listView);
-        else
-          Errors.getDefaultErrorHandler().apply(this, arguments);
+          Voc.fetchModelsForReferredResources(list);
+          Voc.fetchModelsForLinkedResources(list.model);
+//          self.loadExtras(oParams);
+        },
+//        error: Errors.getDefaultErrorHandler()
+        error: function(collection, xhr, options) {
+          if (xhr.status === 204)
+            self.changePage(listView);
+          else
+            Errors.getDefaultErrorHandler().apply(this, arguments);
+        }
       });
       
-      this.monitorCollection(c);
+      this.monitorCollection(list);
       
       return this;
     },
@@ -424,27 +411,13 @@ define([
       var res = this.currentModel = new typeCl({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
       var changedPage = false;
-      var after = function(fromDB) {
-        if (!changedPage) {
-          changedPage = true;
-          self.changePage(v);
-        }
-        
-        if (fromDB)
-          Events.trigger('navigateToResource.' + res.resourceId, res);
-        else // only after fetch from server, otherwise assume we already have linked stuff from when we first fetched this sucker
-          Voc.fetchModelsForLinkedResources(res);
+      var success = function() {
+        self.changePage(v);
+        Events.trigger('navigateToResource.' + res.resourceId, res);
+        Voc.fetchModelsForLinkedResources(res);
       };
       
-      res.fetch({sync: true, forceFetch: forceFetch}).progress(function() { // from DB
-        after(true);
-      }).done(function() {
-        if (res.lastFetchOrigin == 'server')
-          after(false);
-      }).fail(function() {
-//        debugger;
-      });
-  
+      res.fetch({sync: true, forceFetch: forceFetch, success: success});
       return true;
     },
     
@@ -560,14 +533,17 @@ define([
             }
             else {
               var apps = new ResourceList(null, {model: appModel, params: atts});
-              apps.fetch({sync: true}).done(function() {
-                app = apps.models[0];
-                C.cacheResource(app);
-                followsList = new ResourceList(null, {model: U.getModel(friendAppType), params: {friend1: app.getUri()}}); // FriendApp list representing apps this app follows
-                fetchFollows = followsList.fetch({sync: true}).promise();
-                fetchFollows.always(fetchFollowsPipe.resolve);
-                defer.resolve();
-              }).fail(defer.reject);
+              apps.fetch({
+                sync: true, 
+                success: function() {
+                  app = apps.models[0];
+                  C.cacheResource(app);
+                  followsList = new ResourceList(null, {model: U.getModel(friendAppType), params: {friend1: app.getUri()}}); // FriendApp list representing apps this app follows
+                  followsList.fetch({sync: true, success: fetchFollowsPipe.resolve, error: fetchFollowsPipe.resolve});
+                  defer.resolve();
+                }, 
+                error: defer.reject
+              });
             }
           }
           else {
@@ -578,15 +554,13 @@ define([
             }
             
             app = new appModel({_uri: appUri});
-            app.fetch({sync: true}).done(defer.resolve).fail(defer.reject);
+            app.fetch({sync: true, success: defer.resolve, error: defer.reject});
           }
         }).promise();
 
         if (appIsCurrentApp) {
           followsList = new ResourceList(null, {model: U.getModel(friendAppType), params: {friend1: appUri}}); // FriendApp list representing apps this app follows
-          fetchFollows = followsList.fetch({sync: true}).promise();
-          fetchFollowsPipe = $.Deferred();
-          fetchFollows.always(fetchFollowsPipe.resolve);
+          followsList.fetch({sync: true, success: fetchFollowsPipe.resolve, error: fetchFollowsPipe.resolve});
         }
 
         fetchApp.done(function() {
