@@ -155,7 +155,7 @@ define([
                 $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
               },
               model: U.getModel(friendType),
-              title: U.getDisplayName(res) + "'s" + U.getPlural(friendName)
+              title: U.getDisplayName(res) + "'s " + U.getPlural(friendName)
             });
             
             friends.fetch({
