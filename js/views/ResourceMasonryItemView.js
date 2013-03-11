@@ -21,7 +21,11 @@ define([
       this.template = this.makeTemplate('masonry-list-item');
       this.modTemplate = this.makeTemplate('masonry-mod-list-item');
 
-      this.IMG_MAX_WIDTH = $(window).height() > $(window).width() ? 320 : 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
+      if ($(window).height() > $(window).width())
+        this.IMG_MAX_WIDTH = 272;
+      else
+        this.IMG_MAX_WIDTH = 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
+//      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important');
   //    this.model.on('change', this.render, this);
       return this;
     },
@@ -74,7 +78,7 @@ define([
     },
     render: function(event) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (isModification) 
         return this.renderModificationTile();
       var m = this.resource;
@@ -161,7 +165,7 @@ define([
 
           var pName = grid[row].propertyName;
           var gP = meta[pName];          
-          if (U.isCloneOf(gP, "ImageResource.mediumImage")  ||  U.isCloneOf(gP, "ImageResource.smallImage"))
+          if (U.isCloneOf(gP, "ImageResource.mediumImage", vocModel)  ||  U.isCloneOf(gP, "ImageResource.smallImage", vocModel))
             continue;
           if (!meta[pName].skipLabelInGrid)
             gridCols += '<span class="label">' + row + '</span>';
@@ -242,7 +246,8 @@ define([
           tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }
-      if (U.isAssignableFrom(vocModel, "App")) {
+      
+      if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
         if ((json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
           tmpl_data.tryApp = uri;
@@ -258,7 +263,7 @@ define([
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
       }
-      if (U.isAssignableFrom(vocModel, "Tournament")) 
+      if (U.isAssignableFrom(vocModel, U.getLongUri1("commerce/urbien/Tournament"))) 
         tmpl_data.v_submitForTournament = G.pageRoot + "#media%2fpublishing%2fVideo?-tournament=" + encodeURIComponent(rUri) + '&-tournamentName=' + encodeURIComponent(dn);
 
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');

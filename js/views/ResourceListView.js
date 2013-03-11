@@ -17,7 +17,7 @@ define([
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode', 'orientationchange'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
@@ -32,6 +32,42 @@ define([
       this.fileUploadTemplate = this.makeTemplate('fileUpload');
       return this;
     },
+    events: {
+      'orientationchange': 'orientationchange'
+//      'click': 'click'
+    },
+    orientationchange: function(e) {
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
+//      alert ('here we are');
+      
+      if (!isMasonry)
+        return;
+      var prevWidth;
+      if ($(window).height() > $(window).width()) {
+        this.IMG_MAX_WIDTH = 272;
+        prevWidth = 205;
+      } 
+      else {
+        this.IMG_MAX_WIDTH = 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
+        prevWidth = 272;
+      }
+      
+      $('.nabBoard').attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important');
+      $('.nab .anab galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH);
+      
+      var img = $('.nab .anab galleryItem_css3 img');
+      for (var i=0; i<n; i++) {
+        var width = img[i].width;
+        var height = img[i].height;
+        if (width > this.IMG_MAX_WIDTH) {
+          ratio = this.IMG_MAX_WIDTH / width;
+          img[i].attr('style', 'max-width:' + this.IMG_MAX_WIDTH + '; width:' +  this.IMG_MAX_WIDTH + '; height: ' + Math.floor(height * ration));
+        }
+      }
+      Event.stopEvent();
+      Event.trigger('refresh');
+    },
     onadd: function(resources, options) {
       if (options && options.refresh)
         this.refresh(resources);
@@ -41,9 +77,6 @@ define([
         throw new Error('this view doesn\'t have a mode ' + mode);
       
       this.mode = mode;
-    },
-    events: {
-//      'click': 'click'
     },
     refresh: function(rl, modified) {
       if (rl && rl != this.collection)
@@ -58,7 +91,7 @@ define([
       rl = this.collection;
       var resources = rl.models;
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
       canceled = canceled.length ? canceled[0] : null;
@@ -77,7 +110,7 @@ define([
 //        if (litemplate)
 //          isMasonry = false;
 //      }
-      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
+      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
 //        if (U.isA(vocModel, 'Intersection')) {
 //          var href = window.location.href;
@@ -169,7 +202,7 @@ define([
         else if (!nextPage)
           frag.appendChild(lis[i]);
       }
-
+/*
       if (isChooser) {
         var params = U.getParamMap(window.location.href, '&');
         var prop = params['$prop'];
@@ -178,10 +211,11 @@ define([
           var type = U.getTypeUri(forResource);      
           var cModel = U.getModel(type);
           
-          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage")) 
+          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage", cModel)) 
             frag.appendChild(fileUploadTemplate({name: prop}));          
         }
       }
+*/      
       if (!nextPage) {
         this.$el.html(frag);
       }

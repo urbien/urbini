@@ -12,12 +12,12 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      options = options || {};
+      this.twin = options.twin;
       return this;
     },
     events: {
-//      'click': 'click'
     },
-//    click: Events.defaultClickHandler,
     refresh: function() {
       G.log(this.TAG, "info", "refresh resource");
       return this;
@@ -30,7 +30,7 @@ define([
       if (!this.resource.isA('ImageResource')) 
         return this;
       var json = this.resource.attributes;
-      if (U.isAssignableFrom(this.vocModel, 'Video')) {
+      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('media/publishing/Video'))) {
         var v = json.videoHtml5 || json.description;  
         if (v) {
           var frag = document.createDocumentFragment();
@@ -44,10 +44,12 @@ define([
           return;
         }
       }
-  //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
+      
+//      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
+      
       var oWidth;
       var oHeight;
       if (props.length) {
@@ -75,12 +77,19 @@ define([
   //          li += '<div><a href="#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
-      var maxH = $(window).height() - 50;
+//      var maxH = $(window).height() - 50;
 
       var metaW = meta[p]['imageWidth'];
       var metaH = meta[p]['imageHeight'];
-      var metaDim = meta[p]['maxDimension'];
+      var metaDim = meta[p]['maxImageDimension'];
 
+      if (maxW > metaDim) {
+        if (oWidth > oHeight)
+          maxW = metaDim;
+        else {
+          maxW = (oWidth / oHeight) * metaDim;
+        }
+      }
       var w;
       var h;
       if (oWidth > maxW) {
@@ -98,10 +107,12 @@ define([
       else if (oWidth  &&  oWidth != 0) {
         w = oWidth;
       }
+      /*
       if (oHeight  &&  oHeight > maxH) {
         var ratio = maxH / oHeight;
         w = w * ratio;
       }
+      */
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
       var iTemplate = w ? "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "' />"
@@ -110,7 +121,12 @@ define([
 
       var padding = w ? (15 - (maxW - w) / 2) : 0;
       padding = -padding;
-      li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
+      
+      var mg = U.getPropertiesWith(meta, "mainGroup");
+      if (mg == null  ||  mg.length == 0)
+        li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
+      else
+        li = '<div><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;

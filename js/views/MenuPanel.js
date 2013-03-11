@@ -189,7 +189,7 @@ define([
 //          self.tabs[title] = U.getPageUrl(mobileUrl);
 //  
 //        }
-        if (G.currentUser._uri == G.currentApp.creator) {
+        if (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res)) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('edit', uri);
           var title = 'Edit ' + G.currentApp.title;

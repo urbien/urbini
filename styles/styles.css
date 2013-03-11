@@ -96,15 +96,25 @@ label.error {
 
 @media screen and (orientation: portrait) {
   label.error { margin-left: 0; display: block; }
-  .nab .anab .galleryItem_css3 img { min-width: 310px; margin-left: -20px;margin-top: -11px;} 
+/*  .nab .anab .galleryItem_css3 img { min-width: 310px; margin-left: -20px;margin-top: -11px;} */ 
 }
 
 @media screen and (orientation: landscape) {
   label.error { display: inline-block; margin-left: 23%; }
-/*  #sidebarDiv {padding-left: 7px;} */ 
 }
 
 em { color: red; font-weight: bold; padding-right: .25em; }
 #editForm .ui-select, #mv .ui-field-contain .ui-controlgroup-controls {
   width: 100%;
+}
+
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+
+blockquote pre .script {
+  font-family monospace;
+  white-space: pre-wrap;
+  text-align: center;
 }

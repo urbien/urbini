@@ -18,7 +18,7 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
@@ -26,14 +26,26 @@ define([
       this.on('change', this.onchange);
       this.on('sync', this.onsync);
       this.vocModel = this.constructor;
-      if (this.getUri())
-        this.subscribeToUpdates();
-      
+      this.subscribeToUpdates();
       this.resourceId = G.nextId();
-//      var type = this.vocModel.type;
-//      if (type.startsWith('http://urbien.com/voc/dev/')) {
-////        Events.trigger('installApp', );
-//      }
+      this.setDefaults();
+    },
+    
+    setDefaults: function() {
+      var vocModel = this.vocModel,
+          defaults = {};
+      
+      if (this.isA('Submission')) {
+        var currentUser = G.currentUser;
+        if (!currentUser.guest) {
+          var submittedBy = U.getCloneOf(vocModel, "Submission.submittedBy")[0];
+          if (submittedBy && !this.get(submittedBy)) {
+            defaults[submittedBy] = currentUser._uri;
+          }
+        }
+      }
+      
+      this.set(defaults, {silent: true})
     },
     
     onsync: function() {
@@ -67,7 +79,7 @@ define([
       }
       
       Events.on('synced.' + resUri, callback);
-      Events.on('updateBacklinkCounts' + resUri, this.updateCounts);
+      Events.on('updateBacklinkCounts.' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
     cancel: function(options) {
@@ -177,6 +189,7 @@ define([
       resp._shortUri = U.getShortUri(uri, this.constructor);
       var primaryKeys = U.getPrimaryKeys(this.constructor);
       resp._uri = U.getLongUri1(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});
+//      resp._type = this.vocModel.type;
       if (lf)
         resp._lastFetchedOn = lf;
       
@@ -291,17 +304,17 @@ define([
         var isNew = this.isNew();
         var method = isNew ? 'create.' : 'edit.';
         var json = this.toJSON();
-        json._type = this.vocModel.type;
-        Events.trigger(method + json._type, json);
-        var sup = this.vocModel;
-        while (sup = sup.superClass) {
-          Events.trigger(method + sup.type, this);
-        }
+//        json._type = this.vocModel.type;
+        Events.trigger(method + this.vocModel.type, json);
+//        var sup = this.vocModel;
+//        while (sup = sup.superClass) {
+//          Events.trigger(method + sup.type, this);
+//        }
         
         // TODO: fix this hack, or move this to some place where we handle resources by type
         var plugModel = U.getModel('Handler');
         if (plugModel && this.vocModel.type === plugModel.type)
-          Events.trigger("newPlug", self);
+          Events.trigger("newPlug", this.toJSON());
       }
     },
 
@@ -316,28 +329,32 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          Events.trigger('updateBacklinkCounts.' + val, this, isNew);
+          Events.trigger('updateBacklinkCounts.' + val, isNew);
         }
       }
     },
     
-    updateCounts: function(res, isNew) {
-      debugger;
+    updateCounts: function(isNew) {
+//      debugger;
       if (!isNew)
         return; // for now
       
-      var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
+      var vocModel = this.vocModel;
+      var meta = U.getPropertiesWith(vocModel.properties, "backLink");
       var props = this.attributes;
-      var blRange = res.vocModel.type;
-      for (var bl in meta) {
+      var blRange = vocModel.type;
+      for (var bl in props) {
         var blProp = meta[bl];
+        if (!blProp)
+          continue;
+        
         var range = U.getTypeUri(blProp.range);
         if (range !== blRange)
           continue;
         
         if (blProp.where) {
           var testFunction = U.buildValueTester(blProp.where, vocModel);
-          if (!testFunction || !testFunction(res))
+          if (!testFunction || !testFunction(this))
             continue;
         }
         
@@ -345,7 +362,7 @@ define([
           debugger;
           var where = {$or: blProp.whereOr};
           var testFunction = U.buildValueTester($.param(where), vocModel);
-          if (!testFunction || !testFunction(res))
+          if (!testFunction || !testFunction(this))
             continue;
         }
         
@@ -359,13 +376,14 @@ define([
     
     save: function(attrs, options) {
       var isNew = this.isNew();
+      var appInstallType = G.commonTypes.AppInstall;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);        
 //        G.cacheResource(this);
-        if (U.isAssignableFrom(this.vocModel, 'AppInstall')) {
+        if (U.isAssignableFrom(this.vocModel, appInstallType)) {
           Events.trigger('appInstall', this);
         }
         
@@ -397,10 +415,14 @@ define([
         options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
         var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
-          success && success.apply(this, arguments);
           if (response.error)
             return;
           
+          // trigger this first because "success" may want to redirect to mkresource for some app-related model
+          if (U.isAssignableFrom(self.vocModel, appInstallType))
+            Events.trigger('appInstall', self);
+          
+          success && success.apply(this, arguments);
 //          G.cacheResource(self);
           Events.trigger('resourcesChanged', [self]);
           if (self.isNew()) // was a synchronous mkresource operation
@@ -408,10 +430,6 @@ define([
 //          else if (isNew) { // completed sync with db
 //          }
           
-          if (U.isAssignableFrom(self.vocModel, 'AppInstall')) {
-//            if (isNew || self.isNew()) // completed sync with server, whether via db or directly
-            Events.trigger('appInstall', self);
-          }
           
           self.triggerPlugs(options);
           self.notifyContainers();

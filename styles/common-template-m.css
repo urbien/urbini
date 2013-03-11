@@ -142,7 +142,7 @@ html { height: 100%; }
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
 
 .nabBoard h3, .gridBoard h3 { height: 20px; padding: 11px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-
+h3#pageTitle {margin: 10px 0 0 0;}
 .gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
 .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
@@ -236,8 +236,13 @@ html { height: 100%; }
   .nab .anab .galleryItem_css3 img {max-width: 272px;}
   .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+  #resourceImage img {max-width: 320px;}
 }
-
+#mainGroup div {white-space:normal; height: 60px; }
+#mainGroup span {text-shadow: 0 1px 0 #bbb;}
+#mainGroup .ui-btn-inner { padding: 1.3em 10px; font-size: 14px;}
+#mainGroup .ui-listview .ui-icon { display: none;  }
+#mainGroup .ui-icon { display: none;  }
 #resourceView { font-size: 16px; }
 /* login popup icon for Live social net (lack in awesome font currently) */
 .ui-icon-live-sign:before { content: url(../images/frame/white_bg/live-sign.png); border-radius: 4px; background-color: #aaa; padding: 2px; margin-left: 1px; }

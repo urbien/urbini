@@ -36,7 +36,13 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
-    <div id="resourceImage"></div>
+    <div class="ui-grid-a" style="width: 100%;padding-right:10px">
+      <div class="ui-block-a" id="resourceImage"></div>
+      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
+    </div>
+    <div id="resourceImageGrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
+    <div id="photogrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     
@@ -54,7 +60,13 @@
   </div>
 </script>  
 
+
 <script type="text/template" id="menuP">
+  <!--form role="search" data-inset="true" data-theme="{{= G.theme.menu }}">
+    <div data-role="fieldcontain">
+      <input type="search" name="search" placeholder="Search" />
+    </div>
+  </form -->
    <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems">
    </ul>
 </script>  
@@ -73,12 +85,20 @@
 
 <script type="text/template" id="stringPT">
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
-     <span>{{= value }}</span>
+     <span style="white-space: normal;">{{= value }}</span>
   {{ } }}
   {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
   {{ } }}
+</script>
   
+<script type="text/template" id="longStringPT">
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
+     <span style="white-space: normal; color: #777;">{{= value }}</span>
+  {{ } }}
+  {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
+    {{= value }}
+  {{ } }}
 </script>
 
 <script type="text/template" id="emailPT">
@@ -243,7 +263,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="home123" target="#">
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id == 'undefined' ? 'home123' : id }}" target="#">
       {{= title }}
     </a>
   </li>
@@ -264,6 +284,18 @@
      </a>
    </li>
 </script>
+
+<script type="text/template" id="cpMainGroupTemplate">
+   {{ var params = {}; }}
+   {{ params[backlink] = _uri; }}
+   {{ if (typeof count != 'undefined') { }}  
+     <a data-role="button" data-icon="star" style="background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}</a>
+   {{ } }}
+   {{ if (typeof count == 'undefined') { }}  
+     <a data-role="button" data-icon="star" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#"><span data-icon="star">{{= name }}</span></a>
+   {{ } }}
+</script>
+
 
 <script type="text/template" id="cpTemplateNoAdd">
    <li>
@@ -397,7 +429,7 @@
 </script>
 
 <script type="text/template" id="tryButtonTemplate">
-  <a target="#" data-icon="check" id="try" data-role="button" date-position="notext">Try this application live</a>
+  <a target="#" data-icon="check" id="try" data-role="button" date-position="notext">Goto app</a>
 </script>
 
 <script type="text/template" id="forkButtonTemplate">
@@ -421,17 +453,18 @@
     <div id="name" align="center">
       <!-- h3 style="margin: 8px;font-size:16px;font-family:Tahoma, Lucinda Grande, Verdana, Helvetica, Arial, sans-serif;" id="pageTitle">{{= this.pageTitle }}</h3 -->
       <h3 id="pageTitle">{{= this.title }}</h3>
+      <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}">
       <div style="max-width:400px;" id="publishBtn">
         {{ if (typeof publish != 'undefined') { }}
             {{= publish }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="forkMeBtn">
+      <div style="max-width:200px;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
         {{ if (typeof forkMeApp != 'undefined') { }}
             {{= forkMeApp }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="tryBtn">
+      <div style="max-width:200px;" id="tryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
         {{ if (typeof tryApp != 'undefined') { }}
             {{= tryApp }}
         {{ } }}
@@ -445,6 +478,7 @@
         {{ if (typeof enterTournament != 'undefined') { }}
             {{= enterTournament }}
         {{ } }}
+      </div>
       </div>
        {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}
     </div>
@@ -594,14 +628,58 @@
 
 
 <script type="text/template" id="fileUpload">
-  <a target="#"  id="imageUpload" name="{{= shortName }}" class="resourceProp" {{= rules }} >
-    <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
-    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
-  </a>
-  <!-- div data-role="fieldcontain">
-    <input {{= rules }} type="file" name="{{= shortName }}" id="file" value="" />
-  </div -->   
+  <form data-ajax="false" id="fileUpload" action="#" method="POST" enctype="multipart/form-data">
+    <div data-role="fieldcontain">
+      <input {{= rules }} type="file" name="{{= name }}" id="file" />
+      <input {{= rules }} type="hidden" name="uri" value="{{= forResource }}" />
+      <input name="-$action" type="hidden" value="upload" />
+      <input name="type" type="hidden" value="{{= type }}" />
+      <input name="location" type="hidden" value="{{= G.serverName + '/wf/' + location }}" />
+      <input name="$returnUri" type="hidden" value="{{= window.location.hash }}" />
+    </div>
+  </form>
+</script>
+
+<script type="text/template" id="photogridTemplate">
+<!--  {{= typeof title !== 'undefined' && title ? '<div data-role="footer" data-theme="{0}"><h3>{1}</h3></div>'.format(G.theme.photogrid, title) : ''}} -->
+    
+<!--  <div class="grid-listview">
+    <div data-role="footer" data-theme="{{= G.theme.photogrid }}"><h3>{{= typeof photogridTitle === 'undefined' ? 'Blah blah blah' : photogridTitle }}</h3></div> -->
+    
+    <ul data-role="listview" data-inset="true">
+    {{ for (var i = 0; i < items.length; i++) { }}
+    {{   var item = items[i];                   }}
+      <li>
+        <a href="{{= item.target }}">
+          {{= item.image ? '<img src="{0}">'.format(item.image) : '' }}
+          {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
+          {{= item.note ? '<p>{0}</p>'.format(item.note) : '' }}
+          {{= item.superscript ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
+        </a> 
+      </li>
+    {{ } }}
+    </ul>
+</script>
+
+<script type="text/template" id="photogridTemplate">
+<!--  {{= typeof title !== 'undefined' && title ? '<div data-role="footer" data-theme="{0}"><h3>{1}</h3></div>'.format(G.theme.photogrid, title) : ''}} -->
+    
+<!--  <div class="grid-listview">
+    <div data-role="footer" data-theme="{{= G.theme.photogrid }}"><h3>{{= typeof photogridTitle === 'undefined' ? 'Blah blah blah' : photogridTitle }}</h3></div> -->
+    
+    <ul data-role="listview" data-inset="true">
+    {{ for (var i = 0; i < items.length; i++) { }}
+    {{   var item = items[i];                   }}
+      <li>
+        <a href="{{= item.target }}">
+          {{= item.image ? '<img src="{0}">'.format(item.image) : '' }}
+          {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
+          {{= item.note ? '<p>{0}</p>'.format(item.note) : '' }}
+          {{= item.superscript ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
+        </a> 
+      </li>
+    {{ } }}
+    </ul>
 </script>
 
 <!-- EDIT TEMPLATES -->

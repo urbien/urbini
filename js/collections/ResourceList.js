@@ -20,13 +20,14 @@ define([
         firstPage: 0,
         offsetParam: "$offset",
         limitParam: "$limit",
-        queryMap: options.queryMap || {},
+        params: options.params || {},
         model: options.model || models[0].model,
         rUri: options._rUri,
-        listId: G.nextId()
+        listId: G.nextId(),
+        title: options.title
       });
       
-      this.vocModel = vocModel = this.model;
+      var vocModel = this.vocModel = this.model;
       this.resources = this.models;
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'add'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
@@ -39,13 +40,12 @@ define([
 //      this.url = this.baseUrl;
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;      
-      this.queryMap[this.limitParam] = this.perPage;
-      this.query = options._query;
-      this.parseQuery(this.query);
-      this.belongsInCollection = U.buildValueTester(this.queryMap, this.vocModel);
+      this.params[this.limitParam] = this.perPage;
+      this.parseQuery(options._query);
+      this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+      Events.trigger('newResourceList', this);
 //      this.sync = this.constructor.sync;
       
-      Events.trigger('newResourceList', this);
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
     getNextPage: function(options) {
@@ -79,8 +79,8 @@ define([
       this.pager();
     },
     getUrl: function() {
-      var url = this.baseUrl + (this.queryMap ? "?$minify=y&$mobile=y&" + $.param(this.queryMap) : '');
-      if (this.queryMap  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
+      var url = this.baseUrl + (this.params ? "?$minify=y&$mobile=y&" + $.param(this.params) : '');
+      if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
         url += '&$chooser=y';
       return url;
     },
@@ -88,8 +88,9 @@ define([
       if (!query)
         return;
       
+      this.query = query;
       query = query.split("&");
-      var qMap = this.queryMap = this.queryMap || {};
+      var params = this.params = this.params || {};
       for (var i = 0; i < query.length; i++) {
         var p = query[i].split("=");
         var name = decodeURIComponent(p[0]);
@@ -102,10 +103,10 @@ define([
         else if (q.charAt(0) == '-')
           continue;
         else
-          qMap[name] = val;
+          params[name] = val;
       }
       
-      this.url = this.baseUrl + (this.queryMap ? $.param(this.queryMap) : ''); //this.getUrl();
+      this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
     },
     getKey: function() {
       return this.vocModel.type;
@@ -157,12 +158,18 @@ define([
     fetch: function(options) {
       var self = this;
       options = _.extend({update: true, remove: false, parse: true}, options);
-      this.queryMap = this.queryMap || {};
+      this.params = this.params || {};
       if (this.offset)
-        this.queryMap[this.offsetParam] = this.offset;
+        this.params[this.offsetParam] = this.offset;
       this.rUri = options._rUri;
       options.url = this.getUrl();
       var error = options.error = options.error || Errors.getDefaultErrorHandler();
+      options.error = function() {
+        self._lastFetchedOn = G.currentServerTime();
+        if (error)
+          error.apply(this, arguments);
+      }
+      
       var success = options.success || function(resp, status, xhr) {
         self.update(resp, options);        
       };

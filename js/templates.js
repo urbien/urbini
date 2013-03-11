@@ -46,8 +46,8 @@ define([
       "date": "datePET",
       "ComplexDate": "datePET",
       "system/primitiveTypes/Duration": "datePET",
-      "model/company/Money": "moneyPET",
-      "model/portal/Image": "fileUpload"
+//    "model/portal/Image": "fileUpload",
+      "model/company/Money": "moneyPET"
 //       ,
 //      "boolean": "booleanPET",
 //      "int": "intPET",

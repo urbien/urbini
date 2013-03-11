@@ -57,7 +57,13 @@ define([
     },
     orientationchange: function(e) {
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament')                  || 
+                                                        vocModel.type.endsWith('/Theme')                       || 
+                                                        vocModel.type.endsWith('/Goal')                        || 
+                                                        vocModel.type.endsWith('/App')                         || 
+//                                                        vocModel.type.endsWith('/AppIdea')                     || 
+//                                                        vocModel.type.endsWith('/NominationForConnecttion')    || 
+                                                        vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       if (isMasonry) {
         Events.stopEvent(e);
         Events.trigger('refresh', {model: this.model, checked: checked});
@@ -134,7 +140,7 @@ define([
           }
           
           res.lastFetchOrigin = null;
-          self.redirect(res, {trigger: true, replace: true, forceRefresh: true, removeFromView: true});
+          self.redirect(res, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
         }
         
       });
@@ -206,7 +212,7 @@ define([
       })).render();
   
       var models = rl.models;
-      var isModification = U.isAssignableFrom(vocModel, 'Modification');
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
 
 //      var meta = models[0].__proto__.constructor.properties;
 //      meta = meta || models[0].properties;
@@ -220,7 +226,7 @@ define([
 //          isMasonry = false;
 //      }
       
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, 'Comment');
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
       var hash = window.location.hash;
       var params = hash ? U.getParamMap(hash) : null;

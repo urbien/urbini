@@ -1,6 +1,8 @@
 define(['globals', 'jquery', 'events'], function(G, $, Events) {
   var cache = C = {
     // Models
+//    MODEL_PREFIX: 'model:',
+//    ENUMERATIONS_KEY: 'enumerations',
     shortNameToModel: {},
     typeToModel: {},
     shortNameToEnum: {},
@@ -8,6 +10,7 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
     shortNameToInline: {},
     typeToInline: {},
     modCache: {},
+
 //    usedModels: {},
 
     // Resources and ResourceLists
@@ -32,7 +35,9 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
       typeCache[model.type] = model;
     },
     cacheResource: function(resource) {
-      return C.Resources[resource.getUri()] = resource;
+      var uri = resource.getUri();
+      if (uri)
+        C.Resources[uri] = resource;
     },
     getResource: function(uri) {
       return C.Resources[uri] || C.searchCollections(uri);
@@ -41,7 +46,7 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
       return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[query];
     },
     cacheResourceList: function(list) {
-      var qs = list._query || $.param(list.queryMap);
+      var qs = list.query; // || $.param(list.params);
       var typeUri = list.vocModel.type;
       return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[qs || typeUri] = list;
     },
@@ -68,6 +73,57 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
       return null;
     },
     
+    /**
+     * @param atts: attributes that must be present on the resource we're searching for
+     */
+    search: function(type, atts) {
+      var tester = function(res) {
+        for (var name in atts) {
+          var value = atts[name];
+          if (res.get(name) !== value)
+            return false;
+        }        
+        
+        return true;
+      };
+      
+      for (var uri in C.Resources) {
+        var res = C.Resources[uri];
+        if (tester(res))
+          return res;
+      }
+      
+      for (var colType in C.ResourceLists) {
+        var cols = C.ResourceLists[colType];
+        for (var query in cols) {
+          var col = cols[query], resources = col.models;
+          for (var i = 0; i < resources.length; i++) {
+            var res = resources[i];
+            if (tester(res))
+              return res;
+          }
+        }
+      }
+      
+      return null;
+    },
+    
+    // Plugs
+    plugs: {},
+//    PLUGS_PREFIX: 'plugs:',
+//    savePlugs: function(plugs) {
+//      for (var type in plugs) {
+//        C.plugs[type] = C.plugs[type] || plugs[type];
+//      }
+//      
+//      if (!G.hasLocalStorage)
+//        return;
+//      
+//      for (var type in plugs) {
+//        G.localStorage.putAsync(C.PLUGS_PREFIX + type, plugs[type]);
+//      }
+//    },
+
     clearCache: function() {
       C.shortNameToModel = {};
       C.typeToModel = {};
@@ -80,7 +136,17 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
     }
   };
   
-  Events.on('newResourceList', C.cacheResourceList);
+  Events.on('newResourceList', function(list) {
+    C.cacheResourceList(list);
+    var listType = list.vocModel.type;
+    for (var uri in C.Resources) {
+      var res = C.Resources[uri];
+      if (res.vocModel.type == listType && !list.get(uri) && list.belongsInCollection(res)) {
+        list.add(res);
+      }
+    }
+  });
+  
   Events.on('newResource', function(resource) {
     C.cacheResource(resource);
     for (var colType in C.ResourceLists) {
@@ -94,6 +160,11 @@ define(['globals', 'jquery', 'events'], function(G, $, Events) {
     }
   });
 
+//  Events.on('newPlug', function(plug) {
+//    var plugs = {};
+//    plugs[plug.fromDavClassUri] = [plug];
+//    C.savePlugs(plugs); 
+//  });
 
-  return cache;
+  return G.Cache = cache;
 });

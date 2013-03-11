@@ -3,7 +3,7 @@ define([
   'events', 
   'views/ToggleButton', 
   'views/BasicView' 
-], function(Templates, Events, ToggleButton, BasicView) {
+], function(Events, ToggleButton, BasicView) {
   return ToggleButton.extend({
     btnId: 'mapIt',
     template: 'mapItButtonTemplate',

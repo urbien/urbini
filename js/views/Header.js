@@ -3,17 +3,19 @@ define([
   'globals',
   'events', 
   'utils',
+  'vocManager',
   'views/BasicView'
-], function(G, Events, U, BasicView) {
+], function(G, Events, U, Voc, BasicView) {
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'makeWidget', 'makeWidgets');
+      _.bindAll(this, 'render', 'makeWidget', 'makeWidgets', 'fileUpload');
       this.constructor.__super__.initialize.apply(this, arguments);
-      
+
       var res = this.resource || this.collection;
       _.extend(this, options);
       this.template = this.makeTemplate(this.template);
+      this.fileUploadTemplate = this.makeTemplate('fileUpload');
       if (typeof this.pageTitle === 'undefined') {
         var hash = window.location.hash && window.location.hash.slice(1);
         if (hash && G.tabs) {
@@ -62,6 +64,36 @@ define([
       
       return this;
     },
+    events: {
+      'change #fileUpload': 'fileUpload'
+    },
+    fileUpload: function(e) {
+      Events.stopEvent(e);      
+      var params = U.getParamMap(window.location.hash);
+      $('#fileUpload').attr('action', G.serverName + '/mkresource');
+//      var returnUri = $('$returnUri');
+//      if (returnUri) {
+//        var fn = $(':file').value;
+//        var idx = fn.lastIndexOf('/');
+//        $('$returnUri').attr('value', returnUri + '&originalImage=' + encodeURIComponent(G.pageRoot + '/wf/' + params['$location']) + fn.slice(idx));
+//      }
+      document.forms["fileUpload"].submit();
+      /*
+      $.ajax({
+        url     : G.serverName + '/mkresource',
+        type    : 'POST',
+        enctype: 'multipart/form-data',
+        data    : $('#fileUpload').serialize(),
+        success : function( data ) {
+           alert('Submitted');
+        },
+        error   : function( xhr, err ) {
+           alert('Error');     
+        }
+      });
+      */    
+
+    },
     makeWidget: function(options) {
       var w = options.widget;
       if (typeof w != 'function') {
@@ -87,7 +119,10 @@ define([
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
       
-      this.$el.html(this.template());
+      if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
+        this.$el.html(this.template({className: 'ui-grid-a'}));
+      else
+        this.$el.html(this.template());
       var l = this.buttons.left;
       l && this.makeWidgets(l, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-left'});
      
@@ -122,6 +157,37 @@ define([
         }
       }
 
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
+      if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
+        var params = U.getParamMap(window.location.hash);
+        var forResource = params['forResource'];
+        var location = params['$location'];
+        var returnUri = params['$returnUri'];
+        var pr = params['$prop'];
+        if (forResource  &&  location  &&  pr) {
+          var type = U.getTypeUri(forResource);      
+          var cModel = U.getModel(type);
+          var self = this;
+          if (!cModel) {
+            Voc.getModels(type).done(function() {
+              cModel = U.getModel(type);
+              if (cModel  &&  !cModel.properties[pr].readOnly) {
+                var frag = document.createDocumentFragment();
+                var rules = ' data-formEl="true"';
+                U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
+                self.$el.append(frag);
+              }
+            });
+          }
+          else {
+            var frag = document.createDocumentFragment();
+            var rules = ' data-formEl="true"';
+            U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location }));
+            self.$el.append(frag);
+          }
+          
+        }
+      }
       if (G.currentUser.guest) {
         var log = this.buttons.log;
         log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});

@@ -15,7 +15,6 @@ define([
       timeout: 'Slow internet connection, please try again'
     },
     getDefaultErrorHandler: function(errorHandler) {
-      var id = G.nextId();
       var defaultErrorHandler = function(originalModel, err, options) {
         var code = err.code || err.status;
         var type = err.type || err.statusText;
@@ -40,7 +39,7 @@ define([
                 if (U.isModel(originalModel)) {
                   errMsg = "The item you're looking for doesn't exist";
                 }
-                else if (U.isCollection(originalModel)) {// && originalModel.queryMap.length == 0)))
+                else if (U.isCollection(originalModel)) {// && originalModel.params.length == 0)))
                   errMsg = "No results were found for your query";
                 }
               }
