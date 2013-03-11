@@ -816,7 +816,7 @@ define([
   });
   
   Events.on('VERSION.Models', function(init) {
-    debugger;
+//    debugger;
     G.localStorage.clean(function(key) {
       return _.any([Voc.MODEL_PREFIX], function(prefix) {
         return key.startsWith(prefix);

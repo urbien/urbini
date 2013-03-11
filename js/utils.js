@@ -1335,6 +1335,11 @@ define([
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
     
+    getValueDisplayName: function(res, propName) {
+      var prop = res.vocModel.properties[propName];
+      return prop && (U.isResourceProp(prop) ? res.get(propName + '.displayName') : res.get(propName));
+    },
+    
     makeOrGroup: function() {
       return slice.call(arguments).join('||');
     },
@@ -2438,6 +2443,16 @@ define([
     pipe: function(defer1, defer2) {
       defer1.done(defer2.resolve).fail(defer2.reject);
       return defer2.promise();
+    },
+    
+    trim: function(text, length) {
+      if (!text)
+        return '';
+      
+      if (text.length < length)
+        return text;
+      
+      return text.slice(0, length) + '...';
     }
     
 //    where: function(res, where) {

@@ -150,6 +150,7 @@ define([
     render:function (eventName) {
       G.log(this.TAG, 'render');  
       var rl = this.collection;
+      var self = this;
       var commonParams = {
         model: rl,
         parentView: this
@@ -236,8 +237,8 @@ define([
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
       this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}, this.options));
       this.listView.render();
+        
       if (isGeo) {
-        var self = this;
         U.require(['views/MapView'], function(MV) {
           MapView = MV;
           self.mapView = new MapView(_.extend(commonParams, {el: self.$('#mapHolder', self.el)}));
@@ -250,6 +251,13 @@ define([
       if (!isMV)
         $('form#mv').hide();
 
+      if (this.vocModel.type === G.commonTypes.Handler) {
+        this.listView.$el.addClass('grid-listview');
+//        setTimeout(function() {          
+//          self.$el.trigger('create');
+//        }, 100);
+      }
+      
       this.rendered = true;
       return this;
     }

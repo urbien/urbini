@@ -63,6 +63,7 @@ define([
 //    },
 
     render:function (eventName) {
+//      var renderDfd = $.Deferred();
       var res = this.resource;
       var commonParams = {
         model: res,
@@ -132,6 +133,7 @@ define([
       U.require(viewType, function(viewMod) {        
         self.imageView = new viewMod(_.extend(commonParams, {el: $(viewDiv, self.el)}));
         self.imageView.render();
+//        renderDfd.done(self.imageView.finalize);
       });
       
       var commonTypes = G.commonTypes;
@@ -195,6 +197,7 @@ define([
         $('body').append(this.$el);
       
       this.rendered = true;
+//      renderDfd.resolve();
       return this;
     }
   }, {

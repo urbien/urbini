@@ -6,8 +6,9 @@ define([
   'views/BasicView',
   'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
-  'views/CommentListItemView'
-], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView) {
+  'views/CommentListItemView',
+  'views/PhotogridView'
+], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView) {
   return BasicView.extend({
     TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
@@ -30,6 +31,19 @@ define([
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.fileUploadTemplate = this.makeTemplate('fileUpload');
+      var commonTypes = G.commonTypes;
+      var type = this.vocModel.type;
+//      this.isPhotogrid = _.contains([commonTypes.Handler, commonTypes.FriendApp], type);
+      this.isPhotogrid = _.contains([commonTypes.Handler/*, commonTypes.FriendApp*/], type);
+//      var self = this;
+//      if (this.isPhotogrid) {
+//        this.readyPromise = U.require('views/PhotogridView', function(PhotogridView) {
+//          self.PhotogridView = PhotogridView;
+//        }).promise();
+//      }
+//      else
+//        this.ready = true;
+      
       return this;
     },
     events: {
@@ -43,6 +57,7 @@ define([
       
       if (!isMasonry)
         return;
+      
       var prevWidth;
       if ($(window).height() > $(window).width()) {
         this.IMG_MAX_WIDTH = 272;
@@ -62,9 +77,10 @@ define([
         var height = img[i].height;
         if (width > this.IMG_MAX_WIDTH) {
           ratio = this.IMG_MAX_WIDTH / width;
-          img[i].attr('style', 'max-width:' + this.IMG_MAX_WIDTH + '; width:' +  this.IMG_MAX_WIDTH + '; height: ' + Math.floor(height * ration));
+          img[i].attr('style', 'max-width:' + this.IMG_MAX_WIDTH + '; width:' +  this.IMG_MAX_WIDTH + '; height: ' + Math.floor(height * ratio));
         }
       }
+      
       Event.stopEvent();
       Event.trigger('refresh');
     },
@@ -91,6 +107,7 @@ define([
       rl = this.collection;
       var resources = rl.models;
       var vocModel = this.vocModel;
+      var type = vocModel.type;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
@@ -99,7 +116,7 @@ define([
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  && !this.isPhotogrid &&  _.any(['/Tournament', '/Theme', '/App', '/Goal', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -164,6 +181,11 @@ define([
       }
       
 //      var defaultUnchecked = params.$checked !== 'y';
+      var table;
+      if (this.isPhotogrid)
+        table = $('<table width="100%"></table>')[0];
+        
+//      var renderDfd = this.isPhotogrid ? $.Deferred() : null;
       for (; i < num; i++) {
         var res = resources[i];
         if (canceled && res.get(canceled))
@@ -177,7 +199,12 @@ define([
         var uri = res.get('_uri');
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
-          if (isMultiValueChooser) {
+          if (this.isPhotogrid) {
+            liView = new PhotogridView(_.extend(commonParams, {tagName: 'div', linkToIntersection: true}));
+//            renderDfd.done(liView.finalize);
+          }
+          else 
+            if (isMultiValueChooser) {
             var isListed =  _.contains(mvVals, res.get('davDisplayName'));
 //            var isChecked = defaultUnchecked === isListed;
             liView = new ResourceListItemView(_.extend(commonParams, {mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}));
@@ -192,16 +219,38 @@ define([
             var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
             liView = imageProperty != null ? new ResourceListItemView(_.extend(commonParams, { imageProperty: imageProperty, parentView: this, swatch: swatch})) : new ResourceListItemView(_.extend(commonParams, {swatch: swatch}));
           }
-          if (nextPage)  
-            this.$el.append(liView.render().el);
+
+          var rendered = liView.render();
+          if (!rendered)
+            continue;
+          else
+            rendered = rendered.el;
+          
+          if (rendered && this.isPhotogrid) {
+            var row = $("<tr></tr>")[0];
+            var cell = $("<td></td>")[0];
+            cell.appendChild(rendered);
+            row.appendChild(cell);
+            table.appendChild(row);
+            if (i < num - 1)
+              table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
+          }
           else {
-            var fr = liView.render().el; 
-            frag.appendChild(fr);
+            if (nextPage) {
+              this.$el.append(rendered);
+            }
+            else {
+              frag.appendChild(rendered);
+            }
           }
         }
         else if (!nextPage)
           frag.appendChild(lis[i]);
       }
+      
+      if (frag && table)
+        frag.appendChild(table);
+      
 /*
       if (isChooser) {
         var params = U.getParamMap(window.location.href, '&');
@@ -235,11 +284,33 @@ define([
         this.initializedListView = true;
       }
       
-    
 //      this.$el.trigger('create');
 //      if (this.$el.hasClass('ui-listview'))
 //        this.$el.trigger('refresh');
 
+//      if (this.isPhotogrid) {
+//        var dim = 0;
+//        var grids = $('.gridblock');
+//        for (var i = 0; i < grids.length; i++) {
+//          var div = $(grids[i]);
+//          var img = div.find('img');
+//          if (img) {
+//            dim = Math.max(img.height(), img.width());
+//            break;
+//          }
+//        }
+//        
+//        if (dim) {
+//          for (var i = 0; i < grids.length; i++) {          
+//            var div = $(grids[i]);
+//            div.css('height', dim + 20);
+//          }
+//        }
+//      }
+      
+//      if (renderDfd)
+//        renderDfd.resolve();
+      
       return this;
       
 //      else {
@@ -308,6 +379,15 @@ define([
     },
     
     render: function(e) {
+//      if (this.readyPromise && !this.readyPromise.isResolved()) {
+//        var args = arguments, self = this;
+//        this.readyPromise.done(function() {
+//          self.render.apply(self, arguments);
+//        });
+//        
+//        return;
+//      }
+      
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);

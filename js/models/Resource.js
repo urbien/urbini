@@ -18,7 +18,7 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(options) {
-      _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
       if (options && options._query)
         this.urlRoot += "?" + options._query;
       
@@ -29,6 +29,19 @@ define([
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.setDefaults();
+    },
+    
+    get: function(propName) {
+      var val = Backbone.Model.prototype.get.call(this, propName);
+      var vocModel = this.vocModel;
+      if (!vocModel)
+        return val;
+      
+      var prop = vocModel.properties[propName];
+      if (prop && !prop.backLink && U.isResourceProp(prop))
+        return val && U.getLongUri1(val);
+      else
+        return val;
     },
     
     setDefaults: function() {

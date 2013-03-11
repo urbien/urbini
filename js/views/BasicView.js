@@ -49,10 +49,25 @@ define([
     
     return false;
   };
+
+  BasicView.prototype.isChildOf = function(view) {
+    var parent = this.parentView;
+    while (parent) {
+      if (view === parent)
+        return true;
+      
+      parent = parent.parentView;
+    }
+    
+    return false;
+  };
   
   BasicView.prototype.assign = function (view, selector) {
     view.setElement(this.$(selector)).render();
   }
   
+  BasicView.prototype.finalize = function () {
+  }
+
   return BasicView; 
 });

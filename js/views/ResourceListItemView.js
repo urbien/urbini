@@ -151,6 +151,9 @@ define([
         var qidx = href.indexOf('?');
         var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
         var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
+//        if (a && b && vocModel.type == G.commonTypes.Handler)
+//          return this.renderIntersectionItem(json, a, b);
+          
         if (a  ||  b) {
           var urbModel = U.getModel('Urbien');
           var isAContact;
@@ -361,6 +364,16 @@ define([
       
       return viewCols;
     },
+    
+//    renderTwinIntersectionItem: function(json, a, b) {
+//      var m = this.resource;
+//      var vocModel = this.vocModel;
+//      var meta = vocModel.properties;
+//      if (!meta)
+//        return this;
+//      
+//    }
+
     renderIntersectionItem: function(json, delegateTo, cloneOf) {
       var m = this.resource;
       var vocModel = this.vocModel;

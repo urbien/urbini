@@ -11,7 +11,7 @@ define([
   return BasicView.extend({
     TAG: "PhotogridView",
     initialize: function(options) {
-      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'finalize'); // fixes loss of context for 'this' within methods
       options = options || {};
       this.constructor.__super__.initialize.apply(this, arguments);
       this.source = options.source;
@@ -22,24 +22,28 @@ define([
       }
       
       this.isTrigger = this.vocModel.type === G.commonTypes.Handler;
+      this.linkToIntersection = options.linkToIntersection;
       return this;
     },
     render: function(options) {
       if (this.resource)
-        this.renderResource.apply(this, arguments);
+        return this.renderResource.apply(this, arguments);
       else if (this.collection)
-        this.renderCollection.apply(this, arguments);
+        return this.renderCollection.apply(this, arguments);
+      
+      this.$el.css('margin-left', '100px;');
     },
     renderResource: function(options) {
+      var res = this.resource;
       var vocModel = this.vocModel;
       var meta = vocModel.properties;
       if (!meta)
         return this;
       
-      if (!this.resource.isA('ImageResource') && !this.resource.isA('Intersection')) 
+      if (!res.isA('ImageResource') && !res.isA('Intersection')) 
         return this;
       
-      var json = this.resource.attributes;
+      var json = res.attributes;
       if (U.isAssignableFrom(vocModel, U.getLongUri1('media/publishing/Video'))) {
         var v = json.videoHtml5 || json.description;  
         if (v) {
@@ -51,7 +55,7 @@ define([
           else
             delete json['description'];
           this.$el.html(frag);
-          return;
+          return this;
         }
       }
       
@@ -65,54 +69,85 @@ define([
         var p = props[0];
         var metaP = meta[p];
         images.push({
-          uri: json[p],
-          title: U.getDisplayName(this.resource),
+          image: json[p],
+          title: U.getDisplayName(res),
           width: json.originalWidth,
           height: json.originalHeight,
           metaW: metaP['imageWidth'],
           metaH: metaP['imageHeight'],
-          metaDim: metaP['maxImageDimension']
+          metaDim: metaP['maxImageDimension'],
+          caption: this.getCaption()
         });
       } 
       else {
-        if (U.isA(vocModel, 'Intersection')) { 
-          var propsA = U.getCloneOf(vocModel, 'Intersection.aFeatured');
-          var propsB = U.getCloneOf(vocModel, 'Intersection.bFeatured');
-          if (!propsA.length || !propsB.length)
+        if (U.isA(vocModel, 'Intersection')) {
+          var iProps = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
+          if (!iProps.a || !iProps.b || !json[iProps.a] || !json[iProps.b])
             return;
           
-          var props = {a: propsA[0], b: propsB[0]};
+          var imgProps = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
+          if (!imgProps.a || !imgProps.b)
+            return;
+          
+          var resUri = res.getUri();
           _.each(['a', 'b'], function(p) {
-            var prop = props[p];
-            var metaP = meta[prop];
+            var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+            if (!target)
+              return;
+            
+            var imgProp = imgProps[p];
+            var metaP = meta[imgProp];
+            var image = json[imgProp];
+            if (image && image.indexOf('Image/') == 0)
+              image = image.slice(6);    
+
             var imageData = {
-              uri: json[prop],
+              image: image,
+              target: U.makePageUrl('view', target),
               title: json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0] + '.displayName'],
               width: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalWidth'.format(p))[0]],
               height: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalHeight'.format(p))[0]],            
               metaW: metaP['imageWidth'],
               metaH: metaP['imageHeight'],
-              metaDim: metaP['maxImageDimension']
+              metaDim: metaP['maxImageDimension'],
             };
             
             if (self.isTrigger) {
               if (p === 'a') {
-                imageData.note = 'Model: ' + json['cause.displayName'];
-                imageData.superscript = 'Trigger';
+                imageData.caption = json['cause.displayName'];
+                imageData.superscript = 'Cause';
               }
               else {
-                imageData.note = 'Model: '+ json['effect.displayName'];
-                imageData.superscript = 'Result';
+                imageData.caption = json['effect.displayName'];
+                imageData.superscript = 'Effect';
               }
+              
+              imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
             }
+            else
+              imageData.caption = self.getCaption(iProps[p])
+            
+            if (p === 'b')
+              imageData['float'] = 'right';
             
             images.push(imageData);
-          });          
+          });
+          
+//          if (self.isTrigger) {
+//            images.splice(1, 0, {
+//              image: 'images/bolt2.png',
+//              target: U.makePageUrl('view', res)
+////              ,
+////              title: 'Trigger',
+////              caption: U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')),
+////              superscript: 'Trigger'
+//            });
+//          }
         }
       }
       
       if (!images.length) 
-        return this;
+        return;
 
 //      if (isTrigger) {
 //        images.splice(1, 0, {
@@ -122,40 +157,39 @@ define([
 //        });
 //      }
       
-      var frag = document.createDocumentFragment();
-      var isHorizontal = ($(window).height() < $(window).width());
-      var maxW = $(window).width(); // - 3;
-      var maxH = $(window).height() - 50;
-
-      var items = [], i = 0;
-      _.each(images, function(image) {
-        if (image.uri) {
-          if (image.uri.indexOf('Image/') == 0)
-            image.uri = image.uri.slice(6);    
-        }
-        
-        var w;
-        var h;
-        if (image.width > maxW) {
-          var ratio;
-          ratio = maxW / image.width;
-          w = maxW;
-          image.height = image.height * ratio;
-        }
-        else if (image.width  &&  image.width != 0) {
-          w = image.width;
-        }
-        
-        if (image.height  &&  image.height > maxH) {
-          var ratio = maxH / image.height;
-          w = w * ratio;
-        }
-
-        var note = image.note || 'description placeholder';  
-        items.push({image: image.uri, icon: image.icon, target: image.target || '', title: image.title, superscript: image.superscript, note: note});
-      });
-      
-      this.finishRender(items);
+//      var frag = document.createDocumentFragment();
+//      var isHorizontal = ($(window).height() < $(window).width());
+//      var maxW = $(window).width(); // - 3;
+//      var maxH = $(window).height() - 50;      
+//      var items = [], i = 0;
+//      _.each(images, function(image) {
+//        if (image.uri) {
+//          if (image.uri.indexOf('Image/') == 0)
+//            image.uri = image.uri.slice(6);    
+//        }
+//        
+//        var w;
+//        var h;
+//        if (image.width > maxW) {
+//          var ratio;
+//          ratio = maxW / image.width;
+//          w = maxW;
+//          image.height = image.height * ratio;
+//        }
+//        else if (image.width  &&  image.width != 0) {
+//          w = image.width;
+//        }
+//        
+//        if (image.height  &&  image.height > maxH) {
+//          var ratio = maxH / image.height;
+//          w = w * ratio;
+//        }
+//
+//        items.push(_.extend(image, {target: image.target || ''}));
+//      });
+//      
+//      this.finishRender(items);
+      this.finishRender(images);
       return this;  
     },
     
@@ -163,29 +197,28 @@ define([
       var vocModel = this.vocModel;
       var meta = vocModel.properties;
       if (!meta)
-        return;
+        return this;
       
       if (!this.collection.isA('ImageResource')) 
-        return;
+        return this;
       
       var isIntersection = U.isA(vocModel, 'Intersection');
       var targetProp, imgProp,                      // if it's a regular resource 
-          intersectionA, intersectionB, imgA, imgB; // if it's an intersection
+          intersection; // if it's an intersection
       
       if (isIntersection) {
-        intersectionA = U.getCloneOf(vocModel, 'Intersection.a')[0];
-        intersectionB = U.getCloneOf(vocModel, 'Intersection.b')[0];
-        imgA = U.getCloneOf(vocModel, 'Intersection.aThumb')[0];
-        imgB = U.getCloneOf(vocModel, 'Intersection.bThumb')[0];
+        intersection = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
+        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
       }
       else {
         var props = U.getCloneOf(vocModel, 'ImageResource.smallImage');
         if (!props.length)
-          return;
+          return this;
         else
           targetProp = props[0];
       }
       
+      var self = this;
       var isHorizontal = ($(window).height() < $(window).width());
       var items = [];
       var i = 0;
@@ -195,33 +228,43 @@ define([
       var isFriendApp = U.isAssignableFrom(vocModel, commonTypes.FriendApp);
       var triggerType = commonTypes.Handler;
       this.collection.each(function(resource) {
-        var target, image, title;
+        var target, image, title, caption;
         if (isIntersection) {
-          var a = resource.get(intersectionA), 
-              b = resource.get(intersectionB);
-          if (a === source) {
-            target = b;
-            image = resource.get(imgB);
-            title = resource.get(intersectionB + '.displayName');
+          var iValues = {a: resource.get(intersection.a), b: resource.get(intersection.b)};
+          var side = iValues.a === source ? 'b' : 'a';
+          target = iValues[side];
+          image = resource.get(imgProp[side]);
+          title = resource.get(intersection[side] + '.displayName');
+          if (isFriendApp) {
+            caption = U.makeHeaderTitle(U.getValueDisplayName(resource, 'friend1'), U.getValueDisplayName(resource, 'friend2'));
           }
-          else {
-            target = a;
-            image = resource.get(imgA);
-            title = resource.get(intersectionA + '.displayName');
-          }
+          else
+            caption = self.getCaption(resource, intersection[side]);
+//          if (a === source) {
+//            target = b;
+//            image = resource.get(imgB);
+//            title = resource.get(intersectionB + '.displayName');
+//            caption = self.getCaption(resource, intersectionB);
+//          }
+//          else {
+//            target = a;
+//            image = resource.get(imgA);
+//            title = resource.get(intersectionA + '.displayName');
+//            caption = self.getCaption(resource, intersectionB);
+//          }
             
           if (!image && !title)
             return;
           
           if (isFriendApp) {
             var and1 = $.param({
-              fromApp: a,
-              toApp: b
+              fromApp: iValues.a,
+              toApp: iValues.b
             });
 
             var and2 = $.param({
-              fromApp: b,
-              toApp: a
+              fromApp: iValues.b,
+              toApp: iValues.a
             });
 
             target = U.makePageUrl('list', triggerType, {
@@ -240,15 +283,15 @@ define([
         if (typeof target == 'undefined') 
           return;
         
-        if (target.indexOf('Image/') == 0)
-          target = propVal.slice(6);
-
-        items.push({image: image, target: target, title: title, superscript: ++i, note: 'description placeholder'});
+        image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
+        items.push({image: image, target: target, title: title, superscript: ++i, caption: caption, titleLink: '#'});
       });
       
       if (items.length == 0)
-        return;
+        return this;
       
+      if (items.length == 2)
+        items[1]['float'] = 'right';
       this.finishRender(items);
       return this;
     },
@@ -275,21 +318,60 @@ define([
     finishRender: function(items) {
       this.$el.html(this.template({items: items}));
       this.$el.trigger('create');
-      this.$el.removeClass('hidden');      
-      var btns = this.$('.ui-btn');
-      switch (items.length) {
-        case 1:
-          btns.css('float', 'middle');
-          break;        
-        case 2:
-          $(btns[1]).css('float', 'right');
-          break;
-        case 3:
-          debugger;
-          $(btns[2]).css('float', 'right');
-          $(btns[1]).css('float', 'center');
-          break;
+      this.$el.removeClass('hidden');
+      this.finalize();
+      var self = this;
+      Events.on('changePage', function(view) {
+        if (view == self || self.isChildOf(view))
+          self.finalize();
+      });
+    },
+    
+    finalize: function() {
+//      var btns = this.$('.ui-btn');
+//      switch (btns.length) {
+//        case 1:
+//          btns.css('float', 'center');
+//          break;        
+//        case 2:
+//          $(btns[1]).css('float', 'right');
+//          break;
+////        case 3:
+////          debugger;
+////          $(btns[2]).css('float', 'right');
+////          $(btns[1]).css('float', 'center');
+////          break;
+//      }     
+    },
+    
+    getCaption: function(resource, prop) {
+      var res = arguments.length <= 1 ? (resource && U.isModel(resource) ? resource : this.resource) : resource;
+      prop = prop ? prop : res ? null : res;
+      var vocModel = res.vocModel;
+      if (prop) {
+        var val = U.getValueDisplayName(res, prop);
+        if (val)
+          return val;
       }
+      else {
+        if (res.isA("Submission")) {
+          var descProp = U.getCloneOf(res.vocModel, 'Submission.description');
+          for (var i = 0; i < descProp.length; i++) {
+            var val = U.trim(res.get(descProp[i]), 30);
+            if (val)
+              return val;
+          }
+          
+          var byProp = U.getCloneOf(res.vocModel, 'Submission.submittedBy')[0];
+          var val = U.getValueDisplayName(res, byProp);
+          if (val)
+            return val;
+        }
+        
+//        return ''; // var range = prop.range || prop.facet; return range.slice(range.lastIndexOf('/')) + 1;
+      }
+      
+      return ' ';          
     }
   });
 });

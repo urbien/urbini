@@ -319,7 +319,7 @@ define('app', [
           var setVersion = false;
           if (newV[key] > oldV[key]) {
             if (!setVersion) {
-              debugger;
+//              debugger;
               G.setVersion(newV);
               setVersion = true;
             }

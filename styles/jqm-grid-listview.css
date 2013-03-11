@@ -35,7 +35,7 @@
   text-shadow: none;
 }
 
-/* First breakpoint is 768px. 3 column layout. Tiles 150x150 pixels at the breakpoint. */
+/* First breakpoint is 298px. 2 column layout. Tiles 140x140 pixels at the breakpoint. */
 @media all and (min-width: 298px) {
   .grid-listview .ui-content {
     padding: 9px;
@@ -182,7 +182,7 @@
 #  }
 #}
 
-/* First breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
+/* 2nd breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
 @media all and (min-width: 768px){
   .grid-listview .ui-content {
     padding: 9px;
@@ -196,7 +196,7 @@
   }
 }
 
-/* Second breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
+/* 3rd breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
 @media all and (min-width: 1020px){
   .grid-listview .ui-content {
     padding: 10px;

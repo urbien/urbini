@@ -1482,7 +1482,7 @@ define([
     var dbOpen = RM.db;
     var settings = {sequential: true, preventPileup: true};
     RM.runTask(function() { // take over the queue
-      debugger;
+//      debugger;
       RM.taskQueue = new TaskQueue("DB");
       RM.runTask(function() {
         var defer = this;

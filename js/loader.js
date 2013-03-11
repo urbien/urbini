@@ -751,7 +751,7 @@ define('fileCache', function() {
         after();
       
       if (!cleaning) // TODO: unhack this garbage
-        G.Cache && G.Voc && G.Cache.storeModels(G.Voc.models);
+        G.Voc && G.Voc.saveModelsToStorage();
     },
     
     nukeScripts: function() {
