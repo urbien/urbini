@@ -287,11 +287,15 @@ define([
         items.push({image: image, target: target, title: title, superscript: ++i, caption: caption, titleLink: '#'});
       });
       
-      if (items.length == 0)
-        return this;
-      
-      if (items.length == 2)
-        items[1]['float'] = 'right';
+      switch (items.length) {
+        case 0:
+          return this;
+        case 1:
+          items[0]['float'] = 'center';
+        case 2:
+          items[1]['float'] = 'right';
+          break;
+      }
       this.finishRender(items);
       return this;
     },
