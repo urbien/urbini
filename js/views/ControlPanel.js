@@ -77,7 +77,7 @@ define([
       if (!meta)
         return this;
       
-      var json = res.attributes;
+      var json = res.toJSON();
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");

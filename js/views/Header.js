@@ -11,6 +11,8 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'makeWidget', 'makeWidgets', 'fileUpload');
       this.constructor.__super__.initialize.apply(this, arguments);
+      if (this.resource)
+        this.resource.on('change', this.render, this);
 
       var res = this.resource || this.collection;
       _.extend(this, options);

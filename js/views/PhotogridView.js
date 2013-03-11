@@ -43,7 +43,7 @@ define([
       if (!res.isA('ImageResource') && !res.isA('Intersection')) 
         return this;
       
-      var json = res.attributes;
+      var json = res.toJSON();
       if (U.isAssignableFrom(vocModel, U.getLongUri1('media/publishing/Video'))) {
         var v = json.videoHtml5 || json.description;  
         if (v) {

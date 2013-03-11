@@ -71,7 +71,7 @@ define([
       }
       
       G.log(this.TAG, "render");
-      var json = res.attributes;
+      var json = res.toJSON();
       json.viewId = this.cid;
       this.$el.html(this.template(json));
       
@@ -93,7 +93,7 @@ define([
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
-          if (res.get('_uri')  != G.currentApp._uri  &&  (noWebClasses ||  wasPublished)) {
+          if (/*res.get('_uri')  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
             this.doTry = true;
             this.forkMe = true;
           }

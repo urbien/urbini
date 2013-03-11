@@ -140,7 +140,7 @@ define([
         img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
         if (!img)
           img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      var json = m.attributes;
+      var json = m.toJSON();
       
       var rUri = m.get('_uri');
       
@@ -292,7 +292,7 @@ define([
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
 //      if (img == null)
-      var json = m.attributes;
+      var json = m.toJSON();
       
       var forResource = U.getCloneOf(vocModel, 'Reference.forResource')[0];
       var resourceDisplayName = U.getCloneOf(vocModel, 'Reference.resourceDisplayName')[0];
@@ -365,7 +365,7 @@ define([
         return this;
       
       var img;
-      var json = m.attributes;
+      var json = m.toJSON();
       if (cloneOf == 'Intersection.a') {
         var aF = U.getCloneOf(vocModel, 'Intersection.aFeatured');
         var aT = U.getCloneOf(vocModel, 'Intersection.aThumb');
@@ -448,7 +448,7 @@ define([
       if (!meta)
         return this;
       
-      var json = this.resource.attributes;
+      var json = this.resource.toJSON();
       var imgSrc = json.v_imgSrc;
       if (!imgSrc)
         imgSrc = 'forResource';
