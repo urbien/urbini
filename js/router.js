@@ -238,7 +238,7 @@ define([
         Events.once('synced.' + uri, function(data) {
           params[param] = data._uri;
           var updateHash = function() {
-            debugger;
+//            debugger;
             self.navigate(U.makeMobileUrl('list', vocModel.type, params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
           }
           

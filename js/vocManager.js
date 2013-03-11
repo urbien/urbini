@@ -655,8 +655,10 @@ define([
           G.localStorage.put(Voc.contactKey, JSON.stringify(c));
         }
          
-        var plugTypes = G.localStorage.nukePlugs();
-        Voc.fetchPlugs(plugTypes);
+//        var plugTypes = G.localStorage.nukePlugs(); // keep for now, plugs are small and non-user-specific
+        if (!c.guest) {
+          Voc.fetchPlugs(); //plugTypes);
+        }
       }
     },
     
