@@ -11,4 +11,5 @@ We have been solving all these problems and some more (e.g. MVC models creation 
 Please join us in this amazing journey of taking back the Web.
 
 Gene, Ellen, Jacob, Mark, Simon, Alex and the rest of Urbien team.
-Learn more about <a href="http://urbien.com">Urbien</a>.
+Visit <a href="http://urbien.com">Urbien</a> to learn more about us.
+Visit <a href="https://github.com/urbien/urbini/wiki">our wiki</a> to learn how to build mobile web apps really fast. These apps will have offline support, built in social login and reposting, profile import and friend invite, ecommerce capabilities, image galleries and a lot more, without you lifting a finger.
