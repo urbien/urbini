@@ -904,7 +904,7 @@ define([
       
       var res = this.resource;
       var type = res.type;
-      var json = res.attributes;
+      var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});

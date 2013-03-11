@@ -104,7 +104,7 @@ define([
       }
       var self = this;
       var res = this.resource || this.collection;
-      var json = res.attributes;
+      var json = res.toJSON();
       this.$el.html(this.template(json));      
 
       var ul = this.$('#menuItems');

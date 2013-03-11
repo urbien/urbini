@@ -29,7 +29,7 @@ define([
       
       if (!this.resource.isA('ImageResource')) 
         return this;
-      var json = this.resource.attributes;
+      var json = this.resource.toJSON();
       if (U.isAssignableFrom(this.vocModel, U.getLongUri1('media/publishing/Video'))) {
         var v = json.videoHtml5 || json.description;  
         if (v) {
