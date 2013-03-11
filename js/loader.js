@@ -490,8 +490,8 @@
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
-//  var nav = Lablz.navigator;
   if (Lablz.minify) {
+    var nav = Lablz.navigator;
     if (nav.isChrome) // || nav.isSafari)
       Lablz.inject(text);
     else if (nav.isFirefox)
