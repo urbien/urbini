@@ -30,8 +30,6 @@ define([
         return this.renderResource.apply(this, arguments);
       else if (this.collection)
         return this.renderCollection.apply(this, arguments);
-      
-      this.$el.css('margin-left', '100px;');
     },
     renderResource: function(options) {
       var res = this.resource;
@@ -322,7 +320,14 @@ define([
     
     finishRender: function(items) {
       this.$el.html(this.template({items: items}));
-      this.$el.trigger('create');
+      if (this.rendered) {
+        this.$el.trigger('create');
+        this.$el.trigger('refresh');
+      }
+      else {
+        this.$el.trigger('create');
+        this.rendered = true;
+      }
       this.$el.removeClass('hidden');
       this.finalize();
       var self = this;
