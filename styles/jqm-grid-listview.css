@@ -35,16 +35,15 @@
   text-shadow: none;
 }
 
-/* First breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
-@media all and (min-width: 768px){
+@media all and (min-width: 468px) {
   .grid-listview .ui-content {
     padding: 9px;
   }
   .grid-listview .ui-listview .ui-li.ui-btn {
     float: left;
-    width: 30.9333%; /* 33.3333% incl. 2 x 1.2% margin */
-    height: 232px;
-    margin: 9px 1.2%;
+    width: 46%; /* 50% incl. 2 x 2% margin */
+    height: 216px;
+    margin: 9px 2%;
     border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
   }
   /* If you don't want a border at all, just set "border: none;" here to negate the semi white top border */
@@ -168,6 +167,21 @@
     transition: all 500ms ease; 
   }
 }
+
+/* First breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
+@media all and (min-width: 768px){
+  .grid-listview .ui-content {
+    padding: 9px;
+  }
+  .grid-listview .ui-listview .ui-li.ui-btn {
+    float: left;
+    width: 30.9333%; /* 33.3333% incl. 2 x 1.2% margin */
+    height: 232px;
+    margin: 9px 1.2%;
+    border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
+  }
+}
+
 /* Second breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
 @media all and (min-width: 1020px){
   .grid-listview .ui-content {
