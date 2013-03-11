@@ -292,6 +292,7 @@ define([
           return this;
         case 1:
           items[0]['float'] = 'center';
+          break;
         case 2:
           items[1]['float'] = 'right';
           break;
