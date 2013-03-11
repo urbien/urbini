@@ -109,7 +109,7 @@ define([
               height: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalHeight'.format(p))[0]],            
               metaW: metaP['imageWidth'],
               metaH: metaP['imageHeight'],
-              metaDim: metaP['maxImageDimension'],
+              metaDim: metaP['maxImageDimension']
             };
             
             if (self.isTrigger) {
