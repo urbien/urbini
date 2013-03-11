@@ -167,7 +167,7 @@ define([
                 colorIdx = 0;
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) 
-                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, count: cnt}, common)));
+                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p}, common)));
               else {
                 if (isPropEditable)
                   U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));

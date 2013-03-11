@@ -41,8 +41,8 @@
       <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
-    <div id="photogridHeader" style="padding: 7px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <div id="photogrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
+    <div id="photogrid" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     
@@ -288,11 +288,11 @@
 <script type="text/template" id="cpMainGroupTemplate">
    {{ var params = {}; }}
    {{ params[backlink] = _uri; }}
-   {{ if (typeof count != 'undefined') { }}  
-     <a data-role="button" data-icon="star" style="background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}</a>
+   {{ if (typeof value != 'undefined') { }}  
+     <a data-role="button" data-icon="star" style="background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }} {{= value == 0 ? '' : value }}</a>
    {{ } }}
-   {{ if (typeof count == 'undefined') { }}  
-     <a data-role="button" data-icon="star" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#"><span data-icon="star">{{= name }}</span></a>
+   {{ if (typeof value == 'undefined') { }}  
+     <a data-role="button" data-icon="star" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#">{{= name }}</a>
    {{ } }}
 </script>
 
