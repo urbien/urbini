@@ -88,7 +88,11 @@ define([
         }
       }
       else {
-        RM.saveItem(data, options);
+        var dfd = RM.saveItem(data, options);
+        if (options.success)
+          dfd.done(options.success);
+        else if (options.error)
+          dfd.fail(options.error);
       }
       
       return;
