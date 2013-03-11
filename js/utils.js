@@ -1502,7 +1502,7 @@ define([
       var isEnum = propTemplate === 'enumPET';      
       if (isEnum) {
         var facet = prop.facet;
-        var eCl = C.getEnumModel(U.getLongUri1(facet));
+        var eCl = U.getEnumModel(U.getLongUri1(facet));
         if (!eCl)
           throw new Error("Enum {0} has not yet been loaded".format(facet));
         
