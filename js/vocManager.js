@@ -730,7 +730,6 @@ define([
         var key = Voc.PLUGS_PREFIX + type;
         var current = ls.get(key);
         if (current) {
-          debugger;
           current = JSON.parse(current);
           _.each(typePlugs, function(tPlug) {
             var uri = tPlug._uri;
