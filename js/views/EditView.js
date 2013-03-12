@@ -13,20 +13,7 @@ define([
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
 
-  var scrollerTypes = ['date', 'duration']; //, 'enum'];
-//  var getScrollerModuleName = function(scrollerType) {
-//    switch (scrollerType) {
-//    case 'datetime':
-//      return 'mobiscroll-datetime';
-//    case 'duration':
-//      return 'mobiscroll-duration';
-//    case 'enum':
-//      return 'mobiscroll-enum';
-//      return
-//    }
-//    return 'mobiscroll-' + scrollerType;
-//  }
-    
+  var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
@@ -208,11 +195,6 @@ define([
         else
           chosenRes = options;
         
-//        var isIntersection = self.vocModel;
-//        if (isIntersection) {
-//          
-//        }
-        
         G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
@@ -261,6 +243,9 @@ define([
         else {
           var uri = chosenRes.getUri();
           props[prop] = uri;
+          var resName = U.getDisplayName(chosenRes);
+          if (resName)
+            props[prop + '.displayName'] = resName;
           this.resource.set(props, {skipValidation: true, skipRefresh: true});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
@@ -481,10 +466,16 @@ define([
           webPropType = G.commonTypes.WebProperty,
           self = this;
       
-      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor')))
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: uri, '-info': 'Change interface property names and attributes as you will'}), {trigger: true, forceFetch: true});        
+      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
+        debugger;
+        var iClName = U.getValueDisplayName(res, 'interfaceClass');
+        var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), {trigger: true, forceFetch: true});
+      }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: uri}), {trigger: true, forceFetch: true});        
+        var wClName = U.getValueDisplayName(res, 'domain');
+        var title = wClName ? U.makeHeaderTitle(wClName, 'Strings') : 'Strings';
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), {trigger: true, forceFetch: true});        
 //        window.history.back();
 //        var cloneOf = res.get('cloneOf');
 //        if (cloneOf && cloneOf.count > 0)
@@ -644,7 +635,8 @@ define([
           action = this.action, 
           url = G.apiUrl, 
           form = this.$form, 
-          vocModel = this.vocModel;
+          vocModel = this.vocModel,
+          meta = vocModel.properties;
       
       var atts = {};
       for (var i = 0; i < inputs.length; i++) {
@@ -654,8 +646,10 @@ define([
           continue;
         
         val = this.getValue(input);
-        if (name.indexOf('_select') == -1  ||  !this.vocModel.properties[name.substring(0, name.length - 7)].multiValue)
+        if (name.indexOf('_select') == -1  ||  !meta[name.substring(0, name.length - 7)].multiValue) {
           atts[name] = val;
+          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
+        }
         else {
           var v = atts[name];
           if (!v) {

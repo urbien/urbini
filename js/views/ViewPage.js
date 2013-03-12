@@ -131,7 +131,7 @@ define([
       
       var self = this;
       U.require(viewType, function(viewMod) {        
-        self.imageView = new viewMod(_.extend(commonParams, {el: $(viewDiv, self.el)}));
+        self.imageView = new viewMod(_.extend(commonParams, {el: $(viewDiv, self.el), arrows: false}));
         self.imageView.render();
 //        renderDfd.done(self.imageView.finalize);
       });

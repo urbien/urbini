@@ -990,6 +990,9 @@ define([
       return keys;
     },
     
+    /**
+     * @params (resource or resource.attributes, [model or model.properties])
+     */
     getDisplayName: function(resource, vocModel) {
       var dn = U.getValue(resource, 'davDisplayName');
       if (dn)
@@ -2429,7 +2432,8 @@ define([
     synchronousTypes: [
       'aspects/commerce/Transaction', 
       'commerce/coupon/Deposit', 
-      'model/social/AppInstall'
+      'model/social/AppInstall',
+      'model/social/PushoverAccess'
     ],
     
     canAsync: function(type) {

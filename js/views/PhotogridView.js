@@ -11,7 +11,7 @@ define([
   return BasicView.extend({
     TAG: "PhotogridView",
     initialize: function(options) {
-      _.bindAll(this, 'render', 'finalize'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'finalize', 'goToIntersection'); // fixes loss of context for 'this' within methods
       options = options || {};
       this.constructor.__super__.initialize.apply(this, arguments);
       this.source = options.source;
@@ -22,8 +22,19 @@ define([
       }
       
       this.isTrigger = this.vocModel.type === G.commonTypes.Handler;
-      this.linkToIntersection = options.linkToIntersection;
+      this.showArrows = options.arrows !== false;
+//      this.linkToIntersection = options.linkToIntersection;
       return this;
+    },
+    events: {
+      'click [data-intersection]': 'goToIntersection'
+    },
+    goToIntersection: function(e) {
+      var intersection = e.currentTarget.dataset.intersection;
+      if (intersection)
+        this.router.navigate(U.makeMobileUrl('view', intersection), {trigger:true});
+      else
+        debugger;
     },
     render: function(options) {
       if (this.resource)
@@ -89,7 +100,8 @@ define([
           
           var resUri = res.getUri();
           _.each(['a', 'b'], function(p) {
-            var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+//            var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+            var target = json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
             if (!target)
               return;
             
@@ -123,12 +135,13 @@ define([
               imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
             }
             else
-              imageData.caption = self.getCaption(iProps[p])
+              imageData.caption = self.getCaption(iProps[p]);
             
             if (p === 'b')
               imageData['float'] = 'right';
-            else
-              imageData['hasArrow'] = 'true';
+            else if (self.showArrows)
+              imageData['arrow'] = resUri;
+            
             images.push(imageData);
           });
           
@@ -282,9 +295,9 @@ define([
         if (typeof target == 'undefined') 
           return;
 
-        var plugsCount = resource.get('plugs').count;
+        superscript = isFriendApp ? resource.get('plugs').count : ++i;
         image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
-        items.push({image: image, target: target, title: title, superscript: ++i, caption: caption, titleLink: '#', plugsCount: plugsCount});
+        items.push({image: image, target: target, title: title, superscript: superscript, caption: caption, titleLink: '#'});
       });
       
       switch (items.length) {

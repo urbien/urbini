@@ -383,16 +383,15 @@
     <a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     {{ _.forEach(nets, function(net) { }} 
 
-    <a data-role="button" href="{{= net.url }}"> 
+    <a data-role="button" href="{{= net.url }}">
         <span class="big_symbol 
-        {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-        {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
-        {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-        {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
-        {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+      {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
+      {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+      {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
         "/ >
        </span>
-       {{= net.socialNet }}
+     {{= net.socialNet }}
     </a>
 
     {{ }); }}
@@ -651,10 +650,12 @@
           {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
           {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
-          {{= item.plugsCount ? '<p class="ui-li-aside">{0}'.format(item.plugsCount) : '' }}
+          {{= typeof item.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
         </a> 
       </li>
-      {{= item.hasArrow ? '<li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #888;font-size:16px;" class="ui-icon-chevron-right"></i></li>' : '' }}
+      {{ if (item.arrow) { }}
+         <li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #FFC96C; font-size:20px;" class="ui-icon-chevron-right"></i></li>
+      {{ }                 }}
     {{ } }}
     </ul>
 </script>
