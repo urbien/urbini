@@ -251,8 +251,13 @@ define([
 //            viewCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
             var thumb = json[d[0] + '.thumb'];
             viewCols += '<div style="padding-top:3px;">';
-            if (thumb)
-              viewCols += '<img src="' + thumb + '" />';
+            if (thumb) {
+              var idx = thumb.indexOf('/Image?url=');
+              if (idx == -1)
+                viewCols += '<img src="' + thumb + '" />';
+              else
+                viewCols += '<img src="' + thumb.slice(idx + 11) + '" />';
+            }
 //            viewCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
             viewCols += '<div class="submitter">&#160;&#160;' + json[d[0] + '.displayName'] + '</div>'
             viewCols += '</div>';
