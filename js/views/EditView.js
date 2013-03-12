@@ -469,7 +469,7 @@ define([
     },
     redirect: function(options) {
       var params = U.getQueryParams();
-      if (params.$returnUri)
+      if (params.$returnUri) 
         return this.router.navigate(params.$returnUri, {trigger: true, replace: false, forceFetch: true});
       
       if (this.action === 'edit')

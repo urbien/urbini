@@ -990,19 +990,24 @@ define([
       return keys;
     },
     
-    getDisplayName: function(resource, meta) {
-      var dn = resource.get('davDisplayName');
+    getDisplayName: function(resource, vocModel) {
+      var dn = U.getValue(resource, 'davDisplayName');
       if (dn)
         return dn;
       
-      var vocModel = resource.vocModel;
-      if (!meta) 
+      var meta;
+      if (typeof vocModel === 'function') {
         meta = vocModel.properties;
-      
+      }
+      else {
+        meta = vocModel;
+        vocModel = resource.vocModel || null;
+      }
+        
       var dnProps = U.getDisplayNameProps(meta);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
-        var uri = resource.get('_uri');
+        var uri = U.getValue(resource, '_uri');
         if (!uri)
           return vocModel.displayName;
         var s = uri.split('?');
@@ -1018,7 +1023,7 @@ define([
       for (var i=0; i<dnProps.length; i++) {
         var shortName = dnProps[i],
             prop = meta[shortName],
-            value = resource.get(shortName);
+            value = U.getValue(resource, shortName);
         
         if (value  &&  typeof value != 'undefined') {
           if (first)
