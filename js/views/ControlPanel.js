@@ -100,7 +100,7 @@ define([
 
       var currentAppProps = U.getCurrentAppProps(meta);
 
-      var title = U.getDisplayName(res, meta);
+      var title = U.getDisplayName(res);
       var color = ['rgba(156, 156, 255, 0.8)', 'rgba(255, 0, 255, 0.8)', 'rgba(32, 173, 176, 0.8)', 'rgba(255, 255, 0, 0.8)', 'rgba(255, 156, 156, 0.8)', 'purple'];
       var color1 = ['yellow', 'rgba(156, 156, 255, 0.8)', '#9999ff', 'magenta', 'lightseagreen', '#ff9999', 'purple'];
       var colorIdx = 0;

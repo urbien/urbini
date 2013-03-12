@@ -275,14 +275,10 @@ define('app', [
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
-        var popupTemplate = U.template('loginPopupTemplate');
-        var $popup = $('.ui-page-active #login_popup');
-        var html = popupTemplate({nets: G.socialNets, msg: options.online});
-        if ($popup.length == 0) {
-          $(document.body).append(html);
-          $popup = $('#login_popup');
-        }
-          
+        $('#login_popup').remove();
+        var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online});
+        $(document.body).append(popupHtml);
+        var $popup = $('#login_popup');
         $popup.trigger('create');
         $popup.popup().popup("open");
         return false; // prevents login button highlighting

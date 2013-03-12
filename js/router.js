@@ -71,6 +71,16 @@ define([
     },
     
     navigate: function(fragment, options) {
+      if (fragment.startsWith('http://')) {
+        var appPath = G.serverName + '/' + G.appRoot;
+        if (fragment.startsWith(appPath))
+          fragment = fragment.slice(appPath.length);
+        else {
+          window.location.href = fragment;
+          return;
+        }
+      }
+      
       G.log(this.TAG, 'events', 'navigate', fragment);
       options = options || {};
       _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'removeFromView', 'errMsg', 'info'), {
@@ -284,7 +294,7 @@ define([
         return;
 
       var vocModel = U.getModel(type);
-      if (!this.isAppLoaded(type, 'make', arguments))
+      if (!this.isAppLoadedAndInstalled(type, 'make', arguments))
         return;
 
       var params = U.getHashParams(),
@@ -481,7 +491,21 @@ define([
       }
     },
 
-    isAppLoaded: function(type, method, args) {
+    _getInstallTitle: function(appName, edit) {
+      if (edit)
+        return 'Allow app {0}'.format(appName);
+      else
+        return 'Install app {0}'.format(appName);
+    },
+
+    _getInstallTerms: function(className, edit) {
+      if (edit)        
+        return 'To make a \'{0}\', agree to this app\'s terms'.format(className);
+      else
+        return 'You can make a \'{0}\' as soon as you install this app'.format(className);
+    },
+
+    isAppLoadedAndInstalled: function(type, method, args) {
       if (!U.isAnAppClass(type))
         return true;
       
@@ -492,11 +516,14 @@ define([
         return false;
       }
       
-      var APP_TERMS = 'Before you use this app, you need to agree to its terms and conditions';
+//      var APP_TERMS = 'Make sure you agree to this app\'s terms and conditions';
+      var className = U.getModel(type).displayName;
       var appInfo = user.installedApps && user.installedApps[appPath];
       if (appInfo) {
         if (!appInfo.installed) {
-          this.navigate(U.makeMobileUrl('edit', appInfo.install, {'-info': APP_TERMS, $returnUri: window.location.href}), {trigger: true});
+          var title = this._getInstallTitle(appInfo.davDisplayName);
+          var terms = this._getInstallTerms(className, true);
+          this.navigate(U.makeMobileUrl('edit', appInfo.install, {'-info': terms, $returnUri: window.location.href, $title: title}), {trigger: true});
           return false;
         }
       
@@ -512,7 +539,7 @@ define([
           currentApp = G.currentApp;
       
       Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
-        var installOptions = {'-info': APP_TERMS, $returnUri: window.location.href};
+        var installOptions = {$returnUri: window.location.href};
         var app, appUri, followsList, fetchFollows;
         var fetchFollowsPipe = $.Deferred();
         var appIsCurrentApp = currentApp.appPath === appPath;
@@ -569,7 +596,10 @@ define([
         
         $.when.apply($, [fetchFollowsPipe, fetchApp]).done(function() {
           var followsNames = followsList.pluck('davDisplayName');
-          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, {appPlugs: followsNames.join(','), allow: true, $returnUri: U.getHash()})), {trigger: true}); // check all appPlugs by default
+          var appName = U.getDisplayName(app);
+          var title = self._getInstallTitle(appName);
+          var terms = self._getInstallTerms(className);
+          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, {$title: title, '-info': terms, appPlugs: followsNames.join(','), allow: true, $returnUri: U.getHash()})), {trigger: true}); // check all appPlugs by default
         }).fail(function() {
           debugger;
         });
