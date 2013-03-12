@@ -38,9 +38,9 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 15%"></div>
+      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
     </div>
-    <div id="resourceImageGrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
     <div id="photogrid" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
@@ -654,6 +654,7 @@
           {{= item.plugsCount ? '<p class="ui-li-aside">{0}'.format(item.plugsCount) : '' }}
         </a> 
       </li>
+      {{= item.hasArrow ? '<li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #888;font-size:16px;" class="ui-icon-chevron-right"></i></li>' : '' }}
     {{ } }}
     </ul>
 </script>

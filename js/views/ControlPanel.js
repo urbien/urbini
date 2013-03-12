@@ -84,7 +84,7 @@ define([
       if (this.isMainGroup  &&  !mainGroup)
         return;
       
-      var mainGroupArr = mainGroup ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
+      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});

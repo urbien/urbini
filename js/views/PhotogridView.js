@@ -127,7 +127,8 @@ define([
             
             if (p === 'b')
               imageData['float'] = 'right';
-            
+            else
+              imageData['hasArrow'] = 'true';
             images.push(imageData);
           });
           
