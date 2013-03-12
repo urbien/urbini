@@ -83,6 +83,8 @@ define([
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
       if (this.isMainGroup  &&  !mainGroup)
         return;
+      
+      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
@@ -107,8 +109,8 @@ define([
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
-//          if (mainGroup  &&  !isMainGroup  &&  _.has(mainGroup, grMeta.shortName))
-//            continue;
+          if (!this.isMainGroup  &&  grMeta.mainGroup)
+            continue;
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
@@ -167,7 +169,7 @@ define([
                 colorIdx = 0;
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) 
-                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, count: cnt}, common)));
+                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p}, common)));
               else {
                 if (isPropEditable)
                   U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
@@ -193,6 +195,8 @@ define([
           if (_.has(displayedProps, p))  
             continue;
           if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
+            continue;
+          if (mainGroup  &&  $.inArray(p, mainGroupArr) != -1)
             continue;
           var count = -1;
           if (!_.has(backlinks, p)) {

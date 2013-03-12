@@ -127,7 +127,8 @@ define([
             
             if (p === 'b')
               imageData['float'] = 'right';
-            
+            else
+              imageData['hasArrow'] = 'true';
             images.push(imageData);
           });
           
@@ -280,9 +281,10 @@ define([
         
         if (typeof target == 'undefined') 
           return;
-        
+
+        var plugsCount = resource.get('plugs').count;
         image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
-        items.push({image: image, target: target, title: title, superscript: ++i, caption: caption, titleLink: '#'});
+        items.push({image: image, target: target, title: title, superscript: ++i, caption: caption, titleLink: '#', plugsCount: plugsCount});
       });
       
       switch (items.length) {
