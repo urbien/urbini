@@ -654,7 +654,7 @@
         </a> 
       </li>
       {{ if (item.arrow) { }}
-         <li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #FFC96C; font-size:20px;" class="ui-icon-chevron-right"></i></li>
+        <li class="connect" style="padding:0px; border:0;"><i style="color: #FFC96C;" class="ui-icon-chevron-right"></i></li>
       {{ }                 }}
     {{ } }}
     </ul>
@@ -665,7 +665,7 @@
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
-  <div id="resourceImage"></div><br/>
+  <div id="resourceImage"></div>
   <form data-ajax="false" id="editForm" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
     </ul>
