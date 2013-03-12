@@ -38,10 +38,10 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
+      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 15%"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
-    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
+    <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
     <div id="photogrid" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
@@ -286,14 +286,16 @@
 </script>
 
 <script type="text/template" id="cpMainGroupTemplate">
-   {{ var params = {}; }}
-   {{ params[backlink] = _uri; }}
-   {{ if (typeof value != 'undefined') { }}  
-     <a data-role="button" data-icon="star" style="background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }} {{= value == 0 ? '' : value }}</a>
-   {{ } }}
-   {{ if (typeof value == 'undefined') { }}  
-     <a data-role="button" data-icon="star" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#">{{= name }}</a>
-   {{ } }}
+ {{ var params = {}; }}
+ {{ params[backlink] = _uri; }}
+ {{ if (typeof value != 'undefined') { }}  
+   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     <i class="ui-icon-star-empty" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+   </a>
+ {{ } }}
+ {{ if (typeof value == 'undefined') { }}  
+   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#"><i class="ui-icon-star-empty" style="font-size: 20px;"></i>&#160;{{= name }}</a>
+ {{ } }}
 </script>
 
 
@@ -649,7 +651,7 @@
           {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
           {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
-          {{= item.superscript ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
+          {{= item.plugsCount ? '<p class="ui-li-aside">{0}'.format(item.plugsCount) : '' }}
         </a> 
       </li>
     {{ } }}
