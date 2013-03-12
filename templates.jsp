@@ -654,7 +654,7 @@
           {{= item.plugsCount ? '<p class="ui-li-aside">{0}'.format(item.plugsCount) : '' }}
         </a> 
       </li>
-      {{= item.hasArrow ? '<li class="connect" style="padding:0px; border:0;"><i style="color: #888;" class="ui-icon-chevron-right"></i></li>' : '' }}
+      {{= item.hasArrow ? '<li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>' : '' }}
     {{ } }}
     </ul>
 </script>

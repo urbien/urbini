@@ -47,6 +47,8 @@
     margin: 9px 1.7%;
     border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
   }
+  .grid-listview .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
+  .connect i { font-size:16px; color: #888;}
   /* If you don't want a border at all, just set "border: none;" here to negate the semi white top border */
   .grid-listview .ui-listview .ui-li.ui-btn-inner {
     border: inherit;
@@ -184,7 +186,7 @@
 
 @media all and (min-width: 468px){
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none; background-image:none;}
-  .connect i { font-size:36px;}
+  .connect i { font-size:36px;color: lightgrey;}
 }
 /* 2nd breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
 @media all and (min-width: 768px){
@@ -192,7 +194,7 @@
     padding: 9px;
   }
   .ui-listview .connect { float: left; top:110px; padding:0px; border:0px; background: none; background-image:none;}
-  .connect i { font-size:36px;}
+  .connect i { font-size:36px;color: lightgrey;}
   .grid-listview .ui-listview .ui-li.ui-btn {
     float: left;
     width: 30.9333%; /* 33.3333% incl. 2 x 1.2% margin */
