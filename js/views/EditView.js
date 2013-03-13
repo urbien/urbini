@@ -452,13 +452,15 @@ define([
         }, 1000);
       }
     },
+    
     redirect: function(options) {
       var params = U.getQueryParams();
+      var options = _.extend({replace: true, trigger: true}, options || {});
       if (params.$returnUri) 
-        return this.router.navigate(params.$returnUri, {trigger: true, replace: false, forceFetch: true});
+        return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
       
       if (this.action === 'edit')
-        return this.router.navigate(U.makeMobileUrl(this.resource), {trigger: true, replace: true});
+        return this.router.navigate(U.makeMobileUrl(this.resource), options);
         
       var res = this.resource,
           uri = res.getUri(),
@@ -470,12 +472,12 @@ define([
         debugger;
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), {trigger: true, forceFetch: true});
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
         var wClName = U.getValueDisplayName(res, 'domain');
-        var title = wClName ? U.makeHeaderTitle(wClName, 'Strings') : 'Strings';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), {trigger: true, forceFetch: true});        
+        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));        
 //        window.history.back();
 //        var cloneOf = res.get('cloneOf');
 //        if (cloneOf && cloneOf.count > 0)
@@ -521,7 +523,7 @@ define([
                   redirectPath = blProp.range;
                 else {
                   G.log(this.TAG, 'error', 'couldn\'t create redirect', redirectTo);
-                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), options);
                   return;
                 }
               }
@@ -530,7 +532,7 @@ define([
                 Voc.getModels(range).done(function() {
                   self.redirect.apply(self, args);
                 }).fail(function() {
-                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), options);
                 })
                 
                 return;
