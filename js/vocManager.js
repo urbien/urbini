@@ -467,11 +467,12 @@ define([
             });
           });
         });
-      },
-      
-      abort: function() {
-        this.aborted = true;
       }
+//    ,
+//      
+//      abort: function() {
+//        this.aborted = true;
+//      }
     },
 
     /**
@@ -518,18 +519,22 @@ define([
             causeModel = U.getModel(plug.causeDavClassUri),
             toolSuite = Voc.getPlugToolSuite(cause, causeModel, effect, effectModel, plug);
         
+        var goAhead; 
         try {
           if (plugFn.proxy)
-            plugFn.apply(toolSuite).call({}, cause, effect);
+            goAhead = plugFn.apply(toolSuite).call({}, cause, effect);
           else
-            plugFn.call({}, cause, effect);
+            goAhead = plugFn.call({}, cause, effect);
         } catch (err) {
           Voc.nukePlug(plug, plugFn);
           return;
         }
         
-        if (!_.size(effect))
+        if (goAhead === false)
           return;
+                
+//        if (!_.size(effect))
+//          return;
         
         // copy image props, if both are imageResources. Add more crap like this here (and then make them all separate methods
         if (U.isA(causeModel, "ImageResource") && U.isA(effectModel, "ImageResource")) {
@@ -797,7 +802,6 @@ define([
   });
 
   Events.on('appInstall', function(appInstall) {
-    debugger;
     if (!appInstall.get('allow'))
       return;
    
@@ -811,7 +815,6 @@ define([
     installed[appPath] = jApp;
     
     if (!U.isTempResource(appInstall)) {
-      debugger;
       Voc.fetchPlugs({appInstall: appInstall.getUri()});
     }
   });
