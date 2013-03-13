@@ -200,7 +200,7 @@ define([
         if (i >= lis.length || _.contains(modified, uri)) {
           var liView;
           if (this.isPhotogrid) {
-            liView = new PhotogridView(_.extend(commonParams, {tagName: 'div'}));
+            liView = new PhotogridView(_.extend(commonParams, {tagName: 'div', linkToIntersection: true}));
 //            renderDfd.done(liView.finalize);
           }
           else 

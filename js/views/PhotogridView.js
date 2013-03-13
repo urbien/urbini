@@ -23,7 +23,7 @@ define([
       
       this.isTrigger = this.vocModel.type === G.commonTypes.Handler;
       this.showArrows = options.arrows !== false;
-//      this.linkToIntersection = options.linkToIntersection;
+      this.linkToIntersection = options.linkToIntersection;
       return this;
     },
     events: {
@@ -100,8 +100,8 @@ define([
           
           var resUri = res.getUri();
           _.each(['a', 'b'], function(p) {
-//            var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
-            var target = json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+            var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+//            var target = json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
             if (!target)
               return;
             
@@ -252,18 +252,6 @@ define([
           }
           else
             caption = self.getCaption(resource, intersection[side]);
-//          if (a === source) {
-//            target = b;
-//            image = resource.get(imgB);
-//            title = resource.get(intersectionB + '.displayName');
-//            caption = self.getCaption(resource, intersectionB);
-//          }
-//          else {
-//            target = a;
-//            image = resource.get(imgA);
-//            title = resource.get(intersectionA + '.displayName');
-//            caption = self.getCaption(resource, intersectionB);
-//          }
             
           if (!image && !title)
             return;
