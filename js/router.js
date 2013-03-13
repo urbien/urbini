@@ -65,10 +65,12 @@ define([
     },
     
     defaultOptions: {
-      forceFetch: false,
       extraParams: {},
-      removeFromView: false
+      removeFromView: false,
+      replace: false
     },
+    
+    fragmentToOptions: {},
     
     navigate: function(fragment, options) {
       if (fragment.startsWith('http://')) {
@@ -83,12 +85,14 @@ define([
       
       G.log(this.TAG, 'events', 'navigate', fragment);
       options = options || {};
-      _.extend(this, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'removeFromView', 'errMsg', 'info'), {
+      
+      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'removeFromView', 'errMsg', 'info', 'replace'));
+      _.extend(this, {
         previousView: this.currentView, 
         previousFragment: U.getHash(), 
         previousViewsCache: this.viewsCache
       });
-            
+      
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       _.extend(this, this.defaultOptions);
       return ret;
@@ -168,7 +172,8 @@ define([
       }
       
       var page = this.page = this.page || 1;
-      var forceFetch = this.forceFetch;
+      var options = this.getChangePageOptions();
+      var forceFetch = options.forceFetch;
       
       if (!this.isModelLoaded(typeUri, 'list', arguments))
         return;
@@ -188,7 +193,7 @@ define([
       if (list && cView) {
         this.currentModel = list;
         cView.setMode(mode || G.LISTMODES.LIST);
-        this.changePage(cView, {page: page});
+        this.changePage(cView, _.extend({page: page}));
         Events.trigger('navigateToList.' + list.listId, list);
         list.fetch({page: page, forceFetch: forceFetch});
         this.monitorCollection(list);
@@ -214,7 +219,7 @@ define([
 //          self.loadExtras(oParams);
         },
 //        error: Errors.getDefaultErrorHandler()
-        error: function(collection, xhr, options) {
+        error: function(collection, xhr, opts) {
           if (xhr.status === 204)
             self.changePage(listView);
           else
@@ -223,7 +228,6 @@ define([
       });
       
       this.monitorCollection(list);
-      
       return this;
     },
     
@@ -321,6 +325,10 @@ define([
       }
     },
 
+    getChangePageOptions: function() {
+      return this.fragmentToOptions[U.getHash()] || {};
+    },
+    
     edit: function(path) {
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
@@ -395,7 +403,8 @@ define([
         });
       }
 
-      var forceFetch = this.forceFetch;
+      var options = this.getChangePageOptions();
+      var forceFetch = options.forceFetch;
       var self = this;
       var collection;
       if (!res) {
@@ -622,7 +631,6 @@ define([
     changePage: function(view) {
       try {
         this.changePage1(view);
-//        this.navigateDone();
         return this;
       } finally {
         this.checkErr();
@@ -644,12 +652,15 @@ define([
           
       }
     },
+    
     changePage1: function(view) {
       if (view == this.currentView) {
         G.log(this.TAG, "render", "Not replacing view with itself");
         return;
       }
       
+      var options = this.getChangePageOptions();
+      var replace = options.replace;
       var lostHistory = false;
       if (this.backClicked) {
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
@@ -683,10 +694,11 @@ define([
           }
       
 //          transition = "slide"; //$.mobile.defaultPageTransition;
-          if (this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
+          if (!replace  &&  this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
             this.viewsStack.push(this.currentView);
             this.urlsStack.push(this.currentUrl);
           }
+          
           this.currentView = view;
           this.currentUrl = window.location.href;
         }
@@ -717,6 +729,7 @@ define([
 //        $(window).resize();
 //      if (this.backClicked == true) 
 //        previousView.remove();
+      this.fragmentToOptions = {};
       return view;
     }
   });

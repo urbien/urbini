@@ -17,10 +17,10 @@ define([
 
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
-    initialize: function(options) {
+    initialize: function(atts, options) {
       _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
-      if (options && options._query)
-        this.urlRoot += "?" + options._query;
+//      if (options && options._query)
+//        this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
@@ -29,6 +29,8 @@ define([
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.setDefaults();
+      if (atts)
+        this.parse(atts);
     },
     
     get: function(propName) {
@@ -116,11 +118,7 @@ define([
       this.save(props, options);
     },
     onchange: function(e) {
-//      if (this.vocModel.type.contains('hudsonfog.com/voc/system/designer/'))
-//        Events.trigger('modelUpdate', this.get('davClassUri'));
-      
-//      G.cacheResource(this);
-      Events.trigger('newResource', this);
+//      Events.trigger('newResource', this);
       if (this.lastFetchOrigin !== 'server')
         return;
       
@@ -245,15 +243,20 @@ define([
     },
     
     validateProperty: function(attrs, name, options) {
-      var prop = this.constructor.properties[name];
+      if (name.startsWith('_'))
+        return true;
+      
+      var prop = this.vocModel.properties[name];
       if (!prop || prop.readOnly || prop.backLink || prop.virtual || prop.propertyGroupList)
         return true;
       
       var value = attrs[name];
-      if (U.isNully(value)) {
+      var isNully = U.isNully(value);
+      var propName = U.getPropDisplayName(prop);
+      if (isNully) {
         if (options.validateAll && prop.required && U.isPropEditable(this, prop) && !(this.isNew() && prop.avoidDisplayingOnCreate)) {
           if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
-            return U.getPropDisplayName(prop) + ' is a required field';
+            return propName + ' is a required field';
         }
         else
           return true;
@@ -274,14 +277,14 @@ define([
         else { 
           var val = U.getTypedValue(this, name, value);
           if (val == null || val !== val) { // test for NaN
-            return U.invalid[facet] || 'Invalid value';
+            return isNully ? 'Please fill out this field' : U.invalid[facet] || 'Invalid value';
           }
         }
       }
       else {
         val = U.getTypedValue(this, name, value);
         if (val == null || val !== val) { // test for NaN
-          return U.invalid[prop.range] || 'Invalid value';
+          return isNully ? 'Please fill out this field' : U.invalid[prop.range] || 'Invalid value';
         }
         else
           attrs[name] = val;
@@ -348,7 +351,6 @@ define([
     },
     
     updateCounts: function(res, isNew) {
-      debugger;
       if (!isNew)
         return; // for now
       
@@ -380,7 +382,13 @@ define([
         }
         
         var blVal = _.clone(props[bl]);
-        blVal.count++;
+        if (blVal) {
+          blVal.count++;
+        }
+        else {
+          props[bl] = {count: 1};
+        }
+        
         var atts = {};
         atts[bl] = blVal;
         this.set(atts, {skipValidation: true});
