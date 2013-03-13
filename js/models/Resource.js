@@ -150,7 +150,7 @@ define([
       return retUri;
     },
     isNew: function() {
-      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri());
+      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri()) || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
@@ -342,21 +342,21 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          Events.trigger('updateBacklinkCounts.' + val, isNew);
+          Events.trigger('updateBacklinkCounts.' + val, this, isNew);
         }
       }
     },
     
-    updateCounts: function(isNew) {
-//      debugger;
+    updateCounts: function(res, isNew) {
+      debugger;
       if (!isNew)
         return; // for now
       
-      var vocModel = this.vocModel;
-      var meta = U.getPropertiesWith(vocModel.properties, "backLink");
+      var blVocModel = res.vocModel;
+      var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
       var props = this.attributes;
-      var blRange = vocModel.type;
-      for (var bl in props) {
+      var blRange = blVocModel.type;
+      for (var bl in meta) {
         var blProp = meta[bl];
         if (!blProp)
           continue;
@@ -366,16 +366,16 @@ define([
           continue;
         
         if (blProp.where) {
-          var testFunction = U.buildValueTester(blProp.where, vocModel);
-          if (!testFunction || !testFunction(this))
+          var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          if (!testFunction || !testFunction(res))
             continue;
         }
         
         if (blProp.whereOr) {
           debugger;
           var where = {$or: blProp.whereOr};
-          var testFunction = U.buildValueTester($.param(where), vocModel);
-          if (!testFunction || !testFunction(this))
+          var testFunction = U.buildValueTester($.param(where), blVocModel);
+          if (!testFunction || !testFunction(res))
             continue;
         }
         
@@ -392,6 +392,14 @@ define([
       var appInstallType = G.commonTypes.AppInstall;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
+//      var meta = this.vocModel.properties;
+//      for (var att in data) {
+//        var prop = meta[att];
+//        if (prop && U.isResourceProp(prop)) {
+//          
+//        }
+//      }
+      
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);        
