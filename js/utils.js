@@ -431,7 +431,14 @@ define([
         }
       }
       
-      throw new Error("couldn't parse uri: " + uri);
+      if (uri == '_me') {
+        if (G.currentUser.guest)
+          throw new Error("user is not logged in");
+        else
+          return G.currentUser._uri;
+      }
+      
+      throw new Error("couldn't parse uri: " + uri);          
     },
     
 //    getLongUri: function(uri, hint) {
@@ -1005,6 +1012,7 @@ define([
       else {
         meta = vocModel;
         vocModel = resource.vocModel || null;
+        meta = meta || vocModel && vocModel.properties;
       }
         
       var dnProps = U.getDisplayNameProps(meta);
@@ -1143,7 +1151,8 @@ define([
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
       var now = G.currentServerTime();
       var diff = ((now - parseFloat(time)) / 1000);
-      var day_diff = Math.floor(diff / 86400);
+      var day_diff = diff / 86400;
+      day_diff = day_diff >= 0 ? Math.floor(day_diff) : Math.ceil(day_diff);
           
       if (isNaN(day_diff))
         return null;
