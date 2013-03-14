@@ -1449,7 +1449,7 @@ define([
       return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
     },
     
-    getAppPath: function(title) {
+    getAppPathFromTitle: function(title) {
       return title.replace(/-/g, '_').replace(/[^a-z_1-9eA-Z]/g, '');
     },
     

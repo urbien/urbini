@@ -132,7 +132,7 @@ define([
                 imageData.superscript = 'Effect';
               }
               
-              imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
+//              imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
             }
             else
               imageData.caption = self.getCaption(iProps[p]);
@@ -239,16 +239,22 @@ define([
       var vocModel = vocModel;
       var isFriendApp = U.isAssignableFrom(vocModel, commonTypes.FriendApp);
       var triggerType = commonTypes.Handler;
+      var uris = [];
       this.collection.each(function(resource) {
         var target, image, title, caption;
         if (isIntersection) {
           var iValues = {a: resource.get(intersection.a), b: resource.get(intersection.b)};
           var side = iValues.a === source ? 'b' : 'a';
           target = iValues[side];
+          if (_.contains(uris, target)) // we don't want to display 2 friend resources representing two sides of a friendship
+            return;
+
+          uris.push(target);
           image = resource.get(imgProp[side]);
           title = resource.get(intersection[side] + '.displayName');
           if (isFriendApp) {
-            caption = U.makeHeaderTitle(U.getValueDisplayName(resource, 'friend1'), U.getValueDisplayName(resource, 'friend2'));
+//            caption = U.makeHeaderTitle(U.getValueDisplayName(resource, 'friend1'), U.getValueDisplayName(resource, 'friend2'));
+            caption = ' ';
           }
           else
             caption = self.getCaption(resource, intersection[side]);
