@@ -14,7 +14,7 @@ define([
       'click #try': 'tryApp',
       'click #enterTournament': 'enterTournament',
       'click #fork': 'forkApp',
-      'click #testPlug': 'testPlug'
+      'click #testAppPlug': 'testPlug'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'publish', 'tryApp', 'testPlug', 'forkApp', 'enterTournament');

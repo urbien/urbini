@@ -206,11 +206,11 @@ define([
         log: [LoginButtons]    
       };
       
-      this.header = new Header(_.extend(commonParams, {
+      this.header = new Header(_.extend({
         buttons: this.buttons,
         viewId: this.cid,
         el: $('#headerDiv', this.el)
-      })).render();
+      }, commonParams)).render();
   
       var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
@@ -235,13 +235,13 @@ define([
       var isMV = params  &&  params['$multiValue'] != null;
 //      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
       var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
-      this.listView = new ResourceListView(_.extend(commonParams, {el: $(containerTag, this.el), mode: this.mode}, this.options));
+      this.listView = new ResourceListView(_.extend({el: $(containerTag, this.el), mode: this.mode}, commonParams , this.options));
       this.listView.render();
         
       if (isGeo) {
         U.require(['views/MapView'], function(MV) {
           MapView = MV;
-          self.mapView = new MapView(_.extend(commonParams, {el: self.$('#mapHolder', self.el)}));
+          self.mapView = new MapView(_.extend({el: self.$('#mapHolder', self.el)}, commonParams));
           self.mapView.render();
         });
       }

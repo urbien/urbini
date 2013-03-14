@@ -444,7 +444,7 @@
 </script>
 
 <script type="text/template" id="testPlugTemplate">
-  <a target="#" data-icon="bolt" id="testPlug" data-role="button" date-position="notext">Test this plug</a>
+  <a target="#" data-icon="bolt" id="testAppPlug" data-role="button" date-position="notext">Test this plug</a>
 </script>
 
 <script type="text/template" id="headerTemplate">
