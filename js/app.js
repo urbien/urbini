@@ -275,10 +275,16 @@ define('app', [
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
+        var onDismiss = options.onDismiss;
         $('#login_popup').remove();
-        var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online});
+        var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online, dismissible: !onDismiss});
         $(document.body).append(popupHtml);
         var $popup = $('#login_popup');
+        if (onDismiss)
+          $popup.find('[data-cancel]').click(function() {
+            onDismiss();
+          });
+        
         $popup.trigger('create');
         $popup.popup().popup("open");
         return false; // prevents login button highlighting

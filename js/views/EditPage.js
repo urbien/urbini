@@ -80,9 +80,15 @@ define([
     render:function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
-      var json = res.toJSON();
-      json.viewId = this.cid;
-      this.$el.html(this.template(json));
+//      var json = res.toJSON();
+//      json.viewId = this.cid;
+      var settings = {viewId: this.cid}
+      if (U.isAssignableFrom(this.resource, "AppInstall")) {
+        settings.submit = 'Allow';
+        settings.noCancel = true;
+      }
+      
+      this.$el.html(this.template(settings));
       
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));

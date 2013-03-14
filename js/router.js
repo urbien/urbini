@@ -288,6 +288,17 @@ define([
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
       
+      if (G.currentUser.guest) {
+        Events.trigger('req-login', {
+          returnUri: window.location.href, 
+          onDismiss: function() {
+            window.history.back();
+          }
+        });
+        
+        return;
+      }
+      
       var EditPage = this.EditPage; 
       var parts = path.split('?');
       var type = decodeURIComponent(parts[0]);
@@ -332,6 +343,15 @@ define([
     edit: function(path) {
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
+      else if (G.currentUser.guest) {
+        Events.trigger('req-login', {
+          onDismiss: function() {
+            window.history.back();
+          }
+        });
+        
+        return;
+      }
       else {
         try {
           this.view.call(this, path, true);
@@ -413,7 +433,7 @@ define([
           var result = C.searchCollections(collections, uri);
           if (result) {
             collection = result.collection;
-            res = result.model;
+            res = result.resource;
           }
         }
       }
@@ -507,14 +527,77 @@ define([
         return 'Install app {0}'.format(appName);
     },
 
-    _getInstallTerms: function(className, edit) {
-      if (edit)        
-        return 'To make a \'{0}\', agree to this app\'s terms'.format(className);
-      else
-        return 'You can make a \'{0}\' as soon as you install this app'.format(className);
+    _getInstallTerms: function(className, appName, appPlugs, edit) {
+      if (edit)
+        return 'Edit your inter-app connections here';
+      else {
+        var msg = 'Do you allow app {0} to be added to your profile'.format(className);
+        if (appPlugs.length)
+          return '{0} and connect to app{1}? You can always disconnect apps on their app pages and/or remove them from profile.'.format(className, (appPlugs.length === 1 ? ' ' : 's ') + appPlugs.join(', '));
+        else
+          return '{0}?'.format(msg);
+      }
     },
 
-    isAppLoadedAndInstalled: function(type, method, args) {
+    isAppConfigured: function(app) {
+      var appPath = U.getValue(app, 'appPath');
+      var userAccType = 'http://urbien.com/voc/dev/{0}/UserAccount'.format(appPath);
+      var type = U.getCurrentType();
+      if (type === userAccType)
+        return true;
+      
+      var accountModel = U.getModel(userAccType);
+      if (!accountModel)
+        return true;
+      
+      if (!_.size(_.omit(accountModel.properties, 'davDisplayName', 'davGetLastModified', '_uri', '_shortUri', 'id', 'app', 'user')))
+        return true;
+      
+//      var existing = C.getResource(function(res) {
+//        return res.vocModel == accountModel;
+//      });
+//      
+//      if (existing && existing.length)
+//        return true;
+
+      debugger;
+      var userAccounts = new ResourceList(null, {model: accountModel, params: {
+        user: G.currentUser._uri,
+        app: U.getValue(app, '_uri')
+      }});
+      
+      var redirectOptions = {
+        $returnUri: window.location.href, 
+        '-info': 'Configure your app below', 
+        $title: appPath + ' config'          
+      };
+
+      var self = this;
+      var error = function(uAccs, xhr, options) {
+//      switch (xhr.status) {
+//      case 404:
+        debugger;
+        self.navigate(U.makeMobileUrl('make', accountModel.type, redirectOptions), {trigger: true});            
+//      }
+      };
+      
+      var success = function(resp, status, options) {
+        var acc = userAccounts.models && userAccounts.models[0];
+        if (acc)
+          self.navigate(U.makeMobileUrl('edit', userAccounts.models[0], redirectOptions), {trigger: true});
+        else
+          error(userAccounts, status, options);
+      }
+      
+      userAccounts.fetch({
+        success: success,
+        error: error
+      });
+
+      return false;
+    },
+    
+    isAppLoadedAndInstalled: function(type) {
       if (!U.isAnAppClass(type))
         return true;
       
@@ -529,14 +612,24 @@ define([
       var className = U.getModel(type).displayName;
       var appInfo = user.installedApps && user.installedApps[appPath];
       if (appInfo) {
-        if (!appInfo.installed) {
+        if (!appInfo.allowed) {
           var title = this._getInstallTitle(appInfo.davDisplayName);
-          var terms = this._getInstallTerms(className, true);
-          this.navigate(U.makeMobileUrl('edit', appInfo.install, {'-info': terms, $returnUri: window.location.href, $title: title}), {trigger: true});
+          var redirectOptions = {
+            $returnUri: U.getHash(), 
+            $title: title, 
+            allow: true
+          };
+          
+          var terms = this._getInstallTerms(className, appInfo.title, null, true);
+          if (terms) {
+            redirectOptions['-info'] = terms;
+          }
+          
+          this.navigate(U.makeMobileUrl('edit', appInfo.install, redirectOptions), {trigger: true, replace: true});
           return false;
         }
       
-        return true;
+        return this.isAppConfigured(appInfo);
       }
 
       // theoretically, we can only be in G.currentApp, and it's not installed
@@ -604,11 +697,29 @@ define([
         });
         
         $.when.apply($, [fetchFollowsPipe, fetchApp]).done(function() {
-          var followsNames = followsList.pluck('davDisplayName');
+          var installedAppUris = _.pluck(user.installedApps, '_uri');
+          followsList = followsList.filter(function(friend) {
+            var target = friend.get('friend2');
+            return _.contains(installedAppUris, target);
+          });
+          
+          var followsNames = _.pluck(followsList, 'davDisplayName');
+          var followsCSV = followsNames.join(', ');
           var appName = U.getDisplayName(app);
           var title = self._getInstallTitle(appName);
-          var terms = self._getInstallTerms(className);
-          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, {$title: title, '-info': terms, appPlugs: followsNames.join(','), allow: true, $returnUri: U.getHash()})), {trigger: true}); // check all appPlugs by default
+          var redirectOptions = {
+            $returnUri: U.getHash(), 
+            $title: title, 
+            allow: true,
+            appPlugs: followsCSV
+          };
+          
+          var terms = self._getInstallTerms(className, appName, followsNames);
+          if (terms) {
+            redirectOptions['-info'] = terms;
+          }
+
+          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default
         }).fail(function() {
           debugger;
         });

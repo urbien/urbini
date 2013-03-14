@@ -810,8 +810,8 @@ define([
     var app = C.getResource(appInstall.get('application'));
     var jApp = app ? app.toJSON() : {};
     jApp.install = appInstall.getUri();
-    jApp.installed = true;
-    var appPath = app ? app.get('appPath') : U.getAppPath(appInstall.get('application.displayName'));
+    jApp.allowed = true;
+    var appPath = app ? app.get('appPath') : U.getAppPathFromTitle(appInstall.get('application.displayName'));
     installed[appPath] = jApp;
     
     if (!U.isTempResource(appInstall)) {

@@ -378,9 +378,11 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
-  <div id="login_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
+  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
+  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
     <h4 id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    
     {{ _.forEach(nets, function(net) { }} 
 
     <a data-role="button" href="{{= net.url }}">
@@ -442,7 +444,7 @@
 </script>
 
 <script type="text/template" id="testPlugTemplate">
-  <a target="#" data-icon="bolt" id="testPlug" data-role="button" date-position="notext">Test this Plug / Socket</a>
+  <a target="#" data-icon="bolt" id="testPlug" data-role="button" date-position="notext">Test this plug</a>
 </script>
 
 <script type="text/template" id="headerTemplate">
@@ -654,7 +656,7 @@
         </a> 
       </li>
       {{ if (item.arrow) { }}
-        <li class="connect" style="padding:0px; border:0;"><i style="color: #FFC96C;" class="ui-icon-chevron-right"></i></li>
+         <li class="connect" style="padding:0px; border:0;"><i style="color: #FFC96C;" class="ui-icon-chevron-right"></i></li>
       {{ }                 }}
     {{ } }}
     </ul>
@@ -672,10 +674,16 @@
     
     <div name="errors" style="float:left"></div>
     <div class="ui-body ui-body-b">
+    {{ if (obj.noCancel) {  }} 
+        <button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button>
+    {{ }                    }}
+    {{ if (!obj.noCancel) { }}
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">Cancel</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">Submit</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
       </fieldset>
+    {{ }                    }}
+
     </div>
   </form>
 </div>
