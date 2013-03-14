@@ -1429,7 +1429,7 @@ define([
       }
       
       if (prop.script) {
-        val = '<blockquote><pre><code>{0}</code></pre></blockquote>'.format(val);
+        val = '<pre><code>{0}</code></pre>'.format(val);
       }
       
       val = val || res.get(propName) || '';
