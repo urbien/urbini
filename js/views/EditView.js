@@ -400,9 +400,9 @@ define([
       $('form').clearForm();      
 //      this.originalResource = this.resource.toJSON();
     },
-    getInput: function(selector) {
-      return this.$form.find('input').or('textarea').find(selector);
-    },
+//    getInput: function(selector) {
+//      return this.$form.find('input').add('textarea').add('.resourceProp');
+//    },
     getInputs: function() {
 //      return this.$form.find('.formElement,.resourceProp');
       return this.$form.find('[data-formEl]');
@@ -418,13 +418,17 @@ define([
       var badInputs = [];
       var errDiv = this.$form.find('div[name="errors"]');
       errDiv.empty();
+      var inputs = this.getInputs();
       for (name in errors) {
         var msg = errors[name];
         var madeError = false;
-        var input = this.$form.find('input[name="{0}"]'.format(name));
+        var input = inputs.filter(function(idx, inp) {
+          return (inp.name === name);
+        });
+        
         var id;
-        if (input.length) {        
-          badInputs.push(input);
+        if (input.length) {
+          badInputs.push(input[0]);
           var id = input[0].id;
           var err = this.$form.find('label.error[for="{0}"]'.format(id));
           if (err.length) {
@@ -448,17 +452,19 @@ define([
       
       if (badInputs.length) {
         $('html, body').animate({
-          scrollTop: badInputs[0].offset().top - 10
+          scrollTop: $(badInputs[0]).offset().top - 10
         }, 1000);
       }
     },
+    
     redirect: function(options) {
       var params = U.getQueryParams();
+      var options = _.extend({replace: true, trigger: true}, options || {});
       if (params.$returnUri) 
-        return this.router.navigate(params.$returnUri, {trigger: true, replace: false, forceFetch: true});
+        return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
       
       if (this.action === 'edit')
-        return this.router.navigate(U.makeMobileUrl(this.resource), {trigger: true, replace: true});
+        return this.router.navigate(U.makeMobileUrl(this.resource), options);
         
       var res = this.resource,
           uri = res.getUri(),
@@ -470,12 +476,12 @@ define([
         debugger;
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), {trigger: true, forceFetch: true});
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
         var wClName = U.getValueDisplayName(res, 'domain');
-        var title = wClName ? U.makeHeaderTitle(wClName, 'Strings') : 'Strings';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), {trigger: true, forceFetch: true});        
+        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));        
 //        window.history.back();
 //        var cloneOf = res.get('cloneOf');
 //        if (cloneOf && cloneOf.count > 0)
@@ -521,7 +527,7 @@ define([
                   redirectPath = blProp.range;
                 else {
                   G.log(this.TAG, 'error', 'couldn\'t create redirect', redirectTo);
-                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), options);
                   return;
                 }
               }
@@ -530,7 +536,7 @@ define([
                 Voc.getModels(range).done(function() {
                   self.redirect.apply(self, args);
                 }).fail(function() {
-                  self.router.navigate(U.makeMobileUrl('view', uri), {trigger: true});
+                  self.router.navigate(U.makeMobileUrl('view', uri), options);
                 })
                 
                 return;
@@ -981,9 +987,7 @@ define([
       var view = this;
       
       var initInputs = function(inputs) {
-        for (var i=0; i<inputs.length; i++) {
-          var input = inputs[i];
-//          var i = input;
+        _.each(inputs, function(input) {
           var name = input.name;
           var jin = $(input);
           var jparent = jin.parent();
@@ -999,7 +1003,7 @@ define([
           };
           
           jin.focusout(onFocusout);
-        }
+        });
 //        jin.keyup(onFocusout);
       };
 

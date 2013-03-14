@@ -1475,7 +1475,9 @@ define([
   });
   
   Events.on('resourcesChanged', function(toAdd) {
-    setTimeout(function() {RM.addItems(toAdd)}, 100);
+    setTimeout(function() {
+      RM.addItems(toAdd)
+    }, 100);
   });
 
   Events.on('userChanged', function() {

@@ -17,10 +17,10 @@ define([
 
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
-    initialize: function(options) {
+    initialize: function(atts, options) {
       _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
-      if (options && options._query)
-        this.urlRoot += "?" + options._query;
+//      if (options && options._query)
+//        this.urlRoot += "?" + options._query;
       
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
@@ -29,6 +29,8 @@ define([
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.setDefaults();
+      if (atts)
+        this.parse(atts);
     },
     
     get: function(propName) {
@@ -116,11 +118,7 @@ define([
       this.save(props, options);
     },
     onchange: function(e) {
-//      if (this.vocModel.type.contains('hudsonfog.com/voc/system/designer/'))
-//        Events.trigger('modelUpdate', this.get('davClassUri'));
-      
-//      G.cacheResource(this);
-      Events.trigger('newResource', this);
+//      Events.trigger('newResource', this);
       if (this.lastFetchOrigin !== 'server')
         return;
       
@@ -150,7 +148,7 @@ define([
       return retUri;
     },
     isNew: function() {
-      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri());
+      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri()) || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
@@ -245,15 +243,20 @@ define([
     },
     
     validateProperty: function(attrs, name, options) {
-      var prop = this.constructor.properties[name];
+      if (name.startsWith('_'))
+        return true;
+      
+      var prop = this.vocModel.properties[name];
       if (!prop || prop.readOnly || prop.backLink || prop.virtual || prop.propertyGroupList)
         return true;
       
       var value = attrs[name];
-      if (U.isNully(value)) {
+      var isNully = U.isNully(value);
+      var propName = U.getPropDisplayName(prop);
+      if (isNully) {
         if (options.validateAll && prop.required && U.isPropEditable(this, prop) && !(this.isNew() && prop.avoidDisplayingOnCreate)) {
           if (!prop.writeJS && !prop.formulaJS && !prop.formula && !U.isCloneOf(prop, 'Submission.submittedBy'))
-            return U.getPropDisplayName(prop) + ' is a required field';
+            return propName + ' is a required field';
         }
         else
           return true;
@@ -274,14 +277,14 @@ define([
         else { 
           var val = U.getTypedValue(this, name, value);
           if (val == null || val !== val) { // test for NaN
-            return U.invalid[facet] || 'Invalid value';
+            return isNully ? 'Please fill out this field' : U.invalid[facet] || 'Invalid value';
           }
         }
       }
       else {
         val = U.getTypedValue(this, name, value);
         if (val == null || val !== val) { // test for NaN
-          return U.invalid[prop.range] || 'Invalid value';
+          return isNully ? 'Please fill out this field' : U.invalid[prop.range] || 'Invalid value';
         }
         else
           attrs[name] = val;
@@ -342,21 +345,20 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          Events.trigger('updateBacklinkCounts.' + val, isNew);
+          Events.trigger('updateBacklinkCounts.' + val, this, isNew);
         }
       }
     },
     
-    updateCounts: function(isNew) {
-//      debugger;
+    updateCounts: function(res, isNew) {
       if (!isNew)
         return; // for now
       
-      var vocModel = this.vocModel;
-      var meta = U.getPropertiesWith(vocModel.properties, "backLink");
+      var blVocModel = res.vocModel;
+      var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
       var props = this.attributes;
-      var blRange = vocModel.type;
-      for (var bl in props) {
+      var blRange = blVocModel.type;
+      for (var bl in meta) {
         var blProp = meta[bl];
         if (!blProp)
           continue;
@@ -366,21 +368,27 @@ define([
           continue;
         
         if (blProp.where) {
-          var testFunction = U.buildValueTester(blProp.where, vocModel);
-          if (!testFunction || !testFunction(this))
+          var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          if (!testFunction || !testFunction(res))
             continue;
         }
         
         if (blProp.whereOr) {
           debugger;
           var where = {$or: blProp.whereOr};
-          var testFunction = U.buildValueTester($.param(where), vocModel);
-          if (!testFunction || !testFunction(this))
+          var testFunction = U.buildValueTester($.param(where), blVocModel);
+          if (!testFunction || !testFunction(res))
             continue;
         }
         
         var blVal = _.clone(props[bl]);
-        blVal.count++;
+        if (blVal) {
+          blVal.count++;
+        }
+        else {
+          props[bl] = {count: 1};
+        }
+        
         var atts = {};
         atts[bl] = blVal;
         this.set(atts, {skipValidation: true});
@@ -392,6 +400,14 @@ define([
       var appInstallType = G.commonTypes.AppInstall;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
+//      var meta = this.vocModel.properties;
+//      for (var att in data) {
+//        var prop = meta[att];
+//        if (prop && U.isResourceProp(prop)) {
+//          
+//        }
+//      }
+      
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);        
