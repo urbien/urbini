@@ -10,13 +10,7 @@ define([
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
-//  var useWebSQL = typeof window.webkitIndexedDB === 'undefined' && window.shimIndexedDB;
-//  useWebSQL && window.shimIndexedDB.__useShim();
-//  var useWebSQL = true;
-//  window.shimIndexedDB.__useShim();
-//  var IDBCursor = $.indexedDB.IDBCursor;
-//  var useWebSQL = false;
-//  idbq.init();
+//  window.idbModules.DEBUG = G.minify === false;
   var parse = function(items) {
     return parseFromDB(items);
   },
@@ -555,7 +549,7 @@ define([
       cols = _.filter(cols, function(c) {
         var p = props[c];
         return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
-      });
+      }).concat('_uri');
       
       return _.map(cols, prepPropNameForDB);
     },
@@ -1108,8 +1102,8 @@ define([
       case '$in':
         var commaIdx = val.indexOf(',');
         name = val.slice(0, commaIdx);
-        val = val.slice(commaIdx + 1);
-        break;
+        val = val.slice(commaIdx + 1).split(',');
+        return RM.Index(name).oneof.apply(null, val);
       }
       
       
