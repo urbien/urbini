@@ -89,8 +89,7 @@ define([
       this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'removeFromView', 'errMsg', 'info', 'replace'));
       _.extend(this, {
         previousView: this.currentView, 
-        previousFragment: U.getHash(), 
-        previousViewsCache: this.viewsCache
+        previousFragment: U.getHash() 
       });
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
@@ -183,13 +182,13 @@ define([
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
-      this.viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       var list = C.getResourceList(typeUri, key);
       if (list && !list._lastFetchedOn)
         list = null;
       
       var meta = model.properties;      
-      var cView = this.CollectionViews[typeUri][key];
+      var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
+      var cView = viewsCache[key];
       if (list && cView) {
         this.currentModel = list;
         cView.setMode(mode || G.LISTMODES.LIST);
@@ -325,7 +324,6 @@ define([
         mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousFragment});
       }
       
-      this.viewsCache = this.MkResourceViews;
       this.currentModel = mPage.resource;
       mPage.set({action: 'make'});
       try {
@@ -366,7 +364,7 @@ define([
       if (!edit && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
       
-      var views = this.viewsCache = this[edit ? 'EditViews' : 'Views'];
+      var views = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? this.EditPage : this.ViewPage;
 
       var params = U.getHashParams();
@@ -745,22 +743,6 @@ define([
         return this;
       } finally {
         this.checkErr();
-//        if (this.removeFromView) {
-//          var self = this;
-//          this.previousView && this.previousView.close();
-//          var cache = this.previousViewsCache;
-//          if (cache) {
-//            var c = U.filterObj(cache, function(key, val) {
-//              return val === self.previousView;
-//            });
-//            
-//            if (_.size(c))
-//              delete cache[U.getFirstProperty(cache)];
-//          }
-//          
-//          delete this.previousView;
-//        }
-          
       }
     },
     
