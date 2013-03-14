@@ -262,7 +262,10 @@ define([
           if (!image && !title)
             return;
           
-          if (isFriendApp) {
+          if (self.linkToIntersection)
+            target = U.makePageUrl('view', target);
+          else {
+//          if (isFriendApp) {
             var and1 = $.param({
               fromApp: iValues.a,
               toApp: iValues.b
@@ -277,8 +280,6 @@ define([
               $or: U.makeOrGroup($.param({$and: and1}), $.param({$and: and2}))
             });
           }
-          else
-            target = U.makePageUrl('view', target);
         }
         else {
           target = U.makePageUrl(resource);
