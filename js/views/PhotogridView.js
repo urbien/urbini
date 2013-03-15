@@ -263,22 +263,26 @@ define([
             return;
           
           if (self.linkToIntersection)
-            target = U.makePageUrl('view', target);
+            target = U.makePageUrl('view', resource);
           else {
-//          if (isFriendApp) {
-            var and1 = $.param({
-              fromApp: iValues.a,
-              toApp: iValues.b
-            });
-
-            var and2 = $.param({
-              fromApp: iValues.b,
-              toApp: iValues.a
-            });
-
-            target = U.makePageUrl('list', triggerType, {
-              $or: U.makeOrGroup($.param({$and: and1}), $.param({$and: and2}))
-            });
+            if (isFriendApp) {
+              var and1 = $.param({
+                fromApp: iValues.a,
+                toApp: iValues.b
+              });
+  
+              var and2 = $.param({
+                fromApp: iValues.b,
+                toApp: iValues.a
+              });
+  
+              target = U.makePageUrl('list', triggerType, {
+                $or: U.makeOrGroup($.param({$and: and1}), $.param({$and: and2}))
+              });
+            }
+            else {
+              target = U.makePageUrl('view', target);
+            }
           }
         }
         else {
