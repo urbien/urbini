@@ -33,7 +33,12 @@ define(['jqueryIndexedDB'], function() {
       between: queryMaker("between"),
       betweeq: queryMaker("betweeq"),
       oneof:   function oneof() {
-        var values = Array.prototype.slice.call(arguments);
+        var values;
+        if (Object.prototype.toString.call(arguments[0]) === '[object Array]')
+          values = arguments[0];
+        else
+          values = Array.prototype.slice.call(arguments);
+        
         var query = IndexQuery(name, "eq", [values.shift()]);
         while (values.length) {
           query = query.or(IndexQuery(name, "eq", [values.shift()]));
