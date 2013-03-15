@@ -38,7 +38,7 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
+      <div id="mainGroup" class="ui-block-b" style="float:right; width: 32%"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
