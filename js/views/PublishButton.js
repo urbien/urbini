@@ -114,10 +114,11 @@ define([
       });
       return this;
     },
+    
     forkApp: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
-      this.router.navigate(U.makeMobileUrl('make', 'model/social/App', {basedOnTemplate: res.getUri()}), {trigger: true});
+      this.router.navigate(U.makeMobileUrl('make', 'model/social/App', {forkedFrom: res.getUri()}), {trigger: true});
     },
 
     render: function(options) {
