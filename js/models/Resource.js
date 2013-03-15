@@ -398,6 +398,7 @@ define([
     },
     
     save: function(attrs, options) {
+      this.loaded = true;
       var isNew = this.isNew();
       var appInstallType = G.commonTypes.AppInstall;
       options = _.extend({patch: true, silent: true}, options || {});
