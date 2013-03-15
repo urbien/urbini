@@ -105,10 +105,11 @@ define(['globals', 'utils'], function(G, U) {
 //        var redefer = yields ? [runNonSeq(true)] : []; 
         $.when.apply($, yieldsFor.length ? [runNonSeq(yieldsFor, true)] : []).always(function() {  // if non-yielding, then run right away, otherwise force queued up non-sequentials to run first
           G.log(q.TAG, 'db', q.name, 'Running sequential task:', name);
-          var taskPromise = new $.Deferred(function() {
+          var taskDfd = new $.Deferred(function() {
             task.apply(this, []);
-          }).promise();
+          });
           
+          var taskPromise = taskDfd.promise();
           taskPromise.name = name;
           q.runningTasks.push(taskPromise);
           taskPromise.always(function() {
@@ -131,6 +132,13 @@ define(['globals', 'utils'], function(G, U) {
             
             defer.resolve();
           }.bind(q));
+          
+          setTimeout(function() {
+            if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
+              debugger; // sth went wrong with task, it didn't finish
+              taskDfd.reject(null, {code: 0, type: 'timeout'});
+            }
+          }, 10000);
         }.bind(q));
       }.bind(q));
       
