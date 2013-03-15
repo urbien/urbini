@@ -292,6 +292,7 @@ var idbModules = window.idbModules = {};
                 success(undefined, undefined);
             }
         }, function(tx, data){
+            debugger;
             idbModules.DEBUG && console.log("Could not execute Cursor.continue");
             error(data);
         });

@@ -31,6 +31,8 @@ define([
       this.setDefaults();
       if (atts)
         this.parse(atts);
+      
+      Events.trigger('newResource', this);      
     },
     
     get: function(propName) {

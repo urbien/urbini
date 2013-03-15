@@ -2306,11 +2306,19 @@ define([
           
           break;
         case '$in':
-          debugger;
-          var or = {}, propName = clause[0];
+          var or = {};
+          var values = clause.value.split(',');
+          var propName = values[0];
+          var prop = meta[propName];
+          if (!prop) {
+            debugger;
+            return function() {return true};
+          }
+          
+          values = values.slice(1);
           var chain = [];
-          for (var i = 1; i < clause.length; i++) {
-            var test = U.makeTest(meta[param], U.DEFAULT_WHERE_PARAMETER, clause[i]);
+          for (var i = 1; i < values.length; i++) {
+            var test = U.makeTest(prop, U.DEFAULT_WHERE_OPERATOR, values[i]);
             chain.push(test);
           }
           

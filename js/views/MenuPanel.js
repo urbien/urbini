@@ -216,11 +216,27 @@ define([
               U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
           }
         }
-        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
+        
+        var user = G.currentUser;
+        var installed = user.installedApps;
+        if (_.size(installed)) {
+//          // get the _uri values of all the apps, cut out their primary key appId, make a small csv. Url hashes can be arbirarily long? 
+//          var $in = 'appId,' + _.map(_.pluck(_.toArray(installed), '_uri'), function(uri) {
+//            return uri.slice(uri.indexOf('=') + 1);
+//          }).join(',');
+          
+        var $in = '_uri,' + _.pluck(_.toArray(installed), '_uri').join(',');
+          
+          // Apps I installed
+          U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in})}));          
+        }
+        
+        // Apps I created
+//        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
-        if (G.currentUser.newAlertsCount) {
+        if (user.newAlertsCount) {
 //          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: G.currentUser.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));
         }
         
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
