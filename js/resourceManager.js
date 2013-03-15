@@ -767,7 +767,7 @@ define([
               ref._tempUri = tempUri;
             
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
-              Events.trigger('synced.' + oldUri, data);
+              Events.trigger('synced:' + oldUri, data);
               if (model.collection)
                 Events.trigger('refresh', newUri);
               
@@ -1478,7 +1478,7 @@ define([
     RM.databaseCompromised = true;
   });
 
-  Events.on('VERSION.Models', function(init) {
+  Events.on('VERSION:Models', function(init) {
     var dbOpen = RM.db;
     var settings = {sequential: true, preventPileup: true};
     RM.runTask(function() { // take over the queue

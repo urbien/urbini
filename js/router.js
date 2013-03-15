@@ -66,7 +66,6 @@ define([
     
     defaultOptions: {
       extraParams: {},
-      removeFromView: false,
       replace: false
     },
     
@@ -86,7 +85,7 @@ define([
       G.log(this.TAG, 'events', 'navigate', fragment);
       options = options || {};
       
-      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'removeFromView', 'errMsg', 'info', 'replace'));
+      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'errMsg', 'info', 'replace'));
       _.extend(this, {
         previousView: this.currentView, 
         previousFragment: U.getHash() 
@@ -193,7 +192,7 @@ define([
         this.currentModel = list;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, _.extend({page: page}));
-        Events.trigger('navigateToList.' + list.listId, list);
+        Events.trigger('navigateToList:' + list.listId, list);
         list.fetch({page: page, forceFetch: forceFetch});
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
@@ -248,7 +247,7 @@ define([
         if (!U.isTempUri(uri))
           continue;
         
-        Events.once('synced.' + uri, function(data) {
+        Events.once('synced:' + uri, function(data) {
           params[param] = data._uri;
           var updateHash = function() {
 //            debugger;
@@ -408,7 +407,7 @@ define([
         res = null;
 
       if (U.isTempUri(uri)) {
-        Events.once('synced.' + uri, function() {
+        Events.once('synced:' + uri, function() {
           var currentView = self.currentView;
           var updateHash = function() {
             self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
@@ -417,7 +416,7 @@ define([
           if (currentView && currentView.resource === res)
             updateHash();
           else
-            Events.once('navigateToResource.' + res.resourceId, updateHash);
+            Events.once('navigateToResource:' + res.resourceId, updateHash);
         });
       }
 
@@ -440,7 +439,7 @@ define([
         this.currentModel = res;
         var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
         this.changePage(v);
-        Events.trigger('navigateToResource.' + res.resourceId, res);
+        Events.trigger('navigateToResource:' + res.resourceId, res);
         res.fetch({forceFetch: forceFetch});                
         return this;
       }
@@ -450,7 +449,7 @@ define([
       var changedPage = false;
       var success = function() {
         self.changePage(v);
-        Events.trigger('navigateToResource.' + res.resourceId, res);
+        Events.trigger('navigateToResource:' + res.resourceId, res);
         Voc.fetchModelsForLinkedResources(res);
       };
       

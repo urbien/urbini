@@ -39,7 +39,7 @@ define([
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
-      this.url = this.baseUrl;      
+      this.url = this.baseUrl;
       this.params[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
@@ -220,6 +220,7 @@ define([
       
       return this.sync('read', this, options);
     },
+    
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.resources.length;

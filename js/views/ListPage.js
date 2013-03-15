@@ -140,7 +140,7 @@ define([
           }
           
           res.lastFetchOrigin = null;
-          self.redirect(res, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
+          self.redirect(res, {trigger: true, replace: true, forceFetch: true});
         }
         
       });
@@ -170,7 +170,7 @@ define([
       var isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       var hash = window.location.hash;
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type);
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || U.isCreatable(type);
       var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');

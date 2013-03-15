@@ -195,6 +195,10 @@ define([
       return type.indexOf("/voc/dev/") != -1;
     },
     
+    getTypes: function(vocModel) {
+      return _.union(vocModel.type, vocModel.superClasses || []);
+    },
+    
     getUserRole: function() {
       return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
     },
@@ -316,6 +320,39 @@ define([
 //      
 //      return false;
 //    },
+    
+    isCreatable: function(type, userRole) {
+      if (G.currentUser.guest)
+        return false;
+      
+      if (type.startsWith(G.defaultVocPath + 'system/designer/'))
+        return true;
+      
+      userRole = userRole || U.getUserRole();
+      var urbienModel = U.getModel(G.commonTypes.Urbien);
+      var backlinks = U.getPropertiesWith(urbienModel.properties, [{name: "backLink"}, {name: 'range', values: [type, type.slice(type.indexOf('/voc/') + 5)]}]);
+      if (!_.size(backlinks))
+        return false;
+      
+      for (var blName in backlinks) {
+        var blProp = backlinks[blName];
+        if (!U.isPropEditable(U.mimicResource(G.currentUser), blProp, userRole))
+          return false;
+      }
+      
+      return true;
+    },
+    
+    mimicResource: function(json) {
+      return {
+        get: function(prop) {
+          return json[prop];
+        },
+        getUri: function() {
+          return json._uri;
+        }
+      }
+    },
     
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
@@ -1881,6 +1918,8 @@ define([
       preserve = preserve || [];
       var props = vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
+        if (/\./.test(key))
+          return false;
         var prop = props[key];
         return !U.isSystemProp(key) && prop && (_.contains('backLink') || !prop.backLink) && (U.isResourceProp(prop) || (_.contains('readOnly') || !prop.readOnly)) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
       }); // is writeable, starts with a letter and doesn't contain a '.'
@@ -2479,6 +2518,14 @@ define([
         return text;
       
       return text.slice(0, length) + '...';
+    },
+    
+    fixResourceJSON: function(item, vocModel) {
+      var meta = vocModel.properties;
+      for (var p in item) {
+        if (!/_/.test(p) && !meta[p])
+          delete item[p];
+      }
     }
     
 //    where: function(res, where) {

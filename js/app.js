@@ -311,7 +311,7 @@ define('app', [
           debugger;
           G.setVersion(newV);
           for (var key in newV) {
-            Events.trigger('VERSION.' + key, init);
+            Events.trigger('VERSION:' + key, init);
           }
           
           return;
@@ -326,7 +326,7 @@ define('app', [
               setVersion = true;
             }
             
-            Events.trigger('VERSION.' + key, init);              
+            Events.trigger('VERSION:' + key, init);              
           }
         }
       };

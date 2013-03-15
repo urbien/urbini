@@ -378,7 +378,7 @@ define([
       
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
-      _.extend(m.properties, Resource.properties);
+      _.defaults(m.properties, Resource.properties);
       m.superClasses = _.map(m.superClasses, U.getLongUri1);
       _.extend(m.properties, U.systemProps);
       m.prototype.initialize = Voc.getInit.apply(m);
@@ -502,7 +502,7 @@ define([
       }
       
       _.each(Voc.scriptActions, function(action) {        
-        Events.off(action + '.' + causeType, plugFn);
+        Events.off(action + ':' + causeType, plugFn);
       });
     },
     
@@ -618,7 +618,7 @@ define([
           if (script === null)
             G.log(Voc.TAG, 'error', 'bad custom createScript', plug.app, type);
           else
-            Events.on(action + '.' + type, Voc.preparePlug(script, plug));
+            Events.on(action + ':' + type, Voc.preparePlug(script, plug));
         }          
       }
     },
@@ -819,7 +819,7 @@ define([
     }
   });
   
-  Events.on('VERSION.Models', function(init) {
+  Events.on('VERSION:Models', function(init) {
 //    debugger;
     G.localStorage.clean(function(key) {
       return _.any([Voc.MODEL_PREFIX], function(prefix) {

@@ -86,17 +86,17 @@ define([
       var callback = function(data) {
         var uri = self.getUri();
         if (data._oldUri === uri) {
-          Events.off('synced.' + uri, callback);
-          Events.on('synced.' + data._uri, callback);
-          Events.off('updateBacklinkCounts.' + uri, self.updateCounts);
-          Events.on('updateBacklinkCounts.' + data._uri, self.updateCounts);
+          Events.off('synced:' + uri, callback);
+          Events.on('synced:' + data._uri, callback);
+          Events.off('updateBacklinkCounts:' + uri, self.updateCounts);
+          Events.on('updateBacklinkCounts:' + data._uri, self.updateCounts);
         }
         
         self.set(data);
       }
       
-      Events.on('synced.' + resUri, callback);
-      Events.on('updateBacklinkCounts.' + resUri, this.updateCounts);
+      Events.on('synced:' + resUri, callback);
+      Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
     cancel: function(options) {
@@ -215,7 +215,8 @@ define([
         this.subscribeToUpdates();
       
       var self = this;
-      if (!options || !options.silent) {
+      options = options || {};
+      if (!options.silent) {
         props = U.filterObj(props, function(name, val) {
           return willSave(self, name, val);
         })
@@ -224,7 +225,33 @@ define([
           return;
       }
       
+      if (!options.sync) {
+        var vocModel = this.getModel();
+        var meta = vocModel.properties;
+        for (var shortName in props) {
+          var sndName = shortName + '.displayName';
+          if (props[sndName])
+            continue;
+          
+          var uri = props[shortName];
+          if (!uri)
+            continue;
+          
+          var prop = meta[shortName];
+          if (U.isResourceProp(prop)) {
+            var res = C.getResource(uri);
+            if (res) {
+              props[sndName] = U.getDisplayName(res);
+            }
+          }
+        }
+      }
+      
       return Backbone.Model.prototype.set.apply(this, [props].concat(U.slice.call(arguments, 1)));
+    },
+    
+    getModel: function() {
+      return this.constructor; // this.vocModel is not available till initialize is called
     },
     
     validate: function(attrs, options) {
@@ -320,7 +347,7 @@ define([
     triggerPlugs: function(options) {
       if (!G.currentUser.guest && !options.fromDB) {
         var isNew = this.isNew();
-        var method = isNew ? 'create.' : 'edit.';
+        var method = isNew ? 'create:' : 'edit:';
         var json = this.toJSON();
 //        json._type = this.vocModel.type;
         Events.trigger(method + this.vocModel.type, json);
@@ -347,7 +374,7 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          Events.trigger('updateBacklinkCounts.' + val, this, isNew);
+          Events.trigger('updateBacklinkCounts:' + val, this, isNew);
         }
       }
     },

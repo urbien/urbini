@@ -336,7 +336,7 @@ define([
       this.$el.html(this.template({items: items}));
       if (this.rendered) {
         this.$el.trigger('create');
-        this.$el.trigger('refresh');
+        this.$el.listview('refresh');
       }
       else {
         this.$el.trigger('create');
