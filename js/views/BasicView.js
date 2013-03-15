@@ -8,6 +8,7 @@ define([
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
+      options = options || {};
       _.extend(this, _.pick(options, basicOptions));
       var res = this.data = this.model;
       if (this.model instanceof Backbone.Collection) {
@@ -30,44 +31,62 @@ define([
 //  BasicView.prototype.setActive = function(active) {
 //    this.active = active;
 //  }
-  BasicView.prototype.makeTemplate = function(templateName) {
-    return U.template(templateName, this);
-  };
-
   
-  BasicView.prototype.isActive = function() {
-    if (this.active)
-      return true;
+  _.extend(BasicView.prototype, {
+    makeTemplate: function(templateName) {
+      return U.template(templateName, this);
+    },
+  
     
-    var view = this.parentView;
-    while (view) {
-      if (view.active)
+    isActive: function() {
+      if (this.active)
         return true;
       
-      view = view.parentView;
-    }
-    
-    return false;
-  };
-
-  BasicView.prototype.isChildOf = function(view) {
-    var parent = this.parentView;
-    while (parent) {
-      if (view === parent)
-        return true;
+      var view = this.parentView;
+      while (view) {
+        if (view.active)
+          return true;
+        
+        view = view.parentView;
+      }
       
-      parent = parent.parentView;
-    }
+      return false;
+    },
+  
+    isChildOf: function(view) {
+      var parent = this.parentView;
+      while (parent) {
+        if (view === parent)
+          return true;
+        
+        parent = parent.parentView;
+      }
+      
+      return false;
+    },
     
-    return false;
-  };
+  //  assign: function (view, selector) {
+  //    view.setElement(this.$(selector)).render();
+  //  }
   
-  BasicView.prototype.assign = function (view, selector) {
-    view.setElement(this.$(selector)).render();
-  }
-  
-  BasicView.prototype.finalize = function () {
-  }
+    assign: function (selector, view) {
+      var selectors;
+      if (_.isObject(selector)) {
+          selectors = selector;
+      }
+      else {
+          selectors = {};
+          selectors[selector] = view;
+      }
+      if (!selectors) return;
+      _.each(selectors, function (view, selector) {
+          view.setElement(this.$(selector)).render();
+      }, this);
+    },
+    
+    finalize: function () {
+    }
+  });
 
   return BasicView; 
 });

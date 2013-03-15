@@ -31,16 +31,16 @@ define([
       var meta = this.vocModel.properties;
       var params = U.getQueryParams();
       var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
-      for (var shortName in init) {
-        var prop = meta[shortName];
-        if (U.isResourceProp(prop)) {
-          var uri = init[shortName];
-          var res = C.getResource(uri);
-          if (res) {
-            init[shortName + '.displayName'] = U.getDisplayName(res);
-          }
-        }
-      }
+//      for (var shortName in init) {
+//        var prop = meta[shortName];
+//        if (U.isResourceProp(prop)) {
+//          var uri = init[shortName];
+//          var res = C.getResource(uri);
+//          if (res) {
+//            init[shortName + '.displayName'] = U.getDisplayName(res);
+//          }
+//        }
+//      }
 //      var bl = params.$backLink;
 //      if (bl) {
 //        this.backLink = bl;
@@ -631,7 +631,7 @@ define([
       if (!isEdit && uri) {
 //        this.incrementBLCount();
         debugger;
-        this.redirect({trigger: true, replace: true, forceFetch: true, removeFromView: true});
+        this.redirect({trigger: true, replace: true, forceFetch: true});
         return;
       }
       
@@ -674,8 +674,11 @@ define([
         succeeded = true;
         var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
 //        var props = atts;
-        if (isEdit && !_.size(props))
+        if (isEdit && !_.size(props)) {
+          debugger; // user didn't modify anything?
+          self.redirect({trigger: true, replace: true});
           return;
+        }
         
         // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         var onSaveError = function(resource, xhr, options) {
@@ -688,7 +691,7 @@ define([
           
           self.getInputs().attr('disabled', false);
           var code = xhr ? xhr.code || xhr.status : 0;
-          if (!code || xhr.statusText === 'error') {            
+          if (!code || xhr.statusText === 'error') {
             Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
             return;
           }
@@ -743,7 +746,7 @@ define([
           success: function(resource, response, options) {
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
-            self.redirect({trigger: true, replace: true, removeFromView: true});
+            self.redirect({trigger: true, replace: true});
           }, 
           error: onSaveError
         });

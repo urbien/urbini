@@ -23,7 +23,7 @@ define([
       this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;
       if (U.isTempUri(uri)) {
-        Events.once('synced.' + uri, function(data) {
+        Events.once('synced:' + uri, function(data) {
           if (self.isActive()) {
             var newUri = data._uri;
             self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
