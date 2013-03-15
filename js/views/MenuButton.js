@@ -22,7 +22,7 @@ define([
     menu: function(e) {
       Events.stopEvent(e);
       U.require('views/MenuPanel', function(MenuPanel) {
-        var menuPanel = new MenuPanel({viewId: this.viewId, model: this.resource});
+        var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model});
         menuPanel.render();        
       }, this);
 
