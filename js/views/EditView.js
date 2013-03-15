@@ -506,7 +506,7 @@ define([
           redirectPath = '',
           redirectTo = vocModel.onCreateRedirectTo;
       // check if we came here by backlink
-      if (!redirectTo) 
+      if (!redirectTo && params.$backLink) 
         redirectTo = U.getContainerProperty(vocModel);
  
       switch (redirectAction) {
