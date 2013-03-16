@@ -6,9 +6,9 @@ define([
   'views/BasicView',
   'views/Header',
   'views/BackButton',
-  'views/LoginButtons',
+  'views/LoginButton',
   'views/ResourceView'
-], function(G, U, Events, BasicView, Header, BackButton, LoginButtons, ResourceView) {
+], function(G, U, Events, BasicView, Header, BackButton, LoginButton, ResourceView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
@@ -69,7 +69,7 @@ define([
       var res = this.resource || this.collection;
       this.$el.html(this.template(res.attributes));      
       this.buttons = {
-        left: [BackButton, LoginButtons],
+        left: [BackButton, LoginButton],
         right: []
       };
       

@@ -342,6 +342,7 @@ define([
         this.$el.trigger('create');
         this.rendered = true;
       }
+      
       this.$el.removeClass('hidden');
       this.finalize();
       var self = this;

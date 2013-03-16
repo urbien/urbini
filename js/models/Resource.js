@@ -28,11 +28,14 @@ define([
       this.vocModel = this.constructor;
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
-      this.setDefaults();
+      if (this.isNew())
+        this.setDefaults();
+      
       if (atts)
         this.parse(atts);
       
-      Events.trigger('newResource', this);      
+      if (this.getUri())
+        Events.trigger('newResource', this);      
     },
     
     get: function(propName) {
@@ -51,13 +54,14 @@ define([
     setDefaults: function() {
       var vocModel = this.vocModel,
           defaults = {};
-      
+
       if (this.isA('Submission')) {
         var currentUser = G.currentUser;
         if (!currentUser.guest) {
           var submittedBy = U.getCloneOf(vocModel, "Submission.submittedBy")[0];
           if (submittedBy && !this.get(submittedBy)) {
             defaults[submittedBy] = currentUser._uri;
+            U.copySubProps(currentUser, defaults, submittedBy);
           }
         }
       }
@@ -84,16 +88,23 @@ define([
       // be to have a central cache of resources by uri (like in G.Router), and look up 
       // the resource there and use model.set
       var callback = function(data) {
-        var uri = self.getUri();
-        if (data._oldUri === uri) {
-          Events.off('synced:' + uri, callback);
-          Events.on('synced:' + data._uri, callback);
-          Events.off('updateBacklinkCounts:' + uri, self.updateCounts);
-          Events.on('updateBacklinkCounts:' + data._uri, self.updateCounts);
+        var uri = this.getUri();
+        var oldUri = data._oldUri;
+        if (oldUri) {
+          Events.off('synced:' + oldUri, callback);
+          Events.on('synced:' + uri, callback);
+          Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
+          Events.on('updateBacklinkCounts:' + uri, this.updateCounts);
         }
         
-        self.set(data);
-      }
+        this.set(data);
+        if (this.collection) {
+          if (oldUri)
+            this.collection.trigger('replace', this, oldUri);
+          else
+            this.collection.trigger('refresh', uri);
+        }        
+      }.bind(this);
       
       Events.on('synced:' + resUri, callback);
       Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
@@ -114,8 +125,8 @@ define([
       options.success = function(resource, response, options) {
         success && success.apply(this, arguments);
         if (!response.error)          
-          self.trigger('cancel');
-      }
+          this.trigger('cancel');
+      }.bind(this);
 
       this.save(props, options);
     },
@@ -173,17 +184,7 @@ define([
           break;
         default:
           lf = G.currentServerTime();
-          break;
-          
-//        else if (this.lastFetchOrigin === 'edit') {
-//          debugger;
-//          var meta = this.vocModel.properties;
-//          for (var pName in resp) {
-//            var prop = meta[pName];
-//            if (prop)
-//              resp[pName] = U.getTypedValue(this, pName, resp[pName]);
-//          }
-//        }
+          break;          
       }
       
       if (!resp || resp.error)
@@ -202,7 +203,6 @@ define([
       resp._shortUri = U.getShortUri(uri, this.constructor);
       var primaryKeys = U.getPrimaryKeys(this.constructor);
       resp._uri = U.getLongUri1(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});
-//      resp._type = this.vocModel.type;
       if (lf)
         resp._lastFetchedOn = lf;
       
@@ -229,6 +229,9 @@ define([
         var vocModel = this.getModel();
         var meta = vocModel.properties;
         for (var shortName in props) {
+          if (/\./.test(shortName))
+            continue;
+          
           var sndName = shortName + '.displayName';
           if (props[sndName])
             continue;
@@ -454,7 +457,6 @@ define([
       else {
         data = U.prepForSync(data, this.vocModel, ['parameter']);
         if (_.size(data) == 0) {
-//          debugger;
           if (!isNew) {
             if (options.error)
               options.error(this, {code: 304, details: "unmodified"}, options);
@@ -511,6 +513,7 @@ define([
         saved = Backbone.Model.prototype.save.call(this, data, options);
       }
       
+      this.trigger('change', this, options);
       return saved;
       
 //      if (options.sync) {

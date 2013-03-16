@@ -135,7 +135,7 @@ define(['globals', 'utils'], function(G, U) {
           
           setTimeout(function() {
             if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
-              debugger; // sth went wrong with task, it didn't finish
+//              debugger; // sth went wrong with task, it didn't finish
               taskDfd.reject(null, {code: 0, type: 'timeout'});
             }
           }, 10000);

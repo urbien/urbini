@@ -5,8 +5,9 @@ define([
   'backbone',
   'templates',
   'jquery',
-  'cache'
-], function(G, _, Backbone, Templates, $, C) {
+  'cache',
+  'events'
+], function(G, _, Backbone, Templates, $, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -57,6 +58,7 @@ define([
   String.prototype.endsWith = function(str) {
     return this.slice(this.length - str.length) === str;
   };
+  
   // extends jQuery to check if selected collection is empty or not
   $.fn.exist = function(){
     return this.length > 0 ? this : false;
@@ -2368,13 +2370,30 @@ define([
           });
           
           break;
+        case '$like':
+          var nameVal = clause.value.split(',');
+          var propName = nameVal[0];
+          var prop = meta[propName];
+          if (!prop) {
+            debugger;
+            return function() {return true};
+          }
+          
+          var value = nameVal[1].toLowerCase();
+          var chain = [];
+          rules.push(function(res) {
+            var val = res[propName];
+            return val && val.toLowerCase().indexOf(value) != -1;
+          });
+          
+          break;
         default:
           if (param.startsWith('$'))
             break;
           
           var prop = meta[param];
           if (!prop || U.getObjectType(clause) !== '[object Object]') {
-            debugger;
+            G.log(U.TAG, 'info', 'couldnt find property {0} in class {1}'.format(param, vocModel.type));
             return function() {
               return true;
             }
@@ -2519,55 +2538,51 @@ define([
       
       return text.slice(0, length) + '...';
     },
-    
+
     fixResourceJSON: function(item, vocModel) {
       var meta = vocModel.properties;
       for (var p in item) {
         if (!/_/.test(p) && !meta[p])
           delete item[p];
       }
-    }
+    },
     
-//    where: function(res, where) {
-//      where = where.split('&');
-//      for (var i = 0; i < where.length; i++) {
-//        var clause = U.parseAPIClause(where[i]);
-//        if (!clause) {
-//          G.log(U.TAG, 'error', 'bad where clause: ' + where[i]);
-//          return false;
+    /**
+     * @param from - attributes object
+     * @param to - attributes object
+     * @prop - string name of property
+     * 
+     * given prop is sth like 'submittedBy', copies props like submittedBy.displayName, submittedBy.thumb from "from" to "to" 
+     */
+    copySubProps: function(from, to, prop) {
+//      if (from.davDisplayName)
+//        to[prop + '.displayName'] = from.davDisplayName;
+//      
+//      var type = U.getTypeUri(from._uri);
+//      var model = U.getModel(type);
+//      if (model) {
+//        var ir = 'ImageResource'; 
+//        if (U.isA(model, ir)) {
+//          var iProps = _.map(['smallImage', 'mediumImage'], function(ip) {return '{0}.{1}'.format(ir, ip)});
+//          var imgProps = U.getCloneOf(model, iProps);
+//          if (imgProps.length) {
+//            _.each(imgProps, function(imgProp) {              
+//              var resProp = '{0}.{1}'.format(prop, imgProp);
+//              var val = from[resProp];
+//              if (val)
+//                to[resProp] = val;
+//            });
+//          }
 //        }
 //      }
-//      
-//      return true;
-//    }
-//    
-//    ,
-//    getProp: function(meta, name) {
-//      var org = meta[name];
-//      if (org)
-//        return org;
-//      
-//      var alt = U.getAltName(meta, name);
-//      return alt ? meta[alt] : null;
-//    },
-//    
-//    getAltName: function(props, name) {
-//      var alt = U.filterObj(meta, function(prop) {
-//        return prop.altName == name;
-//      });
-//      
-//      return _.size(alt) ? U.getFirstProperty(alt) : null;
-//    }
-//    
-//    ,
-//    intersectObjects: function(array) {
-//      var rest = slice.call(arguments, 1);
-//      return _.filter(_.uniq(array), function(item) {
-//        return _.every(rest, function(other) {
-//          return _.any(other, function(element) { return _.isEqual(element, item); });
-//        });
-//      });
-//    }
+      
+      var start = prop + '.';
+      for (var p in from) {
+        if (p.startsWith(start))
+          to[p] = from[p];
+      }
+    }
+    
   };
 
   for (var p in U.systemProps) {

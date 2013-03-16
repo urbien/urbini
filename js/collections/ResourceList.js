@@ -32,6 +32,7 @@ define([
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'add'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
+      this.on('replace', this.replace, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
       this.type = vocModel.type;
       this.shortName = vocModel.shortName || vocModel.shortName;
@@ -43,10 +44,28 @@ define([
       this.params[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
-      Events.trigger('newResourceList', this);
+      if (options.cache !== false)
+        Events.trigger('newResourceList', this);
+      
+      Events.on('newResource', function(resource) {
+        var types = U.getTypes(resource.vocModel);
+        if (!_.contains(types, this.type))
+          return;
+        
+        if (this.belongsInCollection(resource)) {
+          this.add(resource);
+          this.trigger('refresh', resource.getUri());
+        }
+      }.bind(this));
+      
 //      this.sync = this.constructor.sync;
       
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
+    },
+    replace: function(resource, oldUri) {
+      this.remove(resource);
+      this.add(resource);
+      this.trigger('refresh', resource.getUri());
     },
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
@@ -151,6 +170,7 @@ define([
       this.resources = this.models;
     },
     onAdd: function(model) {
+      debugger;
     },
     fetchAll: function(options) { 
       return Backbone.Model.prototype.fetch.call(this, options);
@@ -225,8 +245,10 @@ define([
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.resources.length;
         Backbone.Collection.prototype.update.call(this, resources, options);
+        
         if (this.resources.length > numBefore)
-          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+          this.trigger('refresh', _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+//          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
 
         return;
       }
@@ -279,7 +301,7 @@ define([
       }
       
       if (toAdd.length) {
-        Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
+        this.trigger('refresh', _.map(toAdd, function(s) {return s._uri}));
         Events.trigger('resourcesChanged', toAdd); 
       }
       

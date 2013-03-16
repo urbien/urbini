@@ -6,14 +6,14 @@ define([
   'error',
   'views/BasicView',
   'views/ResourceListView', 
-  'views/Header', 
-  'views/AddButton', 
-  'views/BackButton', 
-  'views/LoginButtons', 
-  'views/AroundMeButton', 
-  'views/MapItButton',
-  'views/MenuButton'
-], function(G, Events, U, Errors, BasicView, ResourceListView, Header, AddButton, BackButton, LoginButtons, AroundMeButton, MapItButton, MenuButton) {
+  'views/Header' 
+//  'views/AddButton', 
+//  'views/BackButton', 
+//  'views/LoginButton', 
+//  'views/AroundMeButton', 
+//  'views/MapItButton',
+//  'views/MenuButton'
+], function(G, Events, U, Errors, BasicView, ResourceListView, Header) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -27,6 +27,103 @@ define([
 //      this.options = _.pick(options, 'checked', 'props');
       this.TAG = "ListPage";
       this.viewId = options.viewId;
+      
+      var rl = this.collection;
+      var self = this;
+      
+      var commonParams = {
+        model: rl,
+        parentView: this
+      };
+      
+      var json = this.json = rl.toJSON();
+      json.viewId = this.cid;
+      var vocModel = this.vocModel;
+      var type = vocModel.type;
+      var viewMode = vocModel.viewMode;
+      var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      _.extend(json, {isMasonry: isMasonry});  
+      
+      var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
+      if (isGeo) {
+        this.mapReadyDfd = $.Deferred();
+        this.mapReady = this.mapReadyDfd.promise();
+        U.require(['views/MapView'], function(MV) {
+          MapView = MV;
+          this.mapView = new MapView(commonParams);
+          this.mapReadyDfd.resolve();
+        }, this);
+      }      
+
+      var hash = window.location.hash;
+      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || U.isCreatable(type);
+      var idx;
+      if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
+        var s = hash.substring(idx + 1).split('&');
+        if (s && s.length > 0) {
+          for (var i=0; i<s.length; i++) {
+            var p = s[i].split('=');
+            var prop = vocModel.properties[p[0]];
+            if (!prop  ||  !prop.containerMember) 
+              continue;
+            var type = U.getLongUri1(prop.range);
+            var cM = U.getModel(type);
+            if (!cM) 
+              continue;
+            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+            var bl = [];
+            for (var p in blProps) {
+              var b = blProps[p];
+              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
+                bl.push(b);
+            }
+            if (bl.length > 0)
+              showAddButton = true;
+          }
+        }
+      }
+
+      this.buttons = {
+        back: true,
+        add: showAddButton,
+        mapIt: isGeo,
+        menu: true,
+        login: true
+      };
+
+      this.header = new Header(_.extend({
+        buttons: this.buttons,
+        viewId: this.cid
+      }, commonParams));
+      
+      
+      var models = rl.models;
+      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
+
+//      var meta = models[0].__proto__.constructor.properties;
+//      meta = meta || models[0].properties;
+      var meta = vocModel.properties;
+
+//      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
+//      if (isMasonry) {
+//        var key = this.vocModel.shortName + '-list-item';
+//        var litemplate = U.getTypeTemplate('list-item', rl);
+//        if (litemplate)
+//          isMasonry = false;
+//      }
+      
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
+
+      var hash = window.location.hash;
+      var params = hash ? U.getParamMap(hash) : null;
+
+      var isMV = this.isMV = params  &&  params['$multiValue'] != null;
+//      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
+      this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
+      this.listView = new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options));
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
@@ -142,113 +239,28 @@ define([
           res.lastFetchOrigin = null;
           self.redirect(res, {trigger: true, replace: true, forceFetch: true});
         }
-        
       });
-
     },
     
     render:function (eventName) {
       G.log(this.TAG, 'render');  
-      var rl = this.collection;
-      var self = this;
-      var commonParams = {
-        model: rl,
-        parentView: this
-      };
-      
-      var json = rl.toJSON();
-      json.viewId = this.cid;
-      var vocModel = this.vocModel;
-      var type = vocModel.type;
-      var viewMode = vocModel.viewMode;
-      var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      _.extend(json, {isMasonry: isMasonry});  
+
+      var json = this.json
       this.$el.html(this.template(json));
-      
-      var isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
-      var hash = window.location.hash;
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || U.isCreatable(type);
-      var idx;
-      if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
-        var s = hash.substring(idx + 1).split('&');
-        if (s && s.length > 0) {
-          for (var i=0; i<s.length; i++) {
-            var p = s[i].split('=');
-            var prop = vocModel.properties[p[0]];
-            if (!prop  ||  !prop.containerMember) 
-              continue;
-            var type = U.getLongUri1(prop.range);
-            var cM = U.getModel(type);
-            if (!cM) 
-              continue;
-            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-            var bl = [];
-            for (var p in blProps) {
-              var b = blProps[p];
-              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
-                bl.push(b);
-            }
-            if (bl.length > 0)
-              showAddButton = true;
-          }
-        }
-      }
-        
-      this.buttons = {
-        left: [BackButton], // , LoginButtons
-//        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [MapItButton, AroundMeButton, MenuButton] ) 
-//                     : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
-        right: isGeo ? (showAddButton ? [AddButton, MapItButton, AroundMeButton, MenuButton] : [AroundMeButton, MapItButton, MenuButton] ) 
-            : (showAddButton ? [AddButton, MenuButton] : [MenuButton]),
-        log: [LoginButtons]    
+      var views = {
+        '#headerDiv': this.header
       };
       
-      this.header = new Header(_.extend({
-        buttons: this.buttons,
-        viewId: this.cid,
-        el: $('#headerDiv', this.el)
-      }, commonParams)).render();
-  
-      var models = rl.models;
-      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-
-//      var meta = models[0].__proto__.constructor.properties;
-//      meta = meta || models[0].properties;
-      var meta = vocModel.properties;
-
-//      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-//      if (isMasonry) {
-//        var key = this.vocModel.shortName + '-list-item';
-//        var litemplate = U.getTypeTemplate('list-item', rl);
-//        if (litemplate)
-//          isMasonry = false;
-//      }
-      
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
-
-      var hash = window.location.hash;
-      var params = hash ? U.getParamMap(hash) : null;
-
-      var isMV = params  &&  params['$multiValue'] != null;
-//      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      var containerTag = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
-      this.listView = new ResourceListView(_.extend({el: $(containerTag, this.el), mode: this.mode}, commonParams , this.options));
-      this.listView.render();
+      views[this.listContainer] = this.listView;
+      this.assign(views);
         
-      if (isGeo) {
-        U.require(['views/MapView'], function(MV) {
-          MapView = MV;
-          self.mapView = new MapView(_.extend({el: self.$('#mapHolder', self.el)}, commonParams));
-          self.mapView.render();
-        });
-      }
+      this.mapReady && this.mapReady.done(function() {
+        this.assign('#mapHolder', this.mapView);  
+      }.bind(this));
       
       if (!this.$el.parentNode)  
         $('body').append(this.$el);
-      if (!isMV)
+      if (!this.isMV)
         $('form#mv').hide();
 
       if (this.vocModel.type === G.commonTypes.Handler) {

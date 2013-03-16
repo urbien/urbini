@@ -28,9 +28,8 @@ define([
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
       
-      var meta = this.vocModel.properties;
-      var params = U.getQueryParams();
-      var init = this.initialParams = U.getQueryParams(params, this.vocModel) || {};
+      var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
+      this.resource.set(init, {silent: true});
 //      for (var shortName in init) {
 //        var prop = meta[shortName];
 //        if (U.isResourceProp(prop)) {
@@ -46,9 +45,6 @@ define([
 //        this.backLink = bl;
 //        init[bl] = params[bl];
 //      }
-      
-      this.resource.set(init, {silent: true});
-      this.originalResource = this.resource.toJSON();
       
       return this;
     },
@@ -748,6 +744,7 @@ define([
             res.lastFetchOrigin = null;
             self.redirect({trigger: true, replace: true});
           }, 
+          skipRefresh: true,
           error: onSaveError
         });
       }.bind(this);
@@ -769,7 +766,6 @@ define([
       }
       
       this.resetResource();
-//      this.setValues(atts, {validateAll: false, skipRefresh: true});
       res.lastFetchOrigin = 'edit';
       atts = U.mapObj(atts, function(att, val) {
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
@@ -906,6 +902,9 @@ define([
         return this;
       
       var res = this.resource;
+      if (!this.rendered) 
+        this.originalResource = res.toJSON();
+      
       var type = res.type;
       var json = res.toJSON();
       var frag = document.createDocumentFragment();

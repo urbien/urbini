@@ -36,8 +36,13 @@ define([
     events: {
 //      'click': 'click'
     },
-    refresh: function() {
-      var res = this.resource;      
+    refresh: function(resource, options) {
+      options = options || {};
+      if (options.skipRefresh || options.fromDB)
+        return;
+      
+      var res = this.resource;   
+      
 //      if (res.lastFetchOrigin === 'edit')
 //        return;
       

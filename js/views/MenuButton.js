@@ -31,11 +31,12 @@ define([
     render: function(options) {
       if (!this.template)
         return this;
+      
       var newAlerts = G.currentUser.newAlertsCount;
-      if (typeof options !== 'undefined' && options.append)
-        this.$el.append(this.template({viewId: this.viewId, newAlerts: newAlerts}));
-      else
-        this.$el.html(this.template());
+//      if (typeof options !== 'undefined' && options.append)
+//        this.$el.append(this.template({viewId: this.viewId, newAlerts: newAlerts}));
+//      else
+        this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
       
       return this;
     }

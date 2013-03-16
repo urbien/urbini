@@ -7,8 +7,9 @@ define([
   'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
   'views/CommentListItemView',
-  'views/PhotogridView'
-], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView) {
+  'views/PhotogridView',
+  'collections/ResourceList'
+], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
   return BasicView.extend({
     TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
@@ -20,12 +21,12 @@ define([
     initialize: function (options) {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode', 'orientationchange'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
       this.collection.on('reset', this.render, this);
       this.collection.on('add', this.onadd, this);
+      this.collection.on('refresh', this.refresh);
 //      this.collection.on('add', this.add, this);
 //      this.options = _.pick(options, 'checked', 'props') || {};
       this.TAG = 'ResourceListView';
@@ -44,6 +45,7 @@ define([
 //      else
 //        this.ready = true;
       
+      this.filteredCollection = this.collection;
       return this;
     },
     events: {
@@ -81,8 +83,9 @@ define([
         }
       }
       
-      Event.stopEvent();
-      Event.trigger('refresh');
+      Events.stopEvent(e);
+//      Events.trigger('refresh');
+      this.refresh();
     },
     onadd: function(resources, options) {
       if (options && options.refresh)
@@ -94,17 +97,18 @@ define([
       
       this.mode = mode;
     },
-    refresh: function(rl, modified) {
-      if (rl && rl != this.collection)
-        return this;
-  
+    
+    refresh: function(modified) {
+      if (!this.rendered)
+        return;
+      
       modified = typeof modified === 'string' ? [modified] : modified;
 //      if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
 //      var lis = this.$('li').detach();
 //      var frag = document.createDocumentFragment();
       
-      rl = this.collection;
+      var rl = this.filteredCollection;
       var resources = rl.models;
       var vocModel = this.vocModel;
       var type = vocModel.type;
@@ -284,6 +288,8 @@ define([
         this.initializedListView = true;
       }
       
+//      this.restyle();
+      
 //      this.$el.trigger('create');
 //      if (this.$el.hasClass('ui-listview'))
 //        this.$el.trigger('refresh');
@@ -331,7 +337,7 @@ define([
 //        return;
       
       var self = this;
-      var rl = this.collection;
+      var rl = this.filteredCollection;
       var before = rl.models.length;
       if (!before)
         return;
@@ -391,10 +397,75 @@ define([
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);
+      var wasRendered = this.rendered;
+      this.rendered = true;
       this.refresh();
+      
+      var self = this;
+      var collection = this.collection;
+      var colModel = collection.vocModel;
+      if (!wasRendered) {
+        this.$el.on('listviewbeforefilter', function ( e, data ) {
+          var $ul = $( this ),
+              $input = $( data.input ),
+              value = $input.val(),
+              html = "";
+          
+//            $ul.html( "" );
+          if ( value ) {// && value.length > 2 ) {
+            var resourceMatches = _.filter(collection.models, function(res) {
+              var dn = U.getDisplayName(res);
+              return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+            });
+            
+            var list = self.filteredCollection = new ResourceList(resourceMatches, {
+              model: colModel, 
+              cache: false,
+              params: _.extend({
+                '$like': 'davDisplayName,' + value
+              }, collection.params)
+            });
+            
+            var numResults = list.size();
+            if (numResults < self.displayPerPage) {
+              var numOriginally = collection.size();
+              list.fetch({
+//                sync: true,
+                success: function() {
+                  self.refresh();
+                  var numResultsNow = list.size();
+                  if (numResultsNow > numResults)
+                    collection.update(list.models.slice(numResults));
+                }
+              });
+            }
+              
+//              $ul.html( "<li><div class='ui-loader'><span class='ui-icon ui-icon-loading'></span></div></li>" );
+            self.refresh();
+//              $ul.listview( "refresh" );
+            
+            
+//              $.ajax({
+//                url: "http://gd.geobytes.com/AutoCompleteCity",
+//                dataType: "jsonp",
+//                crossDomain: true,
+//                data: {
+//                  q: $input.val()
+//                }
+//              })
+//              .then( function ( response ) {
+//                $.each( response, function ( i, val ) {
+//                  html += "<li>" + val + "</li>";
+//                });
+//                $ul.html( html );
+//                $ul.listview( "refresh" );
+//                $ul.trigger( "updatelayout");
+//              });
+          }
+        });
+      }
   //    e && this.refresh(e);
   
-      this.rendered = true;
       return this;
     },
   

@@ -5,35 +5,74 @@ define([
   'utils',
   'vocManager',
   'views/BasicView'
-], function(G, Events, U, Voc, BasicView) {
+//  ,
+//  'views/BackButton',
+//  'views/LoginButton',
+//  'views/AddButton',
+//  'views/MapItButton',
+//  'views/AroundMeButton',
+//  'views/MenuButton',
+//  'views/PublishButton'
+], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'makeWidget', 'makeWidgets', 'fileUpload');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload');
       this.constructor.__super__.initialize.apply(this, arguments);
+      options = options || {};
+      this.viewId = options.viewId;
       if (this.resource)
-        this.resource.on('change', this.render, this);
+        this.resource.on('change', this.renderTitle, this);
 
-      var res = this.resource || this.collection;
-      _.extend(this, options);
+      var res = this.model;
+//      _.extend(this, options);
       this.template = this.makeTemplate(this.template);
       this.fileUploadTemplate = this.makeTemplate('fileUpload');
-      this.$el.prevObject.attr('data-title', this.pageTitle);
-      this.$el.prevObject.attr('data-theme', G.theme.list);
       var params = U.getHashParams();
       this.info = params['-info'];
       
-      var b = this.buttons;
-      this.makeWidgets(_.union(b.left, b.right, b.log || []));      
+      var buttons = options.buttons;
+      var btnOptions = {
+        model: res, 
+        parentView: this,
+        viewId: this.viewId
+      };
+      
+      var reqdButtons = [];
+      buttons = U.filterObj(buttons, function(key, val) {
+        return val;
+      });
+      
+      for (var btn in buttons) {
+        btn = btn.camelize(true); // capitalize first letter
+        reqdButtons.push('views/{0}Button'.format(btn));
+      }
+      
+      this.buttons = {};
+      this.readyDfd = $.Deferred();
+      this.ready = this.readyDfd.promise();
+      U.require(reqdButtons, function() {
+        var btns = arguments;
+        var i = 0;
+        for (var btn in buttons) {
+          var model = arguments[i++];
+          this.buttons[btn] = new model(btnOptions);
+        }
+        
+        this.readyDfd.resolve();
+      }, this);
+      
+      this.calcTitle();
       return this;
     },
+    
     calcTitle: function() {
       if (typeof this.pageTitle !== 'undefined') {
         this.title = this.pageTitle;
         return this;
       }
       
-      var res = this.resource;
+      var res = this.model;
       var title;
       var hash = window.location.hash && window.location.hash.slice(1);
       if (hash && G.tabs) {
@@ -99,86 +138,99 @@ define([
       */    
 
     },
-    makeWidget: function(w) {
-      if (typeof w != 'function') {
-        w.render({append: true});
-        return;
-      }
-      
-      var res = this.resource || this.collection;
-      w = new w({model: res, viewId: this.viewId}); //.render({append: true});
-      return w;
+    
+    render: function() {
+      var args = arguments;
+      this.ready.done(function() {
+        this.renderHelper.apply(this, args);
+      }.bind(this));
     },
     
-    makeWidgets: function(wdgts) {
-      this.widgets = [];
-      for (var i = 0; i < wdgts.length; i++) {
-        this.widgets.push(this.makeWidget(wdgts[i]));
-      }
-      
-      return this;
+    renderTitle: function() {
+      this.calcTitle();
+      this.$('#pageTitle').html(this.title); 
     },
-    renderWidgets: function(options) {
-      options = options || {domEl: 'li'};
-      var headerUl = this.$('#headerUl');
-      for (var i = 0; i < this.widgets.length; i++) {
-        var w = this.widgets[i];
-        w.setElement(headerUl).delegateEvents();
-        w.render({append: true});
-        w.$(options.domEl).addClass(options.css);
-        w.$el.trigger('create');
-      }
-    },
-    render: function() {
+    
+    renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
       
-      this.$el.empty();
-      this.calcTitle();
+      this.$el.html("");
+//      this.calcTitle();
       if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-a'}));
       else
         this.$el.html(this.template());
+
+      this.$el.prevObject.attr('data-title', this.pageTitle);
+      this.$el.prevObject.attr('data-theme', G.theme.list);
+//      this.renderTitle();
+      var frag = document.createDocumentFragment();
+      var btns = this.buttons;
+      if (btns.back)
+        frag.appendChild(btns.back.render().el);
+      if (btns.mapIt)
+        frag.appendChild(btns.mapIt.render().el);
+      if (btns.add)
+        frag.appendChild(btns.add.render().el);
+      if (btns.aroundMe)
+        frag.appendChild(btns.aroundMe.render().el);
+      if (btns.menu)
+        frag.appendChild(btns.menu.render().el);
+      if (btns.login)
+        frag.appendChild(btns.login.render().el);
+      
+      var $ul = this.$('#headerUl');
+      $ul.html(frag);
       
       this.$el.trigger('create');
-      this.renderWidgets();
-//      for (var set in this.buttons) {
-//        this.renderWidgets(this.buttons[set], {domEl: 'li'})
-//      }
-      
-//      var l = this.buttons.left;
-//      l && this.renderWidgets(l, {domEl: 'li'}); //, css: 'ui-btn-left'});
-//     
-//      var r = this.buttons.right;
-//      r && this.renderWidgets(r, {domEl: 'li'}); //, css: 'ui-btn-right'});
-      var self = this;
+      var pBtn = this.publishButton;
       if (this.doPublish) {
-        U.require(['views/PublishButton'], function(PublishButton) {
-          self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
-        });
+        this.assign('div#publishBtn', pBtn);
       }
       else {
         if (this.doTry) {
-          U.require(['views/PublishButton'], function(PublishButton) {
-            self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
-          });
+          this.assign('div#tryBtn', pBtn);
         }
         if (this.forkMe) {
-          U.require(['views/PublishButton'], function(PublishButton) {
-            self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
-          });
+          this.assign('div#forkMeBtn', pBtn);
         }
         if (this.testPlug) {
-          U.require(['views/PublishButton'], function(PublishButton) {
-            self.testPlug = new PublishButton({el: $('div#testPlugBtn', self.el), model: self.resource}).render({testPlug: true});
-          });
+          this.assign('div#testPlugBtn', pBtn);
         }
         if (this.enterTournament) {
-          U.require(['views/PublishButton'], function(PublishButton) {
-            self.enterTournament = new PublishButton({el: $('div#enterTournamentBtn', self.el), model: self.resource}).render({enterTournament: true});
-          });
+          this.assign('div#enterTournamentBtn', pBtn);
         }
       }
+      
+//      var self = this;
+//      if (this.doPublish) {
+//        U.require(['views/PublishButton'], function(PublishButton) {
+//          self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
+//        });
+//      }
+//      else {
+//        if (this.doTry) {
+//          U.require(['views/PublishButton'], function(PublishButton) {
+//            self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
+//          });
+//        }
+//        if (this.forkMe) {
+//          U.require(['views/PublishButton'], function(PublishButton) {
+//            self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
+//          });
+//        }
+//        if (this.testPlug) {
+//          U.require(['views/PublishButton'], function(PublishButton) {
+//            self.testPlug = new PublishButton({el: $('div#testPlugBtn', self.el), model: self.resource}).render({testPlug: true});
+//          });
+//        }
+//        if (this.enterTournament) {
+//          U.require(['views/PublishButton'], function(PublishButton) {
+//            self.enterTournament = new PublishButton({el: $('div#enterTournamentBtn', self.el), model: self.resource}).render({enterTournament: true});
+//          });
+//        }
+//      }
 
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
       if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
@@ -216,7 +268,8 @@ define([
 //        var log = this.buttons.log;
 //        log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
 //      }
-      
+//
+//      this.restyle();
       return this;
     }
   });

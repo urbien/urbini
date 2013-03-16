@@ -768,8 +768,8 @@ define([
             
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
               Events.trigger('synced:' + oldUri, data);
-              if (model.collection)
-                Events.trigger('refresh', newUri);
+//              if (model.collection)
+//                Events.trigger('refresh', newUri);
               
               dfd.resolve(ref);
             }).fail(function() {
@@ -1043,7 +1043,7 @@ define([
           subQuery = RM.buildOrQuery(val, vocModel, indexNames);
         }
         else if (name === '$and') {
-          subQuery = RM.buildSubQuery(name, val, vocModel);
+          subQuery = RM.buildSubQuery(name, val, vocModel, indexNames);
         }
         else if (name.startsWith('$')){
           debugger; // not supported yet...but what haven't be supported?
@@ -1052,7 +1052,7 @@ define([
           if (!hasIndex(indexNames, name))
             return null;
             
-          subQuery = RM.buildSubQuery(name, val, vocModel);
+          subQuery = RM.buildSubQuery(name, val, vocModel, indexNames);
         }
         
         if (!subQuery)
@@ -1080,7 +1080,7 @@ define([
     /**
      * @param val can be the value or a combination of operator and value, e.g. ">=7"
      */
-    buildSubQuery: function(name, val, vocModel) {
+    buildSubQuery: function(name, val, vocModel, indexNames) {
       var clause = U.parseAPIClause(name, val);
       if (!clause)
         return null;
@@ -1094,7 +1094,7 @@ define([
           return null;
         
         _.each(apiQuery, function(param) {
-          var subq = RM.buildSubQuery(param.name, param.value, vocModel);
+          var subq = RM.buildSubQuery(param.name, param.value, vocModel, indexNames);
           query = query ? query[qOp](subq) : subq;
         });
         
@@ -1102,8 +1102,19 @@ define([
       case '$in':
         var commaIdx = val.indexOf(',');
         name = val.slice(0, commaIdx);
+        if (!hasIndex(indexNames, name))
+          return null;
+          
         val = val.slice(commaIdx + 1).split(',');
         return RM.Index(name).oneof.apply(null, val);
+      case '$like':
+        var commaIdx = val.indexOf(',');
+        name = val.slice(0, commaIdx);
+        if (!hasIndex(indexNames, name))
+          return null;
+        
+        val = val.slice(commaIdx + 1);
+        return RM.Index(name).betweeq(val, val + '\uffff');
       }
       
       
@@ -1203,7 +1214,7 @@ define([
       
       for (var name in filter) {
 //        var name = modelParams[i];
-        var subQuery = RM.buildSubQuery(name, filter[name], vocModel);
+        var subQuery = RM.buildSubQuery(name, filter[name], vocModel, indexNames);
         if (!subQuery)
           return false;
 //        subQuery.setPrimaryKey('_uri');

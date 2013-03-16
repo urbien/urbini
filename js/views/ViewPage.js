@@ -5,15 +5,15 @@ define([
   'events',
   'views/BasicView',
   'views/Header',
-  'views/BackButton',
-  'views/LoginButtons',
-  'views/AroundMeButton',
-  'views/MenuButton',
+//  'views/BackButton',
+//  'views/LoginButton',
+//  'views/AroundMeButton',
+//  'views/MenuButton',
   'views/ResourceView',
 //  'views/ResourceImageView',
 //  'views/PhotogridView',
   'views/ControlPanel'
-], function(G, U, Events, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, ResourceView, /*ResourceImageView,*/ ControlPanel) {
+], function(G, U, Events, BasicView, Header, /*BackButton, LoginButton, AroundMeButton, MenuButton,*/ ResourceView, /*ResourceImageView,*/ ControlPanel) {
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
@@ -34,16 +34,22 @@ define([
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));
       
+//      this.buttons = {
+//        left: [BackButton],
+//        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton],
+//        log: [LoginButton]
+//      };
+      
       this.buttons = {
-        left: [BackButton],
-        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton],
-        log: [LoginButtons]
+        back: true,
+        aroundMe: isGeo,
+        menu: true,
+        login: true
       };
 
       this.header = new Header(_.extend(commonParams, {
         buttons: this.buttons,
-        viewId: this.cid,
-        el: $('#headerDiv', this.el)
+        viewId: this.cid
       }, _.pick(this, ['doTry', 'doPublish', 'testPlug', 'forkMe', 'enterTournament'])));
 
       var viewType, viewDiv;
@@ -88,7 +94,7 @@ define([
         
         U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
           Voc.getModels(friendType).done(function() {              
-            var friends = new ResourceList(null, {
+            self.friends = new ResourceList(null, {
               params: {
                 $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
               },
@@ -96,14 +102,10 @@ define([
               title: U.getDisplayName(res) + "'s " + U.getPlural(friendName)
             });
             
-            friends.fetch({
+            self.friends.fetch({
               success: function() {
-                if (friends.size()) {
-                  var pHeader = self.$('div#photogridHeader');
-                  var h3 = pHeader.find('h3');
-                  h3[0].innerHTML = friends.title;
-                  pHeader.removeClass('hidden');
-                  self.photogrid = new PhotogridView({model: friends, parentView: self, el: self.$('div#photogrid', self.el), source: uri});
+                if (self.friends.size()) {
+                  self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri});
                   self.photogridDfd.resolve();
   //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
   //                header.insertBefore(self.photogrid.el);
@@ -144,14 +146,7 @@ define([
       return this;
     },
     
-    render: function() {
-      var self = this, args = arguments;
-      this.ready.done(function() {
-        self.renderHelper.apply(self, args);
-      })
-    },
-    
-    renderHelper: function (eventName) {
+    render: function (eventName) {
       G.log(this.TAG, "render");
       var res = this.resource;
       var json = res.toJSON();
@@ -189,8 +184,12 @@ define([
       
       var self = this;
       this.photogridReady.done(function() {        
+        var pHeader = self.$('div#photogridHeader');
+        var h3 = pHeader.find('h3');
+        h3[0].innerHTML = self.friends.title;
+        pHeader.removeClass('hidden');
         self.assign({
-          'div#photogridHeader': self.photogrid
+          'div#photogrid': self.photogrid
         });
       });
 
@@ -201,8 +200,11 @@ define([
         'div#mainGroup'        : this.cpMain
       };
       
-      views[this.imgDiv] = this.imageView; 
       this.assign(views);
+      this.ready.done(function() {
+        this.assign(this.imgDiv, this.imageView);
+      }.bind(this));
+
       
 //      this.imageView.render();
 //      this.header.render();
@@ -219,6 +221,7 @@ define([
       
       this.rendered = true;
 //      renderDfd.resolve();
+//      this.restyle();
       return this;
     }
   }, {

@@ -9,8 +9,10 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}"></ul>
-    <div id="nabs_grid" class="masonry">
+    <div class="jqm-search">
+      <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="true" data-filter-placeholder="{{= obj.placeholder || '' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+      <div id="nabs_grid" class="masonry">
+      </div>
     </div>
     <!-- ul id="columns">
     </ul -->
@@ -451,34 +453,34 @@
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
     <div id="errMsg"></div>
     <div data-role="navbar">
-      <ul id="headerUl"></ul>
+      <ul id="headerUl">
+      </ul>
     </div>
     <div id="name" align="center">
-      <!-- h3 style="margin: 8px;font-size:16px;font-family:Tahoma, Lucinda Grande, Verdana, Helvetica, Arial, sans-serif;" id="pageTitle">{{= this.pageTitle }}</h3 -->
       <h3 id="pageTitle">{{= this.title }}</h3>
       <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}">
       <div style="max-width:400px;" id="publishBtn">
-        {{ if (typeof publish != 'undefined') { }}
+        {{ if (obj.publish) { }}
             {{= publish }}
         {{ } }}
       </div>
       <div style="max-width:200px;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
-        {{ if (typeof forkMeApp != 'undefined') { }}
+        {{ if (obj.forkMeApp) { }}
             {{= forkMeApp }}
         {{ } }}
       </div>
       <div style="max-width:200px;" id="tryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
-        {{ if (typeof tryApp != 'undefined') { }}
+        {{ if (obj.tryApp) { }}
             {{= tryApp }}
         {{ } }}
       </div>
       <div style="max-width:200px;" id="testPlugBtn">
-        {{ if (typeof testPlug != 'undefined') { }}
+        {{ if (obj.testPlug) { }}
             {{= testPlug }}
         {{ } }}
       </div>
       <div style="max-width:320px;" id="enterTournamentBtn">
-        {{ if (typeof enterTournament != 'undefined') { }}
+        {{ if (obj.enterTournament) { }}
             {{= enterTournament }}
         {{ } }}
       </div>

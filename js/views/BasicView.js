@@ -85,6 +85,14 @@ define([
     },
     
     finalize: function () {
+    },
+    
+    restyle: function() {
+      this.$el.find('ul[data-role]').listview();
+      this.$el.find('div[data-role="fieldcontain"]').fieldcontain();
+      this.$el.find('button[data-role="button"]').button();
+      this.$el.find('input,textarea').textinput();
+//      this.$el.page();
     }
   });
 

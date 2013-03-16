@@ -463,7 +463,7 @@ define([
       if (!LoginView) {
         var args = arguments;
         var self = this;
-        require(['views/LoginButtons'], function(LV) {
+        require(['views/LoginButton'], function(LV) {
           LoginView = LV;
           self.login.apply(self, args);
         })
