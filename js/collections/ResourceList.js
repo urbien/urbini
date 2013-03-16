@@ -29,7 +29,7 @@ define([
       
       var vocModel = this.vocModel = this.model;
       this.resources = this.models;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'add'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
       this.on('replace', this.replace, this);
@@ -61,6 +61,12 @@ define([
 //      this.sync = this.constructor.sync;
       
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
+    },
+    add: function(models, options) {
+      Backbone.Collection.prototype.add.apply(this, arguments);
+      if (_.isArray(models)) {
+        this.trigger('refresh');
+      }
     },
     replace: function(resource, oldUri) {
       this.remove(resource);
@@ -168,9 +174,6 @@ define([
     onReset: function(model) {
       G.log(this.TAG, "info", "resourceList onReset");
       this.resources = this.models;
-    },
-    onAdd: function(model) {
-      debugger;
     },
     fetchAll: function(options) { 
       return Backbone.Model.prototype.fetch.call(this, options);

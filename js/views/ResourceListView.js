@@ -434,8 +434,9 @@ define([
                 success: function() {
                   self.refresh();
                   var numResultsNow = list.size();
-                  if (numResultsNow > numResults)
-                    collection.update(list.models.slice(numResults));
+                  if (numResultsNow > numResults) {
+                    collection.add(list.models.slice(numResults));
+                  }
                 }
               });
             }

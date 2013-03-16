@@ -9,10 +9,8 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <div class="jqm-search">
-      <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="true" data-filter-placeholder="{{= obj.placeholder || '' }}" data-filter-theme="{{= G.theme.list }}"></ul>
-      <div id="nabs_grid" class="masonry">
-      </div>
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="true" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
     </ul -->
