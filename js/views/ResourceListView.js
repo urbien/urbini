@@ -421,7 +421,15 @@ define([
               var dn = U.getDisplayName(res);
               return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
             });
-            
+
+//            filtered = self.filteredCollection = new ResourceList(resourceMatches, {
+//              cache: false,
+//              model: collection.model,
+//              params: _.extend({
+//                '$like': 'davDisplayName,' + value
+//              }, collection.params)
+//            });
+
             filtered.reset(resourceMatches, {
               params: _.extend({
                 '$like': 'davDisplayName,' + value

@@ -76,8 +76,11 @@ define([
       this.adding = true;
       Backbone.Collection.prototype.add.apply(this, arguments);
       this.adding = false;
-      if (_.isArray(models))
-        this.trigger('refresh');
+      if (_.isArray(models)) {
+        this.trigger('refresh', _.map(models, function(m) {
+          return U.getValue(m, '_uri');
+        }));
+      }
     },
     replace: function(resource, oldUri) {
       this.remove(resource);
