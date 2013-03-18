@@ -10,7 +10,7 @@ define([
   'views/PhotogridView',
   'collections/ResourceList'
 ], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
-  return BasicView.extend({
+  var RLV = BasicView.extend({
     TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -24,9 +24,9 @@ define([
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
-      this.collection.on('reset', this.render, this);
-      this.collection.on('add', this.onadd, this);
-      this.collection.on('refresh', this.refresh);
+//      this.collection.on('reset', this.render, this);
+//      this.collection.on('add', this.onadd, this);
+//      this.collection.on('refresh', this.refresh);
 //      this.collection.on('add', this.add, this);
 //      this.options = _.pick(options, 'checked', 'props') || {};
       this.TAG = 'ResourceListView';
@@ -45,7 +45,11 @@ define([
 //      else
 //        this.ready = true;
       
-      this.filteredCollection = this.collection;
+//      this.setFilteredCollection();
+      var col = this.filteredCollection = this.collection.clone();
+      col.on('refresh', this.refresh);
+      col.on('add', this.onadd);
+      col.on('reset', this.refresh);
       return this;
     },
     events: {
@@ -102,6 +106,7 @@ define([
       if (!this.rendered)
         return;
       
+      G.log(this.TAG, 'refreshing ResourceListView');
       modified = typeof modified === 'string' ? [modified] : modified;
 //      if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
@@ -403,69 +408,48 @@ define([
       
       var self = this;
       var collection = this.collection;
+      var filtered = this.filteredCollection;
       var colModel = collection.vocModel;
       if (!wasRendered) {
-        this.$el.on('listviewbeforefilter', function ( e, data ) {
-          var $ul = $( this ),
-              $input = $( data.input ),
-              value = $input.val(),
-              html = "";
+        this.$el.on('listviewbeforefilter', function (e, data) {
+          var $ul = $(this),
+              $input = $(data.input),
+              value = $input.val();
           
-//            $ul.html( "" );
-          if ( value ) {// && value.length > 2 ) {
+          if (value) { // && value.length > 2 ) {
             var resourceMatches = _.filter(collection.models, function(res) {
               var dn = U.getDisplayName(res);
               return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
             });
             
-            var list = self.filteredCollection = new ResourceList(resourceMatches, {
-              model: colModel, 
-              cache: false,
+            filtered.reset(resourceMatches, {
               params: _.extend({
                 '$like': 'davDisplayName,' + value
               }, collection.params)
             });
             
-            var numResults = list.size();
+            var numResults = filtered.size();
             if (numResults < self.displayPerPage) {
               var numOriginally = collection.size();
-              list.fetch({
-//                sync: true,
+              var indicatorId = self.showLoadingIndicator(3000); // 3 second timeout
+              filtered.fetch({
+                forceFetch: true,
                 success: function() {
-                  self.refresh();
-                  var numResultsNow = list.size();
-                  if (numResultsNow > numResults) {
-                    collection.add(list.models.slice(numResults));
-                  }
+//                  var numResultsNow = filtered.size();
+//                  if (numResultsNow > numResults) {
+//                    collection.add(filtered.models.slice(numResults));
+//                  }
+                  
+                  self.hideLoadingIndicator(indicatorId);
+                },
+                error: function() {
+                  self.hideLoadingIndicator(indicatorId);
                 }
               });
             }
-              
-//              $ul.html( "<li><div class='ui-loader'><span class='ui-icon ui-icon-loading'></span></div></li>" );
-            self.refresh();
-//              $ul.listview( "refresh" );
-            
-            
-//              $.ajax({
-//                url: "http://gd.geobytes.com/AutoCompleteCity",
-//                dataType: "jsonp",
-//                crossDomain: true,
-//                data: {
-//                  q: $input.val()
-//                }
-//              })
-//              .then( function ( response ) {
-//                $.each( response, function ( i, val ) {
-//                  html += "<li>" + val + "</li>";
-//                });
-//                $ul.html( html );
-//                $ul.listview( "refresh" );
-//                $ul.trigger( "updatelayout");
-//              });
           }
         });
       }
-  //    e && this.refresh(e);
   
       return this;
     },
@@ -498,7 +482,7 @@ define([
       // if scrollTop is near to zero then it is "initial" next page retriving not by a user
       if ($wnd.scrollTop() > 20) {  
         this.skipScrollEvent = true; 
-        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+//        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
       }
       this.getNextPage();
     },
@@ -519,7 +503,9 @@ define([
       // masonry code works with DOM elements already inserted into a page
       // small timeout insures right bricks alignment
       var self = this;
-      setTimeout(function() { self.alignBricks(); }, 50);
+      setTimeout(function() { 
+        self.alignBricks(); 
+      }, 50);
     },
     alignBricks: function(loaded) {
       // masonry is hidden
@@ -537,17 +523,18 @@ define([
       var $allBricks = $(this.$el.children());
       // new, unaligned bricks - items without 'masonry-brick' class
       var $newBricks = $allBricks.filter(function(idx, node) {
-                  var $next = $(node).next();
-                  var hasClass = $(node).hasClass("masonry-brick");
-                  // if current node does not have "masonry-brick" class but the next note has
-                  // then need to reload/reset bricks
-                  if ($next.exist() &&
-                      !hasClass && 
-                      $next.hasClass("masonry-brick"))
-                    needToReload = true;
-                  
-                  return !hasClass;
-                });
+        var $next = $(node).next();
+        var hasClass = $(node).hasClass("masonry-brick");
+        
+        // if current node does not have "masonry-brick" class but the next note has
+        // then need to reload/reset bricks
+        if ($next.exist() &&
+            !hasClass && 
+            $next.hasClass("masonry-brick"))
+          needToReload = true;
+        
+        return !hasClass;
+      });
 
       // if image(s) has width and height parameters then possible to align masonry
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
@@ -598,4 +585,6 @@ define([
   }, {
     displayName: 'EditView'
   });
+  
+  return RLV;
 });

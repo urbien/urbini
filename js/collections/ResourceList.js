@@ -47,7 +47,14 @@ define([
       if (options.cache !== false)
         Events.trigger('newResourceList', this);
       
-      Events.on('newResource', function(resource) {
+      Events.on('newResource', function(resource, options) {
+        if (this.adding)
+          return;
+        
+        var uri = resource.getUri();
+        if (uri && this.get(uri))
+          return;
+        
         var types = U.getTypes(resource.vocModel);
         if (!_.contains(types, this.type))
           return;
@@ -62,11 +69,15 @@ define([
       
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
+    clone: function() {
+      return new ResourceList(this.models, _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
+    },
     add: function(models, options) {
+      this.adding = true;
       Backbone.Collection.prototype.add.apply(this, arguments);
-      if (_.isArray(models)) {
+      this.adding = false;
+      if (_.isArray(models))
         this.trigger('refresh');
-      }
     },
     replace: function(resource, oldUri) {
       this.remove(resource);
@@ -171,9 +182,13 @@ define([
       
       return response;
     },
-    onReset: function(model) {
-      G.log(this.TAG, "info", "resourceList onReset");
+    onReset: function(model, options) {
       this.resources = this.models;
+      if (options.params) {
+        _.extend(this.params, options.params);
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this._lastFetchedOn = null;
+      }
     },
     fetchAll: function(options) { 
       return Backbone.Model.prototype.fetch.call(this, options);
@@ -296,7 +311,7 @@ define([
             modified.push(uri);
           }
           else {
-            this.add(new this.vocModel(r));
+            this.add(new this.vocModel(r, {silent: true})); // to avoid triggering newResource event
           }
         }
         else

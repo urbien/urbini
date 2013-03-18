@@ -95,17 +95,21 @@ define([
 //      this.$el.page();
     },
     
-    showLoadingIndicator: function() {
+    showLoadingIndicator: function(timeout) {
       $.mobile.loading('show');
       // in case if fetch failed to invoke a callback
-      // then hide loading indicator after 3 sec. !!!
-      setTimeout(function() { 
-        this.hideLoadingIndicator(); 
-      }.bind(this), 3000);
+      // then hide loading indicator after 3 sec.
+      if (timeout) {
+        return timeoutId = setTimeout(function() {
+          this.hideLoadingIndicator(timeoutId);
+        }.bind(this), timeout);
+      }
     },
     
-    hideLoadingIndicator: function() {
-      clearTimeout(this.loadIndicatorTimerId);
+    hideLoadingIndicator: function(timeoutId) {
+      if (typeof timeoutId !== 'undefined')
+        clearTimeout(timeoutId);
+      
       $.mobile.loading('hide');
     }
   });

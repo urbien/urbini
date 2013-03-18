@@ -391,6 +391,7 @@
       {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
       {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
       {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
         "/ >
        </span>
      {{= net.socialNet }}

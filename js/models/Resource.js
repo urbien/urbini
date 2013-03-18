@@ -22,6 +22,7 @@ define([
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
+      options = options || {};
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
       this.on('sync', this.onsync);
@@ -34,7 +35,7 @@ define([
       if (atts)
         this.parse(atts);
       
-      if (this.getUri())
+      if (this.getUri() && !options.silent)
         Events.trigger('newResource', this);      
     },
     
