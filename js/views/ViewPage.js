@@ -39,18 +39,21 @@ define([
 //        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton],
 //        log: [LoginButton]
 //      };
-      
+
+      var commonTypes = G.commonTypes;
       this.buttons = {
         back: true,
         aroundMe: isGeo,
         menu: true,
         login: true
+//        ,
+//        publish: _.any(_.pick(this, 'doPublish', 'doTry', 'forkMe', 'testPlug', 'enterTournament'))
       };
 
       this.header = new Header(_.extend(commonParams, {
         buttons: this.buttons,
         viewId: this.cid
-      }, _.pick(this, ['doTry', 'doPublish', 'testPlug', 'forkMe', 'enterTournament'])));
+      }));
 
       var viewType, viewDiv;
       if (res.isA('Intersection')) {
@@ -151,37 +154,7 @@ define([
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;
-      this.$el.html(this.template(json));
-
-      var commonTypes = G.commonTypes;
-      if (!G.currentUser.guest) {
-        var user = G.currentUser._uri;
-        if (U.isAssignableFrom(res.vocModel, commonTypes.App)) {
-          var appOwner = U.getLongUri1(res.get('creator') || user);
-          var lastPublished = res.get('lastPublished');
-          if (user == appOwner  &&  !lastPublished || res.get('lastModifiedWebClass') > lastPublished)
-            this.doPublish = true;
-          
-          var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
-          var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
-          if (/*res.get('_uri')  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
-            this.doTry = true;
-            this.forkMe = true;
-          }
-        }
-        else if (U.isAssignableFrom(res.vocModel, commonTypes.Handler)) {
-//          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
-//          if (user == plugOwner)
-            this.testPlug = true;            
-        }
-        else {
-          var params = U.getParamMap(window.location.hash);
-          if (U.isAssignableFrom(res.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
-            this.enterTournament = true;
-        }
-      }
-      
-      
+      this.$el.html(this.template(json));      
       var self = this;
       this.photogridReady.done(function() {        
         var pHeader = self.$('div#photogridHeader');

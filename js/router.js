@@ -528,7 +528,7 @@ define([
       if (edit)
         return 'Edit your inter-app connections here';
       else {
-        var msg = 'Do you allow app {0} to be added to your profile'.format(className);
+        var msg = 'Do you allow app {0} to be added to your profile'.format(appName);
         if (appPlugs.length)
           return '{0} and connect to app{1}? You can always disconnect apps on their app pages and/or remove them from profile.'.format(className, (appPlugs.length === 1 ? ' ' : 's ') + appPlugs.join(', '));
         else

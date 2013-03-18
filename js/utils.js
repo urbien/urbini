@@ -122,11 +122,15 @@ define([
             }
             else if (code > 399 && code < 600) {
               var text = xhr.responseText;
-              try {
-                defer.reject(xhr, JSON.parse(xhr.responseText), opts);
-              } catch (err) {
-                defer.reject(xhr, "error", opts);
-              }                
+              if (text && text.length) {
+                try {
+                  defer.reject(xhr, JSON.parse(xhr.responseText), opts);
+                  return;
+                } catch (err) {
+                }
+              }
+                
+              defer.reject(xhr, "error", opts);
             }
             else {
               defer.resolve(xhr.data, xhr.status, xhr);
@@ -169,12 +173,14 @@ define([
 //            debugger;
             var text = jqXHR.responseText;
             var error;
-            try {
-              error = JSON.parse(text).error;
-            } catch (err) {
-              error = {code: jqXHR.status, details: err};
+            if (text.length) {
+              try {
+                error = JSON.parse(text).error;
+              } catch (err) {
+              }
             }
             
+            error = error || {code: jqXHR.status, details: err};
             defer.reject(jqXHR, error, opts);
           });
         }
@@ -1533,9 +1539,10 @@ define([
           break;
       }
       
+      var encOptions = {delimiter: '&amp'};
       url += encodeURIComponent(typeOrUri);
       if (_.size(params))
-        url += '?' + $.param(params);
+        url += '?' + U.getQueryString(params, encOptions);
       
       return url;
     },

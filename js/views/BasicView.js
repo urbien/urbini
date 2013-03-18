@@ -69,7 +69,7 @@ define([
   //    view.setElement(this.$(selector)).render();
   //  }
   
-    assign: function (selector, view) {
+    assign: function (selector, view, renderOptions) {
       var selectors;
       if (_.isObject(selector)) {
           selectors = selector;
@@ -80,7 +80,7 @@ define([
       }
       if (!selectors) return;
       _.each(selectors, function (view, selector) {
-          view.setElement(this.$(selector)).render();
+          view.setElement(this.$(selector)).render(renderOptions);
       }, this);
     },
     
@@ -93,6 +93,20 @@ define([
       this.$el.find('button[data-role="button"]').button();
       this.$el.find('input,textarea').textinput();
 //      this.$el.page();
+    },
+    
+    showLoadingIndicator: function() {
+      $.mobile.loading('show');
+      // in case if fetch failed to invoke a callback
+      // then hide loading indicator after 3 sec. !!!
+      setTimeout(function() { 
+        this.hideLoadingIndicator(); 
+      }.bind(this), 3000);
+    },
+    
+    hideLoadingIndicator: function() {
+      clearTimeout(this.loadIndicatorTimerId);
+      $.mobile.loading('hide');
     }
   });
 

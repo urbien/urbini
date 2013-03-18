@@ -23,7 +23,7 @@ define([
       this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
       this.editRowTemplate = this.makeTemplate('editRowTemplate');
       this.hiddenPropTemplate = this.makeTemplate('hiddenPET');
-      this.resource.on('change', this.refresh, this);
+//      this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
@@ -475,12 +475,11 @@ define([
         return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
-        var wClName = U.getValueDisplayName(res, 'domain');
-        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));        
-//        window.history.back();
-//        var cloneOf = res.get('cloneOf');
-//        if (cloneOf && cloneOf.count > 0)
+//        var wClName = U.getValueDisplayName(res, 'domain');
+//        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
+//        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));
+        
+        return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
       }
       
       if (res.isA('Redirectable')) {
@@ -576,6 +575,7 @@ define([
             redirectPath = uri;
             action = 'view';
           }
+          
           options.forceFetch = true;
           break;
         default:
@@ -591,6 +591,7 @@ define([
       
       this.router.navigate(U.makeMobileUrl(action, redirectPath, redirectParams), options);
     },
+    
     getValue: function(input) {
       var jInput = $(input);
       var val;

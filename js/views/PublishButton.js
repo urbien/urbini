@@ -127,7 +127,7 @@ define([
           this.$el.html(this.forkTemplate());
           this.$el.trigger('create');
         }
-        if (options.tryApp) {
+        if (options.doTry) {
           this.$el.html(this.tryTemplate());
           this.$el.trigger('create');
         }

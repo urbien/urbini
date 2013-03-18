@@ -24,7 +24,7 @@ define([
   },
   
   parsePropNameFromDB = function(propName) {
-    return propName.startsWith('_') ? propName.slice(1) : propNamee;
+    return propName.startsWith('_') ? propName.slice(1) : propName;
   },
     
   prepForDB = function(item) {
@@ -100,16 +100,19 @@ define([
     isCollection = U.isCollection(data),
     vocModel = data.vocModel,
     fetchFromServer = function(isUpdate, timeout) {
-        if (!isCollection && U.isTempUri(data.getUri())) {
-  //        debugger;
-          options.error && options.error(data, {type: 'offline'}, options);
-          return;
-        }
-        
-        data.lastFetchOrigin = 'server';
-        RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn);
+      if (!isCollection && U.isTempUri(data.getUri())) {
+//        debugger;
+        options.error && options.error(data, {code: 204}, options);
+        return;
+      }
+      
+      data.lastFetchOrigin = 'server';
+      RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn);
     }
     
+    if (!isCollection && U.isTempUri(data.getUri()))
+      forceFetch = false;
+      
     data._dirty = 0;
     if (isCollection)
       collection = data;
@@ -1497,7 +1500,7 @@ define([
       RM.taskQueue = new TaskQueue("DB");
       RM.runTask(function() {
         var defer = this;
-        var dbPromise = $.indexedDB(RM.DB_NAME).deleteDatabase().done(function(crap, event) {
+        var dbPromise = RM.deleteDatabase().done(function(crap, event) {
           G.databaseCompromised = false;
           G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
           if (dbOpen)

@@ -195,11 +195,12 @@ define([
         return resp;
       }
         
-      var uri = resp._uri;
+      var uri = resp._uri || resp.uri;
       if (!uri) {      
         resp = resp.data[0];
-        uri = resp._uri;
+        uri = resp._uri || resp.uri;
       }
+      
       resp._shortUri = U.getShortUri(uri, this.constructor);
       var primaryKeys = U.getPrimaryKeys(this.constructor);
       resp._uri = U.getLongUri1(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});

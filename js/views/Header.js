@@ -20,6 +20,7 @@ define([
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
+      _.extend(this, options);
       this.viewId = options.viewId;
       if (this.resource)
         this.resource.on('change', this.renderTitle, this);
@@ -31,7 +32,12 @@ define([
       var params = U.getHashParams();
       this.info = params['-info'];
       
+      var commonTypes = G.commonTypes;
       var buttons = options.buttons;
+      if (U.isAssignableFrom(res.vocModel, commonTypes.App)) {
+        buttons.publish = true;
+      }
+      
       var btnOptions = {
         model: res, 
         parentView: this,
@@ -155,6 +161,7 @@ define([
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
       
+      var res = this.resource; // undefined, if this is a header for a collection view
       this.$el.html("");
 //      this.calcTitle();
       if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
@@ -184,54 +191,46 @@ define([
       $ul.html(frag);
       
       this.$el.trigger('create');
-      var pBtn = this.publishButton;
+      var commonTypes = G.commonTypes;
+      if (res && !G.currentUser.guest) {
+        var user = G.currentUser._uri;
+        if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
+          var appOwner = U.getLongUri1(res.get('creator') || user);
+          var lastPublished = res.get('lastPublished');
+          if (user == appOwner  &&  !lastPublished || res.get('lastModifiedWebClass') > lastPublished)
+            this.doPublish = true;
+          
+          var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
+          var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
+          if (/*res.get('_uri')  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
+            this.doTry = true;
+            this.forkMe = true;
+          }
+        }
+        else if (U.isAssignableFrom(res.vocModel, commonTypes.Handler)) {
+          this.testPlug = true;            
+        }
+        else {
+          var params = U.getParamMap(window.location.hash);
+          if (U.isAssignableFrom(res.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+            this.enterTournament = true;
+        }
+      }
+
+      var pBtn = btns.publish;
       if (this.doPublish) {
         this.assign('div#publishBtn', pBtn);
-      }
+      }      
       else {
-        if (this.doTry) {
-          this.assign('div#tryBtn', pBtn);
-        }
-        if (this.forkMe) {
-          this.assign('div#forkMeBtn', pBtn);
-        }
-        if (this.testPlug) {
-          this.assign('div#testPlugBtn', pBtn);
-        }
-        if (this.enterTournament) {
-          this.assign('div#enterTournamentBtn', pBtn);
-        }
+        var options = ['doTry', 'forkMe', 'testPlug', 'enterTournament'];
+        var settings = _.pick(this, options);
+        _.each(options, function(option) {
+          if (this[option]) {
+            this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
+          }
+        }.bind(this));
       }
       
-//      var self = this;
-//      if (this.doPublish) {
-//        U.require(['views/PublishButton'], function(PublishButton) {
-//          self.publish = new PublishButton({el: $('div#publishBtn', self.el), model: self.resource}).render();
-//        });
-//      }
-//      else {
-//        if (this.doTry) {
-//          U.require(['views/PublishButton'], function(PublishButton) {
-//            self.tryApp = new PublishButton({el: $('div#tryBtn', self.el), model: self.resource}).render({tryApp: true, forkMe: this.forkMe});
-//          });
-//        }
-//        if (this.forkMe) {
-//          U.require(['views/PublishButton'], function(PublishButton) {
-//            self.forkMeApp = new PublishButton({el: $('div#forkMeBtn', self.el), model: self.resource}).render({forkMe: true});
-//          });
-//        }
-//        if (this.testPlug) {
-//          U.require(['views/PublishButton'], function(PublishButton) {
-//            self.testPlug = new PublishButton({el: $('div#testPlugBtn', self.el), model: self.resource}).render({testPlug: true});
-//          });
-//        }
-//        if (this.enterTournament) {
-//          U.require(['views/PublishButton'], function(PublishButton) {
-//            self.enterTournament = new PublishButton({el: $('div#enterTournamentBtn', self.el), model: self.resource}).render({enterTournament: true});
-//          });
-//        }
-//      }
-
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
       if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
         var params = U.getParamMap(window.location.hash);
@@ -264,12 +263,6 @@ define([
         }
       }
       
-//      if (G.currentUser.guest) {
-//        var log = this.buttons.log;
-//        log && this.makeWidgets(log, {domEl: 'li', id: '#headerUl'}); //, css: 'ui-btn-right'});
-//      }
-//
-//      this.restyle();
       return this;
     }
   });

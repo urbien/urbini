@@ -502,17 +502,7 @@ define([
       }
       this.getNextPage();
     },
-    showLoadingIndicator: function() {
-      $.mobile.loading('show');
-      // in case if fetch failed to invoke a callback
-      // then hide loading indicator after 3 sec. !!!
-      var self = this;
-      setTimeout(function() { self.hideLoadingIndicator(); }, 3000);
-    },
-    hideLoadingIndicator: function() {
-      clearTimeout(this.loadIndicatorTimerId);
-      $.mobile.loading('hide');
-    },
+    
     resumeScrollEventProcessing: function () {
       this.skipScrollEvent = false;
       this.hideLoadingIndicator();
