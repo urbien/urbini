@@ -103,18 +103,7 @@ define([
       var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
 
-//      var meta = models[0].__proto__.constructor.properties;
-//      meta = meta || models[0].properties;
       var meta = vocModel.properties;
-
-//      var isMasonry = this.isMasonry = !isList && U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(meta, 'ImageResource.bigImage').length > 0);
-//      if (isMasonry) {
-//        var key = this.vocModel.shortName + '-list-item';
-//        var litemplate = U.getTypeTemplate('list-item', rl);
-//        if (litemplate)
-//          isMasonry = false;
-//      }
-      
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
       var hash = window.location.hash;
@@ -245,7 +234,7 @@ define([
     render:function (eventName) {
       G.log(this.TAG, 'render');  
 
-      var json = this.json
+      var json = this.json;
       this.$el.html(this.template(json));
       var views = {
         '#headerDiv': this.header
@@ -265,9 +254,6 @@ define([
 
       if (this.vocModel.type === G.commonTypes.Handler) {
         this.listView.$el.addClass('grid-listview');
-//        setTimeout(function() {          
-//          self.$el.trigger('create');
-//        }, 100);
       }
       
       this.rendered = true;

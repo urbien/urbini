@@ -46,10 +46,6 @@ define([
 //        this.ready = true;
       
 //      this.setFilteredCollection();
-      var col = this.filteredCollection = this.collection.clone();
-      col.on('refresh', this.refresh);
-      col.on('add', this.onadd);
-      col.on('reset', this.refresh);
       return this;
     },
     events: {
@@ -102,7 +98,7 @@ define([
       this.mode = mode;
     },
     
-    refresh: function(modified) {
+    refresh: function(modified, wereAdded) {
       if (!this.rendered)
         return;
       
@@ -176,7 +172,7 @@ define([
       var i = 0;
       var nextPage = false;
       var frag;
-      if (typeof modified == 'undefined'  ||  modified.length == 0) {
+      if (wereAdded || typeof modified == 'undefined'  ||  modified.length == 0) {
         i = curNum;
         if (curNum == num)
           return this;
@@ -282,12 +278,16 @@ define([
 //      this.renderMany(this.model.models.slice(0, lis.length));
 
       if (this.initializedListView) {
-        if (isModification  ||  isMasonry  ||  isMultiValueChooser)
+        if (isModification  ||  isMasonry  ||  isMultiValueChooser) {
           this.$el.trigger('create');
+        }
         else {
           this.$el.trigger('create');
           this.$el.listview('refresh');
         }
+
+        if (isMasonry || isModification)
+          this.alignBricks();
       }
       else {
         this.initializedListView = true;
@@ -353,9 +353,9 @@ define([
 //      var requested = this.page * this.displayPerPage;
       var after = function() {
 //        var numShowing = (self.page + 1) * self.displayPerPage;
-        if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
-          self.refresh();
-        }
+//        if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
+//          self.refresh();
+//        }
         // listview (not masonry) can resume to process events immediately
         if (!self.hasMasonry())
           self.skipScrollEvent = false;
@@ -363,12 +363,12 @@ define([
       };
       
       var error = function() { after(); };
-      if (requested <= rl.models.length && rl.models.length % this.displayPerPage > 0) {
-        this.refresh(rl);
-        return;
-      }
-      if (before >= requested) {
+//      if (requested <= rl.models.length && rl.models.length % this.displayPerPage > 0) {
 //        this.refresh(rl);
+//        return;
+//      }
+      if (before >= requested) {
+        this.refresh(rl);
         after();
         return;
       }
@@ -402,6 +402,11 @@ define([
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);
+      var col = this.filteredCollection = this.collection.clone();
+      col.on('refresh', this.refresh);
+      col.on('add', this.onadd);
+      col.on('reset', this.refresh);
+
       var wasRendered = this.rendered;
       this.rendered = true;
       this.refresh();
@@ -518,7 +523,6 @@ define([
     alignBricks: function(loaded) {
       // masonry is hidden
       if (this.$el.width() == 0) {
-        debugger;
         if (!loaded)
           this.$el.load(function() {alignBricks(true)});
         else

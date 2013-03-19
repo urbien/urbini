@@ -313,7 +313,7 @@ define([
 
     fetchModelsForReferredResources: function(list) {
       var model = list.vocModel;
-      var resources = list.resources;
+      var resources = list.models;
       var meta = model.properties;
       
       var tmp = [];
