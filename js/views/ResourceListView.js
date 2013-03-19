@@ -429,7 +429,7 @@ define([
       var filtered = this.filteredCollection;
       var colModel = collection.vocModel;
       if (!wasRendered) {
-        this.$el.on('listviewbeforefilter', function (e, data) {
+        this.$el.on('listviewbeforefilter', _.debounce(function (e, data) {
           var $ul = $(this),
               $input = $(data.input),
               value = $input.val();
@@ -464,7 +464,7 @@ define([
               }
             });
           }            
-        });
+        }, 150));
       }
   
       return this;
