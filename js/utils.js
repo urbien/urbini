@@ -71,6 +71,8 @@ define([
       var mods = [], newModNames = [], newModFullNames = [];
       for (var i = 0; i < modules.length; i++) {
         var fullName = modules[i], name = fullName;
+        if (!fullName)
+          G.log(U.TAG, 'error', 'match undefined 1');
         var moduleViaPlugin = fullName.match(/\!(.*)$/);
         if (moduleViaPlugin) {
           name = moduleViaPlugin[1]; 
@@ -214,7 +216,8 @@ define([
     isUserInRole: function(userRole, ar, res) {
       if (userRole == 'guest')
         return false;
-      
+      if (userRole == 'admin')
+        return true;
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
       var resUri = res.get('_uri');
@@ -222,9 +225,8 @@ define([
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
-        if (_.contains(['admin', 'siteOwner'], r)) {
-          if (userRole == r) return true;
-        }
+        if (_.contains(['siteOwner'], r)  &&  userRole == r) 
+          return true;
         else if (r === 'owner') {
           continue; // TODO: implement this
         }
@@ -263,6 +265,9 @@ define([
         hash = hash.slice(0, qIdx);
       
       hash = decodeURIComponent(hash);
+      if (!hash)
+        G.log(U.TAG, 'error', 'match undefined 0');
+      
       route = hash.match('^view|menu|edit|make|chooser');
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);
@@ -468,6 +473,9 @@ define([
     },
     
     getLongUri1: function(uri, vocModel) {
+      if (!uri)
+        G.log(U.TAG, 'error', 'match undefined 2');
+
       for (var pattern in U.uriPatternMap) {
         var fn = U.uriPatternMap[pattern];
         var match = uri.match(fn.regExp);
@@ -627,6 +635,11 @@ define([
         return uri;
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
+      if (!uri) {
+        G.log(U.TAG, 'error', 'match undefined 3');
+        console.trace();
+      }
+
       var nameAndId = uri.match(regex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
@@ -923,6 +936,9 @@ define([
           model = typeof args[1] === 'function' ? args[1] : args[1].constructor;
         else {
           return U.filterObj(params, function(name, val) {
+            if (!name)
+              G.log(U.TAG, 'error', 'match undefined 4');
+
             return name.match(/^[a-zA-Z]+/);
           });
 //          throw new Error('missing parameter "model"');
@@ -1206,7 +1222,7 @@ define([
       var absDiff = Math.abs(diff);
       var absDayDiff = Math.abs(day_diff);
       var pre = future ? "In " : "";
-      var post = ""; //future ? "" : " ago";
+      var post = future ? "" : " ago";
       
       if (day_diff == 0) {
         var str = (absDiff < 60 && "just now" ||
@@ -1539,7 +1555,7 @@ define([
           break;
       }
       
-      var encOptions = {delimiter: '&amp'};
+      var encOptions = {delimiter: '&amp;'};
       url += encodeURIComponent(typeOrUri);
       if (_.size(params))
         url += '?' + U.getQueryString(params, encOptions);
@@ -2076,6 +2092,8 @@ define([
           return startOfDay + 2*U.millis.day;
       }
       
+      if (!date)
+        G.log(U.TAG, 'error', 'match undefined 5');
       var parsed = date.match(/(\d)* ?(second|minute|hour|day|week|month|year){1}s? ?(ago|ahead)/);
       if (!parsed)
         throw new Error('couldn\'t parse date: ' + date);
@@ -2240,6 +2258,9 @@ define([
       }
         
       if (numArgs != 3) {
+        if (!opVal)
+          G.log(U.TAG, 'error', 'match undefined 6');
+
         opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
         if (!opVal || opVal.length != 3)
           return null;

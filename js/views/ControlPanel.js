@@ -89,6 +89,7 @@ define([
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
+      var displayInline = U.getPropertiesWith(meta, "displayInline");
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
       var role = U.getUserRole();
@@ -147,17 +148,14 @@ define([
 //              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
             }
             else {
-              var jp = json[p];
-              if (jp) {
-//                var v = jp.value;
-                cnt = jp.count;
-                if (typeof cnt == 'undefined'  ||  !cnt)
-                  cnt = 0;
-                if (cnt != 0 ||  isPropEditable)
-                  doShow = true;
-  //                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-  //              else
-              }
+              var v = json[p].value;
+              cnt = json[p].count;
+              if (typeof cnt == 'undefined'  ||  !cnt)
+                cnt = 0;
+              if (cnt != 0 ||  isPropEditable)
+                doShow = true;
+//                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+//              else
             }
             if (doShow) {
               if (!this.isMainGroup  &&  !groupNameDisplayed) {
@@ -172,7 +170,7 @@ define([
                 colorIdx = 0;
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) 
-                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p}, common)));
+                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: prop['icon']}, common)));
               else {
                 if (isPropEditable)
                   U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));

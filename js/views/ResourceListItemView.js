@@ -9,7 +9,7 @@ define([
   'views/BasicView',
   'vocManager'
 ], function(G, $, _, Events, Errors, U, BasicView, Voc) {
-  return BasicView.extend({
+  var RLIV = BasicView.extend({
     TAG: 'ResourceListItemView',
     tagName:"li",
     isCommonTemplate: true,
@@ -20,7 +20,8 @@ define([
       this.resource.on('remove', this.remove, this);
 //      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
-      this.template = U.getTypeTemplate('list-item', this.resource);
+      this.isEdit = options  &&  options.edit;
+      this.template = !this.isEdit  &&  U.getTypeTemplate('list-item', this.resource);
 //      this.likesAndComments = this.makeTemplate('likesAndComments');
       if (this.template) 
         this.isCommonTemplate = false;
@@ -31,6 +32,8 @@ define([
           this.mvProp = options.mvProp;
 //          this.mvVals = options.mvVals;
         }
+        else if (this.isEdit)
+          this.template = this.makeTemplate('editListItemTemplate');
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
           this.template = this.makeTemplate('listItemTemplate');
@@ -144,6 +147,10 @@ define([
 //        var distance = m.get(distanceProp);
 //        json.distanceUnits = 'mi';
 //      }
+      
+      if (!json._uri)
+        G.log(RLIV.TAG, 'error', 'uri undefined 2', JSON.stringify(json));
+
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
       var urbienType = G.commonTypes.Urbien;
       if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
@@ -185,6 +192,20 @@ define([
         this.$el.html(this.template(json));
         return this;
       }
+      var params = U.getQueryParams(window.location.hash);
+      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
+      var action = !isEdit ? 'view' : 'edit'; 
+      json['action'] = action;
+      if (this.isEdit) {
+        if (params['$editCols']) {
+          json['editProp'] = params['$editCols'];
+          json['editPropValue'] = json[params['$editCols']];
+        }
+        else {
+          json['editProp'] = 'label';
+          json['editPropValue'] = json['label'];
+        }
+      }
 
       var viewCols = this.getViewCols(json);
       var dn = U.getDisplayName(m);
@@ -219,6 +240,8 @@ define([
       
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
+      _.extend(json);
+      
       this.$el.html(this.template(json));
       return this;
     },
@@ -236,7 +259,6 @@ define([
         }
         
         var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
-        
         viewCols += '<div class="commonLI">' + json.davDisplayName;
         if (isClass) {
           var comment = json['comment'];
@@ -529,4 +551,6 @@ define([
     }
 
   });  
+  
+  return RLIV;
 });

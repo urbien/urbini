@@ -60,8 +60,21 @@ define([
 //    click: Events.defaultClickHandler,
     render: function(options) {
       G.log(this.TAG, "render");
+
       var res = this.resource;
       var vocModel = this.vocModel;
+
+      var params = U.getParamMap(window.location.hash);
+      var isApp = U.isAssignableFrom(res, G.commonTypes.App);
+      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
+      if (isAbout) {
+        this.$el.removeClass('hidden');
+        this.$el.html(res.get('description'));      
+        this.$el.trigger('create');      
+        this.rendered = true;
+        return this;
+      }
+      
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
       var json = res.toJSON();

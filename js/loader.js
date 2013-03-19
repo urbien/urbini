@@ -878,6 +878,7 @@ define('fileCache', function() {
       Theme: 'model/social/Theme',
       WebClass: 'system/designer/WebClass',
       WebProperty: 'system/designer/WebProperty',
+      CloneOfProperty: 'system/designer/CloneOfProperty',
       Handler: 'system/designer/Handler',
       AppInstall: 'model/social/AppInstall'
     },

@@ -23,6 +23,11 @@
         </fieldset>
       </div>
     </form>  
+    <form data-ajax="false" id="editRlForm" action="#">
+      <input type="submit" id="editRlSubmit" value="Submit" />
+      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      </ul>
+    </form>  
   </div>
   
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
@@ -38,17 +43,18 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="float:right; width: 32%"></div>
+      <div id="mainGroup" class="ui-block-b" style="float: right;width: 32%; min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
     <div id="photogrid" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
+    <div id="about" class="hidden" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}"></div>
     
     {{ if ($('#other')) { }}
-      <br/>
-      <br/>
+      <!--br/>
+      <br/-->
     {{ } }}
     
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview">
@@ -177,12 +183,20 @@
   <img src="{{= value }}"></img>
 </script>
 
+
+<script type="text/template" id="editListItemTemplate">
+  <input data-formel="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
+  {{= viewCols }}
+</script>
+
+
 <script type="text/template" id="listItemTemplate">
+  {{ var action = action ? action : 'view' }}
   {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <a href="{{= U.makePageUrl('view', _uri) }}">
+    <a href="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= U.makePageUrl('view', _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
@@ -194,7 +208,7 @@
     /> 
     {{= viewCols }}
   </a>
-  {{ if (this.resource.isA('Buyable')) { }}
+  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{ if (typeof price == 'object') { }} 
        {{= price.currency + price.value }}
@@ -217,16 +231,17 @@
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
+  {{ var action = action ? action : 'view' }}
   {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <a href="{{= U.makePageUrl('view', _uri) }}">
+    <a href="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= U.makePageUrl('view', _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
   
   {{= viewCols }}
   </a>
-  {{ if (this.resource.isA('Buyable')) { }}
+  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{= price.currency + price.value }}
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
@@ -288,13 +303,15 @@
 <script type="text/template" id="cpMainGroupTemplate">
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (typeof value != 'undefined') { }}  
-   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="ui-icon-star-empty" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+ {{ if (!value) { }}  
+   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; background-color: {{= color }}" href="#">
+     <i class="{{= icon }}" style="right: -20px; font-size: 20px;"></i>&#160;{{= name }}
    </a>
  {{ } }}
- {{ if (typeof value == 'undefined') { }}  
-   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="background: {{= color }}" href="#"><i class="ui-icon-star-empty" style="font-size: 20px;"></i>&#160;{{= name }}</a>
+ {{ if (typeof value != 'undefined') { }}  
+   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+   </a>
  {{ } }}
 </script>
 
@@ -457,7 +474,7 @@
     </div>
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}">
+      <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}"  style="margin-top: -10px;" id="headerButtons">
       <div style="max-width:400px; display: inline-block;" id="publishBtn">
         {{ if (obj.publishApp) { }}
             {{= publish }}
@@ -484,11 +501,10 @@
         {{ } }}
       </div>
       </div>
-       {{= typeof this.info == 'undefined' ? '' : '<div class="info">' + this.info + '</div>'}}
     </div>
+      {{= typeof this.info == 'undefined' ? '' : '<h3 id="info"><i class="ui-icon-warning-sign"></i> ' + this.info + '</h3>'}}
   </div>
 </script>
-
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
@@ -657,11 +673,31 @@
         </a> 
       </li>
       {{ if (item.arrow) { }}
-         <li class="connect" style="padding:0px; border:0;"><i style="color: #FFC96C;" class="ui-icon-chevron-right"></i></li>
+         <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
+         <!--li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #FFC96C; font-size:20px;" class="ui-icon-chevron-right"></i></li-->
       {{ }                 }}
     {{ } }}
     </ul>
 </script>
+
+<!-- script type="text/template" id="photogridTemplate">
+    <ul data-role="listview" data-inset="true">
+    {{ #items }}
+      <li style="{{= 'float: ' + (float || 'left') }}">
+        <a href="{{= target }}">
+          {{= image ? '<img src="{0}" />'.format(image) : '' }}
+          {{= title ? '<h2>{0}</h2>'.format(title) : '' }}
+          {{= caption ? '<p>{0}</p>'.format(caption) : '' }}
+          {{= typeof superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
+        </a> 
+      </li>
+      {{ if (arrow) { }}
+         <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
+         <!--li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #FFC96C; font-size:20px;" class="ui-icon-chevron-right"></i></li-->
+      {{ }                 }}
+    {{ /items }}
+    </ul>
+</script -->
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
@@ -777,7 +813,6 @@
   <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   </a>
 </script>

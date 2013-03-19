@@ -210,58 +210,60 @@ define([
           link.innerHTML = innerHtml;
           link.parentNode.innerHTML += set;
         }
+        
         else if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
-          Events.stopEvent(e);
   //        Events.trigger('buy', this.model);
-          var popupTemplate = this.makeTemplate('buyPopupTemplate');
-          var $popup = $('#buy_popup');
           var price = chosenRes.get('price');
-          var dn = U.getDisplayName(chosenRes);
-          var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-          var href = chosenRes.get('_uri');          
-          var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
-          if ($popup.length == 0) {
-            $($(document).find($('.ui-page-active'))[0]).append(html);
-            
-  //          $('body').append(html);
-            $popup = $('#buy_popup');
+          if (price  &&  price.value) { 
+            Events.stopEvent(e);
+            var popupTemplate = this.makeTemplate('buyPopupTemplate');
+            var $popup = $('#buy_popup');
+            var dn = U.getDisplayName(chosenRes);
+            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+            var href = chosenRes.get('_uri');          
+            var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+            if ($popup.length == 0) {
+              $($(document).find($('.ui-page-active'))[0]).append(html);
+              
+    //          $('body').append(html);
+              $popup = $('#buy_popup');
+            }
+            else {
+              $('#buyMsg').html(msg);
+              $('#buyLink').attr('href', href);
+              $('#tryLink').attr('href', href);
+              $('#buyName').html(dn);
+            }
+            $popup.trigger('create');
+            $popup.popup().popup("open");
+            return;
           }
-          else {
-            $('#buyMsg').html(msg);
-            $('#buyLink').attr('href', href);
-            $('#tryLink').attr('href', href);
-            $('#buyName').html(dn);
-          }
-          $popup.trigger('create');
-          $popup.popup().popup("open");
-          return;
         }
-        else {
-          var uri = chosenRes.getUri();
-          props[prop] = uri;
-          var resName = U.getDisplayName(chosenRes);
-          if (resName)
-            props[prop + '.displayName'] = resName;
-          this.resource.set(props, {skipValidation: true, skipRefresh: true});
-          var pr = vocModel.properties[prop];
-          var dn = pr.displayName;
-          if (!dn)
-            dn = prop.charAt(0).toUpperCase() + prop.slice(1);
-          var name = chosenRes.get('davDisplayName');
-          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
-          this.setResourceInputValue(link, uri);
-          if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
-            if (G.currentApp) {
-              var cUri = G.currentApp._uri;
-              if (cUri.indexOf('http') == -1) {
-                cUri = U.getLongUri1(cUri);
-                G.currentApp._uri = cUri;
-              }
-              if (this.resource.get('_uri') == cUri) {
-                var themeSwatch = chosenRes.get('swatch');
-                if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
-                  G.theme.swatch = themeSwatch;
-              }
+        
+        var uri = chosenRes.getUri();
+        props[prop] = uri;
+        var resName = U.getDisplayName(chosenRes);
+        if (resName)
+          props[prop + '.displayName'] = resName;
+        this.resource.set(props, {skipValidation: true, skipRefresh: true});
+        var pr = vocModel.properties[prop];
+        var dn = pr.displayName;
+        if (!dn)
+          dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+        var name = chosenRes.get('davDisplayName');
+        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        this.setResourceInputValue(link, uri);
+        if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
+          if (G.currentApp) {
+            var cUri = G.currentApp._uri;
+            if (cUri.indexOf('http') == -1) {
+              cUri = U.getLongUri1(cUri);
+              G.currentApp._uri = cUri;
+            }
+            if (this.resource.get('_uri') == cUri) {
+              var themeSwatch = chosenRes.get('swatch');
+              if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+                G.theme.swatch = themeSwatch;
             }
           }
         }
@@ -869,9 +871,12 @@ define([
         
         return;
       }
-      if (_.has(info.backlinks, p)  ||  U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel))
+      if (_.has(info.backlinks, p))
         return;
-
+      if (U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel)) {
+        if (window.location.hash.startsWith('#make/')  || prop.avoidDisplayingInEdit)
+          return;
+      }
       _.extend(prop, {shortName: p});
       var res = this.resource;
       if (!willShow(res, prop, info.userRole))
@@ -879,7 +884,7 @@ define([
       
       info.displayedProps[p] = true;
       var pInfo = U.makeEditProp(this.resource, prop, info.formId);
-      if (!info.groupNameDisplayed) {
+      if (!info.groupNameDisplayed  &&  info.propertyGroupName) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
       }
@@ -913,7 +918,15 @@ define([
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var displayedProps = {};
-
+      
+      var reqParams = U.getParamMap(window.location.href);
+      var editCols = reqParams['$editCols'];
+      var editProps = editCols ? editCols.replace(/\s/g, '').split(',') : null;
+        
+      if (!editProps) {
+        propsForEdit = this.vocModel.propertiesForEdit;
+        editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
+      }
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
       var formId = G.nextId();
       var idx = 0;
@@ -921,7 +934,7 @@ define([
       var maxChars = 30;
       var userRole = U.getUserRole();
       var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
-      if (propGroups.length) {
+      if (propGroups.length  &&  !editCols) {
         if (propGroups.length > 1  &&  propGroups[0].shortName != 'general') {
           var generalGroup = $.grep(propGroups, function(item, i) {
             return item.shortName == 'general';
@@ -941,30 +954,34 @@ define([
           groupNameDisplayed = false;
           for (var j = 0; j < props.length; j++) {
             var p = props[j].trim();
+            if (editProps  &&  $.inArray(p, editProps) == -1)
+              continue;
             if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
               continue;
-
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
           }
         }
-        
-        var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
-        var init = this.initialParams;
-        for (var p in reqd) {
-          p = p.trim();
-          if (typeof init[p] !== 'undefined')
-            continue;
-          if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
-            continue;
-          
-          _.extend(info, {name: p, prop: reqd[p]});
-          this.addProp(info);
-        }        
+        if (!editCols) {
+          var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
+          var init = this.initialParams;
+          for (var p in reqd) {
+            p = p.trim();
+            if (typeof init[p] !== 'undefined')
+              continue;
+            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
+              continue;
+            
+            _.extend(info, {name: p, prop: reqd[p]});
+            this.addProp(info);
+          }        
+        }
       }
-      else {
+      if (!propGroups.length || editProps) {
         for (var p in meta) {
           p = p.trim();
+          if (editProps  &&  $.inArray(p, editProps) == -1)
+            continue;
           if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  json[p]))
             continue;
           if (this.action != 'make'  &&  meta[p].immutable  &&  json[p])

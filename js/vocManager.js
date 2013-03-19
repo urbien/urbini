@@ -821,6 +821,8 @@ define([
   
   Events.on('VERSION:Models', function(init) {
 //    debugger;
+    G.log(Voc.TAG, 'info', 'nuking models from LS');
+
     G.localStorage.clean(function(key) {
       return _.any([Voc.MODEL_PREFIX], function(prefix) {
         return key.startsWith(prefix);

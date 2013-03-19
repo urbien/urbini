@@ -142,7 +142,7 @@ html { height: 100%; }
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
 
 .nabBoard h3, .gridBoard h3 { height: 20px; padding: 11px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-h3#pageTitle {margin: 10px 0 0 0;}
+h3#pageTitle {margin: 10px 0 10px 0;}
 .gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
 .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
@@ -257,13 +257,13 @@ h3#pageTitle {margin: 10px 0 0 0;}
 
 /* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
-.info {background: yellow; font-size: 16px; padding: 5px;color: #047907;}
+#info {background-color:black;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
 .buyButton { float:right; }
 
 *.ui-listview *.ui-btn-up-c,
 *.ui-listview *.ui-btn-down-c,
 *.ui-listview *.ui-btn-hover-c {
-  border: 1px solid     #ccc /*{c-bup-border}*/;
+/*  border: 1px solid     #ccc*/ /*{c-bup-border};*/
   background:       #eee /*{c-bup-background-color}*/;
   font-weight: bold;
   color:          #222 /*{c-bup-color}*/;
@@ -276,11 +276,15 @@ h3#pageTitle {margin: 10px 0 0 0;}
   background-image:         linear-gradient( #fff /*{c-bup-background-start}*/, #f1f1f1 /*{c-bup-background-end}*/);
 }
 .badge, .menuBadge, .appBadge {
+/*
+  commented out since this gradient crashes android stock browser
+  
   background: radial-gradient( center -9px, circle closest-side, white 0, red 26px );
   background: -moz-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
   background: -ms-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
   background: -o-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
   background: -webkit-radial-gradient( center -9px, circle closest-side, white 0, red 26px );
+*/  
   background-color: red;
   border: 2px solid white;
   border-radius: 12px; /* must be 1/2 of ( border-width*2 + width ) */
@@ -320,4 +324,10 @@ h3#pageTitle {margin: 10px 0 0 0;}
 
 #photogrid .ui-li-aside a {
   color: #eee;
+}
+#photogrid .ui-shadow {
+  box-shadow: none;
+ -moz-box-shadow: none;
+ -webkit-box-shadow:none;
+}
 }

@@ -59,8 +59,13 @@ define([
         viewId: this.cid
       });
       
-      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
-      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
+      var reqParams = U.getParamMap(window.location.href);
+      var editCols =  reqParams['$editCols'];
+      if (!editCols) {
+        this.imageView = new ResourceImageView({model: res});
+      }
+      
+      this.editView = new EditView(_.extend({model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
       if (this.editParams)
         this.editView.set(this.editParams);
     },
@@ -103,26 +108,22 @@ define([
       this.router.navigate(U.makeMobileUrl('edit', this.resource), {trigger: true, replace: true});
       return this;
     },
-//    tap: function() {
-//      G.log(this.TAG, 'events');
-//      return Events.defaultTapHandler.apply(this, arguments);
-//    },
-//    click: Events.defaultClickHandler,  
-//    click: function(e) {
-//      clicked = true;
-//      Events.defaultClickHandler(e);  
-//    },
 
     render:function (eventName) {
       G.log(this.TAG, "render");
       
       var views = {
-        'div#resourceImage': this.imageView,
         '#resourceEditView': this.editView,
         '#headerDiv'       : this.header
       };
       
+      if (this.imageView)
+        views['div#resourceImage'] = this.imageView;
+
       this.assign(views);      
+      if (this.header.noButtons)
+        this.header.$el.find('#headerButtons').css('display', 'none');
+
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       

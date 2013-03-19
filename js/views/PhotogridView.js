@@ -113,6 +113,7 @@ define([
 
             var imageData = {
               image: image,
+/*              target: U.makePageUrl('view', resUri),*/
               target: U.makePageUrl('view', target),
               title: json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0] + '.displayName'],
               width: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalWidth'.format(p))[0]],
@@ -220,7 +221,8 @@ define([
       
       if (isIntersection) {
         intersection = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
-        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
+        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
+//        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
       }
       else {
         var props = U.getCloneOf(vocModel, 'ImageResource.smallImage');
@@ -294,7 +296,14 @@ define([
         if (typeof target == 'undefined') 
           return;
 
-        superscript = isFriendApp ? resource.get('plugs').count : ++i;
+        var superscript;
+        if (!isFriendApp)
+          superscript = ++i;
+        else {
+          var plugs = resource.get('plugs');
+          if (plugs)
+            superscript = plugs.count;
+        }
         image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
         items.push({image: image, target: target, title: title, superscript: superscript, caption: caption, titleLink: '#'});
       });

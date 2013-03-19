@@ -3,8 +3,9 @@ define([
   'globals',
   'utils',
   'events',
+  'vocManager',
   'views/BasicView'
-], function(G, U, Events, BasicView) {
+], function(G, U, Events, Voc, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -191,7 +192,7 @@ define([
 //        }
         if (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res)) {
           var uri = U.getLongUri1(G.currentApp._uri);
-          pageUrl = U.makePageUrl('edit', uri);
+          pageUrl = U.makePageUrl('view', uri);
           var title = 'Edit ' + G.currentApp.title;
           var img = G.currentApp.smallImage;
           if (!img) 
@@ -292,9 +293,57 @@ define([
     },
     
     subscribe: function() {
+      Events.stopEvent(e);
+      var self = this;
+      Voc.getModels("model/portal/MySubscription").done(function() {
+        var m = U.getModel("model/portal/MySubscription");
+        var res = new m();
+        var props = {forum: self.resource.get('_uri'), owner: G.currentUser._uri};
+        res.save(props, {
+          sync: true,
+          success: function(resource, response, options) {
+            var rUri = self.resource.get('_uri');
+            var uri = 'view/' + encodeURIComponent(rUri) + '?-info=' + encodeURIComponent("You were successfully subscribed to " + self.vocModel.displayName + ' ' + self.resource.get('davDisplayName'));
+            self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
+          },
+          error: function(resource, xhr, options) {
+            var code = xhr ? xhr.code || xhr.status : 0;
+            switch (code) {
+            case 401:
+              Events.trigger('req-login');
+//              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+//              Events.on(401, msg || 'You are not unauthorized to make these changes');
+              break;
+            case 404:
+              debugger;
+              Errors.errDialog({msg: msg || 'Item not found', delay: 100});
+              break;
+            case 409:
+              debugger;
+              var rUri = self.resource.get('_uri');
+              var uri = 'view/' + encodeURIComponent(rUri) + '?-info=' + encodeURIComponent("You've already been subscribed to " + self.vocModel.displayName + ' ' + self.resource.get('davDisplayName'));
+              self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
+//              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
+              break;
+            default:
+              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+//              debugger;
+              break;
+            }
+          }
+        });
+//        self.redirect.apply(self, args);
+      }).fail(function() {
+        self.router.navigate(U.makeMobileUrl('view', uri), options);
+      });
+
       alert('subscribed...not really though');
     }
-  }, {
+    
+  }, 
+  
+  
+  {
     displayName: 'MenuPage'
   });
 });

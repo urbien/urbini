@@ -192,12 +192,12 @@ define([
       
       this.$el.trigger('create');
       var commonTypes = G.commonTypes;
-      if (res && !G.currentUser.guest) {
+      if (res && G.currentUser.guest  &&  !this.isAbout) {
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
-          if (user == appOwner  &&  !lastPublished || res.get('lastModifiedWebClass') > lastPublished)
+          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
             this.doPublish = true;
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
@@ -207,12 +207,14 @@ define([
             this.forkMe = true;
           }
         }
-        else if (U.isAssignableFrom(res.vocModel, commonTypes.Handler)) {
-          this.testPlug = true;            
+
+        else if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
+//          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
+//          if (user == plugOwner)
+            this.testPlug = true;            
         }
         else {
-          var params = U.getParamMap(window.location.hash);
-          if (U.isAssignableFrom(res.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+          if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
             this.enterTournament = true;
         }
       }
@@ -227,6 +229,9 @@ define([
         _.each(options, function(option) {
           if (this[option]) {
             this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
+          }
+          else {
+//            $('#{0}Btn'.format(option)).css('display', 'none');
           }
         }.bind(this));
       }
@@ -263,6 +268,9 @@ define([
         }
       }
       
+      if (!this.doPublish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament) 
+        this.noButtons = true;
+
       return this;
     }
   });

@@ -36,15 +36,18 @@ define([
         parentView: this
       };
       
-      var json = this.json = rl.toJSON();
+      var hash = window.location.hash;
+      var json = this.json = rl.toJSON();      
       json.viewId = this.cid;
       var vocModel = this.vocModel;
       var type = vocModel.type;
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      _.extend(json, {isMasonry: isMasonry});  
+      var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
+      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || 
+                                                        vocModel.type.endsWith('/Goal')       || 
+                                                        vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       
       var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       if (isGeo) {
@@ -57,9 +60,7 @@ define([
         }, this);
       }      
 
-      var hash = window.location.hash;
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || U.isCreatable(type);
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner', rl)));
       var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
@@ -71,8 +72,13 @@ define([
               continue;
             var type = U.getLongUri1(prop.range);
             var cM = U.getModel(type);
-            if (!cM) 
-              continue;
+            if (!cM) {
+              var rType = U.getTypeUri(decodeURIComponent(p[1]));
+              if (rType)
+                cM = U.getModel(rType);
+              if (!cM)
+                continue;
+            }
             var blProps = U.getPropertiesWith(cM.properties, 'backLink');
             var bl = [];
             for (var p in blProps) {
@@ -106,12 +112,10 @@ define([
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var hash = window.location.hash;
       var params = hash ? U.getParamMap(hash) : null;
-
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
-//      var isModification = type.indexOf(cmpStr) == type.length - cmpStr.length;
-      this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : '#sidebar');
+      this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
+      this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       this.listView = new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options));
     },
     setMode: function(mode) {
@@ -161,11 +165,40 @@ define([
 //      if (p && p.mode == G.LISTMODES.CHOOSER) {
       Events.stopEvent(e);
       var checked = this.$('input:checked');
-      if (checked.length)
+      var editList = this.$('input:[data-formel]');
+      if (checked.length) {
         Events.trigger('chooser:' + U.getQueryParams().$multiValue, {model: this.model, checked: checked});
-      else
+        return;
+      }
+      Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
+      return;
+/*
+      if (!editList) { 
         Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
-//      }
+        return;
+      }
+      
+      for (var i=0; i<editList.length; i++) {
+        var name = editList[i].name;
+        var idx = name.indexOf('.$.');
+        var uri = name.substring(0, idx);
+        var propName = name.substring(idx + 3);
+        
+        var props = {propName: editList[i].value};
+        var res = this.collection.models[i];
+        res.save(props, {
+          sync: !U.canAsync(this.vocModel),
+          success: function(resource, response, options) {
+            res.lastFetchOrigin = null;
+          },
+          error: function(resource, response, options) {
+            var a = 'here we are';
+          }
+        });
+      }  
+      this.router.navigate(hash, {trigger: true, replace: true});
+      */
+//      this.redirect({trigger: true, replace: true, removeFromView: true});
     }, 
     pageshow: function(e) {
       G.log(this.TAG, 'events', 'pageshow');
@@ -251,7 +284,8 @@ define([
         $('body').append(this.$el);
       if (!this.isMV)
         $('form#mv').hide();
-
+      if (!this.isEdit)
+        $('form#editRlForm').hide();
       if (this.vocModel.type === G.commonTypes.Handler) {
         this.listView.$el.addClass('grid-listview');
       }

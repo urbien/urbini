@@ -417,7 +417,9 @@ define([
     },
     
     deleteDatabase: function() {
+      G.log(RM.TAG, 'info', 'deleting db');
       return $.indexedDB(RM.DB_NAME).deleteDatabase().done(function() {
+        G.log(RM.TAG, 'info', 'deleted db');
         RM.databaseCompromised = false;
         RM.db = null;
       });

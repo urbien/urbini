@@ -54,7 +54,11 @@ define([
     },
     orientationchange: function(e) {
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || vocModel.type.endsWith('/Goal') || vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
+      var isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || 
+                                       vocModel.type.endsWith('/Theme')      || 
+                                       vocModel.type.endsWith('/App')        || 
+                                       vocModel.type.endsWith('/Goal') || 
+                                       vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
 //      alert ('here we are');
       
       if (!isMasonry)
@@ -133,6 +137,9 @@ define([
 //          isMasonry = false;
 //      }
       var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
+      var params = U.getParamMap(window.location.hash);
+      var isEdit = !isModification  &&  !isMasonry  &&  (params['$editList']); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty));
+
 //      if (!isComment  &&  !isMasonry  &&  !isList) {
 //        if (U.isA(vocModel, 'Intersection')) {
 //          var href = window.location.href;
@@ -208,8 +215,7 @@ define([
             liView = new PhotogridView(_.extend(commonParams, {tagName: 'div', linkToIntersection: true}));
 //            renderDfd.done(liView.finalize);
           }
-          else 
-            if (isMultiValueChooser) {
+          else if (isMultiValueChooser) {
             var isListed =  _.contains(mvVals, res.get('davDisplayName'));
 //            var isChecked = defaultUnchecked === isListed;
             liView = new ResourceListItemView(_.extend(commonParams, {mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}));
@@ -220,6 +226,8 @@ define([
             liView = new ResourceMasonryItemView(_.extend(commonParams, {className: 'nab nabBoard'}));
           else if (isComment)
             liView = new CommentListItemView(commonParams);
+          else if (isEdit) 
+            liView = new ResourceListItemView(_.extend(commonParams, {editCols: params['$editCols'], edit: true}));
           else {
             var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
             liView = imageProperty != null ? new ResourceListItemView(_.extend(commonParams, { imageProperty: imageProperty, parentView: this, swatch: swatch})) : new ResourceListItemView(_.extend(commonParams, {swatch: swatch}));
@@ -273,7 +281,9 @@ define([
       if (!nextPage) {
         this.$el.html(frag);
       }
-      
+      if (!isComment)
+        this.$el.prevObject.find('#comments').css('display', 'none');
+
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
 

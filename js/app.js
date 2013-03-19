@@ -331,6 +331,7 @@ define('app', [
 
       _.each(['.js', '.css', '.jsp'], function(ext) {
         Events.on("VERSION" + ext.toUpperCase(), function() {
+          G.log(App.TAG, 'info', 'nuking', ext, 'from LS');
           var keys = _.keys(localStorage);
           for (var i = 0; i < keys.length; i++) {
             var key = keys[i];

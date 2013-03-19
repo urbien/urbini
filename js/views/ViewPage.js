@@ -26,11 +26,6 @@ define([
       this.viewId = options.viewId;
       
       var res = this.resource;
-      var commonParams = {
-        model: res,
-        parentView: this
-      }
-      
       var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
                   (res.isA("Shape") && res.get('shapeJson'));
       
@@ -46,38 +41,50 @@ define([
         aroundMe: isGeo,
         menu: true,
         login: true
-//        ,
-//        publish: _.any(_.pick(this, 'doPublish', 'doTry', 'forkMe', 'testPlug', 'enterTournament'))
       };
 
-      this.header = new Header(_.extend(commonParams, {
+      var params = U.getParamMap(window.location.hash);
+      var isApp = U.isAssignableFrom(res, commonTypes.App);
+      var isAbout = this.isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
+      var commonParams = {
+        model: res,
+        parentView: this,
+        isAbout: isAbout
+      }
+        
+      this.header = new Header(_.extend({
         buttons: this.buttons,
         viewId: this.cid
-      }));
+      }, commonParams));
 
-      var viewType, viewDiv;
-      if (res.isA('Intersection')) {
-        viewType = 'views/PhotogridView';
-        this.imgDiv = 'div#resourceImageGrid';
-      }
-      else {
-        viewType = 'views/ResourceImageView';
-        this.imgDiv = 'div#resourceImage';
+      if (!isAbout) {
+        var viewType, viewDiv;
+        if (res.isA('Intersection')) {
+          viewType = 'views/PhotogridView';
+          this.imgDiv = 'div#resourceImageGrid';
+        }
+        else {
+          viewType = 'views/ResourceImageView';
+          this.imgDiv = 'div#resourceImage';
+        }
       }
       
       var self = this;
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       U.require(viewType, function(viewMod) {
-        self.imageView = new viewMod(_.extend(commonParams, {el: $(this.imgDiv, self.el), arrows: false}));
+        self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams));
         self.readyDfd.resolve();
 //        renderDfd.done(self.imageView.finalize);
       });
 
-      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
-      this.view = new ResourceView(_.extend(commonParams, {el: $('ul#resourceView', this.el)}));
-      this.cp = new ControlPanel(_.extend(commonParams, {el: $('ul#cpView', this.el), isMainGroup: false}));
+//      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
+      if (!isAbout) {
+        this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
+        this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
+      }  
       
+      this.view = new ResourceView(commonParams);      
       this.photogridDfd = $.Deferred();
       this.photogridReady = this.photogridDfd.promise();
       var commonTypes = G.commonTypes;
@@ -94,7 +101,7 @@ define([
           friendType = commonTypes.Friend;
           friendName = 'Friend';
         }
-        
+
         U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
           Voc.getModels(friendType).done(function() {              
             self.friends = new ResourceList(null, {
@@ -119,7 +126,6 @@ define([
         });
       }
       
-
       Events.on("mapReady", this.showMapButton);
     },
     events: {
@@ -166,29 +172,28 @@ define([
         });
       });
 
+      var viewTag = this.isAbout ? 'div#about' : 'ul#resourceView';
       var views = {
-        '#headerDiv'           : this.header,
-        'ul#resourceView'      : this.view,
-        'ul#cpView'            : this.cp,
-        'div#mainGroup'        : this.cpMain
+        '#headerDiv'           : this.header
       };
+      
+      views[viewTag] = this.view;
+      if (this.cp)
+        views['ul#cpView'] = this.cp;
+      if (this.cpMain)
+        views['div#mainGroup'] = this.cpMain;
       
       this.assign(views);
       this.ready.done(function() {
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
-
       
-//      this.imageView.render();
-//      this.header.render();
-//      this.header.$el.trigger('create');
-//      this.cpMain.render();
-//      this.view.setElement($('ul#resourceView', this.el)).delegateEvents().render();
-//      this.cp.render();
-      if (G.currentUser.guest) {
-        this.$('#edit').hide();
-      }
-
+      if (!this.isAbout) {
+        if (G.currentUser.guest) {
+          this.$('#edit').hide();
+        }
+      }       
+     
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
