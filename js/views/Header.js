@@ -202,7 +202,7 @@ define([
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
-          if (/*res.get('_uri')  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
+          if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
             this.doTry = true;
             this.forkMe = true;
           }

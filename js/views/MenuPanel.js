@@ -280,7 +280,7 @@ define([
       var edit = m.get('edit');
       if (!user.guest  &&  edit  &&  user.totalMojo > edit) {
         U.addToFrag(frag, this.menuItemTemplate({title: 'Add', mobileUrl: 'make/' + U.encode(m.constructor.shortName), id: 'add'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + U.encode(m.get('_uri')), id: 'edit'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + U.encode(m.getUri()), id: 'edit'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Delete', mobileUrl: '', id: 'delete'}));
       }
     },
@@ -298,11 +298,11 @@ define([
       Voc.getModels("model/portal/MySubscription").done(function() {
         var m = U.getModel("model/portal/MySubscription");
         var res = new m();
-        var props = {forum: self.resource.get('_uri'), owner: G.currentUser._uri};
+        var props = {forum: self.resource.getUri(), owner: G.currentUser._uri};
         res.save(props, {
           sync: true,
           success: function(resource, response, options) {
-            var rUri = self.resource.get('_uri');
+            var rUri = self.resource.getUri();
             var uri = 'view/' + encodeURIComponent(rUri) + '?-info=' + encodeURIComponent("You were successfully subscribed to " + self.vocModel.displayName + ' ' + self.resource.get('davDisplayName'));
             self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
           },
@@ -320,7 +320,7 @@ define([
               break;
             case 409:
               debugger;
-              var rUri = self.resource.get('_uri');
+              var rUri = self.resource.getUri();
               var uri = 'view/' + encodeURIComponent(rUri) + '?-info=' + encodeURIComponent("You've already been subscribed to " + self.vocModel.displayName + ' ' + self.resource.get('davDisplayName'));
               self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
 //              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});

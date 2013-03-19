@@ -38,9 +38,15 @@ define([
     },
     render: function(options) {
       if (this.resource)
-        return this.renderResource.apply(this, arguments);
+        this.renderResource.apply(this, arguments);
       else if (this.collection)
-        return this.renderCollection.apply(this, arguments);
+        this.renderCollection.apply(this, arguments);
+      
+      if (this.images && this.images.length) {
+        this.$el.html(this.template({items: this.images}));
+        this.$el.removeClass('hidden');
+        this.$el.trigger('create');
+      }
     },
     renderResource: function(options) {
       var res = this.resource;
@@ -113,7 +119,6 @@ define([
 
             var imageData = {
               image: image,
-/*              target: U.makePageUrl('view', resUri),*/
               target: U.makePageUrl('view', target),
               title: json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0] + '.displayName'],
               width: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalWidth'.format(p))[0]],
@@ -202,7 +207,8 @@ define([
 //      });
 //      
 //      this.finishRender(items);
-      this.finishRender(images);
+//      this.finishRender(images);
+      this.images = images;
       return this;  
     },
     
@@ -221,8 +227,7 @@ define([
       
       if (isIntersection) {
         intersection = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
-        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
-//        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
+        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
       }
       else {
         var props = U.getCloneOf(vocModel, 'ImageResource.smallImage');
@@ -234,7 +239,7 @@ define([
       
       var self = this;
       var isHorizontal = ($(window).height() < $(window).width());
-      var items = [];
+      var images = [];
       var i = 0;
       var source = this.source;
       var commonTypes = G.commonTypes;
@@ -296,29 +301,24 @@ define([
         if (typeof target == 'undefined') 
           return;
 
-        var superscript;
-        if (!isFriendApp)
-          superscript = ++i;
-        else {
-          var plugs = resource.get('plugs');
-          if (plugs)
-            superscript = plugs.count;
-        }
+        var plugs = resource.get('plugs') || {count: undefined};
+        superscript = isFriendApp ? plugs.count : ++i;
         image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
-        items.push({image: image, target: target, title: title, superscript: superscript, caption: caption, titleLink: '#'});
+        images.push({image: image, target: target, title: title, superscript: superscript, caption: caption, titleLink: '#'});
       });
       
-      switch (items.length) {
+      switch (images.length) {
         case 0:
           return this;
         case 1:
-          items[0]['float'] = 'center';
+          images[0]['float'] = 'center';
           break;
         case 2:
-          items[1]['float'] = 'right';
+          images[1]['float'] = 'right';
           break;
       }
-      this.finishRender(items);
+      
+      this.images = images;
       return this;
     },
 
@@ -343,25 +343,24 @@ define([
     
     finishRender: function(items) {
       this.$el.html(this.template({items: items}));
-      if (this.rendered) {
-        this.$el.trigger('create');
-        this.$el.listview('refresh');
-      }
-      else {
-        this.$el.trigger('create');
-        this.rendered = true;
-      }
-      
+//      if (this.rendered) {
+//        this.$el.trigger('create');
+//        this.$el.listview('refresh');
+//      }
+//      else {
       this.$el.removeClass('hidden');
-      this.finalize();
-      var self = this;
-      Events.on('changePage', function(view) {
-        if (view == self || self.isChildOf(view))
-          self.finalize();
-      });
+        this.$el.trigger('create');
+//        this.rendered = true;
+//      }
+//      this.finalize();
+//      var self = this;
+//      Events.on('changePage', function(view) {
+//        if (view == self || self.isChildOf(view))
+//          self.finalize();
+//      });
     },
     
-    finalize: function() {
+//    finalize: function() {
 //      var btns = this.$('.ui-btn');
 //      switch (btns.length) {
 //        case 1:
@@ -376,7 +375,7 @@ define([
 ////          $(btns[1]).css('float', 'center');
 ////          break;
 //      }     
-    },
+//    },
     
     getCaption: function(resource, prop) {
       var res = arguments.length <= 1 ? (resource && U.isModel(resource) ? resource : this.resource) : resource;

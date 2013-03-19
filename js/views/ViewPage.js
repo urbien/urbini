@@ -151,7 +151,7 @@ define([
     },
     edit: function(e) {
       e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.resource.get('_uri')), {trigger: true});
+      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true});
       return this;
     },
     

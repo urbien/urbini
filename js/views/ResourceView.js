@@ -50,7 +50,7 @@ define([
       if (U.isCollection(arguments[0])) {
         collection = arguments[0];
         modified = arguments[1];
-        if (collection != res.collection || !_.contains(modified, res.get('_uri')))
+        if (collection != res.collection || !_.contains(modified, res.getUri()))
           return this;
       }
 

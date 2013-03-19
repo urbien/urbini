@@ -28,10 +28,9 @@ define([
       });
       
       var vocModel = this.vocModel = this.model;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'replace', 'onResourceChange'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
-      this.on('replace', this.replace, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
       this.type = vocModel.type;
       this.shortName = vocModel.shortName || vocModel.shortName;
@@ -46,12 +45,24 @@ define([
       if (options.cache !== false)
         Events.trigger('newResourceList', this);
       
+//      this.on('updated', function() {
+//        debugger;
+//      });
+//
+//      this.on('replaced', function() {
+//        debugger;
+//      });
+//
+//      this.on('added', function() {
+//        debugger;
+//      });
+
       Events.on('newResource', function(resource, options) {
+        // we are adding this resource to this collection at the moment
         if (this.adding)
           return;
         
-        var uri = resource.getUri();
-        if (uri && this.get(uri))
+        if (this.get(resource))
           return;
         
         var types = U.getTypes(resource.vocModel);
@@ -59,8 +70,9 @@ define([
           return;
         
         if (this.belongsInCollection(resource)) {
+          debugger;
           this.add(resource);
-          this.trigger('refresh', resource.getUri());
+          this.trigger('added', [resource]);
         }
       }.bind(this));
       
@@ -71,20 +83,38 @@ define([
     clone: function() {
       return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
     },
+    onResourceChange: function(resource) {
+      this.trigger('updated', [resource]);
+    },
     add: function(models, options) {
+      var multiAdd = _.isArray(models);
+      models = multiAdd ? models : [models];
+      models = _.map(models, function(m) {
+        var resource = m instanceof Backbone.Model ? m : new this.vocModel(m, {silent: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
+        
+        // just in case we're already subscribed, unsubscribe
+        resource.off('replaced', this.replace); 
+        resource.off('change', this.onResourceChange);
+        
+        resource.on('replaced', this.replace);
+        resource.on('change', this.onResourceChange);
+        return resource;
+      }.bind(this));
+      
       this.adding = true;
-      Backbone.Collection.prototype.add.apply(this, arguments);
-      this.adding = false;
-      if (_.isArray(models)) {
-        this.trigger('refresh', _.map(models, function(m) {
-          return U.getValue(m, '_uri');
-        }), true);
+      try {
+        return Backbone.Collection.prototype.add.call(this, models, options);
+      } finally {
+        this.adding = false;
+        if (multiAdd && !this.resetting) {
+          this.trigger('added', models);
+        }        
       }
     },
     replace: function(resource, oldUri) {
       this.remove(resource);
       this.add(resource);
-      this.trigger('refresh', resource.getUri());
+      this.trigger('replaced', resource, oldUri);
     },
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
@@ -108,7 +138,7 @@ define([
       options.nextPage = true;
       var length = this.models.length;
       if (length)
-        options.startAfter = this.models[length - 1].get('_uri');
+        options.startAfter = this.models[length - 1].getUri();
       
       this.fetch(options);
     },
@@ -185,15 +215,20 @@ define([
       
       return response;
     },
+    reset: function() {
+      this.resetting = true;
+      try {
+        return Backbone.Collection.prototype.reset.apply(this, arguments);
+      } finally {
+        this.resetting = false;
+      }
+    },
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
         this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
         this._lastFetchedOn = null;
       }
-    },
-    fetchAll: function(options) { 
-      return Backbone.Model.prototype.fetch.call(this, options);
     },
     fetch: function(options) {
       var self = this;
@@ -265,22 +300,11 @@ define([
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.models.length;
         Backbone.Collection.prototype.update.call(this, resources, options);
-        
-        if (this.models.length > numBefore)
-          this.trigger('refresh', _.map(this.models.slice(numBefore), function(s) {return s.get('_uri')}));
-//          Events.trigger('refresh', this, _.map(this.models.slice(numBefore), function(s) {return s.get('_uri')}));
-
         return;
       }
 
-//      var isUpdate = options.isUpdate,
-//          currentUris = isUpdate ? _.map(this.models, Resource.getUri) : [];
-          
       resources = this.parse(resources);      
       if (!_.size(resources)) {
-//        if (isUpdate)
-//          Events.trigger('delete', currentUris);
-        
         return false;
       }
       
@@ -288,43 +312,41 @@ define([
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
       // An alternative is to override Backbone.Collection.reset() method and do some magic there.
       
-      var toAdd = [],
+      var added = [],
           skipped = [],
-          modified = [],
+          updated = [],
           now = G.currentServerTime();
       
       for (var i = 0; i < resources.length; i++) {
         var r = resources[i];
         r._lastFetchedOn = now;
         var uri = r._uri;
-        var saved = this.get(uri);        
-//        if (isUpdate && saved)
-//          currentUris.remove(uri);
-          
+        var saved = this.get(uri);
         var ts = saved && saved.get(tsProp) || 0;
         var newLastModified = r[tsProp];
         if (typeof newLastModified === "undefined") 
           newR = 0;
         
         if (!newLastModified || newLastModified > ts) {
-          toAdd.push(r);
           if (saved) {
             saved.set(r);
-            modified.push(uri);
+            updated.push(saved);
           }
           else {
-            this.add(new this.vocModel(r, {silent: true})); // to avoid triggering newResource event
+            added.push(r);
           }
         }
         else
           saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
       
-      if (toAdd.length) {
-        this.trigger('refresh', _.map(toAdd, function(s) {return s._uri}), options.nextPage);
-        Events.trigger('resourcesChanged', toAdd); 
-      }
+      var vocModel = this.vocModel;
       
+      this.add(added);
+      updated.length && this.trigger('updated', updated);
+      
+      // not everyone who cares about resources being updated has access to the collection
+      Events.trigger('updatedResources', _.union(updated, added)); 
       return this;
     }
   }, {

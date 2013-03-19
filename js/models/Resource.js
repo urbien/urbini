@@ -101,9 +101,9 @@ define([
         this.set(data);
         if (this.collection) {
           if (oldUri)
-            this.collection.trigger('replace', this, oldUri);
-          else
-            this.collection.trigger('refresh', uri);
+            this.trigger('replaced', this, oldUri);
+//          else
+//            this.trigger('updated', this);
         }        
       }.bind(this);
       
@@ -136,13 +136,13 @@ define([
       if (this.lastFetchOrigin !== 'server')
         return;
       
-      Events.trigger('resourcesChanged', [this]);
+      Events.trigger('updatedResources', [this]);
     },
     remove: function() {
       this.collection && this.collection.remove(this);
     },
     url: function() {
-      var uri = this.get('_uri');
+      var uri = this.getUri();
       var type = this.vocModel.type;
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
       if (uri)
@@ -170,7 +170,7 @@ define([
       return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type);
     },
     getKey: function() {
-      return U.getLongUri1(this.get('_uri'));
+      return U.getLongUri1(this.getUri());
     },
     getUri: function() {
       return this.get('_uri');
@@ -216,6 +216,9 @@ define([
       if (!this.subscribedToUpdates && this.getUri())
         this.subscribeToUpdates();
       
+      if (!_.size(props))
+        return true;
+      
       var self = this;
       options = options || {};
       if (!options.silent) {
@@ -224,7 +227,7 @@ define([
         })
         
         if (!_.size(props))
-          return;
+          return true;
       }
       
       if (!options.sync) {
@@ -391,14 +394,15 @@ define([
       var blVocModel = res.vocModel;
       var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
       var props = this.attributes;
-      var blRange = blVocModel.type;
+      var blRanges = U.getTypes(blVocModel);
+      var atts = {};
       for (var bl in meta) {
         var blProp = meta[bl];
         if (!blProp)
           continue;
         
         var range = U.getTypeUri(blProp.range);
-        if (range !== blRange)
+        if (!_.contains(blRanges, range))
           continue;
         
         if (blProp.where) {
@@ -415,18 +419,16 @@ define([
             continue;
         }
         
-        var blVal = _.clone(props[bl]);
-        if (blVal) {
+        var blVal = _.clone(props[bl]) || {};
+        if (_.has(blVal, 'count'))
           blVal.count++;
-        }
-        else {
-          props[bl] = {count: 1};
-        }
+        else
+          blVal.count = 1;
         
-        var atts = {};
         atts[bl] = blVal;
-        this.set(atts, {skipValidation: true});
       }
+      
+      this.set(atts, {skipValidation: true});
     },
     
     save: function(attrs, options) {
@@ -452,6 +454,7 @@ define([
         }
         
         this.triggerPlugs(options);
+        this.notifyContainers();
         if (isNew) {
           Events.trigger('newResource', this);
         }
@@ -487,7 +490,7 @@ define([
           
           success && success.apply(this, arguments);
 //          G.cacheResource(self);
-          Events.trigger('resourcesChanged', [self]);
+          Events.trigger('updatedResources', [self]);
           if (self.isNew()) // was a synchronous mkresource operation
             Events.trigger('newResource', self);
 //          else if (isNew) { // completed sync with db
@@ -495,7 +498,10 @@ define([
           
           
           self.triggerPlugs(options);
-          self.notifyContainers();
+          if (!options.fromDB) {
+            debugger;
+            self.notifyContainers();
+          }
         };
         
         options.error = function(originalModel, err, opts) {
@@ -514,8 +520,11 @@ define([
         
         saved = Backbone.Model.prototype.save.call(this, data, options);
       }
+   
+      // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
+      if (!options.fromDB) 
+        this.trigger('change', this, options);
       
-      this.trigger('change', this, options);
       return saved;
       
 //      if (options.sync) {
@@ -547,7 +556,7 @@ define([
 //        if (response.error)
 //          return;
 //        
-//        Events.trigger('resourcesChanged', [self]);
+//        Events.trigger('updatedResources', [self]);
 //        var method = isNew ? 'add.' : 'edit.';
 //        if (!G.currentUser.guest) {
 //          var json = self.toJSON();

@@ -66,7 +66,7 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
     /**
      * search a collection map for a collection with a given model
      * @return if filter function is passed in, return all resources that matched across all collections, otherwise return {collection: collection, resource: resource}, 
-     *         where collection is the first one found containing a resource where resource.get('_uri') == uri, or null otherwise
+     *         where collection is the first one found containing a resource where resource.getUri() == uri, or null otherwise
      *         
      * @param uri: uri of a model, or filter function
      */

@@ -220,7 +220,7 @@ define([
         return true;
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
-      var resUri = res.get('_uri');
+      var resUri = res.getUri();
       var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
@@ -378,7 +378,7 @@ define([
       if (roles  &&  (roles.indexOf('self') == -1))
         return false;
       
-      var resExists = !!res.get('_uri');
+      var resExists = !!res.getUri();
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
           return false;
@@ -1295,7 +1295,7 @@ define([
     },
     
     getUris: function(data) {
-      return _.map(data instanceof Backbone.Collection ? data.models : [data], function(m) {return m.get('_uri')});
+      return _.map(data instanceof Backbone.Collection ? data.models : [data], function(m) {return m.getUri()});
     },
     
     isCollection: function(res) {
@@ -1657,7 +1657,7 @@ define([
 //     * build view/list/etc. hash for model, defaults to homePage if model is null
 //     */
 //    buildHash: function(model) {
-//      return model instanceof Backbone.Model ? 'view/' + U.encode(model.get('_uri')) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
+//      return model instanceof Backbone.Model ? 'view/' + U.encode(model.getUri()) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
 //    
 //    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},

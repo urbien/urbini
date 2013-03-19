@@ -74,7 +74,7 @@ define([
       if (propVal.indexOf('Image/') == 0)
         propVal = propVal.slice(6);
   //          var iTemplate = this.makeTemplate('imagePT');
-  //          li += '<div><a href="#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
+  //          li += '<div><a href="#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
 //      var maxH = $(window).height() - 50;
@@ -124,9 +124,9 @@ define([
       
       var mg = U.getPropertiesWith(meta, "mainGroup");
       if (mg == null  ||  mg.length == 0)
-        li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
+        li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate + '</a></div>';
       else
-        li = '<div><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.get('_uri')) + '">' + iTemplate + '</a></div>';
+        li = '<div><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
       this.$el.html(frag);
       return this;

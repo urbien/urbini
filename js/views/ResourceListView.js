@@ -89,11 +89,13 @@ define([
       
       Events.stopEvent(e);
 //      Events.trigger('refresh');
-      this.refresh();
+      this.refresh(null, {orientation: true});
     },
     onadd: function(resources, options) {
-      if (options && options.refresh)
+      if (options && options.refresh) {
+        debugger;
         this.refresh(resources);
+      }
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
@@ -102,16 +104,20 @@ define([
       this.mode = mode;
     },
     
-    refresh: function(modified, wereAdded) {
+    refresh: function(modified, options) {
       if (!this.rendered)
         return;
       
+      var isAdd = options.added;
+      var isUpdate = options.updated;
+      var isReset = options.reset;
+      var isOrientationChange = options.orientation;
+      
       G.log(this.TAG, 'refreshing ResourceListView');
-      modified = typeof modified === 'string' ? [modified] : modified;
-//      if (this.$el.hasClass('ui-listview')) {
-      //Element is already initialized
-//      var lis = this.$('li').detach();
-//      var frag = document.createDocumentFragment();
+      modified = modified ? (_.isArray(modified) ? modified : [modified]) : null;
+      var modifiedUris = modified && _.map(modified, function(m) {
+        return m.getUri();
+      });
       
       var rl = this.filteredCollection;
       var resources = rl.models;
@@ -179,10 +185,13 @@ define([
       var i = 0;
       var nextPage = false;
       var frag;
-      if (wereAdded || typeof modified == 'undefined'  ||  modified.length == 0) {
+      if (isAdd || !modified && !isOrientationChange) {
         i = curNum;
-        if (curNum == num)
+        if (curNum == num) {
+          debugger;
           return this;
+        }
+        
         if (curNum > 0)
           nextPage = true;
       }
@@ -208,8 +217,8 @@ define([
           parentView: this
         };
         
-        var uri = res.get('_uri');
-        if (i >= lis.length || _.contains(modified, uri)) {
+        var uri = res.getUri();
+        if (i >= lis.length || _.contains(modifiedUris, uri)) {
           var liView;
           if (this.isPhotogrid) {
             liView = new PhotogridView(_.extend(commonParams, {tagName: 'div', linkToIntersection: true}));
@@ -378,7 +387,7 @@ define([
 //        return;
 //      }
       if (before >= requested) {
-        this.refresh(rl);
+        this.refresh(rl.models.slice(requested), {added: true});
         after();
         return;
       }
@@ -400,28 +409,22 @@ define([
     },
     
     render: function(e) {
-//      if (this.readyPromise && !this.readyPromise.isResolved()) {
-//        var args = arguments, self = this;
-//        this.readyPromise.done(function() {
-//          self.render.apply(self, arguments);
-//        });
-//        
-//        return;
-//      }
-      
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
-//      this.renderMany(this.model.models);
+      var self = this;
       var col = this.filteredCollection = this.collection.clone();
-      col.on('refresh', this.refresh);
-      col.on('add', this.onadd);
-      col.on('reset', this.refresh);
-
+      _.each(['updated', 'added', 'reset'], function(event) {
+        col.on(event, function(resources) {
+          var options = {};
+          options[event] = true;
+          self.refresh(resources, options);
+        });        
+      });
+      
       var wasRendered = this.rendered;
       this.rendered = true;
-      this.refresh();
+      this.refresh(null, {added: true});
       
-      var self = this;
       var collection = this.collection;
       var filtered = this.filteredCollection;
       var colModel = collection.vocModel;
@@ -431,46 +434,36 @@ define([
               $input = $(data.input),
               value = $input.val();
           
-          if (value) { // && value.length > 2 ) {
-            var resourceMatches = _.filter(collection.models, function(res) {
-              var dn = U.getDisplayName(res);
-              return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
-            });
-
-//            filtered = self.filteredCollection = new ResourceList(resourceMatches, {
-//              cache: false,
-//              model: collection.model,
-//              params: _.extend({
-//                '$like': 'davDisplayName,' + value
-//              }, collection.params)
-//            });
-
-            filtered.reset(resourceMatches, {
-              params: _.extend({
-                '$like': 'davDisplayName,' + value
-              }, collection.params)
-            });
-            
-            var numResults = filtered.size();
-            if (numResults < self.displayPerPage) {
-              var numOriginally = collection.size();
-              var indicatorId = self.showLoadingIndicator(3000); // 3 second timeout
-              filtered.fetch({
-                forceFetch: true,
-                success: function() {
-//                  var numResultsNow = filtered.size();
-//                  if (numResultsNow > numResults) {
-//                    collection.add(filtered.models.slice(numResults));
-//                  }
-                  
-                  self.hideLoadingIndicator(indicatorId);
-                },
-                error: function() {
-                  self.hideLoadingIndicator(indicatorId);
-                }
-              });
-            }
+          if (!value) {
+            filtered.reset(collection.models, {params: collection.params});
+            return;
           }
+          
+          var resourceMatches = _.filter(collection.models, function(res) {
+            var dn = U.getDisplayName(res);
+            return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+          });
+
+          filtered.reset(resourceMatches, {
+            params: _.extend({
+              '$like': 'davDisplayName,' + value
+            }, collection.params)
+          });
+          
+          var numResults = filtered.size();
+          if (numResults < self.displayPerPage) {
+            var numOriginally = collection.size();
+            var indicatorId = self.showLoadingIndicator(3000); // 3 second timeout
+            filtered.fetch({
+              forceFetch: true,
+              success: function() {
+                self.hideLoadingIndicator(indicatorId);
+              },
+              error: function() {
+                self.hideLoadingIndicator(indicatorId);
+              }
+            });
+          }            
         });
       }
   

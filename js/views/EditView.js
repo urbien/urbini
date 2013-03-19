@@ -220,7 +220,7 @@ define([
             var $popup = $('#buy_popup');
             var dn = U.getDisplayName(chosenRes);
             var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-            var href = chosenRes.get('_uri');          
+            var href = chosenRes.getUri();          
             var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
             if ($popup.length == 0) {
               $($(document).find($('.ui-page-active'))[0]).append(html);
@@ -260,7 +260,7 @@ define([
               cUri = U.getLongUri1(cUri);
               G.currentApp._uri = cUri;
             }
-            if (this.resource.get('_uri') == cUri) {
+            if (this.resource.getUri() == cUri) {
               var themeSwatch = chosenRes.get('swatch');
               if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
                 G.theme.swatch = themeSwatch;
@@ -364,7 +364,7 @@ define([
         var prName = pr.displayName;
         if (!prName)
           prName = pr.shortName;
-        var rParams = { forResource: res.get('_uri'), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
+        var rParams = { forResource: res.getUri(), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }

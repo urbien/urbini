@@ -315,7 +315,7 @@ define([
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
       var mPage = this.MkResourceViews[makeId];
-      if (mPage && !mPage.model.get('_uri')) {
+      if (mPage && !mPage.model.getUri()) {
         // all good, continue making ur mkresource
       }
       else {

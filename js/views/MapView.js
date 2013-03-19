@@ -152,7 +152,7 @@ define([
       }
       
       resourceLink = resourceLink || res.get('davDisplayName');
-      var data = {resourceLink: resourceLink, uri: res.get('_uri'), rows: grid};
+      var data = {resourceLink: resourceLink, uri: res.getUri(), rows: grid};
       
       if (res.isA("ImageResource")) {
         var medImg = res.get('mediumImage') || res.get('featured');

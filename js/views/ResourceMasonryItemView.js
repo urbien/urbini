@@ -42,7 +42,7 @@ define([
       self = this;
       var props = {};
       props.vote = 'Like';
-      props.votable = this.resource.get('_uri');
+      props.votable = this.resource.getUri();
       r.save(props, {
         success: function(resource, response, options) {
           self.router.navigate(window.location.hash, options);
@@ -142,15 +142,17 @@ define([
           img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       var json = m.toJSON();
       
-      var rUri = m.get('_uri');
-      
+      var rUri = m.getUri();
+      if (!rUri)
+        debugger;
+        
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       img = json[img];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
+      var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
       var resourceLink;
       var i = 0;

@@ -1483,10 +1483,10 @@ define([
 //      options.error && updatePromise.fail(options.error);
 //    }
   });
-  
-  Events.on('resourcesChanged', function(toAdd) {
+
+  Events.on('updatedResources', function(resources) {
     setTimeout(function() {
-      RM.addItems(toAdd)
+      RM.addItems(resources);
     }, 100);
   });
 

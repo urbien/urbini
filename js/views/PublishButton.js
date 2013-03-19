@@ -101,7 +101,7 @@ define([
         resource = new (U.getModel('TournamentEntry'))();
       }
       var params = U.getParamMap(window.location.hash);
-      var props = {tournament: params['-tournament'], entry: res.get('_uri')};
+      var props = {tournament: params['-tournament'], entry: res.getUri()};
       var self = this;
       resource.save(props, {
         sync: true,

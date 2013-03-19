@@ -54,7 +54,7 @@ define([
       if (U.isCollection(arguments[0])) {
         collection = arguments[0];
         modified = arguments[1];
-        if (collection != this.resource.collection || !_.contains(modified, this.resource.get('_uri')))
+        if (collection != this.resource.collection || !_.contains(modified, this.resource.getUri()))
           return this;
       }
       
@@ -163,7 +163,7 @@ define([
                 groupNameDisplayed = true;
               }
               
-//              var uri = U.getShortUri(res.get('_uri'), vocModel); 
+//              var uri = U.getShortUri(res.getUri(), vocModel); 
               var uri = res.getUri();
               var t = U.makeHeaderTitle(title, n);
               if (colorIdx == color.length) 
@@ -178,9 +178,9 @@ define([
                   U.addToFrag(frag, this.cpTemplateNoAdd(common));
               }
 //              if (isPropEditable)
-//                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
+//                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
 //              else
-//                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
+//                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.getUri()}));
             }
           }
         }
@@ -242,12 +242,12 @@ define([
           }
           if (doShow) {
   //          if (isPropEditable)
-  //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
+  //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
   //          else
-  //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.get('_uri')}));
+  //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.getUri()}));
   //          var range = U.getClassName(prop.range);
             var range = prop.range;
-  //          var uri = U.getShortUri(res.get('_uri'), vocModel); 
+  //          var uri = U.getShortUri(res.getUri(), vocModel); 
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
             var comment = prop.comment;

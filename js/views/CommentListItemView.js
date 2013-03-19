@@ -30,7 +30,7 @@ define([
       self = this;
       var props = {};
       props.vote = 'Like';
-      props.votable = this.resource.get('_uri');
+      props.votable = this.resource.getUri();
       r.save(props, {
         success: function(resource, response, options) {
           self.router.navigate(window.location.hash, options);

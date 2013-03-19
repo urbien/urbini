@@ -40,7 +40,7 @@ define([
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate('view/' + U.encode(this.resource.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+      this.router.navigate('view/' + U.encode(this.resource.getUri()) + "?-edit=y", {trigger: true, replace: true});
       return this;
     },
     click: function(e) {
@@ -132,7 +132,7 @@ define([
       var edit = m.get('edit');
       if (!user.guest  &&  edit  &&  user.totalMojo > edit) {
         U.addToFrag(frag, this.menuItemTemplate({title: 'Add', mobileUrl: 'make/' + U.encode(m.constructor.shortName), id: 'add'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + U.encode(m.get('_uri')), id: 'edit'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Edit', mobileUrl: 'edit/' + U.encode(m.getUri()), id: 'edit'}));
         U.addToFrag(frag, this.menuItemTemplate({title: 'Delete', mobileUrl: '', id: 'delete'}));
       }
     },
