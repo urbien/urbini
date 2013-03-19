@@ -263,7 +263,7 @@ define('app', [
             }
             : 
             {
-              scope: net.settings,
+//              scope: net.settings,
               display: 'touch', // 'page', 
               state: state, 
               redirect_uri: G.serverName + '/social/socialsignup', 

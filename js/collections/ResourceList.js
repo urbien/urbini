@@ -70,7 +70,7 @@ define([
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
     clone: function() {
-      return new ResourceList(this.models, _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
     },
     add: function(models, options) {
       this.adding = true;

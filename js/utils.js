@@ -173,7 +173,7 @@ define([
 //            debugger;
             var text = jqXHR.responseText;
             var error;
-            if (text.length) {
+            if (text && text.length) {
               try {
                 error = JSON.parse(text).error;
               } catch (err) {
@@ -2443,10 +2443,10 @@ define([
       var range = prop.range;
       var name = prop.shortName;
       var falsy = function(res) {
-        return U.isFalsy(res[name], range);
+        return U.isFalsy(U.getValue(res, name), range);
       }
       var truthy = function(res) {
-        return !U.isFalsy(res[name], range);
+        return !U.isFalsy(U.getValue(res, name), range);
       }
       
       if (bound === 'null')
