@@ -176,15 +176,13 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
   
   Events.on('newResource', function(resource) {
     C.cacheResource(resource);
-    for (var colType in C.ResourceLists) {
-      var cols = C.ResourceLists[colType];
-      for (var colQuery in cols) {
-        var col = cols[colQuery];
-        if (col.belongsInCollection(resource)) {
-          col.add(resource, {refresh: true});
-        }
-      }
-    }
+//    var cols = C.ResourceLists[resource.vocModel.type];
+//    for (var colQuery in cols) {
+//      var col = cols[colQuery];
+//      if (col.belongsInCollection(resource)) {
+//        col.add(resource, {refresh: true});
+//      }
+//    }
   });
 
 //  Events.on('newPlug', function(plug) {

@@ -23,7 +23,7 @@ define([
       this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;
       if (U.isTempUri(uri)) {
-        Events.once('synced.' + uri, function(data) {
+        Events.once('synced:' + uri, function(data) {
           if (self.isActive()) {
             var newUri = data._uri;
             self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
@@ -36,8 +36,13 @@ define([
     events: {
 //      'click': 'click'
     },
-    refresh: function() {
-      var res = this.resource;      
+    refresh: function(resource, options) {
+      options = options || {};
+      if (options.skipRefresh || options.fromDB)
+        return;
+      
+      var res = this.resource;   
+      
 //      if (res.lastFetchOrigin === 'edit')
 //        return;
       

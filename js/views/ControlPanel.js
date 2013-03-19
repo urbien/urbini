@@ -147,14 +147,17 @@ define([
 //              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
             }
             else {
-              var v = json[p].value;
-              cnt = json[p].count;
-              if (typeof cnt == 'undefined'  ||  !cnt)
-                cnt = 0;
-              if (cnt != 0 ||  isPropEditable)
-                doShow = true;
-//                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
-//              else
+              var jp = json[p];
+              if (jp) {
+//                var v = jp.value;
+                cnt = jp.count;
+                if (typeof cnt == 'undefined'  ||  !cnt)
+                  cnt = 0;
+                if (cnt != 0 ||  isPropEditable)
+                  doShow = true;
+  //                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
+  //              else
+              }
             }
             if (doShow) {
               if (!this.isMainGroup  &&  !groupNameDisplayed) {

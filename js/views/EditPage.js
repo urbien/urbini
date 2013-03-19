@@ -8,13 +8,13 @@ define([
   'views/BasicView',
   'views/Header',
   'views/BackButton',
-  'views/LoginButtons',
+  'views/LoginButton',
   'views/AroundMeButton',
   'views/MenuButton',
   'views/EditView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, BasicView, Header, BackButton, LoginButtons, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, BasicView, Header, BackButton, LoginButton, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     clicked: false,
@@ -27,6 +27,42 @@ define([
       this.editOptions = _.extend({action: 'edit'}, _.pick(options, editParams));
       _.extend(this, this.editOptions);
       Events.on("mapReady", this.showMapButton);
+
+      var res = this.resource;
+  //    var json = res.toJSON();
+  //    json.viewId = this.cid;
+      var settings = {viewId: this.cid}
+      if (U.isAssignableFrom(res, "AppInstall")) {
+        settings.submit = 'Allow';
+        settings.noCancel = true;
+      }
+      
+      this.$el.html(this.template(settings));
+      
+      var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
+                  (res.isA("Shape") && res.get('shapeJson'));
+      
+      this.buttons = {
+  //        left: [BackButton],
+  //        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
+  //        log: [LoginButton]
+        back: true,
+        aroundMe: isGeo,
+        menu: true,
+        login: true
+      };
+    
+      this.header = new Header({
+        model: res, 
+//        pageTitle: this.pageTitle || res.get('davDisplayName'), 
+        buttons: this.buttons,
+        viewId: this.cid
+      });
+      
+      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
+      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
+      if (this.editParams)
+        this.editView.set(this.editParams);
     },
     set: function(params) {
       _.extend(this, params);
@@ -79,46 +115,14 @@ define([
 
     render:function (eventName) {
       G.log(this.TAG, "render");
-      var res = this.resource;
-//      var json = res.toJSON();
-//      json.viewId = this.cid;
-      var settings = {viewId: this.cid}
-      if (U.isAssignableFrom(this.resource, "AppInstall")) {
-        settings.submit = 'Allow';
-        settings.noCancel = true;
-      }
       
-      this.$el.html(this.template(settings));
-      
-      var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
-                  (res.isA("Shape") && res.get('shapeJson'));
-      
-      this.buttons = {
-          left: [BackButton],
-          right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
-          log: [LoginButtons]
+      var views = {
+        'div#resourceImage': this.imageView,
+        '#resourceEditView': this.editView,
+        '#headerDiv'       : this.header
       };
       
-      this.header = new Header({
-        model: res, 
-//        pageTitle: this.pageTitle || res.get('davDisplayName'), 
-        buttons: this.buttons,
-        viewId: this.cid,
-        el: $('#headerDiv', this.el)
-      }).render();
-      
-      this.header.$el.trigger('create');      
-      this.imageView = new ResourceImageView({el: $('div#resourceImage', this.el), model: res});
-      this.imageView.render();
-      this.editView = new EditView(_.extend({el: $('#resourceEditView', this.el), model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
-      if (this.editParams)
-        this.editView.set(this.editParams);
-      
-      this.editView.render();
-//      this.cp = new ControlPanel({el: $('ul#cpView', this.el), model: res});
-//      this.cp.render();      
-//      this.editBtn = new EditButton({el: $('#edit', this.el), model: res});
-//      this.editBtn.render();
+      this.assign(views);      
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       

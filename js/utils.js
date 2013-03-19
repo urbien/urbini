@@ -5,8 +5,9 @@ define([
   'backbone',
   'templates',
   'jquery',
-  'cache'
-], function(G, _, Backbone, Templates, $, C) {
+  'cache',
+  'events'
+], function(G, _, Backbone, Templates, $, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -57,6 +58,7 @@ define([
   String.prototype.endsWith = function(str) {
     return this.slice(this.length - str.length) === str;
   };
+  
   // extends jQuery to check if selected collection is empty or not
   $.fn.exist = function(){
     return this.length > 0 ? this : false;
@@ -120,11 +122,15 @@ define([
             }
             else if (code > 399 && code < 600) {
               var text = xhr.responseText;
-              try {
-                defer.reject(xhr, JSON.parse(xhr.responseText), opts);
-              } catch (err) {
-                defer.reject(xhr, "error", opts);
-              }                
+              if (text && text.length) {
+                try {
+                  defer.reject(xhr, JSON.parse(xhr.responseText), opts);
+                  return;
+                } catch (err) {
+                }
+              }
+                
+              defer.reject(xhr, "error", opts);
             }
             else {
               defer.resolve(xhr.data, xhr.status, xhr);
@@ -167,12 +173,14 @@ define([
 //            debugger;
             var text = jqXHR.responseText;
             var error;
-            try {
-              error = JSON.parse(text).error;
-            } catch (err) {
-              error = {code: jqXHR.status, details: err};
+            if (text.length) {
+              try {
+                error = JSON.parse(text).error;
+              } catch (err) {
+              }
             }
             
+            error = error || {code: jqXHR.status, details: err};
             defer.reject(jqXHR, error, opts);
           });
         }
@@ -193,6 +201,10 @@ define([
 
     isAnAppClass: function(type) {
       return type.indexOf("/voc/dev/") != -1;
+    },
+    
+    getTypes: function(vocModel) {
+      return _.union(vocModel.type, vocModel.superClasses || []);
     },
     
     getUserRole: function() {
@@ -316,6 +328,39 @@ define([
 //      
 //      return false;
 //    },
+    
+    isCreatable: function(type, userRole) {
+      if (G.currentUser.guest)
+        return false;
+      
+      if (type.startsWith(G.defaultVocPath + 'system/designer/'))
+        return true;
+      
+      userRole = userRole || U.getUserRole();
+      var urbienModel = U.getModel(G.commonTypes.Urbien);
+      var backlinks = U.getPropertiesWith(urbienModel.properties, [{name: "backLink"}, {name: 'range', values: [type, type.slice(type.indexOf('/voc/') + 5)]}]);
+      if (!_.size(backlinks))
+        return false;
+      
+      for (var blName in backlinks) {
+        var blProp = backlinks[blName];
+        if (!U.isPropEditable(U.mimicResource(G.currentUser), blProp, userRole))
+          return false;
+      }
+      
+      return true;
+    },
+    
+    mimicResource: function(json) {
+      return {
+        get: function(prop) {
+          return json[prop];
+        },
+        getUri: function() {
+          return json._uri;
+        }
+      }
+    },
     
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
@@ -1494,9 +1539,10 @@ define([
           break;
       }
       
+      var encOptions = {delimiter: '&amp'};
       url += encodeURIComponent(typeOrUri);
       if (_.size(params))
-        url += '?' + $.param(params);
+        url += '?' + U.getQueryString(params, encOptions);
       
       return url;
     },
@@ -1881,6 +1927,8 @@ define([
       preserve = preserve || [];
       var props = vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
+        if (/\./.test(key))
+          return false;
         var prop = props[key];
         return !U.isSystemProp(key) && prop && (_.contains('backLink') || !prop.backLink) && (U.isResourceProp(prop) || (_.contains('readOnly') || !prop.readOnly)) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
       }); // is writeable, starts with a letter and doesn't contain a '.'
@@ -2329,13 +2377,30 @@ define([
           });
           
           break;
+        case '$like':
+          var nameVal = clause.value.split(',');
+          var propName = nameVal[0];
+          var prop = meta[propName];
+          if (!prop) {
+            debugger;
+            return function() {return true};
+          }
+          
+          var value = nameVal[1].toLowerCase();
+          var chain = [];
+          rules.push(function(res) {
+            var val = res[propName];
+            return val && val.toLowerCase().indexOf(value) != -1;
+          });
+          
+          break;
         default:
           if (param.startsWith('$'))
             break;
           
           var prop = meta[param];
           if (!prop || U.getObjectType(clause) !== '[object Object]') {
-            debugger;
+            G.log(U.TAG, 'info', 'couldnt find property {0} in class {1}'.format(param, vocModel.type));
             return function() {
               return true;
             }
@@ -2479,48 +2544,52 @@ define([
         return text;
       
       return text.slice(0, length) + '...';
-    }
+    },
+
+    fixResourceJSON: function(item, vocModel) {
+      var meta = vocModel.properties;
+      for (var p in item) {
+        if (!/_/.test(p) && !meta[p])
+          delete item[p];
+      }
+    },
     
-//    where: function(res, where) {
-//      where = where.split('&');
-//      for (var i = 0; i < where.length; i++) {
-//        var clause = U.parseAPIClause(where[i]);
-//        if (!clause) {
-//          G.log(U.TAG, 'error', 'bad where clause: ' + where[i]);
-//          return false;
+    /**
+     * @param from - attributes object
+     * @param to - attributes object
+     * @prop - string name of property
+     * 
+     * given prop is sth like 'submittedBy', copies props like submittedBy.displayName, submittedBy.thumb from "from" to "to" 
+     */
+    copySubProps: function(from, to, prop) {
+//      if (from.davDisplayName)
+//        to[prop + '.displayName'] = from.davDisplayName;
+//      
+//      var type = U.getTypeUri(from._uri);
+//      var model = U.getModel(type);
+//      if (model) {
+//        var ir = 'ImageResource'; 
+//        if (U.isA(model, ir)) {
+//          var iProps = _.map(['smallImage', 'mediumImage'], function(ip) {return '{0}.{1}'.format(ir, ip)});
+//          var imgProps = U.getCloneOf(model, iProps);
+//          if (imgProps.length) {
+//            _.each(imgProps, function(imgProp) {              
+//              var resProp = '{0}.{1}'.format(prop, imgProp);
+//              var val = from[resProp];
+//              if (val)
+//                to[resProp] = val;
+//            });
+//          }
 //        }
 //      }
-//      
-//      return true;
-//    }
-//    
-//    ,
-//    getProp: function(meta, name) {
-//      var org = meta[name];
-//      if (org)
-//        return org;
-//      
-//      var alt = U.getAltName(meta, name);
-//      return alt ? meta[alt] : null;
-//    },
-//    
-//    getAltName: function(props, name) {
-//      var alt = U.filterObj(meta, function(prop) {
-//        return prop.altName == name;
-//      });
-//      
-//      return _.size(alt) ? U.getFirstProperty(alt) : null;
-//    }
-//    
-//    ,
-//    intersectObjects: function(array) {
-//      var rest = slice.call(arguments, 1);
-//      return _.filter(_.uniq(array), function(item) {
-//        return _.every(rest, function(other) {
-//          return _.any(other, function(element) { return _.isEqual(element, item); });
-//        });
-//      });
-//    }
+      
+      var start = prop + '.';
+      for (var p in from) {
+        if (p.startsWith(start))
+          to[p] = from[p];
+      }
+    }
+    
   };
 
   for (var p in U.systemProps) {

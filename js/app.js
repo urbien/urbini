@@ -308,10 +308,9 @@ define('app', [
         var newV = data ? data.VERSION : G.getVersion();
         var oldV = G.getVersion(!data) || newV; // get old
         if (newV.All > oldV.All) {
-          debugger;
           G.setVersion(newV);
           for (var key in newV) {
-            Events.trigger('VERSION.' + key, init);
+            Events.trigger('VERSION:' + key, init);
           }
           
           return;
@@ -321,19 +320,17 @@ define('app', [
           var setVersion = false;
           if (newV[key] > oldV[key]) {
             if (!setVersion) {
-//              debugger;
               G.setVersion(newV);
               setVersion = true;
             }
             
-            Events.trigger('VERSION.' + key, init);              
+            Events.trigger('VERSION:' + key, init);              
           }
         }
       };
 
       _.each(['.js', '.css', '.jsp'], function(ext) {
         Events.on("VERSION" + ext.toUpperCase(), function() {
-          debugger;
           var keys = _.keys(localStorage);
           for (var i = 0; i < keys.length; i++) {
             var key = keys[i];

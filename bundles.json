@@ -6,7 +6,7 @@
     html: ['../templates.jsp']
   },
   post: {
-    js: ['views/BasicView', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/MenuButton', 'views/LoginButtons', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
+    js: ['views/BasicView', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 'views/MapView', 'views/PublishButton', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps', 
          'lib/mobiscroll-datetime-min', 'mobiscroll-duration'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css']

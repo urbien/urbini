@@ -378,7 +378,7 @@ define([
       
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
-      _.extend(m.properties, Resource.properties);
+      _.defaults(m.properties, Resource.properties);
       m.superClasses = _.map(m.superClasses, U.getLongUri1);
       _.extend(m.properties, U.systemProps);
       m.prototype.initialize = Voc.getInit.apply(m);
@@ -502,7 +502,7 @@ define([
       }
       
       _.each(Voc.scriptActions, function(action) {        
-        Events.off(action + '.' + causeType, plugFn);
+        Events.off(action + ':' + causeType, plugFn);
       });
     },
     
@@ -606,7 +606,7 @@ define([
     initPlug: function(plug, type) {
       var scripts = {};
       _.each(Voc.scriptActions, function(action) {        
-        scripts[action] = plug[action + 'Script'];
+        scripts[action] = plug['on' + action.camelize(true)];
       });
       
       for (var action in scripts) {
@@ -616,9 +616,9 @@ define([
           script = Voc.buildScript(script); //, plug.causeDavClassUri, plug.causeDavClassUri);
 //          script = new Function(script.startsWith("function") ? script.slice(script.indexOf("{") + 1, script.lastIndexOf("}")) : script); //, plug.causeDavClassUri, plug.causeDavClassUri);
           if (script === null)
-            G.log(Voc.TAG, 'error', 'bad custom createScript', plug.app, type);
+            G.log(Voc.TAG, 'error', 'bad custom on{0} script'.format(action), plug.app, type);
           else
-            Events.on(action + '.' + type, Voc.preparePlug(script, plug));
+            Events.on(action + ':' + type, Voc.preparePlug(script, plug));
         }          
       }
     },
@@ -819,7 +819,7 @@ define([
     }
   });
   
-  Events.on('VERSION.Models', function(init) {
+  Events.on('VERSION:Models', function(init) {
 //    debugger;
     G.localStorage.clean(function(key) {
       return _.any([Voc.MODEL_PREFIX], function(prefix) {

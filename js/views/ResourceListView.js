@@ -7,9 +7,10 @@ define([
   'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
   'views/CommentListItemView',
-  'views/PhotogridView'
-], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView) {
-  return BasicView.extend({
+  'views/PhotogridView',
+  'collections/ResourceList'
+], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
+  var RLV = BasicView.extend({
     TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -20,12 +21,12 @@ define([
     initialize: function (options) {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode', 'orientationchange'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on('refresh', this.refresh);
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
-      this.collection.on('reset', this.render, this);
-      this.collection.on('add', this.onadd, this);
+//      this.collection.on('reset', this.render, this);
+//      this.collection.on('add', this.onadd, this);
+//      this.collection.on('refresh', this.refresh);
 //      this.collection.on('add', this.add, this);
 //      this.options = _.pick(options, 'checked', 'props') || {};
       this.TAG = 'ResourceListView';
@@ -44,6 +45,11 @@ define([
 //      else
 //        this.ready = true;
       
+//      this.setFilteredCollection();
+      var col = this.filteredCollection = this.collection.clone();
+      col.on('refresh', this.refresh);
+      col.on('add', this.onadd);
+      col.on('reset', this.refresh);
       return this;
     },
     events: {
@@ -81,8 +87,9 @@ define([
         }
       }
       
-      Event.stopEvent();
-      Event.trigger('refresh');
+      Events.stopEvent(e);
+//      Events.trigger('refresh');
+      this.refresh();
     },
     onadd: function(resources, options) {
       if (options && options.refresh)
@@ -94,17 +101,19 @@ define([
       
       this.mode = mode;
     },
-    refresh: function(rl, modified) {
-      if (rl && rl != this.collection)
-        return this;
-  
+    
+    refresh: function(modified) {
+      if (!this.rendered)
+        return;
+      
+      G.log(this.TAG, 'refreshing ResourceListView');
       modified = typeof modified === 'string' ? [modified] : modified;
 //      if (this.$el.hasClass('ui-listview')) {
       //Element is already initialized
 //      var lis = this.$('li').detach();
 //      var frag = document.createDocumentFragment();
       
-      rl = this.collection;
+      var rl = this.filteredCollection;
       var resources = rl.models;
       var vocModel = this.vocModel;
       var type = vocModel.type;
@@ -284,6 +293,8 @@ define([
         this.initializedListView = true;
       }
       
+//      this.restyle();
+      
 //      this.$el.trigger('create');
 //      if (this.$el.hasClass('ui-listview'))
 //        this.$el.trigger('refresh');
@@ -331,7 +342,7 @@ define([
 //        return;
       
       var self = this;
-      var rl = this.collection;
+      var rl = this.filteredCollection;
       var before = rl.models.length;
       if (!before)
         return;
@@ -391,10 +402,63 @@ define([
       G.log(this.TAG, "render");
       this.numDisplayed = 0;
 //      this.renderMany(this.model.models);
-      this.refresh();
-  //    e && this.refresh(e);
-  
+      var wasRendered = this.rendered;
       this.rendered = true;
+      this.refresh();
+      
+      var self = this;
+      var collection = this.collection;
+      var filtered = this.filteredCollection;
+      var colModel = collection.vocModel;
+      if (!wasRendered) {
+        this.$el.on('listviewbeforefilter', function (e, data) {
+          var $ul = $(this),
+              $input = $(data.input),
+              value = $input.val();
+          
+          if (value) { // && value.length > 2 ) {
+            var resourceMatches = _.filter(collection.models, function(res) {
+              var dn = U.getDisplayName(res);
+              return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+            });
+
+//            filtered = self.filteredCollection = new ResourceList(resourceMatches, {
+//              cache: false,
+//              model: collection.model,
+//              params: _.extend({
+//                '$like': 'davDisplayName,' + value
+//              }, collection.params)
+//            });
+
+            filtered.reset(resourceMatches, {
+              params: _.extend({
+                '$like': 'davDisplayName,' + value
+              }, collection.params)
+            });
+            
+            var numResults = filtered.size();
+            if (numResults < self.displayPerPage) {
+              var numOriginally = collection.size();
+              var indicatorId = self.showLoadingIndicator(3000); // 3 second timeout
+              filtered.fetch({
+                forceFetch: true,
+                success: function() {
+//                  var numResultsNow = filtered.size();
+//                  if (numResultsNow > numResults) {
+//                    collection.add(filtered.models.slice(numResults));
+//                  }
+                  
+                  self.hideLoadingIndicator(indicatorId);
+                },
+                error: function() {
+                  self.hideLoadingIndicator(indicatorId);
+                }
+              });
+            }
+          }
+        });
+      }
+  
       return this;
     },
   
@@ -426,21 +490,11 @@ define([
       // if scrollTop is near to zero then it is "initial" next page retriving not by a user
       if ($wnd.scrollTop() > 20) {  
         this.skipScrollEvent = true; 
-        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+//        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
       }
       this.getNextPage();
     },
-    showLoadingIndicator: function() {
-      $.mobile.loading('show');
-      // in case if fetch failed to invoke a callback
-      // then hide loading indicator after 3 sec. !!!
-      var self = this;
-      setTimeout(function() { self.hideLoadingIndicator(); }, 3000);
-    },
-    hideLoadingIndicator: function() {
-      clearTimeout(this.loadIndicatorTimerId);
-      $.mobile.loading('hide');
-    },
+    
     resumeScrollEventProcessing: function () {
       this.skipScrollEvent = false;
       this.hideLoadingIndicator();
@@ -457,7 +511,9 @@ define([
       // masonry code works with DOM elements already inserted into a page
       // small timeout insures right bricks alignment
       var self = this;
-      setTimeout(function() { self.alignBricks(); }, 50);
+      setTimeout(function() { 
+        self.alignBricks(); 
+      }, 50);
     },
     alignBricks: function(loaded) {
       // masonry is hidden
@@ -475,17 +531,18 @@ define([
       var $allBricks = $(this.$el.children());
       // new, unaligned bricks - items without 'masonry-brick' class
       var $newBricks = $allBricks.filter(function(idx, node) {
-                  var $next = $(node).next();
-                  var hasClass = $(node).hasClass("masonry-brick");
-                  // if current node does not have "masonry-brick" class but the next note has
-                  // then need to reload/reset bricks
-                  if ($next.exist() &&
-                      !hasClass && 
-                      $next.hasClass("masonry-brick"))
-                    needToReload = true;
-                  
-                  return !hasClass;
-                });
+        var $next = $(node).next();
+        var hasClass = $(node).hasClass("masonry-brick");
+        
+        // if current node does not have "masonry-brick" class but the next note has
+        // then need to reload/reset bricks
+        if ($next.exist() &&
+            !hasClass && 
+            $next.hasClass("masonry-brick"))
+          needToReload = true;
+        
+        return !hasClass;
+      });
 
       // if image(s) has width and height parameters then possible to align masonry
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
@@ -536,4 +593,6 @@ define([
   }, {
     displayName: 'EditView'
   });
+  
+  return RLV;
 });

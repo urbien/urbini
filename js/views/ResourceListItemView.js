@@ -219,7 +219,6 @@ define([
       
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
-      _.extend(json);
       this.$el.html(this.template(json));
       return this;
     },
@@ -259,8 +258,11 @@ define([
                 viewCols += '<img src="' + thumb.slice(idx + 11) + '" />';
             }
 //            viewCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
-            viewCols += '<div class="submitter">&#160;&#160;' + json[d[0] + '.displayName'] + '</div>'
-            viewCols += '</div>';
+            var submitterName = json[d[0] + '.displayName'];
+            if (submitterName) {
+              viewCols += '<div class="submitter">&#160;&#160;' + submitterName + '</div>'
+              viewCols += '</div>';
+            }
           }
         }
         viewCols += '</div>';

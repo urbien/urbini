@@ -9,7 +9,7 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= !this.isMasonry }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -38,7 +38,7 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="position:absolute; right: 3px;width: 32%"></div>
+      <div id="mainGroup" class="ui-block-b" style="float:right; width: 32%"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -391,6 +391,7 @@
       {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
       {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
       {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
         "/ >
        </span>
      {{= net.socialNet }}
@@ -451,34 +452,34 @@
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
     <div id="errMsg"></div>
     <div data-role="navbar">
-      <ul id="headerUl"></ul>
+      <ul id="headerUl">
+      </ul>
     </div>
     <div id="name" align="center">
-      <!-- h3 style="margin: 8px;font-size:16px;font-family:Tahoma, Lucinda Grande, Verdana, Helvetica, Arial, sans-serif;" id="pageTitle">{{= this.pageTitle }}</h3 -->
       <h3 id="pageTitle">{{= this.title }}</h3>
       <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}">
-      <div style="max-width:400px;" id="publishBtn">
-        {{ if (typeof publish != 'undefined') { }}
+      <div style="max-width:400px; display: inline-block;" id="publishBtn">
+        {{ if (obj.publishApp) { }}
             {{= publish }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
-        {{ if (typeof forkMeApp != 'undefined') { }}
+      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
+        {{ if (obj.forkMeApp) { }}
             {{= forkMeApp }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="tryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
-        {{ if (typeof tryApp != 'undefined') { }}
+      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
+        {{ if (obj.tryApp) { }}
             {{= tryApp }}
         {{ } }}
       </div>
-      <div style="max-width:200px;" id="testPlugBtn">
-        {{ if (typeof testPlug != 'undefined') { }}
+      <div style="max-width:200px; display: inline-block;" id="testPlugBtn">
+        {{ if (obj.testPlug) { }}
             {{= testPlug }}
         {{ } }}
       </div>
-      <div style="max-width:320px;" id="enterTournamentBtn">
-        {{ if (typeof enterTournament != 'undefined') { }}
+      <div style="max-width:320px; display: inline-block;" id="enterTournamentBtn">
+        {{ if (obj.enterTournament) { }}
             {{= enterTournament }}
         {{ } }}
       </div>
@@ -491,18 +492,18 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
-  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
+  <a href="{{= U.makePageUrl('view', submitter) }}">
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
 <td width="99%" class="cl" valign="top">
   <span class="commentListDate" style="float:right;">{{= G.U.getFormattedDate(submitTime, true) }}</span>
-  <a href="{{= G.pageRoot + '#view/' + encodeURIComponent(submitter) }}">
+  <a href="{{= U.makePageUrl('view', submitter) }}">
     {{= obj['submitter.displayName'] }}
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
   <br/>
-  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('aspects/tags/Vote') + '?vote=Like&amp;votable=' + encodeURIComponent(_uri) + '&amp;-makeId=' + G.nextId() }}">
+  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'aspects/tags/Vote', {vote: 'Like', 'votable:' _uri, '-makeId': G.nextId()}) }}">
   </a>
   <span>{{= typeof votes.count == 'undefined' ? '' : votes.count }}</span>
 </td>
@@ -540,11 +541,11 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor + '&amp;-makeId=' + G.nextId() }}">
+          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri  + '&amp;-makeId=' + G.nextId() }}"> 
+          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
           </a>
           {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
@@ -596,14 +597,14 @@
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
       <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a style="float:left" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/model/portal/Comment') +'?forum=' + v_showCommentsFor.uri + '&amp;-makeId=' + G.nextId() }}">Comment
+          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= G.pageRoot + '#' + encodeURIComponent('model/portal/Comment') + '?forum=' + v_showCommentsFor.uri }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
           {{ } }}
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a class="like" style="float: left" href="{{= G.pageRoot + '#make/' + encodeURIComponent('http://www.hudsonfog.com/voc/aspects/tags/Vote') + '?vote=Like&amp;votable=' + v_showVotesFor.uri + '&amp;-makeId=' + G.nextId() }}">
+          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
@@ -611,7 +612,7 @@
           </a>
           {{ if (v_showVotesFor.count) { }}
           <div style="float:right; font-size:12px;"> 
-            <a href="{{= G.pageRoot + '#' + encodeURIComponent('aspects/tags/Vote') + '?votable=' + v_showVotesFor.uri + '&amp;$title=' + encodeURIComponent(davDisplayName + ' liked by') }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
           </div>
           {{ } }}
         {{ } }}

@@ -29,9 +29,10 @@ define([
       
       var vocModel = this.vocModel = this.model;
       this.resources = this.models;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'add'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
+      this.on('replace', this.replace, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
       this.type = vocModel.type;
       this.shortName = vocModel.shortName || vocModel.shortName;
@@ -39,14 +40,52 @@ define([
 //      this.baseUrl = G.apiUrl + this.shortName;
 //      this.url = this.baseUrl;
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
-      this.url = this.baseUrl;      
+      this.url = this.baseUrl;
       this.params[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
-      Events.trigger('newResourceList', this);
+      if (options.cache !== false)
+        Events.trigger('newResourceList', this);
+      
+      Events.on('newResource', function(resource, options) {
+        if (this.adding)
+          return;
+        
+        var uri = resource.getUri();
+        if (uri && this.get(uri))
+          return;
+        
+        var types = U.getTypes(resource.vocModel);
+        if (!_.contains(types, this.type))
+          return;
+        
+        if (this.belongsInCollection(resource)) {
+          this.add(resource);
+          this.trigger('refresh', resource.getUri());
+        }
+      }.bind(this));
+      
 //      this.sync = this.constructor.sync;
       
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
+    },
+    clone: function() {
+      return new ResourceList(this.models, _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
+    },
+    add: function(models, options) {
+      this.adding = true;
+      Backbone.Collection.prototype.add.apply(this, arguments);
+      this.adding = false;
+      if (_.isArray(models)) {
+        this.trigger('refresh', _.map(models, function(m) {
+          return U.getValue(m, '_uri');
+        }));
+      }
+    },
+    replace: function(resource, oldUri) {
+      this.remove(resource);
+      this.add(resource);
+      this.trigger('refresh', resource.getUri());
     },
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
@@ -146,11 +185,13 @@ define([
       
       return response;
     },
-    onReset: function(model) {
-      G.log(this.TAG, "info", "resourceList onReset");
+    onReset: function(model, options) {
       this.resources = this.models;
-    },
-    onAdd: function(model) {
+      if (options.params) {
+        _.extend(this.params, options.params);
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this._lastFetchedOn = null;
+      }
     },
     fetchAll: function(options) { 
       return Backbone.Model.prototype.fetch.call(this, options);
@@ -220,12 +261,15 @@ define([
       
       return this.sync('read', this, options);
     },
+    
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.resources.length;
         Backbone.Collection.prototype.update.call(this, resources, options);
+        
         if (this.resources.length > numBefore)
-          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+          this.trigger('refresh', _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+//          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
 
         return;
       }
@@ -270,7 +314,7 @@ define([
             modified.push(uri);
           }
           else {
-            this.add(new this.vocModel(r));
+            this.add(new this.vocModel(r, {silent: true})); // to avoid triggering newResource event
           }
         }
         else
@@ -278,7 +322,7 @@ define([
       }
       
       if (toAdd.length) {
-        Events.trigger('refresh', self, _.map(toAdd, function(s) {return s._uri}));
+        this.trigger('refresh', _.map(toAdd, function(s) {return s._uri}));
         Events.trigger('resourcesChanged', toAdd); 
       }
       
