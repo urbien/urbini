@@ -392,7 +392,7 @@ define([
     },
     resetResource: function() {
       this.resource.clear({silent: true, skipRefresh: true});
-      this.resource.set(this.originalResource, {skipRefresh: true});
+      this.resource.set(this.originalResource, {skipRefresh: true}); // can't use silent here if we want resource.changed to have the changed attributes later 
     },
     resetForm: function() {
       $('form').clearForm();      
@@ -747,7 +747,7 @@ define([
             res.lastFetchOrigin = null;
             self.redirect({trigger: true, replace: true});
           }, 
-          skipRefresh: true,
+//          skipRefresh: true,
           error: onSaveError
         });
       }.bind(this);

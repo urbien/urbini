@@ -188,7 +188,6 @@ define([
       if (isAdd || !modified && !isOrientationChange) {
         i = curNum;
         if (curNum == num) {
-          debugger;
           return this;
         }
         
@@ -415,6 +414,7 @@ define([
       var col = this.filteredCollection = this.collection.clone();
       _.each(['updated', 'added', 'reset'], function(event) {
         col.on(event, function(resources) {
+          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
           var options = {};
           options[event] = true;
           self.refresh(resources, options);

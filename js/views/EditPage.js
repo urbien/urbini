@@ -39,8 +39,8 @@ define([
       
       this.$el.html(this.template(settings));
       
-      var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
-                  (res.isA("Shape") && res.get('shapeJson'));
+      var isGeo = !!((res.isA("Locatable") && res.get('latitude')) || 
+                     (res.isA("Shape") && res.get('shapeJson')));
       
       this.buttons = {
   //        left: [BackButton],
@@ -56,7 +56,8 @@ define([
         model: res, 
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
-        viewId: this.cid
+        viewId: this.cid,
+        parentView: this
       });
       
       var reqParams = U.getParamMap(window.location.href);

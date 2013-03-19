@@ -22,8 +22,14 @@ define([
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
-      if (this.resource)
-        this.resource.on('change', this.renderTitle, this);
+      if (this.resource) {
+        this.resource.on('change', function(res, options) {
+          if (options && options.skipRefresh)
+            return;
+          
+          this.refresh();          
+        }, this);
+      }
 
       var res = this.model;
 //      _.extend(this, options);
@@ -33,7 +39,7 @@ define([
       this.info = params['-info'];
       
       var commonTypes = G.commonTypes;
-      var buttons = options.buttons;
+      var buttons = this.buttons;
       if (U.isAssignableFrom(res.vocModel, commonTypes.App)) {
         buttons.publish = true;
       }
@@ -54,7 +60,7 @@ define([
         reqdButtons.push('views/{0}Button'.format(btn));
       }
       
-      this.buttons = {};
+      this.buttonViews = {};
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       U.require(reqdButtons, function() {
@@ -62,7 +68,7 @@ define([
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
-          this.buttons[btn] = new model(btnOptions);
+          this.buttonViews[btn] = new model(btnOptions);
         }
         
         this.readyDfd.resolve();
@@ -78,9 +84,10 @@ define([
         return this;
       }
       
+      var hash = window.location.hash;
+      hash = hash && hash.slice(1);
       var res = this.model;
       var title;
-      var hash = window.location.hash && window.location.hash.slice(1);
       if (hash && G.tabs) {
         decHash = decodeURIComponent(hash);
         var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
@@ -90,7 +97,7 @@ define([
       
       if (!title) {
         if (hash) {
-          var params = U.getQueryParams(hash);
+          var params = U.getHashParams();
           title = params.$title;
           title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
         }
@@ -100,7 +107,7 @@ define([
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
-            if (window.location.hash  &&  window.location.hash.indexOf('#make/') == 0) {
+            if (hash  &&  hash.indexOf('make/') == 0) {
 //              title = this.pageTitle;
             }
             else {
@@ -145,53 +152,34 @@ define([
 
     },
     
+    refresh: function(options) {
+      this.refreshTitle();
+      if (!this.rendered)
+        return this;
+      
+      this.renderSpecialButtons();
+      return this;
+    },
+    
     render: function() {
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
-      }.bind(this));
+      }.bind(this)); 
     },
     
-    renderTitle: function() {
+    refreshTitle: function() {
       this.calcTitle();
       this.$('#pageTitle').html(this.title); 
     },
     
-    renderHelper: function() {
-      if (window.location.hash.indexOf("#menu") != -1)
-        return this;
+    renderSpecialButtons: function() {
+      _.each(['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug'], function(btn) {
+        this.$('#{0}Btn'.format(btn)).html("");
+      }.bind(this));
       
-      var res = this.resource; // undefined, if this is a header for a collection view
-      this.$el.html("");
-//      this.calcTitle();
-      if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
-        this.$el.html(this.template({className: 'ui-grid-a'}));
-      else
-        this.$el.html(this.template());
-
-      this.$el.prevObject.attr('data-title', this.pageTitle);
-      this.$el.prevObject.attr('data-theme', G.theme.list);
-//      this.renderTitle();
-      var frag = document.createDocumentFragment();
-      var btns = this.buttons;
-      if (btns.back)
-        frag.appendChild(btns.back.render().el);
-      if (btns.mapIt)
-        frag.appendChild(btns.mapIt.render().el);
-      if (btns.add)
-        frag.appendChild(btns.add.render().el);
-      if (btns.aroundMe)
-        frag.appendChild(btns.aroundMe.render().el);
-      if (btns.menu)
-        frag.appendChild(btns.menu.render().el);
-      if (btns.login)
-        frag.appendChild(btns.login.render().el);
-      
-      var $ul = this.$('#headerUl');
-      $ul.html(frag);
-      
-      this.$el.trigger('create');
       var commonTypes = G.commonTypes;
+      var res = this.resource;
       if (res && G.currentUser.guest  &&  !this.isAbout) {
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
@@ -219,7 +207,7 @@ define([
         }
       }
 
-      var pBtn = btns.publish;
+      var pBtn = this.buttonViews.publish;
       if (this.doPublish) {
         this.assign('div#publishBtn', pBtn);
       }      
@@ -236,9 +224,10 @@ define([
         }.bind(this));
       }
       
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
+      var hash = window.location.hash;
+      var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
       if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
-        var params = U.getParamMap(window.location.hash);
+        var params = U.getParamMap(hash);
         var forResource = params['forResource'];
         var location = params['$location'];
         var returnUri = params['$returnUri'];
@@ -269,8 +258,44 @@ define([
       }
       
       if (!this.doPublish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament) 
-        this.noButtons = true;
+        this.noButtons = true;      
+    },
+    
+    renderHelper: function() {
+      if (window.location.hash.indexOf("#menu") != -1)
+        return this;
+      
+      var res = this.resource; // undefined, if this is a header for a collection view
+      this.$el.html("");
+      if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
+        this.$el.html(this.template({className: 'ui-grid-a'}));
+      else
+        this.$el.html(this.template());
 
+      this.$el.prevObject.attr('data-title', this.pageTitle);
+      this.$el.prevObject.attr('data-theme', G.theme.list);
+      var frag = document.createDocumentFragment();
+      var btns = this.buttonViews;
+      if (btns.back)
+        frag.appendChild(btns.back.render().el);
+      if (btns.mapIt)
+        frag.appendChild(btns.mapIt.render().el);
+      if (btns.add)
+        frag.appendChild(btns.add.render().el);
+      if (btns.aroundMe)
+        frag.appendChild(btns.aroundMe.render().el);
+      if (btns.menu)
+        frag.appendChild(btns.menu.render().el);
+      if (btns.login)
+        frag.appendChild(btns.login.render().el);
+      
+      var $ul = this.$('#headerUl');
+      $ul.html(frag);
+      
+      this.$el.trigger('create');
+
+      this.renderSpecialButtons();
+      this.rendered = true;
       return this;
     }
   });

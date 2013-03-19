@@ -58,6 +58,7 @@ define([
     },
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,
+    
     render: function(options) {
       G.log(this.TAG, "render");
 

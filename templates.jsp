@@ -288,12 +288,23 @@
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
+<script type="text/template" id="inlineListItemTemplate">
+<li>
+  <i class="icon-home"></i>
+  <a href="{{= U.makePageUrl('view', _uri) }}">{{= name }}</a>
+  {{ if (typeof comment != 'undefined') { }}
+    <p style="padding-left: 15px;">{{= comment }}</p>
+  {{ } }}
+  </a>
+</li>
+</script>
+
 <script type="text/template" id="cpTemplate">
-   <li>
+{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.footer) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
-     {{ if (typeof comment != 'undentified') { }}
+     {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
      </a>
@@ -317,7 +328,7 @@
 
 
 <script type="text/template" id="cpTemplateNoAdd">
-   <li>
+{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a>

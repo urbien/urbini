@@ -105,7 +105,7 @@ define([
       }
       var self = this;
       var res = this.resource || this.collection;
-      var json = res.toJSON();
+      var json = this.resource && res.toJSON();
       this.$el.html(this.template(json));      
 
       var ul = this.$('#menuItems');
@@ -190,7 +190,8 @@ define([
 //          self.tabs[title] = U.getPageUrl(mobileUrl);
 //  
 //        }
-        if (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res)) {
+        
+        if (this.resource && (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res))) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('view', uri);
           var title = 'Edit ' + G.currentApp.title;

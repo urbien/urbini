@@ -40,7 +40,7 @@ define([
     },
     
     get: function(propName) {
-      var val = Backbone.Model.prototype.get.call(this, propName);
+      var val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
       var vocModel = this.vocModel;
       if (!vocModel)
         return val;
@@ -192,7 +192,7 @@ define([
         return null;
 
       if (!resp.data) {
-        this.loaded = true;
+//        this.loaded = true;
         return resp;
       }
         
@@ -208,9 +208,28 @@ define([
       if (lf)
         resp._lastFetchedOn = lf;
       
+      if (!this.loaded) {
+        var vocModel = this.vocModel;
+        var meta = vocModel.properties;
+        for (var p in resp) {
+          var prop = meta[p], val = resp[p];
+          if (!prop || !val || !prop.backLink || !val._list)
+            continue;
+          
+          this.hasInlineLists = true;
+          Events.trigger('inlineResourceList', this, prop, val._list);
+        }
+      }
+      
       this.loaded = true;
       return resp;
     },
+    
+//    setInlineList: function(propName, list) {
+//      this.inlineLists = this.inlineLists || {};
+//      this.inlineLists[propName] = list;
+//      this.trigger('inlineList', propName);
+//    },
     
     set: function(props, options) {
       if (!this.subscribedToUpdates && this.getUri())
@@ -230,28 +249,44 @@ define([
           return true;
       }
       
+      var vocModel = this.getModel();
+      var meta = vocModel.properties;
       if (!options.sync) {
-        var vocModel = this.getModel();
-        var meta = vocModel.properties;
+        var displayNameChanged = false;
         for (var shortName in props) {
           if (/\./.test(shortName))
             continue;
+          
+          var prop = meta[shortName];
+          if (!prop)
+            continue;
+          
+          var val = props[shortName];
+          if (!val)
+            continue;
+          
+          if (prop.displayNameElm) {
+            displayNameChanged = true;
+          }
           
           var sndName = shortName + '.displayName';
           if (props[sndName])
             continue;
           
-          var uri = props[shortName];
-          if (!uri)
-            continue;
-          
-          var prop = meta[shortName];
           if (U.isResourceProp(prop)) {
-            var res = C.getResource(uri);
+            var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
             }
           }
+        }
+        
+        if (this.loaded && displayNameChanged) {
+          var displayNameProps = _.defaults({}, props, this.attributes);
+          delete displayNameProps.davDisplayName;
+          var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
+          if (newDisplayName)
+            props.davDisplayName = newDisplayName;
         }
       }
       
