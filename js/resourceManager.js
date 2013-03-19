@@ -122,7 +122,7 @@ define([
     }
     
     if (isCollection) {
-      lastFetchedOn = collection.resources.length && collection.resources[0].loaded && RM.getLastFetched(data, now);
+      lastFetchedOn = collection.models.length && collection.models[0].loaded && RM.getLastFetched(data, now);
       params = collection.params;
       filter = U.getQueryParams(collection);
       isFilter = !!filter;
@@ -136,7 +136,7 @@ define([
       numRequested = params.$limit ? parseInt(params.$limit) : collection.perPage;
       start = start || 0;
       options.end = end = start + numRequested;
-      numNow = collection.resources.length;
+      numNow = collection.models.length;
       shortPage = !!(numNow && numNow < collection.perPage);
       isUpdate = options.isUpdate = numNow >= end || shortPage;
       if (isUpdate) {
@@ -206,7 +206,7 @@ define([
       G.log(RM.TAG, 'db', "got resources from db: " + vocModel.type);
       results = U.getObjectType(results) === '[object Object]' ? [results] : results;
       var resp = {data: results, metadata: {offset: start}};
-      var numBefore = isCollection && collection.resources.length;
+      var numBefore = isCollection && collection.models.length;
       defaultSuccess(resp, 'success', null); // add to / update collection
 
       if (!isCollection) {
@@ -228,7 +228,7 @@ define([
         return fetchFromServer(isUpdate, 0);
       }
       
-      var numAfter = collection.resources.length;
+      var numAfter = collection.models.length;
       if (!isUpdate && numAfter === numBefore) // db results are useless
         return fetchFromServer(isUpdate, 100);
       

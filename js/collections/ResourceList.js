@@ -28,7 +28,6 @@ define([
       });
       
       var vocModel = this.vocModel = this.model;
-      this.resources = this.models;
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
@@ -79,7 +78,7 @@ define([
       if (_.isArray(models)) {
         this.trigger('refresh', _.map(models, function(m) {
           return U.getValue(m, '_uri');
-        }));
+        }), true);
       }
     },
     replace: function(resource, oldUri) {
@@ -90,7 +89,7 @@ define([
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
       this.offset += this.perPage;
-      this.offset = Math.min(this.offset, this.resources.length);
+      this.offset = Math.min(this.offset, this.models.length);
       this.pager(options);
     },
     getPreviousPage: function () {
@@ -106,9 +105,10 @@ define([
       this.page = Math.floor(this.offset / this.perPage);
       options = options || {};
       options.sync = true;
-      var length = this.resources.length;
+      options.nextPage = true;
+      var length = this.models.length;
       if (length)
-        options.startAfter = this.resources[length - 1].get('_uri');
+        options.startAfter = this.models[length - 1].get('_uri');
       
       this.fetch(options);
     },
@@ -186,7 +186,6 @@ define([
       return response;
     },
     onReset: function(model, options) {
-      this.resources = this.models;
       if (options.params) {
         _.extend(this.params, options.params);
         this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
@@ -238,7 +237,7 @@ define([
             success(resp, status, xhr);
             return;
           case 304:
-            var ms = self.resources.slice(options.start, options.end);
+            var ms = self.models.slice(options.start, options.end);
             _.each(ms, function(m) {
               m.set({'_lastFetchedOn': now}, {silent: true});
             });
@@ -264,18 +263,18 @@ define([
     
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
-        var numBefore = this.resources.length;
+        var numBefore = this.models.length;
         Backbone.Collection.prototype.update.call(this, resources, options);
         
-        if (this.resources.length > numBefore)
-          this.trigger('refresh', _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
-//          Events.trigger('refresh', this, _.map(this.resources.slice(numBefore), function(s) {return s.get('_uri')}));
+        if (this.models.length > numBefore)
+          this.trigger('refresh', _.map(this.models.slice(numBefore), function(s) {return s.get('_uri')}));
+//          Events.trigger('refresh', this, _.map(this.models.slice(numBefore), function(s) {return s.get('_uri')}));
 
         return;
       }
 
 //      var isUpdate = options.isUpdate,
-//          currentUris = isUpdate ? _.map(this.resources, Resource.getUri) : [];
+//          currentUris = isUpdate ? _.map(this.models, Resource.getUri) : [];
           
       resources = this.parse(resources);      
       if (!_.size(resources)) {
@@ -322,7 +321,7 @@ define([
       }
       
       if (toAdd.length) {
-        this.trigger('refresh', _.map(toAdd, function(s) {return s._uri}));
+        this.trigger('refresh', _.map(toAdd, function(s) {return s._uri}), options.nextPage);
         Events.trigger('resourcesChanged', toAdd); 
       }
       
