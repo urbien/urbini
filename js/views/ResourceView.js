@@ -16,9 +16,10 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propRowTemplate = this.makeTemplate('propRowTemplate');
-      this.propRowTemplate2 = this.makeTemplate('propRowTemplate2');
-      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
+      _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate'], function(t) {
+        this.makeTemplate(t, t, this.vocModel.type, true);
+      }.bind(this));
+      
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;

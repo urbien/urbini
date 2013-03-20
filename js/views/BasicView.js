@@ -50,9 +50,16 @@ define([
       // override this
     },
     
-    makeTemplate: function(templateName, localName, type) {
-      U.pushUniq(this._templates, templateName);
+    makeTemplate: function(templateName, localName, type, fallBackToDefault) {
       var template = this[localName] = U.template(templateName, type, this);
+      if (!template) {
+        if (fallBackToDefault && type)
+          return this.makeTemplate(templateName, localName);
+        else
+          return template;
+      }
+        
+      U.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       return template;
     },  

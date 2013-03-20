@@ -7,14 +7,14 @@ define([
 ], function(G, ToggleButton, BasicView, U) {
   return ToggleButton.extend({
     btnId: 'aroundMe',
-    template: 'aroundMeButtonTemplate',
+    templateName: 'aroundMeButtonTemplate',
     events: {
       'click #aroundMe': 'toggleAroundMe'
     },
     initialize: function(options) {      
       _.bindAll(this, 'render', 'toggleAroundMe', 'isActive');
       BasicView.prototype.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);        
+      this.makeTemplate(this.templateName, 'template', this.vocModel.type, true);        
       return this;
     },
     isActive: function() {

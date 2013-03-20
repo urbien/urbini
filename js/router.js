@@ -267,6 +267,9 @@ define([
           var tIdx = types.indexOf(type);
           if (tIdx != -1) {
             types.splice(tIdx, 1);
+            if (!types.length)
+              delete templateToTypes[tName];
+            
             templates.push(t);
           }
         });

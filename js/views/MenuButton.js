@@ -8,14 +8,14 @@ define([
 ], function(G, _, U, Events, BasicView) {
   var MenuPanel;
   return BasicView.extend({
-    template: 'menuButtonTemplate',
+    templateName: 'menuButtonTemplate',
     events: {
       'click #menuBtn': 'menu'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);
+      this.makeTemplate(this.templateName, 'template', this.vocModel.type, true);
       this.viewId = options.viewId;
       return this;
     },
