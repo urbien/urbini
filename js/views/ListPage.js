@@ -55,7 +55,7 @@ define([
         this.mapReady = this.mapReadyDfd.promise();
         U.require(['views/MapView'], function(MV) {
           MapView = MV;
-          this.mapView = new MapView(commonParams);
+          this.addChild('mapView', new MapView(commonParams));
           this.mapReadyDfd.resolve();
         }, this);
       }      
@@ -100,10 +100,10 @@ define([
         login: true
       };
 
-      this.header = new Header(_.extend({
+      this.addChild('header', new Header(_.extend({
         buttons: this.buttons,
         viewId: this.cid
-      }, commonParams));
+      }, commonParams)));
       
       
       var models = rl.models;
@@ -116,7 +116,8 @@ define([
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
-      this.listView = new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options));
+      this.addChild('listView', new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options)));
+      this.canSearch = !this.isMasonry && !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])

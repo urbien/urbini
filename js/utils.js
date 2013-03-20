@@ -268,7 +268,7 @@ define([
       if (!hash)
         G.log(U.TAG, 'error', 'match undefined 0');
       
-      route = hash.match('^view|menu|edit|make|chooser');
+      route = hash.match('^view|menu|edit|make|chooser|templates');
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);
         if (sqlIdx == -1)
@@ -473,8 +473,10 @@ define([
     },
     
     getLongUri1: function(uri, vocModel) {
-      if (!uri)
-        G.log(U.TAG, 'error', 'match undefined 2');
+      if (!uri) {
+        G.log(U.TAG, 'error', 'null passed to getLongUri1');
+        return uri;
+      }
 
       for (var pattern in U.uriPatternMap) {
         var fn = U.uriPatternMap[pattern];
@@ -631,7 +633,7 @@ define([
 //    },
     
     getShortUri: function(uri, model) {
-      if (model.properties._shortUri == 'unsupported')
+      if (!uri || model.properties._shortUri == 'unsupported')
         return uri;
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
@@ -1115,6 +1117,10 @@ define([
       return (dn || vocModel.displayName).trim();
     },
 
+    getTemplate: function() {
+      return Templates.get.apply(Templates, arguments);
+    },
+    
     getTypeTemplate: function(id, resource) {
       var t = G.template;
       if (!t) 
@@ -1555,10 +1561,10 @@ define([
           break;
       }
       
-      var encOptions = {delimiter: '&amp;'};
+//      var encOptions = {delimiter: '&amp;'};
       url += encodeURIComponent(typeOrUri);
       if (_.size(params))
-        url += '?' + U.getQueryString(params, encOptions);
+        url += '?' + U.getQueryString(params); //, encOptions);
       
       return url;
     },
@@ -2498,8 +2504,18 @@ define([
       }
     },
 
-    template: function(templateName, context) {
-      var template = typeof templateName === 'string' ? _.template(Templates.get(templateName)) : templateName;
+    template: function(templateName, type, context) {
+      var template;
+      if (typeof templateName === 'string') {
+        template = Templates.get(templateName, type);
+        if (!template)
+          return null;
+        
+        template = _.template(template);
+      }
+      else
+        template = templateName;
+      
       context = context || this;
       return function(json) {
         json = json || {};

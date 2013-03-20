@@ -29,6 +29,10 @@ define([
       this.vocModel = this.constructor;
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
+      this.detached = options.detached; // if true, this resource will not be persisted to the database, nor will it be fetched from the server
+      if (this.detached)
+        this.loaded = true;
+      
       if (this.isNew())
         this.setDefaults();
       
@@ -469,7 +473,7 @@ define([
     save: function(attrs, options) {
       this.loaded = true;
       var isNew = this.isNew();
-      var appInstallType = G.commonTypes.AppInstall;
+      var commonTypes = G.commonTypes;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
 //      var meta = this.vocModel.properties;
@@ -480,13 +484,24 @@ define([
 //        }
 //      }
       
+      var vocModel = this.vocModel;
+      var isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall);
+      var isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst);
+      if (isTemplate) {
+        var tText = data.templateText;
+        if (!tText.trim().startsWith('<script')) {
+          data.templateText = '<script type="text/template" id="{0}">{1}</script>'.format(data.templateName, tText);
+        }
+      }
+      
       var saved;
       if (!options.sync) {
         saved = Backbone.Model.prototype.save.call(this, data, options);        
 //        G.cacheResource(this);
-        if (U.isAssignableFrom(this.vocModel, appInstallType)) {
+        if (isAppInstall)
           Events.trigger('appInstall', this);
-        }
+        else if (isTemplate)
+          Events.trigger('templateUpdate', this);
         
         this.triggerPlugs(options);
         this.notifyContainers();
@@ -495,7 +510,7 @@ define([
         }
       }
       else {
-        data = U.prepForSync(data, this.vocModel, ['parameter']);
+        data = U.prepForSync(data, vocModel, ['parameter']);
         if (_.size(data) == 0) {
           if (!isNew) {
             if (options.error)
@@ -520,8 +535,10 @@ define([
             return;
           
           // trigger this first because "success" may want to redirect to mkresource for some app-related model
-          if (U.isAssignableFrom(self.vocModel, appInstallType))
+          if (isAppInstall)
             Events.trigger('appInstall', self);
+          else if (isTemplate)
+            Events.trigger('templateUpdate', self);
           
           success && success.apply(this, arguments);
 //          G.cacheResource(self);
@@ -559,6 +576,9 @@ define([
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
       if (!options.fromDB) 
         this.trigger('change', this, options);
+      
+      if (saved)
+        this.detached = false;
       
       return saved;
       

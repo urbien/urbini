@@ -8,19 +8,21 @@ define([
   'collections/ResourceList',
   'cache',
   'vocManager',
-  'views/HomePage'
+  'views/HomePage',
+  'templates'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage/*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
       ""                                                       : "home",
       ":type"                                                  : "list", 
-      "view/*path"                                             : "view",  
+      "view/*path"                                             : "view",
+      "templates/*path"                                        : "templates",
       "edit/*path"                                             : "edit", 
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
@@ -65,7 +67,7 @@ define([
     },
     
     defaultOptions: {
-      extraParams: {},
+//      extraParams: {},
       replace: false
     },
     
@@ -85,7 +87,7 @@ define([
       G.log(this.TAG, 'events', 'navigate', fragment);
       options = options || {};
       
-      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'extraParams', 'forceFetch', 'errMsg', 'info', 'replace'));
+      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace'));
       _.extend(this, {
         previousView: this.currentView, 
         previousFragment: U.getHash() 
@@ -200,7 +202,7 @@ define([
       }      
       
       list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
-      var listView = new ListPage(_.extend(this.extraParams || {}, {model: list}));
+      var listView = new ListPage({model: list});
       
       this.CollectionViews[typeUri][key] = listView;
       listView.setMode(mode || G.LISTMODES.LIST);
@@ -227,6 +229,69 @@ define([
       
       this.monitorCollection(list);
       return this;
+    },
+    
+    templates: function(tName) {
+      if (!this.ListPage)
+        return this.loadViews('ListPage', this.templates, arguments);
+
+      var cached = this.CollectionViews[tName];
+      if (cached) {
+        this.changePage(cached);
+        return;
+      }
+        
+      var previousView = this.currentView;
+      var descendants = previousView.getDescendants();
+      var templateToTypes = {};
+      _.each(descendants, function(d) {
+        var templates = d._templates;
+        var type = d.vocModel.type;
+        if (templates.length) {
+          _.each(templates, function(t) {
+            var typeTemplates = templateToTypes[t] = templateToTypes[t] || [];
+            U.pushUniq(typeTemplates, type);
+          });
+        }
+      });
+      
+//      var templates = _.compact(_.union.apply(_, _.pluck(descendants, '_templates')));
+//      var type = params.model;
+      var appTemplates = G.appTemplates;
+      var templates = [];
+      if (appTemplates) {
+        _.each(appTemplates.models, function(t) {
+          var tName = t.get('templateName');
+          var type = t.get('modelDavClassUri');
+          var types = templateToTypes[tName] || [];
+          var tIdx = types.indexOf(type);
+          if (tIdx != -1) {
+            types.splice(tIdx, 1);
+            templates.push(t);
+          }
+        });
+      }
+      
+      var currentAppUri = G.currentApp._uri;
+      var jstType = G.commonTypes.Jst;
+      var jstModel = U.getModel(jstType);
+      var jstUriBase = G.sqlUrl + '/' + jstType.slice(7) + '?';
+      _.each(templateToTypes, function(types, tName) {
+        templates.push(new jstModel({
+          _uri:  jstUriBase + $.param({templateName: tName}),
+          templateName: tName,
+          forResource: currentAppUri
+        }, {
+          detached: true
+        }));
+      });
+      
+      var tList = new ResourceList(templates, {params: {forResource: currentAppUri}});
+      if (!G.appTemplates)
+        G.appTemplates = tList;
+      
+      var lPage = this.CollectionViews[tName] = new this.ListPage({model: tList});
+      this.changePage(lPage);
     },
     
     monitorCollection: function(collection) {
@@ -437,7 +502,7 @@ define([
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] = views[uri] || new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
         this.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
         res.fetch({forceFetch: forceFetch});                
@@ -445,7 +510,7 @@ define([
       }
       
       var res = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl(_.extend(this.extraParams || {}, {model: res, source: this.previousFragment}));
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
       var changedPage = false;
       var success = function() {
         self.changePage(v);

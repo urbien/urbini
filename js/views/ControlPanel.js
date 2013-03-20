@@ -121,31 +121,29 @@ define([
         });
       });
 
-      if (false) {
-        _.each(displayInline, function(prop, name) {
-          if (!prop.backLink)
-            return;
+      _.each(displayInline, function(prop, name) {
+        if (!prop.backLink)
+          return;
+        
+        var val = json[name];
+        if (!val)
+          return;
+        
+        var inline = val._list;
+        if (inline && inline.length) {
+          var propDisplayName = U.getPropDisplayName(prop);
+          var common = {range: prop.range, backlink: prop.backLink, name: propDisplayName, value: prop.count || 0, _uri: uri, title: U.makeHeaderTitle(title, propDisplayName), comment: prop.comment};
+          if (isPropEditable)
+            U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+          else
+            U.addToFrag(frag, this.cpTemplateNoAdd(common));
           
-          var val = json[name];
-          if (!val)
-            return;
-          
-          var inline = val._list;
-          if (inline && inline.length) {
-            var propDisplayName = U.getPropDisplayName(prop);
-            var common = {range: prop.range, backlink: prop.backLink, name: propDisplayName, value: prop.count || 0, _uri: uri, title: U.makeHeaderTitle(title, propDisplayName), comment: prop.comment};
-            if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
-            else
-              U.addToFrag(frag, this.cpTemplateNoAdd(common));
-            
-            _.each(inline, function(iRes) {
-              U.addToFrag(frag, this.inlineListItemTemplate({name: iRes.davDisplayName, _uri: iRes._uri}));
-              displayedProps[name] = true;
-            }.bind(this));
-          }
-        }.bind(this));
-      }
+          _.each(inline, function(iRes) {
+            U.addToFrag(frag, this.inlineListItemTemplate({name: iRes.davDisplayName, _uri: iRes._uri}));
+            displayedProps[name] = true;
+          }.bind(this));
+        }
+      }.bind(this));
       
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {

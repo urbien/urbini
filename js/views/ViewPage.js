@@ -20,7 +20,7 @@ define([
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
-      this.template = this.makeTemplate('resource');
+      this.makeTemplate('resource', 'template'); // templateName, template reference in this view
       this.TAG = "ViewPage";
       this.router = G.Router || Backbone.History;
       this.viewId = options.viewId;
@@ -52,10 +52,10 @@ define([
         isAbout: isAbout
       }
         
-      this.header = new Header(_.extend({
+      this.addChild('header', new Header(_.extend({
         buttons: this.buttons,
         viewId: this.cid
-      }, commonParams));
+      }, commonParams)));
 
       if (!isAbout) {
         var viewType, viewDiv;
@@ -73,18 +73,18 @@ define([
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       U.require(viewType, function(viewMod) {
-        self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams));
+        self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
         self.readyDfd.resolve();
 //        renderDfd.done(self.imageView.finalize);
       });
 
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
-        this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
-        this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
+        this.addChild('cpMain', new ControlPanel(_.extend({isMainGroup: true}, commonParams)));
+        this.addChild('cp', new ControlPanel(_.extend({isMainGroup: false}, commonParams)));
       }  
       
-      this.view = new ResourceView(commonParams);      
+      this.addChild('view', new ResourceView(commonParams));
       this.photogridDfd = $.Deferred();
       this.photogridReady = this.photogridDfd.promise();
       var commonTypes = G.commonTypes;
@@ -115,7 +115,7 @@ define([
             self.friends.fetch({
               success: function() {
                 if (self.friends.size()) {
-                  self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri});
+                  self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri}));
                   self.photogridDfd.resolve();
   //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
   //                header.insertBefore(self.photogrid.el);

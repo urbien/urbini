@@ -847,6 +847,6 @@ define([
 //      baseResource.setInlineList(prop.shortName, rl);
     });
   });  
-
+  
   return (G.Voc = Voc);
 });

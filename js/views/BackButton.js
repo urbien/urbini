@@ -6,14 +6,14 @@ define([
   'views/BasicView' 
 ], function(_, U, Events, BasicView) {
   return BasicView.extend({
-    template: 'backButtonTemplate',
+    templateName: 'backButtonTemplate',
     events: {
       'click #back': 'back'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);
+      this.makeTemplate(this.templateName, 'template', this.vocModel.type) || this.makeTemplate(this.templateName, 'template');
       return this;
     },
     back: function(e) {

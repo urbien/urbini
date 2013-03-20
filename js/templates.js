@@ -3,8 +3,9 @@ define([
   'globals',
   'fileCache!../templates.jsp',
   'jquery', 
-  'underscore' 
-], function(G, HTML, $, _) {
+  'underscore',
+  'events'
+], function(G, HTML, $, _, Events) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -66,16 +67,46 @@ define([
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
       var elts = $('script[type="text/template"]', $(HTML));
-      for (var i = 0; i < elts.length; i++) {
-        Templates.templates[elts[i].id] = elts[i].innerHTML;
-      }
+      _.each(elts, function(elt) {
+        this.templates[elt.id] = {
+          'default': elt.innerHTML
+        };
+      }.bind(this));
     },
  
-    // Get template by name from hash of preloaded templates
-    get: function(name) {
-      return this.templates[name];
+    addCustomTemplate: function(template) {
+      var type = template.get('modelDavClassUri');
+      var elts = $(template.get('templateText'));
+      _.each(elts, function(elt) {
+        var templates = this.templates[elt.id];
+        if (!templates) // currently, only allow to override default templates
+          return;
+        
+        templates[type] = elt.innerHTML;
+        Events.trigger('templateUpdate', template);
+      }.bind(this));
     },
     
+    // Get template by name from hash of preloaded templates
+    /**
+     * @param name: template name
+     * @param custom: set to false if you want the default template, otherwise will return custom template (if available, else default template)
+     */
+    get: function(name, type) {
+      var templates = this.templates[name];
+      return type ? templates[type] : templates['default'];
+    },
+    
+    getDefaultTemplate: function(name) {
+      var template = this.templates[name];
+      return template && template['default'];      
+    },
+
+    getCustomTemplate: function(name, type) {
+      var template = this.templates[name];
+      return template && template[type]; 
+    },
+
     getPropTemplate: function(prop, edit, val) {
       var t = edit ? Templates.propEditTemplates : Templates.propTemplates;
       var template;
@@ -86,9 +117,10 @@ define([
           return t.resource;
         template = t[prop.range];
       }
+      
       return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' ? t.string : t.resource);
     }
   };
-  
+
   return Templates;
 });

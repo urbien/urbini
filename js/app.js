@@ -10,8 +10,9 @@ define('app', [
   'cache',
   'vocManager',
   'resourceManager',
-  'router'
-], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router) {
+  'router',
+  'collections/ResourceList'
+], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
 //  _.extend(Backbone.History.prototype, {
@@ -129,22 +130,20 @@ define('app', [
     },
 
     doPreStartTasks: function() {
-      return $.Deferred(function(defer) {
-        App.setupWorkers();
-        App.setupCleaner();
-        G.checkVersion();
-        Templates.loadTemplates();
-        extendMetadataKeys();
-        App.setupNetworkEvents();
-        Voc.checkUser();
-        Voc.loadEnums();
-        var waitTime = 50;
+      return $.Deferred(function(defer) {        
+        var modelsDfd = $.Deferred();
+        var dbDfd = $.Deferred();
+        var startDB = function() {
+          if (RM.db)
+            dbDfd.resolve();
+          else
+            RM.restartDB().always(dbDfd.resolve);
+        }
+        
         var loadModels = function() {
           Voc.getModels().done(function() {
-            if (RM.db)
-              defer.resolve();
-            else
-              RM.restartDB().always(defer.resolve);
+            startDB();
+            modelsDfd.resolve();
           }).fail(function()  {
             if (G.online) {
               Errors.timeout();
@@ -159,8 +158,49 @@ define('app', [
             }
           });          
         };
-        
+  
+        var templatesDfd = $.Deferred();
+        var getTemplates = function() {
+          var jstType = G.commonTypes.Jst;
+          var jstModel = U.getModel(jstType);
+          var templatesBl = G.currentApp.templates;
+          if (templatesBl && templatesBl.count) {
+            var templatesRL = G.appTemplates = new ResourceList(null, {
+              model: jstModel,
+              params: {
+                forResource: G.currentApp._uri
+              }
+            });
+            
+            templatesRL.fetch({
+              success: function() {
+                templatesRL.each(function(template) {
+                  Templates.addCustomTemplate(template);
+                });
+                
+                templatesDfd.resolve();
+              },
+              error: function() {
+                templatesDfd.resolve();
+              }
+            });
+          }
+          else
+            templatesDfd.resolve();
+        }; 
+  
+        App.setupWorkers();
+        App.setupCleaner();
         loadModels();
+        G.checkVersion();
+        Templates.loadTemplates();
+        extendMetadataKeys();
+        App.setupNetworkEvents();
+        Voc.checkUser();
+        Voc.loadEnums();
+        var waitTime = 50;
+        dbDfd.done(getTemplates);
+        templatesDfd.done(defer.resolve); // the last item on the menu
       }).promise();
     },
     

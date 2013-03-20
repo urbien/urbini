@@ -21,25 +21,28 @@ define([
 //      this.resource.on('change', this.render, this);
       var key = this.vocModel.shortName + '-list-item';
       this.isEdit = options  &&  options.edit;
-      this.template = !this.isEdit  &&  U.getTypeTemplate('list-item', this.resource);
+      if (!this.isEdit) {
+        this.makeTemplate('listItemTemplate', 'template', this.vocModel.type); //= !this.isEdit //U.getTypeTemplate('list-item', this.resource);
+      }
+      
 //      this.likesAndComments = this.makeTemplate('likesAndComments');
       if (this.template) 
         this.isCommonTemplate = false;
       else {
         if (options.mv) {
-          this.template = this.makeTemplate('mvListItem');
+          this.makeTemplate('mvListItem', 'template');
           this.$el.attr("data-role", "controlgroup");
           this.mvProp = options.mvProp;
 //          this.mvVals = options.mvVals;
         }
         else if (this.isEdit)
-          this.template = this.makeTemplate('editListItemTemplate');
+          this.makeTemplate('editListItemTemplate', 'template');
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
-          this.template = this.makeTemplate('listItemTemplate');
+          this.makeTemplate('listItemTemplate', 'template');
         }
         else
-          this.template = this.makeTemplate('listItemTemplateNoImage');
+          this.makeTemplate('listItemTemplateNoImage', 'template');
       }
       if (options.swatch) {
         this.$el.attr("data-theme", options.swatch);
@@ -193,8 +196,13 @@ define([
         return this;
       }
       var params = U.getQueryParams(window.location.hash);
-      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
-      var action = !isEdit ? 'view' : 'edit'; 
+      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
+      var action;
+//      if (U.isAssignableFrom(vocModel, G.commonTypes.Jst) && m.detached)
+//        action = 'make';
+//      else
+        action = !isEdit ? 'view' : 'edit'; 
+      
       json['action'] = action;
       if (this.isEdit) {
         if (params['$editCols']) {
@@ -296,7 +304,8 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          var bl = json[pMeta.shortName] || {count: 0};
+          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: bl.count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (this.resource.isA('Votable')) {
@@ -305,7 +314,8 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          var bl = json[pMeta.shortName] || {count: 0};
+          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: bl.count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       json.viewCols = viewCols;

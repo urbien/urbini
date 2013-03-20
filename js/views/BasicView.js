@@ -3,8 +3,9 @@ define([
   'globals',
   'backbone',
   'utils',
-  'templates'
-], function(G, Backbone, U, Templates) {
+  'templates',
+  'events'
+], function(G, Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
@@ -22,21 +23,57 @@ define([
       }
       
       this.router = G.Router || Backbone.history;
+      Events.on('templateUpdate', function(template) {
+        var dClUri = template.get('modelDavClassUri');
+        if (!dClUri)
+          return;
+        
+        var type = U.getTypeUri(dClUri);
+        if (U.getTypes(this.vocModel).indexOf(type) == -1)
+          return;
+        
+        var templateName = template.get('templateName');
+        this.makeTemplate(templateName, this._templateMap[templateName]);
+        this.refresh();
+      }.bind(this));
+      
       return this;
     }
   }, {
     displayName: 'BasicView'
   });
-
-//  BasicView.prototype.setActive = function(active) {
-//    this.active = active;
-//  }
   
   _.extend(BasicView.prototype, {
-    makeTemplate: function(templateName) {
-      return U.template(templateName, this);
+    _templates: [],
+    _templateMap: {},
+    refresh: function() {
+      // override this
     },
-  
+    
+    makeTemplate: function(templateName, localName, type) {
+      U.pushUniq(this._templates, templateName);
+      var template = this[localName] = U.template(templateName, type, this);
+      this._templateMap[templateName] = localName;
+      return template;
+    },  
+    
+    addChild: function(name, view) {
+      this.children = this.children || {};
+      this[name] = this.children[name] = view;
+    },
+    
+    getChildViews: function() {
+      return this.children;
+    },
+    
+    getDescendants: function() {
+      if (!this.children)
+        return [];
+      else {
+        var childViews = _.values(this.children)
+        return _.union([], childViews, _.union.apply(_, _.map(childViews, function(child) {return child.getDescendants()})));
+      }
+    },
     
     isActive: function() {
       if (this.active)

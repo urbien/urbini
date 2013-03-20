@@ -28,8 +28,19 @@ define([
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
       
+      // maybe move this to router
       var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
+      if (U.isAssignableFrom(this.vocModel, G.commonTypes.Jst) && !init.templateText) {
+        var templateName = init.templateName;
+        if (templateName) {
+          var text = U.getTemplate(templateName);
+          if (text)
+            init.templateText = text;
+        }
+      }      
+
       this.resource.set(init, {silent: true});
+      
 //      for (var shortName in init) {
 //        var prop = meta[shortName];
 //        if (U.isResourceProp(prop)) {

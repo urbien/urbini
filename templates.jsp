@@ -9,7 +9,7 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= !this.isMasonry && !this.isPhotogrid }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -232,8 +232,13 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   {{ var action = action ? action : 'view' }}
-  {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <a href="{{= U.makePageUrl(action, _uri) }}">
+  {{ if (typeof v_submitToTournament == 'undefined') { }}  
+    {{ if (this.resource.detached && this.vocModel.type === G.commonTypes.Jst) { }}
+      <a href="{{= U.makePageUrl('make', this.vocModel.type, {templateName: templateName}) }}">
+    {{ } }}
+    {{ if (!this.resource.detached || this.vocModel.type !== G.commonTypes.Jst) { }}
+      <a href="{{= U.makePageUrl(action, _uri) }}">
+    {{ } }}
   {{ } }}
   {{ if (typeof v_submitToTournament != 'undefined') { }}
     <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -794,7 +799,7 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
-    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : escape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
     <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>

@@ -191,7 +191,8 @@ define([
 //  
 //        }
         
-        if (this.resource && (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res))) {
+        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
+        if (this.resource && isCreatorOrAdmin) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('view', uri);
           var title = 'Edit ' + G.currentApp.title;
@@ -217,6 +218,17 @@ define([
             else
               U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
           }
+          
+//          var myChildren = this.children;
+//          var currentViewChildren = G.Router.currentView.children;
+//          var templatesUsed = _.union([], _.map(children, function(child, name) {
+//            return this.templates;
+//          }));
+        }
+        
+        if (isCreatorOrAdmin) {
+          var wHash = U.getHash();
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Templates used on this page', pageUrl: U.makePageUrl('templates', wHash)}));
         }
         
         var user = G.currentUser;

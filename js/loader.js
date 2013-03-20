@@ -880,6 +880,9 @@ define('fileCache', function() {
       WebProperty: 'system/designer/WebProperty',
       CloneOfProperty: 'system/designer/CloneOfProperty',
       Handler: 'system/designer/Handler',
+      Jst: 'system/designer/Jst',
+      JS: 'system/designer/JS',
+      Css: 'system/designer/Css',
       AppInstall: 'model/social/AppInstall'
     },
     timeOffset: G.localTime - G.serverTime,

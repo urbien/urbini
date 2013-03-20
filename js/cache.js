@@ -166,6 +166,9 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
   Events.on('newResourceList', function(list) {
     C.cacheResourceList(list);
     var listType = list.vocModel.type;
+//    if (listType === G.commonTypes.Jst)
+//      C.templatesList = list;
+    
     for (var uri in C.Resources) {
       var res = C.Resources[uri];
       if (res.vocModel.type == listType && !list.get(uri) && list.belongsInCollection(res)) {

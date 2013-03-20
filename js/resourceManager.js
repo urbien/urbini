@@ -92,6 +92,9 @@ define([
       return;
     }
     
+    if (data.detached)
+      return;
+    
     var isUpdate, filter, isFilter, start, end, params, numRequested, stale, save, numNow, shortPage, collection, resource, lastFetchedOn,
     defaultSuccess = options.success, 
     defaultError = options.error,
@@ -945,7 +948,7 @@ define([
           type = vocModel.type;
         
         var tempUri;
-        if (!uri) {
+        if (!uri || item.detached) {
           tempUri = U.makeTempUri(type, now);
           item.set({'_uri': tempUri}, {silent: true});
         }
