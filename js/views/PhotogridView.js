@@ -47,6 +47,8 @@ define([
         this.$el.removeClass('hidden');
         this.$el.trigger('create');
       }
+      
+      return this;
     },
     renderResource: function(options) {
       var res = this.resource;

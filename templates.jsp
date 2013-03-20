@@ -9,7 +9,7 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= !this.isMasonry }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= !this.isMasonry && !this.isPhotogrid }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -672,7 +672,7 @@
 </script>
 
 <script type="text/template" id="photogridTemplate">
-    <ul data-role="listview" data-inset="true">
+    <ul data-role="listview" data-inset="true" data-filter="false">
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
       <li style="{{= 'float: ' + (item.float || 'left') }}">

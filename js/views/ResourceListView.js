@@ -35,7 +35,7 @@ define([
       var commonTypes = G.commonTypes;
       var type = this.vocModel.type;
 //      this.isPhotogrid = _.contains([commonTypes.Handler, commonTypes.FriendApp], type);
-      this.isPhotogrid = _.contains([commonTypes.Handler/*, commonTypes.FriendApp*/], type);
+      this.isPhotogrid = this.parentView.isPhotogrid;
 //      var self = this;
 //      if (this.isPhotogrid) {
 //        this.readyPromise = U.require('views/PhotogridView', function(PhotogridView) {

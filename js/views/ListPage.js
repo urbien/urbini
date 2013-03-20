@@ -48,7 +48,7 @@ define([
                                                         vocModel.type.endsWith('/Goal')       || 
                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      
+      this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
       var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
@@ -288,6 +288,7 @@ define([
         $('form#editRlForm').hide();
       if (this.vocModel.type === G.commonTypes.Handler) {
         this.listView.$el.addClass('grid-listview');
+//        this.listView.$el.find('ul').removeClass('grid-listview');
       }
       
       this.rendered = true;
