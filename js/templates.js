@@ -74,17 +74,30 @@ define([
       }.bind(this));
     },
  
+    _treatTemplate: function(text) {
+      text = text.trim();
+      var matches = text.match(/<script[^>]*>([\s\S]*)<\/script>/);
+      return matches ? matches[1] : text;
+    },
+    
     addCustomTemplate: function(template) {
       var type = template.get('modelDavClassUri');
-      var elts = $(template.get('templateText'));
-      _.each(elts, function(elt) {
-        var templates = this.templates[elt.id];
-        if (!templates) // currently, only allow to override default templates
-          return;
-        
-        templates[type] = elt.innerHTML;
-        Events.trigger('templateUpdate', template);
-      }.bind(this));
+      var templates = this.templates[template.get('templateName')];
+      if (!templates) // currently, only allow to override default templates
+        return;
+      
+      templates[type || 'default'] = this._treatTemplate(template.get('templateText'));
+      Events.trigger('templateUpdate', template);
+      
+//      var elts = $(template.get('templateText'));
+//      _.each(elts, function(elt) {
+//        var templates = this.templates[elt.id];
+//        if (!templates) // currently, only allow to override default templates
+////          return;
+//        
+//        templates[type] = elt.innerHTML;
+//        Events.trigger('templateUpdate', template);
+//      }.bind(this));
     },
     
     // Get template by name from hash of preloaded templates
@@ -119,8 +132,26 @@ define([
       }
       
       return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' ? t.string : t.resource);
+    },
+    
+    prepNewTemplate: function(t) {
+      if (t.vocModel.type !== G.commonTypes.Jst)
+        return;
+      
+      if (!t.get('templateText')) {
+        var tName = t.get('templateName');
+        if (!tName)
+          return;
+        
+        var defText = Templates.get(tName);
+        if (defText)
+          t.set({templateText: defText});
+      }
     }
   };
+  
+  Events.on('newResource', Templates.prepNewTemplate);
+  Events.on('newTemplate', Templates.prepNewTemplate);
 
   return Templates;
 });

@@ -41,6 +41,7 @@ define([
 //          a.removeClass(disabled);
 //      }
       
+      this.finish();
       return this;
     }
   }, {

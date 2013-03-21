@@ -22,7 +22,14 @@ define([
       G.log(this.TAG, "info", "refresh resource");
       return this;
     },
-    render: function(options) {
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    renderHelper: function(options) {
       var meta = this.vocModel.properties;
       if (!meta)
         return this;

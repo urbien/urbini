@@ -73,8 +73,14 @@ define([
         this.$el.listview('refresh');
       }
     },
-
-    render: function(options) {
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    renderHelper: function(options) {
       G.log(this.TAG, "render");
       var res = this.resource;
       var vocModel = this.vocModel;

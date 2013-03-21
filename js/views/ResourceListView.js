@@ -471,6 +471,7 @@ define([
         }, 150));
       }
   
+      this.finish();
       return this;
     },
   

@@ -30,20 +30,11 @@ define([
       
       // maybe move this to router
       var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
-      if (U.isAssignableFrom(this.vocModel, G.commonTypes.Jst) && !init.templateText) {
-        var templateName = init.templateName;
-        if (templateName) {
-          var text = U.getTemplate(templateName);
-          if (text)
-            init.templateText = text;
-        }
-      }      
-
       this.isTemplate = this.vocModel.type === G.commonTypes.Jst;
       this.resource.set(init, {silent: true});
       var readyDfd = $.Deferred(function(defer) {
         if (this.isTemplate) {
-          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'/*, 'codemirrorFormatting'*/], function(CodeMirror) {
+          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'/*, 'codemirrorFormatting'*/], function() {
             defer.resolve();
           }, this);
         }
@@ -51,24 +42,7 @@ define([
           defer.resolve();        
       }.bind(this));
       
-      this.ready = readyDfd.promise();
-      
-//      for (var shortName in init) {
-//        var prop = meta[shortName];
-//        if (U.isResourceProp(prop)) {
-//          var uri = init[shortName];
-//          var res = C.getResource(uri);
-//          if (res) {
-//            init[shortName + '.displayName'] = U.getDisplayName(res);
-//          }
-//        }
-//      }
-//      var bl = params.$backLink;
-//      if (bl) {
-//        this.backLink = bl;
-//        init[bl] = params[bl];
-//      }
-      
+      this.ready = readyDfd.promise();      
       return this;
     },
     events: {
@@ -923,12 +897,10 @@ define([
       input.data('uri', value);
     },
     render: function() {
-      if (!this.ready)
-        return render.apply(this, arguments);
-      
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
+        this.finish();
       }.bind(this));
     },
     renderHelper: function(options) {
@@ -1104,6 +1076,9 @@ define([
       
       if (this.isTemplate && CodeMirror) {
         var textarea = form.find('textarea[name="templateText"]')[0];
+        if (!textarea)
+          return this;
+        
         var editor = CodeMirror.fromTextArea(textarea, {
           mode: 'text/html',
           tabMode: 'indent',

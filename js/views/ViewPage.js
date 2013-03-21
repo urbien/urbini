@@ -41,7 +41,7 @@ define([
         back: true,
         aroundMe: isGeo,
         menu: true,
-        login: true
+        login: G.currentUser.guest
       };
 
       var params = U.getParamMap(window.location.hash);
@@ -156,7 +156,15 @@ define([
       return this;
     },
     
-    render: function (eventName) {
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    
+    renderHelper: function() {
       G.log(this.TAG, "render");
       var res = this.resource;
       var json = res.toJSON();
@@ -201,6 +209,7 @@ define([
       this.rendered = true;
 //      renderDfd.resolve();
 //      this.restyle();
+      
       return this;
     }
   }, {

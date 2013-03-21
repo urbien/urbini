@@ -34,13 +34,21 @@ define([
         this.loaded = true;
       
       if (this.isNew())
-        this.setDefaults();
+        this.setDefaults(options.query);
       
-      if (atts)
+      if (atts) {
         this.parse(atts);
+        // if no model based props are set, means we didn't "load" this resource yet
+        if (!_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)})) {
+          this.loaded = false;
+        }
+      }
       
       if (this.getUri() && !options.silent)
-        Events.trigger('newResource', this);      
+        Events.trigger('newResource', this);
+      else if (this.vocModel.type === G.commonTypes.Jst) {
+        Events.trigger('newTemplate', this);        
+      }
     },
     
     get: function(propName) {
@@ -56,9 +64,10 @@ define([
         return val;
     },
     
-    setDefaults: function() {
+    setDefaults: function(query) {
       var vocModel = this.vocModel,
-          defaults = {};
+          query = U.getQueryParams(query); // will default to current url's query if query is undefined
+          defaults = U.getQueryParams(query, vocModel);
 
       if (this.isA('Submission')) {
         var currentUser = G.currentUser;
@@ -196,7 +205,7 @@ define([
         return null;
 
       if (!resp.data) {
-//        this.loaded = true;
+        this.loaded = true;
         return resp;
       }
         
@@ -222,6 +231,7 @@ define([
           
           this.hasInlineLists = true;
           Events.trigger('inlineResourceList', this, prop, val._list);
+//          delete val._list;
         }
       }
       
@@ -430,6 +440,8 @@ define([
       if (!isNew)
         return; // for now
       
+      var resUri = res.getUri();
+      var resJSON;
       var blVocModel = res.vocModel;
       var meta = U.getPropertiesWith(this.vocModel.properties, "backLink");
       var props = this.attributes;
@@ -464,6 +476,14 @@ define([
         else
           blVal.count = 1;
         
+        if (blProp.displayInline) {
+          blVal._list = blVal._list || [];
+          if (!_.find(blVal._list, function(item) { return item._uri === resUri; })) {
+            resJSON = resJSON || res.toJSON();
+            blVal._list.push(resJSON);
+          }
+        }
+          
         atts[bl] = blVal;
       }
       
@@ -487,12 +507,6 @@ define([
       var vocModel = this.vocModel;
       var isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall);
       var isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst);
-      if (isTemplate) {
-        var tText = data.templateText;
-        if (!tText.trim().startsWith('<script')) {
-          data.templateText = '<script type="text/template" id="{0}">{1}</script>'.format(data.templateName, tText);
-        }
-      }
       
       var saved;
       if (!options.sync) {

@@ -47,7 +47,7 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
           return res;
         
         var search = C.searchCollections(uri);
-        return search && search.model;
+        return search && search.resource;
       case 'function':
         var filter = uri;
         var fromResCache = _.filter(C.Resources, filter);
@@ -72,16 +72,18 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
      */
     searchCollections: function(collections, uri) {
       var filter;
-      if (arguments.length == 1) // if just uri is passed in, search all available collections
+      if (arguments.length == 1) { // if just uri is passed in, search all available collections
+        uri = collections;
         collections = C.ResourceLists;
+      }
       else {
         filter = typeof uri === 'function' && uri;
         collections = [collections];
       }
       
       var matches = [];
-      for (var i = 0; i < collections.length; i++) {
-        var collectionsByQuery = collections[i];
+      for (var type in collections) {
+        var collectionsByQuery = collections[type];
         for (var query in collectionsByQuery) {
           var resource;
           var col = collectionsByQuery[query];

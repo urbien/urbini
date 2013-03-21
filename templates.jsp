@@ -5,6 +5,7 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
+  <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -38,6 +39,7 @@
 </script>  
  
 <script type="text/template" id="resource">
+  <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
@@ -68,28 +70,13 @@
 
 
 <script type="text/template" id="menuP">
-  <!--form role="search" data-inset="true" data-theme="{{= G.theme.menu }}">
-    <div data-role="fieldcontain">
-      <input type="search" name="search" placeholder="Search" />
-    </div>
-  </form -->
-   <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems">
-   </ul>
-</script>  
-
-<script type="text/template" id="menu">
-  <div id="headerDiv" data-theme="{{= G.theme.menu }}"></div>
-  <div id="menuHolder" data-role="content" data-theme="{{= G.theme.menu }}">
-    <ul data-role="listview" data-theme="{{= G.theme.menu }}" id="menuItems" class="action-list" data-inset="true">
-    </ul>
-  </div>
-  
-  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
-  </div>
+  <!-- Left-side slide-out menu panel -->
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems">
+  </ul>
 </script>  
 
 <script type="text/template" id="stringPT">
+  <!-- Left-side slide-out menu panel -->
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span style="white-space: normal;">{{= value }}</span>
   {{ } }}
@@ -168,6 +155,7 @@
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
+  <!-- one map popup -->
   <ul style="list-style-type:none">
     <li><span><a href="{{= U.makePageUrl('view', uri) }}"> {{= resourceLink }} </a></span></li>
     {{ _.forEach(rows, function(val, key) { }} 
@@ -185,12 +173,14 @@
 
 
 <script type="text/template" id="editListItemTemplate">
+  <!-- one row of a list in edit mode -->
   <input data-formel="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
   {{= viewCols }}
 </script>
 
 
 <script type="text/template" id="listItemTemplate">
+  <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
   {{ if (typeof v_submitToTournament == 'undefined') { }}
     <a href="{{= U.makePageUrl(action, _uri) }}">
@@ -231,6 +221,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
+  <!-- one row on a list page (no image) -->
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
@@ -270,6 +261,7 @@
 </script>
 
 <script type="text/template" id="menuItemTemplate">
+  <!-- one item on the left-side slide-out menu panel -->
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
@@ -279,6 +271,7 @@
 </script>
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
+  <!-- Notifications item on the left-side slide-out menu panel -->
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= pageUrl }}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
@@ -287,6 +280,7 @@
 </script>
 
 <script type="text/template" id="homeMenuItemTemplate">
+  <!-- app home page menu item -->
   <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id == 'undefined' ? 'home123' : id }}" target="#">
@@ -296,10 +290,12 @@
 </script>
 
 <script type="text/template" id="propRowTemplate">
-   <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
+  <!-- wrapper for one row on a list page (short) -->
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="inlineListItemTemplate">
+<!-- one row of an inline backlink in view mode -->
 <li>
   <i class="icon-home"></i>
   <a href="{{= U.makePageUrl('edit', _uri) }}">{{= name }}</a>
@@ -311,6 +307,7 @@
 </script>
 
 <script type="text/template" id="cpTemplate">
+<!-- readwrite backlink in resource view -->
 {{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.footer) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
@@ -323,6 +320,7 @@
 </script>
 
 <script type="text/template" id="cpMainGroupTemplate">
+<!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
@@ -338,6 +336,7 @@
 </script>
 
 <script type="text/template" id="cpMainGroupTemplateH">
+<!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
@@ -353,6 +352,7 @@
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
+<!-- readonly backlink in resource view -->
 {{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
@@ -361,11 +361,13 @@
 </script>
 
 <script type="text/template" id="propRowTemplate2">
-   <li>{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
+  <!-- wrapper for one row on a list page (long) -->
+  <li data-shortname="{{= shortName }}">{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">
-   <li data-theme="{{= G.theme.footer }}" data-role="list-divider">{{= value }}</li>
+  <!-- row divider / property group header in resource view -->
+  <li data-theme="{{= G.theme.footer }}" data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -383,28 +385,33 @@
 </script-->
 
 <script type="text/template" id="mapItButtonTemplate">
+  <!-- button that toggles map view -->
   <li>
     <a id="mapIt" target="#" data-icon="globe">Map It</a>
   </li>
 </script>
 
 <script type="text/template" id="mapTemplate">
+  <!-- map holder -->
   <div id="map" class="map" data-role="none"></div>
 </script>
 
 <script type="text/template" id="backButtonTemplate">
+  <!-- The UI back button (not the built-in browser one) -->
   <li id="back">
     <a target="#" data-icon="chevron-left" class="back">Back</a>
   </li>  
 </script>
 
 <script type="text/template" id="addButtonTemplate">
+  <!-- button used for creating new resources -->
   <li id="addBtn">
     <a target="#" data-icon="plus-sign">Create</a>
   </li>  
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
+  <!-- button that toggles the menu panel -->
   <li id="menuBtn">
     <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
       {{= typeof newAlerts == 'undefined'  ||  !newAlerts ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
@@ -413,12 +420,14 @@
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
+  <!-- button that summons the login popup -->
   <li id="login">   
     <a target="#" data-icon="signin">Sign In</a>
   </li>
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
+  <!-- popup for trial / purchase -->
   <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
     <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-role="content" data-theme="c" role="main">
@@ -431,6 +440,7 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
+  <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
     <h4 id="loginMsg">{{= msg }}</h4>
@@ -476,32 +486,39 @@
 </script>
 
 <script type="text/template" id="aroundMeButtonTemplate">
+  <!-- button for toggling ordering of results by geo-promixity to the user -->
   <li id="aroundMe">
     <a target="#" data-icon="map-marker">Around Me</a>
   </li>
 </script>
 
 <script type="text/template" id="publishButtonTemplate">
+  <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
   <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">Your application has been changed please re-Publish</a>
 </script>
 
 <script type="text/template" id="tryButtonTemplate">
+  <!-- button that spirits you away to go try a particular app -->
   <a target="#" data-icon="check" id="try" data-role="button" date-position="notext">Goto app</a>
 </script>
 
 <script type="text/template" id="forkButtonTemplate">
+  <!-- a la Github's Fork It button, let's you clone an existing app -->
   <a target="#" data-icon="copy" id="fork" data-role="button" date-position="notext">Fork me</a>
 </script>
 
 <script type="text/template" id="enterTournamentTemplate">
+  <!-- button that will enter the user into a tournament -->
   <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" date-position="notext">Enter: {{= name }}</a>
 </script>
 
 <script type="text/template" id="testPlugTemplate">
+  <!-- button that allows you to test a script connecting two apps -->
   <a target="#" data-icon="bolt" id="testAppPlug" data-role="button" date-position="notext">Test this plug</a>
 </script>
 
 <script type="text/template" id="headerTemplate">
+  <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
     <div id="errMsg"></div>
     <div data-role="navbar">
@@ -616,6 +633,8 @@
 </script>
 
 <script type="text/template" id="masonry-list-item">
+  <!-- a masonry item brick -->
+  
   <div class="anab">
   <!--
     {{ if (typeof creatorThumb != 'undefined') { }}
@@ -684,6 +703,8 @@
 
 
 <script type="text/template" id="fileUpload">
+  <!-- a file upload form -->
+  
   <form data-ajax="false" id="fileUpload" action="#" method="POST" enctype="multipart/form-data">
     <div data-role="fieldcontain">
       <input {{= rules }} type="file" name="{{= name }}" id="file" />
@@ -697,6 +718,8 @@
 </script>
 
 <script type="text/template" id="photogridTemplate">
+  <!-- an image grid with per-image overlays -->
+
     <ul data-role="listview" data-inset="true" data-filter="false">
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
@@ -737,6 +760,7 @@
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
+<!-- the edit page for any particular resource -->
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
@@ -768,6 +792,7 @@
 </script>
 
 <script type="text/template" id="mvListItem">
+  <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
   <label for="{{= id }}">{{= davDisplayName }}</label>
@@ -779,8 +804,8 @@
 </script>
 
 <script type="text/template" id="editRowTemplate">
+  <!-- one property row in edit mode -->
   <li data-role="fieldcontain">{{= value }}
-<!--  {{= typeof comment === 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
   </li>
 </script>
 

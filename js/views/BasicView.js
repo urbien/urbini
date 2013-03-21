@@ -1,15 +1,17 @@
 //'use strict';
 define([
   'globals',
+  'jquery',
   'backbone',
   'utils',
   'templates',
   'events'
-], function(G, Backbone, U, Templates, Events) {
+], function(G, $, Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
       options = options || {};
+      this._loadingDfd = new $.Deferred();
       this._templates = [];
       this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
@@ -50,6 +52,24 @@ define([
       // override this
     },
     
+    _getLoadingDeferreds: function() {
+      return [this._loadingDfd].concat(_.pluck(this.getDescendants(), '_loadingDfd'));
+    },
+    
+    isDoneLoading: function() {
+      return _.all(this._getLoadingDeferreds(), function(c) {
+        return c.isResolved() || c.isRejected();
+      });
+    },
+    
+    whenDoneLoading: function(callback) {
+      $.when.apply($, this._getLoadingDeferreds()).then(callback);
+    },
+    
+    finish: function() {
+      this._loadingDfd.resolve();
+    },
+    
     makeTemplate: function(templateName, localName, type, fallBackToDefault) {
       var template = this[localName] = U.template(templateName, type, this);
       if (!template) {
@@ -78,7 +98,7 @@ define([
       if (!this.children)
         return [];
       else {
-        var childViews = _.values(this.children)
+        var childViews = _.values(this.children);
         return _.union([], childViews, _.union.apply(_, _.map(childViews, function(child) {return child.getDescendants()})));
       }
     },

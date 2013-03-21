@@ -212,19 +212,19 @@ define([
         sync: true,
         forceFetch: forceFetch,
         _rUri: oParams,
-        success: function() {
+        success: _.once(function() {
           self.changePage(listView);
           Voc.fetchModelsForReferredResources(list);
           Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
-        },
+        }),
 //        error: Errors.getDefaultErrorHandler()
-        error: function(collection, xhr, opts) {
+        error: _.once(function(collection, xhr, opts) {
           if (xhr.status === 204)
             self.changePage(listView);
           else
             Errors.getDefaultErrorHandler().apply(this, arguments);
-        }
+        })
       });
       
       this.monitorCollection(list);
@@ -524,7 +524,7 @@ define([
         Voc.fetchModelsForLinkedResources(res);
       };
       
-      res.fetch({sync: true, forceFetch: forceFetch, success: success});
+      res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
       return true;
     },
     
@@ -658,8 +658,8 @@ define([
       }
       
       userAccounts.fetch({
-        success: success,
-        error: error
+        success: _.once(success),
+        error: _.once(error)
       });
 
       return false;
@@ -818,7 +818,10 @@ define([
         var redirect = pageOptions.postChangePageRedirect;
         if (redirect) {
           pageOptions.postChangePageRedirect = null;
-          this.navigate(redirect, {trigger: true, replace: true});
+          view.whenDoneLoading(function() {
+            if (view.isActive())
+              this.navigate(redirect, {trigger: true, replace: true});
+          }.bind(this));
         }
       }
     },

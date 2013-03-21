@@ -166,6 +166,7 @@ define([
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
+        this.finish();
       }.bind(this)); 
     },
     
@@ -279,8 +280,11 @@ define([
       var btns = this.buttonViews;
       if (btns.back)
         frag.appendChild(btns.back.render().el);
-      if (btns.mapIt)
-        frag.appendChild(btns.mapIt.render().el);
+      if (btns.mapIt) {
+        this.isGeo = this.isGeo || _.any(this.collection.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))})
+        if (this.isGeo)
+          frag.appendChild(btns.mapIt.render().el);
+      }
       if (btns.add)
         frag.appendChild(btns.add.render().el);
       if (btns.aroundMe)

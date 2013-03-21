@@ -128,7 +128,16 @@ define([
       var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
       this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
     },
-    render: function(event) {
+    
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    
+    renderHelper: function(event) {
       var m = this.resource;
       var vocModel = this.vocModel;
       var meta = vocModel.properties;
@@ -197,11 +206,16 @@ define([
       }
       var params = U.getQueryParams(window.location.hash);
       var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
-      var action;
-//      if (U.isAssignableFrom(vocModel, G.commonTypes.Jst) && m.detached)
-//        action = 'make';
-//      else
-        action = !isEdit ? 'view' : 'edit'; 
+      var action = !isEdit ? 'view' : 'edit'; 
+      if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
+        var text = json.templateText;
+        if (text) {
+          var comments = U.getHTMLComments(text);
+          if (comments && comments.length)
+            json.comment = comments[0].trim();
+        }
+      }
+
       
       json['action'] = action;
       if (this.isEdit) {

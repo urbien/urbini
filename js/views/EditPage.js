@@ -7,14 +7,10 @@ define([
   'events',
   'views/BasicView',
   'views/Header',
-  'views/BackButton',
-  'views/LoginButton',
-  'views/AroundMeButton',
-  'views/MenuButton',
   'views/EditView',
   'views/ResourceImageView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, BasicView, Header, BackButton, LoginButton, AroundMeButton, MenuButton, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, BasicView, Header, EditView, ResourceImageView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     clicked: false,
@@ -43,13 +39,10 @@ define([
                      (res.isA("Shape") && res.get('shapeJson')));
       
       this.buttons = {
-  //        left: [BackButton],
-  //        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton], // no need MapItButton? nope
-  //        log: [LoginButton]
         back: true,
         aroundMe: isGeo,
         menu: true,
-        login: true
+        login: G.currentUser.guest
       };
     
       this.addChild('header', new Header({
@@ -110,7 +103,15 @@ define([
       return this;
     },
 
-    render:function (eventName) {
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    
+    renderHelper:function () {
       G.log(this.TAG, "render");
       
       var views = {

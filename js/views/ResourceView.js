@@ -31,7 +31,19 @@ define([
           }
         });
       }
-      
+
+//      this.isTemplate = this.vocModel.type === G.commonTypes.Jst;
+//      var readyDfd = $.Deferred(function(defer) {
+//        if (this.isTemplate) {
+//          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
+//            defer.resolve();
+//          }, this);
+//        }
+//        else
+//          defer.resolve();        
+//      }.bind(this));
+//      
+//      this.ready = readyDfd.promise();      
       return this;
     },
     events: {
@@ -60,7 +72,18 @@ define([
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,
     
-    render: function(options) {
+    render: function() {
+      var args = arguments;
+      if (!this.ready)
+        return this.renderHelper.apply(this, args);
+      
+      this.ready.done(function() {
+        this.renderHelper.apply(this, args);
+        this.finish();
+      }.bind(this));
+    },
+    
+    renderHelper: function(options) {
       G.log(this.TAG, "render");
 
       var res = this.resource;
@@ -201,9 +224,28 @@ define([
       else
         this.$el.trigger('create');      
 
+
+//      if (this.isTemplate) {
+//        var templateLi = this.$('[data-shortname="templateText"]')[0];
+//        if (templateLi) {
+//          var lineNo = 1, output = templateLi, numbers = document.getElementById("numbers");
+////          output.innerHTML;// = numbers.innerHTML = "";
+//          highlightText(output.innerHTML, this.__addLine);
+//        }
+//      }
+
       this.rendered = true;
       return this;
+    },
+    
+    __addLine: function(line) {
+      var doc = document;
+      numbers.appendChild(doc.createTextNode(String(lineNo++)));
+      numbers.appendChild(doc.createElement("BR"));
+      for (var i = 0; i < line.length; i++) output.appendChild(line[i]);
+      output.appendChild(doc.createElement("BR"));
     }
+
   }, {
     displayName: 'ResourceView'
   });

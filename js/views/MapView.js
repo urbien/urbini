@@ -59,12 +59,12 @@ define([
       }
       
       var metadata = {};
-      var gj = this.constructor.collectionToGeoJSON(res, metadata);
+      var gj = this.collectionToGeoJSON(res, metadata);
       if (!gj || !_.size(gj))
         return;
       
       var bbox = metadata.bbox;
-      var center = MapView.getCenterLatLon(bbox);
+      var center = this.getCenterLatLon(bbox);
       
       var pMap = U.getHashParams();
       var poi = pMap['-item'];
@@ -73,7 +73,7 @@ define([
       if (poi) {
         coords = [parseFloat(pMap.longitude), parseFloat(pMap.latitude)];
         center = [coords[1], coords[0]];
-        poi = MapView.getBasicGeoJSON('Point', coords);
+        poi = this.getBasicGeoJSON('Point', coords);
         if (isMe) {
           poi.properties.name = 'Your location';
           poi.properties.html = '<a href="' + G.pageRoot + '#view/profile">You are here</a>';
@@ -114,6 +114,7 @@ define([
       Events.trigger('mapReady', res);
       this.$el.append(frag);
       this.hide();
+      this.finish();
       return this;
     },
     resetMap: function() {
@@ -137,9 +138,7 @@ define([
     hide: function() {
       this.$el.hide();
       return this;    
-    }
-  },
-  {
+    },
     getMapItemHTML: function(res) {
       var grid = U.getCols(res, 'grid');
     
@@ -168,27 +167,27 @@ define([
           medImg = {value: U.decode(medImg)};
           width && (medImg.width = width);
           height && (medImg.height = height);
-          data.image = MapView.prototype.makeTemplate("imagePT")(medImg);
+          data.image = this.makeTemplate("imagePT", "imagePT")(medImg);
 //          _.extend(data, {U: U, G: G});
-          return MapView.prototype.makeTemplate("mapItemTemplate")(data);
+          return this.makeTemplate("mapItemTemplate", "mapItemTemplate")(data);
         }
       }
       
-      return this.makeTemplate("mapItemTemplate")(data);
+      return this.makeTemplate("mapItemTemplate", "mapItemTemplate")(data);
     },
     collectionToGeoJSON: function(model, metadata) {
       var gj = [];
       _.each(model.models, function(m){
-        var mGJ = MapView.modelToGeoJSON(m, metadata);
+        var mGJ = this.modelToGeoJSON(m, metadata);
         if (mGJ)
           gj.push(mGJ);
-      })
+      }.bind(this));
       
       return gj;
     },
     modelToGeoJSON: function(model, metadata) {
       if (U.isCollection(model))
-        return MapView.collectionToGeoJSON(model);
+        return this.collectionToGeoJSON(model);
       
       var isShape = model.isA("Shape");
       var coords, area;
@@ -208,7 +207,7 @@ define([
       }
       
         
-      var type = MapView.getShapeType(coords);
+      var type = this.getShapeType(coords);
       if (metadata) {
         var bbox;
         if (isShape)
@@ -226,12 +225,12 @@ define([
           metadata.bbox = bbox; 
       }
       
-      var json = MapView.getBasicGeoJSON(type, coords);
+      var json = this.getBasicGeoJSON(type, coords);
       json.properties.name = model.constructor.displayName + " " + model.get('davDisplayName');
       if (area)
         json.properties.area = area;
       
-      json.properties.html = MapView.getMapItemHTML(model);
+      json.properties.html = this.getMapItemHTML(model);
       return json;
     },
     
@@ -255,7 +254,7 @@ define([
     },
     
     getShapeType: function(rings) {
-      var depth = MapView.getDepth(rings);
+      var depth = this.getDepth(rings);
       switch (depth) {
       case 1:
         return "Point";

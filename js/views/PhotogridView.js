@@ -48,6 +48,7 @@ define([
         this.$el.trigger('create');
       }
       
+      this.finish();
       return this;
     },
     renderResource: function(options) {

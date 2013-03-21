@@ -7,12 +7,6 @@ define([
   'views/BasicView',
   'views/ResourceListView', 
   'views/Header' 
-//  'views/AddButton', 
-//  'views/BackButton', 
-//  'views/LoginButton', 
-//  'views/AroundMeButton', 
-//  'views/MapItButton',
-//  'views/MenuButton'
 ], function(G, Events, U, Errors, BasicView, ResourceListView, Header) {
   var MapView;
   return BasicView.extend({
@@ -49,7 +43,7 @@ define([
                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
-      var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])) && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
+      var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
         this.mapReady = this.mapReadyDfd.promise();
@@ -97,7 +91,7 @@ define([
         add: showAddButton,
         mapIt: isGeo,
         menu: true,
-        login: true
+        login: G.currentUser.guest
       };
 
       this.addChild('header', new Header(_.extend({
@@ -265,7 +259,15 @@ define([
       });
     },
     
-    render:function (eventName) {
+    render: function() {
+      try {
+        return this.renderHelper.apply(this, arguments);
+      } finally {
+        this.finish();
+      }
+    },
+    
+    renderHelper: function() {
       G.log(this.TAG, 'render');  
 
       var json = this.json;

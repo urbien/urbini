@@ -39,6 +39,7 @@ define([
         this.$el.html(this.template());
       
       this.resetStyle();
+      this.finish();
       return this;
     }
   });

@@ -1500,11 +1500,11 @@ define([
         val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
       }
       
-      if (prop.script) {
-        val = '<pre><code>{0}</code></pre>'.format(val);
+      val = val || res.get(propName) || '';        
+      if (prop.code) {
+        val = '<pre><code>{0}</code></pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
       }
       
-      val = val || res.get(propName) || '';
       var displayName = res.get(propName + '.displayName');
       if (displayName)
         val = {value: val, displayName: displayName};
@@ -1514,7 +1514,7 @@ define([
       var propTemplate = Templates.getPropTemplate(prop);
 //      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)
 //        propTemplate = 'longStringPT';
-      return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val)};
+      return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val), shortName: prop.shortName};
     },
     
     makePageUrl: function() {
@@ -1957,8 +1957,11 @@ define([
         if (/\./.test(key))
           return false;
         var prop = props[key];
-        return !U.isSystemProp(key) && prop && (_.contains('backLink') || !prop.backLink) && (U.isResourceProp(prop) || (_.contains('readOnly') || !prop.readOnly)) && /^[a-zA-Z]+[^\.]*$/.test(key); // sometimes if it's readOnly, we still need it - like if it's a backlink
-      }); // is writeable, starts with a letter and doesn't contain a '.'
+        return prop && !U.isSystemProp(key) && 
+            (_.contains('backLink', preserve) || !prop.backLink) && 
+            (U.isResourceProp(prop) || (_.contains('readOnly', preserve) || !prop.readOnly)) && // sometimes if it's readOnly, we still need it - like if it's a backlink
+            /^[a-zA-Z]+[^\.]*$/.test(key);  // is writeable, starts with a letter and doesn't contain a '.'
+      }); 
       
       return U.flattenModelJson(filtered, vocModel, preserve);
     },
@@ -2516,7 +2519,7 @@ define([
         if (!template)
           return null;
         
-        template = _.template(template);
+        template = _.template(U.removeHTMLComments(template));
       }
       else
         template = templateName;
@@ -2630,8 +2633,39 @@ define([
         if (p.startsWith(start))
           to[p] = from[p];
       }
-    }
+    },
     
+    nukeHTML: function(str) {
+      return str.replace(/(<([^>]+)>)/ig, '');
+    },
+    
+    __htmlCommentRegex: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
+    __htmlCommentRegexG: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/g,
+    getHTMLComments: function(str) {
+      var matches = str.match(U.__htmlCommentRegex);
+      return matches && matches.slice(1);
+    },
+    removeHTMLComments: function(str) {
+      return str.replace(U.__htmlCommentRegexG, '');
+    },
+    
+    htmlEscape: function(str) {
+      return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+    },
+  
+    htmlUnescape: function(value){
+        return String(value)
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&');
+    }
   };
 
   for (var p in U.systemProps) {
@@ -2706,6 +2740,6 @@ define([
     i['int'] = common + 'n integer';
     i['float'] = i['double'] = common + ' number';
   })();
-  
+
   return (Lablz.U = U);
 });
