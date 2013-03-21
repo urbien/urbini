@@ -937,6 +937,11 @@ define([
       if (!editProps) {
         propsForEdit = this.vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
+        if (!editProps  &&  this.action == 'make'  &&  this.vocModel.type.endsWith('WebProperty')) {
+          editProps = [];
+          editProps.push('label');
+          editProps.push('propertyType');
+        }  
       }
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
       var formId = G.nextId();
@@ -973,7 +978,7 @@ define([
             groupNameDisplayed = true;
           }
         }
-        if (!editCols) {
+        if (!editProps) {
           var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
           var init = this.initialParams;
           for (var p in reqd) {
@@ -1001,7 +1006,13 @@ define([
           this.addProp(info);
         }        
       }        
-        
+      
+      for (var p in reqParams) {
+        if (!meta[p]  || _.has(displayedProps, p))
+          continue;
+        _.extend(info, {name: p, prop: meta[p]});
+        this.addProp(info);
+      }
       (this.$ul = this.$('#fieldsList')).html(frag);
       if (this.$ul.hasClass('ui-listview')) {
         this.$ul.trigger('create');
