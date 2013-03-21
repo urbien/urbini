@@ -39,7 +39,19 @@ define([
         }
       }      
 
+      this.isTemplate = this.vocModel.type === G.commonTypes.Jst;
       this.resource.set(init, {silent: true});
+      var readyDfd = $.Deferred(function(defer) {
+        if (this.isTemplate) {
+          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'/*, 'codemirrorFormatting'*/], function(CodeMirror) {
+            defer.resolve();
+          }, this);
+        }
+        else
+          defer.resolve();        
+      }.bind(this));
+      
+      this.ready = readyDfd.promise();
       
 //      for (var shortName in init) {
 //        var prop = meta[shortName];
@@ -910,7 +922,16 @@ define([
       input = input instanceof $ ? input : $(input);
       input.data('uri', value);
     },
-    render: function(options) {
+    render: function() {
+      if (!this.ready)
+        return render.apply(this, arguments);
+      
+      var args = arguments;
+      this.ready.done(function() {
+        this.renderHelper.apply(this, args);
+      }.bind(this));
+    },
+    renderHelper: function(options) {
       G.log(this.TAG, "render");
       var self = this;
       var args = arguments;
@@ -1069,6 +1090,22 @@ define([
 //          this.$('a[name="' + prop.shortName + '"]').trigger('click');
 //        }
 //      }
+      
+      if (this.isTemplate && CodeMirror) {
+        var textarea = form.find('textarea[name="templateText"]')[0];
+        var editor = CodeMirror.fromTextArea(textarea, {
+          mode: 'text/html',
+          tabMode: 'indent',
+          lineNumbers: true,
+          viewportMargin: Infinity,
+          tabSize: 2
+        });
+        
+//        var totalLines = editor.lineCount();
+//        var totalChars = editor.getTextArea().value.length;
+//        editor.autoFormatRange({line:0, ch:0}, {line:totalLines, ch:totalChars});
+//        editor.refresh();
+      }
       
       this.rendered = true;
       return this;

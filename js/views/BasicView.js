@@ -10,6 +10,8 @@ define([
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
       options = options || {};
+      this._templates = [];
+      this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
       var res = this.data = this.model;
       if (this.model instanceof Backbone.Collection) {
@@ -57,8 +59,6 @@ define([
           return template;
       }
         
-      this._templates = this._templates || [];
-      this._templateMap = this._templateMap || {};
       U.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       return template;

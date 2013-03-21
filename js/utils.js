@@ -1636,7 +1636,7 @@ define([
         rules['data-duration'] = true;
       else if (U.isEnumProp(prop))
         rules['data-enum'] = true;
-      
+            
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       var propInfo = {value: U.template(propTemplate)(val)};

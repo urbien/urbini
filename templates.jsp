@@ -231,16 +231,14 @@
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
-  {{ var action = action ? action : 'view' }}
-  {{ if (typeof v_submitToTournament == 'undefined') { }}  
-    {{ if (this.resource.detached && this.vocModel.type === G.commonTypes.Jst) { }}
-      <a href="{{= U.makePageUrl('make', this.vocModel.type, {templateName: templateName}) }}">
-    {{ } }}
-    {{ if (!this.resource.detached || this.vocModel.type !== G.commonTypes.Jst) { }}
-      <a href="{{= U.makePageUrl(action, _uri) }}">
+  {{ var action = action ? action : 'view'; }}
+  {{ var detached = this.resource.detached; }}
+  {{ if (!obj.v_submitToTournament) { }}  
+    {{ if (this.vocModel.type === G.commonTypes.Jst) { }}
+      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName}) }}">
     {{ } }}
   {{ } }}
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
+  {{ if (obj.v_submitToTournament) { }}
     <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
   
@@ -261,6 +259,10 @@
     <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
   {{ } }}
   -->  
+  
+  {{ if (obj.comment) { }}
+    <p style="padding-left: 15px;">{{= comment }}</p>
+  {{ } }}
 </script>
 
 <script type="text/template" id="menuItemTemplate">

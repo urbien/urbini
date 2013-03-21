@@ -1390,6 +1390,12 @@ define('fileCache', function() {
         indexedDBShim: 'lib/IndexedDBShim',
         jqueryIndexedDB: 'lib/jquery-indexeddb',
         queryIndexedDB: 'lib/queryIndexedDB',
+        codemirror: 'lib/codemirror',
+        codemirrorCss: '../styles/codemirror.css',
+        codemirrorJSMode: 'lib/codemirrorJSMode',
+        codemirrorXMLMode: 'lib/codemirrorXMLMode',
+        codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
+        codemirrorFormatting: 'lib/codemirrorFormatting',
         leaflet: 'lib/leaflet',
         leafletMarkerCluster: 'lib/leaflet.markercluster',
         jqueryImagesloaded: 'lib/jquery.imagesloaded',
@@ -1401,7 +1407,10 @@ define('fileCache', function() {
         jqueryImagesloaded: ['jquery'],
         mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
         jqueryIndexedDB: ['jquery', 'indexedDBShim'],
-        indexedDBShim: ['taskQueue']
+        indexedDBShim: ['taskQueue'],
+        codemirrorJSMode: ['codemirror', 'codemirrorCss'],
+        codemirrorFormatting: ['codemirror', 'codemirrorCss'],
+        codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
       }
     }
   }; 
