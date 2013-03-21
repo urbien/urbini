@@ -1115,7 +1115,9 @@ define([
 //        var totalLines = editor.lineCount();
 //        var totalChars = editor.getTextArea().value.length;
 //        editor.autoFormatRange({line:0, ch:0}, {line:totalLines, ch:totalChars});
-        setTimeout(editor.refresh, 100);
+        setTimeout(function() {
+          editor.refresh.apply(editor);
+        }, 100);
       }
       
       this.rendered = true;

@@ -233,9 +233,13 @@
 <script type="text/template" id="listItemTemplateNoImage">
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
+  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
-    {{ if (this.vocModel.type === G.commonTypes.Jst) { }}
+    {{ if (isJst) { }}
       <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName}) }}">
+    {{ } }}
+    {{ if (!isJst) { }}
+      <a href="{{= U.makePageUrl(action, _uri) }}">
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
