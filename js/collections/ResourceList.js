@@ -21,7 +21,7 @@ define([
         offsetParam: "$offset",
         limitParam: "$limit",
         params: options.params || {},
-        model: options.model || models[0].vocModel,
+        model: options.model || (models[0] && models[0].vocModel),
         rUri: options._rUri,
         listId: G.nextId(),
         title: options.title

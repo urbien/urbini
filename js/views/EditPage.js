@@ -52,21 +52,21 @@ define([
         login: true
       };
     
-      this.header = new Header({
+      this.addChild('header', new Header({
         model: res, 
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
         parentView: this
-      });
+      }));
       
       var reqParams = U.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
       if (!editCols) {
-        this.imageView = new ResourceImageView({model: res});
+        this.addChild('imageView', new ResourceImageView({model: res}));
       }
       
-      this.editView = new EditView(_.extend({model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions));
+      this.addChild('editView', new EditView(_.extend({model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions)));
       if (this.editParams)
         this.editView.set(this.editParams);
     },
