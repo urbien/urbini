@@ -80,36 +80,22 @@ define([
       var props = U.getCloneOf(vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(vocModel, 'ImageResource.originalImage');
-      
       var images = [], self = this;
-      if (props.length) {
-        var p = props[0];
-        var metaP = meta[p];
-        images.push({
-          image: json[p],
-          title: U.getDisplayName(res),
-          width: json.originalWidth,
-          height: json.originalHeight,
-          metaW: metaP['imageWidth'],
-          metaH: metaP['imageHeight'],
-          metaDim: metaP['maxImageDimension'],
-          caption: this.getCaption()
-        });
-      } 
-      else {
-        if (U.isA(vocModel, 'Intersection')) {
+      
+      if (U.isA(vocModel, 'Intersection')) {
+        while (true) {
           var iProps = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
           if (!iProps.a || !iProps.b || !json[iProps.a] || !json[iProps.b])
-            return;
+            break;
           
           var imgProps = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
           if (!imgProps.a || !imgProps.b)
-            return;
+            break;
           
           var resUri = res.getUri();
           _.each(['a', 'b'], function(p) {
             var target = self.linkToIntersection ? resUri : json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
-//            var target = json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
+  //          var target = json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0]];
             if (!target)
               return;
             
@@ -118,7 +104,7 @@ define([
             var image = json[imgProp];
             if (image && image.indexOf('Image/') == 0)
               image = image.slice(6);    
-
+  
             var imageData = {
               image: image,
               target: U.makePageUrl('view', target),
@@ -140,7 +126,7 @@ define([
                 imageData.superscript = 'Effect';
               }
               
-//              imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
+  //            imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
             }
             else
               imageData.caption = self.getCaption(iProps[p]);
@@ -152,20 +138,36 @@ define([
             
             images.push(imageData);
           });
+          break; 
           
-//          if (self.isTrigger) {
-//            images.splice(1, 0, {
-//              image: 'images/bolt2.png',
-//              target: U.makePageUrl('view', res)
-////              ,
-////              title: 'Trigger',
-////              caption: U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')),
-////              superscript: 'Trigger'
-//            });
-//          }
+  //        if (self.isTrigger) {
+  //          images.splice(1, 0, {
+  //            image: 'images/bolt2.png',
+  //            target: U.makePageUrl('view', res)
+  ////            ,
+  ////            title: 'Trigger',
+  ////            caption: U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')),
+  ////            superscript: 'Trigger'
+  //          });
+  //        }
         }
       }
-      
+      if (!images.length) {
+        if (props.length) {
+          var p = props[0];
+          var metaP = meta[p];
+          images.push({
+            image: json[p],
+            title: U.getDisplayName(res),
+            width: json.originalWidth,
+            height: json.originalHeight,
+            metaW: metaP['imageWidth'],
+            metaH: metaP['imageHeight'],
+            metaDim: metaP['maxImageDimension'],
+            caption: this.getCaption()
+          });
+        } 
+      }      
       if (!images.length) 
         return;
 
@@ -229,7 +231,7 @@ define([
       
       if (isIntersection) {
         intersection = {a: U.getCloneOf(vocModel, 'Intersection.a')[0], b: U.getCloneOf(vocModel, 'Intersection.b')[0]};
-        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aThumb')[0], b: U.getCloneOf(vocModel, 'Intersection.bThumb')[0]};
+        imgProp = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
       }
       else {
         var props = U.getCloneOf(vocModel, 'ImageResource.smallImage');
@@ -267,7 +269,8 @@ define([
           }
           else
             caption = self.getCaption(resource, intersection[side]);
-            
+          if (caption == title)
+            caption = ' ';
           if (!image && !title)
             return;
           
