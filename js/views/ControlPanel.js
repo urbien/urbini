@@ -16,6 +16,7 @@ define([
       this.inlineListItemTemplate = this.makeTemplate('inlineListItemTemplate');
       this.cpTemplate = this.makeTemplate('cpTemplate');
       this.cpMainGroupTemplate = this.makeTemplate('cpMainGroupTemplate');
+      this.cpMainGroupTemplateH = this.makeTemplate('cpMainGroupTemplateH');
       this.cpTemplateNoAdd = this.makeTemplate('cpTemplateNoAdd');
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
@@ -88,7 +89,19 @@ define([
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
       if (this.isMainGroup  &&  !mainGroup)
         return;
-      
+      var isHorizontal;      
+      if (this.isMainGroup) {
+        if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
+          this.$el.css("float", "left");
+          this.$el.css("width", "100%");
+          isHorizontal = true;
+        }
+        else {
+          this.$el.css("float", "right");
+          this.$el.css("width", "35%");
+          this.$el.css("min-width", "130");
+        }
+      }
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
@@ -121,36 +134,40 @@ define([
         });
       });
 
-      _.each(displayInline, function(prop, name) {
-        if (!prop.backLink)
-          return;
-        
-        var val = json[name];
-        if (!val)
-          return;
-        
-        var inline = val._list;
-        if (inline && inline.length) {
-          var propDisplayName = U.getPropDisplayName(prop);
-          var common = {range: prop.range, backlink: prop.backLink, name: propDisplayName, value: prop.count || 0, _uri: uri, title: U.makeHeaderTitle(title, propDisplayName), comment: prop.comment};
-          if (isPropEditable)
-            U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
-          else
-            U.addToFrag(frag, this.cpTemplateNoAdd(common));
+      if (!this.isMainGroup) {
+        _.each(displayInline, function(prop, name) {
+          if (!prop.backLink)
+            return;
           
-          _.each(inline, function(iRes) {
-            U.addToFrag(frag, this.inlineListItemTemplate({name: iRes.davDisplayName, _uri: iRes._uri}));
-            displayedProps[name] = true;
-          }.bind(this));
-        }
-      }.bind(this));
+          var val = json[name];
+          if (!val)
+            return;
+          
+          var inline = val._list;
+          if (inline && inline.length) {
+            var propDisplayName = U.getPropDisplayName(prop);
+//            var common = {range: prop.range, backlink: prop.backLink, name: propDisplayName, value: prop.count || 0, _uri: uri, title: U.makeHeaderTitle(title, propDisplayName), comment: prop.comment};
+//            if (isPropEditable)
+//              U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+//            else
+//              U.addToFrag(frag, this.cpTemplateNoAdd(common));
+            
+            U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
+            _.each(inline, function(iRes) {
+              U.addToFrag(frag, this.inlineListItemTemplate({name: iRes.davDisplayName, _uri: iRes._uri, comment: iRes.comment }));
+              displayedProps[name] = true;
+            }.bind(this));
+          }
+        }.bind(this));
+      }
       
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           if (!this.isMainGroup  &&  grMeta.mainGroup)
             continue;
-          
+          var avoidDisplaying = grMeta.avoidDisplayingInView;
+           
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
@@ -173,6 +190,8 @@ define([
               continue;
   
             displayedProps[p] = true;
+            if (avoidDisplaying)
+              continue;
             var n = U.getPropDisplayName(prop);
             var range = prop.range; 
             var isPropEditable = U.isPropEditable(res, prop, role);
@@ -209,9 +228,16 @@ define([
               var t = U.makeHeaderTitle(title, n);
               if (colorIdx == color.length) 
                 colorIdx = 0;
+              if (prop.displayInline) {
+                cnt = 0;
+                n = '<i class="ui-icon-plus"></i>' + n;
+              }
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) {
-                U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: prop['icon']}, common)));
+                if (isHorizontal)
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: prop['icon']}, common)));
+                else
+                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: prop['icon']}, common)));
               }
               else {
                 if (isPropEditable)
