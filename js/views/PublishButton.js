@@ -11,7 +11,7 @@ define([
     template: 'publishButtonTemplate',
     events: {
       'click #publish': 'publish',
-      'click #try': 'tryApp',
+      'click #tryTheApp': 'tryApp',
       'click #enterTournament': 'enterTournament',
       'click #fork': 'forkApp',
       'click #testAppPlug': 'testPlug'
@@ -19,11 +19,11 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'publish', 'tryApp', 'testPlug', 'forkApp', 'enterTournament');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);
-      this.tryTemplate = this.makeTemplate('tryButtonTemplate');
-      this.forkTemplate = this.makeTemplate('forkButtonTemplate');
-      this.testPlugTemplate = this.makeTemplate('testPlugTemplate');
-      this.enterTournamentTemplate = this.makeTemplate('enterTournamentTemplate');
+      this.makeTemplate(this.template, 'template', this.vocModel.type, true);
+      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type, true);
+      this.makeTemplate('forkButtonTemplate', 'forkTemplate', this.vocModel.type, true);
+      this.makeTemplate('testPlugTemplate', 'testPlugTemplate', this.vocModel.type, true);
+      this.makeTemplate('enterTournamentTemplate', 'enterTournamentTemplate', this.vocModel.type, true);
       return this;
     },
     testPlug: function(e) {
@@ -145,6 +145,8 @@ define([
         this.$el.html(this.template());
         this.$el.trigger('create');
       }
+      
+      this.$('#tryTheApp').click(this.tryApp);
       return this;
     }
   });

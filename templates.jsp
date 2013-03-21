@@ -499,7 +499,7 @@
 
 <script type="text/template" id="tryButtonTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="check" id="try" data-role="button" date-position="notext">Goto app</a>
+  <a target="#" data-icon="check" id="tryTheApp" data-role="button" date-position="notext">Goto app</a>
 </script>
 
 <script type="text/template" id="forkButtonTemplate">
