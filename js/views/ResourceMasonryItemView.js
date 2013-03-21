@@ -256,11 +256,11 @@ define([
           tmpl_data.rUri = uri;
         }
         
-        var followers = json.followers || {count: 0};
+        var followers = json.appConnections || {count: 0};
         var followersCount = followers.count;
         if (followersCount) {
           tmpl_data.followersCount = followersCount;
-          tmpl_data.followersUri = U.getPageUrl('list', meta.followers.range, {friend2: json._uri});
+          tmpl_data.followersUri = U.getPageUrl('list', meta.appConnections.range, {friend2: json._uri});
         }
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
