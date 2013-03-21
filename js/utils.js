@@ -1179,7 +1179,9 @@ define([
       
       var now = G.currentServerTime();
       var date = U.getFormattedDate(now + time);
-      if (date.startsWith("In "))
+      if (date === 'Just now')
+        return 'None';
+      else if (date.startsWith("In "))
         return date.slice(3);
       else if (date.endsWith(" ago"))
         return date.slice(0, date.length - 4);

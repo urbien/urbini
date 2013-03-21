@@ -1233,10 +1233,11 @@ define([
         query = query ? query.and(latLonQuery) : latLonQuery;
       
       if (orderBy) {
+        debugger;
         if (query) {  
           var distanceProp = positionProps.distance;
           for (var i = 0; i < orderBy.length; i++) {
-            var oProp = orderBy[i];
+            var oProp = orderBy[i].shortName;
             if (oProp === distanceProp) {
               query.sort(function(a, b) {
                 debugger;
@@ -1252,7 +1253,7 @@ define([
           }
         }
         else
-          query = RM.Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+          query = RM.Index(orderBy.shortName, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
         
 //        }
 //        else
