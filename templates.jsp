@@ -336,12 +336,12 @@
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
    <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; min-width:110px; float:left; background:none; background-color: {{= color }}" href="#">
-     <i class="{{= icon }}" style="font-size: 20px;"></i>&#160;{{= name }}
+       {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;"></i>' : '' }} {{= name }} 
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; min-width:100px;float:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="{{= icon }}" style="font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -20px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>

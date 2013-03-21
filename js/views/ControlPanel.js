@@ -228,16 +228,20 @@ define([
               var t = U.makeHeaderTitle(title, n);
               if (colorIdx == color.length) 
                 colorIdx = 0;
+              var icon;
               if (prop.displayInline) {
                 cnt = 0;
-                n = '<i class="ui-icon-plus"></i>' + n;
+                icon = "ui-icon-plus";
               }
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) {
+                if (!icon)
+                  icon = !prop['icon'] ? 'ui-icon-star' :  prop['icon'];
+                
                 if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: prop['icon']}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));
                 else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: prop['icon']}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: icon}, common)));
               }
               else {
                 if (isPropEditable)
