@@ -158,6 +158,7 @@ define([
       if (!this.rendered)
         return this;
       
+      this.calcSpecialButtons();
       this.renderSpecialButtons();
       return this;
     },
@@ -174,15 +175,11 @@ define([
       this.calcTitle();
       this.$('#pageTitle').html(this.title); 
     },
-    
-    renderSpecialButtons: function() {
-      _.each(['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug'], function(btn) {
-        this.$('#{0}Btn'.format(btn)).html("");
-      }.bind(this));
-      
+
+    calcSpecialButtons: function() {
       var commonTypes = G.commonTypes;
       var res = this.resource;
-      if (res && G.currentUser.guest  &&  !this.isAbout) {
+      if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
@@ -208,7 +205,13 @@ define([
             this.enterTournament = true;
         }
       }
-
+    },
+    
+    renderSpecialButtons: function() {
+      _.each(['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug'], function(btn) {
+        this.$('#{0}Btn'.format(btn)).html("");
+      }.bind(this));
+      
       var pBtn = this.buttonViews.publish;
       if (this.doPublish) {
         this.assign('div#publishBtn', pBtn);
@@ -267,6 +270,7 @@ define([
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
       
+      this.calcSpecialButtons();
       var res = this.resource; // undefined, if this is a header for a collection view
       this.$el.html("");
       if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
