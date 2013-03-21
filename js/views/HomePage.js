@@ -44,7 +44,7 @@ define([
 //      if (this.first)
 //        $.mobile.initializePage();
       this.first = false;
-      this.finish();
+//      this.finish();
       return this;
     }
   }, {
