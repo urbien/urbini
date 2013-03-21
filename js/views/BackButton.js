@@ -6,6 +6,7 @@ define([
   'views/BasicView' 
 ], function(_, U, Events, BasicView) {
   return BasicView.extend({
+    TAG: 'BackButton',
     templateName: 'backButtonTemplate',
     events: {
       'click #back': 'back'

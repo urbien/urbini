@@ -8,6 +8,7 @@ define([
 ], function(G, _, U, Events, BasicView) {
   var MenuPanel;
   return BasicView.extend({
+    TAG: 'MenuButton',
     templateName: 'menuButtonTemplate',
     events: {
       'click #menuBtn': 'menu'

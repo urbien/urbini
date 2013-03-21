@@ -87,7 +87,7 @@ define([
       G.log(this.TAG, 'events', 'navigate', fragment);
       options = options || {};
       
-      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace'));
+      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect'));
       _.extend(this, {
         previousView: this.currentView, 
         previousFragment: U.getHash() 
@@ -242,10 +242,15 @@ define([
       }
         
       var previousView = this.currentView;
+      if (!previousView) {
+        this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
+        return;
+      }
+      
       var descendants = previousView.getDescendants();
       var templateToTypes = {};
       _.each(descendants, function(d) {
-        var templates = d._templates;
+        var templates = d._templates || [];
         var type = d.vocModel.type;
         if (templates.length) {
           _.each(templates, function(t) {
@@ -255,8 +260,6 @@ define([
         }
       });
       
-//      var templates = _.compact(_.union.apply(_, _.pluck(descendants, '_templates')));
-//      var type = params.model;
       var appTemplates = G.appTemplates;
       var templates = [];
       if (appTemplates) {
@@ -401,8 +404,8 @@ define([
       }
     },
 
-    getChangePageOptions: function() {
-      return this.fragmentToOptions[U.getHash()] || {};
+    getChangePageOptions: function(fragment) {
+      return this.fragmentToOptions[fragment || U.getHash()] || {};
     },
     
     edit: function(path) {
@@ -810,6 +813,13 @@ define([
         return this;
       } finally {
         this.checkErr();
+        var pageOptions = this.getChangePageOptions();
+        this.fragmentToOptions = {};
+        var redirect = pageOptions.postChangePageRedirect;
+        if (redirect) {
+          pageOptions.postChangePageRedirect = null;
+          this.navigate(redirect, {trigger: true, replace: true});
+        }
       }
     },
     
@@ -889,7 +899,6 @@ define([
 //        $(window).resize();
 //      if (this.backClicked == true) 
 //        previousView.remove();
-      this.fragmentToOptions = {};
       return view;
     }
   });

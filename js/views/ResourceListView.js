@@ -220,25 +220,29 @@ define([
         var uri = res.getUri();
         if (i >= lis.length || _.contains(modifiedUris, uri)) {
           var liView;
+          var viewName = 'liView' + i;
           if (this.isPhotogrid) {
-            liView = new PhotogridView(_.extend({tagName: 'div', linkToIntersection: true}, commonParams));
+            liView = this.addChild(viewName, new PhotogridView(_.extend({tagName: 'div', linkToIntersection: true}, commonParams)));
           }
           else if (isMultiValueChooser) {
             var isListed =  _.contains(mvVals, res.get('davDisplayName'));
 //            var isChecked = defaultUnchecked === isListed;
-            liView = new ResourceListItemView(_.extend({mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}, commonParams));
+            liView = this.addChild(viewName, new ResourceListItemView(_.extend({mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}, commonParams)));
           }
           else if (isMasonry  ||  isModification) 
 //            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
 //          else if (isModification)
-            liView = new ResourceMasonryItemView(_.extend({className: 'nab nabBoard'}, commonParams));
+            liView = this.addChild(viewName, new ResourceMasonryItemView(_.extend({className: 'nab nabBoard'}, commonParams)));
           else if (isComment)
-            liView = new CommentListItemView(commonParams);
+            liView = this.addChild(viewName, new CommentListItemView(commonParams));
           else if (isEdit) 
-            liView = new ResourceListItemView(_.extend({editCols: params['$editCols'], edit: true}, commonParams));
+            liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: params['$editCols'], edit: true}, commonParams)));
           else {
             var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-            liView = imageProperty != null ? new ResourceListItemView(_.extend({ imageProperty: imageProperty, parentView: this, swatch: swatch}, commonParams)) : new ResourceListItemView(_.extend({swatch: swatch}, commonParams));
+            if (imageProperty != null)
+              liView = this.addChild(viewName, new ResourceListItemView(_.extend({ imageProperty: imageProperty, parentView: this, swatch: swatch}, commonParams)))
+            else
+              liView = this.addChild(viewName, new ResourceListItemView(_.extend({swatch: swatch}, commonParams)));
           }
 
           var rendered = liView.render();
