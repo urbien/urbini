@@ -43,7 +43,7 @@
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="float: right;width: 32%; min-width: 130px"></div>
+      <div id="mainGroup" class="ui-block-b" style="width: 32%; min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -298,7 +298,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <li>
   <i class="icon-home"></i>
-  <a href="{{= U.makePageUrl('view', _uri) }}">{{= name }}</a>
+  <a href="{{= U.makePageUrl('edit', _uri) }}">{{= name }}</a>
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
@@ -333,6 +333,20 @@
  {{ } }}
 </script>
 
+<script type="text/template" id="cpMainGroupTemplateH">
+ {{ var params = {}; }}
+ {{ params[backlink] = _uri; }}
+ {{ if (!value) { }}  
+   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; min-width:110px; float:left; background:none; background-color: {{= color }}" href="#">
+       {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;"></i>' : '' }} {{= name }} 
+   </a>
+ {{ } }}
+ {{ if (typeof value != 'undefined') { }}  
+   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; min-width:100px;float:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -20px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+   </a>
+ {{ } }}
+</script>
 
 <script type="text/template" id="cpTemplateNoAdd">
 {{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
@@ -685,7 +699,7 @@
       <li style="{{= 'float: ' + (item.float || 'left') }}">
         <a href="{{= item.target }}">
           {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
-          {{= item.title ? '<h2>{0}</h2>'.format(item.title) : '' }}
+          {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
           {{= typeof item.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
         </a> 

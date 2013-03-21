@@ -114,17 +114,17 @@
   .ui-listview .ui-li-has-thumb .ui-li-heading,
   .ui-listview .ui-li-has-thumb .ui-li-desc {
     background: #111;
-    background: rgba(0,0,0,.8);
+    background: rgba(0,0,0,.7);
     -webkit-background-clip: padding;
     background-clip: padding-box;
   }
   .ui-listview .ui-li-has-thumb .ui-li-heading {
     padding: 10px;
-    bottom: 20%;
+    bottom: 3%;
   }
   .ui-listview .ui-li-has-thumb .ui-li-desc {
     padding: 0 10px;
-    min-height: 20%;
+    min-height: 3%;
     -webkit-border-bottom-left-radius: inherit;
     border-bottom-left-radius: inherit;
     -webkit-border-bottom-right-radius: inherit;
@@ -201,6 +201,12 @@
     height: 232px;
     margin: 9px 1.2%;
     border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
+  }
+  .ui-listview .ui-li-has-thumb .ui-li-heading {
+    bottom: 20%;
+  }
+  .ui-listview .ui-li-has-thumb .ui-li-desc {
+    min-height: 20%;
   }
 }
 
