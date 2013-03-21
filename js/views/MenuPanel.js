@@ -191,7 +191,7 @@ define([
 //  
 //        }
         
-        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
+        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  (this.resource  &&  U.isUserInRole(U.getUserRole(), 'admin', res)) || (this.collection &&  this.collection.models.length  &&  U.isUserInRole(U.getUserRole(), 'admin', res.models[0])));
         if (this.resource && isCreatorOrAdmin) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('view', uri);

@@ -60,7 +60,7 @@ define([
         }, this);
       }      
 
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner', rl)));
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || (vocModel.skipAccessControl  &&  (isOwner  ||  (rl.models.length  &&  U.isUserInRole(U.getUserRole(), 'siteOwner', rl.models[0]))));
       var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
