@@ -44,8 +44,6 @@ define([
   });
   
   _.extend(BasicView.prototype, {
-    _templates: [],
-    _templateMap: {},
     refresh: function() {
       // override this
     },
@@ -59,6 +57,8 @@ define([
           return template;
       }
         
+      this._templates = this._templates || [];
+      this._templateMap = this._templateMap || {};
       U.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       return template;
@@ -67,6 +67,7 @@ define([
     addChild: function(name, view) {
       this.children = this.children || {};
       this[name] = this.children[name] = view;
+      return view;
     },
     
     getChildViews: function() {

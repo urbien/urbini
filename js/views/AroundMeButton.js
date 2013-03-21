@@ -6,6 +6,7 @@ define([
   'utils'
 ], function(G, ToggleButton, BasicView, U) {
   return ToggleButton.extend({
+    TAG: 'AroundMeButton',
     btnId: 'aroundMe',
     templateName: 'aroundMeButtonTemplate',
     events: {

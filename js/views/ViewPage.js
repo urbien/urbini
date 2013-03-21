@@ -15,6 +15,7 @@ define([
   'views/ControlPanel'
 ], function(G, U, Events, BasicView, Header, /*BackButton, LoginButton, AroundMeButton, MenuButton,*/ ResourceView, /*ResourceImageView,*/ ControlPanel) {
   return BasicView.extend({
+    TAG: 'ViewPage',
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');

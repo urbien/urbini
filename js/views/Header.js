@@ -15,6 +15,7 @@ define([
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   return BasicView.extend({
+    TAG: 'Header',
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload');
@@ -33,8 +34,8 @@ define([
 
       var res = this.model;
 //      _.extend(this, options);
-      this.template = this.makeTemplate(this.template);
-      this.fileUploadTemplate = this.makeTemplate('fileUpload');
+      this.makeTemplate(this.template, 'template', this.vocModel.type, true);
+      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type, true);
       var params = U.getHashParams();
       this.info = params['-info'];
       
@@ -68,7 +69,7 @@ define([
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
-          this.buttonViews[btn] = new model(btnOptions);
+          this.buttonViews[btn] = this.addChild(btn + 'BtnView', new model(btnOptions));
         }
         
         this.readyDfd.resolve();

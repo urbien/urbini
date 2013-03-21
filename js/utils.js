@@ -268,7 +268,12 @@ define([
       if (!hash)
         G.log(U.TAG, 'error', 'match undefined 0');
       
-      route = hash.match('^view|menu|edit|make|chooser|templates');
+      if (hash.startsWith('templates')) {
+//        hash = U.decode(hash.slice(10));
+        return G.commonTypes.Jst;
+      }
+      
+      route = hash.match('^view|menu|edit|make|chooser');
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);
         if (sqlIdx == -1)
