@@ -1233,7 +1233,6 @@ define([
         query = query ? query.and(latLonQuery) : latLonQuery;
       
       if (orderBy) {
-        debugger;
         if (query) {  
           var distanceProp = positionProps.distance;
           for (var i = 0; i < orderBy.length; i++) {
@@ -1248,7 +1247,7 @@ define([
               });
             }
             else {
-              query = query.sort(oProp, !asc);
+              query = query.sort(prepPropNameForDB(oProp), !asc);
             }
           }
         }
