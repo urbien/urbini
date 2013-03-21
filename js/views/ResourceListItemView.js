@@ -304,8 +304,8 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          var bl = json[pMeta.shortName] || {count: 0};
-          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: bl.count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: cnt }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (this.resource.isA('Votable')) {
@@ -314,8 +314,8 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          var bl = json[pMeta.shortName] || {count: 0};
-          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: bl.count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(json['_uri'])), count: cnt }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       json.viewCols = viewCols;
