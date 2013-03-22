@@ -80,28 +80,27 @@ define([
         }
       }
       
-      if (U.isAssignableFrom(this.vocModel, G.commonTypes.Jst))  // templates.js is responsible for templates
-        return;
-      
-      var codeProps = U.getPropertiesWith(this.vocModel.properties, 'code');
-      for (var cp in codeProps) {
-        if (this.get(cp))
-          continue;
-        
-        var code = codeProps[cp].code;
-        switch (code) {
-          case 'html':
-            defaults[cp] = '<!-- put your HTML here buddy -->';
-            break;
-          case 'css':
-            defaults[cp] = '/* put your CSS here buddy */';
-            break;
-          case 'js':
-            defaults[cp] = '/* put your JS here buddy */';
-            break;
+      if (!U.isAssignableFrom(this.vocModel, G.commonTypes.Jst)) { // templates.js is responsible for templates
+        var codeProps = U.getPropertiesWith(this.vocModel.properties, 'code');
+        for (var cp in codeProps) {
+          if (this.get(cp))
+            continue;
+          
+          var code = codeProps[cp].code;
+          switch (code) {
+            case 'html':
+              defaults[cp] = '<!-- put your HTML here buddy -->';
+              break;
+            case 'css':
+              defaults[cp] = '/* put your CSS here buddy */';
+              break;
+            case 'js':
+              defaults[cp] = '/* put your JS here buddy */';
+              break;
+          }
         }
       }
-      
+    
       this.set(defaults, {silent: true})
     },
     
