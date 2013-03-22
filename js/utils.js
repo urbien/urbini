@@ -1506,8 +1506,9 @@ define([
       
       val = val || res.get(propName) || '';        
       if (prop.code) {
-        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName) 
-            + '<pre>{0}</pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
+        val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? U.htmlEscape(val) : val);
+//        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName) 
+//            + '<pre>{0}</pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
       }
       
       var displayName = res.get(propName + '.displayName');

@@ -245,7 +245,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   }
 }
 
-.editbox {
+/*.editbox {
   margin: .4em;
   padding: 0;
   font-family: monospace;
@@ -300,3 +300,4 @@ span.js-comment {
 span.js-string {
   color: #AA2222;
 }
+*/

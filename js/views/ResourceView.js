@@ -36,7 +36,8 @@ define([
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
-          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
+          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+//          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
             defer.resolve();
           }, this);
         }
@@ -234,30 +235,65 @@ define([
         this.$el.trigger('create');      
 
 
-      if (this.isCode) {
-        var doc = document;
-        var codeNodes = this.$('[data-code]');
-        _.each(codeNodes, function(codeNode) {
-          var lineNo = 1;
-          var output = $(codeNode).find('pre')[0];
-          var text = output.innerHTML.trim();
-          if (!text.length)
-            return;
-          
-          var numbers = this.$('div#{0}_numbers'.format(codeNode.dataset.shortname))[0];
-          output.innerHTML = numbers.innerHTML = '';
-          function highlight(line) {
-            numbers.appendChild(doc.createTextNode(String(lineNo++)));
-            numbers.appendChild(doc.createElement("BR"));
-            for (var i = 0; i < line.length; i++) { 
-              output.appendChild(line[i]);
+      if (this.isCode && CodeMirror) {
+//        var doc = document;
+//        var codeNodes = this.$('[data-code]');
+//        _.each(codeNodes, function(codeNode) {
+//          var lineNo = 1;
+//          var output = $(codeNode).find('pre')[0];
+//          var text = output.innerHTML.trim();
+//          if (!text.length)
+//            return;
+//          
+//          var numbers = this.$('div#{0}_numbers'.format(codeNode.dataset.shortname))[0];
+//          output.innerHTML = numbers.innerHTML = '';
+//          function highlight(line) {
+//            numbers.appendChild(doc.createTextNode(String(lineNo++)));
+//            numbers.appendChild(doc.createElement("BR"));
+//            for (var i = 0; i < line.length; i++) { 
+//              output.appendChild(line[i]);
+//            }
+//            
+//            output.appendChild(doc.createElement("BR"));
+//          }
+//
+//          highlightText(text, highlight);
+//        }.bind(this));
+        this.$('textarea[data-code]').each(function() {
+          var mode = this.dataset.code;
+          switch (mode) {
+            case 'html':
+              mode = 'text/html';
+              break;
+            case 'css':
+              mode = 'css';
+              break;
+//            case 'js':
+//              mode = 'javascript';
+//              break;
+            default: {
+//              debugger;
+              mode = 'javascript';
+              break;
             }
-            
-            output.appendChild(doc.createElement("BR"));
           }
-
-          highlightText(text, highlight);
-        }.bind(this));
+          
+          var editor = CodeMirror.fromTextArea(this, {
+            mode: mode,
+            tabMode: 'indent',
+            lineNumbers: true,
+            viewportMargin: Infinity,
+            tabSize: 2,
+            readOnly: true
+          });
+          
+          setTimeout(function() {
+            // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
+            editor.refresh.apply(editor); 
+          }, 50);
+//          $(".Codemirror").focus();
+//          var $this = $(this);
+        });
       }
 
       this.rendered = true;

@@ -1085,7 +1085,7 @@ define([
           }, 50);
 //          $(".Codemirror").focus();
 //          var $this = $(this);
-        })
+        });
       }
       
       this.rendered = true;
