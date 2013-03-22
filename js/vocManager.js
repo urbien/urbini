@@ -880,7 +880,7 @@ define([
       wClsDfd.promise().done(function() {   
         debugger;
         var modifiedWClUris = modifiedWCls.pluck('davClassUri');
-        Voc.getModels(modifiedWClUris).done(function() {
+        Voc.getModels(modifiedWClUris, {force: true}).done(function() {
           G.log(Voc.TAG, 'info', 'reloaded models: ' + modifiedWClUris);
         });
       });
