@@ -133,19 +133,19 @@ define([
       
       return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' ? t.string : t.resource);
     },
-    
+    __DEFAULT_TEMPLATE: '<!-- put your template code here -->',
     prepNewTemplate: function(t) {
       if (t.vocModel.type !== G.commonTypes.Jst)
         return;
       
       if (!t.get('templateText')) {
         var tName = t.get('templateName');
-        if (!tName)
-          return;
+        var text;
+        if (tName)
+          text = Templates.get(tName);
         
-        var defText = Templates.get(tName);
-        if (defText)
-          t.set({templateText: defText});
+        text = text || Templates.__DEFAULT_TEMPLATE;
+        t.set({templateText: text});
       }
     }
   };

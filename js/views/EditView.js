@@ -30,7 +30,8 @@ define([
       
       // maybe move this to router
       var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
-      this.isTemplate = this.vocModel.type === G.commonTypes.Jst;
+      var codeProps = U.getPropertiesWith(this.vocModel.properties, 'code');
+      this.isTemplate = !!_.size(codeProps);
       this.resource.set(init, {silent: true});
       var readyDfd = $.Deferred(function(defer) {
         if (this.isTemplate) {
@@ -868,6 +869,7 @@ define([
         
         return;
       }
+      
       if (_.has(info.backlinks, p))
         return;
       if (U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel)) {
@@ -1044,7 +1046,7 @@ define([
 
       initInputs(inputs);        
       form.find('[required]').each(function() {
-        $(this).prev('label').addClass('req');
+        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
       form.find('select').change(this.onSelected);
@@ -1075,24 +1077,38 @@ define([
 //      }
       
       if (this.isTemplate && CodeMirror) {
-        var textarea = form.find('textarea[name="templateText"]')[0];
-        if (!textarea)
-          return this;
-        
-        var editor = CodeMirror.fromTextArea(textarea, {
-          mode: 'text/html',
-          tabMode: 'indent',
-          lineNumbers: true,
-          viewportMargin: Infinity,
-          tabSize: 2
-        });
-        
-//        var totalLines = editor.lineCount();
-//        var totalChars = editor.getTextArea().value.length;
-//        editor.autoFormatRange({line:0, ch:0}, {line:totalLines, ch:totalChars});
-        setTimeout(function() {
-          editor.refresh.apply(editor);
-        }, 100);
+        form.find('textarea[data-code]').each(function() {
+          var mode = this.dataset.code;
+          switch (mode) {
+            case 'html':
+              mode = 'text/html';
+              break;
+            case 'js':
+              mode = 'javascript';
+              break;
+            case 'css':
+              mode = 'css';
+              break;
+            default: {
+              debugger;
+              return;
+            }
+          }
+          
+          var editor = CodeMirror.fromTextArea(this, {
+            mode: mode,
+            tabMode: 'indent',
+            lineNumbers: true,
+            viewportMargin: Infinity,
+            tabSize: 2
+          });
+          
+//          setTimeout(function() {
+//            editor.refresh.apply(editor);
+//          }, 100);
+//          $(".Codemirror").focus();
+//          var $this = $(this);
+        })
       }
       
       this.rendered = true;

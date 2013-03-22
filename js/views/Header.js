@@ -41,7 +41,7 @@ define([
       
       var commonTypes = G.commonTypes;
       var buttons = this.buttons;
-      if (U.isAssignableFrom(res.vocModel, commonTypes.App)) {
+      if (U.isAssignableFrom(res.vocModel, commonTypes.App) || U.isAssignableFrom(res.vocModel, commonTypes.Handler)) {
         buttons.publish = true;
       }
       
@@ -215,8 +215,9 @@ define([
       var pBtn = this.buttonViews.publish;
       if (this.doPublish) {
         this.assign('div#publishBtn', pBtn);
-      }      
-      else {
+      }
+      else if (pBtn) {
+        this.$('div#publishBtn').css("display", "none");
         var options = ['doTry', 'forkMe', 'testPlug', 'enterTournament'];
         var settings = _.pick(this, options);
         _.each(options, function(option) {
@@ -224,7 +225,7 @@ define([
             this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
           }
           else {
-//            $('#{0}Btn'.format(option)).css('display', 'none');
+            this.$('#{0}Btn'.format(option)).css('display', 'none');
           }
         }.bind(this));
       }
@@ -289,6 +290,7 @@ define([
         if (this.isGeo)
           frag.appendChild(btns.mapIt.render().el);
       }
+      
       if (btns.add)
         frag.appendChild(btns.add.render().el);
       if (btns.aroundMe)

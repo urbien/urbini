@@ -137,13 +137,16 @@ define([
     assign: function (selector, view, renderOptions) {
       var selectors;
       if (_.isObject(selector)) {
-          selectors = selector;
+        selectors = selector;
       }
       else {
-          selectors = {};
-          selectors[selector] = view;
+        selectors = {};
+        selectors[selector] = view;
       }
-      if (!selectors) return;
+      
+      if (!selectors) 
+        return;
+      
       _.each(selectors, function (view, selector) {
           view.setElement(this.$(selector)).render(renderOptions);
       }, this);

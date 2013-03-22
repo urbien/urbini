@@ -1631,6 +1631,8 @@ define([
         rules.required = 'required';
       if (prop.maxSize)      
         rules.maxlength = prop.maxSize;
+      if (prop.code)
+        rules['data-code'] = prop.code;
       
       if (U.isDateProp(prop))
         rules['data-date'] = true;
