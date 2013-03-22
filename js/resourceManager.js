@@ -746,7 +746,7 @@ define([
             ref = info.reference,
             refs = info.references,
             vocModel = resource.vocModel,
-            type = vocModel.type;
+            types = vocModel.type;
         
         var atts = _.omit(ref, _.keys(REF_STORE.indices));
         atts.$returnMade = true;

@@ -30,12 +30,12 @@ define([
       
       // maybe move this to router
       var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
-      var codeProps = U.getPropertiesWith(this.vocModel.properties, 'code');
-      this.isTemplate = !!_.size(codeProps);
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
+      this.isCode = codemirrorModes.length;
       this.resource.set(init, {silent: true});
       var readyDfd = $.Deferred(function(defer) {
-        if (this.isTemplate) {
-          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'/*, 'codemirrorFormatting'*/], function() {
+        if (this.isCode) {
+          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'].concat(codemirrorModes), function() {
             defer.resolve();
           }, this);
         }
@@ -68,31 +68,6 @@ define([
       this.mobiscroll(e, 'enum');
     },
 
-//    /**
-//     * up the counter on the backlink
-//     */
-//    incrementBLCount: function() {
-//      var bl = this.backlinkResource,
-//          blPropName = this.backLink;
-//      
-//      if (bl && blPropName) {
-//        var blModel = bl.vocModel;
-//        if (blModel) {
-//          var backlinks = U.getPropertiesWith(blModel.properties, "backLink");
-//          for (var blName in backlinks) {
-//            var prop = backlinks[blName];
-//            if (prop && prop.backLink === blPropName) {
-//              var val = bl.get(blName);
-//              if (val) {
-//                val.count++;
-//                bl.set(blName, val);
-//              }
-//            }
-//          }
-//        }
-//      }
-//    },
-    
     mobiscroll: function(e, scrollerType) {
       var inits = this.initializedScrollers = this.initializedScrollers || {};
       if (inits[scrollerType])
@@ -1076,22 +1051,23 @@ define([
 //        }
 //      }
       
-      if (this.isTemplate && CodeMirror) {
+      if (this.isCode && CodeMirror) {
         form.find('textarea[data-code]').each(function() {
           var mode = this.dataset.code;
           switch (mode) {
             case 'html':
               mode = 'text/html';
               break;
-            case 'js':
-              mode = 'javascript';
-              break;
             case 'css':
               mode = 'css';
               break;
+//            case 'js':
+//              mode = 'javascript';
+//              break;
             default: {
-              debugger;
-              return;
+//              debugger;
+              mode = 'javascript';
+              break;
             }
           }
           
@@ -1103,9 +1079,10 @@ define([
             tabSize: 2
           });
           
-//          setTimeout(function() {
-//            editor.refresh.apply(editor);
-//          }, 100);
+          setTimeout(function() {
+            // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
+            editor.refresh.apply(editor); 
+          }, 50);
 //          $(".Codemirror").focus();
 //          var $this = $(this);
         })

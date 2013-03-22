@@ -362,7 +362,7 @@
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}">{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}>{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">

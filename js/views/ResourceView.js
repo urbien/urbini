@@ -32,18 +32,19 @@ define([
         });
       }
 
-//      this.isTemplate = this.vocModel.type === G.commonTypes.Jst;
-//      var readyDfd = $.Deferred(function(defer) {
-//        if (this.isTemplate) {
-//          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
-//            defer.resolve();
-//          }, this);
-//        }
-//        else
-//          defer.resolve();        
-//      }.bind(this));
-//      
-//      this.ready = readyDfd.promise();      
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
+      this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
+      var readyDfd = $.Deferred(function(defer) {
+        if (this.isCode) {
+          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
+            defer.resolve();
+          }, this);
+        }
+        else
+          defer.resolve();        
+      }.bind(this));
+      
+      this.ready = readyDfd.promise();      
       return this;
     },
     events: {
@@ -74,8 +75,8 @@ define([
     
     render: function() {
       var args = arguments;
-      if (!this.ready)
-        return this.renderHelper.apply(this, args);
+//      if (!this.ready)
+//        return this.renderHelper.apply(this, args);
       
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
@@ -151,6 +152,10 @@ define([
   
             // remove HTML tags, test length of pure text
             var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
+            if (prop.code) {
+              val.value = this.__prependNumbersDiv(prop, val.value);          
+            }
+            
             if (val.name.length + v.length > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(val));
             else
@@ -192,6 +197,10 @@ define([
         }
         
         var val = U.makeProp({resource: res, propName: p, prop: prop, value: json[p]});
+        if (prop.code) {
+          val.value = this.__prependNumbersDiv(prop, val.value);          
+        }
+        
         var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
         if (otherLi) {
           if (val.name.length + v.length > maxChars)
@@ -225,25 +234,39 @@ define([
         this.$el.trigger('create');      
 
 
-//      if (this.isTemplate) {
-//        var templateLi = this.$('[data-shortname="templateText"]')[0];
-//        if (templateLi) {
-//          var lineNo = 1, output = templateLi, numbers = document.getElementById("numbers");
-////          output.innerHTML;// = numbers.innerHTML = "";
-//          highlightText(output.innerHTML, this.__addLine);
-//        }
-//      }
+      if (this.isCode) {
+        var doc = document;
+        var codeNodes = this.$('[data-code]');
+        _.each(codeNodes, function(codeNode) {
+          var lineNo = 1;
+          var output = $(codeNode).find('pre')[0];
+          var text = output.innerHTML.trim();
+          if (!text.length)
+            return;
+          
+          var numbers = this.$('div#{0}_numbers'.format(codeNode.dataset.shortname))[0];
+          output.innerHTML = numbers.innerHTML = '';
+          function highlight(line) {
+            numbers.appendChild(doc.createTextNode(String(lineNo++)));
+            numbers.appendChild(doc.createElement("BR"));
+            for (var i = 0; i < line.length; i++) { 
+              output.appendChild(line[i]);
+            }
+            
+            output.appendChild(doc.createElement("BR"));
+          }
+
+          highlightText(text, highlight);
+        }.bind(this));
+      }
 
       this.rendered = true;
       return this;
     },
     
-    __addLine: function(line) {
-      var doc = document;
-      numbers.appendChild(doc.createTextNode(String(lineNo++)));
-      numbers.appendChild(doc.createElement("BR"));
-      for (var i = 0; i < line.length; i++) output.appendChild(line[i]);
-      output.appendChild(doc.createElement("BR"));
+    __prependNumbersDiv: function(prop, html) {
+//      return '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(prop.shortName) + html;
+      return html;
     }
 
   }, {

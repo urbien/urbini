@@ -1396,7 +1396,7 @@ define('fileCache', function() {
         codemirrorXMLMode: 'lib/codemirrorXMLMode',
         codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
 //        codemirrorFormatting: 'lib/codemirrorFormatting',
-//        codemirrorHighlighting: 'lib/codemirrorHighlighting',
+        codemirrorHighlighting: 'lib/codemirrorHighlighting',
         leaflet: 'lib/leaflet',
         leafletMarkerCluster: 'lib/leaflet.markercluster',
         jqueryImagesloaded: 'lib/jquery.imagesloaded',

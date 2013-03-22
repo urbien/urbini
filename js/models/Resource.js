@@ -565,7 +565,6 @@ define([
           
           self.triggerPlugs(options);
           if (!options.fromDB) {
-            debugger;
             self.notifyContainers();
           }
         };

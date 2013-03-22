@@ -498,7 +498,9 @@ define([
           return G.currentUser._uri;
       }
       
-      throw new Error("couldn't parse uri: " + uri);          
+      G.log(U.TAG, 'info', 'couldnt derive long uri for ' + uri);
+      return uri;
+//      throw new Error("couldn't parse uri: " + uri);
     },
     
 //    getLongUri: function(uri, hint) {
@@ -1504,7 +1506,8 @@ define([
       
       val = val || res.get(propName) || '';        
       if (prop.code) {
-        val = '<pre><code>{0}</code></pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
+        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName) 
+            + '<pre>{0}</pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
       }
       
       var displayName = res.get(propName + '.displayName');
@@ -1516,7 +1519,12 @@ define([
       var propTemplate = Templates.getPropTemplate(prop);
 //      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)
 //        propTemplate = 'longStringPT';
-      return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val), shortName: prop.shortName};
+      var rules = {};
+      if (prop.code)
+        rules['data-code'] = prop.code;
+      
+      rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val), shortName: prop.shortName, rules: rules};
     },
     
     makePageUrl: function() {
@@ -2669,6 +2677,29 @@ define([
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
             .replace(/&amp;/g, '&');
+    },
+    
+    getRequiredCodemirrorModes: function(vocModel) {
+      var codeProps = U.getPropertiesWith(vocModel.properties, 'code');
+      var scriptTypes = [];
+      var codemirrorModes = [];
+      for (var cp in codeProps) {
+        var code = codeProps[cp].code;
+        switch (code) {
+          case 'html':
+            codemirrorModes.push('codemirrorHTMLMode');
+            break;
+          case 'css':
+//            codemirrorModes.push('codemirrorCSSMode');
+            break;
+          case 'js':
+            codemirrorModes.push('codemirrorJSMode');
+            break;
+        }
+      }
+      
+      codemirrorModes = _.uniq(codemirrorModes);
+      return codemirrorModes;
     }
   };
 
