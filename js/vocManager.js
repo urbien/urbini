@@ -846,7 +846,46 @@ define([
 //      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
 //      baseResource.setInlineList(prop.shortName, rl);
     });
-  });  
+  });
+  
+  Events.on('publishingApp', function(app) {
+    var wClsDfd = new $.Deferred();
+    var modifiedWCls;
+    var lastPublished = app.get('lastPublished');
+    Voc.getModels(G.commonTypes.WebClass).done(function() {        
+      modifiedWCls = new ResourceList(null, {
+        model: U.getModel(G.commonTypes.WebClass),
+        params: {
+          modified: '>=' + lastPublished,
+          parentFolder: app.getUri()
+        }
+      });
+      
+      modifiedWCls.fetch({
+        success: function() {
+          wClsDfd.resolve();
+        },
+        error: function() {
+          debugger;
+          wClsDfd.reject();
+        }
+      });
+    });
+    
+    Events.once('publishedApp', function(app) {
+      // check if maybe the app didn't get published for some reason
+      if (app.get('lastPublished') <= lastPublished) 
+        return;
+      
+      wClsDfd.promise().done(function() {   
+        debugger;
+        var modifiedWClUris = modifiedWCls.pluck('davClassUri');
+        Voc.getModels(modifiedWClUris).done(function() {
+          G.log(Voc.TAG, 'info', 'reloaded models: ' + modifiedWClUris);
+        });
+      });
+    });
+  });
   
   return (G.Voc = Voc);
 });

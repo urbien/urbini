@@ -50,7 +50,8 @@ define([
 //        pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
-        parentView: this
+        parentView: this,
+        isEdit: true
       }));
       
       var reqParams = U.getParamMap(window.location.href);

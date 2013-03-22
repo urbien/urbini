@@ -69,7 +69,7 @@ define([
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {
-          'default': elt.innerHTML
+          'default': elt.innerHTML.trim()
         };
       }.bind(this));
     },
@@ -86,7 +86,14 @@ define([
       if (!templates) // currently, only allow to override default templates
         return;
       
-      templates[type || 'default'] = this._treatTemplate(template.get('templateText'));
+      var text = this._treatTemplate(template.get('templateText'));
+      if (type)
+        templates[type] = text;
+      else {
+        templates['oldDefault'] = templates['default'];
+        templates['default'] = text;
+      }
+      
       Events.trigger('templateUpdate', template);
       
 //      var elts = $(template.get('templateText'));
@@ -112,7 +119,12 @@ define([
     
     getDefaultTemplate: function(name) {
       var template = this.templates[name];
-      return template && template['default'];      
+      return template && template['default'];
+    },
+    
+    getOriginalTemplate: function(name) {
+      var template = this.templates[name];
+      return template && template['originalDefault'] || template['default'];
     },
 
     getCustomTemplate: function(name, type) {

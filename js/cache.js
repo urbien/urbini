@@ -16,6 +16,10 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
     // Resources and ResourceLists
     Resources: {},
     ResourceLists: {},
+    
+    // codemirror editors
+    codemirrors: {},
+    
     cacheModel: function(model) {
       var snCache, typeCache;
       if (model.enumeration) {
@@ -163,6 +167,12 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
 //      Voc.models = [];
 //      Voc.mightBeStale = {};
     }
+//    ,
+//    
+//    getCodemirror: function(uri, propName) {
+//      var resEditors = C.codemirrors[uri];
+//      return resEditors && resEditors[propName];
+//    }
   };
   
   Events.on('newResourceList', function(list) {
@@ -189,7 +199,13 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
 //      }
 //    }
   });
-
+  
+//  Events.on('newCodeMirror', function(uri, propName, editor) {
+//    var editors = C.codemirrors;
+//    var resEditors = editors[uri] = {};
+//    resEditors[propName] = editor;
+//  });
+//
 //  Events.on('newPlug', function(plug) {
 //    var plugs = {};
 //    plugs[plug.fromDavClassUri] = [plug];

@@ -70,6 +70,14 @@ define([
       this._loadingDfd.resolve();
     },
     
+    getTemplate: function(templateName, type) {
+      return Templates.get(templateName, type);
+    },
+
+    getOriginalTemplate: function(templateName) {
+      return Templates.getOriginalTemplate(templateName);
+    },
+
     makeTemplate: function(templateName, localName, type, fallBackToDefault) {
       var template = this[localName] = U.template(templateName, type, this);
       if (!template) {

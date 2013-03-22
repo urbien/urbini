@@ -14,6 +14,7 @@ define([
 //  'views/MenuButton',
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
   return BasicView.extend({
     TAG: 'Header',
     template: 'headerTemplate',
@@ -41,7 +42,7 @@ define([
       
       var commonTypes = G.commonTypes;
       var buttons = this.buttons;
-      if (U.isAssignableFrom(res.vocModel, commonTypes.App) || U.isAssignableFrom(res.vocModel, commonTypes.Handler)) {
+      if (_.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
         buttons.publish = true;
       }
       
@@ -180,12 +181,17 @@ define([
       var commonTypes = G.commonTypes;
       var res = this.resource;
       if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
+        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
+          var tName = res.get('templateName');
+          this.resetTemplate = tName && this.getOriginalTemplate(tName);
+        }
+      
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
           if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
-            this.doPublish = true;
+            this.publish = true;
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
@@ -208,17 +214,17 @@ define([
     },
     
     renderSpecialButtons: function() {
-      _.each(['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug'], function(btn) {
+      _.each(SPECIAL_BUTTONS, function(btn) {
         this.$('#{0}Btn'.format(btn)).html("");
       }.bind(this));
       
       var pBtn = this.buttonViews.publish;
-      if (this.doPublish) {
+      if (this.publish) {
         this.assign('div#publishBtn', pBtn);
       }
       else if (pBtn) {
         this.$('div#publishBtn').css("display", "none");
-        var options = ['doTry', 'forkMe', 'testPlug', 'enterTournament'];
+        var options = SPECIAL_BUTTONS.slice().remove('publish');
         var settings = _.pick(this, options);
         _.each(options, function(option) {
           if (this[option]) {
@@ -263,7 +269,8 @@ define([
         }
       }
       
-      if (!this.doPublish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament) 
+//      if (!this.publish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament  && ) 
+      if (!_.any(SPECIAL_BUTTONS, function(b) { return this[b]; }.bind(this)))
         this.noButtons = true;      
     },
     
@@ -274,7 +281,7 @@ define([
       this.calcSpecialButtons();
       var res = this.resource; // undefined, if this is a header for a collection view
       this.$el.html("");
-      if (!this.doPublish  &&  this.doTry  &&  this.forkMe)
+      if (!this.publish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-a'}));
       else
         this.$el.html(this.template());

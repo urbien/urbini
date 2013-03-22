@@ -1079,6 +1079,9 @@ define([
             tabSize: 2
           });
           
+//          Events.trigger('newCodeMirror', this.resource.getUri(), this.dataset.shortName, editor);
+          $.data(this, 'codemirror', editor);
+          
           setTimeout(function() {
             // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
             editor.refresh.apply(editor); 

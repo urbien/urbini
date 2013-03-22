@@ -5,26 +5,58 @@ define([
   'utils',
   'events',
   'vocManager',
-  'views/BasicView'
-], function(G, _, U, Events, Voc, BasicView) {
+  'views/BasicView',
+  'cache'
+], function(G, _, U, Events, Voc, BasicView, C) {
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
   return BasicView.extend({
-    template: 'publishButtonTemplate',
-    events: {
-      'click #publish': 'publish',
-      'click #tryTheApp': 'tryApp',
-      'click #enterTournament': 'enterTournament',
-      'click #fork': 'forkApp',
-      'click #testAppPlug': 'testPlug'
-    },
+    template: 'publishBtnTemplate',
+//    events: {
+//      'click #publish': 'publish',
+//      'click #tryTheApp': 'doTry',
+//      'click #enterTournament': 'enterTournament',
+//      'click #forkMe': 'forkMe',
+//      'click #testAppPlug': 'testPlug',
+//      'click #resetTemplate': 'resetTemplate'
+//    },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'publish', 'tryApp', 'testPlug', 'forkApp', 'enterTournament');
+      _.bindAll.apply(_, [this, 'render'].concat(SPECIAL_BUTTONS));
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type, true);
-      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type, true);
-      this.makeTemplate('forkButtonTemplate', 'forkTemplate', this.vocModel.type, true);
-      this.makeTemplate('testPlugTemplate', 'testPlugTemplate', this.vocModel.type, true);
-      this.makeTemplate('enterTournamentTemplate', 'enterTournamentTemplate', this.vocModel.type, true);
+      
+      _.each(SPECIAL_BUTTONS, function(btnName) {
+        var tName = '{0}BtnTemplate'.format(btnName);
+        this.makeTemplate(tName, tName, this.vocModel.type, true);        
+      }.bind(this));
+      
+//      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type, true);
+//      this.makeTemplate('forkButtonTemplate', 'forkTemplate', this.vocModel.type, true);
+//      this.makeTemplate('testPlugTemplate', 'testPlugTemplate', this.vocModel.type, true);
+//      this.makeTemplate('enterTournamentTemplate', 'enterTournamentTemplate', this.vocModel.type, true);
+//      this.makeTemplate('resetTemplateButtonTemplate', 'resetTemplateTemplate', this.vocModel.type, true);
       return this;
+    },
+    resetTemplate: function(e) {
+      // toggle from "Reset to default" to "Undo Reset"
+      var btn = e.currentTarget;
+      var $btn = $(btn);
+      var newTitle;
+      if (!this.oldTitle) {
+        this.oldTitle = btn.innerText;
+        newTitle = 'Undo reset';
+      }
+      else {
+        newTitle = this.oldTitle;
+        this.oldTitle = null;
+      }
+      
+      var textarea = $('[data-code="html"]')[0];
+      var codemirror = $.data(textarea, 'codemirror');
+      this.templateCache = this.templateCache || {};
+      var prevText = this.templateCache[textarea.id] || this.getTemplate(this.resource.get('templateName'));
+      this.templateCache[textarea.id] = codemirror.getValue();
+      codemirror.setValue(prevText);
+      $btn.find('.ui-btn-text').text(newTitle);
     },
     testPlug: function(e) {
       Events.stopEvent(e);
@@ -46,17 +78,20 @@ define([
       var effectList = U.makeMobileUrl('list', effect, params);
       this.router.navigate(U.makeMobileUrl('make', cause, {$returnUri: effectList}), {trigger: true});
     },
-    tryApp: function(e) {
+    doTry: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
       window.location.href = G.serverName + '/app/' + res.get('appPath');      
 //      this.router.navigate('app/' + res.get('appPath'), {trigger: true});
     },
     publish: function(e) {
+      this.showLoadingIndicator();
       Events.stopEvent(e);
       var res = this.resource;
       var props = {publish: true};
       var self = this;
+      Events.trigger('publishingApp', res);
+
       res.save(props, {
         sync: true,
         success: function(resource, response, options) {
@@ -67,21 +102,23 @@ define([
 //          
 //          $('.formElement').attr('disabled', false);
 //          debugger;
-          var query = U.getQueryParams();
-          var hash = window.location.href;
-          hash = hash.slice(hash.indexOf('#') + 1);
-          if (_.size(query))
-            hash = hash.slice(0, hash.indexOf('?'));
-          
-          query.$nonce = new Date().getTime();
-          hash = hash + '?' + $.param(query);
-          self.router.navigate(hash, {trigger: true, replace: true, forceFetch: true});
+          Events.trigger('publishedApp', res);
+//          var query = U.getQueryParams();
+//          var hash = window.location.href;
+//          hash = hash.slice(hash.indexOf('#') + 1);
+//          if (_.size(query))
+//            hash = hash.slice(0, hash.indexOf('?'));
+//          
+////          query.$nonce = new Date().getTime();
+//          hash = hash + '?' + $.param(query);
+          self.router.navigate(U.getHash(), {trigger: true, replace: true, forceFetch: true});
 //        window.location.reload();
         }
 //      ,
 //        queryString: 'publish=true'
 //        error: onSaveError
       });
+      
       return this;
     },
     enterTournament: function(e) {
@@ -115,7 +152,7 @@ define([
       return this;
     },
     
-    forkApp: function(e) {
+    forkMe: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
       this.router.navigate(U.makeMobileUrl('make', 'model/social/App', {forkedFrom: res.getUri()}), {trigger: true});
@@ -123,30 +160,28 @@ define([
 
     render: function(options) {
       if (options) {
-        if (options.forkMe) {
-          this.$el.html(this.forkTemplate());
+        var btns = _.keys(_.pick(options, SPECIAL_BUTTONS));
+        _.each(btns, function(btnName) {
+          var bOptions = {};
+          if (options.enterTournament) {
+            var params = U.getParamMap(window.location.href);
+            bOptions.name = params['-tournamentName'];
+          }
+          
+          this.$el.html(this['{0}BtnTemplate'.format(btnName)]());
           this.$el.trigger('create');
-        }
-        if (options.doTry) {
-          this.$el.html(this.tryTemplate());
-          this.$el.trigger('create');
-        }
-        if (options.testPlug) {
-          this.$el.html(this.testPlugTemplate());
-          this.$el.trigger('create');
-        }
-        if (options.enterTournament) {
-          var params = U.getParamMap(window.location.href);
-          this.$el.html(this.enterTournamentTemplate({name: params['-tournamentName']}));
-          this.$el.trigger('create');
-        }
+        }.bind(this));
       }
       else if (this.template) {
         this.$el.html(this.template());
         this.$el.trigger('create');
       }
       
-      this.$('#tryTheApp').click(this.tryApp);
+      // TODO: figure out why click on Try button doesn't arrive in handler without this hack
+      _.each(SPECIAL_BUTTONS, function(bName) {        
+        this.$('#{0}'.format(bName)).click(this[bName]);
+      }.bind(this));
+      
       return this;
     }
   });
