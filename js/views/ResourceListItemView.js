@@ -214,6 +214,8 @@ define([
           if (comments && comments.length)
             json.comment = comments[0].trim();
         }
+        if (params['modelName'])
+          json.$title = U.makeHeaderTitle(params['modelName'], json.templateName);
       }
 
       
