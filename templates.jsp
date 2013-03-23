@@ -227,7 +227,7 @@
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName}) }}">
+      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, model: model, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
       <a href="{{= U.makePageUrl(action, _uri) }}">
@@ -346,7 +346,7 @@
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; min-width:100px;float:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -20px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>
@@ -533,11 +533,6 @@
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
       <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}"  style="margin-top: -10px;" id="headerButtons">
-      <div style="max-width:400px; display: inline-block;" id="publishBtn">
-        {{ if (obj.publishApp) { }}
-            {{= publish }}
-        {{ } }}
-      </div>
       <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
         {{ if (obj.forkMeApp) { }}
             {{= forkMeApp }}
@@ -546,6 +541,11 @@
       <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
+        {{ } }}
+      </div>
+      <div style="max-width:400px; display: inline-block;" id="publishBtn">
+        {{ if (obj.publishApp) { }}
+            {{= publish }}
         {{ } }}
       </div>
       <div style="max-width:200px; display: inline-block;" id="testPlugBtn">
