@@ -117,6 +117,7 @@ define([
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
       if (displayInline) {
+        res.off('inlineList', this.refresh);
         res.on('inlineList', this.refresh);
         if (_.size(res.inlineLists)) {
           // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...

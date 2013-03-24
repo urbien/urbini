@@ -486,17 +486,19 @@ define([
         res = null;
 
       if (U.isTempUri(uri)) {
-        Events.once('synced:' + uri, function() {
-          var currentView = self.currentView;
-          var updateHash = function() {
-            self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
-          }
-          
-          if (currentView && currentView.resource === res)
-            updateHash();
-          else
-            Events.once('navigateToResource:' + res.resourceId, updateHash);
-        });
+        if (!U.isTempUri(res.getUri())) {
+          Events.once('synced:' + uri, function() {
+            var currentView = self.currentView;
+            var updateHash = function() {
+              self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
+            }
+            
+            if (currentView && currentView.resource === res)
+              updateHash();
+            else
+              Events.once('navigateToResource:' + res.resourceId, updateHash);
+          });
+        }
       }
 
       var options = this.getChangePageOptions();
@@ -519,7 +521,12 @@ define([
         var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
         this.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        res.fetch({forceFetch: forceFetch});                
+        res.fetch({forceFetch: forceFetch});
+        var resUri = res.getUri();
+        if (!U.isTempUri(resUri)) {
+          this.navigate(U.makeMobileUrl('view', resUri), {trigger: false, replace: true});
+        }
+        
         return this;
       }
       
