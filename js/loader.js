@@ -1395,6 +1395,7 @@ define('fileCache', function() {
         codemirrorJSMode: 'lib/codemirrorJSMode',
         codemirrorXMLMode: 'lib/codemirrorXMLMode',
         codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
+        codemirrorCSSMode: 'lib/codemirrorCSSMode',
 //        codemirrorFormatting: 'lib/codemirrorFormatting',
 //        codemirrorHighlighting: 'lib/codemirrorHighlighting',
         leaflet: 'lib/leaflet',
@@ -1410,6 +1411,7 @@ define('fileCache', function() {
         jqueryIndexedDB: ['jquery', 'indexedDBShim'],
         indexedDBShim: ['taskQueue'],
         codemirrorJSMode: ['codemirror', 'codemirrorCss'],
+        codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
 //        codemirrorFormatting: ['codemirror', 'codemirrorCss'],
 //        codemirrorHighlighting: ['codemirror', 'codemirrorCss'],
         codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']

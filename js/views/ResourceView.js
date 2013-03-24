@@ -42,7 +42,7 @@ define([
           }, this);
         }
         else
-          defer.resolve();        
+          defer.resolve();
       }.bind(this));
       
       this.ready = readyDfd.promise();      

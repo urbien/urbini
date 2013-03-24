@@ -839,12 +839,13 @@ define([
     var range = U.getTypeUri(prop.range);
     Voc.getModels(range).done(function() {
       var model = U.getModel(range);
-      _.each(inlineResources, function(res) {
-        new model(res);  // get those suckers in the cache
-      });
+      var rl = new ResourceList(inlineResources, {model: model, params: U.getListParams(baseResource, prop)}); // get this cached
+//      _.each(inlineResources, function(res) {
+//        new model(res);  // get those suckers in the cache
+//      });
       
 //      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
-//      baseResource.setInlineList(prop.shortName, rl);
+      baseResource.setInlineList(prop.shortName, rl);
     });
   });
   

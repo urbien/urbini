@@ -1900,7 +1900,13 @@ define([
         return name;
       }
     },
-    
+
+    getFirstValue: function(obj) {
+      for (var name in obj) {
+        return obj[name];
+      }
+    },
+
     // https://gist.github.com/boo1ean/3878870
     plural: [
        [/(quiz)$/i,               "$1zes"  ],
@@ -2692,10 +2698,11 @@ define([
         var code = codeProps[cp].code;
         switch (code) {
           case 'html':
+            codemirrorModes.push('codemirrorXMLMode');
             codemirrorModes.push('codemirrorHTMLMode');
             break;
           case 'css':
-//            codemirrorModes.push('codemirrorCSSMode');
+            codemirrorModes.push('codemirrorCSSMode');
             break;
           case 'js':
             codemirrorModes.push('codemirrorJSMode');
@@ -2705,6 +2712,17 @@ define([
       
       codemirrorModes = _.uniq(codemirrorModes);
       return codemirrorModes;
+    },
+    
+    getListParams: function(resource, backlinkProp) {
+      var params = {};
+      params[backlinkProp.backLink] = resource.getUri();
+      if (backlinkProp.where)
+        _.extend(params, U.getQueryParams(backlinkProp.where));
+      if (backlinkProp.whereOr)
+        params.$or = backlinkProp.whereOr;
+      
+      return params;
     }
   };
 

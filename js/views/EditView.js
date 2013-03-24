@@ -35,7 +35,7 @@ define([
       this.resource.set(init, {silent: true});
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'].concat(codemirrorModes), function() {
+          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
             defer.resolve();
           }, this);
         }

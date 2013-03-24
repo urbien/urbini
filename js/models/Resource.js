@@ -247,12 +247,12 @@ define([
         var meta = vocModel.properties;
         for (var p in resp) {
           var prop = meta[p], val = resp[p];
-          if (!prop || !val || !prop.backLink || !val._list)
-            continue;
-          
-          this.hasInlineLists = true;
-          Events.trigger('inlineResourceList', this, prop, val._list);
-//          delete val._list;
+          if (prop && val && prop.displayInline && prop.backLink && val._list) {
+            Events.trigger('inlineResourceList', this, prop, val._list);
+//            this.inlineLists = this.inlineLists || {};
+//            this.inlineLists[prop.shortName] = val._list;
+            delete val._list; // we don't want to store a huge list of json objects under one resource in indexedDB
+          }
         }
       }
       
@@ -260,11 +260,11 @@ define([
       return resp;
     },
     
-//    setInlineList: function(propName, list) {
-//      this.inlineLists = this.inlineLists || {};
-//      this.inlineLists[propName] = list;
-//      this.trigger('inlineList', propName);
-//    },
+    setInlineList: function(propName, list) {
+      this.inlineLists = this.inlineLists || {};
+      this.inlineLists[propName] = list;
+      this.trigger('inlineList', propName);
+    },
     
     set: function(props, options) {
       if (!this.subscribedToUpdates && this.getUri())
@@ -498,10 +498,16 @@ define([
           blVal.count = 1;
         
         if (blProp.displayInline) {
-          blVal._list = blVal._list || [];
-          if (!_.find(blVal._list, function(item) { return item._uri === resUri; })) {
-            resJSON = resJSON || res.toJSON();
-            blVal._list.push(resJSON);
+          this.inlineLists = this.inlineLists || {};
+          var list;
+          if (!(list = this.inlineLists[bl])) {
+//            list = new ResourceList([res], {model: res.vocModel, params: U.getListParams(res, blProp)});
+            Events.trigger('inlineResourceList', this, prop, val._list);
+            return;
+          }
+          
+          if (!list.get(resUri)) {
+            list.add(res);
           }
         }
           
