@@ -1180,14 +1180,14 @@ define([
         return "none";
       
       var now = G.currentServerTime();
-      var date = U.getFormattedDate(now + time);
-      if (date === 'Just now')
-        return 'None';
-      else if (date.startsWith("In "))
+      var date = U.getFormattedDate(now + time).toLowerCase();
+      if (date === 'just now')
+        return 'none';
+      else if (date.startsWith("in "))
         return date.slice(3);
       else if (date.endsWith(" ago"))
         return date.slice(0, date.length - 4);
-      else if (date === 'Tomorrow')
+      else if (date === 'tomorrow')
         return '1 day';
       else
         throw new Error("couldn't parse time");
