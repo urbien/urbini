@@ -192,7 +192,8 @@ define([
 //  
 //        }
         
-        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  (this.resource  &&  U.isUserInRole(U.getUserRole(), 'admin', res)) || (this.collection &&  this.collection.models.length  &&  U.isUserInRole(U.getUserRole(), 'admin', res.models[0])));
+        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
+//        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  (this.resource  &&  U.isUserInRole(U.getUserRole(), 'admin', res)) || (this.collection &&  this.collection.models.length  &&  U.isUserInRole(U.getUserRole(), 'admin', res.models[0])));
         if (this.resource && isCreatorOrAdmin) {
           var uri = U.getLongUri1(G.currentApp._uri);
           pageUrl = U.makePageUrl('view', uri);
@@ -228,8 +229,10 @@ define([
         }
         
         if (isCreatorOrAdmin) {
-          var wHash = U.getHash();
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Templates used on this page', pageUrl: U.makePageUrl('templates', wHash)}));
+          var wHash = decodeURIComponent(U.getHash());
+          var params = {};
+          params.modelName = this.vocModel.displayName;
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Templates used on this page', pageUrl: U.makePageUrl('templates', wHash, params)}));
         }
         
         var user = G.currentUser;
@@ -240,10 +243,10 @@ define([
 //            return uri.slice(uri.indexOf('=') + 1);
 //          }).join(',');
           
-        var $in = '_uri,' + _.pluck(_.toArray(installed), '_uri').join(',');
+          var $in = '_uri,' + _.pluck(_.toArray(installed), '_uri').join(',');
           
           // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in})}));          
+          U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
         }
         
         // Apps I created

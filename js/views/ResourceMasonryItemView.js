@@ -257,7 +257,8 @@ define([
       }
       
       if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
-        if ((json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
+        var params = U.getParamMap(window.location.hash);
+        if ((params  &&  params.$myApps)  ||  (json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
           tmpl_data.tryApp = uri;
           tmpl_data.rUri = uri;

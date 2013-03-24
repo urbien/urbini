@@ -981,6 +981,9 @@ define([
         if (!meta[p]  || _.has(displayedProps, p))
           continue;
         _.extend(info, {name: p, prop: meta[p]});
+        
+        var h =  '<input type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+        U.addToFrag(info.frag, h);
         this.addProp(info);
       }
       (this.$ul = this.$('#fieldsList')).html(frag);

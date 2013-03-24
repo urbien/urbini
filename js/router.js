@@ -279,6 +279,13 @@ define([
       }
       
       var currentAppUri = G.currentApp._uri;
+      var modelUri = decodeURIComponent(tName);
+      var idx = modelUri.indexOf('?');
+      var sqlUri = '/' + G.sqlUri + '/';
+      var idx0 = modelUri.indexOf(sqlUri);
+      modelUri = idx0 == -1 ||  idx0 > idx ? modelUri.slice(0, idx) : 'http://' + modelUri.slice(idx0 + sqlUri.length, idx);
+      if (modelUri.indexOf('http://') == -1)
+        modelUri = U.getModel(modelUri).type;
       var jstType = G.commonTypes.Jst;
       var jstModel = U.getModel(jstType);
       var jstUriBase = G.sqlUrl + '/' + jstType.slice(7) + '?';
@@ -286,7 +293,8 @@ define([
         templates.push(new jstModel({
           _uri:  jstUriBase + $.param({templateName: tName}),
           templateName: tName,
-          forResource: currentAppUri
+          forResource: currentAppUri,
+          modelDavClassUri: modelUri
         }, {
           detached: true
         }));

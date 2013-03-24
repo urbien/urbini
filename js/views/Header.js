@@ -101,7 +101,7 @@ define([
         if (hash) {
           var params = U.getHashParams();
           title = params.$title;
-          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
+//          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
         }
 
         if (!title) {
