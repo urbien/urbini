@@ -7,8 +7,9 @@ define([
   'utils',
   'views/BasicView',
   'vocManager',
-  'collections/ResourceList'
-], function(G, $, _, Events, U, BasicView, Voc, ResourceList) {
+  'collections/ResourceList',
+  'cache'
+], function(G, $, _, Events, U, BasicView, Voc, ResourceList, C) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {

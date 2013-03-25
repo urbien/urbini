@@ -47,7 +47,7 @@ define([
 //    LoginView: null,
     initialize: function () {
       this.firstPage = true;
-      homePage = new HomePage({el: $('div#homePage')});
+      this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
       Events.on('back', function() {
         self.backClicked = true;
@@ -122,8 +122,8 @@ define([
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();
         if (!this.currentView) {
-          homePage.render();
-          this.currentView = homePage;
+          this.homePage.render();
+          this.currentView = this.homePage;
           var idx = window.location.href.indexOf('#');
           this.currentUrl = (idx == -1) ? window.location.href : window.location.href.substring(0, idx);
         }
@@ -137,8 +137,8 @@ define([
       }
       else {
         this.currentUrl = window.location.href;
-        homePage.render();
-        this.currentView = homePage;
+        this.homePage.render();
+        this.currentView = this.homePage;
       }
     },
     

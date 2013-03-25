@@ -91,7 +91,7 @@ define([
       var res = this.model;
       var title;
       if (hash && G.tabs) {
-        decHash = decodeURIComponent(hash);
+        var decHash = decodeURIComponent(hash);
         var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
         if (matches.length)
           title = matches[0].title;

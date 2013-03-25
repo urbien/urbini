@@ -1073,6 +1073,7 @@ define([
       var isTemplate = this.vocModel.type === G.commonTypes.Jst;
       form.find('textarea[data-code]').each(function() {
         var textarea = this;
+        var $textarea = $(this);
         var code = textarea.dataset.code;
         var propName = textarea.name;
         var mode;
@@ -1129,7 +1130,7 @@ define([
               editor.on('change', resetHandler);
           });
           
-          reset.insertAfter($(this).next());
+          reset.insertAfter($textarea.next());
           reset.button();
           if (defaultText === textarea.value) {
             reset.hide();
@@ -1147,6 +1148,7 @@ define([
           // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
           editor.refresh.apply(editor);
           editor.scrollIntoView({line: 0, ch: 0});
+          $textarea.focus();
         }.bind(textarea), 50);
         
         $.data(textarea, 'codemirror', editor);

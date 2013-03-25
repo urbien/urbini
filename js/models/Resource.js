@@ -3,8 +3,9 @@ define([
   'globals',
   'utils',
   'error',
-  'events'
-], function(G, U, Error, Events) {
+  'events',
+  'cache'
+], function(G, U, Error, Events, C) {
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);
     if (U.isNully(prev))

@@ -406,7 +406,7 @@ define([
     },
     
     isResourceProp: function(prop) {
-      return prop && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
+      return prop && !prop.backLink && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -1159,7 +1159,7 @@ define([
     getQueryString: function(paramMap, options) {
       options = options || {};
       if (!options.sort) {
-        result = $.param(paramMap);
+        var result = $.param(paramMap);
         return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
       }
       

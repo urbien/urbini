@@ -251,6 +251,7 @@ define([
   };
   
   Lablz.idbq = idbq;
+  var RM;
   var ResourceManager = RM = {
     TAG: 'Storage',
     fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
@@ -1145,7 +1146,7 @@ define([
       if (U.isModel(data))
         return false;
       
-      var query, orderBy, 
+      var query, orderBy, asc, 
           defOp = 'eq',
           collection = data,
           vocModel = collection.vocModel,
