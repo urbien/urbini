@@ -222,7 +222,7 @@ define([
       var me = G.currentUser._uri;
       var resUri;
       if (U.isCollection(res))
-        resUri = res.models[0].getUri();
+        resUri = null; //res.models[0].getUri();
       else  
         resUri = res.getUri();
       var iAmRes = me === resUri;
@@ -2723,7 +2723,11 @@ define([
         params.$or = backlinkProp.whereOr;
       
       return params;
-    }
+    },
+    
+    DEFAULT_HTML_PROP_VALUE: '<!-- put your HTML here buddy -->',
+    DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
+    DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */'
   };
 
   for (var p in U.systemProps) {

@@ -12,7 +12,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);
+      this.makeTemplate(this.template, 'template', this.vocModel.type);
       return this;
     },
     edit: function(e) {

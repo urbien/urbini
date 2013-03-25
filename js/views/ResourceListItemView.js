@@ -22,10 +22,10 @@ define([
       var key = this.vocModel.shortName + '-list-item';
       this.isEdit = options  &&  options.edit;
       if (!this.isEdit) {
-        this.makeTemplate('listItemTemplate', 'template', this.vocModel.type); //= !this.isEdit //U.getTypeTemplate('list-item', this.resource);
+        this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
       }
       
-//      this.likesAndComments = this.makeTemplate('likesAndComments');
+//      this.makeTemplate('likesAndComments', 'likesAndComments', this.vocModel.type);
       if (this.template) 
         this.isCommonTemplate = false;
       else {

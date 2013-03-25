@@ -16,7 +16,6 @@ define([
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode', 'orientationchange');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on('changePage', this.pageChanged);
-      this.template = this.makeTemplate(this.template);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.TAG = "ListPage";
@@ -35,6 +34,7 @@ define([
       json.viewId = this.cid;
       var vocModel = this.vocModel;
       var type = vocModel.type;
+      this.makeTemplate(this.template, 'template', type);
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  

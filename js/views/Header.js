@@ -14,7 +14,7 @@ define([
 //  'views/MenuButton',
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
   return BasicView.extend({
     TAG: 'Header',
     template: 'headerTemplate',
@@ -35,8 +35,8 @@ define([
 
       var res = this.model;
 //      _.extend(this, options);
-      this.makeTemplate(this.template, 'template', this.vocModel.type, true);
-      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type, true);
+      this.makeTemplate(this.template, 'template', this.vocModel.type);
+      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
       var params = U.getHashParams();
       this.info = params['-info'];
       
@@ -181,10 +181,10 @@ define([
       var commonTypes = G.commonTypes;
       var res = this.resource;
       if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
-        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
-          var tName = res.get('templateName');
-          this.resetTemplate = tName && this.getOriginalTemplate(tName);
-        }
+//        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
+//          var tName = res.get('templateName');
+//          this.resetTemplate = tName && this.getOriginalTemplate(tName);
+//        }
       
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {

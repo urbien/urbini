@@ -14,12 +14,12 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
-      this.inlineListItemTemplate = this.makeTemplate('inlineListItemTemplate');
-      this.cpTemplate = this.makeTemplate('cpTemplate');
-      this.cpMainGroupTemplate = this.makeTemplate('cpMainGroupTemplate');
-      this.cpMainGroupTemplateH = this.makeTemplate('cpMainGroupTemplateH');
-      this.cpTemplateNoAdd = this.makeTemplate('cpTemplateNoAdd');
+      this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', this.vocModel.type);
+      this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', this.vocModel.type);
+      this.makeTemplate('cpTemplate', 'cpTemplate', this.vocModel.type);
+      this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', this.vocModel.type);
+      this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', this.vocModel.type);
+      this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', this.vocModel.type);
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
       this.isMainGroup = options.isMainGroup;

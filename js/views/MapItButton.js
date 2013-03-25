@@ -13,7 +13,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'mapIt');
       BasicView.prototype.initialize.apply(this, arguments);
-      this.template = this.makeTemplate(this.template);
+      this.makeTemplate(this.template, 'template', this.vocModel.type);
       return this;
     },
     mapIt: function(e) {

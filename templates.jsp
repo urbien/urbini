@@ -227,7 +227,7 @@
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, model: model, $title: $title}) }}">
+      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
       <a href="{{= U.makePageUrl(action, _uri) }}">
@@ -494,32 +494,32 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">Your application has been changed please re-Publish</a>
+  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">Your application has been changed please re-Publish</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
 <!-- button to reset a template to its default value -->
-<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" date-position="notext" data-reset="true">Reset to default</a>
+<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">Reset to default</a>
 </script>
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="check" id="doTry" data-role="button" date-position="notext">Goto app</a>
+  <a target="#" data-icon="check" id="doTry" data-role="button" data-position="notext">Goto app</a>
 </script>
 
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <a target="#" data-icon="copy" id="forkMe" data-role="button" date-position="notext">Fork me</a>
+  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">Fork me</a>
 </script>
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" date-position="notext">Enter: {{= name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">Enter: {{= name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
   <!-- button that allows you to test a script connecting two apps -->
-  <a target="#" data-icon="bolt" id="testPlug" data-role="button" date-position="notext">Test this plug</a>
+  <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">Test this plug</a>
 </script>
 
 <script type="text/template" id="headerTemplate">

@@ -87,17 +87,9 @@ define([
             continue;
           
           var code = codeProps[cp].code;
-          switch (code) {
-            case 'html':
-              defaults[cp] = '<!-- put your HTML here buddy -->';
-              break;
-            case 'css':
-              defaults[cp] = '/* put your CSS here buddy */';
-              break;
-            case 'js':
-              defaults[cp] = '/* put your JS here buddy */';
-              break;
-          }
+          var defVal = U['DEFAULT_{0}_PROP_VALUE'.format(code.toUpperCase())];
+          if (defVal)
+            defaults[cp] = defVal;
         }
       }
     

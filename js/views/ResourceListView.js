@@ -21,6 +21,7 @@ define([
     initialize: function (options) {
       _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onNewItemsAppend', 'setMode', 'orientationchange'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      options = options || {};
       $(window).on('scroll', this.onScroll);
       Events.on('changePage', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
@@ -31,11 +32,13 @@ define([
 //      this.options = _.pick(options, 'checked', 'props') || {};
       this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
-      this.fileUploadTemplate = this.makeTemplate('fileUpload');
+      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
       var commonTypes = G.commonTypes;
       var type = this.vocModel.type;
 //      this.isPhotogrid = _.contains([commonTypes.Handler, commonTypes.FriendApp], type);
       this.isPhotogrid = this.parentView.isPhotogrid;
+      if (this.isPhotogrid)
+        this.displayPerPage = 5;
 //      var self = this;
 //      if (this.isPhotogrid) {
 //        this.readyPromise = U.require('views/PhotogridView', function(PhotogridView) {
@@ -178,7 +181,7 @@ define([
           mvVals.push(s[i].trim());
       }
       
-      var lis = isModification || isMasonry ? this.$('.nab') : this.$('li');
+      var lis = isModification || isMasonry ? this.$('.nab') : this.isPhotogrid ? this.$('tr') : this.$('li');
       var imageProperty = U.getImageProperty(rl);
       var curNum = lis.length;
       var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
@@ -203,8 +206,15 @@ define([
       
 //      var defaultUnchecked = params.$checked !== 'y';
       var table;
-      if (this.isPhotogrid)
-        table = $('<table width="100%"></table>')[0];
+      if (this.isPhotogrid) {
+        table = $('table#photogridList{0}'.format(this.cid));
+        if (table.length) {
+          table = table[0];
+          table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
+        }
+        else
+          table = $('<table id="photogridList{0}" width="100%"></table>'.format(this.cid))[0];
+      }
         
 //      var renderDfd = this.isPhotogrid ? $.Deferred() : null;
       for (; i < num; i++) {
