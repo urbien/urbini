@@ -107,7 +107,9 @@ define([
         this.adding = false;
         if (multiAdd && !this.resetting) {
           this.trigger('added', models);
-        }        
+        }
+        
+        Events.trigger('newResources', models);
       }
     },
     replace: function(resource, oldUri) {
