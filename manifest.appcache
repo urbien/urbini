@@ -7,7 +7,7 @@ js/lib/font/fontawesome-webfont.ttf
 js/lib/jqm-icon-pack-fa.css
 js/lib/images/icons-18-white-pack.png
 <appJS>
-js/lib/images/ajax-loader.gif
+images/ajax-loader.gif
 js/lib/images/frame/white_bg/live-sign.png
 #<appImages>
 # cache-end

@@ -1517,28 +1517,53 @@ require(['globals'], function(G) {
   }
   
   var pre = G.bundles.pre;
-  G.loadBundle(pre, function() {
-    G.finishedTask("loading pre-bundle");
-    var priorities = [];
-    var appcache = G.files.appcache;
-    for (var type in pre) {
-      var subBundle = pre[type];
-      for (var i = 0; i < subBundle.length; i++) {
-        var module = subBundle[i];
-        if (module.hasOwnProperty('priority')) {
-          subBundle.splice(i, 1);
-//          if (appcache[module.name]) {
-//            require([module.name]);
-//            continue;
-//          }
-//          
-          priorities.push(module);
-        }
+  var priorities = [];
+  var appcache = G.files.appcache;
+  for (var type in pre) {
+    var subBundle = pre[type];
+    for (var i = 0; i < subBundle.length; i++) {
+      var module = subBundle[i];
+      if (module.hasOwnProperty('priority')) {
+        subBundle.splice(i, 1);
+//        if (appcache[module.name]) {
+//          require([module.name]);
+//          continue;
+//        }
+//        
+        priorities.push(module);
       }
     }
+  }
+
+  if (priorities.length) {
+    priorities.sort(function(a, b) {
+      return b.priority - a.priority;
+    });
     
-    G.startedTask("loading modules");
-    function loadRegular() {
+    var pModules = [];
+    for (var i = 0; i < priorities.length; i++) {
+      pModules.push(priorities[i].name);
+    }
+    
+//    require(pModules);
+    require(pModules, function() {
+      loadRegular();
+    });
+  }
+  else
+    loadRegular();
+
+  function loadRegular() {    
+    G.loadBundle(pre, function() {
+      G.finishedTask("loading pre-bundle");
+      
+      G.startedTask("loading modules");
+      var css = G.bundles.pre.css.slice();
+      for (var i = 0; i < css.length; i++) {
+        var cssObj = css[i];
+        css[i] = cssObj.name;
+      }
+      
       require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
@@ -1554,30 +1579,6 @@ require(['globals'], function(G) {
           G.postBundleListeners.length = 0;
         }, true);
       });
-    }
-    
-    if (priorities.length) {
-      priorities.sort(function(a, b) {
-        return b.priority - a.priority;
-      });
-      
-      var pModules = [];
-      for (var i = 0; i < priorities.length; i++) {
-        pModules.push(priorities[i].name);
-      }
-      
-//      require(pModules);
-      require(pModules, function() {
-        loadRegular();
-      });
-    }
-    else
-      loadRegular();
-
-    var css = G.bundles.pre.css.slice();
-    for (var i = 0; i < css.length; i++) {
-      var cssObj = css[i];
-      css[i] = cssObj.name;
-    }
-  });
+    });
+  }
 })
