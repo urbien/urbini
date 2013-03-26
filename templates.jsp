@@ -227,7 +227,7 @@
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, model: model, $title: $title}) }}">
+      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
       <a href="{{= U.makePageUrl(action, _uri) }}">
@@ -494,7 +494,7 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">Your application has been changed please re-Publish</a>
+  <a target="#" data-icon="book" id="publish" data-role="button" date-position="notext">This app has been changed please re-Publish</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
