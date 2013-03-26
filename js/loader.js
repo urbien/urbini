@@ -589,6 +589,7 @@ define('globals', function() {
 
   var orgRJSLoad = requirejs.load;
   requirejs.load = function (context, name, url, config) {
+    console.log(G.TAG, 'cache', 'loading', url);
     var completeLoad = context.completeLoad,
         url = G.getCanonicalPath(url),
         config = config || (context && context.config) || {},
@@ -596,6 +597,7 @@ define('globals', function() {
 
     if (G.isInAppcacheBundle(url)) {  
       var path = G.requireConfig.paths[name];
+      path = path || name;
       var realPath = G.files[path].name;
       arguments[2] = url.replace(path, realPath);
       orgRJSLoad.apply(this, arguments);
@@ -1152,11 +1154,15 @@ define('fileCache', function() {
       var bType = Object.prototype.toString.call(bundle);
       var noTS = bType === '[object String]';
       if (noTS) {
+        debugger;
         var name = bundle;
-        bundle = {def: [{}]};
-        bundle.def[0][name] = G.files[name];
+        bundle = {def: [{
+          name: name,
+          timestamp: G.files[name]
+        }]};
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
+        debugger;
         bundle = {def: bundle};
       }
       
@@ -1168,18 +1174,18 @@ define('fileCache', function() {
           if (typeof info === 'string')
             name = info, timestamp = G.files[name];
           else {
-            for (var n in info) {
-              name = n;
-              break;
-            }
+            name = info.name;
+            timestamp = info.timestamp;
             
-            timestamp = info[name];
             // for some files, like xhrWorker, we need the full name (e.g. xhrWorker.min_en_18908809988.js)
-            if (timestamp.timestamp) { 
-              name = timestamp.name;
-              timestamp = timestamp.timestamp;
-            }
+//            if (timestamp.timestamp) { 
+//              name = timestamp.name;
+//              timestamp = timestamp.timestamp;
+//            }
           }
+          
+          if (!name)
+            debugger;
           
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
@@ -1476,19 +1482,29 @@ require(['globals'], function(G) {
       var bt = bundle[type];
       for (var i = 0; i < bt.length; i++) {
         var info = bt[i];
-        for (var prop in info) {
-          var val = info[prop];
-          G.files[prop] = val;
-          if (when === 'appcache') {
-            G.files.appcache[prop] = true;
-          }
+        G.files[info.name] = info.timestamp;
+        if (when === 'appcache') {
+          G.files.appcache[info.name] = true;
         }
       }
     }
   }
   
-  G.loadBundle(G.bundles.pre, function() {
+  var pre = G.bundles.pre;
+  G.loadBundle(pre, function() {
     G.finishedTask("loading pre-bundle");
+    var priorities = [];
+    for (var type in pre) {
+      var subBundle = pre[type];
+      for (var i = 0; i < subBundle.length; i++) {
+        var module = subBundle[i];
+        if (module.hasOwnProperty('priority')) {
+          priorities.push(module);
+          subBundle.splice(i, 1);
+        }
+      }
+    }
+    
     var css = G.bundles.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       var cssObj = css[i];
@@ -1499,20 +1515,39 @@ require(['globals'], function(G) {
     }
     
     G.startedTask("loading modules");
-    require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
-      G.finishedTask("loading modules");
-      G.browser = $.browser;
-      App.initialize();
-      G.startedTask('loading post-bundle');
-      G.loadBundle(G.bundles.post, function() {
-        G.finishedTask('loading post-bundle');
-        G.postBundleLoaded = true;
-        for (var i = 0; i < G.postBundleListeners.length; i++) {
-          G.postBundleListeners[i]();
-        }
-        
-        G.postBundleListeners.length = 0;
-      }, true);
-    });
+    function loadRegular() {
+      require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
+        G.finishedTask("loading modules");
+        G.browser = $.browser;
+        App.initialize();
+        G.startedTask('loading post-bundle');
+        G.loadBundle(G.bundles.post, function() {
+          G.finishedTask('loading post-bundle');
+          G.postBundleLoaded = true;
+          for (var i = 0; i < G.postBundleListeners.length; i++) {
+            G.postBundleListeners[i]();
+          }
+          
+          G.postBundleListeners.length = 0;
+        }, true);
+      });
+    }
+    
+    if (priorities.length) {
+      priorities.sort(function(a, b) {
+        return b.priority - a.priority;
+      });
+      
+      var pModules = [];
+      for (var i = 0; i < priorities.length; i++) {
+        pModules.push(priorities[i].name);
+      }
+      
+      require(priorities, function() {
+        loadRegular();
+      });
+    }
+    else
+      loadRegular();
   });
 })

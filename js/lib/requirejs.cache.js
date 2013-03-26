@@ -103,6 +103,7 @@ define(function () {
         return;
       }
       
+      var ext;
       var isText = ext = name.match(/\.[a-zA-Z]+$/g);
       if (ext)
         ext = ext[0].slice(1).toLowerCase();

@@ -227,7 +227,7 @@
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, $title: $title}) }}">
+      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, model: model, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
       <a href="{{= U.makePageUrl(action, _uri) }}">

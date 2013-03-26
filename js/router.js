@@ -243,6 +243,10 @@ define([
         
       var previousView = this.currentView;
       if (!previousView) {
+        var qIdx = tName.indexOf("?");
+        if (qIdx >= 0) // these parameters are meant for the templates route, not for the previous view 
+          tName = tName.slice(0, qIdx);
+        
         this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
         return;
       }
