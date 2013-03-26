@@ -26,7 +26,7 @@ define([
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
 
-//      this.resource.on('change', this.refresh, this);
+      this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
