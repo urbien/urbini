@@ -595,17 +595,20 @@ define('globals', function() {
         config = config || (context && context.config) || {},
         cached;
 
+    if (/\.(jsp|css|html)\.js$/.test(url))
+      url = url.replace(/\.js$/, '');
+        
     if (G.isInAppcacheBundle(url)) {  
       var path = G.requireConfig.paths[name];
       path = path || name;
       var realPath = G.files[path].name;
       arguments[2] = url.replace(path, realPath);
-      orgRJSLoad.apply(this, arguments);
-      return;
+      if (!/\.(jsp|css|html)$/.test(url)) {
+        orgRJSLoad.apply(this, arguments);
+        return;
+      }
     }
 
-    if (/\.(jsp|css|html)\.js$/.test(url))
-      url = url.replace(/\.js$/, '');
       
     var ext;
     var isText = ext = name.match(/\.[a-zA-Z]+$/g);
@@ -1155,11 +1158,15 @@ define('fileCache', function() {
       var noTS = bType === '[object String]';
       if (noTS) {
         debugger;
-        var name = bundle;
-        bundle = {def: [{
-          name: name,
-          timestamp: G.files[name]
-        }]};
+        var info = {
+          name: bundle
+        }
+        
+        var timestamp = G.files[name];
+        if (timestamp && timestamp.timestamp)
+          info.timestamp = timestamp.timestamp;
+        
+        bundle = {def: [info]};
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
         debugger;
@@ -1482,9 +1489,9 @@ require(['globals'], function(G) {
       var bt = bundle[type];
       for (var i = 0; i < bt.length; i++) {
         var info = bt[i];
-        G.files[info.name] = info.timestamp;
+        G.files[info.name] = info;
         if (when === 'appcache') {
-          G.files.appcache[info.name] = true;
+          G.files.appcache[info.name] = info;
         }
       }
     }
@@ -1494,28 +1501,49 @@ require(['globals'], function(G) {
   G.loadBundle(pre, function() {
     G.finishedTask("loading pre-bundle");
     var priorities = [];
+    var appcache = G.files.appcache;
     for (var type in pre) {
       var subBundle = pre[type];
       for (var i = 0; i < subBundle.length; i++) {
         var module = subBundle[i];
         if (module.hasOwnProperty('priority')) {
-          priorities.push(module);
           subBundle.splice(i, 1);
+//          if (appcache[module.name]) {
+//            require([module.name]);
+//            continue;
+//          }
+//          
+          priorities.push(module);
         }
       }
     }
     
+    if (priorities.length) {
+      priorities.sort(function(a, b) {
+        return b.priority - a.priority;
+      });
+      
+      var pModules = [];
+      for (var i = 0; i < priorities.length; i++) {
+        pModules.push(priorities[i].name);
+      }
+      
+      require(pModules);
+//      require(pModules, function() {
+//        loadRegular();
+//      });
+    }
+//    else
+//      loadRegular();
+
     var css = G.bundles.pre.css.slice();
     for (var i = 0; i < css.length; i++) {
       var cssObj = css[i];
-      for (var name in cssObj) {
-        css[i] = name;
-        break;
-      }
+      css[i] = cssObj.name;
     }
     
     G.startedTask("loading modules");
-    function loadRegular() {
+//    function loadRegular() {
       require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
@@ -1531,23 +1559,6 @@ require(['globals'], function(G) {
           G.postBundleListeners.length = 0;
         }, true);
       });
-    }
-    
-    if (priorities.length) {
-      priorities.sort(function(a, b) {
-        return b.priority - a.priority;
-      });
-      
-      var pModules = [];
-      for (var i = 0; i < priorities.length; i++) {
-        pModules.push(priorities[i].name);
-      }
-      
-      require(priorities, function() {
-        loadRegular();
-      });
-    }
-    else
-      loadRegular();
+//    }    
   });
 })
