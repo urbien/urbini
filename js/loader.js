@@ -555,6 +555,7 @@ define('globals', function() {
         onLoad,
         ext = url.match(/\.[a-zA-Z]+$/g)[0];
     
+    var appcache = G.files.appcache;
     if (ext === '.jsp')
       onLoad = contextOrOnLoad;
     else
@@ -563,7 +564,11 @@ define('globals', function() {
     switch (ext) {
       case '.css':
         text += '\r\n/*//@ sourceURL=' + url + '*/';
-        G.appendCSS(text);
+        if (appcache[name])
+          G.linkCSS(G.serverName + '/' + url);
+        else
+          G.appendCSS(text);
+        
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
         G.log(G.TAG, 'cache', 'end cache.get: ' + url);
@@ -589,7 +594,7 @@ define('globals', function() {
 
   var orgRJSLoad = requirejs.load;
   requirejs.load = function (context, name, url, config) {
-    console.log(G.TAG, 'cache', 'loading', url);
+//    console.log(G.TAG, 'cache', 'loading', url);
     var completeLoad = context.completeLoad,
         url = G.getCanonicalPath(url),
         config = config || (context && context.config) || {},
@@ -598,7 +603,8 @@ define('globals', function() {
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
         
-    if (G.isInAppcacheBundle(url)) {  
+    var inAppcache = G.isInAppcacheBundle(url);
+    if (inAppcache) {  
       var path = G.requireConfig.paths[name];
       path = path || name;
       var realPath = G.files[path].name;
@@ -616,11 +622,11 @@ define('globals', function() {
       ext = ext[0].slice(1).toLowerCase();
       
     var mCache = G.modules;
-    var inMemory = mCache && mCache[url];
+    var inMemory = inAppcache || (mCache && mCache[url]);
     var loadedCached = false;
     if (inMemory) {// || hasLocalStorage) {
       var loadSource = inMemory ? 'memory' : 'LS',
-          cached = mCache[url];
+          cached = inAppcache || mCache[url];
 
       var loadedCached = cached;
       if (loadedCached) {            
@@ -1091,7 +1097,18 @@ define('fileCache', function() {
       
       return keys;
     },
-    
+
+    linkCSS: function(url) {
+      var link = doc.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = url; 
+//      link.setAttribute("rel", "stylesheet")
+//      link.setAttribute("type", "text/css")
+//      link.setAttribute("href", url);
+      head.appendChild(link);
+    },
+
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
@@ -1154,10 +1171,10 @@ define('fileCache', function() {
 
     pruneBundle: function(bundle) {
       var modules = [];
+      var appcache = G.files.appcache;
       var bType = Object.prototype.toString.call(bundle);
       var noTS = bType === '[object String]';
       if (noTS) {
-        debugger;
         var info = {
           name: bundle
         }
@@ -1169,7 +1186,6 @@ define('fileCache', function() {
         bundle = {def: [info]};
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
-        debugger;
         bundle = {def: bundle};
       }
       
@@ -1191,9 +1207,10 @@ define('fileCache', function() {
 //            }
           }
           
-          if (!name)
-            debugger;
+          if (!name || appcache[name])
+            continue;
           
+//          var inAppcache = !!appcache[name];
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
@@ -1204,6 +1221,8 @@ define('fileCache', function() {
             continue;
           
           info[path] = timestamp; // || G.modules(G.bundles, path)[path];
+//          if (inAppcache)
+//            info.appcache = true;
           modules.push(info);
         }
       }
@@ -1518,32 +1537,8 @@ require(['globals'], function(G) {
       }
     }
     
-    if (priorities.length) {
-      priorities.sort(function(a, b) {
-        return b.priority - a.priority;
-      });
-      
-      var pModules = [];
-      for (var i = 0; i < priorities.length; i++) {
-        pModules.push(priorities[i].name);
-      }
-      
-      require(pModules);
-//      require(pModules, function() {
-//        loadRegular();
-//      });
-    }
-//    else
-//      loadRegular();
-
-    var css = G.bundles.pre.css.slice();
-    for (var i = 0; i < css.length; i++) {
-      var cssObj = css[i];
-      css[i] = cssObj.name;
-    }
-    
     G.startedTask("loading modules");
-//    function loadRegular() {
+    function loadRegular() {
       require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
@@ -1559,6 +1554,30 @@ require(['globals'], function(G) {
           G.postBundleListeners.length = 0;
         }, true);
       });
-//    }    
+    }
+    
+    if (priorities.length) {
+      priorities.sort(function(a, b) {
+        return b.priority - a.priority;
+      });
+      
+      var pModules = [];
+      for (var i = 0; i < priorities.length; i++) {
+        pModules.push(priorities[i].name);
+      }
+      
+//      require(pModules);
+      require(pModules, function() {
+        loadRegular();
+      });
+    }
+    else
+      loadRegular();
+
+    var css = G.bundles.pre.css.slice();
+    for (var i = 0; i < css.length; i++) {
+      var cssObj = css[i];
+      css[i] = cssObj.name;
+    }
   });
 })
