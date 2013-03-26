@@ -178,6 +178,9 @@ define([
     },
 
     calcSpecialButtons: function() {
+      if (this.isEdit)
+        return;
+      
       var commonTypes = G.commonTypes;
       var res = this.resource;
       if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
@@ -190,8 +193,9 @@ define([
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
-          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
+          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished'))) {
             this.publish = true;
+          }
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));

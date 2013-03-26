@@ -910,11 +910,10 @@ define([
         propsForEdit = this.vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
         if (!editProps  &&  this.action == 'make'  &&  this.vocModel.type.endsWith('WebProperty')) {
-          editProps = [];
-          editProps.push('label');
-          editProps.push('propertyType');
+          editProps = ['label', 'propertyType'];
         }  
       }
+      
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
       var formId = G.nextId();
       var idx = 0;
