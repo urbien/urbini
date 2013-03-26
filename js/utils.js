@@ -221,9 +221,9 @@ define([
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
       var resUri;
-      if (U.isCollection(res))
-        resUri = res.models[0].getUri();
-      else  
+      if (!U.isCollection(res))
+//        resUri = res.models[0].getUri();
+//      else  
         resUri = res.getUri();
       var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
