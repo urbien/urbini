@@ -27,7 +27,7 @@ define([
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
       this.on('sync', this.onsync);
-      this.vocModel = this.constructor;
+      this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.detached = options.detached; // if true, this resource will not be persisted to the database, nor will it be fetched from the server
@@ -50,6 +50,14 @@ define([
       else if (this.vocModel.type === G.commonTypes.Jst) {
         Events.trigger('newTemplate', this);        
       }
+    },
+    
+    setModel: function(vocModel, options) {
+      vocModel = vocModel || this.constructor;
+      this.constructor = this.vocModel = vocModel;
+      this.type = vocModel.type;
+      if (!options || !options.silent)
+        this.trigger('change', this);
     },
     
     get: function(propName) {
@@ -119,6 +127,13 @@ define([
         var uri = this.getUri();
         var oldUri = data._oldUri;
         if (oldUri) {
+          var oldType = U.getTypeUri(oldUri);
+          var newType = U.getTypeUri(uri);
+          if (oldType != newType) {
+            debugger;
+            // change vocModel
+          }
+          
           Events.off('synced:' + oldUri, callback);
           Events.on('synced:' + uri, callback);
           Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
@@ -229,9 +244,9 @@ define([
         uri = resp._uri || resp.uri;
       }
 
-      resp._shortUri = U.getShortUri(uri, this.constructor);
-      var primaryKeys = U.getPrimaryKeys(this.constructor);
-      resp._uri = U.getLongUri1(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});
+      resp._shortUri = U.getShortUri(uri, this.vocModel);
+      var primaryKeys = U.getPrimaryKeys(this.vocModel);
+      resp._uri = U.getLongUri1(resp._uri, {type: this.type, primaryKeys: primaryKeys});
       if (lf)
         resp._lastFetchedOn = lf;
       
@@ -510,18 +525,37 @@ define([
       this.set(atts, {skipValidation: true});
     },
     
+//    handleTypeBased: function(data) {
+//      var isNew = this.isNew();
+//      var vocModel = this.vocModel;
+//      var type = vocModel.type;
+//      var commonTypes = G.commonTypes;
+//      switch (type) {
+//        case commonTypes.WebProperty:
+//          if (!isNew)
+//            return true;
+//          
+//          switch (data.propertyType) {
+//            
+//          }
+//        default:
+//          return true;
+//      }
+//      
+//      options = _.extend(options || {}, {skipTypeBased: true});
+//      this.save(data, options);
+//      return false;
+//    },
+    
     save: function(attrs, options) {
       this.loaded = true;
       var isNew = this.isNew();
       var commonTypes = G.commonTypes;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
-//      var meta = this.vocModel.properties;
-//      for (var att in data) {
-//        var prop = meta[att];
-//        if (prop && U.isResourceProp(prop)) {
-//          
-//        }
+//      if (!options.skipTypeBased) {
+//        if (!this.handleTypeBased(data, options)) // delayed execution
+//          return
 //      }
       
       var vocModel = this.vocModel;

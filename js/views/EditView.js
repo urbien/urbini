@@ -26,7 +26,7 @@ define([
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
 
-//      this.resource.on('change', this.refresh, this);
+      this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
@@ -910,11 +910,10 @@ define([
         propsForEdit = this.vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
         if (!editProps  &&  this.action == 'make'  &&  this.vocModel.type.endsWith('WebProperty')) {
-          editProps = [];
-          editProps.push('label');
-          editProps.push('propertyType');
+          editProps = ['label', 'propertyType'];
         }  
       }
+      
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
       var formId = G.nextId();
       var idx = 0;

@@ -886,6 +886,18 @@ define([
         });
       });
     });
+    
+    Events.on('newResource', function(resource) {
+      var uri = resource.getUri();
+      var type = resource.type;
+      var actualType = U.getType(uri);
+      if (actualType && type != actualType) {
+        Voc.getModels(actualType).done(function() {
+          var actualModel = U.getModel(actualType);
+          resource.setModel(actualModel);
+        });
+      }
+    });
   });
   
   return (G.Voc = Voc);

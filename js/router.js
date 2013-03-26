@@ -534,7 +534,7 @@ define([
         Events.trigger('navigateToResource:' + res.resourceId, res);
         res.fetch({forceFetch: forceFetch});
         if (wasTemp && !isTemp)
-          this.navigate(U.makeMobileUrl(action, resUri), {trigger: false, replace: true});
+          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
         
         return this;
       }
