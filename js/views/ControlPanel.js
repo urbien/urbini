@@ -185,7 +185,7 @@ define([
           var propDisplayName = U.getPropDisplayName(prop);
           U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
           list.each(function(iRes) {
-            U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment }));
+            U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment, _problematic: iRes.get('_error') }));
             displayedProps[name] = true;
           }.bind(this));
         }.bind(this));
@@ -367,7 +367,14 @@ define([
       if (!options || options.setHTML)
         this.$el.html(frag);
       
-//      var self = this;  
+//      var self = this;
+//      var problems = $('.problematic');
+//      problems.each(function() {
+//        $(this).css('color', '#f66');
+//        if (!this.innerHTML.startsWith('<i'))
+//          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
+//      });
+      
       this.rendered = true;
       return this;
     }

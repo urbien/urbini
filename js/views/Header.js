@@ -174,7 +174,7 @@ define([
     
     refreshTitle: function() {
       this.calcTitle();
-      this.$('#pageTitle').html(this.title); 
+      this.$('#pageTitle').html(this.title);
     },
 
     calcSpecialButtons: function() {
@@ -281,7 +281,11 @@ define([
     renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
-      
+
+      var error = this.resource.get('_error');
+      if (error)
+        this.error = error.details;
+
       this.calcSpecialButtons();
       var res = this.resource; // undefined, if this is a header for a collection view
       this.$el.html("");

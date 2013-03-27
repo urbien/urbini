@@ -298,7 +298,7 @@
 <!-- one row of an inline backlink in view mode -->
 <li>
   <i class="icon-home"></i>
-  <a href="{{= U.makePageUrl('edit', _uri) }}">{{= name }}</a>
+  <a href="{{= U.makePageUrl('edit', _uri) }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }}</a>
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
@@ -525,7 +525,6 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
-    <div id="errMsg"></div>
     <div data-role="navbar">
       <ul id="headerUl">
       </ul>
@@ -566,6 +565,7 @@
       </div>
     </div>
       {{= typeof this.info == 'undefined' ? '' : '<h3 id="info"><i class="ui-icon-warning-sign"></i> ' + this.info + '</h3>'}}
+      {{= typeof this.error == 'undefined' ? '' : '<h3 id="error"><i class="ui-icon-ban-circle"></i> ' + this.error + '</h3>'}}
   </div>
 </script>
 
@@ -854,10 +854,10 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
-    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : escape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
-    <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
 </script>
 

@@ -127,12 +127,12 @@ define([
         var uri = this.getUri();
         var oldUri = data._oldUri;
         if (oldUri) {
-          var oldType = U.getTypeUri(oldUri);
-          var newType = U.getTypeUri(uri);
-          if (oldType != newType) {
-            debugger;
-            // change vocModel
-          }
+//          var oldType = U.getTypeUri(oldUri);
+//          var newType = U.getTypeUri(uri);
+//          if (oldType != newType) {
+//            debugger;
+//            // change vocModel
+//          }
           
           Events.off('synced:' + oldUri, callback);
           Events.on('synced:' + uri, callback);
@@ -510,7 +510,9 @@ define([
           var list;
           if (!(list = this.inlineLists[bl])) {
 //            list = new ResourceList([res], {model: res.vocModel, params: U.getListParams(res, blProp)});
-            Events.trigger('inlineResourceList', this, prop, val._list);
+            if (blVal._list)
+              Events.trigger('inlineResourceList', this, prop, blVal._list);
+            
             return;
           }
           

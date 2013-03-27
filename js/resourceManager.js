@@ -63,8 +63,9 @@ define([
       _uri: {unique: true, multiEntry: false},
       _dirty: {unique: false, multiEntry: false},
       _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
-      _problematic: {unique: false, multiEntry: false},
-      _alert: {unique: false, multiEntry: false}      
+      _problematic: {unique: false, multiEntry: false}
+//      ,
+//      _alert: {unique: false, multiEntry: false}      
     })
   };
 
@@ -805,19 +806,28 @@ define([
             if (problem) {
               try {
                 problem = JSON.parse(problem);
-                ref._problem = problem;
+                ref._error = problem.error;
               } catch (err) {
                 problem = null;
               }
             }
             
+            ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem with your edit' : 'There was a problem creating this resource')};
+            var isMkResource = !ref._tempUri;
+            var toSave;
+            var errInfo = _.pick(ref, 'uri', '_error');
+            if (isMkResource)
+              toSave = _.extend(U.getQueryParams(atts, resource.vocModel), errInfo);
+            else
+              toSave = _.extend(resource.toJSON(), errInfo);
+            
             ref._problematic = 1;
-            ref._alert = problem;
 //            if (status > 399 && status < 600) {
               RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {
                 debugger;
               }).progress(function(transaction) {
                 RM.put(ref, transaction.objectStore(REF_STORE.name, 1));
+                RM.put(toSave, transaction.objectStore(type, 1));
               }).always(dfd.resolve); // resolve in any case, so sync operation can conclude
 //            }
 //            else {
@@ -828,8 +838,6 @@ define([
         });
       }).promise();
     },
-    
-    
     
     syncResource: function(ref, refs) {
       return $.Deferred(function(dfd) {
