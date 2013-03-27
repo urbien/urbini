@@ -232,6 +232,8 @@ h3#pageTitle {margin: 10px 0 10px 0;}
 #headerUl .ui-btn { padding: 3px 0px; }
 
 @media (max-width: 320px) {
+
+/*@media all and (min-width: 298px) {*/
   .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
   .nab .anab .galleryItem_css3 img {max-width: 272px;}
   .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
@@ -240,6 +242,19 @@ h3#pageTitle {margin: 10px 0 10px 0;}
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
   .connect i { font-size:16px; color: #888;}
 }
+/*
+@media all and (min-width: 468px){
+  .nab .anab .galleryItem_css3 img {max-width: 205px;}
+  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
+}
+@media all and (min-width: 768px){
+  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+  .nab .anab .galleryItem_css3 img {max-width: 205px;}
+  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
+}
+*/
 #mainGroup div {white-space:normal; height: 60px; }
 #mainGroup span {text-shadow: 0 1px 0 #bbb;}
 #mainGroup .ui-btn-inner { padding: 1.3em 10px; font-size: 14px;}
@@ -331,3 +346,15 @@ h3#pageTitle {margin: 10px 0 10px 0;}
  -webkit-box-shadow:none;
 }
 }
+.demo-1 body:after {
+    content: "";
+    z-index: -1;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: -webkit-radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
+    background: -moz-radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
+    background: -ms-radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
+    background: -o-radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
+    background: radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
+}
+

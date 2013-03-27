@@ -614,7 +614,6 @@ define('globals', function() {
         return;
       }
     }
-
       
     var ext;
     var isText = ext = name.match(/\.[a-zA-Z]+$/g);

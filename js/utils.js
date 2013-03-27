@@ -1656,6 +1656,8 @@ define([
             
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      if (prop.comment)
+        val.comment = prop.comment;
       var propInfo = {value: U.template(propTemplate)(val)};
       if (prop.comment)
         propInfo.comment = prop.comment;

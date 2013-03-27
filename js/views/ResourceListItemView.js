@@ -42,7 +42,7 @@ define([
           this.makeTemplate('listItemTemplate', 'template');
         }
         else
-          this.makeTemplate('listItemTemplateNoImage', 'template');
+          this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
       }
       if (options.swatch) {
         this.$el.attr("data-theme", options.swatch);

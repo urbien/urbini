@@ -276,7 +276,7 @@ define([
           }
         }
         
-        if (!pr.multiValue) {
+        if (!pr.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
           params.$prop = prop;
           return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
         }
@@ -298,7 +298,7 @@ define([
           params.$forResource = uri;
         
         params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-        var mvList = e.target.innerText;
+        var mvList = (e.target.text || e.target.textContent).trim(); //e.target.innerText;
         mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
         params['$' + prop] = mvList;
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), params), {trigger: true});

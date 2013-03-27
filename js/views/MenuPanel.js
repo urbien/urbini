@@ -228,11 +228,11 @@ define([
 //          }));
         }
         
-        if (isCreatorOrAdmin) {
+        if (isCreatorOrAdmin  &&  this.vocModel.type.indexOf('/dev/') != -1) {
           var wHash = decodeURIComponent(U.getHash());
           var params = {};
           params.modelName = this.vocModel.displayName;
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Templates used on this page', pageUrl: U.makePageUrl('templates', wHash, params)}));
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Edit page', pageUrl: U.makePageUrl('templates', wHash, params)}));
         }
         
         var user = G.currentUser;
