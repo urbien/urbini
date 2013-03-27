@@ -107,11 +107,17 @@ define([
         this.adding = false;
         if (multiAdd && !this.resetting) {
           this.trigger('added', models);
-        }        
+        }
+        
+        Events.trigger('newResources', models);
       }
     },
     replace: function(resource, oldUri) {
-      this.remove(resource);
+      if (U.isModel(oldUri))
+        this.remove(oldUri)
+      else
+        this.remove(resource);
+      
       this.add(resource);
       this.trigger('replaced', resource, oldUri);
     },

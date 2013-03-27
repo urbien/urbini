@@ -47,7 +47,7 @@ define([
 //    LoginView: null,
     initialize: function () {
       this.firstPage = true;
-      homePage = new HomePage({el: $('div#homePage')});
+      this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
       Events.on('back', function() {
         self.backClicked = true;
@@ -109,21 +109,21 @@ define([
 //    wasBackClicked: function() {
 //      return !this.navigating && !this.firstPage;
 //    },
-//    route: function() {
-//      var async = Backbone.Router.prototype.route.apply(this, arguments);
-//      // Our route functions return true if they performed an asynchronous page change
-//      if (async === true)
-//        this.navigateDone();
-//      
-//      return this;
-//    },
+    route: function() {
+      var currentView = this.currentView;
+      try {
+        return Backbone.Router.prototype.route.apply(this, arguments);
+      } finally {
+        this.previousView = currentView;
+      }
+    },
     
     home: function() {
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();
         if (!this.currentView) {
-          homePage.render();
-          this.currentView = homePage;
+          this.homePage.render();
+          this.currentView = this.homePage;
           var idx = window.location.href.indexOf('#');
           this.currentUrl = (idx == -1) ? window.location.href : window.location.href.substring(0, idx);
         }
@@ -137,8 +137,8 @@ define([
       }
       else {
         this.currentUrl = window.location.href;
-        homePage.render();
-        this.currentView = homePage;
+        this.homePage.render();
+        this.currentView = this.homePage;
       }
     },
     
@@ -243,6 +243,10 @@ define([
         
       var previousView = this.currentView;
       if (!previousView) {
+        var qIdx = tName.indexOf("?");
+        if (qIdx >= 0) // these parameters are meant for the templates route, not for the previous view 
+          tName = tName.slice(0, qIdx);
+        
         this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
         return;
       }
@@ -442,6 +446,7 @@ define([
       if (!edit && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
       
+      var action = edit ? 'edit' : 'view';
       var views = this[edit ? 'EditViews' : 'Views'];
       var viewPageCl = edit ? this.EditPage : this.ViewPage;
 
@@ -485,18 +490,23 @@ define([
       if (res && !res.loaded)
         res = null;
 
-      if (U.isTempUri(uri)) {
-        Events.once('synced:' + uri, function() {
-          var currentView = self.currentView;
-          var updateHash = function() {
-            self.navigate(U.makeMobileUrl('view', res.getUri()), {trigger: false, replace: true});
-          }
-          
-          if (currentView && currentView.resource === res)
-            updateHash();
-          else
-            Events.once('navigateToResource:' + res.resourceId, updateHash);
-        });
+      var newUri = res && res.getUri();
+      var wasTemp = U.isTempUri(uri);
+      var isTemp = newUri && U.isTempUri(newUri);
+      if (wasTemp) {
+        if (!isTemp) {
+          Events.once('synced:' + uri, function() {
+            var currentView = self.currentView;
+            var updateHash = function() {
+              self.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
+            }
+            
+            if (currentView && currentView.resource === res)
+              updateHash();
+            else
+              Events.once('navigateToResource:' + res.resourceId, updateHash);
+          });
+        }
       }
 
       var options = this.getChangePageOptions();
@@ -516,15 +526,24 @@ define([
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+        var v = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+        if (action === 'view')
+          views[uri] = v;
+        
         this.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        res.fetch({forceFetch: forceFetch});                
+        res.fetch({forceFetch: forceFetch});
+        if (wasTemp && !isTemp)
+          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
+        
         return this;
       }
       
       var res = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
+      var v = new viewPageCl({model: res, source: this.previousFragment});
+      if (action === 'view')
+        views[uri] = v;
+      
       var changedPage = false;
       var success = function() {
         self.changePage(v);

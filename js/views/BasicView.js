@@ -78,10 +78,11 @@ define([
       return Templates.getOriginalTemplate(templateName);
     },
 
-    makeTemplate: function(templateName, localName, type, fallBackToDefault) {
+    makeTemplate: function(templateName, localName, type, dontFallBackToDefault) {
+//      localName = localName || templateName;
       var template = this[localName] = U.template(templateName, type, this);
       if (!template) {
-        if (fallBackToDefault && type)
+        if (!dontFallBackToDefault && type)
           return this.makeTemplate(templateName, localName);
         else
           return template;

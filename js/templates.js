@@ -90,7 +90,7 @@ define([
       if (type)
         templates[type] = text;
       else {
-        templates['oldDefault'] = templates['default'];
+        templates['originalDefault'] = templates['default'];
         templates['default'] = text;
       }
       
@@ -124,7 +124,7 @@ define([
     
     getOriginalTemplate: function(name) {
       var template = this.templates[name];
-      return template && template['originalDefault'] || template['default'];
+      return template ? template['originalDefault'] || template['default'] : null;
     },
 
     getCustomTemplate: function(name, type) {

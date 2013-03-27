@@ -251,6 +251,7 @@ define([
   };
   
   Lablz.idbq = idbq;
+  var RM;
   var ResourceManager = RM = {
     TAG: 'Storage',
     fetchResources: function(method, data, options, isUpdate, timeout, lastFetchedOn) {
@@ -934,6 +935,10 @@ define([
       return vocModel && !U.isA(vocModel, "Buyable");
     },
     
+    makeTempID: function() {
+      return G.currentServerTime();
+    },
+    
     saveItem: function(item, options) {
       return $.Deferred(function(defer) {
         var vocModel = item.vocModel;
@@ -943,9 +948,9 @@ define([
           return;
         }
         
-        var now = G.currentServerTime(),
-          uri = item.getUri(),
-          type = vocModel.type;
+        var now = RM.makeTempID(),
+            uri = item.getUri(),
+            type = vocModel.type;
         
         var tempUri;
         if (!uri || item.detached) {
@@ -965,8 +970,9 @@ define([
             if (!results.length)
               RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
             else {
-              _.extend(results[0], itemJson);
-              RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+              var result = results[0];
+              _.extend(result, itemJson);
+              RM.saveItemHelper(result, item).done(defer.resolve).fail(defer.reject);
             }
           }).fail(function() {
             RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
@@ -979,40 +985,102 @@ define([
       });
     },
     
+//    saveItemHelper: function(itemRef, item) {
+//      return $.Deferred(function(addDefer) {
+//        var type = item.vocModel.type;
+//        if (itemRef._dirty) {
+//          // no need to save ref, it's already marked as dirty, just save the resource
+//          RM.addItems([item], type).done(function() {
+//            addDefer.resolve();
+//            RM.sync();
+//          }).fail(function() {
+//            addDefer.reject();
+//  //          RM.$db.objectStore("ref")["delete"](now);
+//          });        
+//        }
+//        else {
+//          itemRef._dirty = 1;
+//          itemRef._problematic = 0;
+//          var refStore = RM.$db.objectStore(REF_STORE.name);
+//          RM.put(itemRef, refStore).done(function() {            
+//            RM.addItems([item], type).done(function() {
+//              addDefer.resolve();
+//              RM.sync();
+//            }).fail(function() {
+//              addDefer.reject();
+//              debugger;
+//    //          RM.$db.objectStore("ref")["delete"](now);
+//            });
+//          }).fail(function() {
+//            addDefer.reject();
+//            debugger;
+//          });
+//        }
+//      }).promise();
+//    },
+
     saveItemHelper: function(itemRef, item) {
       return $.Deferred(function(addDefer) {
         var type = item.vocModel.type;
-        if (itemRef._dirty) {
-          // no need to save ref, it's already marked as dirty, just save the resource
+        itemRef._dirty = 1;
+        // a mkresource went awry, not sure if we need to do anything special as opposed to edit
+        
+//        var toKill;
+//        if (itemRef._problematic && !itemRef._tempUri) {
+          // (either way it will try to sync again after these latest changes by the user)
+          
+//          // a mkresource went awry, nuke the old one save the new one
+//          debugger;
+//          toKill = itemRef._id;
+//          itemRef._id = U.makeTempID();
+//          tempUri = U.makeTempUri(type, now);
+//          item.set({'_uri': tempUri});
+//        }
+        
+        itemRef._problematic = 0;
+        var refStore = RM.$db.objectStore(REF_STORE.name);
+        RM.put(itemRef, refStore).done(function() {            
           RM.addItems([item], type).done(function() {
             addDefer.resolve();
             RM.sync();
           }).fail(function() {
             addDefer.reject();
-  //          RM.$db.objectStore("ref")["delete"](now);
-          });        
-        }
-        else {
-          itemRef._dirty = 1;
-          itemRef._problematic = 0;
-          var refStore = RM.$db.objectStore(REF_STORE.name);
-          RM.put(itemRef, refStore).done(function() {            
-            RM.addItems([item], type).done(function() {
-              addDefer.resolve();
-              RM.sync();
-            }).fail(function() {
-              addDefer.reject();
-              debugger;
-    //          RM.$db.objectStore("ref")["delete"](now);
-            });
-          }).fail(function() {
-            addDefer.reject();
             debugger;
+//            RM.$db.objectStore("ref")["delete"](now);
           });
-        }
+        }).fail(function() {
+          addDefer.reject();
+          debugger;
+        });
+        
+//        RM.$db.transaction(REF_STORE.name, 1).promise().done(function(transaction) {
+//          debugger;
+//        }).fail(function() {
+//          debugger;
+//        }).progress(function(transaction) {
+//          var refStore = transaction.objectStore(REF_STORE.name);
+//          refStore['delete'](itemRef._id).done(function() {
+//            debugger;
+//          }).fail(function() {
+//            debugger;            
+//          });
+//          
+//          RM.put(itemRef, refStore).done(function() {     
+//            RM.addItems([item], type).done(function() {
+//              addDefer.resolve();            
+//              RM.sync();
+//            }).fail(function() {
+//              addDefer.reject();
+//              debugger;
+//            });
+//          }).fail(function() {
+//            addDefer.reject();
+//            debugger;
+//          });
+//        });
       }).promise();
     },
-    
+
     deleteItem: function(uri) {
       G.log(RM.TAG, 'db', 'deleting item', uri);
 //      var type = U.getClassName(item._uri);
@@ -1145,7 +1213,7 @@ define([
       if (U.isModel(data))
         return false;
       
-      var query, orderBy, 
+      var query, orderBy, asc, 
           defOp = 'eq',
           collection = data,
           vocModel = collection.vocModel,

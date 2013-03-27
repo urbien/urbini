@@ -8,7 +8,7 @@ define([
   'views/BasicView',
   'cache'
 ], function(G, _, U, Events, Voc, BasicView, C) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
   return BasicView.extend({
     template: 'publishBtnTemplate',
 //    events: {
@@ -22,42 +22,42 @@ define([
     initialize: function(options) {
       _.bindAll.apply(_, [this, 'render'].concat(SPECIAL_BUTTONS));
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.template, 'template', this.vocModel.type, true);
+      this.makeTemplate(this.template, 'template', this.vocModel.type);
       
       _.each(SPECIAL_BUTTONS, function(btnName) {
         var tName = '{0}BtnTemplate'.format(btnName);
-        this.makeTemplate(tName, tName, this.vocModel.type, true);        
+        this.makeTemplate(tName, tName, this.vocModel.type);        
       }.bind(this));
       
-//      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type, true);
-//      this.makeTemplate('forkButtonTemplate', 'forkTemplate', this.vocModel.type, true);
-//      this.makeTemplate('testPlugTemplate', 'testPlugTemplate', this.vocModel.type, true);
-//      this.makeTemplate('enterTournamentTemplate', 'enterTournamentTemplate', this.vocModel.type, true);
-//      this.makeTemplate('resetTemplateButtonTemplate', 'resetTemplateTemplate', this.vocModel.type, true);
+//      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type);
+//      this.makeTemplate('forkButtonTemplate', 'forkTemplate', this.vocModel.type);
+//      this.makeTemplate('testPlugTemplate', 'testPlugTemplate', this.vocModel.type);
+//      this.makeTemplate('enterTournamentTemplate', 'enterTournamentTemplate', this.vocModel.type);
+//      this.makeTemplate('resetTemplateButtonTemplate', 'resetTemplateTemplate', this.vocModel.type);
       return this;
     },
-    resetTemplate: function(e) {
-      // toggle from "Reset to default" to "Undo Reset"
-      var btn = e.currentTarget;
-      var $btn = $(btn);
-      var newTitle;
-      if (!this.oldTitle) {
-        this.oldTitle = btn.innerText;
-        newTitle = 'Undo reset';
-      }
-      else {
-        newTitle = this.oldTitle;
-        this.oldTitle = null;
-      }
-      
-      var textarea = $('[data-code="html"]')[0];
-      var codemirror = $.data(textarea, 'codemirror');
-      this.templateCache = this.templateCache || {};
-      var prevText = this.templateCache[textarea.id] || this.getTemplate(this.resource.get('templateName'));
-      this.templateCache[textarea.id] = codemirror.getValue();
-      codemirror.setValue(prevText);
-      $btn.find('.ui-btn-text').text(newTitle);
-    },
+//    resetTemplate: function(e) {
+//      // toggle from "Reset to default" to "Undo Reset"
+//      var btn = e.currentTarget;
+//      var $btn = $(btn);
+//      var newTitle;
+//      if (!this.oldTitle) {
+//        this.oldTitle = btn.innerText;
+//        newTitle = 'Undo reset';
+//      }
+//      else {
+//        newTitle = this.oldTitle;
+//        this.oldTitle = null;
+//      }
+//      
+//      var textarea = $('[data-code="html"]')[0];
+//      var codemirror = $.data(textarea, 'codemirror');
+//      this.templateCache = this.templateCache || {};
+//      var prevText = this.templateCache[textarea.id] || this.getTemplate(this.resource.get('templateName'));
+//      this.templateCache[textarea.id] = codemirror.getValue();
+//      codemirror.setValue(prevText);
+//      $btn.find('.ui-btn-text').text(newTitle);
+//    },
     testPlug: function(e) {
       Events.stopEvent(e);
       var res = this.resource;

@@ -1,5 +1,6 @@
 define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) {
-  var cache = C = {
+  var C;
+  var C = cache = {
     // Models
 //    MODEL_PREFIX: 'model:',
 //    ENUMERATIONS_KEY: 'enumerations',

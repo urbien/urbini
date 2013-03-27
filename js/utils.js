@@ -221,9 +221,9 @@ define([
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
       var resUri;
-      if (!U.isCollection(res))
-//        resUri = res.models[0].getUri();
-//      else  
+      if (U.isCollection(res))
+        resUri = null; //res.models[0].getUri();
+      else  
         resUri = res.getUri();
       var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
@@ -406,7 +406,7 @@ define([
     },
     
     isResourceProp: function(prop) {
-      return prop && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
+      return prop && !prop.backLink && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -1159,7 +1159,7 @@ define([
     getQueryString: function(paramMap, options) {
       options = options || {};
       if (!options.sort) {
-        result = $.param(paramMap);
+        var result = $.param(paramMap);
         return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
       }
       
@@ -1184,14 +1184,14 @@ define([
         return "none";
       
       var now = G.currentServerTime();
-      var date = U.getFormattedDate(now + time);
-      if (date === 'Just now')
-        return 'None';
-      else if (date.startsWith("In "))
+      var date = U.getFormattedDate(now + time).toLowerCase();
+      if (date === 'just now')
+        return 'none';
+      else if (date.startsWith("in "))
         return date.slice(3);
       else if (date.endsWith(" ago"))
         return date.slice(0, date.length - 4);
-      else if (date === 'Tomorrow')
+      else if (date === 'tomorrow')
         return '1 day';
       else
         throw new Error("couldn't parse time");
@@ -1656,6 +1656,8 @@ define([
             
 //      val.classes = classes.join(' ');
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      if (prop.comment)
+        val.comment = prop.comment;
       var propInfo = {value: U.template(propTemplate)(val)};
       if (prop.comment)
         propInfo.comment = prop.comment;
@@ -1900,7 +1902,13 @@ define([
         return name;
       }
     },
-    
+
+    getFirstValue: function(obj) {
+      for (var name in obj) {
+        return obj[name];
+      }
+    },
+
     // https://gist.github.com/boo1ean/3878870
     plural: [
        [/(quiz)$/i,               "$1zes"  ],
@@ -2692,10 +2700,11 @@ define([
         var code = codeProps[cp].code;
         switch (code) {
           case 'html':
+            codemirrorModes.push('codemirrorXMLMode');
             codemirrorModes.push('codemirrorHTMLMode');
             break;
           case 'css':
-//            codemirrorModes.push('codemirrorCSSMode');
+            codemirrorModes.push('codemirrorCSSMode');
             break;
           case 'js':
             codemirrorModes.push('codemirrorJSMode');
@@ -2705,7 +2714,22 @@ define([
       
       codemirrorModes = _.uniq(codemirrorModes);
       return codemirrorModes;
-    }
+    },
+    
+    getListParams: function(resource, backlinkProp) {
+      var params = {};
+      params[backlinkProp.backLink] = resource.getUri();
+      if (backlinkProp.where)
+        _.extend(params, U.getQueryParams(backlinkProp.where));
+      if (backlinkProp.whereOr)
+        params.$or = backlinkProp.whereOr;
+      
+      return params;
+    },
+    
+    DEFAULT_HTML_PROP_VALUE: '<!-- put your HTML here buddy -->',
+    DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
+    DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */'
   };
 
   for (var p in U.systemProps) {

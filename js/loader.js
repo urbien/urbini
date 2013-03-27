@@ -555,6 +555,7 @@ define('globals', function() {
         onLoad,
         ext = url.match(/\.[a-zA-Z]+$/g)[0];
     
+    var appcache = G.files.appcache;
     if (ext === '.jsp')
       onLoad = contextOrOnLoad;
     else
@@ -563,7 +564,11 @@ define('globals', function() {
     switch (ext) {
       case '.css':
         text += '\r\n/*//@ sourceURL=' + url + '*/';
-        G.appendCSS(text);
+        if (appcache[name])
+          G.linkCSS(G.serverName + '/' + url);
+        else
+          G.appendCSS(text);
+        
         G.log(G.TAG, 'cache', 'cache.get: ' + url);
         context.completeLoad(name); // pseudonym for onLoad
         G.log(G.TAG, 'cache', 'end cache.get: ' + url);
@@ -589,32 +594,38 @@ define('globals', function() {
 
   var orgRJSLoad = requirejs.load;
   requirejs.load = function (context, name, url, config) {
+//    console.log(G.TAG, 'cache', 'loading', url);
     var completeLoad = context.completeLoad,
         url = G.getCanonicalPath(url),
         config = config || (context && context.config) || {},
         cached;
 
-    if (G.isInAppcacheBundle(url)) {  
-      var path = G.requireConfig.paths[name];
-      var realPath = G.files[path].name;
-      arguments[2] = url.replace(path, realPath);
-      orgRJSLoad.apply(this, arguments);
-      return;
-    }
-
     if (/\.(jsp|css|html)\.js$/.test(url))
       url = url.replace(/\.js$/, '');
         
+    var inAppcache = G.isInAppcacheBundle(url);
+    if (inAppcache) {  
+      var path = G.requireConfig.paths[name];
+      path = path || name;
+      var realPath = G.files[path].name;
+      arguments[2] = url.replace(path, realPath);
+      if (!/\.(jsp|css|html)$/.test(url)) {
+        orgRJSLoad.apply(this, arguments);
+        return;
+      }
+    }
+      
+    var ext;
     var isText = ext = name.match(/\.[a-zA-Z]+$/g);
     if (ext)
       ext = ext[0].slice(1).toLowerCase();
       
     var mCache = G.modules;
-    var inMemory = mCache && mCache[url];
+    var inMemory = inAppcache || (mCache && mCache[url]);
     var loadedCached = false;
     if (inMemory) {// || hasLocalStorage) {
       var loadSource = inMemory ? 'memory' : 'LS',
-          cached = mCache[url];
+          cached = inAppcache || mCache[url];
 
       var loadedCached = cached;
       if (loadedCached) {            
@@ -715,7 +726,7 @@ define('fileCache', function() {
       if (!G.hasLocalStorage)
         return false;
 
-      var ls = G.localStorage;
+      var ls = G.localStorage;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
 //        G.localStorage.del(key);
@@ -1085,7 +1096,18 @@ define('fileCache', function() {
       
       return keys;
     },
-    
+
+    linkCSS: function(url) {
+      var link = doc.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = url; 
+//      link.setAttribute("rel", "stylesheet")
+//      link.setAttribute("type", "text/css")
+//      link.setAttribute("href", url);
+      head.appendChild(link);
+    },
+
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
@@ -1148,12 +1170,19 @@ define('fileCache', function() {
 
     pruneBundle: function(bundle) {
       var modules = [];
+      var appcache = G.files.appcache;
       var bType = Object.prototype.toString.call(bundle);
       var noTS = bType === '[object String]';
       if (noTS) {
-        var name = bundle;
-        bundle = {def: [{}]};
-        bundle.def[0][name] = G.files[name];
+        var info = {
+          name: bundle
+        }
+        
+        var timestamp = G.files[name];
+        if (timestamp && timestamp.timestamp)
+          info.timestamp = timestamp.timestamp;
+        
+        bundle = {def: [info]};
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
         bundle = {def: bundle};
@@ -1167,19 +1196,20 @@ define('fileCache', function() {
           if (typeof info === 'string')
             name = info, timestamp = G.files[name];
           else {
-            for (var n in info) {
-              name = n;
-              break;
-            }
+            name = info.name;
+            timestamp = info.timestamp;
             
-            timestamp = info[name];
             // for some files, like xhrWorker, we need the full name (e.g. xhrWorker.min_en_18908809988.js)
-            if (timestamp.timestamp) { 
-              name = timestamp.name;
-              timestamp = timestamp.timestamp;
-            }
+//            if (timestamp.timestamp) { 
+//              name = timestamp.name;
+//              timestamp = timestamp.timestamp;
+//            }
           }
           
+          if (!name || appcache[name])
+            continue;
+          
+//          var inAppcache = !!appcache[name];
           var ext = name.match(/\.[a-zA-Z]+$/g);
           if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
             name += '.js';
@@ -1190,6 +1220,8 @@ define('fileCache', function() {
             continue;
           
           info[path] = timestamp; // || G.modules(G.bundles, path)[path];
+//          if (inAppcache)
+//            info.appcache = true;
           modules.push(info);
         }
       }
@@ -1395,6 +1427,7 @@ define('fileCache', function() {
         codemirrorJSMode: 'lib/codemirrorJSMode',
         codemirrorXMLMode: 'lib/codemirrorXMLMode',
         codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
+        codemirrorCSSMode: 'lib/codemirrorCSSMode',
 //        codemirrorFormatting: 'lib/codemirrorFormatting',
 //        codemirrorHighlighting: 'lib/codemirrorHighlighting',
         leaflet: 'lib/leaflet',
@@ -1410,6 +1443,7 @@ define('fileCache', function() {
         jqueryIndexedDB: ['jquery', 'indexedDBShim'],
         indexedDBShim: ['taskQueue'],
         codemirrorJSMode: ['codemirror', 'codemirrorCss'],
+        codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
 //        codemirrorFormatting: ['codemirror', 'codemirrorCss'],
 //        codemirrorHighlighting: ['codemirror', 'codemirrorCss'],
         codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
@@ -1473,43 +1507,77 @@ require(['globals'], function(G) {
       var bt = bundle[type];
       for (var i = 0; i < bt.length; i++) {
         var info = bt[i];
-        for (var prop in info) {
-          var val = info[prop];
-          G.files[prop] = val;
-          if (when === 'appcache') {
-            G.files.appcache[prop] = true;
-          }
+        G.files[info.name] = info;
+        if (when === 'appcache') {
+          G.files.appcache[info.name] = info;
         }
       }
     }
   }
   
-  G.loadBundle(G.bundles.pre, function() {
-    G.finishedTask("loading pre-bundle");
-    var css = G.bundles.pre.css.slice();
-    for (var i = 0; i < css.length; i++) {
-      var cssObj = css[i];
-      for (var name in cssObj) {
-        css[i] = name;
-        break;
+  var pre = G.bundles.pre;
+  var priorities = [];
+  var appcache = G.files.appcache;
+  for (var type in pre) {
+    var subBundle = pre[type];
+    for (var i = 0; i < subBundle.length; i++) {
+      var module = subBundle[i];
+      if (module.hasOwnProperty('priority')) {
+        subBundle.splice(i, 1);
+//        if (appcache[module.name]) {
+//          require([module.name]);
+//          continue;
+//        }
+//        
+        priorities.push(module);
       }
     }
-    
-    G.startedTask("loading modules");
-    require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
-      G.finishedTask("loading modules");
-      G.browser = $.browser;
-      App.initialize();
-      G.startedTask('loading post-bundle');
-      G.loadBundle(G.bundles.post, function() {
-        G.finishedTask('loading post-bundle');
-        G.postBundleLoaded = true;
-        for (var i = 0; i < G.postBundleListeners.length; i++) {
-          G.postBundleListeners[i]();
-        }
-        
-        G.postBundleListeners.length = 0;
-      }, true);
+  }
+
+  if (priorities.length) {
+    priorities.sort(function(a, b) {
+      return b.priority - a.priority;
     });
-  });
+    
+    var pModules = [];
+    for (var i = 0; i < priorities.length; i++) {
+      pModules.push(priorities[i].name);
+    }
+    
+//    require(pModules);
+    require(pModules, function() {
+      loadRegular();
+    });
+  }
+  else
+    loadRegular();
+
+  function loadRegular() {    
+    G.loadBundle(pre, function() {
+      G.finishedTask("loading pre-bundle");
+      
+      G.startedTask("loading modules");
+      var css = G.bundles.pre.css.slice();
+      for (var i = 0; i < css.length; i++) {
+        var cssObj = css[i];
+        css[i] = cssObj.name;
+      }
+      
+      require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
+        G.finishedTask("loading modules");
+        G.browser = $.browser;
+        App.initialize();
+        G.startedTask('loading post-bundle');
+        G.loadBundle(G.bundles.post, function() {
+          G.finishedTask('loading post-bundle');
+          G.postBundleLoaded = true;
+          for (var i = 0; i < G.postBundleListeners.length; i++) {
+            G.postBundleListeners[i]();
+          }
+          
+          G.postBundleListeners.length = 0;
+        }, true);
+      });
+    });
+  }
 })

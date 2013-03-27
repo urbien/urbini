@@ -31,13 +31,13 @@ define([
 //      this.popupTemplate = this.makeTemplate(this.popupTemplate);
 //      this.makeTemplate(this.loginTemplate, 'loginTemplate');
 //      this.logoutTemplate = this.makeTemplate(this.logoutTemplate);
-      this.makeTemplate(this.loginTemplate, 'template', this.vocModel.type, true); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
+      this.makeTemplate(this.loginTemplate, 'template', this.vocModel.type); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
       return this;
     },
 
     render: function(options) {
 //      this.template = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
-//      this.makeTemplate('loginTemplate', 'template', this.vocModel.type, true); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
+//      this.makeTemplate('loginTemplate', 'template', this.vocModel.type); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
       var method = options && options.append ? 'append' : 'html';
       var loginBtn = this.template();
 //      if (!_.size(G.socialNets)) {

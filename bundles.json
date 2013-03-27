@@ -2,16 +2,17 @@
   pre: {
     js: ['lib/jquery', 'jqm-config', 'lib/underscore', 'lib/backbone', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'cache', 'utils', 'error', 'events', 'models/Resource', 'collections/ResourceList', 
      'views/HomePage', 'vocManager', 'resourceManager', 'router', 'app'],
-    css: ['lib/jquery.mobile-1.3.0.min.css', 'lib/jquery.mobile.theme-1.3.0.min.css', 'lib/jquery.mobile.structure-1.3.0.min.css', 'lib/jqm-icon-pack-fa.css', '../styles/styles.css', '../styles/common-template-m.css'],
+    css: ['lib/jquery.mobile-1.3.0.min.css', 'lib/jquery.mobile.theme-1.3.0.min.css', {path: 'lib/jqm-icon-pack-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.0.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
     html: ['../templates.jsp']
   },
   post: {
     js: ['views/BasicView', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 'views/MapView', 'views/PublishButton', 'lib/leaflet', 'lib/leaflet.markercluster', 'maps', 
-         'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/codemirror', 'lib/codemirrorXMLMode', 'lib/codemirrorHTMLMode', 'lib/codemirrorJSMode'],
+         'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/codemirror', 'lib/codemirrorXMLMode', 'lib/codemirrorHTMLMode', 'lib/codemirrorJSMode', 'lib/codemirrorCSSMode'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css', '../styles/codemirror.css']
   },
   appcache: {
-    js: ['xhrWorker', 'lib/jquery.mobile-1.3.0', 'loader', 'lib/require']
+    js: ['xhrWorker', 'lib/jquery.mobile-1.3.0', 'loader', 'lib/require'],
+    css: ['lib/jqm-icon-pack-fa.css']
   }
 }

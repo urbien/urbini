@@ -18,8 +18,8 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.template = this.makeTemplate('masonry-list-item');
-      this.modTemplate = this.makeTemplate('masonry-mod-list-item');
+      this.makeTemplate('masonry-list-item', 'template', this.vocModel.type);
+      this.makeTemplate('masonry-mod-list-item', 'modTemplate', this.vocModel.type);
 
       if ($(window).height() > $(window).width())
         this.IMG_MAX_WIDTH = 272;

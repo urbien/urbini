@@ -3,8 +3,9 @@ define([
   'globals',
   'utils',
   'error',
-  'events'
-], function(G, U, Error, Events) {
+  'events',
+  'cache'
+], function(G, U, Error, Events, C) {
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);
     if (U.isNully(prev))
@@ -26,7 +27,7 @@ define([
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
       this.on('sync', this.onsync);
-      this.vocModel = this.constructor;
+      this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.detached = options.detached; // if true, this resource will not be persisted to the database, nor will it be fetched from the server
@@ -49,6 +50,14 @@ define([
       else if (this.vocModel.type === G.commonTypes.Jst) {
         Events.trigger('newTemplate', this);        
       }
+    },
+    
+    setModel: function(vocModel, options) {
+      vocModel = vocModel || this.constructor;
+      this.constructor = this.vocModel = vocModel;
+      this.type = vocModel.type;
+      if (!options || !options.silent)
+        this.trigger('change', this);
     },
     
     get: function(propName) {
@@ -87,17 +96,9 @@ define([
             continue;
           
           var code = codeProps[cp].code;
-          switch (code) {
-            case 'html':
-              defaults[cp] = '<!-- put your HTML here buddy -->';
-              break;
-            case 'css':
-              defaults[cp] = '/* put your CSS here buddy */';
-              break;
-            case 'js':
-              defaults[cp] = '/* put your JS here buddy */';
-              break;
-          }
+          var defVal = U['DEFAULT_{0}_PROP_VALUE'.format(code.toUpperCase())];
+          if (defVal)
+            defaults[cp] = defVal;
         }
       }
     
@@ -126,6 +127,13 @@ define([
         var uri = this.getUri();
         var oldUri = data._oldUri;
         if (oldUri) {
+          var oldType = U.getTypeUri(oldUri);
+          var newType = U.getTypeUri(uri);
+          if (oldType != newType) {
+            debugger;
+            // change vocModel
+          }
+          
           Events.off('synced:' + oldUri, callback);
           Events.on('synced:' + uri, callback);
           Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
@@ -236,9 +244,9 @@ define([
         uri = resp._uri || resp.uri;
       }
 
-      resp._shortUri = U.getShortUri(uri, this.constructor);
-      var primaryKeys = U.getPrimaryKeys(this.constructor);
-      resp._uri = U.getLongUri1(resp._uri, {type: this.constructor.type, primaryKeys: primaryKeys});
+      resp._shortUri = U.getShortUri(uri, this.vocModel);
+      var primaryKeys = U.getPrimaryKeys(this.vocModel);
+      resp._uri = U.getLongUri1(resp._uri, {type: this.type, primaryKeys: primaryKeys});
       if (lf)
         resp._lastFetchedOn = lf;
       
@@ -247,12 +255,12 @@ define([
         var meta = vocModel.properties;
         for (var p in resp) {
           var prop = meta[p], val = resp[p];
-          if (!prop || !val || !prop.backLink || !val._list)
-            continue;
-          
-          this.hasInlineLists = true;
-          Events.trigger('inlineResourceList', this, prop, val._list);
-//          delete val._list;
+          if (prop && val && prop.displayInline && prop.backLink && val._list) {
+            Events.trigger('inlineResourceList', this, prop, val._list);
+//            this.inlineLists = this.inlineLists || {};
+//            this.inlineLists[prop.shortName] = val._list;
+            delete val._list; // we don't want to store a huge list of json objects under one resource in indexedDB
+          }
         }
       }
       
@@ -260,11 +268,11 @@ define([
       return resp;
     },
     
-//    setInlineList: function(propName, list) {
-//      this.inlineLists = this.inlineLists || {};
-//      this.inlineLists[propName] = list;
-//      this.trigger('inlineList', propName);
-//    },
+    setInlineList: function(propName, list) {
+      this.inlineLists = this.inlineLists || {};
+      this.inlineLists[propName] = list;
+      this.trigger('inlineList', propName);
+    },
     
     set: function(props, options) {
       if (!this.subscribedToUpdates && this.getUri())
@@ -498,10 +506,18 @@ define([
           blVal.count = 1;
         
         if (blProp.displayInline) {
-          blVal._list = blVal._list || [];
-          if (!_.find(blVal._list, function(item) { return item._uri === resUri; })) {
-            resJSON = resJSON || res.toJSON();
-            blVal._list.push(resJSON);
+          this.inlineLists = this.inlineLists || {};
+          var list;
+          if (!(list = this.inlineLists[bl])) {
+//            list = new ResourceList([res], {model: res.vocModel, params: U.getListParams(res, blProp)});
+            if (blVal._list)
+              Events.trigger('inlineResourceList', this, prop, blVal._list);
+            
+            return;
+          }
+          
+          if (!list.get(resUri)) {
+            list.add(res);
           }
         }
           
@@ -511,18 +527,37 @@ define([
       this.set(atts, {skipValidation: true});
     },
     
+//    handleTypeBased: function(data) {
+//      var isNew = this.isNew();
+//      var vocModel = this.vocModel;
+//      var type = vocModel.type;
+//      var commonTypes = G.commonTypes;
+//      switch (type) {
+//        case commonTypes.WebProperty:
+//          if (!isNew)
+//            return true;
+//          
+//          switch (data.propertyType) {
+//            
+//          }
+//        default:
+//          return true;
+//      }
+//      
+//      options = _.extend(options || {}, {skipTypeBased: true});
+//      this.save(data, options);
+//      return false;
+//    },
+    
     save: function(attrs, options) {
       this.loaded = true;
       var isNew = this.isNew();
       var commonTypes = G.commonTypes;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
-//      var meta = this.vocModel.properties;
-//      for (var att in data) {
-//        var prop = meta[att];
-//        if (prop && U.isResourceProp(prop)) {
-//          
-//        }
+//      if (!options.skipTypeBased) {
+//        if (!this.handleTypeBased(data, options)) // delayed execution
+//          return
 //      }
       
       var vocModel = this.vocModel;

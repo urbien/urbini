@@ -15,12 +15,12 @@ define([
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.template = this.makeTemplate('menuP');
-      this.menuItemTemplate = this.makeTemplate('menuItemTemplate');
-      this.homeMenuItemTemplate = this.makeTemplate('homeMenuItemTemplate');
-      this.groupHeaderTemplate = this.makeTemplate('propGroupsDividerTemplate');
-      this.menuItemNewAlertsTemplate = this.makeTemplate('menuItemNewAlertsTemplate');
-//      this.filterTemplate = this.makeTemplate('filterTemplate');
+      this.makeTemplate('menuP', 'template', this.vocModel.type);
+      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
+      this.makeTemplate('homeMenuItemTemplate', 'homeMenuItemTemplate', this.vocModel.type);
+      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
+      this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', this.vocModel.type);
+//      this.makeTemplate('filterTemplate', 'filterTemplate', this.vocModel.type);
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;
@@ -105,7 +105,7 @@ define([
         return;
       }
       var self = this;
-      var res = this.resource || this.collection;
+      var res = this.model;
       var json = this.resource && res.toJSON();
       this.$el.html(this.template(json));      
 

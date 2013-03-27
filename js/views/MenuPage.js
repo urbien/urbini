@@ -14,9 +14,9 @@ define([
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.template = this.makeTemplate('menu');
-      this.menuItemTemplate = this.makeTemplate('menuItemTemplate');
-      this.groupHeaderTemplate = this.makeTemplate('propGroupsDividerTemplate');
+      this.makeTemplate('menu', 'template', this.vocModel.type);
+      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
+      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
       this.router = G.Router || Backbone.history;
       this.TAG = 'MenuPage';
       Events.on("mapReady", this.showMapButton);

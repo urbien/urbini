@@ -15,7 +15,7 @@ define([
       options = options || {};
       this.constructor.__super__.initialize.apply(this, arguments);
       this.source = options.source;
-      this.template = this.makeTemplate('photogridTemplate');
+      this.makeTemplate('photogridTemplate', 'template', this.vocModel.type);
       if (this.collection) {
         this.collection.on('add', this.render, this);
         this.collection.on('sync', this.render, this);

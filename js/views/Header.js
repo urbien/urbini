@@ -14,7 +14,7 @@ define([
 //  'views/MenuButton',
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
   return BasicView.extend({
     TAG: 'Header',
     template: 'headerTemplate',
@@ -35,8 +35,8 @@ define([
 
       var res = this.model;
 //      _.extend(this, options);
-      this.makeTemplate(this.template, 'template', this.vocModel.type, true);
-      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type, true);
+      this.makeTemplate(this.template, 'template', this.vocModel.type);
+      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
       var params = U.getHashParams();
       this.info = params['-info'];
       
@@ -91,7 +91,7 @@ define([
       var res = this.model;
       var title;
       if (hash && G.tabs) {
-        decHash = decodeURIComponent(hash);
+        var decHash = decodeURIComponent(hash);
         var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
         if (matches.length)
           title = matches[0].title;
@@ -178,20 +178,24 @@ define([
     },
 
     calcSpecialButtons: function() {
+      if (this.isEdit)
+        return;
+      
       var commonTypes = G.commonTypes;
       var res = this.resource;
       if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
-        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
-          var tName = res.get('templateName');
-          this.resetTemplate = tName && this.getOriginalTemplate(tName);
-        }
+//        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
+//          var tName = res.get('templateName');
+//          this.resetTemplate = tName && this.getOriginalTemplate(tName);
+//        }
       
         var user = G.currentUser._uri;
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
-          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
+          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished'))) {
             this.publish = true;
+          }
           
           var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));

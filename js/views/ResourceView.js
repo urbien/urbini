@@ -17,7 +17,7 @@ define([
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate'], function(t) {
-        this.makeTemplate(t, t, this.vocModel.type, true);
+        this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
       
       this.resource.on('change', this.refresh, this);
@@ -42,7 +42,7 @@ define([
           }, this);
         }
         else
-          defer.resolve();        
+          defer.resolve();
       }.bind(this));
       
       this.ready = readyDfd.promise();      

@@ -5,23 +5,26 @@ define([
   'underscore', 
   'events', 
   'utils',
-  'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+  'views/BasicView',
+  'vocManager',
+  'collections/ResourceList',
+  'cache'
+], function(G, $, _, Events, U, BasicView, Voc, ResourceList, C) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
-      this.inlineListItemTemplate = this.makeTemplate('inlineListItemTemplate');
-      this.cpTemplate = this.makeTemplate('cpTemplate');
-      this.cpMainGroupTemplate = this.makeTemplate('cpMainGroupTemplate');
-      this.cpMainGroupTemplateH = this.makeTemplate('cpMainGroupTemplateH');
-      this.cpTemplateNoAdd = this.makeTemplate('cpTemplateNoAdd');
+      this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', this.vocModel.type);
+      this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', this.vocModel.type);
+      this.makeTemplate('cpTemplate', 'cpTemplate', this.vocModel.type);
+      this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', this.vocModel.type);
+      this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', this.vocModel.type);
+      this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', this.vocModel.type);
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ControlPanel';
       this.isMainGroup = options.isMainGroup;
-      this.resource.on('inlineList', this.setInlineList, this);
+//      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
@@ -108,12 +111,48 @@ define([
           this.$el.css("min-width", "130");
         }
       }
+      
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
-      var displayInline = U.getPropertiesWith(meta, "displayInline");
+      var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
+      if (displayInline) {
+        res.off('inlineList', this.refresh);
+        res.on('inlineList', this.refresh);
+        if (_.size(res.inlineLists)) {
+          // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...
+        }
+        else {
+          // ...or we have to fetch them separately, and once again, wait for the 'inlineList' event
+          var self = this;
+          var ranges = [];
+          var inlineLists = {};
+          _.each(displayInline, function(prop, name) {
+            U.pushUniq(ranges, U.getTypeUri(prop.range));
+          });
+          
+          Voc.getModels(ranges).done(function() {
+            _.each(displayInline, function(prop, name) {
+              var params = U.getListParams(res, prop);
+              var type = U.getTypeUri(prop.range);
+              var inlineList = C.getResourceList(type, $.param(params));
+              if (!inlineList) {
+                inlineList = new ResourceList(null, {model: U.getModel(type), params: params});
+                inlineList.fetch({
+                  success: function() {
+                    if (inlineList.size()) {
+                      res.setInlineList(name, inlineList);
+                    }
+                  }
+                });
+              }
+            });
+          });
+        }
+      }
+      
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
       var role = U.getUserRole();
@@ -137,33 +176,18 @@ define([
           var prop = meta[p];
           if (prop && prop.mainGroup)
             delete displayInline[p];
-        });
+        }.bind(this));
       });
 
-      if (!this.isMainGroup) {
-        _.each(displayInline, function(prop, name) {
-          if (!prop.backLink)
-            return;
-          
-          var val = json[name];
-          if (!val)
-            return;
-          
-          var inline = val._list;
-          if (inline && inline.length) {
-            var propDisplayName = U.getPropDisplayName(prop);
-//            var common = {range: prop.range, backlink: prop.backLink, name: propDisplayName, value: prop.count || 0, _uri: uri, title: U.makeHeaderTitle(title, propDisplayName), comment: prop.comment};
-//            if (isPropEditable)
-//              U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
-//            else
-//              U.addToFrag(frag, this.cpTemplateNoAdd(common));
-            
-            U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
-            _.each(inline, function(iRes) {
-              U.addToFrag(frag, this.inlineListItemTemplate({name: iRes.davDisplayName, _uri: iRes._uri, comment: iRes.comment }));
-              displayedProps[name] = true;
-            }.bind(this));
-          }
+      if (!this.isMainGroup && _.size(res.inlineLists)) {
+        _.each(res.inlineLists, function(list, name) {
+          var prop = meta[name];
+          var propDisplayName = U.getPropDisplayName(prop);
+          U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
+          list.each(function(iRes) {
+            U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment }));
+            displayedProps[name] = true;
+          }.bind(this));
         }.bind(this));
       }
       

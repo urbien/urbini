@@ -383,7 +383,7 @@ var idbModules = window.idbModules = {};
      * @param {Object} name;
      * @param {Object} objectStore;
     **/
-    function IDBIndex(indexName, idbObjectStore){
+    function IDBIndex(indexName, idbObjectStore, optionalParams){
 //        this.indexName = indexName;
 //        this.__idbObjectStore = this.source = idbObjectStore;
       this.indexName = this.name = indexName;
@@ -393,8 +393,9 @@ var idbModules = window.idbModules = {};
       indexList && (indexList = JSON.parse(indexList));
       
       this.keyPath = ((indexList && indexList[indexName] && indexList[indexName].keyPath) || indexName);
+      optionalParams = optionalParams || {};
       ['multiEntry','unique'].forEach(function(prop){
-          this[prop] = !!indexList && !!indexList[indexName] && !!indexList[indexName].optionalParams && !!indexList[indexName].optionalParams[prop];
+          this[prop] = optionalParams[prop] || !!indexList && !!indexList[indexName] && !!indexList[indexName].optionalParams && !!indexList[indexName].optionalParams[prop];
       }, this);
     }
     
@@ -849,7 +850,7 @@ var idbModules = window.idbModules = {};
         var me = this;
         optionalParameters = optionalParameters || {};
         me.__setReadyState("createIndex", false);
-        var result = new idbModules.IDBIndex(indexName, me);
+        var result = new idbModules.IDBIndex(indexName, me, optionalParameters);
 //        me.__waitForReady(function(){
             result.__createIndex(indexName, keyPath, optionalParameters);
 //        }, "createObjectStore");

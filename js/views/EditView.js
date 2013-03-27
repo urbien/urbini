@@ -20,10 +20,13 @@ define([
                       'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.propGroupsDividerTemplate = this.makeTemplate('propGroupsDividerTemplate');
-      this.editRowTemplate = this.makeTemplate('editRowTemplate');
-      this.hiddenPropTemplate = this.makeTemplate('hiddenPET');
-//      this.resource.on('change', this.refresh, this);
+      var type = this.vocModel.type;
+      this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
+      this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
+      this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
+      this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
+
+      this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
@@ -35,7 +38,7 @@ define([
       this.resource.set(init, {silent: true});
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss', 'codemirrorXMLMode', 'codemirrorHTMLMode'].concat(codemirrorModes), function() {
+          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
             defer.resolve();
           }, this);
         }
@@ -189,12 +192,11 @@ define([
           var price = chosenRes.get('price');
           if (price  &&  price.value) { 
             Events.stopEvent(e);
-            var popupTemplate = this.makeTemplate('buyPopupTemplate');
             var $popup = $('#buy_popup');
             var dn = U.getDisplayName(chosenRes);
             var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
             var href = chosenRes.getUri();          
-            var html = popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
             if ($popup.length == 0) {
               $($(document).find($('.ui-page-active'))[0]).append(html);
               
@@ -274,7 +276,7 @@ define([
           }
         }
         
-        if (!pr.multiValue) {
+        if (!pr.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
           params.$prop = prop;
           return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
         }
@@ -296,7 +298,7 @@ define([
           params.$forResource = uri;
         
         params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-        var mvList = e.target.innerText;
+        var mvList = (e.target.text || e.target.textContent).trim(); //e.target.innerText;
         mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
         params['$' + prop] = mvList;
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), params), {trigger: true});
@@ -908,11 +910,10 @@ define([
         propsForEdit = this.vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
         if (!editProps  &&  this.action == 'make'  &&  this.vocModel.type.endsWith('WebProperty')) {
-          editProps = [];
-          editProps.push('label');
-          editProps.push('propertyType');
+          editProps = ['label', 'propertyType'];
         }  
       }
+      
       var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
       var formId = G.nextId();
       var idx = 0;
@@ -1055,47 +1056,102 @@ define([
 //      }
       
       if (this.isCode && CodeMirror) {
-        form.find('textarea[data-code]').each(function() {
-          var mode = this.dataset.code;
-          switch (mode) {
-            case 'html':
-              mode = 'text/html';
-              break;
-            case 'css':
-              mode = 'css';
-              break;
-//            case 'js':
-//              mode = 'javascript';
-//              break;
-            default: {
-//              debugger;
-              mode = 'javascript';
-              break;
-            }
-          }
-          
-          var editor = CodeMirror.fromTextArea(this, {
-            mode: mode,
-            tabMode: 'indent',
-            lineNumbers: true,
-            viewportMargin: Infinity,
-            tabSize: 2
-          });
-          
-//          Events.trigger('newCodeMirror', this.resource.getUri(), this.dataset.shortName, editor);
-          $.data(this, 'codemirror', editor);
-          
-          setTimeout(function() {
-            // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
-            editor.refresh.apply(editor); 
-          }, 50);
-//          $(".Codemirror").focus();
-//          var $this = $(this);
-        });
+        this.attachCodeMirror();
       }
       
       this.rendered = true;
       return this;
+    },
+    
+    attachCodeMirror: function() {
+      this.makeTemplate('resetTemplateBtnTemplate', 'resetTemplate', this.vocModel.type);
+      var form = this.$form;
+      var view = this;
+      var res = this.resource;
+      var meta = this.vocModel.properties;
+      var isTemplate = this.vocModel.type === G.commonTypes.Jst;
+      form.find('textarea[data-code]').each(function() {
+        var textarea = this;
+        var $textarea = $(this);
+        var code = textarea.dataset.code;
+        var propName = textarea.name;
+        var mode;
+        switch (code) {
+          case 'html':
+            mode = 'text/html';
+            break;
+          case 'css':
+            mode = 'css';
+            break;
+          default: {
+            mode = 'javascript';
+            break;
+          }
+        }
+        
+        var editor = CodeMirror.fromTextArea(textarea, {
+          mode: mode,
+          tabMode: 'indent',
+          lineNumbers: true,
+          viewportMargin: Infinity,
+          tabSize: 2
+        });
+        
+        var prop = meta[propName];
+        var defaultText;
+        if (isTemplate)
+          defaultText = view.getOriginalTemplate(res.get('templateName')) || U.DEFAULT_HTML_PROP_VALUE;
+        else
+          defaultText = U['DEFAULT_{0}_PROP_VALUE'.format(code.toUpperCase())];
+        
+        var changeHandler;
+        if (defaultText) {
+          var reset = $(view.resetTemplate());
+          var resetText = reset[0].innerText;
+          var didReset = false;
+          var prevValue = defaultText;
+          var resetHandler = function() {
+            didReset = !didReset;
+            prevValue = defaultText;
+            reset.find('.ui-btn-text').text(resetText);
+            editor.off('change', resetHandler);
+          };
+          
+          reset.click(function(e) {
+            editor.off('change', resetHandler);
+            Events.stopEvent(e);
+            var newValue = prevValue;
+            prevValue = editor.getValue();
+            editor.setValue(newValue);
+            didReset = !didReset;
+            reset.find('.ui-btn-text').text(didReset ? 'Undo reset' : resetText);
+            if (didReset)    
+              editor.on('change', resetHandler);
+          });
+          
+          reset.insertAfter($textarea.next());
+          reset.button();
+          if (defaultText === textarea.value) {
+            reset.hide();
+            changeHandler = function(from, to, text, removed, next) {
+              if (!text && to.text && to.text.length) {
+                reset.show();
+                editor.off('change', changeHandler);
+              }
+            };                
+          }
+        }
+        
+        changeHandler && editor.on('change', changeHandler);
+        setTimeout(function() {
+          // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
+          editor.refresh.apply(editor);
+          editor.scrollIntoView({line: 0, ch: 0});
+          $textarea.focus();
+        }.bind(textarea), 50);
+        
+        $.data(textarea, 'codemirror', editor);
+      });
     }
   }, {
     displayName: 'EditView'
