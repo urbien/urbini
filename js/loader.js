@@ -815,6 +815,18 @@ define('fileCache', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    showSpinner: function(nonBlockingOverlay, content) {
+      var spinner = document.createElement('div');
+      spinner.id = 'loading-spinner-holder';
+      if (!nonBlockingOverlay)
+        spinner.setAttribute('class', 'spinner_bg');
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (content || '<i class="ui-icon-star-empty icon-4x"></i>') + '</div></div>';
+      body.appendChild(spinner);
+    },
+    hideSpinner: function() {
+      var spinner = document.getElementById('loading-spinner-holder');
+      spinner && spinner.parentNode.removeChild(spinner);
+    },
     getVersion: function(old) {
       if (!old && G.VERSION)
         return G.VERSION;
@@ -1554,6 +1566,8 @@ require(['globals'], function(G) {
     loadRegular();
 
   function loadRegular() {    
+    G.showSpinner();
+    setTimeout(G.hideSpinner, 3000);
     G.loadBundle(pre, function() {
       G.finishedTask("loading pre-bundle");
       
@@ -1568,6 +1582,7 @@ require(['globals'], function(G) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
+//        G.hideSpinner();
         G.startedTask('loading post-bundle');
         G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');

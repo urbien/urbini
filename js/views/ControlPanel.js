@@ -187,6 +187,8 @@ define([
           list.each(function(iRes) {
             U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment, _problematic: iRes.get('_error') }));
             displayedProps[name] = true;
+            iRes.off('change', this.refresh, this);
+            iRes.on('change', this.refresh, this);
           }.bind(this));
         }.bind(this));
       }

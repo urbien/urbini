@@ -549,12 +549,18 @@ define([
 //      return false;
 //    },
     
+    clearErrors: function(data) {
+//      delete data._problematic;
+      delete data._error;
+    },
+    
     save: function(attrs, options) {
       this.loaded = true;
       var isNew = this.isNew();
       var commonTypes = G.commonTypes;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
+      this.clearErrors(data);
 //      if (!options.skipTypeBased) {
 //        if (!this.handleTypeBased(data, options)) // delayed execution
 //          return
@@ -578,6 +584,8 @@ define([
         if (isNew) {
           Events.trigger('newResource', this);
         }
+        
+        this.trigger('saved', options);
       }
       else {
         data = U.prepForSync(data, vocModel, ['parameter']);
@@ -623,6 +631,8 @@ define([
           if (!options.fromDB) {
             self.notifyContainers();
           }
+          
+          self.trigger('saved', options);
         };
         
         options.error = function(originalModel, err, opts) {

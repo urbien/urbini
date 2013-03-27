@@ -821,6 +821,7 @@ define([
             else
               toSave = _.extend(resource.toJSON(), errInfo);
             
+//            resource.set(errInfo);
             ref._problematic = 1;
 //            if (status > 399 && status < 600) {
               RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {
