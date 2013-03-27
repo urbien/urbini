@@ -614,6 +614,7 @@ define('globals', function() {
         return;
       }
     }
+
       
     var ext;
     var isText = ext = name.match(/\.[a-zA-Z]+$/g);
@@ -814,16 +815,22 @@ define('fileCache', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
-    showSpinner: function(nonBlockingOverlay, content) {
+    showSpinner: function(options) {
+      options = options || {};
       var spinner = document.createElement('div');
-      spinner.id = 'loading-spinner-holder';
-      if (!nonBlockingOverlay)
+      spinner.id = 'loading-spinner-holder' + (options.name || '');
+      if (!options.nonBlockingOverlay)
         spinner.setAttribute('class', 'spinner_bg');
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (content || '<i class="ui-icon-star-empty ui-icon-4x"></i>') + '</div></div>';
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (options.content || '<i class="ui-icon-star-empty icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       body.appendChild(spinner);
+      if (options.timeout) {
+        setTimeout(function() {
+          G.hideSpinner(options.name);
+        }, options.timeout);
+      }
     },
-    hideSpinner: function() {
-      var spinner = document.getElementById('loading-spinner-holder');
+    hideSpinner: function(name) {
+      var spinner = document.getElementById('loading-spinner-holder' + (name || ''));
       spinner && spinner.parentNode.removeChild(spinner);
     },
     getVersion: function(old) {
@@ -1564,9 +1571,8 @@ require(['globals'], function(G) {
   else
     loadRegular();
 
-  function loadRegular() {    
-    G.showSpinner();
-    setTimeout(G.hideSpinner, 3000);
+  function loadRegular() {
+    G.showSpinner({name: 'app init', timeout: 3000});
     G.loadBundle(pre, function() {
       G.finishedTask("loading pre-bundle");
       
@@ -1581,7 +1587,7 @@ require(['globals'], function(G) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
-//        G.hideSpinner();
+        G.hideSpinner();
         G.startedTask('loading post-bundle');
         G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');

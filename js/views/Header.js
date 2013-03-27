@@ -282,12 +282,12 @@ define([
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
 
-      var error = this.resource.get('_error');
+      var res = this.resource; // undefined, if this is a header for a collection view
+      var error = res && res.get('_error');
       if (error)
         this.error = error.details;
 
       this.calcSpecialButtons();
-      var res = this.resource; // undefined, if this is a header for a collection view
       this.$el.html("");
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-a'}));

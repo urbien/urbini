@@ -696,7 +696,7 @@ define([
       if (!U.isAnAppClass(type))
         return true;
       
-      var appPath = U.getAppPath(type);
+      var appPath = U.getAppPath(type).toLowerCase();
       var user = G.currentUser;
       if (user.guest) {
         Events.trigger('req-login', {msg: 'Please login before you use this app'});
@@ -705,7 +705,8 @@ define([
       
 //      var APP_TERMS = 'Make sure you agree to this app\'s terms and conditions';
       var className = U.getModel(type).displayName;
-      var appInfo = user.installedApps && user.installedApps[appPath];
+      var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
+      var appInfo = appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
       if (appInfo) {
         if (!appInfo.allowed) {
           var title = this._getInstallTitle(appInfo.davDisplayName);
@@ -850,6 +851,10 @@ define([
               this.navigate(redirect, {trigger: true, replace: true});
           }.bind(this));
         }
+//        else if (this.currentView === this.previousView) {
+//          G.log(this.TAG, 'info', 'duplicate history, navigating back');
+//          window.history.back();
+//        }
       }
     },
     

@@ -838,7 +838,7 @@ define([
   Events.on('publishingApp', function(app) {
     var wClsDfd = new $.Deferred();
     var modifiedWCls;
-    var lastPublished = app.get('lastPublished');
+    var lastPublished = app.get('lastPublished') || 0;
     Voc.getModels(G.commonTypes.WebClass).done(function() {        
       modifiedWCls = new ResourceList(null, {
         model: U.getModel(G.commonTypes.WebClass),
@@ -865,7 +865,6 @@ define([
         return;
       
       wClsDfd.promise().done(function() {   
-        debugger;
         var modifiedWClUris = modifiedWCls.pluck('davClassUri');
         Voc.getModels(modifiedWClUris, {force: true}).done(function() {
           G.log(Voc.TAG, 'info', 'reloaded models: ' + modifiedWClUris);

@@ -111,11 +111,11 @@ define([
 //          
 ////          query.$nonce = new Date().getTime();
 //          hash = hash + '?' + $.param(query);
-          this.hideLoadingIndicator();
+          self.hideLoadingIndicator();
           self.router.navigate(U.getHash(), {trigger: true, replace: true, forceFetch: true});
 //        window.location.reload();
         },
-        error: this.hideLoadingIndicator
+        error: self.hideLoadingIndicator
 //      ,
 //        queryString: 'publish=true'
 //        error: onSaveError

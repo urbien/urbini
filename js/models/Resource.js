@@ -511,7 +511,7 @@ define([
           if (!(list = this.inlineLists[bl])) {
 //            list = new ResourceList([res], {model: res.vocModel, params: U.getListParams(res, blProp)});
             if (blVal._list)
-              Events.trigger('inlineResourceList', this, prop, blVal._list);
+              Events.trigger('inlineResourceList', this, blProp, blVal._list);
             
             return;
           }
