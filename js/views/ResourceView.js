@@ -9,7 +9,10 @@ define([
 ], function(G, $, _, Events, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
-    return p.charAt(0) != '_' && p != 'davDisplayName' && !prop.displayNameElm  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
+    var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
+    // if property marked as Display name element show only on case it is of resource range.
+    return doShow ? (!prop.displayNameElm  ||  prop.range.indexOf("/") != -1) : doShow;
+      
   };
 
   return BasicView.extend({
