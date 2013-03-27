@@ -82,8 +82,10 @@ define([
     clone: function() {
       return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
     },
-    onResourceChange: function(resource) {
-      this.trigger('updated', [resource]);
+    onResourceChange: function(resource, options) {
+      options = options || {};
+      if (!options.partOfUpdate)
+        this.trigger('updated', [resource]);
     },
     add: function(models, options) {
       var multiAdd = _.isArray(models);
@@ -334,7 +336,7 @@ define([
         
         if (!newLastModified || newLastModified > ts) {
           if (saved) {
-            saved.set(r);
+            saved.set(r, {partOfUpdate: true}); // to avoid updating collection (and thus views) 20 times
             updated.push(saved);
           }
           else {

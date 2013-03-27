@@ -959,8 +959,10 @@ define([
       }
       
       var filtered = {};
+      var meta = model.properties;
+      var whereParams = U.whereParams;
       for (var p in params) {
-        if (model.properties[p] || U.whereParams[p])
+        if (meta[p] || whereParams[p])
           filtered[p] = params[p];
       }
   
