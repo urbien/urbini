@@ -820,7 +820,7 @@ define('fileCache', function() {
       spinner.id = 'loading-spinner-holder';
       if (!nonBlockingOverlay)
         spinner.setAttribute('class', 'spinner_bg');
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (content || '<i class="ui-icon-star-empty icon-4x"></i>') + '</div></div>';
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (content || '<i class="ui-icon-star-empty ui-icon-4x"></i>') + '</div></div>';
       body.appendChild(spinner);
     },
     hideSpinner: function() {
