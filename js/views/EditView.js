@@ -36,6 +36,7 @@ define([
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
       this.resource.set(init, {silent: true});
+      
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
           U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
@@ -455,8 +456,14 @@ define([
 //        var wClName = U.getValueDisplayName(res, 'domain');
 //        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
 //        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));
-        
-        return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
+        var propType = res.get('propertyType');
+        switch (propType) {
+          case 'Link':
+          case 'Collection':
+            return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
+          default: 
+            return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
+        }        
       }
       
       if (res.isA('Redirectable')) {
@@ -720,7 +727,7 @@ define([
           success: function(resource, response, options) {
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
-            self.redirect({trigger: true, replace: true});
+            self.redirect();
           }, 
 //          skipRefresh: true,
           error: onSaveError
