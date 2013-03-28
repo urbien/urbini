@@ -93,7 +93,7 @@ define([
     setDefaults: function(query) {
       var vocModel = this.vocModel,
           query = U.getQueryParams(query); // will default to current url's query if query is undefined
-          defaults = U.getQueryParams(query, vocModel);
+          defaults = U.filterInequalities(U.getQueryParams(query, vocModel));
 
       if (this.isA('Submission')) {
         var currentUser = G.currentUser;

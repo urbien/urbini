@@ -32,10 +32,9 @@ define([
 //      this.backlinkResource = options.backlinkResource;
       
       // maybe move this to router
-      var init = this.initialParams = U.getQueryParams(U.getQueryParams(), this.vocModel) || {};
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
-      this.resource.set(init, {silent: true});
+//      this.resource.set(init, {silent: true});
       this.edited = {};
       
       var readyDfd = $.Deferred(function(defer) {
@@ -761,7 +760,7 @@ define([
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
       });
       
-      atts = _.extend({}, res.attributes, this.initialParams, atts);
+      atts = _.extend({}, res.attributes, this.originalResource, atts);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
@@ -910,8 +909,9 @@ define([
         return this;
       
       var res = this.resource;
-      if (!this.rendered) 
+      if (!this.rendered)  {
         this.originalResource = res.toJSON();
+      }
       
       var type = res.type;
       var json = res.toJSON();
@@ -971,7 +971,7 @@ define([
         }
         if (!editProps) {
           var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
-          var init = this.initialParams;
+          var init = this.originalResource;
           for (var p in reqd) {
             p = p.trim();
             if (typeof init[p] !== 'undefined')

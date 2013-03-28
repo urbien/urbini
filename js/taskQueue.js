@@ -80,7 +80,7 @@ define(['globals', 'utils'], function(G, U) {
       
       if (q.blocked) {
         if (!q.runningTasks.length) {
-          G.log(q.TAG, 'db', q.name, 'A sequential finished but failed to report');
+          G.log(q.TAG, 'db', q.name, 'A sequential task finished but failed to report');
           q.blocked = false;
           debugger;
         }

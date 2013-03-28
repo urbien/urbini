@@ -970,6 +970,18 @@ define([
       return filtered;
     },
     
+    filterInequalities: function(params, vocModel) {
+      var query = $.param(params);
+      var parsed = U.parseAPIQuery(query, '&');
+      var filtered = {};
+      _.each(parsed, function(clause) {
+        if (clause.op === '==')
+          filtered[clause.name] = clause.value;
+      });
+      
+      return filtered;
+    },
+    
     getHashParams: function() {
       var h = window.location.href;
       var hashIdx = h.indexOf('#');
