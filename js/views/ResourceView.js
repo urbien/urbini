@@ -26,14 +26,14 @@ define([
       this.resource.on('change', this.refresh, this);
       this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;
-      if (U.isTempUri(uri)) {
-        Events.once('synced:' + uri, function(data) {
-          if (self.isActive()) {
-            var newUri = data._uri;
-            self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
-          }
-        });
-      }
+//      if (U.isTempUri(uri)) {
+//        Events.once('synced:' + uri, function(data) {
+//          if (self.isActive()) {
+//            var newUri = data._uri;
+//            self.router.navigate('view/' + encodeURIComponent(newUri), {trigger: false, replace: true});
+//          }
+//        });
+//      }
 
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
