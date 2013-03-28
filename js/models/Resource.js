@@ -290,16 +290,25 @@ define([
       this.trigger('inlineList', propName);
     },
     
-    set: function(props, options) {
+    set: function(key, val, options) {
       if (!this.subscribedToUpdates && this.getUri())
         this.subscribeToUpdates();
+      
+      // Handle both `"key", value` and `{key: value}` -style arguments.
+      var props;
+      if (_.isObject(key)) {
+        props = key;
+        options = val;
+      } else {
+        (props = {})[key] = val;
+      }
       
       if (!_.size(props))
         return true;
       
       var self = this;
       options = options || {};
-      if (!options.silent) {
+      if (!options.silent && !options.unset) {
         props = U.filterObj(props, function(name, val) {
           return willSave(self, name, val);
         })
@@ -349,7 +358,7 @@ define([
         }
       }
       
-      return Backbone.Model.prototype.set.apply(this, [props].concat(U.slice.call(arguments, 1)));
+      return Backbone.Model.prototype.set.call(this, props, options);
     },
     
     getModel: function() {
@@ -567,7 +576,7 @@ define([
     
     clearErrors: function(data) {
 //      delete data._problematic;
-      delete data._error;
+      this.unset('_error');
     },
     
     save: function(attrs, options) {
@@ -575,7 +584,7 @@ define([
       var isNew = this.isNew();
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
-      this.clearErrors(data);
+      this.clearErrors();
 //      if (!options.skipTypeBased) {
 //        if (!this.handleTypeBased(data, options)) // delayed execution
 //          return

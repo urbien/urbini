@@ -298,7 +298,15 @@ define([
     
     renderError: function(options) {
       options = options || {};
-      var error = options.error || (this.resource && this.resource.get('_error')) || this.error;
+      var error = options.error;
+      if (!error) {
+        error = this.resource && this.resource.get('_error');
+        if (error)
+          error = error.details;
+        else
+          error = this.error;
+      }
+      
       var info = options.info || this.info;
       if (error == null && info == null)
         return this;

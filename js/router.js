@@ -493,12 +493,13 @@ define([
       var newUri = res && res.getUri();
       var wasTemp = U.isTempUri(uri);
       var isTemp = newUri && U.isTempUri(newUri);
+      var self = this;
       if (wasTemp) {
         var updateHash = function() {
           self.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
         }
         
-        if (isTemp) {
+        if (isTemp || !newUri) {
           Events.once('synced:' + uri, function() {
             var currentView = self.currentView;    
             if (currentView && currentView.resource === res) {
@@ -515,7 +516,6 @@ define([
 
       var options = this.getChangePageOptions();
       var forceFetch = options.forceFetch;
-      var self = this;
       var collection;
       if (!res) {
         var collections = C.getResourceList(typeUri);
@@ -551,7 +551,7 @@ define([
       var changedPage = false;
       var success = function() {
         if (wasTemp)
-          self._checkUri(res);
+          self._checkUri(res, wasTemp);
         self.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
         Voc.fetchModelsForLinkedResources(res);
@@ -561,7 +561,7 @@ define([
       return true;
     },
     
-    _checkUri: function(res) {
+    _checkUri: function(res, wasTemp) {
       if (wasTemp) {
         var newUri = res.getUri();
         if (!U.isTempUri(newUri))
