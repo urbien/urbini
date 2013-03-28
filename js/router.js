@@ -494,19 +494,23 @@ define([
       var wasTemp = U.isTempUri(uri);
       var isTemp = newUri && U.isTempUri(newUri);
       if (wasTemp) {
-        if (!isTemp) {
+        var updateHash = function() {
+          self.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
+        }
+        
+        if (isTemp) {
           Events.once('synced:' + uri, function() {
-            var currentView = self.currentView;
-            var updateHash = function() {
-              self.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
-            }
-            
-            if (currentView && currentView.resource === res)
+            var currentView = self.currentView;    
+            if (currentView && currentView.resource === res) {
+              newUri = res.getUri();
               updateHash();
+            }
             else
               Events.once('navigateToResource:' + res.resourceId, updateHash);
           });
         }
+        else
+          updateHash();
       }
 
       var options = this.getChangePageOptions();
@@ -546,6 +550,8 @@ define([
       
       var changedPage = false;
       var success = function() {
+        if (wasTemp)
+          self._checkUri(res);
         self.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
         Voc.fetchModelsForLinkedResources(res);
@@ -553,6 +559,14 @@ define([
       
       res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
       return true;
+    },
+    
+    _checkUri: function(res) {
+      if (wasTemp) {
+        var newUri = res.getUri();
+        if (!U.isTempUri(newUri))
+          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});            
+      }
     },
     
 /*    
@@ -925,9 +939,13 @@ define([
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
       // perform transition
-      view.active = true;
-      if (this.previousView)
-        this.previousView.active = false;
+      var prev = this.previousView;
+      if (prev && prev !== view)
+        prev.trigger('active', false);
+        
+      view.trigger('active', true);
+//      if (this.previousView)
+//        this.previousView.active = false;
       $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
       Events.trigger('changePage', view);
 //      if (this.backClicked)

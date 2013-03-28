@@ -1972,9 +1972,10 @@ define([
       return {x: x, y: y, w: w, h: h};
     },
     
-    getHash: function() {
-      var hash = window.location.hash;
-      return hash.length ? hash.slice(1) : hash;
+    getHash: function(decode) {
+      var match = (window || this).location.href.match(/#(.*)$/);
+      var hash = match ? match[1] : '';      
+      return decode ? decodeURIComponent(hash) : hash;
     },
     
     prepForSync: function(item, vocModel, preserve) {

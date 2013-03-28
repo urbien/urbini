@@ -1375,7 +1375,7 @@ define('fileCache', function() {
         };
         
         xhrWorker.onerror = function(err) {
-          debugger;
+//          debugger;
           G.log(G.TAG, 'error', JSON.stringify(err));
           G.recycleWebWorker(this);
         };

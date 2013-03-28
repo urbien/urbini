@@ -427,12 +427,13 @@ define([
       var self = this;
       var col = this.filteredCollection = this.collection.clone();
       _.each(['updated', 'added', 'reset'], function(event) {
-        col.on(event, function(resources) {
+        self.stopListening(col, 'event');
+        self.listenTo(col, event, function(resources) {
           resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
           var options = {};
           options[event] = true;
           self.refresh(resources, options);
-        });        
+        });
       });
       
       var wasRendered = this.rendered;
