@@ -272,7 +272,8 @@ h3#pageTitle {margin: 10px 0 10px 0;}
 
 /* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
-#info {background-color:black;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
+#headerInfo {background-color:black;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
+#headerError {background-color:red;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
 .buyButton { float:right; }
 
 *.ui-listview *.ui-btn-up-c,

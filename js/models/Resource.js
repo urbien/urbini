@@ -19,7 +19,7 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsync', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsynced', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -53,11 +53,15 @@ define([
     },
     
     setModel: function(vocModel, options) {
+      if (vocModel && vocModel === this.vocModel)
+        return;
+      
       vocModel = vocModel || this.constructor;
       this.constructor = this.vocModel = vocModel;
-      this.type = vocModel.type;
+      var uri = this.getUri();
+      this.type = (uri && U.getTypeUri(uri)) || vocModel.type;
       if (!options || !options.silent)
-        this.trigger('change', this);
+        this.trigger('modelChanged');
     },
     
     get: function(propName) {
@@ -105,9 +109,6 @@ define([
       this.set(defaults, {silent: true})
     },
     
-    onsync: function() {
-//      debugger;
-    },
     subscribeToUpdates: function() {
       if (this.subscribedToUpdates)
         return;
@@ -123,35 +124,37 @@ define([
       // has no idea which resource the data it just got belongs to. Another option would
       // be to have a central cache of resources by uri (like in G.Router), and look up 
       // the resource there and use model.set
-      var callback = function(data) {
-        var uri = this.getUri();
-        var oldUri = data._oldUri;
-        if (oldUri) {
-//          var oldType = U.getTypeUri(oldUri);
-//          var newType = U.getTypeUri(uri);
-//          if (oldType != newType) {
-//            debugger;
-//            // change vocModel
-//          }
-          
-          Events.off('synced:' + oldUri, callback);
-          Events.on('synced:' + uri, callback);
-          Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
-          Events.on('updateBacklinkCounts:' + uri, this.updateCounts);
-        }
-        
-        this.set(data);
-        if (this.collection) {
-          if (oldUri)
-            this.trigger('replaced', this, oldUri);
-//          else
-//            this.trigger('updated', this);
-        }        
-      }.bind(this);
-      
-      Events.on('synced:' + resUri, callback);
+      Events.on('synced:' + resUri, this.onsynced);
       Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
+    },
+    onsynced: function(data, newModel) {
+      var uri = this.getUri();
+      var oldUri = data._oldUri;
+      if (oldUri) {
+//        var oldType = U.getTypeUri(oldUri);
+//        var newType = U.getTypeUri(uri);
+//        if (oldType != newType) {
+//          debugger;
+//          // change vocModel
+//        }
+        
+        Events.off('synced:' + oldUri, this.onsynced);
+        Events.on('synced:' + uri, this.onsynced);
+        Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
+        Events.on('updateBacklinkCounts:' + uri, this.updateCounts);
+      }
+      
+      if (newModel)
+        this.setModel(newModel);
+      
+      this.set(data);
+      if (this.collection) {
+        if (oldUri)
+          this.trigger('replaced', this, oldUri);
+//        else
+//          this.trigger('updated', this);
+      }              
     },
     cancel: function(options) {
       var props = this.vocModel.properties;

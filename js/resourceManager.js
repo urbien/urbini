@@ -766,6 +766,17 @@ define([
                 newUri = data._uri,
                 tempUri = ref._tempUri;
           
+            var oldType = U.getTypeUri(oldUri);
+            var newType = U.getTypeUri(newUri);
+            var changeModelDfd = $.Deferred();
+            if (oldType !== newType) {
+              Voc.getModels(newType).done(function() {
+                changeModelDfd.resolve(U.getModel(newType));
+              }).fail(changeModelDfd.reject);
+            }
+            else
+              changeModelDfd.resolve(vocModel);
+            
             ref = {
               _uri: newUri, 
               _dirty: 0, 
@@ -777,7 +788,9 @@ define([
               ref._tempUri = tempUri;
             
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
-              Events.trigger('synced:' + oldUri, data);
+              changeModelDfd.always(function(newModel) {                
+                Events.trigger('synced:' + oldUri, data, newModel);
+              });
 //              if (model.collection)
 //                Events.trigger('refresh', newUri);
               
@@ -1449,8 +1462,26 @@ define([
           store.get(uri).always(function(result) {
             if (result)
               qDefer.resolve(parse(result));
-            else
-              qDefer.resolve();
+            else {
+              if (isTemp) {
+                RM.Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+                  if (results.length) {
+                    uri = parse(results[0])._uri;
+                    store.get(uri).always(function(result) {
+                      if (result)
+                        qDefer.resolve(parse(result));
+                      else
+                        qDefer.resolve();
+                    });
+                  }
+                  else
+                    qDefer.resolve();                    
+                }).fail(function() {
+                  debugger;
+                  qDefer.resolve();
+                });
+              }
+            }
           });
 //          if (isTemp) {
 //            RM.$db.objectStore(REF_STORE.name, 0).index(prepPropNameForDB('_tempUri')).get(uri).done(function(result) {
@@ -1525,7 +1556,7 @@ define([
             }
           }              
         }).always(function() {
-          debugger;
+//          debugger;
           RM.runTask(queryWithIndex, options);
         });
 

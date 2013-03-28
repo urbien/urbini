@@ -564,9 +564,14 @@
       </div>
       </div>
     </div>
-      {{= typeof this.info == 'undefined' ? '' : '<h3 id="info"><i class="ui-icon-warning-sign"></i> ' + this.info + '</h3>'}}
-      {{= typeof this.error == 'undefined' ? '' : '<h3 id="error"><i class="ui-icon-ban-circle"></i> ' + this.error + '</h3>'}}
+    <div id="headerErrorBar">
+    </div>
   </div>
+</script>
+
+<script type="text/template" id="headerErrorBar">
+  {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-warning-sign"></i> ' + info + '</h3>' : '' }}
+  {{= obj.error ? '<h3 id="headerError"><i class="ui-icon-ban-circle"></i> ' + error + '</h3>' : ''}}
 </script>
 
 <script type="text/template" id="comment-item">

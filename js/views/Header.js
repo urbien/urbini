@@ -35,6 +35,7 @@ define([
 
       var res = this.model;
 //      _.extend(this, options);
+      this.makeTemplate('headerErrorBar', 'headerErrorBar', this.vocModel.type);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
       var params = U.getHashParams();
@@ -77,6 +78,11 @@ define([
       }, this);
       
       this.calcTitle();
+      
+      Events.on('error', function(msg) {
+         this.renderError({error: msg});
+      }.bind(this));
+      
       return this;
     },
     
@@ -161,6 +167,7 @@ define([
       
       this.calcSpecialButtons();
       this.renderSpecialButtons();
+      this.renderError();
       return this;
     },
     
@@ -278,6 +285,30 @@ define([
         this.noButtons = true;      
     },
     
+    renderError: function(options) {
+      options = options || {};
+      var error = options.error || (this.resource && this.resource.get('_error')) || this.error;
+      var info = options.info || this.info;
+      if (error == null && info == null)
+        return this;
+      
+      var length = Math.max(error ? error.length : 0, info ? info.length : 0);
+      var errDiv = this.$('#headerErrorBar');
+      errDiv.html("");
+      errDiv.html(this.headerErrorBar({error: error, info: info}));
+      errDiv.trigger('create');
+      errDiv.show();
+      this.error = null;
+      this.info = null;
+      setTimeout(function() {        
+        $(errDiv).fadeOut(2000, function() {
+          errDiv.html("");
+        });
+      }, length * 60);
+      
+      return this;
+    },
+    
     renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
@@ -318,6 +349,7 @@ define([
       var $ul = this.$('#headerUl');
       $ul.html(frag);
       
+      this.renderError();
       this.$el.trigger('create');
 
       this.renderSpecialButtons();

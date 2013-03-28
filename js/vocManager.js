@@ -871,21 +871,51 @@ define([
         });
       });
     });
-    
-    Events.on('newResource', function(resource) {
-      var uri = resource.getUri();
-      var type = resource.type;
-      var actualType = U.getType(uri);
-      if (actualType && type != actualType) {
-        Voc.getModels(actualType).done(function() {
-          var actualModel = U.getModel(actualType);
-          resource.setModel(actualModel);
-        });
-      }
-    });
   });
   
 
+  Events.on('inlineResourceList', function(baseResource, prop, inlineResources) {
+    var range = U.getTypeUri(prop.range);
+    Voc.getModels(range).done(function() {
+      var model = U.getModel(range);
+      var rl = new ResourceList(inlineResources, {model: model, params: U.getListParams(baseResource, prop)}); // get this cached
+//      _.each(inlineResources, function(res) {
+//        new model(res);  // get those suckers in the cache
+//      });
+      
+//      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
+      baseResource.setInlineList(prop.shortName, rl);
+    });
+  });
+  
+  Events.on('newResources', function(resources) {
+    var actualTypes = {};
+    _.each(resources, function(resource) {
+      if (resource._changingModel)
+        return;
+      
+      var uri = resource.getUri();
+      var type = resource.type;
+      var actualType = U.getTypeUri(uri);
+      if (actualType && type != actualType) {
+        var byType = actualTypes[actualType] = actualTypes[actualType] || [];
+        byType.push(resource);
+      }        
+    });
+    
+    if (_.size(actualTypes)) {
+      Voc.getModels(_.keys(actualTypes)).done(function() {
+        for (var type in actualTypes) {
+          var actualModel = U.getModel(type);
+          var sadResources = actualTypes[type];
+          _.each(sadResources, function(resource) {                
+            resource.setModel(actualModel);
+          });
+        }
+      });
+    }
+  });
+  
   Events.on('inlineResourceList', function(baseResource, prop, inlineResources) {
     var range = U.getTypeUri(prop.range);
     Voc.getModels(range).done(function() {
@@ -924,70 +954,23 @@ define([
       });
     }
   });
-  
-  Events.on('newResource', function(resource) {
-    var uri = resource.getUri();
-    var type = resource.type;
-    var actualType = U.getTypeUri(uri);
-    if (actualType && type != actualType) {
-      Voc.getModels(actualType).done(function() {
-        var actualModel = U.getModel(actualType);
-        resource.setModel(actualModel);
-      });
-    }
-  });
-  
 
-  Events.on('inlineResourceList', function(baseResource, prop, inlineResources) {
-    var range = U.getTypeUri(prop.range);
-    Voc.getModels(range).done(function() {
-      var model = U.getModel(range);
-      var rl = new ResourceList(inlineResources, {model: model, params: U.getListParams(baseResource, prop)}); // get this cached
-//      _.each(inlineResources, function(res) {
-//        new model(res);  // get those suckers in the cache
+//  Events.on('newResource', function(resource) {
+//    if (resource._changingModel)
+//      return;
+//    
+//    var uri = resource.getUri();
+//    var type = resource.type;
+//    var actualType = U.getTypeUri(uri);
+//    if (actualType && type != actualType) {
+//      resource._changingModel = true;
+//      Voc.getModels(actualType).done(function() {
+//        var actualModel = U.getModel(actualType);
+//        resource.setModel(actualModel);
+//        resource._changingModel = false;
 //      });
-      
-//      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
-      baseResource.setInlineList(prop.shortName, rl);
-    });
-  });
-  
-  Events.on('newResources', function(resources) {
-    var actualTypes = {};
-    _.each(resources, function(resource) {
-      var uri = resource.getUri();
-      var type = resource.type;
-      var actualType = U.getTypeUri(uri);
-      if (actualType && type != actualType) {
-        var byType = actualTypes[actualType] = actualTypes[actualType] || [];
-        byType.push(resource);
-      }        
-    });
-    
-    if (_.size(actualTypes)) {
-      Voc.getModels(_.keys(actualTypes)).done(function() {
-        for (var type in actualTypes) {
-          var actualModel = U.getModel(type);
-          var sadResources = actualTypes[type];
-          _.each(sadResources, function(resource) {                
-            resource.setModel(actualModel);
-          });
-        }
-      });
-    }
-  });
-  
-  Events.on('newResource', function(resource) {
-    var uri = resource.getUri();
-    var type = resource.type;
-    var actualType = U.getTypeUri(uri);
-    if (actualType && type != actualType) {
-      Voc.getModels(actualType).done(function() {
-        var actualModel = U.getModel(actualType);
-        resource.setModel(actualModel);
-      });
-    }
-  });
-  
+//    }
+//  });
+
   return (G.Voc = Voc);
 });
