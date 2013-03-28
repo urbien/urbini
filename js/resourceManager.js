@@ -829,12 +829,13 @@ define([
             var isMkResource = !ref._tempUri;
             var toSave;
             var errInfo = _.pick(ref, 'uri', '_error');
+            resource.set(errInfo);
+            
             if (isMkResource)
               toSave = _.extend(U.getQueryParams(atts, resource.vocModel), errInfo);
             else
-              toSave = _.extend(resource.toJSON(), errInfo);
+              toSave = resource.toJSON(); //_.extend(resource.toJSON(), errInfo);
             
-//            resource.set(errInfo);
             ref._problematic = 1;
 //            if (status > 399 && status < 600) {
               RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {

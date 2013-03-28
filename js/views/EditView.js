@@ -838,7 +838,6 @@ define([
       res.lastFetchOrigin = 'edit';
       var onValidated = options.onValidated;
       options.onValidated = function() {
-        debugger;
         _.extend(this.edited, atts);
         onValidated && onValidated.apply(this, arguments);
       }.bind(this);

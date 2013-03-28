@@ -315,7 +315,7 @@ define([
         $(errDiv).fadeOut(2000, function() {
           errDiv.html("");
         });
-      }, length * 60);
+      }, length * 80);
       
       return this;
     },
