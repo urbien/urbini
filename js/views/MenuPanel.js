@@ -24,6 +24,7 @@ define([
       this.TAG = 'MenuPanel';
       Events.on("mapReady", this.showMapButton);
       this.viewId = options.viewId;
+      this.isPanel = true;
     },
     tabs: {},
     events: {
@@ -229,7 +230,7 @@ define([
         }
         
         if (isCreatorOrAdmin  &&  this.vocModel.type.indexOf('/dev/') != -1) {
-          var wHash = decodeURIComponent(U.getHash());
+          var wHash = U.getHash(true);
           var params = {};
           params.modelName = this.vocModel.displayName;
           U.addToFrag(frag, this.menuItemTemplate({title: 'Edit page', pageUrl: U.makePageUrl('templates', wHash, params)}));
