@@ -206,6 +206,7 @@ define([
     },
     
     getTypes: function(vocModel) {
+      vocModel = U.isCollection(vocModel) || U.isModel(vocModel) ? vocModel.vocModel : vocModel;
       return _.union(vocModel.type, vocModel.superClasses || []);
     },
     
@@ -1591,9 +1592,9 @@ define([
       return url;
     },
     
-    makeEditProp: function(res, prop, formId) {
+    makeEditProp: function(res, prop, val, formId) {
       var p = prop.shortName;
-      var val = res.get(p); //values[p];
+      val = typeof val === 'undefined' ? res.get(p) : val;
       var propTemplate = Templates.getPropTemplate(prop, true, val);
       if (typeof val === 'undefined')
         val = {};

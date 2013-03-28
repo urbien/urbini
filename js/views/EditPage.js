@@ -113,8 +113,6 @@ define([
     },
     
     renderHelper:function () {
-      G.log(this.TAG, "render");
-      
       var views = {
         '#resourceEditView': this.editView,
         '#headerDiv'       : this.header

@@ -15,6 +15,7 @@ define([
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
+  var commonTypes = G.commonTypes;
   return BasicView.extend({
     TAG: 'Header',
     template: 'headerTemplate',
@@ -33,22 +34,24 @@ define([
         }, this);
       }
 
-      var res = this.model;
+      var res = this.resource;
+      var vocModel = this.vocModel;
+      var type = vocModel.type;
+      
 //      _.extend(this, options);
-      this.makeTemplate('headerErrorBar', 'headerErrorBar', this.vocModel.type);
-      this.makeTemplate(this.template, 'template', this.vocModel.type);
-      this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
+      this.makeTemplate('headerErrorBar', 'headerErrorBar', type);
+      this.makeTemplate(this.template, 'template', type);
+      this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       var params = U.getHashParams();
       this.info = params['-info'];
       
-      var commonTypes = G.commonTypes;
       var buttons = this.buttons;
-      if (_.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
+      if (res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
         buttons.publish = true;
       }
       
       var btnOptions = {
-        model: res, 
+        model: this.model, 
         parentView: this,
         viewId: this.viewId
       };
@@ -82,7 +85,7 @@ define([
       Events.on('error', function(msg) {
          this.renderError({error: msg});
       }.bind(this));
-      
+
       return this;
     },
     
@@ -160,7 +163,7 @@ define([
 
     },
     
-    refresh: function(options) {
+    refresh: function() {
       this.refreshTitle();
       if (!this.rendered)
         return this;
@@ -187,6 +190,10 @@ define([
     calcSpecialButtons: function() {
       if (this.isEdit)
         return;
+
+      _.each(SPECIAL_BUTTONS, function(btnName) {
+        this[btnName] = false;
+      }.bind(this));
       
       var commonTypes = G.commonTypes;
       var res = this.resource;
@@ -200,12 +207,11 @@ define([
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
-          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished'))) {
+          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
             this.publish = true;
-          }
           
-          var noWebClasses = !res.get('lastModifiedWeblass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
-          var wasPublished = !this.hasPublish && (res.get('lastModifiedWeblass') < res.get('lastPublished'));
+          var noWebClasses = !res.get('lastModifiedWebClass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
+          var wasPublished = res.get('lastModifiedWeblass') < res.get('lastPublished');
           if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
             this.doTry = true;
             this.forkMe = true;
@@ -225,6 +231,9 @@ define([
     },
     
     renderSpecialButtons: function() {
+      if (this.isEdit)
+        return;
+      
       _.each(SPECIAL_BUTTONS, function(btn) {
         this.$('#{0}Btn'.format(btn)).html("");
       }.bind(this));
@@ -232,18 +241,20 @@ define([
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('div#publishBtn', pBtn);
+        this.$('div#publishBtn').css("display", "inline-block");
       }
       else if (pBtn) {
         this.$('div#publishBtn').css("display", "none");
         var options = SPECIAL_BUTTONS.slice().remove('publish');
         var settings = _.pick(this, options);
         _.each(options, function(option) {
+          var display = 'none';
           if (this[option]) {
             this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
+            display = 'inline-block';
           }
-          else {
-            this.$('#{0}Btn'.format(option)).css('display', 'none');
-          }
+          
+          this.$('#{0}Btn'.format(option)).css('display', display);
         }.bind(this));
       }
       

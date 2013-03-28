@@ -48,29 +48,34 @@ define([
         this.refresh();
       }.bind(this));
 
-//      var render = this.render;
-//      var refresh = this.refresh;
-//      this.render = function() {
-//        if (!this.isPanel && !this.isActive()) {
-//         // to avoid rendering views 10 times in the background. Render when it's about to be visible
-//          this.dirty = arguments; 
-//          return false;
-//        }
-//        else
-//          return render.apply(this, arguments);
-//      }.bind(this);
-//      
-//      this.on('active', function(active) {
-//        this.active = active;
-//        _.each(this.children, function(child) {
-//          child.trigger('active', active);
-//        });
-//        
-//        if (active && this.dirty) {
-//          var method = this.rendered ? refresh : render;
-//          method.apply(this, this.dirty);
-//        }        
-//      }.bind(this));
+      var render = this.render;
+      var refresh = this.refresh;
+      this.render = function() {
+        if (!this.isPanel && !this.isActive()) {
+         // to avoid rendering views 10 times in the background. Render when it's about to be visible
+          this.dirty = arguments; 
+          return false;
+        }
+        else {
+          if (!this.TAG)
+            debugger;
+          
+          G.log(this.TAG, 'render', 'view is active, rendering');
+          return render.apply(this, arguments);
+        }
+      }.bind(this);
+      
+      this.on('active', function(active) {
+        this.active = active;
+        _.each(this.children, function(child) {
+          child.trigger('active', active);
+        });
+        
+        if (active && this.dirty) {
+          var method = this.rendered ? refresh : render;
+          method.apply(this, this.dirty);
+        }        
+      }.bind(this));
       
       return this;
     }

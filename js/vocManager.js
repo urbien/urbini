@@ -863,7 +863,7 @@ define([
       // check if maybe the app didn't get published for some reason
       if (app.get('lastPublished') <= lastPublished) 
         return;
-      
+   
       wClsDfd.promise().done(function() {   
         var modifiedWClUris = modifiedWCls.pluck('davClassUri');
         Voc.getModels(modifiedWClUris, {force: true}).done(function() {
@@ -934,7 +934,7 @@ define([
     var actualTypes = {};
     _.each(resources, function(resource) {
       var uri = resource.getUri();
-      var type = resource.type;
+      var type = resource.vocModel.type;
       var actualType = U.getTypeUri(uri);
       if (actualType && type != actualType) {
         var byType = actualTypes[actualType] = actualTypes[actualType] || [];

@@ -8,6 +8,7 @@ define([
   'events'
 ], function(G, $, _, U, BasicView, Events) {
   return BasicView.extend({
+    TAG: 'LoginButton',
     loginTemplate: 'loginButtonTemplate',
 //    logoutTemplate: 'logoutButtonTemplate',
 //    popupTemplate: 'loginPopupTemplate',

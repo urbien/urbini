@@ -7,6 +7,7 @@ define([
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
+    TAG: 'AddButton',
     template: 'addButtonTemplate',
     events: {
       'click #addBtn': 'add'

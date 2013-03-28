@@ -1063,7 +1063,7 @@ define('fileCache', function() {
           bg: '#DDD'
         },
         events: {
-          on: true,
+          on: false,
           color: '#baFF00',
           bg: '#555'
         },

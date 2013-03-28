@@ -6,6 +6,9 @@ define([
   'events',
   'cache'
 ], function(G, U, Error, Events, C) {
+  var commonTypes = G.commonTypes;
+  var APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
+  
   var willSave = function(res, prop, val) {
     var prev = res.get(prop);
     if (U.isNully(prev))
@@ -47,8 +50,18 @@ define([
       
       if (this.getUri() && !options.silent)
         Events.trigger('newResource', this);
-      else if (this.vocModel.type === G.commonTypes.Jst) {
+      else if (this.vocModel.type === commonTypes.Jst) {
         Events.trigger('newTemplate', this);        
+      }
+      
+      if (commonTypes.App == this.type) {
+        Events.on('saved', function(resource, options) {
+          var types = U.getTypes(resource.vocModel);
+          if (_.intersection(types, APP_TYPES).length) {
+//            debugger; // maybe check if the changes concern this app, or another
+            this.set({'lastModifiedWebClass': +new Date()});
+          }
+        }.bind(this));
       }
     },
     
@@ -93,7 +106,7 @@ define([
         }
       }
       
-      if (!U.isAssignableFrom(this.vocModel, G.commonTypes.Jst)) { // templates.js is responsible for templates
+      if (!U.isAssignableFrom(this.vocModel, commonTypes.Jst)) { // templates.js is responsible for templates
         var codeProps = U.getPropertiesWith(this.vocModel.properties, 'code');
         for (var cp in codeProps) {
           if (this.get(cp))
@@ -560,7 +573,6 @@ define([
     save: function(attrs, options) {
       this.loaded = true;
       var isNew = this.isNew();
-      var commonTypes = G.commonTypes;
       options = _.extend({patch: true, silent: true}, options || {});
       var data = attrs || options.data || this.attributes;
       this.clearErrors(data);
@@ -588,7 +600,7 @@ define([
           Events.trigger('newResource', this);
         }
         
-        this.trigger('saved', options);
+        Events.trigger('saved', this, options);
       }
       else {
         data = U.prepForSync(data, vocModel, ['parameter']);
@@ -635,7 +647,7 @@ define([
             self.notifyContainers();
           }
           
-          self.trigger('saved', options);
+          Events.trigger('saved', self, options);
         };
         
         options.error = function(originalModel, err, opts) {

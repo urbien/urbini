@@ -8,7 +8,7 @@ define([
   'vocManager',
   'views/BasicView'
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
-  var willShow = function(res, prop, role) {
+  function willShow(res, prop, role) {
     var p = prop.shortName;
     return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
@@ -36,6 +36,7 @@ define([
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
       this.resource.set(init, {silent: true});
+      this.edited = {};
       
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
@@ -576,6 +577,10 @@ define([
       this.router.navigate(U.makeMobileUrl(action, redirectPath, redirectParams), options);
     },
     
+    getAtt: function(att) {
+      return _.has(this.edited, att) ? this.edited[att] : this.resource.get(att);
+    },
+    
     getValue: function(input) {
       var jInput = $(input);
       var val;
@@ -829,8 +834,16 @@ define([
       this.setValues(atts, {onValidationError: this.fieldError});
     },
     setValues: function(atts, options) {
+      options = options || {};
       var res = this.resource;
       res.lastFetchOrigin = 'edit';
+      var onValidated = options.onValidated;
+      options.onValidated = function() {
+        debugger;
+        _.extend(this.edited, atts);
+        onValidated && onValidated.apply(this, arguments);
+      }.bind(this);
+      
       res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
     },
     addProp: function(info) {
@@ -866,7 +879,7 @@ define([
         return;
       
       info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(this.resource, prop, info.formId);
+      var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
       if (!info.groupNameDisplayed  &&  info.propertyGroupName) {
         U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
         info.groupNameDisplayed = true;
@@ -890,7 +903,6 @@ define([
       }.bind(this));
     },
     renderHelper: function(options) {
-      G.log(this.TAG, "render");
       var self = this;
       var args = arguments;
       var meta = this.vocModel.properties;
@@ -950,7 +962,8 @@ define([
             var p = props[j].trim();
             if (editProps  &&  $.inArray(p, editProps) == -1)
               continue;
-            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
+
+            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))))
               continue;
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
@@ -963,7 +976,7 @@ define([
             p = p.trim();
             if (typeof init[p] !== 'undefined')
               continue;
-            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  json[p])))
+            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))))
               continue;
             
             _.extend(info, {name: p, prop: reqd[p]});
@@ -976,9 +989,9 @@ define([
           p = p.trim();
           if (editProps  &&  $.inArray(p, editProps) == -1)
             continue;
-          if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  json[p]))
+          if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)))
             continue;
-          if (this.action != 'make'  &&  meta[p].immutable  &&  json[p])
+          if (this.action != 'make'  &&  meta[p].immutable  &&  val)
             continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);

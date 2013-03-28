@@ -422,7 +422,6 @@ define([
     },
     
     render: function(e) {
-      G.log(this.TAG, "render");
       this.numDisplayed = 0;
       var self = this;
       var col = this.filteredCollection = this.collection.clone();

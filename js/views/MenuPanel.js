@@ -98,8 +98,6 @@ define([
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      G.log(this.TAG, "render");
-
       var mi = $('#' + this.viewId).find('ul');
       if (mi  &&  mi.length != 0) {
         $('#' + this.viewId).panel("open");

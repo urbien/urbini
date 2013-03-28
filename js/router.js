@@ -874,7 +874,8 @@ define([
     
     changePage1: function(view) {
       if (view == this.currentView) {
-        G.log(this.TAG, "render", "Not replacing view with itself");
+        G.log(this.TAG, "render", "Not replacing view with itself, but will refresh it");
+        view.refresh();
         return;
       }
       

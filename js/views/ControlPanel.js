@@ -84,7 +84,6 @@ define([
       }
     },
     renderHelper: function(options) {
-      G.log(this.TAG, "render");
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = res.type;

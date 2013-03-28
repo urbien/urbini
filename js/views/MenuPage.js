@@ -64,7 +64,6 @@ define([
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      G.log(this.TAG, "render");
       var self = this;
       var res = this.resource || this.collection;
       this.$el.html(this.template(res.attributes));      
