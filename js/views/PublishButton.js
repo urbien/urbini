@@ -115,7 +115,21 @@ define([
           self.router.navigate(U.getHash(), {trigger: true, replace: true, forceFetch: true});
 //        window.location.reload();
         },
-        error: self.hideLoadingIndicator
+        error: function(model, xhr, options) {
+          self.hideLoadingIndicator();
+          var error = xhr && xhr.responseText;
+          if (error) {
+            try {
+              error = JSON.parse(error).error;
+            } catch (err) {
+              error = null;
+            }
+          }
+          
+          var msg = error && error.details;
+          msg = msg || 'App could not be published';
+          Events.trigger('error', msg);
+        }
 //      ,
 //        queryString: 'publish=true'
 //        error: onSaveError
