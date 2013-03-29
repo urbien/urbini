@@ -207,7 +207,7 @@ define([
         if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
-          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || lastPublished  &&  res.get('lastModifiedWebClass') > res.get('lastPublished')))
+          if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || (lastPublished  &&  res.get('lastModifiedWebClass') > lastPublished)))
             this.publish = true;
           
           var noWebClasses = !res.get('lastModifiedWebClass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
