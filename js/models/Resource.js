@@ -9,10 +9,13 @@ define([
   var commonTypes = G.commonTypes;
   var APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
-  var willSave = function(res, prop, val) {
-    var prev = res.get(prop);
-    if (U.isNully(prev))
-      return !U.isNully(val);
+  var willSave = function(res, meta, propName, val) {
+    var prev = res.get(propName);
+    var prop = meta[propName];
+    var isBool = prop && prop.range === 'boolean';
+    var falsyFunc = isBool ? U.isFalsy : U.isNully;
+    if (falsyFunc(prev))
+      return !falsyFunc(val);
     else if (prev !== val && prev.toString() !== val)
       return true;
     
@@ -63,6 +66,8 @@ define([
           }
         }.bind(this));
       }
+      
+      this.changesSinceSave = {};
     },
     
     setModel: function(vocModel, options) {
@@ -306,19 +311,19 @@ define([
       if (!_.size(props))
         return true;
       
+      var vocModel = this.getModel();
+      var meta = vocModel.properties;
       var self = this;
       options = options || {};
       if (!options.silent && !options.unset) {
         props = U.filterObj(props, function(name, val) {
-          return willSave(self, name, val);
+          return willSave(self, meta, name, val);
         })
         
         if (!_.size(props))
           return true;
       }
       
-      var vocModel = this.getModel();
-      var meta = vocModel.properties;
       if (!options.sync) {
         var displayNameChanged = false;
         for (var shortName in props) {
@@ -358,7 +363,15 @@ define([
         }
       }
       
-      return Backbone.Model.prototype.set.call(this, props, options);
+      var result = Backbone.Model.prototype.set.call(this, props, options);
+      if (result) {
+        if (options.userEdit) {
+          _.extend(this.changesSinceSave, props);
+//          options.silent = options.silent !== false;
+        }
+        
+        return result;
+      }
     },
     
     getModel: function() {
@@ -576,7 +589,11 @@ define([
     
     clearErrors: function(data) {
 //      delete data._problematic;
-      this.unset('_error', {silent: true});
+      this.unset('_error');
+    },
+    
+    getUnsavedChanges: function() {
+      return _.clone(this.changesSinceSave);
     },
     
     save: function(attrs, options) {
@@ -596,7 +613,7 @@ define([
       
       var saved;
       if (!options.sync) {
-        saved = Backbone.Model.prototype.save.call(this, data, options);        
+        saved = Backbone.Model.prototype.save.call(this, data, options);
 //        G.cacheResource(this);
         if (isAppInstall)
           Events.trigger('appInstall', this);
@@ -610,6 +627,7 @@ define([
         }
         
         Events.trigger('saved', this, options);
+        this.changesSinceSave = {};
       }
       else {
         data = U.prepForSync(data, vocModel, ['parameter']);
@@ -657,6 +675,10 @@ define([
           }
           
           Events.trigger('saved', self, options);
+          
+          // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating changesSinceSave
+          if (!options.fromDB) 
+            this.changesSinceSave = {};
         };
         
         options.error = function(originalModel, err, opts) {

@@ -45,7 +45,7 @@ define([
         
         var templateName = template.get('templateName');
         this.makeTemplate(templateName, this._templateMap[templateName]);
-        this.refresh();
+        this[this.rendered ? 'render' : 'refresh']();
       }.bind(this));
 
       var render = this.render;
@@ -53,7 +53,7 @@ define([
       this.render = function() {
         if (!this.isPanel && !this.isActive()) {
          // to avoid rendering views 10 times in the background. Render when it's about to be visible
-          this.dirty = arguments; 
+          this.__renderArgs = arguments; 
           return false;
         }
         else {
@@ -71,9 +71,11 @@ define([
           child.trigger('active', active);
         });
         
-        if (active && this.dirty) {
+        if (active && this.__renderArgs) {
           var method = this.rendered ? refresh : render;
-          method.apply(this, this.dirty);
+          var args = this.__renderArgs;
+          this.__renderArgs = null;
+          method.apply(this, args);
         }        
       }.bind(this));
       
@@ -86,6 +88,8 @@ define([
   _.extend(BasicView.prototype, {
     refresh: function() {
       // override this
+      this.render();
+      this.restyle();
     },
     
     _getLoadingDeferreds: function() {

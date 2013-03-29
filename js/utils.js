@@ -49,10 +49,17 @@ define([
       return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
   };
-
+  
   String.prototype.uncamelize = function(capitalFirst) {
     var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
     return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
+  };
+
+  String.prototype.splitCamelCase = function(capitalFirst) {
+      // insert a space before all caps
+    var split = this.replace(/([A-Z])/g, ' $1');
+      // uppercase the first character
+    return capitalFirst ? split.replace(/^./, function(str){ return str.toUpperCase(); }) : split;
   };
 
   String.prototype.endsWith = function(str) {
@@ -107,6 +114,10 @@ define([
       var hasWebWorkers = G.hasWebWorkers;
       var opts = _.clone(options);
       opts.type = opts.method || opts.type;
+      // TODO: remove
+      if (opts.url.indexOf('backboneModel') >= 0 && opts.type !== 'POST')
+        debugger;
+        
       opts.dataType = opts.dataType || 'JSON';
       var useWorker = hasWebWorkers && !opts.sync;
       return new $.Deferred(function(defer) {
@@ -2741,6 +2752,36 @@ define([
         params.$or = backlinkProp.whereOr;
       
       return params;
+    },
+    
+    getChanges: function(prev, now) {
+      var changes = {};
+      for (var prop in now) {
+        if (!prev || prev[prop] !== now[prop]) {
+          if (typeof now[prop] == "object") {
+            var c = U.getChanges(prev[prop], now[prop]);
+            if (! _.isEmpty(c) ) // underscore
+              changes[prop] = c;
+          } else {
+            changes[prop] = now[prop];
+          }
+        }
+      }
+      
+      return changes;
+    },
+
+    getClassDisplayName: function(uri) {
+      if (typeof uri === 'string') {
+        uri = U.getTypeUri(uri);
+        var model = U.getModel(uri);
+        if (model)
+          return model.displayName;
+        else
+          return U.getClassName(uri).splitCamelCase();
+      }
+      else
+        return uri.displayName;
     },
     
     DEFAULT_HTML_PROP_VALUE: '<!-- put your HTML here buddy -->',

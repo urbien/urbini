@@ -443,7 +443,7 @@ define([
       var filtered = this.filteredCollection;
       var colModel = collection.vocModel;
       if (!wasRendered) {
-        this.$el.on('listviewbeforefilter', _.debounce(function (e, data) {
+        this.parentView.$('ul[data-filter="true"]').on('listviewbeforefilter', _.debounce(function (e, data) {
           var $ul = $(this),
               $input = $(data.input),
               value = $input.val();

@@ -20,7 +20,7 @@ define([
     TAG: 'Header',
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateError', 'checkErrorList');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -30,7 +30,7 @@ define([
           if (options && options.skipRefresh)
             return;
           
-          this.refresh();          
+          this.refresh();
         }, this);
       }
 
@@ -81,12 +81,36 @@ define([
       }, this);
       
       this.calcTitle();
-      
-      Events.on('error', function(msg) {
-         this.renderError({error: msg});
-      }.bind(this));
-
+      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
+      Events.off('error', this._updateError);
+      Events.on('error', this._updateError);
       return this;
+    },
+    
+    checkErrorList: function(e) {
+      var $errList = this.$('#errList');
+      var errList = $errList[0];
+      if (errList && errList.children.length <= 1)
+        this.$('#headerErrorBar').html("");
+    },
+    
+    _updateError: function(res, options) {
+      if (res !== this.model)
+        return;
+      
+      if (typeof options === 'string') {
+        this.renderError({error: options});
+        return;
+      }
+
+      if (options.errors) {
+        this.renderError(_.extend({
+          error: this.errorListTemplate({
+            errors: options.errors
+          }), 
+          withIcon: false
+        }, _.omit(options, 'errors')));
+      }
     },
     
     calcTitle: function() {
@@ -170,6 +194,7 @@ define([
       
       this.calcSpecialButtons();
       this.renderSpecialButtons();
+      this.error = null;
       this.renderError();
       return this;
     },
@@ -297,6 +322,9 @@ define([
     },
     
     renderError: function(options) {
+      var errDiv = this.$('#headerErrorBar');
+      errDiv.html("");
+      
       options = options || {};
       var error = options.error;
       if (!error) {
@@ -312,18 +340,20 @@ define([
         return this;
       
       var length = Math.max(error ? error.length : 0, info ? info.length : 0);
-      var errDiv = this.$('#headerErrorBar');
-      errDiv.html("");
-      errDiv.html(this.headerErrorBar({error: error, info: info}));
+      errDiv.html(this.headerErrorBar({error: error, info: info, withIcon: options.withIcon !== false}));
       errDiv.trigger('create');
       errDiv.show();
       this.error = null;
       this.info = null;
-      setTimeout(function() {        
-        $(errDiv).fadeOut(2000, function() {
-          errDiv.html("");
-        });
-      }, length * 80);
+      this.$('#errList').find('.closeparent').click(this.checkErrorList);
+      
+      if (!options.persist) {
+        setTimeout(function() {        
+          $(errDiv).fadeOut(2000, function() {
+            errDiv.html("");
+          });
+        }, length * 80);
+      }
       
       return this;
     },

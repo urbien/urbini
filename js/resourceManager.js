@@ -301,7 +301,7 @@ define([
         return store.put(prepForDB(item));
       }));
     },
-
+    
     Index: function(propName) {
       return Index(prepPropNameForDB(propName));
     },
@@ -983,7 +983,7 @@ define([
           item.set({'_uri': tempUri}, {silent: true});
         }
   
-        var itemJson = tempUri ? item.toJSON() : item.changed,
+        var itemJson = tempUri ? item.toJSON() : item.getUnsavedChanges(),
             itemRef = _.extend({_id: now, _uri: uri || tempUri}, itemJson), 
             done = options.success,
             fail = options.error;
@@ -1611,6 +1611,58 @@ define([
     RM.databaseCompromised = true;
   });
 
+  Events.on('preparingToPublish', function(app) {
+    var appUri = app.getUri();
+    var commonTypes = G.commonTypes;
+    var wClType = commonTypes.WebClass;
+    var designerPkg = G.sqlUrl + '/www.hudsonfog.com/voc/system/designer/';
+    var dfd = $.Deferred();
+    dfd.promise().done(function() {
+      Events.trigger('goodToPublish', app);
+    }).fail(function(errors) {
+      Events.trigger('cannotPublish', errors);      
+    });
+    
+    RM.Index('parentFolder').eq(appUri).getAll(RM.$db.objectStore(wClType, 0)).done(function(webCls) {
+      if (!webCls) {
+        dfd.resolve();
+        return;
+      }
+      
+      webCls = parse(webCls);
+      var webClUris = _.pluck(webCls, '_uri');
+      // find all classes 
+      var refStore = RM.$db.objectStore(REF_STORE.name);
+      var isDesignObj = RM.Index('_uri').betweeq(designerPkg, designerPkg + '\uffff');
+      var isBroken = RM.Index('_problematic').eq(1);
+      isDesignObj.and(isBroken).getAll(refStore).done(function(results) {
+        if (!results.length) {
+          dfd.resolve();
+          return;
+        }
+        
+        results = parse(results);
+        var badBoys = [];
+        _.each(results, function(designerObj) {
+          designerObj._error  = designerObj._error || {code: 400, details: 'Problems here. Help us out?'};
+          if (webClUris.indexOf(designerObj._uri) >= 0 || webClUris.indexOf(designerObj.domain) >= 0) {
+            badBoys.push(designerObj);
+          }
+        });
+        
+        if (!badBoys.length)
+          dfd.resolve();
+        else
+          dfd.reject(badBoys);
+      }).fail(function() {
+        dfd.resolve();
+      });
+    }).fail(function(err, e){
+      debugger;
+      dfd.resolve();
+    });
+  });
+  
   Events.on('VERSION:Models', function(init) {
     var dbOpen = RM.db;
     var settings = {sequential: true, preventPileup: true};

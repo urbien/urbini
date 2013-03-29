@@ -86,57 +86,63 @@ define([
 //      this.router.navigate('app/' + res.get('appPath'), {trigger: true});
     },
     publish: function(e) {
-      this.showLoadingIndicator();
       Events.stopEvent(e);
       var res = this.resource;
       var props = {publish: true};
       var self = this;
-      Events.trigger('publishingApp', res);
-
-      res.save(props, {
-        sync: true,
-        success: function(resource, response, options) {
-//          if (response.error) {
-//            onSaveError(resource, response, options);
-//            return;
-//          }
-//          
-//          $('.formElement').attr('disabled', false);
-//          debugger;
-          res.set({'lastPublished': +new Date()});
-          Events.trigger('publishedApp', res);
-//          var query = U.getQueryParams();
-//          var hash = window.location.href;
-//          hash = hash.slice(hash.indexOf('#') + 1);
-//          if (_.size(query))
-//            hash = hash.slice(0, hash.indexOf('?'));
-//          
-////          query.$nonce = new Date().getTime();
-//          hash = hash + '?' + $.param(query);
-          self.hideLoadingIndicator();
-          self.router.navigate(U.getHash(), {trigger: true, replace: true, forceFetch: true});
-//        window.location.reload();
-        },
-        error: function(model, xhr, options) {
-          self.hideLoadingIndicator();
-          var error = xhr && xhr.responseText;
-          if (error) {
-            try {
-              error = JSON.parse(error).error;
-            } catch (err) {
-              error = null;
+      
+      this.showLoadingIndicator();
+      Events.on('goodToPublish', function() {
+        Events.trigger('publishingApp', res);        
+        res.save(props, {
+          sync: true,
+          success: function(resource, response, options) {
+            res.set({'lastPublished': +new Date()});
+            Events.trigger('publishedApp', res);
+            self.hideLoadingIndicator();
+            self.router.navigate(U.getHash(), {trigger: true, replace: true, forceFetch: true});
+          },
+          error: function(model, xhr, options) {
+            self.hideLoadingIndicator();
+            var error = xhr && xhr.responseText;
+            if (error) {
+              try {
+                error = JSON.parse(error).error;
+              } catch (err) {
+                error = null;
+              }
             }
+            
+            var msg = error && error.details;
+            msg = msg || 'App could not be published';
+            Events.trigger('error', res, msg);
           }
-          
-          var msg = error && error.details;
-          msg = msg || 'App could not be published';
-          Events.trigger('error', msg);
-        }
-//      ,
-//        queryString: 'publish=true'
-//        error: onSaveError
+        });  
       });
       
+      Events.on('cannotPublish', function(badBoys) {
+        self.hideLoadingIndicator();
+        var errs = [];
+        _.each(badBoys, function(badBoy) {
+          var displayName = badBoy.name || badBoy.label;
+          var classUri = U.getTypeUri(badBoy._uri);
+          if (!displayName) {
+            displayName = classUri;
+            displayName = displayName.slice(displayName.lastIndexOf('/') + 1);
+          }
+          
+          displayName = U.getClassDisplayName(classUri) + ' ' + displayName;
+          errs.push({
+            link: U.makePageUrl('edit', badBoy._uri),
+            msg: displayName + ': ' + badBoy._error.details,
+            icon: 'ban-circle'
+          });
+        });
+        
+        Events.trigger('error', res, {errors: errs, persist: true, info: 'Please fix these errors and re-publish'});
+      });
+      
+      Events.trigger('preparingToPublish', res);
       return this;
     },
     enterTournament: function(e) {

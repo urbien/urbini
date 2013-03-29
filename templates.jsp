@@ -571,7 +571,7 @@
 
 <script type="text/template" id="headerErrorBar">
   {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-warning-sign"></i> ' + info + '</h3>' : '' }}
-  {{= obj.error ? '<h3 id="headerError"><i class="ui-icon-ban-circle"></i> ' + error + '</h3>' : ''}}
+  {{= obj.error ? '<h3 id="headerError">' + (obj.withIcon ? '<i class="ui-icon-ban-circle"></i>' : '') + error + '</h3>' : ''}}
 </script>
 
 <script type="text/template" id="comment-item">
@@ -772,6 +772,35 @@
     {{ /items }}
     </ul>
 </script -->
+
+
+<script type="text/template" id="errorListTemplate">
+<!--
+  <ul id="errList" data-split-theme="{{= G.theme.error || 'c' }}" data-role="listview" data-split-icon="delete" data-inset="true">
+  {{  _.each(errors, function(err) {  }}
+     <li>
+       <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
+       <a href="#" class="closeparent" data-position-to="window">Dismiss error</a>
+     </li>
+  {{  });                           }}
+  </ul>
+-->
+<div id="errList" data-theme="{{= G.theme.error || 'c' }}">
+{{  _.each(errors, function(err) {  }}
+     <div style="display:block">
+{{     if (err.link) {            }}
+         <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
+{{     }                          }}
+{{     if (!err.link) {           }}
+{{=      '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}
+{{     }                          }}
+       <i class="ui-icon-delete closeparent" style="float:right; width:20px; height:20px; color: white"></i>
+     </div>
+{{  });                           }}
+</div>
+
+</script>
+
 
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">

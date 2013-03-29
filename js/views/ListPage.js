@@ -113,7 +113,7 @@ define([
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       this.addChild('listView', new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options)));
-      this.canSearch = !this.isMasonry && !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
+      this.canSearch = true; //!this.isMasonry && !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])

@@ -40,7 +40,15 @@ define(['jquery'], function($) {
           }
         });
       };
-      
+
+      var $doc = $(document);
+      $doc.on('click','.closeparent', function(e) {
+        e.preventDefault();
+        $(this).parent().fadeTo(300, 0, function() {
+          $(this).remove();
+        });
+      });
+
       // https://github.com/jogjayr/jQM-Button-Count-Badge
 //      $.fn.mobileBadge = function(options) {
 //        if (typeof options.count !== "number") {

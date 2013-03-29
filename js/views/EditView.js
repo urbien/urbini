@@ -17,7 +17,7 @@ define([
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
-                      'resetResource', 'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
+                      'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
@@ -366,10 +366,10 @@ define([
     set: function(params) {
       _.extend(this, params);
     },
-    resetResource: function() {
-      this.resource.clear({silent: true, skipRefresh: true});
-      this.resource.set(this.originalResource, {skipRefresh: true}); // can't use silent here if we want resource.changed to have the changed attributes later 
-    },
+//    resetResource: function() {
+//      this.resource.clear({silent: true, skipRefresh: true});
+//      this.resource.set(this.originalResource, {skipRefresh: true}); // can't use silent here if we want resource.changed to have the changed attributes later 
+//    },
     resetForm: function() {
       $('form').clearForm();      
 //      this.originalResource = this.resource.toJSON();
@@ -437,8 +437,11 @@ define([
       if (params.$returnUri) 
         return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
       
-      if (this.action === 'edit')
-        return this.router.navigate(U.makeMobileUrl(this.resource), options);
+      if (this.action === 'edit') {
+        window.history.back();
+        return;
+//        return this.router.navigate(U.makeMobileUrl(this.resource), options);
+      }
         
       var res = this.resource,
           uri = res.getUri(),
@@ -657,7 +660,7 @@ define([
           return;
         
         succeeded = true;
-        var props = U.filterObj(action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
+        var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
 //        var props = atts;
         if (isEdit && !_.size(props)) {
           debugger; // user didn't modify anything?
@@ -754,16 +757,16 @@ define([
           break;
       }
       
-      this.resetResource();
+//      this.resetResource();
       res.lastFetchOrigin = 'edit';
       atts = U.mapObj(atts, function(att, val) {
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
       });
       
-      atts = _.extend({}, res.attributes, this.originalResource, atts);
+      atts = _.extend(atts, res.getUnsavedChanges());
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
-        this.setValues(atts, {skipValidation: true});
+        this.setValues(atts, {skipValidation: true, userEdit: true});
         onSuccess();
         self.getInputs().attr('disabled', false);
       }
@@ -837,7 +840,7 @@ define([
       var res = this.resource;
       res.lastFetchOrigin = 'edit';
       var onValidated = options.onValidated;      
-      var set = res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
+      var set = res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true, userEdit: true}, options));
       if (set)
         _.extend(this.edited, _.pick(res.attributes, _.keys(atts)));
     },
