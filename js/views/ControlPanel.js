@@ -262,14 +262,14 @@ define([
               var icon;
               if (prop.displayInline) {
                 cnt = 0;
-                icon = "ui-icon-plus";
+                icon = "ui-icon-plus-sign";
               }
               else
                 icon = prop['icon'];
               var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
               if (this.isMainGroup) {
                 if (!icon)
-                  icon = 'ui-icon-star';
+                  icon = 'ui-icon-star-empty';
                 
                 if (isHorizontal)
                   U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));
