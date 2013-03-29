@@ -836,13 +836,10 @@ define([
       options = options || {};
       var res = this.resource;
       res.lastFetchOrigin = 'edit';
-      var onValidated = options.onValidated;
-      options.onValidated = function() {
-        _.extend(this.edited, atts);
-        onValidated && onValidated.apply(this, arguments);
-      }.bind(this);
-      
-      res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
+      var onValidated = options.onValidated;      
+      var set = res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true}, options));
+      if (set)
+        _.extend(this.edited, _.pick(res.attributes, _.keys(atts)));
     },
     addProp: function(info) {
       var p = info.name;

@@ -576,7 +576,7 @@ define([
     
     clearErrors: function(data) {
 //      delete data._problematic;
-      this.unset('_error');
+      this.unset('_error', {silent: true});
     },
     
     save: function(attrs, options) {
