@@ -8883,7 +8883,7 @@ $.mobile.document.delegate( "ul, ol", "listviewcreate", function() {
 	var list = $( this ),
 		listview = list.data( "mobile-listview" );
 
-	if ( !listview.options.filter ) {
+	if (!listview || !listview.options.filter ) {
 		return;
 	}
 
