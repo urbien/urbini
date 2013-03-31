@@ -1184,7 +1184,8 @@ define('fileCache', function() {
           return w;
       }
       
-      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, G.files.xhrWorker.name));
+      var xw = G.files.xhrWorker;
+      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
       G.workerCache.push(w);
       return w;
     },
