@@ -670,7 +670,7 @@ define([
       if (userChanged) {
         Events.trigger('userChanged')
         if (c.guest) {
-          G.localStorage.del(Voc.contactKey);          
+          G.localStorage.del(Voc.contactKey);
         }
         else {
           // no need to clear localStorage, it's only used to store models, which can be shared

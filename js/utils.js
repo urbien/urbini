@@ -2689,10 +2689,6 @@ define([
       }
     },
     
-    nukeHTML: function(str) {
-      return str.replace(/(<([^>]+)>)/ig, '');
-    },
-    
     __htmlCommentRegex: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
     __htmlCommentRegexGM: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
     __jsCommentRegex: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -2797,6 +2793,9 @@ define([
         return uri.displayName;
     },
     
+    removeHTML: function(str) {
+      return str.replace(/(<([^>]+)>)/ig, '');
+    },
     DEFAULT_HTML_PROP_VALUE: '<!-- put your HTML here buddy -->',
     DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
     DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */'

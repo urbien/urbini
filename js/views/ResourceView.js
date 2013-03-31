@@ -151,7 +151,7 @@ define([
             }
   
             // remove HTML tags, test length of pure text
-            var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
+            var v = U.removeHTML(val.value).trim();
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
@@ -201,7 +201,7 @@ define([
           val.value = this.__prependNumbersDiv(prop, val.value);          
         }
         
-        var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
+        var v = U.removeHTML(val.value).trim();
         if (otherLi) {
           if (val.name.length + v.length > maxChars)
             otherLi += this.propRowTemplate2(val);

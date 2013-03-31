@@ -76,7 +76,7 @@ define([
       
       if (typeof t === 'undefined' || !t)
         return;
-      text = text.replace(/(<([^>]+)>)/ig, '').trim();
+      text = U.removeHTML(text).trim();
       var href = $(t).attr('href') || $(t).attr('link');
       var idx = href.lastIndexOf('#');
       var href = idx == -1 ? href : href.slice(idx + 1)
