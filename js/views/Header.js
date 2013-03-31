@@ -138,7 +138,7 @@ define([
         }
 
         if (!title) {
-          if (res instanceof Backbone.Collection) 
+          if (U.isCollection(res)) 
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
@@ -203,7 +203,6 @@ define([
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
-        this.finish();
       }.bind(this)); 
     },
     
@@ -266,20 +265,20 @@ define([
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('div#publishBtn', pBtn);
-        this.$('div#publishBtn').css("display", "inline-block");
+        this.$('div#publishBtn').show();
       }
       else if (pBtn) {
-        this.$('div#publishBtn').css("display", "none");
+        this.$('div#publishBtn').hide();
         var options = SPECIAL_BUTTONS.slice().remove('publish');
         var settings = _.pick(this, options);
         _.each(options, function(option) {
-          var display = 'none';
+          var method = 'hide';
           if (this[option]) {
             this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
-            display = 'inline-block';
+            method = 'show';
           }
           
-          this.$('#{0}Btn'.format(option)).css('display', display);
+          this.$('#{0}Btn'.format(option))[method]();
         }.bind(this));
       }
       
@@ -402,7 +401,6 @@ define([
       this.$el.trigger('create');
 
       this.renderSpecialButtons();
-      this.rendered = true;
       return this;
     }
   });

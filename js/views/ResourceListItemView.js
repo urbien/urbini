@@ -129,15 +129,7 @@ define([
       this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
     },
     
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    
-    renderHelper: function(event) {
+    render: function(options) {
       var m = this.resource;
       var vocModel = this.vocModel;
       var meta = vocModel.properties;

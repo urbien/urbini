@@ -120,6 +120,7 @@ define([
         });  
       });
       
+      var appUrl = U.makePageUrl('view', res);
       Events.on('cannotPublish', function(badBoys) {
         self.hideLoadingIndicator();
         var errs = [];
@@ -133,7 +134,7 @@ define([
           
           displayName = U.getClassDisplayName(classUri) + ' ' + displayName;
           errs.push({
-            link: U.makePageUrl('edit', badBoy._uri),
+            link: U.makePageUrl('edit', badBoy._uri, {$returnUri: appUrl}),
             msg: displayName + ': ' + badBoy._error.details,
             icon: 'ban-circle'
           });
@@ -193,6 +194,8 @@ define([
           }
           
           this.$el.html(this['{0}BtnTemplate'.format(btnName)]());
+//          var html = this['{0}BtnTemplate'.format(btnName)]();
+//          this.setElement($(html));
           this.$el.trigger('create');
         }.bind(this));
       }

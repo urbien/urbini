@@ -9,8 +9,10 @@ define([
   return BasicView.extend({
     TAG: 'AddButton',
     template: 'addButtonTemplate',
+    tagName: 'li',
+    id: '#addBtn',
     events: {
-      'click #addBtn': 'add'
+      'click': 'add'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'add');
@@ -28,14 +30,7 @@ define([
       this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
       return this;
     },
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    renderHelper: function(options) {
+    render: function(options) {
       if (!this.template)
         return this;
       

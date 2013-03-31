@@ -51,6 +51,7 @@ define([
       var self = this;
       Events.on('back', function() {
         self.backClicked = true;
+        window.history.back();
       });
 
       // a hack to prevent browser address bar from dropping down
@@ -373,7 +374,7 @@ define([
         Events.trigger('req-login', {
           returnUri: window.location.href, 
           onDismiss: function() {
-            window.history.back();
+            Events.trigger('back');
           }
         });
         
@@ -426,7 +427,7 @@ define([
       else if (G.currentUser.guest) {
         Events.trigger('req-login', {
           onDismiss: function() {
-            window.history.back();
+            Events.trigger('back');
           }
         });
         

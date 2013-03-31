@@ -34,20 +34,6 @@ define([
       }
       
       this.router = G.Router || Backbone.history;
-      Events.on('templateUpdate', function(template) {
-        var dClUri = template.get('modelDavClassUri');
-        if (!dClUri)
-          return;
-        
-        var type = U.getTypeUri(dClUri);
-        if (U.getTypes(this.vocModel).indexOf(type) == -1)
-          return;
-        
-        var templateName = template.get('templateName');
-        this.makeTemplate(templateName, this._templateMap[templateName]);
-        this[this.rendered ? 'render' : 'refresh']();
-      }.bind(this));
-
       var render = this.render;
       var refresh = this.refresh;
       this.render = function() {
@@ -61,7 +47,9 @@ define([
             debugger;
           
           G.log(this.TAG, 'render', 'view is active, rendering');
-          return render.apply(this, arguments);
+          render.apply(this, arguments);
+          this.finish();
+          return this;
         }
       }.bind(this);
       
@@ -76,6 +64,7 @@ define([
           var args = this.__renderArgs;
           this.__renderArgs = null;
           method.apply(this, args);
+          this.finish();
         }        
       }.bind(this));
       
@@ -88,8 +77,8 @@ define([
   _.extend(BasicView.prototype, {
     refresh: function() {
       // override this
-      this.render();
-      this.restyle();
+//      this.render();
+//      this.restyle();
     },
     
     _getLoadingDeferreds: function() {
@@ -130,6 +119,22 @@ define([
         
       U.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
+      var event = 'templateUpdate:' + templateName;
+      this.stopListening(Events, event);
+      this.listenTo(Events, event, function(template) {
+        var dClUri = template.get('modelDavClassUri');
+        if (dClUri) {
+          var type = U.getTypeUri(dClUri);
+          if (U.getTypes(this.vocModel).indexOf(type) == -1)
+            return;
+        }
+        
+        this.makeTemplate(templateName, this._templateMap[templateName], dClUri);
+        this[this.rendered ? 'render' : 'refresh']();
+        this.restyle();
+        debugger;
+      }.bind(this));
+
       return template;
     },  
     

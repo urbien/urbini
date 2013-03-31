@@ -9,9 +9,11 @@ define([
   var MenuPanel;
   return BasicView.extend({
     TAG: 'MenuButton',
+    tagName: 'li',
+    id: '#menuBtn',
     templateName: 'menuButtonTemplate',
     events: {
-      'click #menuBtn': 'menu'
+      'click': 'menu'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
@@ -30,24 +32,12 @@ define([
       return this;
     },
     
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    
-    renderHelper: function(options) {
+    render: function(options) {
       if (!this.template)
         return this;
       
       var newAlerts = G.currentUser.newAlertsCount;
-//      if (typeof options !== 'undefined' && options.append)
-//        this.$el.append(this.template({viewId: this.viewId, newAlerts: newAlerts}));
-//      else
-        this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
-      
+      this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
       return this;
     }
   });

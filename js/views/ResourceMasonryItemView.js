@@ -76,14 +76,7 @@ define([
         }
       }
     },
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    renderHelper: function(event) {
+    render: function(options) {
       var vocModel = this.vocModel;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (isModification) 

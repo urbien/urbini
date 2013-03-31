@@ -13,6 +13,7 @@ define([
 //      'MarkerCluster.Default.css'
 //    ],
 //    cssListeners: [],
+    TAG: 'MapView',
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
@@ -114,7 +115,6 @@ define([
       Events.trigger('mapReady', res);
       this.$el.append(frag);
       this.hide();
-      this.finish();
       return this;
     },
     resetMap: function() {

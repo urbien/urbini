@@ -26,6 +26,11 @@ label.req::before {
   color: #f66;
 }
 
+.headerSpecialBtn {
+  display: inline-block;
+  margin: 0 auto;
+}
+
 #label.missing  {  
   color:#FF0000;  
   font-weight:bold;  

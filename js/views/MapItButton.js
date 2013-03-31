@@ -5,10 +5,12 @@ define([
   'views/BasicView' 
 ], function(Events, ToggleButton, BasicView) {
   return ToggleButton.extend({
-    btnId: 'mapIt',
+    TAG: 'MapItButton',
     template: 'mapItButtonTemplate',
+    tagName: 'li',
+    id: 'mapIt',
     events: {
-      'click #mapIt': 'mapIt'
+      'click': 'mapIt'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'mapIt');

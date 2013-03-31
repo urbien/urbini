@@ -76,14 +76,7 @@ define([
         this.$el.listview('refresh');
       }
     },
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    renderHelper: function(options) {
+    render: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = res.type;
@@ -376,7 +369,6 @@ define([
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
       
-      this.rendered = true;
       return this;
     }
   });

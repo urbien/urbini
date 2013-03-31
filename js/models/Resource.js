@@ -172,7 +172,9 @@ define([
           this.trigger('replaced', this, oldUri);
 //        else
 //          this.trigger('updated', this);
-      }              
+      } 
+      
+      this.trigger('syncedWithServer');
     },
     cancel: function(options) {
       var props = this.vocModel.properties;
@@ -370,6 +372,9 @@ define([
 //          options.silent = options.silent !== false;
         }
         
+        if (props._error)
+          this.trigger('error' + res.getUri(), props._error);
+        
         return result;
       }
     },
@@ -382,11 +387,11 @@ define([
       if (this.lastFetchOrigin !== 'edit')
         return;
       
+      options = options || {};
       var errors = {};
-      var props = options.validateAll ? this.vocModel.properties : attrs;
-      var values = attrs;
+      var props = options.validateAll ? _.extend({}, this.attributes, attrs) : attrs;
       for (var name in props) {
-        var error = this.validateProperty(attrs, name, options);
+        var error = this.validateProperty(props, name, options);
         if (error !== true)
           errors[name] = typeof error === 'string' ? error : "Please enter a valid " + U.getPropDisplayName(props[name]);
       }
@@ -610,6 +615,7 @@ define([
       var vocModel = this.vocModel;
       var isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall);
       var isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst);
+      var isApp = U.isAssignableFrom(vocModel, commonTypes.App);
       
       var saved;
       if (!options.sync) {
@@ -618,7 +624,7 @@ define([
         if (isAppInstall)
           Events.trigger('appInstall', this);
         else if (isTemplate)
-          Events.trigger('templateUpdate', this);
+          Events.trigger('templateUpdate:' + this.get('templateName'), this);
         
         this.triggerPlugs(options);
         this.notifyContainers();
@@ -658,7 +664,9 @@ define([
           if (isAppInstall)
             Events.trigger('appInstall', self);
           else if (isTemplate)
-            Events.trigger('templateUpdate', self);
+            Events.trigger('templateUpdate:' + self.get('templateName'), self);
+//          else if (isNew && isApp)
+//            Events.trigger('newApp', self);
           
           success && success.apply(this, arguments);
 //          G.cacheResource(self);

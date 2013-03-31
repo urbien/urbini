@@ -262,14 +262,6 @@ define([
     },
     
     render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    
-    renderHelper: function() {
       G.log(this.TAG, 'render');  
 
       var json = this.json;
@@ -296,7 +288,6 @@ define([
 //        this.listView.$el.find('ul').removeClass('grid-listview');
       }
       
-      this.rendered = true;
       return this;
     }
   }, {

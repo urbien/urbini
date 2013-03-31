@@ -84,7 +84,6 @@ define([
       
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
-        this.finish();
       }.bind(this));
     },
     
@@ -99,7 +98,6 @@ define([
         this.$el.removeClass('hidden');
         this.$el.html(res.get('description'));      
         this.$el.trigger('create');      
-        this.rendered = true;
         return this;
       }
       
@@ -297,7 +295,6 @@ define([
         });
       }
 
-      this.rendered = true;
       return this;
     },
     

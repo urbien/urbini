@@ -26,12 +26,12 @@ define([
             
             return;
           case 401: 
-            window.history.back();
+            Events.trigger('back');
             G.log(Errors.TAG, 'error', 'requesting user-login');
             Events.trigger('req-login', G.currentUser.guest ? Errors.login : Errors.unauthorized);
             return;
           case 404:
-            window.history.back();
+            Events.trigger('back');
             G.log(Errors.TAG, "error", 'no results');
             var errMsg = err.details;
             if (!errMsg) {
@@ -52,13 +52,13 @@ define([
             switch (type) {
               case 'offline':
               case 'timeout':
-                window.history.back();
+                Events.trigger('back');
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;
               case 'error':
               case 'abort':
               default: 
-                window.history.back();
+                Events.trigger('back');
                 Errors.errDialog({msg: err.details || Errors.not_found, delay: 1000});
             }
             return;

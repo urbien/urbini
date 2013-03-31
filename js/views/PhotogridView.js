@@ -48,7 +48,6 @@ define([
         this.$el.trigger('create');
       }
       
-      this.finish();
       return this;
     },
     renderResource: function(options) {
@@ -356,7 +355,6 @@ define([
 //      else {
       this.$el.removeClass('hidden');
         this.$el.trigger('create');
-//        this.rendered = true;
 //      }
 //      this.finalize();
 //      var self = this;

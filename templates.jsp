@@ -386,9 +386,7 @@
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
-  <li>
-    <a id="mapIt" target="#" data-icon="globe">Map It</a>
-  </li>
+  <a id="mapIt" target="#" data-icon="globe">Map It</a>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -398,32 +396,24 @@
 
 <script type="text/template" id="backButtonTemplate">
   <!-- The UI back button (not the built-in browser one) -->
-  <li id="back">
-    <a target="#" data-icon="chevron-left" class="back">Back</a>
-  </li>  
+  <a target="#" data-icon="chevron-left" class="back">Back</a>
 </script>
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <li id="addBtn">
-    <a target="#" data-icon="plus-sign">Create</a>
-  </li>  
+  <a target="#" data-icon="plus-sign">Create</a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
-  <li id="menuBtn">
-    <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-      {{= typeof newAlerts == 'undefined'  ||  !newAlerts ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
-    </a>
-  </li>  
+  <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
+    {{= typeof newAlerts == 'undefined'  ||  !newAlerts ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+  </a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
-  <li id="login">   
-    <a target="#" data-icon="signin">Sign In</a>
-  </li>
+  <a target="#" data-icon="signin">Sign In</a>
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
@@ -487,9 +477,7 @@
 
 <script type="text/template" id="aroundMeButtonTemplate">
   <!-- button for toggling ordering of results by geo-promixity to the user -->
-  <li id="aroundMe">
-    <a target="#" data-icon="map-marker">Around Me</a>
-  </li>
+  <a target="#" data-icon="map-marker">Around Me</a>
 </script>
 
 <script type="text/template" id="publishBtnTemplate">
@@ -531,33 +519,33 @@
     </div>
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" class="{{= typeof className != 'undefined' ? className : '' }}"  style="margin-top: -10px;" id="headerButtons">
-      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-a' : '' }}">
+      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -10px;" id="headerButtons">
+      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
         {{ if (obj.forkMeApp) { }}
             {{= forkMeApp }}
         {{ } }}
       </div>
-      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= typeof className != 'undefined' ? 'ui-block-b' : '' }}">
+      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
         {{ } }}
       </div>
-      <div style="max-width:400px; display: inline-block;" id="publishBtn">
+      <div style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
         {{ if (obj.publishApp) { }}
             {{= publish }}
         {{ } }}
       </div>
-      <div style="max-width:200px; display: inline-block;" id="testPlugBtn">
+      <div style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
         {{ if (obj.testPlug) { }}
             {{= testPlug }}
         {{ } }}
       </div>
-      <div style="max-width:320px; display: inline-block;" id="enterTournamentBtn">
+      <div style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
         {{ if (obj.enterTournament) { }}
             {{= enterTournament }}
         {{ } }}
       </div>
-      <div style="max-width:320px; display: inline-block;" id="resetTemplateBtn">
+      <div style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
         {{ if (obj.resetTemplate) { }}
             {{= resetTemplate }}
         {{ } }}

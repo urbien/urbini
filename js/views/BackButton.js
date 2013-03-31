@@ -8,8 +8,10 @@ define([
   return BasicView.extend({
     TAG: 'BackButton',
     templateName: 'backButtonTemplate',
+    tagName: 'li',
+    id: '#back',
     events: {
-      'click #back': 'back'
+      'click': 'back'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
@@ -20,17 +22,13 @@ define([
     back: function(e) {
       Events.stopEvent(e);
       Events.trigger('back');
-      window.history.back();
       return this;
     },
     render: function(options) {
       if (!this.template)
         return this;
       
-      if (typeof options !== 'undefined' && options.append)
-        this.$el.append(this.template());
-      else
-        this.$el.html(this.template());
+      this.$el.html(this.template());
       
 //      var noBack = window.history.length <= 1;
 //      var a = this.$('a'), disabled = 'ui-disabled';
@@ -41,7 +39,6 @@ define([
 //          a.removeClass(disabled);
 //      }
       
-      this.finish();
       return this;
     }
   }, {

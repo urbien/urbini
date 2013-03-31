@@ -12,8 +12,10 @@ define([
     loginTemplate: 'loginButtonTemplate',
 //    logoutTemplate: 'logoutButtonTemplate',
 //    popupTemplate: 'loginPopupTemplate',
+    tagName: 'li',
+    id: '#loginButton',
     events: {
-      'click #login' : 'showPopup'
+      'click' : 'showPopup'
 //        ,
 //      'click #logout': 'logout'
     },

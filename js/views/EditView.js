@@ -434,11 +434,12 @@ define([
     redirect: function(options) {
       var params = U.getQueryParams();
       var options = _.extend({replace: true, trigger: true}, options || {});
+
       if (params.$returnUri) 
         return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
       
       if (this.action === 'edit') {
-        window.history.back();
+        Events.trigger('back');
         return;
 //        return this.router.navigate(U.makeMobileUrl(this.resource), options);
       }
@@ -467,6 +468,18 @@ define([
           default: 
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
+      }
+      else if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
+        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking in progress, hold on to your hair.', false);
+        res.on('error', function(error) {
+          $.mobile.hidePageLoadingMsg();          
+        });
+        
+        res.on('syncedWithServer', function() {          
+          $.mobile.hidePageLoadingMsg();
+          $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking complete, gently release your hair', false);
+          setTimeout($.mobile.hidePageLoadingMsg, 3000);
+        });
       }
       
       if (res.isA('Redirectable')) {
@@ -775,7 +788,7 @@ define([
     },
     cancel: function(e) {
       Events.stopEvent(e);
-      window.history.back();
+      Events.trigger('back');
     },
     refresh: function(data, options) {
       if (options && options.skipRefresh)
@@ -897,7 +910,6 @@ define([
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
-        this.finish();
       }.bind(this));
     },
     renderHelper: function(options) {
@@ -1078,7 +1090,6 @@ define([
         this.attachCodeMirror();
       }
       
-      this.rendered = true;
       return this;
     },
     

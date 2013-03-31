@@ -61,7 +61,6 @@ define([
       }
         
       this.$el.html(this.template(json));
-      this.finish();
       return this;
     }
   }, {

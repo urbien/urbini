@@ -82,7 +82,8 @@ define([
     
     addCustomTemplate: function(template) {
       var type = template.get('modelDavClassUri');
-      var templates = this.templates[template.get('templateName')];
+      var name = template.get('templateName');
+      var templates = this.templates[name];
       if (!templates) // currently, only allow to override default templates
         return;
       
@@ -94,17 +95,7 @@ define([
         templates['default'] = text;
       }
       
-      Events.trigger('templateUpdate', template);
-      
-//      var elts = $(template.get('templateText'));
-//      _.each(elts, function(elt) {
-//        var templates = this.templates[elt.id];
-//        if (!templates) // currently, only allow to override default templates
-////          return;
-//        
-//        templates[type] = elt.innerHTML;
-//        Events.trigger('templateUpdate', template);
-//      }.bind(this));
+//      Events.trigger('templateUpdate:' + name, template);      
     },
     
     // Get template by name from hash of preloaded templates

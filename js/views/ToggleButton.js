@@ -6,7 +6,6 @@ define([
   'views/BasicView'
 ], function($, _, Events, BasicView) {
   return BasicView.extend({
-    btnId: null,
     initialize: function(options) {
       _.bindAll(this, 'setStyle', 'resetStyle', 'isActive');
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -22,24 +21,21 @@ define([
       return this;
     },
     setStyle: function() {
-      if (!this.btnId) {
-        console.log("Toggle button is missing btnId property");
+      if (!this.id) {
+        console.log("Toggle button is missing 'id' property");
         return this;
       }
       
-      this.$('#' + this.btnId)[this.active ? 'addClass' : 'removeClass']('ui-btn-active');
+      this.$el.parent().find('#' + this.id)[this.active ? 'addClass' : 'removeClass']('ui-btn-active');
     },
     render: function(options) {
       if (!this.template)
         return this;
       
-      if (typeof options !== 'undefined' && options.append)
-        this.$el.append(this.template());
-      else
-        this.$el.html(this.template());
-      
+//      var html = this.template();
+//      this.setElement($(html));
+      this.$el.html(this.template());
       this.resetStyle();
-      this.finish();
       return this;
     }
   });

@@ -110,7 +110,7 @@ define([
                 $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
               },
               model: U.getModel(friendType),
-              title: U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+              title: 'Friends' //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
             });
             
             self.friends.fetch({
@@ -156,15 +156,7 @@ define([
       return this;
     },
     
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    
-    renderHelper: function() {
+    render: function(options) {
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;
@@ -205,7 +197,6 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
-      this.rendered = true;
 //      renderDfd.resolve();
 //      this.restyle();
       

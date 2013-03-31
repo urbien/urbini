@@ -227,7 +227,7 @@ define([
 //          }));
         }
         
-        if (isCreatorOrAdmin  &&  this.vocModel.type.indexOf('/dev/') != -1) {
+        if (isCreatorOrAdmin) { //  &&  this.vocModel.type.indexOf('/dev/') != -1) {
           var wHash = U.getHash(true);
           var params = {};
           params.modelName = this.vocModel.displayName;
@@ -262,7 +262,6 @@ define([
       U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'home', id: 'home123'}));
       ul.append(frag);
       
-      this.rendered = true;
       var p = $('#' + this.viewId);
       p.append(this.$el);
       p.panel("open");

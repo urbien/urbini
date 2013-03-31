@@ -105,14 +105,6 @@ define([
     },
 
     render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    
-    renderHelper:function () {
       var views = {
         '#resourceEditView': this.editView,
         '#headerDiv'       : this.header
@@ -128,7 +120,6 @@ define([
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
-      this.rendered = true;
       return this;
     }
   }, {

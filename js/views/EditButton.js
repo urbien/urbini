@@ -21,14 +21,7 @@ define([
       (G.Router || Backbone.history).navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true});
       return this;
     },
-    render: function() {
-      try {
-        return this.renderHelper.apply(this, arguments);
-      } finally {
-        this.finish();
-      }
-    },
-    renderHelper: function(options) {
+    render: function(options) {
       if (!this.template)
         return this;
       

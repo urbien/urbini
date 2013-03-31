@@ -33,7 +33,7 @@ define([
     },
     swipeleft: function() {
       G.log(this.TAG, 'events', "swipeleft");
-      window.history.back();
+      Events.trigger('back');
     },
     swiperight: function() {
       G.log(this.TAG, 'events', "swiperight");
@@ -100,7 +100,6 @@ define([
       
       ul.append(frag);
       
-      this.rendered = true;
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
       
