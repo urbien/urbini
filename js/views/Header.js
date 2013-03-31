@@ -367,7 +367,9 @@ define([
         this.error = error.details;
 
       this.calcSpecialButtons();
-      this.$el.html("");
+      if (this.rendered)
+        this.$el.html("");
+      
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-a'}));
       else
@@ -398,9 +400,8 @@ define([
       $ul.html(frag);
       
       this.renderError();
-      this.$el.trigger('create');
-
       this.renderSpecialButtons();
+      this.$el.trigger('create');
       return this;
     }
   });

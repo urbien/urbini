@@ -605,10 +605,11 @@ define('globals', function() {
       url = url.replace(/\.js$/, '');
         
     var inAppcache = G.isInAppcacheBundle(url);
-    if (inAppcache) {  
+    if (inAppcache) {
       var path = G.requireConfig.paths[name];
       path = path || name;
-      var realPath = G.files[path].name;
+      var realPath = G.files.appcache[path].fullName;
+//      var realPath = G.files[path].name;
       arguments[2] = url.replace(path, realPath);
       if (!/\.(jsp|css|html)$/.test(url)) {
         orgRJSLoad.apply(this, arguments);
