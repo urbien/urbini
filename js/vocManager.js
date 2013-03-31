@@ -142,7 +142,7 @@ define([
     __fetchAndLoadModels: function(missingOrStale, mightBeStale, willLoad, options) {
       return $.Deferred(function(defer) {
         var need = _.extend({}, missingOrStale, mightBeStale.infos);
-        $.when(Voc.fetchModels(need, options), Voc.loadModels(willLoad)).then(function(data) {
+        $.when(Voc.fetchModels(need, options), Voc.loadModels(willLoad, true)).then(function(data) {
           G.checkVersion(data);
           if (!data) {
             // missingOrStale should be empty
@@ -153,7 +153,7 @@ define([
 //              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
             }
             
-            return Voc.loadModels(mightBeStale.models).done(defer.resolve).fail(defer.reject);            
+            return Voc.loadModels(mightBeStale.models, true).done(defer.resolve).fail(defer.reject);            
           }
           
           var mz = data.models || [];
@@ -646,11 +646,12 @@ define([
       }
     },
 
-    loadModels: function(models) {
+    loadModels: function(models, dontOverwrite) {
       return $.Deferred(function(defer) {
         models = models || Voc.models;      
         _.each(models, function(model) {
-          Voc.loadModel(model);
+          if (!dontOverwrite || !C.typeToModel[model.type])
+            Voc.loadModel(model);
         });
         
         defer.resolve();
