@@ -879,6 +879,11 @@ define([
         view.refresh();
         return;
       }
+
+      var activated = false;
+      var prev = this.previousView;
+      if (prev && prev !== view)
+        prev.trigger('active', false);
       
       var options = this.getChangePageOptions();
       var replace = options.replace;
@@ -911,6 +916,10 @@ define([
         if (!this.backClicked  ||  lostHistory) {
           if (!view.rendered) {
             view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+            if (prev && prev !== view)
+              prev.trigger('active', false);
+              
+            view.trigger('active', true);
             view.render();
           }
       
@@ -940,12 +949,7 @@ define([
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
-      // perform transition
-      var prev = this.previousView;
-      if (prev && prev !== view)
-        prev.trigger('active', false);
-        
-      view.trigger('active', true);
+      // perform transition        
 //      if (this.previousView)
 //        this.previousView.active = false;
       $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});

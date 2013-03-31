@@ -157,7 +157,7 @@ define([
           }
           
           var mz = data.models || [];
-          G.lastModified = data.lastModified;
+          G.lastModified = Math.max(data.lastModified, G.lastModified);
           G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
           var more = data.linkedModelsMetadata;
           if (more) {
@@ -262,7 +262,7 @@ define([
         for (var type in plugs) {
           var typePlugs = plugs[type];
           for (var i = 0; i < typePlugs.length; i++) {
-            Voc.initPlug(typePlugs[i], type);
+            Voc.initPlug(typePlugs[i]);
           }
         }
       }
@@ -584,8 +584,10 @@ define([
     
     initPlugs: function(type) {
       // TODO: turn off plugs as needed, instead of this massacre
-      Events.off('create.' + type);
-      Events.off('edit.' + type);
+      _.each(this.scriptActions, function(action) {
+        Events.off(action + ':' + type);
+      });
+      
       var plugs = C.plugs[type];
       if (!plugs) {
         plugs = G.localStorage.get(Voc.PLUGS_PREFIX + type);
@@ -597,13 +599,15 @@ define([
         return;
     
       _.each(plugs, function(plug) {
-        Voc.initPlug(plug, type);
+        Voc.initPlug(plug);
       });
     },
     
     scriptActions: ['create', 'edit'],
-    
-    initPlug: function(plug, type) {
+    initPlug: function(plug) {
+      this.plugs = this.plugs || U.toObject(this.scriptActions);
+      var cause = plug.causeDavClassUri;
+      var effect = plug.effectDavClassUri;
       var scripts = {};
       _.each(Voc.scriptActions, function(action) {        
         scripts[action] = plug['on' + action.camelize(true)];
@@ -612,13 +616,25 @@ define([
       for (var action in scripts) {
         var script = scripts[action];
         if (script) {
-          script = script.trim();
+          script = U.removeJSComments(script).trim();
+          if (!script.length)
+            continue;
+          
           script = Voc.buildScript(script); //, plug.causeDavClassUri, plug.causeDavClassUri);
 //          script = new Function(script.startsWith("function") ? script.slice(script.indexOf("{") + 1, script.lastIndexOf("}")) : script); //, plug.causeDavClassUri, plug.causeDavClassUri);
           if (script === null)
-            G.log(Voc.TAG, 'error', 'bad custom on{0} script'.format(action), plug.app, type);
-          else
-            Events.on(action + ':' + type, Voc.preparePlug(script, plug));
+            G.log(Voc.TAG, 'error', 'bad custom on{0} script'.format(action), plug.app, cause);
+          else {
+            var scriptPlusGoodies = Voc.preparePlug(script, plug);
+            var plugsForAction = this.plugs[action];
+            var plugsForCause = plugsForAction[cause] = plugsForAction[cause] || {};
+            var existingPlug = plugsForCause[effect];
+            if (existingPlug)
+              Events.off(action + ':' + cause, existingPlug);
+              
+            plugsForCause[effect] = scriptPlusGoodies;
+            Events.on(action + ':' + cause, scriptPlusGoodies);
+          }
         }          
       }
     },

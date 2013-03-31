@@ -270,9 +270,9 @@ define('app', [
     },
     
     doPostStartTasks: function() {
-      for (var type in C.typeToModel) {
-        Voc.initPlugs(type);
-      }
+//      for (var type in C.typeToModel) {
+//        Voc.initPlugs(type);
+//      }
       
       RM.sync();
     },

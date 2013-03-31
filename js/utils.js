@@ -2694,15 +2694,26 @@ define([
     },
     
     __htmlCommentRegex: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
-    __htmlCommentRegexG: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/g,
+    __htmlCommentRegexGM: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
+    __jsCommentRegex: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
+    __jsCommentRegexGM: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/gm,
     getHTMLComments: function(str) {
       var matches = str.match(U.__htmlCommentRegex);
       return matches && matches.slice(1);
     },
     removeHTMLComments: function(str) {
-      return str.replace(U.__htmlCommentRegexG, '');
+      return str.replace(U.__htmlCommentRegexGM, '');
     },
-    
+
+    getJSComments: function(str) {
+      var matches = str.match(U.__jsCommentRegex);
+      return matches && matches.slice(1);
+    },
+
+    removeJSComments: function(str) {
+      return str.replace(U.__jsCommentRegexGM, '');
+    },
+
     htmlEscape: function(str) {
       return String(str)
               .replace(/&/g, '&amp;')

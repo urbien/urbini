@@ -373,7 +373,7 @@ define([
         }
         
         if (props._error)
-          this.trigger('error' + res.getUri(), props._error);
+          this.trigger('error' + this.getUri(), props._error);
         
         return result;
       }
@@ -503,7 +503,7 @@ define([
           if (!val) // might have gotten unset
             continue;
           
-          Events.trigger('updateBacklinkCounts:' + val, this, isNew);
+          Events.trigger('updateBacklinkCounts:' + U.getLongUri1(val), this, isNew);
         }
       }
     },
