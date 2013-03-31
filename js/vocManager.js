@@ -674,7 +674,7 @@ define([
       if (!models) {
         var modelPrefix = Voc.MODEL_PREFIX + G.DEV_PACKAGE_PATH + G.currentApp.appPath;
         models = _.compact(_.map(_.keys(localStorage), function(key) {
-          return key.startsWith(modelPrefix) && key.slice(7);
+          return key.startsWith(modelPrefix) && key.slice(6);
         }));
       }
       
