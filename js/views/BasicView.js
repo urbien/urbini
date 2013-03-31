@@ -47,7 +47,7 @@ define([
         this.makeTemplate(templateName, this._templateMap[templateName]);
         this.refresh();
       }.bind(this));
-
+// comment start
       var render = this.render;
       var refresh = this.refresh;
       this.render = function() {
@@ -66,17 +66,17 @@ define([
       }.bind(this);
       
       this.on('active', function(active) {
-        this.active = active;
+        this.active = active; // keep this
         _.each(this.children, function(child) {
           child.trigger('active', active);
-        });
+        }); // keep this
         
         if (active && this.dirty) {
           var method = this.rendered ? refresh : render;
           method.apply(this, this.dirty);
         }        
       }.bind(this));
-      
+////////// comment end      
       return this;
     }
   }, {

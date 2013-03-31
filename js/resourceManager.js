@@ -809,7 +809,7 @@ define([
           },
           error: function(model, xhr, options) {
             debugger;
-            var code = xhr.status;
+            var code = xhr.status || xhr.code;
             if (code == 0) { // timeout
               RM.sync();
               return;
