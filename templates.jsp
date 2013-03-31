@@ -341,12 +341,13 @@
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
    <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; min-width:110px; float:left; background:none; background-color: {{= color }}" href="#">
-       {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;"></i>' : '' }} {{= name }} 
+       {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;margin-left:-5px;"></i>' : '' }} {{= name }} 
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; min-width:100px;float:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
+     {{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>
@@ -433,7 +434,7 @@
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
-    <h4 id="loginMsg">{{= msg }}</h4>
+    <h4 style="color: #aaa" id="loginMsg">{{= msg }}</h4>
     <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     
     {{ _.forEach(nets, function(net) { }} 
@@ -482,7 +483,7 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">This app has been changed please re-Publish</a>
+  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">This app was changed, click to re-Publish</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
@@ -853,11 +854,11 @@
   
   <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
     {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
-    {{ for (var o in options) { }} 
-    {{   if (o === value) continue; }}
-    {{   var val = U.getPropDisplayName(options[o]); }}
+    {{ _.each(options, function(option) { }} 
+    {{   if (option.displayName === value) return; }}
+    {{   var val = option.displayName; }}
     <option value="{{= val }}">{{= val }}</option>
-    {{ } }}
+    {{ }); }}
   </select>
 </script>
 
@@ -906,8 +907,11 @@
   <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
+    {{ if (!obj.value) { }}
+      {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+    {{ } }} 
   </a>
+  {{= typeof multiValue === 'undefined' ? '' : value }}
 </script>
 
 <script type="text/template" id="multivaluePET">

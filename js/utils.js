@@ -1665,7 +1665,9 @@ define([
 //        val.comment = prop.comment;
       
 //      var classes = [];
-      var rules = prop.multiValue ? {} : {"data-formEl": true};
+      if (prop.multiValue)
+        val.multiValue = true;
+      var rules = prop.multiValue  &&  !val.value ? {} : {"data-formEl": true};
       if (prop.required)
         rules.required = 'required';
       if (prop.maxSize)      

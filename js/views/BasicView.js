@@ -54,10 +54,10 @@ define([
       }.bind(this);
       
       this.on('active', function(active) {
-        this.active = active;
+        this.active = active; // keep this
         _.each(this.children, function(child) {
           child.trigger('active', active);
-        });
+        }); // keep this
         
         if (active && this.__renderArgs) {
           var method = this.rendered ? refresh : render;
@@ -67,7 +67,7 @@ define([
           this.finish();
         }        
       }.bind(this));
-      
+////////// comment end      
       return this;
     }
   }, {
