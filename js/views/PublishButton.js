@@ -200,7 +200,7 @@ define([
         }.bind(this));
       }
       else if (this.template) {
-        this.$el.html(this.template());
+        this.$el.html(this.template({wasPublished: !!this.resource.get('lastPublished')}));
         this.$el.trigger('create');
       }
       

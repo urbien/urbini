@@ -198,7 +198,8 @@ define([
 //          $(link).attr("data-formel", "true");
           props[prop] = set;
           props[prop + '.displayName'] = innerHtml;
-          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+//          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+          this.setValues(props, {skipValidation: true});
           this.setResourceInputValue(link, innerHtml);
         }
         
@@ -235,7 +236,7 @@ define([
           var resName = U.getDisplayName(chosenRes);
           if (resName)
             props[prop + '.displayName'] = resName;
-          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+          this.setValues(props, {skipValidation: true});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
           if (!dn)
@@ -947,9 +948,8 @@ define([
         return this;
       
       var res = this.resource;
-      if (!this.rendered)  {
+      if (!this.originalResource)
         this.originalResource = res.toJSON();
-      }
       
       var type = res.type;
       var json = res.toJSON();

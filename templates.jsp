@@ -483,7 +483,7 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">This app was changed, click to re-Publish</a>
+  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= wasPublished ? 'This app was changed, click to re-Publish' : 'Publish your app when you\'re done' }}</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">

@@ -14,7 +14,7 @@ define([
 //  'views/MenuButton',
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
     TAG: 'Header',
@@ -84,6 +84,7 @@ define([
       this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
       Events.off('error', this._updateError);
       Events.on('error', this._updateError);
+      this.autoFinish = false;
       return this;
     },
     
@@ -259,7 +260,7 @@ define([
         return;
       
       _.each(SPECIAL_BUTTONS, function(btn) {
-        this.$('#{0}Btn'.format(btn)).html("");
+        this.$('#{0}Btn'.format(btn)).html("").hide();
       }.bind(this));
       
       var pBtn = this.buttonViews.publish;
@@ -402,6 +403,16 @@ define([
       this.renderError();
       this.renderSpecialButtons();
       this.$el.trigger('create');
+      
+      // HACK
+      // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
+      var header = this.$('.ui-header');
+      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      if (!header.hasClass(barClass))
+        header.addClass(barClass);
+      
+      // END HACK
+      this.finish();
       return this;
     }
   });

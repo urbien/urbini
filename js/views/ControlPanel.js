@@ -358,8 +358,8 @@ define([
           }
         }
       }
-      if (!options || options.setHTML)
-        this.$el.html(frag);
+      
+      this.$el.html(frag);
       
 //      var self = this;
 //      var problems = $('.problematic');

@@ -36,8 +36,8 @@ define([
       this.router = G.Router || Backbone.history;
       var render = this.render;
       var refresh = this.refresh;
-      this.render = function() {
-        if (!this.isPanel && !this.isActive()) {
+      this.render = function(rOptions) {
+        if ((rOptions && !rOptions.force) && !this.isPanel && !this.isActive()) {
          // to avoid rendering views 10 times in the background. Render when it's about to be visible
           this.__renderArgs = arguments; 
           return false;
@@ -48,7 +48,8 @@ define([
           
           G.log(this.TAG, 'render', 'view is active, rendering');
           render.apply(this, arguments);
-          this.finish();
+          if (this.autoFinish !== false)
+            this.finish();
           return this;
         }
       }.bind(this);

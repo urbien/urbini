@@ -255,8 +255,8 @@ define([
               liView = this.addChild(viewName, new ResourceListItemView(_.extend({swatch: swatch}, commonParams)));
           }
 
-          var rendered = liView.render();
-          if (!rendered)
+          var rendered = liView.render({force: true});
+          if (rendered === false)
             continue;
           else
             rendered = rendered.el;
