@@ -43,8 +43,8 @@ define([
           return false;
         }
         else {
-          if (!this.TAG)
-            debugger;
+//          if (!this.TAG)
+//            debugger;
           
           G.log(this.TAG, 'render', 'view is active, rendering');
           render.apply(this, arguments);
@@ -133,7 +133,6 @@ define([
         this.makeTemplate(templateName, this._templateMap[templateName], dClUri);
         this[this.rendered ? 'render' : 'refresh']();
         this.restyle();
-        debugger;
       }.bind(this));
 
       return template;
