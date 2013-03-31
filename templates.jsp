@@ -890,8 +890,11 @@
   <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
+    {{ if (!obj.value) { }}
+      {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+    {{ } }} 
   </a>
+  {{= typeof multiValue === 'undefined' ? '' : value }}
 </script>
 
 <script type="text/template" id="multivaluePET">
