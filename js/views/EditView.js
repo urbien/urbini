@@ -10,7 +10,7 @@ define([
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
   function willShow(res, prop, role) {
     var p = prop.shortName;
-    return !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
+    return !prop.formula  &&  !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
   };
 
   var scrollerTypes = ['date', 'duration'];
@@ -172,8 +172,9 @@ define([
         var props = {};
         var link = e.target;
         if (isMultiValue) {
-          var set = '';
           var innerHtml = '';
+          var set = '';
+          var input;
           for (var i=0; i<checked.length; i++) {
   //          var val = $('label[for="' + checked[i].id + '"]')[0].value;
             var style = checked[i].style;
@@ -182,10 +183,23 @@ define([
             if (i != 0)
               innerHtml += ', ';
             innerHtml += checked[i].name;
-            set += '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
+            input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
+            $(link.parentNode).append($(input));
+
+            set += input;
           }
-          link.innerHTML = innerHtml;
-          link.parentNode.innerHTML += set;
+//          input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '"' + ' value="' + innerHtml + '" style="display:none" />';
+//          set += input;
+//          $(link.parentNode).append($(input));
+          var html = link.innerHTML;
+          var idx = html.indexOf('</label>');
+          var idx1 = html.indexOf('<br>');
+          link.innerHTML = idx1 == -1 ? html.substring(0, idx + 8) + ' ' + innerHtml : html.substring(0, idx + 8) + ' ' + innerHtml;
+//          $(link).attr("data-formel", "true");
+          props[prop] = set;
+          props[prop + '.displayName'] = innerHtml;
+          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+          this.setResourceInputValue(link, innerHtml);
         }
         
         else if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
@@ -215,35 +229,35 @@ define([
             return;
           }
         }
-        
-        var uri = chosenRes.getUri();
-        props[prop] = uri;
-        var resName = U.getDisplayName(chosenRes);
-        if (resName)
-          props[prop + '.displayName'] = resName;
-        this.resource.set(props, {skipValidation: true, skipRefresh: true});
-        var pr = vocModel.properties[prop];
-        var dn = pr.displayName;
-        if (!dn)
-          dn = prop.charAt(0).toUpperCase() + prop.slice(1);
-        var name = chosenRes.get('davDisplayName');
-        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
-        this.setResourceInputValue(link, uri);
-        if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
-          if (G.currentApp) {
-            var cUri = G.currentApp._uri;
-            if (cUri.indexOf('http') == -1) {
-              cUri = U.getLongUri1(cUri);
-              G.currentApp._uri = cUri;
-            }
-            if (this.resource.getUri() == cUri) {
-              var themeSwatch = chosenRes.get('swatch');
-              if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
-                G.theme.swatch = themeSwatch;
+        else {
+          var uri = chosenRes.getUri();
+          props[prop] = uri;
+          var resName = U.getDisplayName(chosenRes);
+          if (resName)
+            props[prop + '.displayName'] = resName;
+          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+          var pr = vocModel.properties[prop];
+          var dn = pr.displayName;
+          if (!dn)
+            dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+          var name = chosenRes.get('davDisplayName');
+          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+          this.setResourceInputValue(link, uri);
+          if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
+            if (G.currentApp) {
+              var cUri = G.currentApp._uri;
+              if (cUri.indexOf('http') == -1) {
+                cUri = U.getLongUri1(cUri);
+                G.currentApp._uri = cUri;
+              }
+              if (this.resource.getUri() == cUri) {
+                var themeSwatch = chosenRes.get('swatch');
+                if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+                  G.theme.swatch = themeSwatch;
+              }
             }
           }
         }
-        
         this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
@@ -316,11 +330,21 @@ define([
         }
         var domain = U.getLongUri1(res.get('domain'));
         var rParams = {
-          $prop: pr.shortName,
-          $type:  vocModel.type,
-          $title: t,
-          $forResource: domain
-        };
+            $prop: pr.shortName,
+            $type:  vocModel.type,
+            $title: t,
+            $forResource: domain
+          };
+
+        if (vocModel.type.endsWith('BacklinkProperty')) {
+          var pf = U.getLongUri1(res.get('parentFolder'));
+          if (G.currentUser.guest) 
+            _.extend(rParams, {parentFolder: pf});
+          else {
+            var params = {parentFolder: pf, creator: '_me'};
+            _.extend(rParams, {$or: U.getQueryString(params, {delimiter: '||'})});
+          }
+        }
 //          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
 //          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
 
@@ -437,14 +461,18 @@ define([
       if (params.$returnUri) 
         return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
       
-      if (this.action === 'edit')
-        return this.router.navigate(U.makeMobileUrl(this.resource), options);
-        
       var res = this.resource,
           uri = res.getUri(),
           vocModel = this.vocModel,
           webPropType = G.commonTypes.WebProperty,
           self = this;
+
+      if (this.action === 'edit') {
+        if (U.isAssignableFrom(vocModel, webPropType)) 
+          return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
+        else
+          return this.router.navigate(U.makeMobileUrl(res), options);
+      }  
       
       if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
         debugger;
@@ -987,7 +1015,7 @@ define([
             continue;
           if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)))
             continue;
-          if (this.action != 'make'  &&  meta[p].immutable  &&  val)
+          if (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))
             continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);
