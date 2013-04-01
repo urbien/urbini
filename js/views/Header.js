@@ -105,7 +105,7 @@ define([
         return;
 
       var page = options.page;
-      if (!this.isPageView(page))
+      if (page && !this.isPageView(page))
         return;
       
 //      if (typeof options === 'string') {
@@ -133,20 +133,24 @@ define([
         return this;
       }
       
-      var hash = window.location.hash;
+      // only use hash the first time
+      var hash = this.hash = this.hash || window.location.hash; 
       hash = hash && hash.slice(1);
       var res = this.model;
       var title;
       if (hash && G.tabs) {
         var decHash = decodeURIComponent(hash);
-        var matches = _.filter(G.tabs, function(t) {return t.hash == hash || decodeURIComponent(t.hash) == decHash});
+        var matches = _.filter(G.tabs, function(t) {
+          return t.hash == hash || decodeURIComponent(t.hash) == decHash
+        });
+        
         if (matches.length)
           title = matches[0].title;
       }
       
       if (!title) {
         if (hash) {
-          var params = U.getHashParams();
+          var params = U.getHashParams(hash);
           title = params.$title;
 //          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
         }
