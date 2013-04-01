@@ -552,7 +552,7 @@ define([
       var changedPage = false;
       var success = function() {
         if (wasTemp)
-          self._checkUri(res, wasTemp);
+          self._checkUri(res, uri, action);
         self.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
         Voc.fetchModelsForLinkedResources(res);
@@ -562,8 +562,8 @@ define([
       return true;
     },
     
-    _checkUri: function(res, wasTemp) {
-      if (wasTemp) {
+    _checkUri: function(res, uri, action) {
+      if (U.isTempUri(uri)) {
         var newUri = res.getUri();
         if (!U.isTempUri(newUri))
           this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});            
