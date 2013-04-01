@@ -125,41 +125,43 @@ define([
         if (opts.error) defer.fail(opts.error);
         if (useWorker) {
           G.log(U.TAG, 'xhr', 'webworker', opts.url);
-          var xhrWorker = G.getXhrWorker();          
-          xhrWorker.onmessage = function(event) {
-            var xhr = event.data;
-            var code = xhr.status;
-            if (code === 304) {
-//              debugger;
-              defer.reject(xhr, "unmodified", "unmodified");
-            }
-            else if (code > 399 && code < 600) {
-              var text = xhr.responseText;
-              if (text && text.length) {
-                try {
-                  defer.reject(xhr, JSON.parse(xhr.responseText), opts);
-                  return;
-                } catch (err) {
-                }
+          var workerPromise = G.getXhrWorker();
+          workerPromise.done(function(xhrWorker) {          
+            xhrWorker.onmessage = function(event) {
+              var xhr = event.data;
+              var code = xhr.status;
+              if (code === 304) {
+  //              debugger;
+                defer.reject(xhr, "unmodified", "unmodified");
               }
-                
-              defer.reject(xhr, "error", opts);
-            }
-            else {
-              defer.resolve(xhr.data, xhr.status, xhr);
-            }
-          };
-          
-          xhrWorker.onerror = function(err) {
-//            debugger;
-            defer.reject({}, "error", err);
-          };
-          
-          defer.always(function() {
-            G.recycleWebWorker(xhrWorker);
+              else if (code > 399 && code < 600) {
+                var text = xhr.responseText;
+                if (text && text.length) {
+                  try {
+                    defer.reject(xhr, JSON.parse(xhr.responseText), opts);
+                    return;
+                  } catch (err) {
+                  }
+                }
+                  
+                defer.reject(xhr, "error", opts);
+              }
+              else {
+                defer.resolve(xhr.data, xhr.status, xhr);
+              }
+            };
+            
+            xhrWorker.onerror = function(err) {
+  //            debugger;
+              defer.reject({}, "error", err);
+            };
+            
+            defer.always(function() {
+              G.recycleWebWorker(xhrWorker);
+            });
+  
+            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
           });
-
-          xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);

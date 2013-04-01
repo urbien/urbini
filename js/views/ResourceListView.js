@@ -426,7 +426,7 @@ define([
       var self = this;
       var col = this.filteredCollection = this.collection.clone();
       _.each(['updated', 'added', 'reset'], function(event) {
-        self.stopListening(col, 'event');
+        self.stopListening(col, event);
         self.listenTo(col, event, function(resources) {
           resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
           var options = {};

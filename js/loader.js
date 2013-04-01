@@ -1069,6 +1069,11 @@ define('fileCache', function() {
           color: '#baFF00',
           bg: '#555'
         },
+        history: {
+          on: true,
+          color: '#baFF66',
+          bg: '#555'
+        },
         cache: {
           on: false,
           color: '#CCCCCC',
@@ -1168,28 +1173,62 @@ define('fileCache', function() {
       return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
 
-    workerCache: [],
+//    workerCache: [],
+//    workerDfd = $.Deferred(),
     recycleWebWorker: function(worker) {
       worker.onerror = null;
-      worker.onmessage = null;      
+      worker.onmessage = null;
+//      G.workerDfd.resolve();
+      var q = G.queueForWorker;
+      if (q.length)
+        q.shift().resolve(worker);
     },
+    
+    xhrWorker: null,
+    queueForWorker: [],
     isWorkerAvailable: function(worker) {
       return !worker.onerror && !worker.onmessage;
     },
-    getXhrWorker: function() {
-      var cache = G.workerCache;
-      for (var i = 0; i < cache.length; i++) {
-        var w = cache[i];
-        if (G.isWorkerAvailable(w))
-          return w;
-      }
-      
-      var xw = G.files.xhrWorker;
-      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
-      G.workerCache.push(w);
-      return w;
-    },
+    
+//    getXhrWorker: function() {
+//      var cache = G.workerCache;
+//      for (var i = 0; i < cache.length; i++) {
+//        var w = cache[i];
+//        if (G.isWorkerAvailable(w))
+//          return w;
+//      }
+//      
+//      var xw = G.files.xhrWorker;
+//      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
+//      G.workerCache.push(w);
+//      return w;
+//    },
 
+    getXhrWorker: function() {
+      return $.Deferred(function(dfd) {
+        if (!G.xhrWorker) {
+          var xw = G.files.xhrWorker;
+          G.xhrWorker = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
+        }
+        
+        var w = G.xhrWorker;
+        if (G.isWorkerAvailable(w)) {
+          dfd.resolve(w);
+        }
+        else {
+//          $.when.apply($, G.queueForWorker).then(function() {
+//            var idx = G.queueForWorker.indexOf(workerDfd);
+//            if (idx >= 0)
+//              G.queueForWorker.splice(idx, 1);
+//            
+//            dfd.resolve(w);
+//          });
+          
+          G.queueForWorker.push(dfd);
+        }
+      });
+    },
+    
     pruneBundle: function(bundle) {
       var modules = [];
       var appcache = G.files.appcache;
@@ -1370,20 +1409,22 @@ define('fileCache', function() {
       }
 
       if (useWorker) {
-        var xhrWorker = G.getXhrWorker();
-        xhrWorker.onmessage = function(event) {
-          G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-          complete(event.data);
-          G.recycleWebWorker(this);
-        };
-        
-        xhrWorker.onerror = function(err) {
-//          debugger;
-          G.log(G.TAG, 'error', JSON.stringify(err));
-          G.recycleWebWorker(this);
-        };
-        
-        xhrWorker.postMessage(getBundleReq);  
+        var workerPromise = G.getXhrWorker();
+        workerPromise.done(function(xhrWorker) {          
+          xhrWorker.onmessage = function(event) {
+            G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+            complete(event.data);
+            G.recycleWebWorker(this);
+          };
+          
+          xhrWorker.onerror = function(err) {
+  //          debugger;
+            G.log(G.TAG, 'error', JSON.stringify(err));
+            G.recycleWebWorker(this);
+          };
+          
+          xhrWorker.postMessage(getBundleReq);  
+        });
       }
       else {      
         getBundleReq.success = complete; 
@@ -1515,13 +1556,15 @@ define('fileCache', function() {
   else
     G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
   
-  require.config(G.requireConfig);
-   
+  require.config(G.requireConfig);   
   return Lablz;
 });
 
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
+  var spinner = 'app init';
+  G.showSpinner({name: spinner, timeout: 3000});
+  
   G.files = {appcache: {}};
   for (var when in G.bundles) {
     var bundle = G.bundles[when];
@@ -1575,7 +1618,6 @@ require(['globals'], function(G) {
     loadRegular();
 
   function loadRegular() {
-    G.showSpinner({name: 'app init', timeout: 3000});
     G.loadBundle(pre, function() {
       G.finishedTask("loading pre-bundle");
       
@@ -1590,7 +1632,7 @@ require(['globals'], function(G) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
-        G.hideSpinner();
+        G.hideSpinner(spinner);
         G.startedTask('loading post-bundle');
         G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');

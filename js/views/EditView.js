@@ -59,6 +59,13 @@ define([
       'click select[data-enum]': 'scrollEnum',
       'click': 'click'
     },
+
+    disable: function(msg, cssClass) {
+      G.showSpinner({
+        name: 'editPageSpinner' + G.nextId(),
+        content: '<h3 class="{0}">{1}</h3>'.format(cssClass || '', msg);
+      });
+    },
     
     scrollDate: function(e) {
       this.mobiscroll(e, 'date');
@@ -775,6 +782,7 @@ define([
           success: function(resource, response, options) {
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
+            self.disable('Submitted');
             self.redirect();
           }, 
 //          skipRefresh: true,

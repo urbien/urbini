@@ -175,7 +175,17 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
 //      return resEditors && resEditors[propName];
 //    }
   };
-  
+
+  Events.on('badList', function(list) {
+    for (var colType in C.ResourceLists) {
+      var cols = C.ResourceLists[colType];
+      for (var query in cols) {
+        if (cols[query] === list)
+          delete cols[query];
+      }
+    }
+  });
+
   Events.on('newResourceList', function(list) {
     C.cacheResourceList(list);
     var listType = list.vocModel.type;

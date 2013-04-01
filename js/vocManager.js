@@ -75,7 +75,7 @@ define([
       }
       
       if (!G.hasLocalStorage)
-        return Voc.fetchModels(models, options);
+        return Voc.__fetchModels(models, options);
         
       var missingOrStale = {},
           mightBeStale = {infos: {}, models: {}},
@@ -142,7 +142,7 @@ define([
     __fetchAndLoadModels: function(missingOrStale, mightBeStale, willLoad, options) {
       return $.Deferred(function(defer) {
         var need = _.extend({}, missingOrStale, mightBeStale.infos);
-        $.when(Voc.fetchModels(need, options), Voc.loadModels(willLoad, true)).then(function(data) {
+        $.when(Voc.__fetchModels(need, options), Voc.loadModels(willLoad, true)).then(function(data) {
           G.checkVersion(data);
           if (!data) {
             // missingOrStale should be empty
@@ -200,7 +200,7 @@ define([
       }).promise();
     },
 
-    fetchModels: function(models, options) {
+    __fetchModels: function(models, options) {
       return $.Deferred(function(defer) {
         var numModels = _.size(models);
         if (!numModels)
@@ -214,13 +214,13 @@ define([
         var c = Voc.currentModel;
         var urgent = options.sync && numModels > 1 && c && !U.getModel(c) && c;
         if (urgent) {
-          Voc.fetchModels(urgent, options).done(function(data) {
+          Voc.__fetchModels(urgent, options).done(function(data) {
             defer.resolve(data);
             models = U.filterObj(models, function(type, model) {
               return type !== urgent;
             });
               
-            Voc.fetchModels(models, options);
+            Voc.__fetchModels(models, options);
           }).fail(defer.reject);
         }
         
@@ -268,18 +268,19 @@ define([
       }
     },
     
-    fetchModelsForLinkedResources: function(model) {
-      var isResource = typeof model !== 'function';
-      var ctr = isResource ? model.constructor : model;
+    detectLinkedModels: function(res) {
+      var isResource = U.isModel(res);
+      var model = isResource ? res.vocModel : res;
       var props = {};
-      for (var name in ctr.properties) {
-        if (!isResource || model.get(name))
-          props[name] = ctr.properties[name];
+      var meta = model.properties;
+      for (var name in meta) {
+        if (!isResource || res.get(name))
+          props[name] = meta[name];
       }
       
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
         if (isResource && prop.backLink) {
-          var count = model.get(name + 'Count') || model.get(name).count;
+          var count = res.get(name + 'Count') || res.get(name).count;
           if (!count)
             return null;
         }
@@ -295,30 +296,40 @@ define([
         return m && !U.getModel(m);
       }); 
   
-      var linkedModels = {};
-//      G.linkedModelsMetadataMap = {};
-      var l = G.linkedModelsMetadata;      
+      var linkedModels = [];
+      var l = G.linkedModelsMetadata;
       for (var type in l) {
         var idx = tmp.indexOf(type);
         if (idx != -1) {
           tmp.splice(idx, idx + 1);
-          linkedModels[type] = l[type];
+          linkedModels.push(type);
         }
       }
       
-      if (_.size(linkedModels)) {
-        Voc.getModels(linkedModels, {sync: false});
+      return linkedModels;
+    },
+    
+    fetchLinkedAndReferredModels: function(list) {
+      var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
+      if (!resources.length)
+        return;
+      
+      var model = resources[0].vocModel;
+      var linkedModels = Voc.detectLinkedModels(resources[0]);
+      var referredModels = Voc.detectReferredModels(list);
+      var models = _.union(linkedModels || [], referredModels || []);
+      if (_.size(models)) {
+        Voc.getModels(models, {sync: false});
       }
     },
 
-    fetchModelsForReferredResources: function(list) {
-      var model = list.vocModel;
-      var resources = list.models;
+    detectReferredModels: function(list) {      
+      var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
+      var model = resources[0].vocModel;
       var meta = model.properties;
       
       var tmp = [];
-
-      var l = _.keys(C.typeToModel);
+      var cache = C.typeToModel;
       var modelsToFetch = [];
 
       for (var propName in meta) {
@@ -331,13 +342,14 @@ define([
 //        else
           !U.isInlined(p)  &&  p.range  &&  !p.backLink  &&  p.range.indexOf('/') != -1  &&  p.range.indexOf('/Image') == -1  &&  tmp.push(propName);
       }
+      
       if (!tmp.length)
         return;
       
       for (var i=0; i<resources.length; i++) {
-        for (var j=0; j<tmp.length; j++) {
-          var o = resources[i].get(tmp[j]);
-          var uri = o  &&  o.value;
+        var res = resources[i];
+        for (var j = 0; j < tmp.length; j++) {
+          var uri = res.get(tmp[j]);
           if (!uri)
             continue;
           
@@ -346,14 +358,12 @@ define([
           if (idx0 == -1) // could be S3 Image uri
             continue;
           var type = 'http://' + uri.substring(idx0 + G.sqlUri.length + 2, idx);
-          if (!_.contains(modelsToFetch, type)  &&  !_.contains(l, type))
+          if (!_.contains(modelsToFetch, type)  &&  !_.has(cache, type))
             modelsToFetch.push(type);
         }  
       }  
       
-      
-      if (modelsToFetch.length)
-        Voc.getModels(modelsToFetch, {sync: false});
+      return modelsToFetch;
     },
 
     loadModel: function(m) {
@@ -809,6 +819,8 @@ define([
     }    
   };
   
+  _.extend(Voc, Backbone.Events);
+  
   Events.on('newPlug', function(plug) {
     var plugs = {};
     plug = U.isModel(plug) ? plug.toJSON() : plug;
@@ -944,6 +956,15 @@ define([
       
 //      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
       baseResource.setInlineList(prop.shortName, rl);
+    });
+  });
+  
+  Events.on('newResourceList', function(list) {
+    _.each(['updated', 'added', 'reset'], function(event) {
+      Voc.stopListening(list, event);
+      Voc.listenTo(list, event, function(resources) {
+        Voc.fetchLinkedAndReferredModels(resources || list.models);
+      });
     });
   });
   

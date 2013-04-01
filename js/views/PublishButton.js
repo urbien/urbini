@@ -149,19 +149,20 @@ define([
     enterTournament: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
-      
       var model = U.getModel('TournamentEntry');
       if (model != null) 
         resource = new model();
       else {
-        Voc.fetchModels('http://www.hudsonfog.com/voc/commerce/urbien/TournamentEntry', 
-          {success: function() {
-            self.view.apply(self, [path]);
-          },
-          sync: true}
-        );
-        resource = new (U.getModel('TournamentEntry'))();
+        var event = e;
+        var self = this;
+        Voc.getModels('http://www.hudsonfog.com/voc/commerce/urbien/TournamentEntry', {sync: true}).done(function() {
+          debugger;
+          self.enterTournament.call(self, event);
+        });
+        
+        return;
       }
+      
       var params = U.getParamMap(window.location.hash);
       var props = {tournament: params['-tournament'], entry: res.getUri()};
       var self = this;

@@ -64,7 +64,20 @@ define([
                 self.removeAttr('href');
             }
         });
-      });      
+      });
+      
+//      var popped = ('state' in window.history);
+//      var initialURL = window.location.href;
+//      $(window).bind('popstate', function(e) {
+//        // Ignore inital popstate that some browsers fire on page load
+//        var initialPop = !popped && location.href == initialURL;
+//        popped = true
+//        if (initialPop) 
+//          return;
+//        
+//        debugger;
+//        console.log('pop: ' + e.originalEvent.state);
+//      });
     },
     
     defaultOptions: {
@@ -75,6 +88,12 @@ define([
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
+//      if (this.previousFragment === fragment) {
+      // doesn't work to prevent duplicate history entries because it creates unwanted forward history (for example make/edit views)
+//        Events.trigger('back');
+//        return;
+//      }
+      
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + G.appRoot;
         if (fragment.startsWith(appPath))
@@ -215,16 +234,16 @@ define([
         _rUri: oParams,
         success: _.once(function() {
           self.changePage(listView);
-          Voc.fetchModelsForReferredResources(list);
-          Voc.fetchModelsForLinkedResources(list.model);
 //          self.loadExtras(oParams);
         }),
 //        error: Errors.getDefaultErrorHandler()
         error: _.once(function(collection, xhr, opts) {
           if (xhr.status === 204)
             self.changePage(listView);
-          else
+          else {
+            Events.trigger('badList', list);
             Errors.getDefaultErrorHandler().apply(this, arguments);
+          }
         })
       });
       
@@ -555,7 +574,7 @@ define([
           self._checkUri(res, uri, action);
         self.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        Voc.fetchModelsForLinkedResources(res);
+//        Voc.fetchModelsForLinkedResources(res);
       };
       
       res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
@@ -889,10 +908,21 @@ define([
       var replace = options.replace;
       var lostHistory = false;
       if (this.backClicked) {
+        var currentView = this.currentView;
+        if (!(this.currentView instanceof Backbone.View))
+          debugger;
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
+        
         this.currentView = this.viewsStack.pop();
         this.currentUrl = this.urlsStack.pop();
+        if (currentView === this.currentView) {
+          debugger;
+          G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
+          Events.trigger('back');
+          return;
+        }
+        
         if (this.currentView)
           view = this.currentView;
         else
