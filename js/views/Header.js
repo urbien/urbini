@@ -20,7 +20,7 @@ define([
     TAG: 'Header',
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateError', 'checkErrorList');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -82,8 +82,11 @@ define([
       
       this.calcTitle();
       this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
-      Events.off('error', this._updateError);
-      Events.on('error', this._updateError);
+      _.each(['info', 'error'], function(event) {
+        var handler = this._updateInfoErrorBar;
+        Events.off(event, handler);
+        Events.on(event, handler);
+      }.bind(this));
       this.autoFinish = false;
       return this;
     },
@@ -94,24 +97,34 @@ define([
       if (errList && errList.children.length <= 1)
         this.$('#headerErrorBar').html("");
     },
-    
-    _updateError: function(res, options) {
-      if (res !== this.model)
+
+    _updateInfoErrorBar: function(options) {
+      options = options || {};
+      var res = options.resource, col = options.collection;
+      if ((res && res !== this.model) || (col && col !== this.model))
+        return;
+
+      var page = options.page;
+      if (!this.isPageView(page))
         return;
       
-      if (typeof options === 'string') {
-        this.renderError({error: options});
-        return;
-      }
+//      if (typeof options === 'string') {
+//        this.renderError({error: options});
+//        return;
+//      }
 
+      var error = options.error;
       if (options.errors) {
-        this.renderError(_.extend({
-          error: this.errorListTemplate({
-            errors: options.errors
-          }), 
-          withIcon: false
-        }, _.omit(options, 'errors')));
+        error = this.errorListTemplate({
+          errors: options.errors
+        });
       }
+      
+      this.renderError(_.extend({
+        error: error,
+        info: options.info,
+        withIcon: false
+      }, _.omit(options, 'errors')));
     },
     
     calcTitle: function() {

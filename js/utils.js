@@ -125,7 +125,7 @@ define([
         if (opts.error) defer.fail(opts.error);
         if (useWorker) {
           G.log(U.TAG, 'xhr', 'webworker', opts.url);
-          var workerPromise = G.getXhrWorker();
+          var workerPromise = G.getXhrWorkerPromise();
           workerPromise.done(function(xhrWorker) {          
             xhrWorker.onmessage = function(event) {
               var xhr = event.data;
@@ -157,7 +157,7 @@ define([
             };
             
             defer.always(function() {
-              G.recycleWebWorker(xhrWorker);
+              G.recycleXhrWorker(xhrWorker);
             });
   
             xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));

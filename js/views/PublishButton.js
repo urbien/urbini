@@ -115,7 +115,7 @@ define([
             
             var msg = error && error.details;
             msg = msg || 'App could not be published';
-            Events.trigger('error', res, msg);
+            Events.trigger('error', {resource: res, error: msg});
           }
         });  
       });
@@ -140,7 +140,7 @@ define([
           });
         });
         
-        Events.trigger('error', res, {errors: errs, persist: true, info: 'Please fix these errors and re-publish'});
+        Events.trigger('error', {resource: res, errors: errs, persist: true, info: 'Please fix these errors and re-publish'});
       });
       
       Events.trigger('preparingToPublish', res);

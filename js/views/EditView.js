@@ -60,11 +60,28 @@ define([
       'click': 'click'
     },
 
-    disable: function(msg, cssClass) {
-      G.showSpinner({
-        name: 'editPageSpinner' + G.nextId(),
-        content: '<h3 class="{0}">{1}</h3>'.format(cssClass || '', msg);
-      });
+    disable: function(msg) {
+//      var meta = this.vocModel.properties;
+//      this.getInputs().each(function() {
+//        var prop = meta[this.name];
+//        if (prop.script) {
+//          var codemirror = $.data(textarea, 'codemirror');
+//          if (codemirror) {
+//            
+//          }
+//        }
+//          
+//          
+//        switch (this.tagName.toLowerCase()) {
+//        case 'textarea':
+//          this.
+//        }
+//        
+//        $(this).addClass('ui-disabled');
+//      });
+//      
+//      this.$('*').attr('disabled', true);
+      Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
     scrollDate: function(e) {
@@ -782,7 +799,7 @@ define([
           success: function(resource, response, options) {
             self.getInputs().attr('disabled', false);
             res.lastFetchOrigin = null;
-            self.disable('Submitted');
+            self.disable('Changes submitted');
             self.redirect();
           }, 
 //          skipRefresh: true,
@@ -812,7 +829,7 @@ define([
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
       });
       
-      atts = _.extend(atts, res.getUnsavedChanges());
+      atts = _.extend({}, res.getUnsavedChanges(), atts);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true, userEdit: true});
@@ -1197,10 +1214,10 @@ define([
           reset.insertAfter($textarea.next());
           reset.button();
           if (defaultText === textarea.value) {
-            reset.hide();
+            reset.addClass('ui-disabled');
             changeHandler = function(from, to, text, removed, next) {
               if (!text && to.text && to.text.length) {
-                reset.show();
+                reset.removeClass('ui-disabled')
                 editor.off('change', changeHandler);
               }
             };                

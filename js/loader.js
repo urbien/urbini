@@ -1173,38 +1173,16 @@ define('fileCache', function() {
       return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
     },
 
-//    workerCache: [],
-//    workerDfd = $.Deferred(),
-    recycleWebWorker: function(worker) {
-      worker.onerror = null;
-      worker.onmessage = null;
-//      G.workerDfd.resolve();
-      var q = G.queueForWorker;
-      if (q.length)
-        q.shift().resolve(worker);
-    },
-    
     xhrWorker: null,
     queueForWorker: [],
     isWorkerAvailable: function(worker) {
       return !worker.onerror && !worker.onmessage;
     },
     
-//    getXhrWorker: function() {
-//      var cache = G.workerCache;
-//      for (var i = 0; i < cache.length; i++) {
-//        var w = cache[i];
-//        if (G.isWorkerAvailable(w))
-//          return w;
-//      }
-//      
-//      var xw = G.files.xhrWorker;
-//      var w = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
-//      G.workerCache.push(w);
-//      return w;
-//    },
-
-    getXhrWorker: function() {
+    /**
+     * get a promise of a web worker
+     */
+    getXhrWorkerPromise: function() {
       return $.Deferred(function(dfd) {
         if (!G.xhrWorker) {
           var xw = G.files.xhrWorker;
@@ -1212,21 +1190,22 @@ define('fileCache', function() {
         }
         
         var w = G.xhrWorker;
-        if (G.isWorkerAvailable(w)) {
+        if (G.isWorkerAvailable(w))
           dfd.resolve(w);
-        }
-        else {
-//          $.when.apply($, G.queueForWorker).then(function() {
-//            var idx = G.queueForWorker.indexOf(workerDfd);
-//            if (idx >= 0)
-//              G.queueForWorker.splice(idx, 1);
-//            
-//            dfd.resolve(w);
-//          });
-          
+        else
           G.queueForWorker.push(dfd);
-        }
       });
+    },
+    
+    /**
+     * when you're done with a worker, let it go with this method so that others can use it
+     */
+    recycleXhrWorker: function(worker) {
+      worker.onerror = null;
+      worker.onmessage = null;
+      var q = G.queueForWorker;
+      if (q.length)
+        q.shift().resolve(worker);
     },
     
     pruneBundle: function(bundle) {
@@ -1409,18 +1388,24 @@ define('fileCache', function() {
       }
 
       if (useWorker) {
-        var workerPromise = G.getXhrWorker();
+        var workerPromise = G.getXhrWorkerPromise();
         workerPromise.done(function(xhrWorker) {          
           xhrWorker.onmessage = function(event) {
-            G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-            complete(event.data);
-            G.recycleWebWorker(this);
+            try {
+              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+              complete(event.data);
+            } finally {
+              G.recycleXhrWorker(this);
+            }
           };
           
           xhrWorker.onerror = function(err) {
   //          debugger;
-            G.log(G.TAG, 'error', JSON.stringify(err));
-            G.recycleWebWorker(this);
+            try {
+              G.log(G.TAG, 'error', JSON.stringify(err));
+            } finally {
+              G.recycleXhrWorker(this);
+            }
           };
           
           xhrWorker.postMessage(getBundleReq);  

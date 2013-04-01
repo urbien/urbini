@@ -158,6 +158,19 @@ define([
       }
     },
     
+    isPageView: function(view) {
+      return view && view.cid === this.getPageView().cid;
+    },
+    
+    getPageView: function() {
+      var parent = this;
+      while (parent.parentView) {
+        parent = parent.parentView;
+      }
+      
+      return parent;
+    },
+    
     isActive: function() {
       if (this.active)
         return true;
