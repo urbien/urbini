@@ -3,7 +3,7 @@
  * Released under MIT license, http://cubiq.org/license
  */
  
-define(function () {
+define(['jquery'], function ($) {
 	var dummyStyle = document.createElement('div').style,
 		vendor = (function () {
 			var vendors = 't,webkitT,MozT,msT,OT'.split(','),
@@ -78,6 +78,7 @@ define(function () {
 			this.wrapper.style.position = 'relative';
 			
 			this.masterPages = [];
+			this.offset = this.options.width / 100;
 			
 			div = document.createElement('div');
 			div.id = 'swipeview-slider';
@@ -164,7 +165,17 @@ define(function () {
 		},
 
 		refreshSize: function () {
-			this.wrapperWidth = this.wrapper.clientWidth;
+		  var offset = 0;
+		  var w = this.$wrapper = this.$wrapper || $(this.wrapper);
+		  var lPadding = w.css('padding-left'),
+		      rPadding = w.css('padding-right');
+		  
+		  if (lPadding)
+		    offset += parseFloat(lPadding);
+      if (rPadding)
+        offset += parseFloat(rPadding);
+		  
+			this.wrapperWidth = this.wrapper.clientWidth - offset;
 			this.wrapperHeight = this.wrapper.clientHeight;
 			this.pageWidth = this.wrapperWidth;
 			this.maxX = -this.options.numberOfPages * this.pageWidth + this.wrapperWidth;
@@ -273,17 +284,30 @@ define(function () {
 		* Pseudo private methods
 		*
 		*/
+    __px: function(input) {
+      var emSize = parseFloat($("body").css("font-size"));
+      return (input / emSize);
+    },
+    
 		__pos: function (x) {
+      x = Math.round(x);
 			this.x = x;
+			if (x > this.x + 500)
+			  debugger;
+			
 			this.slider.style[transform] = 'translate(' + x + 'px,0)' + translateZ;
 		},
 
 		__resize: function () {
 			this.refreshSize();
 			this.slider.style[transitionDuration] = '0s';
-			this.__pos(-this.page * this.pageWidth);
+			this.__pos(this.__getNewX());
 		},
 
+		__getNewX: function() {
+		  return Math.round(-this.page * this.pageWidth * this.offset);
+		},
+		
 		__start: function (e) {
 			//e.preventDefault();
 
@@ -380,7 +404,7 @@ define(function () {
 			// Check if we exceeded the snap threshold
 			if (dist < this.snapThreshold) {
 				this.slider.style[transitionDuration] = Math.floor(300 * dist / this.snapThreshold) + 'ms';
-				this.__pos(-this.page * this.pageWidth);
+				this.__pos(this.__getNewX());
 				return;
 			}
 
@@ -395,9 +419,9 @@ define(function () {
 			this.masterPages[this.currentMasterPage].className = this.masterPages[this.currentMasterPage].className.replace(/(^|\s)swipeview-active(\s|$)/, '');
 
 			// Flip the page
-			var width = this.options.width; // the width setting is used if we want a preview of the next/prev element on either side of the slider 
+			var width = this.options.width; // the width setting is used if we want a preview of the next/prev element on either side of the slider
 			if (this.directionX > 0) {
-				this.page = -Math.ceil(this.x / this.pageWidth);
+				this.page = -Math.ceil(this.x / (this.pageWidth * this.offset));
 				this.currentMasterPage = (this.page + 1) - Math.floor((this.page + 1) / 3) * 3;
 				this.pageIndex = this.pageIndex === 0 ? this.options.numberOfPages - 1 : this.pageIndex - 1;
 
@@ -409,7 +433,7 @@ define(function () {
 				
 				pageFlipIndex = this.page - 1;
 			} else {
-				this.page = -Math.floor(this.x / this.pageWidth);
+				this.page = -Math.floor(this.x / (this.pageWidth * this.offset));
 				this.currentMasterPage = (this.page + 1) - Math.floor((this.page + 1) / 3) * 3;
 				this.pageIndex = this.pageIndex == this.options.numberOfPages - 1 ? 0 : this.pageIndex + 1;
 
@@ -433,7 +457,7 @@ define(function () {
 			pageFlipIndex = pageFlipIndex - Math.floor(pageFlipIndex / this.options.numberOfPages) * this.options.numberOfPages;
 			this.masterPages[pageFlip].dataset.upcomingPageIndex = pageFlipIndex;		// Index to be loaded in the newly flipped page
 
-			newX = -this.page * this.pageWidth;// * width / 100;
+			newX = this.__getNewX();
 			
 			this.slider.style[transitionDuration] = Math.floor(500 * Math.abs(this.x - newX) / this.pageWidth) + 'ms';
 
@@ -442,12 +466,15 @@ define(function () {
 				this.masterPages[pageFlip].style.visibility = newX === 0 || newX == this.maxX ? 'hidden' : '';
 			}
 
+			console.log('oldX:', this.x, 'newX:', newX);
 			if (this.x == newX) {
+	     console.log('flipping');
 				this.__flip();		// If we swiped all the way long to the next page (extremely rare but still)
 			} else {
 				this.__pos(newX);
 				if (this.options.hastyPageFlip) this.__flip();
 			}
+			
 		},
 		
 		__flip: function () {

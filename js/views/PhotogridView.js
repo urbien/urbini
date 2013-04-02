@@ -285,7 +285,7 @@ define([
           return;
 
         var plugs = resource.get('plugs') || {count: undefined};
-        superscript = isFriendApp ? plugs.count : ++i;
+        superscript = isFriendApp ? plugs.count : undefined; //++i;
         image = image && image.indexOf('Image/') == 0 ? image.slice(6) : image;
         images.push({image: image, target: target, title: title, superscript: superscript, caption: caption, titleLink: '#'});
       });
@@ -298,7 +298,8 @@ define([
           break;
       }
       
-      if (!this.swipeable) {
+      var itemsPerSlide = this.itemsPerSlide || 2;
+      if (!this.swipeable || itemsPerSlide >= images.length) {
         this.$el.html(this.template({items: images}));
         this.$el.removeClass('hidden');
         this.$el.trigger('create');
@@ -306,7 +307,6 @@ define([
       }
 
       var slides = [];
-      var itemsPerSlide = this.itemsPerSlide || 2;
       itemsPerSlide = Math.min(itemsPerSlide, images.length);
       var i = 0, j = images.length - itemsPerSlide + 1;
       for (; i < j; i += itemsPerSlide) {
@@ -320,6 +320,7 @@ define([
 //        var extra = _.map(images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver)), _.clone);
 //        var extra = images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver));
         var extra = images.slice(images.length - itemsPerSlide);
+//        var extra = images.slice(images.length - leftOver);
         adjustSlide(extra);
         slides.push(this.template({items: extra})); // to wrap around        
       }
