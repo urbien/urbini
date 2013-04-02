@@ -63,6 +63,7 @@ define(['jquery'], function ($) {
 
 			this.wrapper = typeof el == 'string' ? document.querySelector(el) : el;
 			this.options = {
+			  width: 100,
 				text: null,
 				numberOfPages: 3,
 				snapThreshold: null,
@@ -90,7 +91,7 @@ define(['jquery'], function ($) {
 			for (i=-1; i<2; i++) {
 				div = document.createElement('div');
 				div.id = 'swipeview-masterpage-' + (i+1);
-				div.style.cssText = cssVendor + 'transform:translateZ(0);position:absolute;top:0;height:100%;width:100%;left:' + i*100 + '%';
+				div.style.cssText = cssVendor + 'transform:translateZ(0);position:absolute;top:0;height:100%;width:100%;left:' + i*this.options.width + '%';
 				if (!div.dataset) div.dataset = {};
 				pageIndex = i == -1 ? this.options.numberOfPages - 1 : i;
 				div.dataset.pageIndex = pageIndex;
@@ -425,9 +426,11 @@ define(['jquery'], function ($) {
 				this.pageIndex = this.pageIndex === 0 ? this.options.numberOfPages - 1 : this.pageIndex - 1;
 
 				pageFlip = this.currentMasterPage - 1;
-				pageFlip = pageFlip < 0 ? 2 : pageFlip;
-				this.masterPages[pageFlip].style.left = this.page * 100 - 100 + '%';
+				if (pageFlip < 0)
+				  pageFlip += 3;
 
+				this.masterPages[pageFlip].style.left = this.page * width - width + '%';
+				
 				pageFlipIndex = this.page - 1;
 			} else {
 				this.page = -Math.floor(this.x / (this.pageWidth * this.offset));
@@ -454,7 +457,8 @@ define(['jquery'], function ($) {
 			pageFlipIndex = pageFlipIndex - Math.floor(pageFlipIndex / this.options.numberOfPages) * this.options.numberOfPages;
 			this.masterPages[pageFlip].dataset.upcomingPageIndex = pageFlipIndex;		// Index to be loaded in the newly flipped page
 
-			newX = this.__getNewX();			
+			newX = this.__getNewX();
+			
 			this.slider.style[transitionDuration] = Math.floor(500 * Math.abs(this.x - newX) / this.pageWidth) + 'ms';
 
 			// Hide the next page if we decided to disable looping
@@ -463,7 +467,6 @@ define(['jquery'], function ($) {
 			}
 
 			if (this.x == newX) {
-	     console.log('flipping');
 				this.__flip();		// If we swiped all the way long to the next page (extremely rare but still)
 			} else {
 				this.__pos(newX);
