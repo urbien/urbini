@@ -63,7 +63,6 @@ define(function () {
 
 			this.wrapper = typeof el == 'string' ? document.querySelector(el) : el;
 			this.options = {
-			  width: 100,
 				text: null,
 				numberOfPages: 3,
 				snapThreshold: null,
@@ -90,7 +89,7 @@ define(function () {
 			for (i=-1; i<2; i++) {
 				div = document.createElement('div');
 				div.id = 'swipeview-masterpage-' + (i+1);
-				div.style.cssText = cssVendor + 'transform:translateZ(0);position:absolute;top:0;height:100%;width:100%;left:' + i*this.options.width + '%';
+				div.style.cssText = cssVendor + 'transform:translateZ(0);position:absolute;top:0;height:100%;width:100%;left:' + i*100 + '%';
 				if (!div.dataset) div.dataset = {};
 				pageIndex = i == -1 ? this.options.numberOfPages - 1 : i;
 				div.dataset.pageIndex = pageIndex;
@@ -199,7 +198,6 @@ define(function () {
 
 			this.masterPages[this.currentMasterPage].className = this.masterPages[this.currentMasterPage].className + ' swipeview-active';
 
-			debugger;
 			if (this.currentMasterPage === 0) {
 				this.masterPages[2].style.left = this.page * 100 - 100 + '%';
 				this.masterPages[0].style.left = this.page * 100 + '%';
@@ -395,18 +393,15 @@ define(function () {
 			this.masterPages[this.currentMasterPage].className = this.masterPages[this.currentMasterPage].className.replace(/(^|\s)swipeview-active(\s|$)/, '');
 
 			// Flip the page
-			var width = this.options.width; // the width setting is used if we want a preview of the next/prev element on either side of the slider 
 			if (this.directionX > 0) {
 				this.page = -Math.ceil(this.x / this.pageWidth);
 				this.currentMasterPage = (this.page + 1) - Math.floor((this.page + 1) / 3) * 3;
 				this.pageIndex = this.pageIndex === 0 ? this.options.numberOfPages - 1 : this.pageIndex - 1;
 
 				pageFlip = this.currentMasterPage - 1;
-				if (pageFlip < 0)
-				  pageFlip += 3;
+				pageFlip = pageFlip < 0 ? 2 : pageFlip;
+				this.masterPages[pageFlip].style.left = this.page * 100 - 100 + '%';
 
-				this.masterPages[pageFlip].style.left = this.page * width - width + '%';
-				
 				pageFlipIndex = this.page - 1;
 			} else {
 				this.page = -Math.floor(this.x / this.pageWidth);
@@ -414,10 +409,8 @@ define(function () {
 				this.pageIndex = this.pageIndex == this.options.numberOfPages - 1 ? 0 : this.pageIndex + 1;
 
 				pageFlip = this.currentMasterPage + 1;
-				if (pageFlip > 2)
-				  pageFlip -= 3;
-//				this.masterPages[pageFlip].style.left = this.page * 100 + 100 + '%';
-        this.masterPages[pageFlip].style.left = this.page * width + width + '%';
+				pageFlip = pageFlip > 2 ? 0 : pageFlip;
+				this.masterPages[pageFlip].style.left = this.page * 100 + 100 + '%';
 
 				pageFlipIndex = this.page + 1;
 			}
@@ -433,7 +426,7 @@ define(function () {
 			pageFlipIndex = pageFlipIndex - Math.floor(pageFlipIndex / this.options.numberOfPages) * this.options.numberOfPages;
 			this.masterPages[pageFlip].dataset.upcomingPageIndex = pageFlipIndex;		// Index to be loaded in the newly flipped page
 
-			newX = -this.page * this.pageWidth * width / 100;
+			newX = -this.page * this.pageWidth;
 			
 			this.slider.style[transitionDuration] = Math.floor(500 * Math.abs(this.x - newX) / this.pageWidth) + 'ms';
 
