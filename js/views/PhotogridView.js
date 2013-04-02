@@ -8,6 +8,14 @@ define([
   'views/BasicView',
   '/../styles/jqm-grid-listview.css'
 ], function(G, $, _, U, Events, BasicView) {
+  var SwipeView;
+  function adjustSlide(images) {
+    if (images.length === 2) {
+      images[0]['float'] = 'left';
+      images[1]['float'] = 'right';
+    }
+  };
+  
   return BasicView.extend({
     TAG: "PhotogridView",
     initialize: function(options) {
@@ -23,7 +31,23 @@ define([
       
       this.isTrigger = this.vocModel.type === G.commonTypes.Handler;
       this.showArrows = options.arrows !== false;
-      this.linkToIntersection = options.linkToIntersection;
+      _.extend(this, _.pick(options, 'linkToIntersection', 'swipeable', 'height', 'itemsPerSlide'));
+      
+      var readyDfd = $.Deferred();
+      if (this.swipeable) {
+        var self = this;
+        U.require('lib/swipeview').done(function(SV) {
+          SwipeView = SV;
+          readyDfd.resolve();
+        }).fail(function() {
+          self.swipeable = false;
+          readyDfd.reject();
+        });
+      }
+      else
+        readyDfd.resolve();
+      
+      this.ready = readyDfd.promise();
       return this;
     },
     events: {
@@ -41,12 +65,6 @@ define([
         this.renderResource.apply(this, arguments);
       else if (this.collection)
         this.renderCollection.apply(this, arguments);
-      
-      if (this.images && this.images.length) {
-        this.$el.html(this.template({items: this.images}));
-        this.$el.removeClass('hidden');
-        this.$el.trigger('create');
-      }
       
       return this;
     },
@@ -138,20 +156,11 @@ define([
             
             images.push(imageData);
           });
-          break; 
           
-  //        if (self.isTrigger) {
-  //          images.splice(1, 0, {
-  //            image: 'images/bolt2.png',
-  //            target: U.makePageUrl('view', res)
-  ////            ,
-  ////            title: 'Trigger',
-  ////            caption: U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')),
-  ////            superscript: 'Trigger'
-  //          });
-  //        }
+          break;           
         }
       }
+      
       if (!images.length) {
         if (props.length) {
           var p = props[0];
@@ -167,56 +176,25 @@ define([
             caption: this.getCaption()
           });
         } 
-      }      
+      }
+      
       if (!images.length) 
         return;
 
-//      if (isTrigger) {
-//        images.splice(1, 0, {
-//          target: this.getTestTriggerUrl(),
-//          title: 'Test this Trigger!',
-//          icon: 'bolt'
-//        });
-//      }
-      
-//      var frag = document.createDocumentFragment();
-//      var isHorizontal = ($(window).height() < $(window).width());
-//      var maxW = $(window).width(); // - 3;
-//      var maxH = $(window).height() - 50;      
-//      var items = [], i = 0;
-//      _.each(images, function(image) {
-//        if (image.uri) {
-//          if (image.uri.indexOf('Image/') == 0)
-//            image.uri = image.uri.slice(6);    
-//        }
-//        
-//        var w;
-//        var h;
-//        if (image.width > maxW) {
-//          var ratio;
-//          ratio = maxW / image.width;
-//          w = maxW;
-//          image.height = image.height * ratio;
-//        }
-//        else if (image.width  &&  image.width != 0) {
-//          w = image.width;
-//        }
-//        
-//        if (image.height  &&  image.height > maxH) {
-//          var ratio = maxH / image.height;
-//          w = w * ratio;
-//        }
-//
-//        items.push(_.extend(image, {target: image.target || ''}));
-//      });
-//      
-//      this.finishRender(items);
-//      this.finishRender(images);
-      this.images = images;
+      this.$el.html(this.template({items: images}));
+      this.$el.removeClass('hidden');
+      this.$el.trigger('create');
       return this;  
     },
-    
-    renderCollection: function(options) {
+
+    renderCollection: function() {
+      var args = arguments;
+      this.ready.always(function() {
+        this.renderCollectionHelper.apply(this, args);
+      }.bind(this));
+    },
+
+    renderCollectionHelper: function() {
       var vocModel = this.vocModel;
       var meta = vocModel.properties;
       if (!meta)
@@ -242,7 +220,7 @@ define([
       }
       
       var self = this;
-      var isHorizontal = ($(window).height() < $(window).width());
+//      var isHorizontal = ($(window).height() < $(window).width());
       var images = [];
       var i = 0;
       var source = this.source;
@@ -315,18 +293,102 @@ define([
       switch (images.length) {
         case 0:
           return this;
-        case 1:
-          images[0]['float'] = 'center';
-          break;
         case 2:
           images[1]['float'] = 'right';
           break;
       }
       
-      this.images = images;
-      return this;
+      if (!this.swipeable) {
+        this.$el.html(this.template({items: images}));
+        this.$el.removeClass('hidden');
+        this.$el.trigger('create');
+        return this;
+      }
+
+      var slides = [];
+      var itemsPerSlide = this.itemsPerSlide || 2;
+      itemsPerSlide = Math.min(itemsPerSlide, images.length);
+      var i = 0, j = images.length - itemsPerSlide + 1;
+      for (; i < j; i += itemsPerSlide) {
+        var slide = images.slice(i, i + itemsPerSlide);
+        adjustSlide(slide);
+        slides.push(this.template({items: slide}));
+      }
+      
+      var leftOver = images.length % itemsPerSlide;
+      if (leftOver) {
+//        var extra = _.map(images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver)), _.clone);
+//        var extra = images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver));
+        var extra = images.slice(images.length - itemsPerSlide);
+        adjustSlide(extra);
+        slides.push(this.template({items: extra})); // to wrap around        
+      }
+
+      this.renderSwipeview(slides);
     },
 
+    renderSwipeview: function(slides) {
+      this.$el.removeClass('hidden');
+      
+      // HACK? Need this otherwise SwipeView can't figure out the width and height of this element
+      this.$el.css('height', (this.height || 250) + 'px');
+      if (!this.el.clientWidth) {
+        var args = arguments, self = this;
+        setTimeout(function() {
+          self.renderSwipeview.apply(self, args);
+        }, 100);
+        
+        return;
+      }      
+      // END HACK
+      
+      var carousel,
+        el,
+        i,
+        page,
+        doc = document;
+  
+      carousel = new SwipeView(this.el, {
+        numberOfPages: slides.length,
+        hastyPageFlip: true,
+        width: 70
+      });
+  
+      // Load initial data
+      for (i=0; i<3; i++) {
+        page = i==0 ? slides.length-1 : Math.min(slides.length, i) - 1;
+        el = doc.createElement('span');
+        el.innerHTML = slides[page];
+        carousel.masterPages[i].appendChild(el);
+      }
+  
+      var self = this;
+      carousel.onFlip(function () {
+        var el,
+            upcoming,
+            i;
+  
+        for (i=0; i<3; i++) {
+          upcoming = carousel.masterPages[i].dataset.upcomingPageIndex;
+  
+          if (upcoming != carousel.masterPages[i].dataset.pageIndex) {
+            el = carousel.masterPages[i].querySelector('span');
+            el.innerHTML = slides[upcoming];
+            $(el).find('ul[data-role="listview"]').each(function() {
+//              var $this = $(this);
+//              if (!$this.hasClass('ui-listview')) { // is true every time
+//                $this.listview().listview('refresh');
+//              }
+              $(this).listview();
+            });
+          }
+        }
+      });
+  
+      this.$el.trigger('create');
+      return this;
+    },
+    
     getTestTriggerUrl: function() {
       var res = this.resource;
       var cause = res.get('causeDavClassUri');
@@ -348,38 +410,9 @@ define([
     
     finishRender: function(items) {
       this.$el.html(this.template({items: items}));
-//      if (this.rendered) {
-//        this.$el.trigger('create');
-//        this.$el.listview('refresh');
-//      }
-//      else {
       this.$el.removeClass('hidden');
-        this.$el.trigger('create');
-//      }
-//      this.finalize();
-//      var self = this;
-//      Events.on('changePage', function(view) {
-//        if (view == self || self.isChildOf(view))
-//          self.finalize();
-//      });
+      this.$el.trigger('create');
     },
-    
-//    finalize: function() {
-//      var btns = this.$('.ui-btn');
-//      switch (btns.length) {
-//        case 1:
-//          btns.css('float', 'center');
-//          break;        
-//        case 2:
-//          $(btns[1]).css('float', 'right');
-//          break;
-////        case 3:
-////          debugger;
-////          $(btns[2]).css('float', 'right');
-////          $(btns[1]).css('float', 'center');
-////          break;
-//      }     
-//    },
     
     getCaption: function(resource, prop) {
       var res = arguments.length <= 1 ? (resource && U.isModel(resource) ? resource : this.resource) : resource;
@@ -404,11 +437,9 @@ define([
           if (val)
             return val;
         }
-        
-//        return ''; // var range = prop.range || prop.facet; return range.slice(range.lastIndexOf('/')) + 1;
       }
       
-      return ' ';          
+      return ' '; // non-empty to get the nice overlay          
     }
   });
 });

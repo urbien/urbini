@@ -116,7 +116,7 @@ define([
             self.friends.fetch({
               success: function() {
                 if (self.friends.size()) {
-                  self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri}));
+                  self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
                   self.photogridDfd.resolve();
   //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
   //                header.insertBefore(self.photogrid.el);

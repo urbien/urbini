@@ -100,7 +100,7 @@ define([
           require(newModFullNames, function() {
             for (var i = 0; i < newModNames.length; i++) {
               C.modCache[newModNames[i]].resolve(arguments[i]);
-            }          
+            }
           });
         });
       }
