@@ -199,27 +199,27 @@ define(function () {
 
 			this.masterPages[this.currentMasterPage].className = this.masterPages[this.currentMasterPage].className + ' swipeview-active';
 
-			debugger;
+			var w = this.options.width;
 			if (this.currentMasterPage === 0) {
-				this.masterPages[2].style.left = this.page * 100 - 100 + '%';
-				this.masterPages[0].style.left = this.page * 100 + '%';
-				this.masterPages[1].style.left = this.page * 100 + 100 + '%';
+				this.masterPages[2].style.left = this.page * w - w + '%';
+				this.masterPages[0].style.left = this.page * w + '%';
+				this.masterPages[1].style.left = this.page * w + w + '%';
 				
 				this.masterPages[2].dataset.upcomingPageIndex = this.page === 0 ? this.options.numberOfPages-1 : this.page - 1;
 				this.masterPages[0].dataset.upcomingPageIndex = this.page;
 				this.masterPages[1].dataset.upcomingPageIndex = this.page == this.options.numberOfPages-1 ? 0 : this.page + 1;
 			} else if (this.currentMasterPage == 1) {
-				this.masterPages[0].style.left = this.page * 100 - 100 + '%';
-				this.masterPages[1].style.left = this.page * 100 + '%';
-				this.masterPages[2].style.left = this.page * 100 + 100 + '%';
+				this.masterPages[0].style.left = this.page * w - w + '%';
+				this.masterPages[1].style.left = this.page * w + '%';
+				this.masterPages[2].style.left = this.page * w + w + '%';
 
 				this.masterPages[0].dataset.upcomingPageIndex = this.page === 0 ? this.options.numberOfPages-1 : this.page - 1;
 				this.masterPages[1].dataset.upcomingPageIndex = this.page;
 				this.masterPages[2].dataset.upcomingPageIndex = this.page == this.options.numberOfPages-1 ? 0 : this.page + 1;
 			} else {
-				this.masterPages[1].style.left = this.page * 100 - 100 + '%';
-				this.masterPages[2].style.left = this.page * 100 + '%';
-				this.masterPages[0].style.left = this.page * 100 + 100 + '%';
+				this.masterPages[1].style.left = this.page * w - w + '%';
+				this.masterPages[2].style.left = this.page * w + '%';
+				this.masterPages[0].style.left = this.page * w + w + '%';
 
 				this.masterPages[1].dataset.upcomingPageIndex = this.page === 0 ? this.options.numberOfPages-1 : this.page - 1;
 				this.masterPages[2].dataset.upcomingPageIndex = this.page;
@@ -416,8 +416,8 @@ define(function () {
 				pageFlip = this.currentMasterPage + 1;
 				if (pageFlip > 2)
 				  pageFlip -= 3;
-//				this.masterPages[pageFlip].style.left = this.page * 100 + 100 + '%';
-        this.masterPages[pageFlip].style.left = this.page * width + width + '%';
+
+				this.masterPages[pageFlip].style.left = this.page * width + width + '%';
 
 				pageFlipIndex = this.page + 1;
 			}
@@ -433,7 +433,7 @@ define(function () {
 			pageFlipIndex = pageFlipIndex - Math.floor(pageFlipIndex / this.options.numberOfPages) * this.options.numberOfPages;
 			this.masterPages[pageFlip].dataset.upcomingPageIndex = pageFlipIndex;		// Index to be loaded in the newly flipped page
 
-			newX = -this.page * this.pageWidth * width / 100;
+			newX = -this.page * this.pageWidth;// * width / 100;
 			
 			this.slider.style[transitionDuration] = Math.floor(500 * Math.abs(this.x - newX) / this.pageWidth) + 'ms';
 
