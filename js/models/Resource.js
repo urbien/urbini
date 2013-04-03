@@ -67,7 +67,7 @@ define([
         }.bind(this));
       }
       
-      this.changesSinceSave = {};
+      this.changesSinceSave = this.isNew() ? this.toJSON() : {};
     },
     
     setModel: function(vocModel, options) {
@@ -300,6 +300,9 @@ define([
     set: function(key, val, options) {
       if (!this.subscribedToUpdates && this.getUri())
         this.subscribeToUpdates();
+      
+      if (key == null)
+        return true;
       
       // Handle both `"key", value` and `{key: value}` -style arguments.
       var props;
@@ -641,9 +644,9 @@ define([
           if (!isNew) {
             if (options.error)
               options.error(this, {code: 304, details: "unmodified"}, options);
+            
+            return; 
           }
-          
-          return; 
         }
         
         data.$returnMade = options.$returnMade !== false;
@@ -707,8 +710,10 @@ define([
       }
    
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
-      if (!options.fromDB) 
+      if (!options.fromDB) { 
+//        G.log(Resource.TAG, 'events', U.getDisplayName(this), 'changed');
         this.trigger('change', this, options);
+      }
       
       if (saved)
         this.detached = false;

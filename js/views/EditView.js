@@ -531,6 +531,7 @@ define([
           $.mobile.hidePageLoadingMsg();
           $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking complete, gently release your hair', false);
           setTimeout($.mobile.hidePageLoadingMsg, 3000);
+          res.fetch({forceFetch: true});
         });
       }
       
@@ -733,7 +734,6 @@ define([
           return;
         }
         
-        // TODO: use Backbone's res.save(props), or res.save(props, {patch: true})
         var onSaveError = function(resource, xhr, options) {
           var err;
           if (resource.status) {

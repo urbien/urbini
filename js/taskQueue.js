@@ -35,6 +35,7 @@ define(['globals', 'utils'], function(G, U) {
      */
     this.runTask = function(task, options) {
       var options = options || {},
+          timeout = options.timeout === false ? false : options.timeout || 10000,
           sequential = options.sequential,
           force = options.force,
           yields = options.yields,
@@ -133,13 +134,15 @@ define(['globals', 'utils'], function(G, U) {
             defer.resolve();
           }.bind(q));
           
-          setTimeout(function() {
-            if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
-//              debugger; // sth went wrong with task, it didn't finish
-              debugger;
-              taskDfd.reject(null, {code: 0, type: 'timeout'});
-            }
-          }, 10000);
+          if (timeout) {
+            setTimeout(function() {
+              if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
+  //              debugger; // sth went wrong with task, it didn't finish
+                debugger;
+                taskDfd.reject(null, {code: 0, type: 'timeout'});
+              }
+            }, timeout);
+          }
         }.bind(q));
       }.bind(q));
       

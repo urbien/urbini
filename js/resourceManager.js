@@ -105,7 +105,6 @@ define([
     vocModel = data.vocModel,
     fetchFromServer = function(isUpdate, timeout) {
       if (!isCollection && U.isTempUri(data.getUri())) {
-//        debugger;
         options.error && options.error(data, {code: 204}, options);
         return;
       }
@@ -246,7 +245,6 @@ define([
         G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
       fetchFromServer(isUpdate, 0);
     }).progress(function(db, event) {
-//      debugger;
       error = error;
     });
   };
@@ -404,7 +402,6 @@ define([
      */
     updateDB: function(types) {
       return $.Deferred(function(defer) {
-//        debugger;
         var toKill = _.clone(types);
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
@@ -519,9 +516,6 @@ define([
           return;
         }
 
-//        if (toKill && toKill.length)
-//          debugger;
-
         // Queue up upgrade
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
         dbPromise.resolve();
@@ -532,13 +526,11 @@ define([
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
-//            debugger;
             G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
             dbPromise.reject();
             RM.restartDB();
             break;
           case 'upgradeneeded':
-//            debugger;
             break;
         }
         G.log(RM.TAG, 'db', event.type);
@@ -808,7 +800,6 @@ define([
             }).always(dfd.resolve); // resolve in any case, so sync operation can conclude
           },
           error: function(model, xhr, options) {
-            debugger;
             var code = xhr.status || xhr.code;
             if (code == 0) { // timeout
               RM.sync();
