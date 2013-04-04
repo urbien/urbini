@@ -132,7 +132,6 @@ define([
               var inlineList = C.getResourceList(type, $.param(params));
               if (!inlineList) {
                 inlineList = new ResourceList(null, {model: U.getModel(type), params: params});
-                debugger;
                 inlineList.fetch({
                   success: function() {
                     if (inlineList.size()) {

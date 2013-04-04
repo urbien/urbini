@@ -317,6 +317,9 @@ define([
         return this;
       
       var prevItemsPerSlide = this.itemsPerSlide;
+      var prevNumImages = this.numImages;
+      this.numImages = images.length;
+      
       var width = this.innerWidth();
       var padding = 20;
       var itemWidth = 250;
@@ -437,7 +440,7 @@ define([
   
       
       if (prevSlide) {
-        var numSlidesBefore = Math.ceil(images.length / prevItemsPerSlide);
+        var numSlidesBefore = Math.ceil(prevNumImages / prevItemsPerSlide);
         prevSlide = prevSlide % numSlidesBefore;
         var leftOver = prevSlide * prevItemsPerSlide;
         var currentPage = Math.floor(leftOver / this.itemsPerSlide);
