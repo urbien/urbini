@@ -32,7 +32,7 @@
   </div>
   
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <!-- nextPage button removed after endless page introduction -->
      <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
   </div>
@@ -43,9 +43,9 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
-    <div class="ui-grid-a" style="width: 100%;padding-right:10px">
-      <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="width: 32%; min-width: 130px"></div>
+    <div class="ui-grid-{{= G.theme.list }}" style="width: 100%;padding-right:10px">
+      <div class="ui-block-{{= G.theme.list }}" id="resourceImage"></div>
+      <div id="mainGroup" class="ui-block-{{= G.theme.list }}" style="width: 32%; min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -63,7 +63,7 @@
     </ul>
   </div>
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
 </script>  
@@ -262,7 +262,7 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : 'data-icon="chevron-right"'}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
       {{= title }}
@@ -272,7 +272,7 @@
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : 'data-icon="chevron-right"'}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= pageUrl }}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
     </a>
@@ -311,7 +311,7 @@
 {{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.footer) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" data-icon="plus">
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -357,7 +357,7 @@
 {{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="arrow-r"></a>
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp"></a>
    </li>
 </script>
 
@@ -368,7 +368,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li data-theme="{{= G.theme.footer }}" data-role="list-divider">{{= value }}</li>
+  <li data-theme="{{= G.theme.list }}" data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -493,7 +493,7 @@
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="check" id="doTry" data-role="button" data-position="notext">Goto app</a>
+  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">Goto app</a>
 </script>
 
 <script type="text/template" id="forkMeBtnTemplate">
@@ -702,6 +702,7 @@
       <a class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a>
     {{ } }}
   </div>     
+        {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </div>
 </script>
 
@@ -821,7 +822,7 @@
 
 
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="home" id="homeBtn" target="#">Home</a>
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
   </div>
 </script>
 
