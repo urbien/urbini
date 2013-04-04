@@ -1044,12 +1044,25 @@ define([
             
             _.extend(info, {name: p, prop: reqd[p]});
             this.addProp(info);
+            displayedProps[p] = true;
           }        
         }
+      }
+      for (var p in reqParams) {
+        if (!meta[p]  || displayedProps[p])
+          continue;
+        _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
+        
+        var h =  '<input data-formel="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+        U.addToFrag(info.frag, h);
+//        this.addProp(info);
+        displayedProps[p] = true;
       }
       if (!propGroups.length || editProps) {
         for (var p in meta) {
           p = p.trim();
+          if (displayedProps[p])
+            continue;
           if (editProps  &&  $.inArray(p, editProps) == -1)
             continue;
           if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)))
@@ -1058,18 +1071,10 @@ define([
             continue;
           _.extend(info, {name: p, prop: meta[p]});
           this.addProp(info);
+          displayedProps[p] = true;
         }        
       }        
       
-      for (var p in reqParams) {
-        if (!meta[p]  || _.has(displayedProps, p))
-          continue;
-        _.extend(info, {name: p, prop: meta[p]});
-        
-        var h =  '<input type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
-        U.addToFrag(info.frag, h);
-        this.addProp(info);
-      }
       (this.$ul = this.$('#fieldsList')).html(frag);
       if (this.$ul.hasClass('ui-listview')) {
         this.$ul.trigger('create');
