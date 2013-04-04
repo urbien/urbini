@@ -49,6 +49,8 @@ define([
       }
       if (this.resource.isA("Buyable"))
         this.$el.attr("data-icon", "false");
+      else
+        this.$el.attr("data-icon", "chevron-right");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;

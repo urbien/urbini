@@ -319,8 +319,8 @@ define([
       if (leftOver) {
 //        var extra = _.map(images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver)), _.clone);
 //        var extra = images.slice(0, itemsPerSlide - leftOver).concat(images.slice(images.length - leftOver));
-        var extra = images.slice(images.length - itemsPerSlide);
-//        var extra = images.slice(images.length - leftOver);
+//        var extra = images.slice(images.length - itemsPerSlide);
+        var extra = images.slice(images.length - leftOver);
         adjustSlide(extra);
         slides.push(this.template({items: extra})); // to wrap around        
       }
@@ -352,7 +352,7 @@ define([
       carousel = new SwipeView(this.el, {
         numberOfPages: slides.length,
         hastyPageFlip: true,
-        width: 70
+        width: 100
       });
   
       // Load initial data
