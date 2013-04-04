@@ -817,6 +817,15 @@ define('fileCache', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    nukeAll: function(reload) {
+      var ls = localStorage;
+      ls && ls.clear && ls.clear();
+      if (G.ResourceManager)
+        G.ResourceManager.deleteDatabase();
+      
+      if (reload !== false)
+        window.location.reload();
+    },
     showSpinner: function(options) {
       options = options || {};
       var spinner = document.createElement('div');

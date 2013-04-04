@@ -19,7 +19,7 @@ define([
   return BasicView.extend({
     TAG: "PhotogridView",
     initialize: function(options) {
-      _.bindAll(this, 'render', 'finalize', 'goToIntersection'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'finalize', 'goToIntersection', 'resize'); // fixes loss of context for 'this' within methods
       options = options || {};
       this.constructor.__super__.initialize.apply(this, arguments);
       this.source = options.source;
@@ -51,7 +51,9 @@ define([
       return this;
     },
     events: {
-      'click [data-intersection]': 'goToIntersection'
+      'click [data-intersection]': 'goToIntersection',
+      'orientationchange': 'resize',
+      'resize': 'resize'
     },
     goToIntersection: function(e) {
       var intersection = e.currentTarget.dataset.intersection;
@@ -298,7 +300,44 @@ define([
           break;
       }
       
-      var itemsPerSlide = this.itemsPerSlide || 2;
+      this.images = images;
+      this.renderSwipeview();
+    },
+    resize: function() {
+      if (this.swipeable)
+        this.renderSwipeview();
+    },
+    renderSwipeview: function(images) {
+      images = images || this.images;
+      if (!images)
+        return this;
+      
+      this.$el.empty();
+      if (!images.length)
+        return this;
+      
+      var prevItemsPerSlide = this.itemsPerSlide;
+      var width = this.innerWidth();
+      var padding = 20;
+      var itemWidth = 250;
+      var itemsPerSlide;
+      if (width < 298) {
+        itemsPerSlide = 1;
+        itemWidth = 120;
+      }
+      /* First breakpoint is 298px. 2 column layout. Tiles 140x140 pixels at the breakpoint. */
+      else if (width < 768) {
+        itemsPerSlide = 2;
+      }
+      /* Second breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
+      else if (width < 1020) {
+        itemsPerSlide = 3;
+      }
+      /* Third breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
+      else {
+        itemsPerSlide = 4;
+      }
+
       if (!this.swipeable || itemsPerSlide >= images.length) {
         this.$el.html(this.template({items: images}));
         this.$el.removeClass('hidden');
@@ -306,8 +345,19 @@ define([
         return this;
       }
 
+      this.itemsPerSlide = itemsPerSlide;      
+      this.height = itemWidth;
+      itemWidth -= padding; // HACK, from CSS
+      itemWidth += 'px';
+      for (var i = 0; i < images.length; i++) {
+//        var firstOrLast = i === 0 || i === images.length - 1;
+        var img = images[i];
+        img.width = img.height = itemWidth;
+//        if (!firstOrLast && margin)
+//          img.margin = margin;
+      }
+      
       var slides = [];
-      itemsPerSlide = Math.min(itemsPerSlide, images.length);
       var i = 0, j = images.length - itemsPerSlide + 1;
       for (; i < j; i += itemsPerSlide) {
         var slide = images.slice(i, i + itemsPerSlide);
@@ -325,12 +375,7 @@ define([
         slides.push(this.template({items: extra})); // to wrap around        
       }
 
-      this.renderSwipeview(slides);
-    },
-
-    renderSwipeview: function(slides) {
-      this.$el.removeClass('hidden');
-      
+      this.$el.removeClass('hidden');      
       // HACK? Need this otherwise SwipeView can't figure out the width and height of this element
       this.$el.css('height', (this.height || 250) + 'px');
       if (!this.el.clientWidth) {
@@ -343,18 +388,24 @@ define([
       }      
       // END HACK
       
-      var carousel,
-        el,
+      var el,
         i,
         page,
         doc = document;
   
-      carousel = new SwipeView(this.el, {
+      var self = this;
+      var prevSlide = 0; 
+      if (this.carousel) {
+        prevSlide = this.carousel.page;
+        this.carousel.destroy();
+      }
+      
+      var carousel = this.carousel = new SwipeView(this.el, {
         numberOfPages: slides.length,
-        hastyPageFlip: true,
+        hastyPageFlip: false,
         width: 100
       });
-  
+
       // Load initial data
       for (i=0; i<3; i++) {
         page = i==0 ? slides.length-1 : Math.min(slides.length, i) - 1;
@@ -362,30 +413,37 @@ define([
         el.innerHTML = slides[page];
         carousel.masterPages[i].appendChild(el);
       }
-  
-      var self = this;
-      carousel.onFlip(function () {
+      
+      carousel.onFlip(function (flipEvent) {
+//        if (!flipEvent.unique)
+//          return;
+        
         var el,
-            upcoming,
-            i;
-  
+        upcoming,
+        i;
+
         for (i=0; i<3; i++) {
           upcoming = carousel.masterPages[i].dataset.upcomingPageIndex;
-  
+          
           if (upcoming != carousel.masterPages[i].dataset.pageIndex) {
             el = carousel.masterPages[i].querySelector('span');
             el.innerHTML = slides[upcoming];
             $(el).find('ul[data-role="listview"]').each(function() {
-//              var $this = $(this);
-//              if (!$this.hasClass('ui-listview')) { // is true every time
-//                $this.listview().listview('refresh');
-//              }
               $(this).listview();
             });
           }
         }
-      });
+      });  
   
+      
+      if (prevSlide) {
+        var numSlidesBefore = Math.ceil(images.length / prevItemsPerSlide);
+        prevSlide = prevSlide % numSlidesBefore;
+        var leftOver = prevSlide * prevItemsPerSlide;
+        var currentPage = Math.floor(leftOver / this.itemsPerSlide);
+        this.carousel.goToPage(currentPage);
+      }
+      
       this.$el.trigger('create');
       return this;
     },

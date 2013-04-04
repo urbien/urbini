@@ -68,7 +68,17 @@ define([
           this.finish();
         }        
       }.bind(this));
-////////// comment end      
+////////// comment end
+      
+      _.each(['onorientationchange', 'onresize'], function(listener) {
+        if (listener in window) {
+          var event = listener.slice(2);
+          window.addEventListener(event, function() {
+            this.$el.trigger(event);
+          }.bind(this), false);
+        }
+      }.bind(this));
+      
       return this;
     }
   }, {
@@ -221,6 +231,26 @@ define([
     },
     
     finalize: function () {
+    },
+
+    padding: function(horizontal) {
+      var one = horizontal ? 'left' : 'top';
+      var two = horizontal ? 'right' : 'bottom';
+      var padding = this.$el.css('padding') || "0px";
+      var onePadding = this.$el.css('padding-' + one) || "0px",
+          twoPadding = this.$el.css('padding-' + two) || "0px";
+      
+      var padding = parseFloat(padding);
+      return (parseFloat(onePadding) || padding) 
+           + (parseFloat(twoPadding) || padding);
+    },
+    
+    innerHeight: function() {
+      return this.el.clientHeight ? this.el.clientHeight - this.padding(false) : this.parentView ? this.parentView.innerHeight() - this.padding(false) : null;
+    },
+
+    innerWidth: function() {
+      return this.el.clientWidth ? this.el.clientWidth - this.padding(true) : this.parentView ? this.parentView.innerWidth() - this.padding(true) : null;
     },
     
     restyle: function() {
