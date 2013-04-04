@@ -725,12 +725,13 @@ define([
           }).fail(function() {
             debugger;
             defer.reject();
+            RM.sync();
           });            
         }).fail(function(error, event) {
           debugger;
           defer.reject(error, event);
         });
-      }, {name: RM.SYNC_TASK_NAME, sequential: false, preventPileup: true});
+      }, {name: RM.SYNC_TASK_NAME, sequential: false, preventPileup: true, timeout: false});
     },
 
     saveToServer: function(updateInfo) {
@@ -1248,11 +1249,11 @@ define([
         orderBy = [meta[orderBy]];
       else {
         var ordered = U.getPropertiesWith(meta, "sortAscending");
-        if (ordered.length) {
-          orderBy = [];
-          for (var p in ordered) {
-            orderBy.push(ordered[p]);
-          }
+        if (_.size(ordered)) {
+          orderBy = _.values(ordered);
+//          for (var p in ordered) {
+//            orderBy.push(ordered[p]);
+//          }
         }
       }
       

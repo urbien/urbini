@@ -725,11 +725,11 @@
 <script type="text/template" id="photogridTemplate">
   <!-- an image grid with per-image overlays -->
 
-    <ul data-role="listview" data-inset="true" data-filter="false" style="width:100%">
+    <ul data-role="listview" data-inset="true" data-filter="false" style="width:100%; list-style-type:none">
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
-        <li style="{{= 'float: ' + (item.float || 'left') }}">
+        <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}

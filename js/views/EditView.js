@@ -494,9 +494,9 @@ define([
           self = this;
 
       if (this.action === 'edit') {
-        if (U.isAssignableFrom(vocModel, webPropType))
-          this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
-        else
+//        if (U.isAssignableFrom(vocModel, webPropType))
+//          this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
+//        else
           Events.trigger('back');
         
         return;
@@ -521,7 +521,7 @@ define([
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
       }
-      else if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
+      else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && res.get('forkedFrom')) {
         $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking in progress, hold on to your hair.', false);
         res.on('error', function(error) {
           $.mobile.hidePageLoadingMsg();          

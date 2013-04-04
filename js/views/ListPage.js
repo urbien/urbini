@@ -131,7 +131,8 @@ define([
       'swipeleft': 'swipeleft',
       'pageshow': 'pageshow',
       'submit': 'submit',
-      'orientationchange': 'orientationchange'  
+      'orientationchange': 'orientationchange',
+      'resize': 'orientationchange'
     },
     swipeleft: function(e) {
       // open backlinks

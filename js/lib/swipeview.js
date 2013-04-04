@@ -291,10 +291,8 @@ define(['jquery'], function ($) {
     
 		__pos: function (x) {
       x = Math.round(x);
-			this.x = x;
-			if (x > this.x + 500)
-			  debugger;
-			
+      this.direction = x > this.x ? 'back' : 'forward';
+			this.x = x;			
 			this.slider.style[transform] = 'translate(' + x + 'px,0)' + translateZ;
 		},
 
@@ -476,8 +474,13 @@ define(['jquery'], function ($) {
 		},
 		
 		__flip: function () {
-			this.__event('flip');
+//		  var diff = false;
+//		  for (var i=0; i <3; i++) {
+//		    if (this.masterPages[i].dataset.pageIndex != this.masterPages[i].dataset.upcomingPageIndex)
+//		      diff = true;
+//		  }
 
+	    this.__event('flip', {direction: this.direction});//, unique: diff});
 			for (var i=0; i<3; i++) {
 				this.masterPages[i].className = this.masterPages[i].className.replace(/(^|\s)swipeview-loading(\s|$)/, '');		// Remove the loading class
 				this.masterPages[i].dataset.pageIndex = this.masterPages[i].dataset.upcomingPageIndex;
@@ -487,6 +490,13 @@ define(['jquery'], function ($) {
 		__event: function (type) {
 			var ev = document.createEvent("Event");
 			
+			var options = arguments[1];
+			if (options) {
+  			for (var option in options) {
+  			  ev[option] = options[option];
+  			}
+			}
+			  
 			ev.initEvent('swipeview-' + type, true, true);
 
 			this.wrapper.dispatchEvent(ev);

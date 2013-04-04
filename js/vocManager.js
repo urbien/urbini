@@ -924,7 +924,7 @@ define([
         return;
       
       var uri = resource.getUri();
-      var type = resource.type;
+      var type = resource.vocModel.type;
       var actualType = U.getTypeUri(uri);
       if (actualType && type != actualType) {
         var byType = actualTypes[actualType] = actualTypes[actualType] || [];
