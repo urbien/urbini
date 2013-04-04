@@ -39,12 +39,30 @@ label.req::before {
 .ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
   display: block;
 }
+#sidebar .ui-icon {
+  background: none;
+}
 
+#resourceViewHolder .cp .ui-btn-icon-notext {
+  width: 20px;
+  height: 20px;
+}
+#resourceViewHolder .ui-icon {
+  background: none;
+}
+#menuItems .ui-icon {
+  background: none;
+}
 .resourceProp {font-weight: normal}
 .ui-field-contain div.ui-slider-switch { width: 7em; position: absolute; right: 0; } // to make Yes/No toggle switch bigger
 .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li-has-thumb { padding-left: 90px; }
+
 .ui-header .ui-btn-left, .ui-header .ui-btn-right {
   top: 5px;
+}
+
+.ui-mini .ui-btn-icon-top .ui-icon {
+  top: 13px;
 }
 
 .ui-field-contain div.ui-slider, .ui-field-contain div.ui-slider.ui-mini { margin:0.3em 0 }
@@ -54,11 +72,19 @@ label.req::before {
   margin-bottom: 25px;
 }
 
+#resourceViewHolder .ui-icon {
+  margin: -12px -7px auto auto !important;
+}
+
+#resourceViewHolder .ui-icon .ui-icon-chevron-right{
+  margin: -12px -9px auto auto !important;
+}
+
 #other {
   padding:0; 
   border:0;border-collapse:collapse 
 }
-
+/*
 .ui-icon-facebook {
   background-image: url(/icons/facebook-mid.png);
 }
@@ -78,7 +104,7 @@ label.req::before {
 .ui-icon-live {
   background-image: url(/icons/windows-live-mid.png);
 }
-
+*/
 .ui-body-c .ui-link:visited {
   color: #757575;
 }
@@ -162,7 +188,105 @@ blockquote pre .script {
   height:31px;
   margin-left:-15px;
   position:absolute;
-#  top:-15px;
+/*  top:-15px; */
   left:50%;
   display:block;
+}
+/*
+.ui-li-link-alt .ui-btn-inner .ui-icon {
+  margin: -11px -9px auto auto !important;
+}
+*/
+
+.ui-icon-delete, .ui-icon-searchfield, .ui-icon-edit, .ui-icon-plus, .ui-icon-book, .ui-icon-copy {
+  position: relative;
+}
+
+.ui-icon-delete:before {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  content: "\f00D";
+  font-size: 17px;
+  background: none;
+/*  color: #fff; */
+}
+.ui-icon-edit:before{
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  font-size: 17px;
+  background: none;
+/*  color: #fff; */
+  content:"\f044"
+}
+.ui-icon-searchfield:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:19px;
+  left:10px;
+  content: "\f002";
+  font-size: 14px;
+  background: none;
+  background-image: none;
+/*  color: #757575; */
+}
+.ui-icon-plus:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f055";
+  font-size: 20px;
+  background: none;
+  background-image: none;
+/*  color: #757575; */
+}
+.ui-icon-minus:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f056";
+  font-size: 20px;
+  background: none;
+  background-image: none;
+/*  color: #757575; */
+}
+.ui-icon-retweet {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f079";
+  font-size: 14px;
+  background: none;
+  background-image: none;
+/*  color: #757575; */
+}
+
+#publish .ui-icon-book:before{
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:0px;
+  left:0px;
+  font-size: 16px;
+  background: none;
+  background-image: none;
+  content:"\f02d"
+}
+#doTry .ui-icon {
+  font-size: 18px;
+}
+
+#forkMe .ui-icon, #publish .ui-icon, #doTry .ui-icon {
+  background: none;
+}
+#forkMe .ui-icon-copy {
+  font-size: 16px;
+}
+.ui-btn-icon-notext .ui-btn-inner {
+  padding: 1px;
 }
