@@ -308,6 +308,8 @@ define([
       var sqlUri = '/' + G.sqlUri + '/';
       var idx0 = modelUri.indexOf(sqlUri);
       modelUri = idx0 == -1 ||  idx0 > idx ? modelUri.slice(0, idx) : 'http://' + modelUri.slice(idx0 + sqlUri.length, idx);
+      if (modelUri === 'view/profile')
+        modelUri = G.currentUser._uri;
       if (modelUri.indexOf('http://') == -1)
         modelUri = U.getModel(modelUri).type;
       var jstType = G.commonTypes.Jst;
