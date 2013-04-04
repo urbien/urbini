@@ -143,7 +143,7 @@ define([
       
 //      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
       if (G.pageRoot != 'app/UrbienApp') {
-        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'home', id: 'urbien123'}));
+        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
         ul.append(frag);
       }
 /*      
@@ -259,7 +259,7 @@ define([
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 
-      U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'home', id: 'home123'}));
+      U.addToFrag(frag, this.homeMenuItemTemplate({title: "Home", icon: 'repeat', id: 'home123'}));
       ul.append(frag);
       
       var p = $('#' + this.viewId);
