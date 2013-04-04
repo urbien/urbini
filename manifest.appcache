@@ -1,14 +1,14 @@
 CACHE MANIFEST
-# Version 2.5
+# Version 3.9
 
 # Explicitly cached 'master entries'.
 CACHE:
 js/lib/font/fontawesome-webfont.ttf
-js/lib/jqm-icon-pack-fa.css
-js/lib/images/icons-18-white-pack.png
+js/lib/jqm-icon-pack-3.0.0-fa.css
+#js/lib/images/icons-18-white-pack.png
 <appJS>
-images/ajax-loader.gif
-js/lib/images/frame/white_bg/live-sign.png
+#images/ajax-loader.gif
+#js/lib/images/frame/white_bg/live-sign.png
 #images/frame/white_bg/live-sign.png
 #<appImages>
 # cache-end
