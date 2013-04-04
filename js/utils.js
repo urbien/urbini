@@ -78,8 +78,8 @@ define([
       var mods = [], newModNames = [], newModFullNames = [];
       for (var i = 0; i < modules.length; i++) {
         var fullName = modules[i], name = fullName;
-        if (!fullName)
-          G.log(U.TAG, 'error', 'match undefined 1');
+//        if (!fullName)
+//          G.log(U.TAG, 'error', 'match undefined 1');
         var moduleViaPlugin = fullName.match(/\!(.*)$/);
         if (moduleViaPlugin) {
           name = moduleViaPlugin[1]; 
@@ -283,8 +283,8 @@ define([
         hash = hash.slice(0, qIdx);
       
       hash = decodeURIComponent(hash);
-      if (!hash)
-        G.log(U.TAG, 'error', 'match undefined 0');
+//      if (!hash)
+//        G.log(U.TAG, 'error', 'match undefined 0');
       
       if (hash.startsWith('templates')) {
 //        hash = U.decode(hash.slice(10));
@@ -662,10 +662,10 @@ define([
         return uri;
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
-      if (!uri) {
-        G.log(U.TAG, 'error', 'match undefined 3');
-        console.trace();
-      }
+//      if (!uri) {
+//        G.log(U.TAG, 'error', 'match undefined 3');
+//        console.trace();
+//      }
 
       var nameAndId = uri.match(regex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
@@ -963,8 +963,8 @@ define([
           model = typeof args[1] === 'function' ? args[1] : args[1].constructor;
         else {
           return U.filterObj(params, function(name, val) {
-            if (!name)
-              G.log(U.TAG, 'error', 'match undefined 4');
+//            if (!name)
+//              G.log(U.TAG, 'error', 'match undefined 4');
 
             return name.match(/^[a-zA-Z]+/);
           });
@@ -2162,8 +2162,8 @@ define([
           return startOfDay + 2*U.millis.day;
       }
       
-      if (!date)
-        G.log(U.TAG, 'error', 'match undefined 5');
+//      if (!date)
+//        G.log(U.TAG, 'error', 'match undefined 5');
       var parsed = date.match(/(\d)* ?(second|minute|hour|day|week|month|year){1}s? ?(ago|ahead)/);
       if (!parsed)
         throw new Error('couldn\'t parse date: ' + date);
@@ -2328,15 +2328,18 @@ define([
       }
         
       if (numArgs != 3) {
-        if (!opVal)
-          G.log(U.TAG, 'error', 'match undefined 6');
-
-        opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
-        if (!opVal || opVal.length != 3)
-          return null;
-      
-        op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
-        val = opVal[2];
+        if (opVal) {
+          opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
+          if (!opVal || opVal.length != 3)
+            return null;
+          
+          op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
+          val = opVal[2];
+        }
+        else {
+          op = U.DEFAULT_WHERE_OPERATOR;
+          val = '';
+        }
       }
       
       if (op === '!')

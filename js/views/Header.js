@@ -27,6 +27,7 @@ define([
       this.viewId = options.viewId;
       if (this.resource) {
         this.resource.on('change', function(res, options) {
+//          G.log(this.TAG, 'events', 'change event received for', U.getDisplayName(this.resource));
           if (options && options.skipRefresh)
             return;
           
