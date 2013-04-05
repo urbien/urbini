@@ -201,7 +201,11 @@ blockquote pre .script {
 .ui-icon-delete, .ui-icon-searchfield, .ui-icon-edit, .ui-icon-plus, .ui-icon-book, .ui-icon-copy {
   position: relative;
 }
-
+.ui-icon {
+  background: none;
+  background-image: none;
+  opacity: 0.8;
+}
 .ui-icon-delete:before {
   position:absolute;
   font-family: FontAwesome !important;
@@ -210,6 +214,7 @@ blockquote pre .script {
   content: "\f00D";
   font-size: 17px;
   background: none;
+  background-image: none;
 /*  color: #fff; */
 }
 .ui-icon-edit:before{
@@ -233,6 +238,21 @@ blockquote pre .script {
   background-image: none;
 /*  color: #757575; */
 }
+
+#resourceView #other .ui-btn-inner .ui-icon-plus:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f01A";
+  font-size: 20px;
+  background: none;
+  background-image: none;
+  opacity: 0.6;
+  margin: -1px -7px auto auto !important;
+}
+
+/*
 .ui-icon-plus:after {
   position:absolute;
   font-family: FontAwesome !important;
@@ -242,8 +262,8 @@ blockquote pre .script {
   font-size: 20px;
   background: none;
   background-image: none;
-/*  color: #757575; */
 }
+*/
 .ui-icon-minus:after {
   position:absolute;
   font-family: FontAwesome !important;
@@ -279,6 +299,7 @@ blockquote pre .script {
 }
 #doTry .ui-icon {
   font-size: 18px;
+  line-height: 18px;
 }
 
 #forkMe .ui-icon, #publish .ui-icon, #doTry .ui-icon {

@@ -122,7 +122,8 @@ define([
           Events.stopEvent(e);
           Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         }
-        
+        else 
+          this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
         return;
       }
       Events.stopEvent(e);
