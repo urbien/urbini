@@ -827,7 +827,7 @@ define([
             ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem with your edit' : 'There was a problem creating this resource')};
             var isMkResource = !ref._tempUri;
             var toSave;
-            var errInfo = _.pick(ref, 'uri', '_error');
+            var errInfo = _.pick(ref, '_uri', '_error');
             resource.set(errInfo);
             
             if (isMkResource)

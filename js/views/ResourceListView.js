@@ -322,6 +322,13 @@ define([
           this.alignBricks();
       }
       else {
+        // HACK
+        setTimeout(function() {          
+          if (isMasonry || isModification)
+            this.alignBricks();
+        }.bind(this), 100);
+        // END HACK
+        
         this.initializedListView = true;
       }
       
@@ -487,7 +494,7 @@ define([
   
     // endless page function
     onScroll: function() {
-      if (!this.visible)
+      if (!this.isActive())
         return;
       
       var $wnd = $(window);

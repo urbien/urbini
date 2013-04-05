@@ -264,6 +264,7 @@ define([
         else if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
 //          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
 //          if (user == plugOwner)
+          if (!this.resource.isNew())
             this.testPlug = true;            
         }
         else {
@@ -289,7 +290,6 @@ define([
       else if (pBtn) {
         this.$('div#publishBtn').hide();
         var options = SPECIAL_BUTTONS.slice().remove('publish');
-        var settings = _.pick(this, options);
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
@@ -299,6 +299,8 @@ define([
           
           this.$('#{0}Btn'.format(option))[method]();
         }.bind(this));
+        
+        _.each()
       }
       
       var hash = window.location.hash;

@@ -64,20 +64,21 @@ define([
       var res = this.resource;
       var cause = res.get('causeDavClassUri');
       var effect = res.get('effectDavClassUri');
-//      window.location.href = G.serverName + '/app/' + res.get('appPath');
-      var params = {};
-      params.plugin = res.getUri();
-      if (!G.currentUser.guest) {
-        var vocModel = res.vocModel;
-        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy');
-        if (submittedBy.length) {
-          submittedBy = submittedBy[0];
-          params[submittedBy] = '_me';
+      Voc.getModels(effect).done(function() {
+        var effectModel = U.getModel(effect);
+        var params = {};
+        params.plugin = res.getUri();
+        if (!G.currentUser.guest) {
+          var submittedBy = U.getCloneOf(effectModel, 'Submission.submittedBy');
+          if (submittedBy.length) {
+            submittedBy = submittedBy[0];
+            params[submittedBy] = '_me';
+          }
         }
-      }
-      
-      var effectList = U.makeMobileUrl('list', effect, params);
-      this.router.navigate(U.makeMobileUrl('make', cause, {$returnUri: effectList}), {trigger: true});
+        
+        var effectList = U.makeMobileUrl('list', effect, params);
+        this.router.navigate(U.makeMobileUrl('make', cause, {$returnUri: effectList}), {trigger: true});
+      }.bind(this));
     },
     doTry: function(e) {
       Events.stopEvent(e);
