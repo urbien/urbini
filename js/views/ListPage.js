@@ -93,6 +93,7 @@ define([
         add: showAddButton,
         mapIt: isGeo,
         menu: true,
+        rightMenu: true,
         login: G.currentUser.guest
       };
 
