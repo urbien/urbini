@@ -146,13 +146,12 @@ define([
     },
     orientationchange: function(e) {
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament')                  || 
-                                                        vocModel.type.endsWith('/Theme')                       || 
-                                                        vocModel.type.endsWith('/Goal')                        || 
-                                                        vocModel.type.endsWith('/App')                         || 
-//                                                        vocModel.type.endsWith('/AppIdea')                     || 
+      var isMasonry = this.isMasonry = !isChooser  &&  (this.vocModel.type.endsWith('/Tournament')                  || 
+                                                        this.vocModel.type.endsWith('/Theme')                       || 
+                                                        this.vocModel.type.endsWith('/Goal')                        || 
+                                                        this.vocModel.type.endsWith('/App')                         || 
 //                                                        vocModel.type.endsWith('/NominationForConnecttion')    || 
-                                                        vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+                                                        this.vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       if (isMasonry) {
         Events.stopEvent(e);
         Events.trigger('refresh', {model: this.model, checked: checked});
