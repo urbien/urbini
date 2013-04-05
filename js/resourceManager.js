@@ -69,6 +69,10 @@ define([
     })
   };
 
+  function getRefStoreProps() {
+    return _.map(_.keys(REF_STORE.indices), parsePropNameFromDB).concat('_id');
+  }
+  
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
     options = options || {};
@@ -743,7 +747,8 @@ define([
             vocModel = resource.vocModel,
             type = vocModel.type;
         
-        var atts = _.omit(ref, _.keys(REF_STORE.indices));
+        var refStoreProps = getRefStoreProps();
+        var atts = _.omit(ref, refStoreProps);
         atts.$returnMade = true;
         resource.save(atts, { // ref has only the changes the user made
           sync: true, 
@@ -860,7 +865,13 @@ define([
           debugger;
         }
         
-        uri = ref._uri; // TODO: figure out why uri value gets lost
+        var refStoreProps = getRefStoreProps();
+        if (!U.isTempUri(uri) && !_.size(_.omit(ref, refStoreProps))) {
+          ref._dirty = 0;
+          RM.put(ref, RM.$db.objectStore(REF_STORE.name, 1)).done(dfd.resolve).fail(dfd.resolve);
+          return;
+        }
+        
         var updated = false, notReady = false;
         for (var p in ref) {
           if (/^_/.test(p)) // ignore props that start with an underscore

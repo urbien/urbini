@@ -283,7 +283,9 @@ define([
             }
           }
         }
-        this.router.navigate(hash, {trigger: true, replace: true});
+        
+        Events.trigger('back');
+//        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
       // set text
@@ -685,7 +687,7 @@ define([
       if (!isEdit && uri) {
 //        this.incrementBLCount();
         debugger;
-        this.redirect({trigger: true, replace: true, forceFetch: true});
+        this.redirect({forceFetch: true});
         return;
       }
       
@@ -730,7 +732,7 @@ define([
 //        var props = atts;
         if (isEdit && !_.size(props)) {
           debugger; // user didn't modify anything?
-          self.redirect({trigger: true, replace: true});
+          self.redirect();
           return;
         }
         

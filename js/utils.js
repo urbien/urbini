@@ -984,6 +984,9 @@ define([
     },
     
     filterInequalities: function(params, vocModel) {
+      if (!_.size(params))
+        return params;
+      
       var query = $.param(params);
       var parsed = U.parseAPIQuery(query, '&');
       var filtered = {};
