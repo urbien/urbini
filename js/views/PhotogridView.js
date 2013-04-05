@@ -326,17 +326,27 @@ define([
       var itemsPerSlide;
       if (width < 298) {
         itemsPerSlide = 1;
-        itemWidth = 120;
+        itemWidth = 140;
       }
-      /* First breakpoint is 298px. 2 column layout. Tiles 140x140 pixels at the breakpoint. */
+      /* 1st breakpoint is 444px. 3 column layout with small icons. Tiles 140x140 pixels at the breakpoint. */
+      else if (width < 438) {
+        itemsPerSlide = 2;
+        itemWidth = 140;
+      }
+      /* 1st breakpoint is 520px. 2 column layout with small icons. Tiles 250x250 pixels at the breakpoint. */
+      else if (width < 494) {
+        itemsPerSlide = 3;
+        itemWidth = 140;
+      }
+      /* 2nd breakpoint is 298px. 2 column layout. Tiles 2500x250 pixels at the breakpoint. */
       else if (width < 768) {
         itemsPerSlide = 2;
       }
-      /* Second breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
+      /* 3rd breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
       else if (width < 1020) {
         itemsPerSlide = 3;
       }
-      /* Third breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
+      /* 4th breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
       else {
         itemsPerSlide = 4;
       }
