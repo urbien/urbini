@@ -249,8 +249,8 @@ define([
         if (_.size(unsaved) && this.lastFetchOrigin !== 'edit') {
           _.each(resp, function(val, key) {
             if (_.has(unsaved, key)) {
-              if (/^_/.test(key) || !meta[key])
-                 return;
+              if (/^_/.test(key))
+                return;
               
               delete resp[key];
             }

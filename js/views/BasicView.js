@@ -37,7 +37,7 @@ define([
       var render = this.render;
       var refresh = this.refresh;
       this.render = function(rOptions) {
-        if ((rOptions && !rOptions.force) && !this.isPanel && !this.isActive()) {
+        if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
          // to avoid rendering views 10 times in the background. Render when it's about to be visible
           this.__renderArgs = arguments; 
           return false;

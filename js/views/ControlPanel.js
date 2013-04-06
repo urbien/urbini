@@ -56,8 +56,9 @@ define([
       G.log(this.TAG, 'add', 'user wants to add to backlink');
     },
     
-    refresh: function() {
-      if (!this.rendered)
+    refresh: function(res, options) {
+      options = options || {};
+      if (!this.rendered || options.partOfUpdate)
         return;
       
       var collection, modified;

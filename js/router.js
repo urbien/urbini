@@ -359,6 +359,7 @@ define([
           continue;
         
         Events.once('synced:' + uri, function(data) {
+          debugger;
           params[param] = data._uri;
           var updateHash = function() {
 //            debugger;
@@ -470,6 +471,14 @@ define([
       }
     },
     
+    _updateCache: function(oldUri, newUri) {
+      _.each([this.EditViews, this.Views, this.MkResourceViews], function(views) {
+        var cached = views[oldUri];
+        if (cached)
+          views[newUri] = cached;
+      });
+    },
+    
     view: function (path, edit) {
       if (!edit && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
@@ -523,23 +532,25 @@ define([
       var isTemp = newUri && U.isTempUri(newUri);
       var self = this;
       if (wasTemp) {
-        var updateHash = function() {
-          self.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
+        var updateHash = function(resource) {
+          self.navigate(U.makeMobileUrl(action, resource.getUri()), {trigger: false, replace: true});
         }
         
         if (isTemp || !newUri) {
-          Events.once('synced:' + uri, function() {
+          Events.once('synced:' + uri, function() {            
+            self._updateCache(uri, res.getUri());
             var currentView = self.currentView;    
             if (currentView && currentView.resource === res) {
-              newUri = res.getUri();
-              updateHash();
+              updateHash(res);
             }
             else
               Events.once('navigateToResource:' + res.resourceId, updateHash);
           });
         }
-        else
-          updateHash();
+        else {
+          self.updateCache(uri, newUri);
+          updateHash(res);
+        }
       }
 
       var options = this.getChangePageOptions();
@@ -558,9 +569,9 @@ define([
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
-        if (action === 'view')
-          views[uri] = v;
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+//        if (action === 'view')
+//          views[uri] = v;
         
         this.changePage(v);
         Events.trigger('navigateToResource:' + res.resourceId, res);
@@ -572,9 +583,9 @@ define([
       }
       
       var res = this.currentModel = new typeCl({_uri: uri, _query: query});
-      var v = new viewPageCl({model: res, source: this.previousFragment});
-      if (action === 'view')
-        views[uri] = v;
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
+//      if (action === 'view')
+//        views[uri] = v;
       
       var changedPage = false;
       var success = function() {
@@ -954,7 +965,7 @@ define([
         if (!this.backClicked  ||  lostHistory) {
           if (!view.rendered) {
             view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-            view.trigger('active', true);
+            view.trigger('active', true) && (activated = true);
             view.render();
           }
       
@@ -983,6 +994,9 @@ define([
 
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+      
+      if (!activated)
+        view.trigger('active', true);
       
       // perform transition        
       $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
