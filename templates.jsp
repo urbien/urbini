@@ -450,7 +450,7 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
+  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content">
     <h4 style="color: #aaa" id="loginMsg">{{= msg }}</h4>
     <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     
