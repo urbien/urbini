@@ -120,11 +120,11 @@ label.req::before {
 }
 
 .ui-body-c .ui-link {color: #757575;}
-
+/*
 .ui-body-c {
-  font-family: Tahoma, Lucida Grande, Verdana, Arial, Helvetica, sans-serif;
+  font-family: Tahoma, Lucida Grande, Verdana, Arial, Helvetica, sans-serif; 
 }
-
+*/
 label.error {
   color: red;
   font-size: 16px;
@@ -310,4 +310,19 @@ blockquote pre .script {
 }
 .ui-btn-icon-notext .ui-btn-inner {
   padding: 1px;
+}
+
+#sidebar .ui-li-static .ui-btn-up-c {
+  border: 0px;
+}
+#sidebar .ui-li-static .ui-li {
+  padding: 0;
+}
+
+#sidebar li.image_fitted {
+  border: 0px;
+  padding: 0;
+}
+#sidebar .ui-btn-inner {
+  white-space: normal;
 }

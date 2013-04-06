@@ -70,14 +70,16 @@ define([
     click: function(e) {
       var t = e.target;
       var text = t.innerHTML;
-      while (t && t.nodeName.toLowerCase() != 'a') {
+      while (t  &&  t.nodeName.toLowerCase() != 'a') {
+        if ($(t).attr("data-href"))
+          break;
         t = t.parentNode;
       }
       
       if (typeof t === 'undefined' || !t)
         return;
       text = U.removeHTML(text).trim();
-      var href = $(t).attr('href') || $(t).attr('link');
+      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
       var idx = href.lastIndexOf('#');
       var href = idx == -1 ? href : href.slice(idx + 1)
           

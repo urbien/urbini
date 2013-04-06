@@ -40,9 +40,11 @@ define([
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
+          this.$el.attr("class", "image_fitted ui-btn ui-li ui-li-has-thumb");
         }
-        else
+        else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
+        }
       }
       if (options.swatch) {
         this.$el.attr("data-theme", options.swatch);
@@ -51,6 +53,8 @@ define([
         this.$el.attr("data-icon", "false");
       else
         this.$el.attr("data-icon", "chevron-right");
+   
+   //      this.$el.attr("class", "image_fitted ui-btn ui-li-has-arrow ui-li ui-li-has-thumb ui-first-child ui-btn-up-c");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;

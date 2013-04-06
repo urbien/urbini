@@ -182,11 +182,12 @@
 <script type="text/template" id="listItemTemplate">
   <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
+  <div class="ui-btn-inner ui-li ui-li-has-thumb">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <a href="{{= U.makePageUrl(action, _uri) }}">
+    <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
@@ -195,9 +196,10 @@
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
-    /> 
+    class="ui-li-thumb" /></i> 
     {{= viewCols }}
-  </a>
+  </div>
+  </div>
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{ if (typeof price == 'object') { }} 
@@ -260,22 +262,32 @@
   {{ } }}
 </script>
 
-<script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : 'data-icon="chevron-right"'}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+<!--script type="text/template" id="menuItemTemplate">
+  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
       {{= title }}
     </a>
   </li>
+</script -->
+
+<script type="text/template" id="menuItemTemplate">
+  <!-- one item on the left-side slide-out menu panel -->
+  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  data-href="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
+    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= typeof image != 'undefined' ? 'margin-left:53px"' : 'margin-left:15px;' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
+      {{= title }}
+    </div>
+  </li>
 </script>
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : 'data-icon="chevron-right"'}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= pageUrl }}">
+  <li style="min-height:24px;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
+    <div style="font-size:16px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
-    </a>
+    </div>
   </li>
 </script>
 
@@ -520,15 +532,15 @@
     </div>
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -10px;" id="headerButtons">
-      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
-        {{ if (obj.forkMeApp) { }}
-            {{= forkMeApp }}
-        {{ } }}
-      </div>
-      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
+      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons">
+      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
+        {{ } }}
+      </div>
+      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
+        {{ if (obj.forkMeApp) { }}
+            {{= forkMeApp }}
         {{ } }}
       </div>
       <div style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
