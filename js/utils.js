@@ -984,6 +984,9 @@ define([
     },
     
     filterInequalities: function(params, vocModel) {
+      if (!_.size(params))
+        return params;
+      
       var query = $.param(params);
       var parsed = U.parseAPIQuery(query, '&');
       var filtered = {};
@@ -1627,12 +1630,14 @@ define([
       if (typeof val === 'undefined')
         val = {};
       else {
-        val = U.getTypedValue(res, p, val);
-        var dn = res.get(p + '.displayName');
+        var dn = val.displayName || res.get(p + '.displayName');
+        var value = val.value || val;
+        val = {
+          value: U.getTypedValue(res, p, value)
+        }
+          
         if (dn)
-          val = {value: val, displayName: dn};
-        else
-          val = {value: val};
+          val.displayName = dn;
       }
       
       var isEnum = propTemplate === 'enumPET';      

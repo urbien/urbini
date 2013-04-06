@@ -35,7 +35,7 @@ define([
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
 //      this.resource.set(init, {silent: true});
-      this.edited = {};
+//      this.edited = {};
       
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
@@ -47,7 +47,21 @@ define([
           defer.resolve();        
       }.bind(this));
       
-      this.ready = readyDfd.promise();      
+      this.ready = readyDfd.promise();
+      Events.on('pageChange', function(from, to) {
+        if (!this.isChildOf(from) || this.resource.isNew()) // don't autosave new resources, they have to hit submit on this one...or is that weird
+          return;
+        
+        var unsaved = this.resource.getUnsavedChanges();
+        if (_.size(unsaved))
+          this.resource.save();
+      }.bind(this));
+
+      Events.on('active', function(active) {
+        if (active)
+          this.canceled = false;
+      }.bind(this));
+      
       return this;
     },
     events: {
@@ -132,8 +146,9 @@ define([
             input: input
           };
 
-        
-          settings.__type = scrollerType;
+          scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+            return _.has(input.dataset, type);
+          });
 //          var scroller;
 //          if (scrollerType === 'enum') {
 //            var type = U.getLongUri1(prop.facet),
@@ -148,6 +163,7 @@ define([
           switch (scrollerType) {
             case 'date':
             case 'duration':
+              var isDate = scrollerType === 'date';
               scroller = $(input).mobiscroll()[scrollerType](settings);
               var val = input.value && parseInt(input.value);
               if (typeof val === 'number')
@@ -224,7 +240,7 @@ define([
           props[prop + '.displayName'] = innerHtml;
 //          this.resource.set(props, {skipValidation: true, skipRefresh: true});
           this.setValues(props, {skipValidation: true});
-          this.setResourceInputValue(link, innerHtml);
+//          this.setResourceInputValue(link, innerHtml);
         }
         
         else if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
@@ -283,7 +299,9 @@ define([
             }
           }
         }
-        this.router.navigate(hash, {trigger: true, replace: true});
+        
+        Events.trigger('back');
+//        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
       // set text
@@ -415,24 +433,18 @@ define([
     set: function(params) {
       _.extend(this, params);
     },
-//    resetResource: function() {
-//      this.resource.clear({silent: true, skipRefresh: true});
-//      this.resource.set(this.originalResource, {skipRefresh: true}); // can't use silent here if we want resource.changed to have the changed attributes later 
-//    },
     resetForm: function() {
       $('form').clearForm();      
-//      this.originalResource = this.resource.toJSON();
     },
-//    getInput: function(selector) {
-//      return this.$form.find('input').add('textarea').add('.resourceProp');
-//    },
     getInputs: function() {
-//      return this.$form.find('.formElement,.resourceProp');
       return this.$form.find('[data-formEl]');
     },
     getScrollers: function() {
-//      return _.uniq(this.$form.find('.i-txt').add(this.$form.find('select')));
       return this.$form.find('.i-txt');
+    },
+    isScroller: function(input) {
+      input = input instanceof $ ? input : $(input);
+      return input.hasClass('i-txt');
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -646,7 +658,24 @@ define([
     },
     
     getAtt: function(att) {
-      return _.has(this.edited, att) ? this.edited[att] : this.resource.get(att);
+//      var edits = res.getUnsavedChanges();
+      var result = {}, displayName;
+//      if (_.has(edits, att)) {
+//        result.value = edits[att];        
+//        displayName = edits[att + '.displayName'];
+//      }
+//      else {
+        result.value = this.resource.get(att);
+        displayName = U.getValueDisplayName(this.resource, att);
+//      }
+      
+      if (_.isUndefined(result.value))
+        return undefined;
+      
+      if (displayName)
+        result.displayName = displayName;
+      
+      return result;
     },
     
     getValue: function(input) {
@@ -685,7 +714,7 @@ define([
       if (!isEdit && uri) {
 //        this.incrementBLCount();
         debugger;
-        this.redirect({trigger: true, replace: true, forceFetch: true});
+        this.redirect({forceFetch: true});
         return;
       }
       
@@ -699,6 +728,7 @@ define([
           meta = vocModel.properties;
       
       var atts = {};
+      // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes
       for (var i = 0; i < inputs.length; i++) {
         var input = inputs[i];
         var name = input.name;
@@ -706,17 +736,21 @@ define([
           continue;
         
         val = this.getValue(input);
-        if (name.indexOf('_select') == -1  ||  !meta[name.substring(0, name.length - 7)].multiValue) {
-          atts[name] = val;
-          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
-        }
-        else {
+//        if (name.indexOf('_select') == -1  ||  !meta[name.substring(0, name.length - 7)].multiValue) {
+//          atts[name] = val;
+//          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
+//        }
+//        else {
+        if (name.indexOf('_select') != -1  &&  meta[name.substring(0, name.length - 7)].multiValue) {
           var v = atts[name];
           if (!v) {
             v = [];
             atts[name] = v;
           }
           v.push(val);
+        }
+        else if (input.dataset.code) {
+          atts[name] = $(input).data('codemirror').getValue();
         }
       }
       
@@ -730,7 +764,7 @@ define([
 //        var props = atts;
         if (isEdit && !_.size(props)) {
           debugger; // user didn't modify anything?
-          self.redirect({trigger: true, replace: true});
+          self.redirect();
           return;
         }
         
@@ -823,8 +857,6 @@ define([
           break;
       }
       
-//      this.resetResource();
-      res.lastFetchOrigin = 'edit';
       atts = U.mapObj(atts, function(att, val) {
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
       });
@@ -832,7 +864,7 @@ define([
       atts = _.extend({}, res.getUnsavedChanges(), atts);
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
-        this.setValues(atts, {skipValidation: true, userEdit: true});
+        this.setValues(atts, {skipValidation: true});
         onSuccess();
         self.getInputs().attr('disabled', false);
       }
@@ -841,6 +873,12 @@ define([
     },
     cancel: function(e) {
       Events.stopEvent(e);
+      if (this.action === 'edit') {
+        this.resource.clear();
+        this.resource.set(this.originalResource);
+      }
+        
+      this.canceled = true;
       Events.trigger('back');
     },
     refresh: function(data, options) {
@@ -858,10 +896,16 @@ define([
       this.render();
     },
     click: function(e) {
-      if (e.target.tagName === 'select') {
+      var from = e.target;
+      if (from.tagName === 'select') {
         Events.stopEvent(e);
         return;
       }
+//      var data = from.dataset;
+//      if (data.duration)
+//        Events.stopEvent(e) && this.scrollDuration(e);
+//      else if (data.date)
+//        Events.stopEvent(e) && this.scrollDate(e);
       
       return true;
 //      return Events.defaultClickHandler(e);
@@ -901,14 +945,28 @@ define([
 //      Events.stopEvent(e);
       this.setValues(atts, {onValidationError: this.fieldError});
     },
-    setValues: function(atts, options) {
+    setValues: function(key, val, options) {
+      var atts;
+      if (_.isObject(key)) {
+        atts = key;
+        options = val;
+      } else {
+        (atts = {})[key] = val;
+      }
+      
+      if (this.canceled)
+        return false;
+      
       options = options || {};
       var res = this.resource;
-      res.lastFetchOrigin = 'edit';
       var onValidated = options.onValidated;      
-      var set = res.set(atts, _.extend({validateAll: false, error: options.onValidationError, validated: options.onValidated, skipRefresh: true, userEdit: true}, options));
-      if (set)
-        _.extend(this.edited, _.pick(res.attributes, _.keys(atts)));
+      return res.set(atts, _.extend({
+        validateAll: false, 
+        error: options.onValidationError, 
+        validated: options.onValidated, 
+        skipRefresh: true, 
+        userEdit: true
+      }, options));
     },
     addProp: function(info) {
       var p = info.name;
@@ -1034,7 +1092,7 @@ define([
         }
         if (!editProps) {
           var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
-          var init = this.originalResource;
+          var init = this.originalResource; //_.extend({}, this.originalResource); //, res.getUnsavedChanges());
           for (var p in reqd) {
             p = p.trim();
             if (typeof init[p] !== 'undefined')
@@ -1088,27 +1146,33 @@ define([
       var doc = document;
       var form = this.$form = this.$('form');
       var inputs = this.getInputs(); //form.find('input');
-      var view = this;
       
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
-          var name = input.name;
-          var jin = $(input);
-          var jparent = jin.parent();
+          if (self.isScroller(input))
+            return;
+          
+          var $in = $(input);
+          var $parent = $in.parent();
           var validated = function() {
-            jparent.find('label.error').remove();
+            $parent.find('label.error').remove();
   //          i.focus();
           };
   
-          var onFocusout = function() {
-            var atts = {};
-            atts[this.name] = this.value;
-            self.setValues(atts, {onValidated: validated, onValidationError: self.fieldError});
-          };
+          var setValues = _.debounce(function() {
+            self.setValues(this.name, this.value, {onValidated: validated, onValidationError: self.fieldError});
+          }, 500);
           
-          jin.focusout(onFocusout);
+          $in.on('input', function() {
+            if ($(this).data('codemirror'))
+              return;
+            
+            setValues.apply(this, arguments);
+          });
+          
+          $in.focusout(setValues);
         });
-//        jin.keyup(onFocusout);
+//        $in.keyup(onFocusout);
       };
 
       initInputs(inputs);        
@@ -1116,25 +1180,44 @@ define([
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select').change(this.onSelected);
+      form.find('select').change(this.onSelected).each(function() {
+        var name = this.name;
+        if (res.get(name))
+          return;
+        
+        if (this.value)
+          self.setValues(name, this.value);
+      });
+      
       form.find("input").bind("keydown", function(event) {
         // track enter key
         var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
         if (keycode == 13) { // keycode for enter key
           // force the 'Enter Key' to implicitly click the Submit button
           Events.stopEvent(event);
-          form.submit();
+          var input = event.target;
+          var name = input.name;
+          var $in = $(input);
+          var $parent = $in.parent();
+          var validated = function() {
+            $parent.find('label.error').remove();
+          };
+  
+          var didSet = self.setValues(name, input.value, {onValidated: validated, onValidationError: self.fieldError});
+          if (didSet)
+            form.submit();
+          
           return false;
         } else  {
           return true;
         }
       }); // end of function
-      
+            
+      var edits = res.getUnsavedChanges();
       form.find('.resourceProp').each(function() {
-        var val = self.originalResource[this.name];
-        if (val)
-          self.setResourceInputValue(this, val);
-      });
+        var name = this.name;
+        this.setResourceInputValue(this, res.get(name) || this.value);
+      }.bind(this));
       
 //      if (_.size(displayedProps) === 1) {
 //        var prop = meta[U.getFirstProperty(displayedProps)];
@@ -1183,6 +1266,12 @@ define([
           viewportMargin: Infinity,
           tabSize: 2
         });
+        
+        // TODO: fix this so it can save changes as you type, but not lose focus
+        editor.on('change', _.debounce(function() {
+          var newVal = editor.getValue();
+          view.setValues(propName, newVal);
+        }, 500));
         
         var prop = meta[propName];
         var defaultText;

@@ -424,6 +424,11 @@
   </a>
 </script>
 
+<script type="text/template" id="rightMenuButtonTemplate">
+<!-- button that toggles the object properties panel -->
+<a target="#" href="#{{= viewId }}" data-icon="indent-right">Properties</a>
+</script>
+
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
   <a target="#" data-icon="signin">Sign In</a>

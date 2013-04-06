@@ -264,6 +264,7 @@ define([
         else if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
 //          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
 //          if (user == plugOwner)
+          if (!this.resource.isNew())
             this.testPlug = true;            
         }
         else {
@@ -289,7 +290,6 @@ define([
       else if (pBtn) {
         this.$('div#publishBtn').hide();
         var options = SPECIAL_BUTTONS.slice().remove('publish');
-        var settings = _.pick(this, options);
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
@@ -299,6 +299,8 @@ define([
           
           this.$('#{0}Btn'.format(option))[method]();
         }.bind(this));
+        
+        _.each()
       }
       
       var hash = window.location.hash;
@@ -398,22 +400,19 @@ define([
       this.$el.prevObject.attr('data-theme', G.theme.list);
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
-      if (btns.back)
-        frag.appendChild(btns.back.render().el);
-      if (btns.mapIt) {
-        this.isGeo = this.isGeo || _.any(this.collection.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))})
-        if (this.isGeo)
-          frag.appendChild(btns.mapIt.render().el);
-      }
-      
-      if (btns.add)
-        frag.appendChild(btns.add.render().el);
-      if (btns.aroundMe)
-        frag.appendChild(btns.aroundMe.render().el);
-      if (btns.menu)
-        frag.appendChild(btns.menu.render().el);
-      if (btns.login)
-        frag.appendChild(btns.login.render().el);
+      _.each(['menu', 'back', 'mapIt', 'aroundMe', 'add', 'login', 'rightMenu'], function(btnName) {
+        var btn = btns[btnName];
+        if (!btn)
+          return;
+        
+        if (btnName === 'mapIt') {
+          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
+          if (!this.isGeo)
+            return;
+        }
+         
+        frag.appendChild(btn.render().el);        
+      });      
       
       var $ul = this.$('#headerUl');
       $ul.html(frag);

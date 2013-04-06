@@ -120,7 +120,7 @@ define([
       else
         this.remove(resource);
       
-      this.add(resource);
+      this.add([resource]); // to make it act like multi-add, so it triggers an 'added' event
       this.trigger('replaced', resource, oldUri);
     },
     getNextPage: function(options) {

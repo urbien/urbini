@@ -50,6 +50,12 @@ define([
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
       Events.on('back', function() {
+        var now = +new Date();
+        if (self.lastBackClick && now - self.lastBackClick < 100)
+          debugger;
+          
+        self.lastBackClick = now;
+        self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
       });
@@ -902,7 +908,7 @@ define([
       }
 
       var activated = false;
-      var prev = this.previousView;
+      var prev = this.currentView;
       if (prev && prev !== view)
         prev.trigger('active', false);
       
@@ -911,14 +917,14 @@ define([
       var lostHistory = false;
       if (this.backClicked) {
         var currentView = this.currentView;
-        if (!(this.currentView instanceof Backbone.View))
+        if (currentView && !(this.currentView instanceof Backbone.View))
           debugger;
         if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
           this.currentView.clicked = false;
         
         this.currentView = this.viewsStack.pop();
         this.currentUrl = this.urlsStack.pop();
-        if (currentView === this.currentView) {
+        if (currentView && currentView === this.currentView) {
           debugger;
           G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
           Events.trigger('back');
@@ -948,9 +954,6 @@ define([
         if (!this.backClicked  ||  lostHistory) {
           if (!view.rendered) {
             view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-            if (prev && prev !== view)
-              prev.trigger('active', false);
-              
             view.trigger('active', true);
             view.render();
           }
@@ -982,14 +985,8 @@ define([
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
       // perform transition        
-//      if (this.previousView)
-//        this.previousView.active = false;
       $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
-      Events.trigger('changePage', view);
-//      if (this.backClicked)
-//        $(window).resize();
-//      if (this.backClicked == true) 
-//        previousView.remove();
+      Events.trigger('pageChange', prev, view);
       return view;
     }
   });

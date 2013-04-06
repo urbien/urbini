@@ -820,11 +820,12 @@ define('fileCache', function() {
     nukeAll: function(reload) {
       var ls = localStorage;
       ls && ls.clear && ls.clear();
-      if (G.ResourceManager)
-        G.ResourceManager.deleteDatabase();
-      
-      if (reload !== false)
-        window.location.reload();
+      if (G.ResourceManager) {
+        G.ResourceManager.deleteDatabase().done(function() {          
+          if (reload !== false)
+            window.location.reload();
+        });
+      }
     },
     showSpinner: function(options) {
       options = options || {};

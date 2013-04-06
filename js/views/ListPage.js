@@ -15,7 +15,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode', 'orientationchange');
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on('changePage', this.pageChanged);
+      Events.on('pageChange', this.pageChanged);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.TAG = "ListPage";
@@ -93,6 +93,7 @@ define([
         add: showAddButton,
         mapIt: isGeo,
         menu: true,
+        rightMenu: true,
         login: G.currentUser.guest
       };
 
@@ -153,7 +154,7 @@ define([
                                                         this.vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       if (isMasonry) {
         Events.stopEvent(e);
-        Events.trigger('refresh', {model: this.model, checked: checked});
+        Events.trigger('refresh', {model: this.model}); //, checked: checked});
       } 
     },
     submit: function(e) {
@@ -205,9 +206,9 @@ define([
 */
     },
     pageChanged: function(view) {
-      G.log(this.TAG, 'events', 'changePage');
-      this.visible = (this == view || this.listView == view);
-      this.listView && (this.listView.visible = this.visible);
+//      G.log(this.TAG, 'events', 'pageChanged');
+//      this.visible = (this == view || this.listView == view);
+//      this.listView && (this.listView.visible = this.visible);
     },
     home: function() {
       var here = window.location.href;
@@ -215,10 +216,8 @@ define([
       return this;
     },
     getNextPage: function() {
-      if (!this.visible)
-        return;
-      
-      this.listView && this.listView.getNextPage();
+      if (this.isActive())
+        this.listView && this.listView.getNextPage();
     },
   //  nextPage: function(e) {
   //    Events.trigger('nextPage', this.resource);    

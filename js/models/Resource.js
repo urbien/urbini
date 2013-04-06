@@ -67,7 +67,7 @@ define([
         }.bind(this));
       }
       
-      this.changesSinceSave = this.isNew() ? this.toJSON() : {};
+      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
     },
     
     setModel: function(vocModel, options) {
@@ -240,7 +240,27 @@ define([
     getUri: function() {
       return this.get('_uri');
     },
-    parse: function (resp) {
+    parse: function(resp) {
+      resp = this.parseHelper.call(this, resp);
+      if (resp) {
+        var meta = this.vocModel.properties;
+        var unsaved = this.getUnsavedChanges();
+        // don't overwrite changes the user has made but hasn't saved yet
+        if (_.size(unsaved) && this.lastFetchOrigin !== 'edit') {
+          _.each(resp, function(val, key) {
+            if (_.has(unsaved, key)) {
+              if (/^_/.test(key) || !meta[key])
+                 return;
+              
+              delete resp[key];
+            }
+          }.bind(this));
+        }
+      }
+      
+      return resp;
+    },
+    parseHelper: function (resp) {
       var lf;
       switch (this.lastFetchOrigin) {
         case 'db':
@@ -295,6 +315,11 @@ define([
       this.inlineLists = this.inlineLists || {};
       this.inlineLists[propName] = list;
       this.trigger('inlineList', propName);
+    },
+    
+    clear: function() {
+      this.unsavedChanges = {};
+      Backbone.Model.prototype.clear.apply(this, arguments);
     },
     
     set: function(key, val, options) {
@@ -368,10 +393,13 @@ define([
         }
       }
       
+      if (options.userEdit)
+        this.lastFetchOrigin = 'edit';
+        
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
         if (options.userEdit) {
-          _.extend(this.changesSinceSave, props);
+          _.extend(this.unsavedChanges, props);
 //          options.silent = options.silent !== false;
         }
         
@@ -601,14 +629,19 @@ define([
     },
     
     getUnsavedChanges: function() {
-      return _.clone(this.changesSinceSave);
+      return _.clone(this.unsavedChanges);
     },
     
     save: function(attrs, options) {
       this.loaded = true;
-      var isNew = this.isNew();
       options = _.extend({patch: true, silent: true}, options || {});
-      var data = attrs || options.data || this.attributes;
+      attrs = attrs || {};
+      var isNew = this.isNew();
+      if (isNew)
+        data = _.extend({}, this.attributes, attrs);
+      else
+        data = _.extend({}, this.getUnsavedChanges(), attrs);
+      
       this.clearErrors();
 //      if (!options.skipTypeBased) {
 //        if (!this.handleTypeBased(data, options)) // delayed execution
@@ -636,7 +669,7 @@ define([
         }
         
         Events.trigger('saved', this, options);
-        this.changesSinceSave = {};
+        this.unsavedChanges = {};
       }
       else {
         data = U.prepForSync(data, vocModel, ['parameter']);
@@ -660,7 +693,7 @@ define([
         options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
         var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
-          if (response.error)
+          if (response && response.error)
             return;
           
           // trigger this first because "success" may want to redirect to mkresource for some app-related model
@@ -687,9 +720,9 @@ define([
           
           Events.trigger('saved', self, options);
           
-          // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating changesSinceSave
+          // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
           if (!options.fromDB) 
-            this.changesSinceSave = {};
+            this.unsavedChanges = {};
         };
         
         options.error = function(originalModel, err, opts) {
