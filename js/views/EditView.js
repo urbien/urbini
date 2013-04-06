@@ -341,7 +341,7 @@ define([
         var mvList = (e.target.text || e.target.textContent).trim(); //e.target.innerText;
         mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
         params['$' + prop] = mvList;
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), params), {trigger: true});
+        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFromType), params), {trigger: true});
         return;
       }
       if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
