@@ -49,7 +49,8 @@ define([
       
       this.ready = readyDfd.promise();
       Events.on('pageChange', function(from, to) {
-        if (!this.isChildOf(from) || this.resource.isNew()) // don't autosave new resources, they have to hit submit on this one...or is that weird
+        // don't autosave new resources, they have to hit submit on this one...or is that weird
+        if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
           return;
         
         var unsaved = this.resource.getUnsavedChanges();
@@ -239,7 +240,7 @@ define([
           props[prop] = set;
           props[prop + '.displayName'] = innerHtml;
 //          this.resource.set(props, {skipValidation: true, skipRefresh: true});
-          this.setValues(props, {skipValidation: true});
+          this.setValues(props, {skipValidation: true, skipRefresh: false});
 //          this.setResourceInputValue(link, innerHtml);
         }
         
@@ -276,7 +277,7 @@ define([
           var resName = U.getDisplayName(chosenRes);
           if (resName)
             props[prop + '.displayName'] = resName;
-          this.setValues(props, {skipValidation: true});
+          this.setValues(props, {skipValidation: true, skipRefresh: false});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
           if (!dn)

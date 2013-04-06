@@ -754,6 +754,11 @@ define([
           sync: true, 
           fromDB: true,
           success: function(model, data, options) {
+            if (!data) { // probably it was canceled and deleted
+              dfd.resolve();
+              return;
+            }
+            
             if (!data._uri) {
               // TODO: handle errors
               debugger;
