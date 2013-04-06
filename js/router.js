@@ -548,7 +548,7 @@ define([
           });
         }
         else {
-          self.updateCache(uri, newUri);
+          self._updateCache(uri, newUri);
           updateHash(res);
         }
       }
