@@ -1532,8 +1532,11 @@ define([
             val = "<span style='color:" + cc + "'>" + val + "</span>";
         }
       }
-      else if (isDisplayName  &&  prop.range == 'string') {
-        val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
+      else if (prop.range == 'string') {
+        if (isDisplayName)
+          val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
+        else
+          val = "<span style='opacity:0.5;'>" + val + "</span>";
       }
       
       val = val || res.get(propName) || '';        
