@@ -26,7 +26,6 @@ define([
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
 
-      debugger;
       this.resource.on('change', this.refresh, this);
       this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
