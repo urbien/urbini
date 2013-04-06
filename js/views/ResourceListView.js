@@ -108,7 +108,8 @@ define([
     },
     
     refresh: function(modified, options) {
-      if (!this.rendered)
+      options = options || {};
+      if (!this.rendered || options.partOfUpdate)
         return;
       
       options = options || {};

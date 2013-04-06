@@ -1183,7 +1183,7 @@ define([
       
       form.find('select').change(this.onSelected).each(function() {
         var name = this.name;
-        if (res.get(name))
+        if (_.isUndefined(res.get(name)))
           return;
         
         if (this.value)
@@ -1217,7 +1217,11 @@ define([
       var edits = res.getUnsavedChanges();
       form.find('.resourceProp').each(function() {
         var name = this.name;
-        this.setResourceInputValue(this, res.get(name) || this.value);
+        var value = res.get(name);
+        if (_.isUndefined(value))
+          value = this.value;
+        
+        this.setResourceInputValue(this, value);
       }.bind(this));
       
 //      if (_.size(displayedProps) === 1) {

@@ -138,6 +138,16 @@ define([
                     if (inlineList.size()) {
                       res.setInlineList(name, inlineList);
                     }
+                    
+                    _.each(['updated', 'added', 'reset'], function(event) {
+                      self.stopListening(inlineList, event);
+                      self.listenTo(inlineList, event, function(resources) {
+                        resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+                        var options = {};
+                        options[event] = true;
+                        self.refresh(resources, options);
+                      });
+                    });
                   }
                 });
               }
