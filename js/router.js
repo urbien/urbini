@@ -23,6 +23,7 @@ define([
       ":type"                                                  : "list", 
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
+//      "views/*path"                                            : "views",
       "edit/*path"                                             : "edit", 
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
@@ -244,10 +245,13 @@ define([
         }),
 //        error: Errors.getDefaultErrorHandler()
         error: _.once(function(collection, xhr, opts) {
-          if (xhr.status === 204)
+          var code = xhr.status;
+          if (code === 204)
             self.changePage(listView);
           else {
-            Events.trigger('badList', list);
+            if (code == 400)
+              Events.trigger('badList', list);
+            
             Errors.getDefaultErrorHandler().apply(this, arguments);
           }
         })
@@ -339,7 +343,91 @@ define([
       var lPage = this.CollectionViews[tName] = new this.ListPage({model: tList});
       this.changePage(lPage);
     },
-    
+
+//    views: function(tName) {
+//      if (!this.ListPage)
+//        return this.loadViews('ListPage', this.views, arguments);
+//
+//      var cached = this.CollectionViews[tName];
+//      if (cached) {
+//        this.changePage(cached);
+//        return;
+//      }
+//        
+//      var previousView = this.currentView;
+//      if (!previousView) {
+//        var qIdx = tName.indexOf("?");
+//        if (qIdx >= 0) // these parameters are meant for the "views" route, not for the previous view 
+//          tName = tName.slice(0, qIdx);
+//        
+//        this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
+//        return;
+//      }
+//
+//      debugger;
+//      var descendants = previousView.getDescendants();
+//      var viewToTypes = {};
+//      _.each(descendants, function(d) {
+//        var views = d._views || [];
+//        var type = d.vocModel.type;
+//        if (views.length) {
+//          _.each(views, function(v) {
+//            var typeViews = viewToTypes[v] = viewToTypes[v] || [];
+//            U.pushUniq(typeViews, type);
+//          });
+//        }
+//      });
+//      
+//      var appViews = G.appViews;
+//      var views = [];
+//      if (appViews) {
+//        _.each(appViews.models, function(v) {
+//          var vName = v.get('viewName');
+//          var type = v.get('modelDavClassUri');
+//          var types = viewToTypes[tName] || [];
+//          var tIdx = types.indexOf(type);
+//          if (tIdx != -1) {
+//            types.splice(tIdx, 1);
+//            if (!types.length)
+//              delete viewToTypes[tName];
+//            
+//            views.push(v);
+//          }
+//        });
+//      }
+//      
+//      var currentAppUri = G.currentApp._uri;
+//      var modelUri = decodeURIComponent(tName);
+//      var idx = modelUri.indexOf('?');
+//      var sqlUri = '/' + G.sqlUri + '/';
+//      var idx0 = modelUri.indexOf(sqlUri);
+//      modelUri = idx0 == -1 ||  idx0 > idx ? modelUri.slice(0, idx) : 'http://' + modelUri.slice(idx0 + sqlUri.length, idx);
+//      if (modelUri === 'view/profile')
+//        modelUri = G.currentUser._uri;
+//      if (modelUri.indexOf('http://') == -1)
+//        modelUri = U.getModel(modelUri).type;
+//      var jsType = G.commonTypes.JS;
+//      var jsModel = U.getModel(jsType);
+//      var jsUriBase = G.sqlUrl + '/' + jsType.slice(7) + '?';
+//      _.each(viewToTypes, function(types, tName) {
+//        views.push(new jsModel({
+//          _uri:  jsUriBase + $.param({viewName: tName}),
+//          viewName: tName,
+//          forResource: currentAppUri,
+//          modelDavClassUri: modelUri
+//        }, {
+//          detached: true
+//        }));
+//      });
+//      
+//      var vList = new ResourceList(views, {params: {forResource: currentAppUri}});
+//      if (!G.appViews)
+//        G.appViews = vList;
+//      
+//      var lPage = this.CollectionViews[tName] = new this.ListPage({model: vList});
+//      this.changePage(lPage);
+//    },
+
     monitorCollection: function(collection) {
       var params = collection.params;
       if (!params)

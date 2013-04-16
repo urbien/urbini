@@ -377,13 +377,14 @@ h3#pageTitle {margin: 10px 0 10px 0;}
     background: radial-gradient(center center, circle cover, rgba(0,0,0,0), rgba(0,0,0,0.5));
 }
 
-#menuItems .ui-li-has-thumb {
+.menuItems .ui-li-has-thumb {
   padding-left: 0; 
   cursor: pointer;
 }
-#menuItems .ui-li-static.ui-li-has-thumb {
+
+.menuItems .ui-li-static.ui-li-has-thumb {
   min-height: 26px;
 }
-#menuItems .ui-li-static .ui-li {
+.menuItems .ui-li-static .ui-li {
   padding: .7em 0px 0 0px;
 }

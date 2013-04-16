@@ -297,7 +297,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 					  throw e;
 					}
 					
-					return {
+					var indexWrapper = {
 						"each": function(callback, range, direction){
 					  debugger;
 							return wrap.cursor(function(){
@@ -355,14 +355,16 @@ define(['globals', 'indexedDBShim'], function(G) {
 						    });
 						  }).promise();
 						}
-//						,
-//            "getAll": function(callback, range, direction){
-//						  return this._getAll.apply(this, arguments);
-//						},
+						,
+            "getAll": function(callback, range, direction){
+						  return indexWrapper._getAll.apply(this, arguments);
+						}
 //            "getAllKeys": function(callback, range, direction){
 //              return this._getAll.apply(this, [callback, range, direction, true]);
 //            }
 					};
+					
+					return indexWrapper;
 				}
 			};
 			

@@ -109,7 +109,7 @@ define([
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
-      var backlinks = U.getPropertiesWith(meta, "backLink");
+      var backlinks = U.getBacklinks(meta);
       var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
       if (displayInline) {
         res.off('inlineList', this.refresh);

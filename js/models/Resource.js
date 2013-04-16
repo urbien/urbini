@@ -177,24 +177,24 @@ define([
       this.trigger('syncedWithServer');
     },
     cancel: function(options) {
+      options = options || {};
       var props = this.vocModel.properties;
       var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled');
       if (!canceled.length)
         throw new Error("{0} can not be canceled because it does not have a 'canceled' property".format(U.getDisplayName(this)));
       
-      canceled = canceled[0];
-      var props = {};
-      props[canceled] = true;
+      this.set(canceled[0], true, {userEdit: true});
       var self = this;
 //      this.save(props, options);
       var success = options.success;
       options.success = function(resource, response, options) {
-        success && success.apply(this, arguments);
-        if (!response.error)          
+        if (!response || !response.error)          
           this.trigger('cancel');
+        
+        success && success.apply(this, arguments);
       }.bind(this);
 
-      this.save(props, options);
+      this.save(null, options);
     },
     onchange: function(e) {
 //      Events.trigger('newResource', this);
@@ -205,6 +205,10 @@ define([
     },
     remove: function() {
       this.collection && this.collection.remove(this);
+    },
+    'delete': function() {
+      Events.trigger('delete', this);
+      this.remove();
     },
     url: function() {
       var uri = this.getUri();

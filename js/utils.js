@@ -1093,6 +1093,16 @@ define([
       return returnArray ? _.toArray(filtered) : filtered;
     },
     
+    getBacklinks: function(meta, returnArray) {
+      return U.getPropertiesWith(meta, "backLink", returnArray);
+    },
+    
+    areQueriesEqual: function(q1, q2) {
+      var p1 = U.getParamMap(q1);
+      var p2 = U.getParamMap(q2);
+      return _.isEqual(p1, p2);
+    },
+    
     getDisplayNameProps: function(meta) {
       var keys = [];
       for (var p in meta) {
@@ -1357,11 +1367,11 @@ define([
     },
 
     getInlineResourceModel: function(type) {
-      return C.shortNameToInline[type] || C.typeToInline[type];      
+      return C.shortNameToInline[type] || C.typeToInline[type] || C.typeToInline[U.getTypeUri(type)];      
     },
 
     getEnumModel: function(type) {
-      return C.shortNameToEnum[type] || C.typeToEnum[type];      
+      return C.shortNameToEnum[type] || C.typeToEnum[type] || C.typeToEnum[U.getTypeUri(type)];      
     },
     
     getModel: function() {

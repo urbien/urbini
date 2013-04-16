@@ -41,7 +41,7 @@ define([
         back: true,
         aroundMe: isGeo,
         menu: true,
-        rightMenu: true,
+        rightMenu: !G.currentUser.guest,
         login: G.currentUser.guest
       };
 

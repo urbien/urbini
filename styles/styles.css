@@ -50,7 +50,7 @@ label.req::before {
 #resourceViewHolder .ui-icon {
   background: none;
 }
-#menuItems .ui-icon {
+.menuItems .ui-icon {
   background: none;
 }
 .resourceProp {font-weight: normal}

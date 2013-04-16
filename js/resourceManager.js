@@ -395,7 +395,7 @@ define([
     },
     
     defaultOptions: {keyPath: prepPropNameForDB('_uri'), autoIncrement: false},
-    DB_NAME: "lablz",
+    DB_NAME: G.serverName,
     runTask: function() {
       return this.taskQueue.runTask.apply(this.taskQueue, arguments);
     },
@@ -678,7 +678,7 @@ define([
           }
           
           G.log(RM.TAG, "db", 'Starting addItems Transaction');
-          RM.$db.transaction(classUri, 1).promise().done(function() {
+          RM.$db.transaction(classUri, 1).done(function() {
             G.log(RM.TAG, "db", 'Transaction completed, all data inserted');
             dfd.resolve();
           }).fail(function(err, e){
@@ -729,7 +729,7 @@ define([
           }).fail(function() {
             debugger;
             defer.reject();
-            RM.sync();
+            setTimeout(RM.sync, 2000);
           });            
         }).fail(function(error, event) {
           debugger;
@@ -1114,22 +1114,31 @@ define([
       }).promise();
     },
 
-    deleteItem: function(uri) {
+    deleteItem: function(item) {
       G.log(RM.TAG, 'db', 'deleting item', uri);
 //      var type = U.getClassName(item._uri);
 //      var name = U.getClassName(type);
-      var type = item._uri || item.vocModel.type;
-      var trans = RM.db.transaction([type], 1);
-      var store = trans.objectStore(type);
-      var request = store["delete"](uri);
-    
-      request.onsuccess = function(e) {
-        G.log(RM.TAG, 'db', 'delete item onsuccess');
-      };
-    
-      request.onerror = function(e) {
-        G.log(RM.TAG, ['error', 'db'], "Error Deleting: ", e);
-      };
+      var type = item.vocModel.type;
+      var uri = item.get('_uri');
+      RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
+        // deleted;
+      }).progress(function(trans) {
+        trans.objectStore(type)['delete'](uri).done(function() {
+          G.log(RM.TAG, 'db', 'deleted', uri);
+        });
+        
+        var refStore = trans.objectStore(REF_STORE.name);
+        RM.Index('_uri').eq(uri).getAll(refStore).done(function(results) {
+          if (results.length) {
+            results = parse(results);
+            _.each(results, function(res) {
+              refStore['delete'](res._id).done(function() {
+                G.log(RM.TAG, 'db', 'deleted from ref store', uri);                
+              });
+            });
+          }
+        });
+      });
     },
     
     buildOrQuery: function(orClause, vocModel, indexNames) {
@@ -1694,5 +1703,9 @@ define([
     }, settings);
   });
   
+  Events.on('delete', function(res) {
+    RM.deleteItem(res);
+  });
+
   return (Lablz.ResourceManager = ResourceManager);
 });

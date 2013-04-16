@@ -7,6 +7,7 @@
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
@@ -33,14 +34,17 @@
   
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <!-- nextPage button removed after endless page introduction -->
-     <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
+     <!-- "Next" button removed after endless page introduction -->
+     {{ if (this.collection.length > this.collection.perPage) { }}
+       <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
+     {{ }                                                       }}
   </div>
 </script>  
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-{{= G.theme.list }}" style="width: 100%;padding-right:10px">
@@ -71,7 +75,13 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems">
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems" class="menuItems">
+  </ul>
+</script>  
+
+<script type="text/template" id="rightMenuP">
+  <!-- Right-side slide-out menu panel -->
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
   </ul>
 </script>  
 
@@ -264,9 +274,9 @@
 
   <!-- one item on the left-side slide-out menu panel -->
 <!--script type="text/template" id="menuItemTemplate">
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
+  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <a {{= obj.image ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
       {{= title }}
     </a>
   </li>
@@ -274,11 +284,24 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  data-href="{{= typeof mobileUrl !== 'undefined' ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
-    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= typeof image != 'undefined' ? 'margin-left:53px"' : 'margin-left:15px;' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
+  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+      {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
+      
+    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <div class="ui-btn-text" style="float:left; min-height:24px;font-size:16px; {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
+      {{ if (obj.data) {                              }}
+      {{   for (var d in data) {                      }}
+      {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
+      {{   }                                          }}
+      {{ }                                            }}
+    >
+    
       {{= title }}
     </div>
+    
+    {{ if (obj.icon) { }}
+      <i class="ui-icon-{{= icon }}" style="float:right; font-size: 20px;"></i>
+    {{ }               }}
   </li>
 </script>
 
@@ -293,7 +316,7 @@
 
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
-  <li {{= typeof icon != 'undefined' ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
     <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id == 'undefined' ? 'home123' : id }}" target="#">
       {{= title }}
@@ -425,8 +448,8 @@
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
-<!-- button that toggles the object properties panel -->
-<a target="#" href="#{{= viewId }}" data-icon="indent-right">Properties</a>
+  <!-- button that toggles the object properties panel -->
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">Properties</a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">

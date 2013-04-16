@@ -188,7 +188,37 @@ define('app', [
           else
             templatesDfd.resolve();
         }; 
-  
+
+        var viewsDfd = $.Deferred();
+        var getViews = function() {
+          var jsType = G.commonTypes.JS;
+          var jsModel = U.getModel(jsType);
+          var viewsBl = G.currentApp.views;
+          if (viewsBl && viewsBl.count) {
+            var viewsRL = G.appViews = new ResourceList(null, {
+              model: jsModel,
+              params: {
+                forResource: G.currentApp._uri
+              }
+            });
+            
+            viewsRL.fetch({
+              success: function() {
+                viewsRL.each(function(view) {
+                  debugger;
+                });
+                
+                viewsDfd.resolve();
+              },
+              error: function() {
+                viewsDfd.resolve();
+              }
+            });
+          }
+          else
+            viewsDfd.resolve();
+        }; 
+
         App.setupWorkers();
         App.setupCleaner();
         loadModels();
@@ -199,8 +229,12 @@ define('app', [
         Voc.checkUser();
         Voc.loadEnums();
         var waitTime = 50;
-        dbDfd.done(getTemplates);
-        templatesDfd.done(defer.resolve); // the last item on the menu
+        dbDfd.done(function() {
+          getTemplates();
+          getViews();
+        });
+        
+        $.when(viewsDfd, templatesDfd).then(defer.resolve); // the last item on the menu
       }).promise();
     },
     
@@ -274,7 +308,32 @@ define('app', [
 //        Voc.initPlugs(type);
 //      }
       
+      this.getGrabs();
       RM.sync();
+    },
+    
+    getGrabs: function() {
+      if (G.currentUser.guest)
+        return;
+      
+      var grabType = G.commonTypes.Grab;
+      Voc.getModels(grabType).done(function() {          
+        var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
+          model: U.getModel(grabType),
+          params: {
+            submittedBy: G.currentUser._uri
+          }
+        });
+        
+        grabsRL.fetch({
+          success: function() {
+//            debugger;
+          },
+          error: function() {
+//            debugger;
+          }
+        });
+      });
     },
     
     setupLoginLogout: function() {

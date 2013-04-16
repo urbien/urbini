@@ -23,10 +23,10 @@ define([
     },
     menu: function(e) {
       Events.stopEvent(e);
-//      U.require('views/RightMenuPanel', function(RightMenuPanel) {
-//        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model});
-//        menuPanel.render();        
-//      }, this);
+      U.require('views/RightMenuPanel', function(RightMenuPanel) {
+        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model});
+        menuPanel.render();        
+      }, this);
 
       return this;
     },

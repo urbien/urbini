@@ -925,6 +925,7 @@ define('fileCache', function() {
       Jst: 'system/designer/Jst',
       JS: 'system/designer/JS',
       Css: 'system/designer/Css',
+      Grab: 'model/social/Grab',
       AppInstall: 'model/social/AppInstall'
     },
     timeOffset: G.localTime - G.serverTime,

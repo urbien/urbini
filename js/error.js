@@ -26,9 +26,12 @@ define([
             
             return;
           case 401: 
-            Events.trigger('back');
+//            Events.trigger('back');
             G.log(Errors.TAG, 'error', 'requesting user-login');
-            Events.trigger('req-login', G.currentUser.guest ? Errors.login : Errors.unauthorized);
+            Events.trigger('req-login', {onDismiss: function() {
+              Events.trigger('back');
+            }});
+            
             return;
           case 404:
             Events.trigger('back');
