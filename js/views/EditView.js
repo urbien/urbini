@@ -27,7 +27,6 @@ define([
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
 
       this.resource.on('change', this.refresh, this);
-      this.TAG = 'EditView';
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
       
@@ -63,6 +62,7 @@ define([
           this.canceled = false;
       }.bind(this));
       
+      this.autoFinish = false;
       return this;
     },
     events: {
@@ -946,6 +946,7 @@ define([
 //      Events.stopEvent(e);
       this.setValues(atts, {onValidationError: this.fieldError});
     },
+    
     setValues: function(key, val, options) {
       var atts;
       if (_.isObject(key)) {
@@ -961,13 +962,18 @@ define([
       options = options || {};
       var res = this.resource;
       var onValidated = options.onValidated;      
-      return res.set(atts, _.extend({
-        validateAll: false, 
-        error: options.onValidationError, 
-        validated: options.onValidated, 
+      var onInvalid = options.onValidationError;
+      if (onInvalid)
+        res.once('invalid', onInvalid);
+      
+      var set = res.set(atts, _.extend({
+        validate: true,
         skipRefresh: true, 
         userEdit: true
       }, options));
+      
+      if (set)
+        onValidated && onValidated();        
     },
     addProp: function(info) {
       var p = info.name;
@@ -1022,6 +1028,7 @@ define([
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
+        this.finish();
       }.bind(this));
     },
     renderHelper: function(options) {

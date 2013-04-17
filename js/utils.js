@@ -99,6 +99,10 @@ define([
         G.loadBundle(newModNames, function() {
           require(newModFullNames, function() {
             for (var i = 0; i < newModNames.length; i++) {
+//              var name = newModNames[i];
+//              var module = arguments[i];
+//              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
+//              C.modCache[name].resolve(module);
               C.modCache[newModNames[i]].resolve(arguments[i]);
             }
           });

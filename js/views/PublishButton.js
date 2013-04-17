@@ -10,7 +10,6 @@ define([
 ], function(G, _, U, Events, Voc, BasicView, C) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
   return BasicView.extend({
-    TAG: 'PublishButton',
     template: 'publishBtnTemplate',
 //    events: {
 //      'click #publish': 'publish',
@@ -213,5 +212,8 @@ define([
       
       return this;
     }
+  },
+  {
+    displayName: 'PublishButton'
   });
 });

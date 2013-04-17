@@ -5,7 +5,7 @@ define([
   'views/BasicView' 
 ], function(Events, ToggleButton, BasicView) {
   return ToggleButton.extend({
-    TAG: 'MapItButton',
+    TAG: 'AroundMeButton',
     template: 'mapItButtonTemplate',
     tagName: 'li',
     id: 'mapIt',
@@ -24,5 +24,8 @@ define([
       this.resetStyle();
       return this;
     }
+  },
+  {
+    displayName: 'MapItButton'
   });
 });

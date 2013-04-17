@@ -18,7 +18,6 @@ define([
       Events.on('pageChange', this.pageChanged);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
-      this.TAG = "ListPage";
       this.viewId = options.viewId;
       
       var rl = this.collection;
@@ -261,8 +260,6 @@ define([
     },
     
     render: function() {
-      G.log(this.TAG, 'render');  
-
       var json = this.json;
       this.$el.html(this.template(json));
       var views = {

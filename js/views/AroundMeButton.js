@@ -91,5 +91,8 @@ define([
          break;  
       }
     }
+  },
+  {
+    displayName: 'AroundMeButton'
   });
 });

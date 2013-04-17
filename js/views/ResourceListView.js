@@ -11,7 +11,6 @@ define([
   'collections/ResourceList'
 ], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
   var RLV = BasicView.extend({
-    TAG: "ResourceListView",
     displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
@@ -30,7 +29,6 @@ define([
 //      this.collection.on('refresh', this.refresh);
 //      this.collection.on('add', this.add, this);
 //      this.options = _.pick(options, 'checked', 'props') || {};
-      this.TAG = 'ResourceListView';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       this.makeTemplate('fileUpload', 'fileUploadTemplate', this.vocModel.type);
       var commonTypes = G.commonTypes;
@@ -109,7 +107,7 @@ define([
     
     refresh: function(modified, options) {
       options = options || {};
-      if (!this.rendered || options.partOfUpdate)
+      if (options.partOfUpdate)
         return;
       
       options = options || {};
@@ -621,7 +619,7 @@ define([
       return this.$el.hasClass('masonry');
     }
   }, {
-    displayName: 'EditView'
+    displayName: 'ResourceListView'
   });
   
   return RLV;

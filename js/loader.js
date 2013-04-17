@@ -1048,7 +1048,7 @@ define('fileCache', function() {
   
     trace: {
       ON: true,
-      DEFAULT: {on: false},
+      DEFAULT: {on: true},
       types : {
         error: {
           on: true,
@@ -1060,18 +1060,23 @@ define('fileCache', function() {
           color: '#FF88FF',
           bg: '#000'
         },
+        xhr: {
+          on: false,
+          color: '#2288FF',
+          bg: '#000'
+        },
         tasks: {
           on: false,
           color: '#88FFFF',
           bg: '#000'
         },
         db: {
-          on: true,
+          on: false,
           color: '#FFFFFF',
           bg: '#000'
         },
         render: {
-          on: false,
+          on: true,
           color: '#AA00FF',
           bg: '#DDD'
         },
@@ -1495,6 +1500,10 @@ define('fileCache', function() {
         jqueryMasonry: 'lib/jquery.masonry'
       },
       shim: {
+        backbone: {
+          deps: ['underscore'],
+          exports: 'Backbone'
+        },
         leafletMarkerCluster: ['leaflet'],
         jqueryMasonry: ['jquery'],
         jqueryImagesloaded: ['jquery'],

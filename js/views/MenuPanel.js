@@ -10,7 +10,6 @@ define([
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    TAG: 'MenuPanel',
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);

@@ -8,7 +8,6 @@ define([
 ], function(G, _, U, Events, BasicView) {
   var MenuPanel;
   return BasicView.extend({
-    TAG: 'MenuButton',
     tagName: 'li',
     id: '#menuBtn',
     templateName: 'menuButtonTemplate',
@@ -40,5 +39,8 @@ define([
       this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
       return this;
     }
+  },
+  {
+    displayName: 'MenuButton'
   });
 });

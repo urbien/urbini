@@ -7,7 +7,6 @@ define([
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
-    TAG: 'RightMenuButton',
     tagName: 'li',
     id: '#rightMenuBtn',
     templateName: 'rightMenuButtonTemplate',
@@ -39,5 +38,8 @@ define([
       this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
       return this;
     }
+  },
+  {
+    displayName: 'RightMenuButton'
   });
 });

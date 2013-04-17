@@ -18,7 +18,6 @@ define([
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
       this.router = G.Router || Backbone.history;
-      this.TAG = 'MenuPage';
       Events.on("mapReady", this.showMapButton);
     },
     tabs: {},

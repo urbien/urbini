@@ -17,7 +17,6 @@ define([
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
-    TAG: 'Header',
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList');
@@ -88,6 +87,7 @@ define([
         Events.off(event, handler);
         Events.on(event, handler);
       }.bind(this));
+      
       this.autoFinish = false;
       return this;
     },
@@ -208,9 +208,6 @@ define([
     
     refresh: function() {
       this.refreshTitle();
-      if (!this.rendered)
-        return this;
-      
       this.calcSpecialButtons();
       this.renderSpecialButtons();
       this.error = null;
@@ -222,6 +219,7 @@ define([
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
+        this.finish();
       }.bind(this)); 
     },
     
@@ -411,7 +409,7 @@ define([
             return;
         }
          
-        frag.appendChild(btn.render().el);        
+        frag.appendChild(btn.render({force: true}).el);        
       });      
       
       var $ul = this.$('#headerUl');
@@ -432,5 +430,8 @@ define([
       this.finish();
       return this;
     }
+  },
+  {
+    displayName: 'Header'
   });
 });

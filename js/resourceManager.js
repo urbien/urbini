@@ -1533,7 +1533,7 @@ define([
         }
       }
       
-      var taskOptions = {name: 'Get Items: ' + (data.getUrl || data.url)()};
+      var taskOptions = {name: 'Get Items: ' + data.getUrl()};
       if (!isCollection)
         return RM.runTask(queryWithIndex, taskOptions);
       

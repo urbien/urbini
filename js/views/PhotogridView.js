@@ -17,7 +17,6 @@ define([
   };
   
   return BasicView.extend({
-    TAG: "PhotogridView",
     initialize: function(options) {
       _.bindAll(this, 'render', 'finalize', 'goToIntersection', 'resize'); // fixes loss of context for 'this' within methods
       options = options || {};
@@ -513,5 +512,8 @@ define([
       
       return ' '; // non-empty to get the nice overlay          
     }
+  },
+  {
+    displayName: 'PhotogridView'
   });
 });

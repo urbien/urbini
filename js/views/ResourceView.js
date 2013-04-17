@@ -24,7 +24,6 @@ define([
       }.bind(this));
       
       this.resource.on('change', this.refresh, this);
-      this.TAG = 'ResourceView';
       var uri = this.resource.getUri(), self = this;
 //      if (U.isTempUri(uri)) {
 //        Events.once('synced:' + uri, function(data) {
@@ -48,6 +47,7 @@ define([
           defer.resolve();
       }.bind(this));
       
+      this.autoFinish = false;
       this.ready = readyDfd.promise();      
       return this;
     },
@@ -84,6 +84,7 @@ define([
       
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
+        this.finish();
       }.bind(this));
     },
     

@@ -22,7 +22,6 @@ define([
       this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', this.vocModel.type);
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', this.vocModel.type);
       this.resource.on('change', this.refresh, this);
-      this.TAG = 'ControlPanel';
       this.isMainGroup = options.isMainGroup;
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
@@ -58,7 +57,7 @@ define([
     
     refresh: function(res, options) {
       options = options || {};
-      if (!this.rendered || options.partOfUpdate)
+      if (options.partOfUpdate)
         return;
       
       var collection, modified;
@@ -112,8 +111,8 @@ define([
       var backlinks = U.getBacklinks(meta);
       var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
       if (displayInline) {
-        res.off('inlineList', this.refresh);
-        res.on('inlineList', this.refresh);
+        res.off('inlineList', this.refreshOrRender, this);
+        res.on('inlineList', this.refreshOrRender, this);
         if (_.size(res.inlineLists)) {
           // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...
         }
@@ -135,9 +134,9 @@ define([
                 inlineList = new ResourceList(null, {model: U.getModel(type), params: params});
                 inlineList.fetch({
                   success: function() {
-                    if (inlineList.size()) {
-                      res.setInlineList(name, inlineList);
-                    }
+//                    if (inlineList.size()) {
+//                      res.setInlineList(name, inlineList);
+//                    }
                     
                     _.each(['updated', 'added', 'reset'], function(event) {
                       self.stopListening(inlineList, event);
@@ -190,8 +189,8 @@ define([
           list.each(function(iRes) {
             U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment, _problematic: iRes.get('_error') }));
             displayedProps[name] = true;
-            iRes.off('change', this.refresh, this);
-            iRes.on('change', this.refresh, this);
+            iRes.off('change', this.refreshOrRender, this);
+            iRes.on('change', this.refreshOrRender, this);
           }.bind(this));
         }.bind(this));
       }
@@ -382,5 +381,7 @@ define([
       
       return this;
     }
+  }, {
+    displayName: 'ControlPanel'
   });
 });

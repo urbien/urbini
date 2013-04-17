@@ -13,7 +13,6 @@ define([
 //      'MarkerCluster.Default.css'
 //    ],
 //    cssListeners: [],
-    TAG: 'MapView',
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
@@ -281,6 +280,9 @@ define([
       
       return depth;
     }
+  },
+  {
+    displayName: 'MapView'
   });
   
   return MapView;

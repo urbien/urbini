@@ -50,34 +50,34 @@ define('app', [
     }
   };  
   
-  /* Backbone.validateAll.js - v0.1.0 - 2012-08-29
-  * http://www.gregfranko.com/Backbone.validateAll.js/
-  * Copyright (c) 2012 Greg Franko; Licensed MIT */
-  Backbone.Model.prototype._validate = function(attrs, options) {
-    options = options || {};
-    if (options.silent || options.skipValidation || !this.validate) {
-      return true;
-    }
-    
-    if (options.validateAll !== false) {
-      attrs = _.extend({}, this.attributes, attrs);
-    }
-    
-    var error = this.validate(attrs, options);
-    if (!error) {
-      if (options.validated)
-        options.validated(this, options);
-      
-      return true;
-    }
-    if (options && options.error) {
-      options.error(this, error, options);
-    } else {
-      this.trigger('error', this, error, options);
-    }
-    
-    return false;
-  };
+//  /* Backbone.validateAll.js - v0.1.0 - 2012-08-29
+//  * http://www.gregfranko.com/Backbone.validateAll.js/
+//  * Copyright (c) 2012 Greg Franko; Licensed MIT */
+//  Backbone.Model.prototype._validate = function(attrs, options) {
+//    options = options || {};
+//    if (options.silent || options.skipValidation || !this.validate) {
+//      return true;
+//    }
+//    
+//    if (options.validateAll !== false) {
+//      attrs = _.extend({}, this.attributes, attrs);
+//    }
+//    
+//    var error = this.validate(attrs, options);
+//    if (!error) {
+//      if (options.validated)
+//        options.validated(this, options);
+//      
+//      return true;
+//    }
+//    if (options && options.error) {
+//      options.error(this, error, options);
+//    } else {
+//      this.trigger('error', this, error, options);
+//    }
+//    
+//    return false;
+//  };
 
   function extendMetadataKeys() {
     var extended = {};

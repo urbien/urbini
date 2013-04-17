@@ -10,7 +10,6 @@ define([
   'vocManager'
 ], function(G, $, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
-    TAG: 'ResourceListItemView',
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
@@ -575,6 +574,9 @@ define([
       return this;
     }
 
+  },
+  {
+    displayName: 'ResourceListItemView'
   });  
   
   return RLIV;

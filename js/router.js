@@ -144,7 +144,16 @@ define([
         this.previousView = currentView;
       }
     },
-    
+
+    /**
+     * Backbone 1.0 decodes parameters, which confuses our routes, as we have fragments such as
+     * #view/http%3A%2F%2Fmark.obval.com%2Furbien%2Fsql%2Furbien.com%2Fvoc%2Fdev%2FGym%2FRun%3Fid%3D32044?$minify=n
+     * which when decoded would have two question marks
+     */
+    _extractParameters: function(route, fragment) {
+      return route.exec(fragment).slice(1);
+    },
+
     home: function() {
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();

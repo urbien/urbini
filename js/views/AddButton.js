@@ -7,7 +7,6 @@ define([
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
-    TAG: 'AddButton',
     template: 'addButtonTemplate',
     tagName: 'li',
     id: '#addBtn',
@@ -41,5 +40,8 @@ define([
       
       return this;
     }
+  },
+  {
+    displayName: 'AddButton'
   });
 });

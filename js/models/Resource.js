@@ -25,7 +25,7 @@ define([
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsynced', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsynced', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -54,7 +54,7 @@ define([
       if (this.getUri() && !options.silent)
         Events.trigger('newResource', this);
       else if (this.vocModel.type === commonTypes.Jst) {
-        Events.trigger('newTemplate', this);        
+        Events.trigger('newTemplate', this);
       }
       
       if (commonTypes.App == this.type) {
@@ -167,6 +167,7 @@ define([
         this.setModel(newModel);
       
       this.set(data);
+      this.url = this.getUrl();
       if (this.collection) {
         if (oldUri)
           this.trigger('replaced', this, oldUri);
@@ -210,7 +211,7 @@ define([
       Events.trigger('delete', this);
       this.remove();
     },
-    url: function() {
+    getUrl: function() {
       var uri = this.getUri();
       var type = this.vocModel.type;
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
@@ -245,6 +246,9 @@ define([
       return this.get('_uri');
     },
     parse: function(resp) {
+      if (!this.vocModel)
+        this.setModel();
+      
       resp = this.parseHelper.call(this, resp);
       if (resp) {
         var meta = this.vocModel.properties;
@@ -504,7 +508,7 @@ define([
       var self = this;
       options = options || {};
       options.error = options.error || Error.getDefaultErrorHandler();
-      options.url = this.url();
+      options.url = this.getUrl();
       return Backbone.Model.prototype.fetch.call(this, options);
     },
     
@@ -596,6 +600,8 @@ define([
           
           if (!list.get(resUri)) {
             list.add(res);
+            blVal._list = blVal._list || [];
+            blVal._list.push(res);
           }
         }
           
@@ -816,8 +822,7 @@ define([
       davGetLastModified: {range: "long"},
       _uri: {range: "Resource"},
       _shortUri: {range: "Resource"}
-    },
-    displayName: 'Resource'
+    }
   });
   
   return Resource;

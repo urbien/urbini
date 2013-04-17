@@ -7,7 +7,6 @@ define([
 ], function(G, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
   var ResourceList = Backbone.Collection.extend({
-    TAG: "ResourceList",
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -306,7 +305,7 @@ define([
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.models.length;
-        Backbone.Collection.prototype.update.call(this, resources, options);
+        Backbone.Collection.prototype.set.call(this, resources, options);
         return;
       }
 

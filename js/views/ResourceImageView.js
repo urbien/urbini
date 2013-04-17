@@ -8,7 +8,6 @@ define([
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
-    TAG: "ResourceImageView",
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -131,5 +130,8 @@ define([
       this.$el.html(frag);
       return this;
     }
+  },
+  {
+    displayName: 'ResourceImageView'
   });
 });

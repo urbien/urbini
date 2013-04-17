@@ -11,7 +11,6 @@ define([
   };
   
   return BasicView.extend({
-    TAG: 'RightMenuPanel',
     initialize: function(options) {
       _.bindAll(this, 'render', 'grab', 'release');
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -288,34 +287,34 @@ define([
         }));
       }
       
-      var backlinks = U.getBacklinks(meta);
-      for (var bl in backlinks) {
-        var blProp = backlinks[bl];
-        var backlink = blProp.backLink;
-        var qParams = {};
-        qParams[backlink] = uri;
-        var propName = U.getPropDisplayName(blProp);
-        var grab = {
-          grabClass: U.getTypeUri(blProp.range),
-          filter: $.param(qParams),
-          title: resName + ' - ' + propName
-        };
-        
-        if (this.grabExists(grab))
-          continue;
-        
-        if (!addedHeader) {
-          U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
-          addedHeader = true;
-        }
-
-        U.addToFrag(frag, this.menuItemTemplate({
-          title: propName, 
-          data: {
-            grab: $.param(grab)
-          }
-        }));
-      }
+//      var backlinks = U.getBacklinks(meta);
+//      for (var bl in backlinks) {
+//        var blProp = backlinks[bl];
+//        var backlink = blProp.backLink;
+//        var qParams = {};
+//        qParams[backlink] = uri;
+//        var propName = U.getPropDisplayName(blProp);
+//        var grab = {
+//          grabClass: U.getTypeUri(blProp.range),
+//          filter: $.param(qParams),
+//          title: resName + ' - ' + propName
+//        };
+//        
+//        if (this.grabExists(grab))
+//          continue;
+//        
+//        if (!addedHeader) {
+//          U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
+//          addedHeader = true;
+//        }
+//
+//        U.addToFrag(frag, this.menuItemTemplate({
+//          title: propName, 
+//          data: {
+//            grab: $.param(grab)
+//          }
+//        }));
+//      }
     },
     
     buildGrabbed: function(frag) {
@@ -329,7 +328,7 @@ define([
           U.addToFrag(frag, this.menuItemTemplate({
             title: item.get('title'), 
             data: {
-              release: item.getUri(),
+              release: item.getUri()
             }
           }));
         }.bind(this));
@@ -367,6 +366,7 @@ define([
       if (!isSuperUser)
         return this;
             
+      U.addToFrag(frag, this.groupHeaderTemplate({value: 'Misc'}));        
       var uri = U.getLongUri1(G.currentApp._uri);
       pageUrl = U.makePageUrl('view', uri);
       var title = 'Edit ' + G.currentApp.title;

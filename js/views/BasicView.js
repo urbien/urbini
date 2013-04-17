@@ -10,6 +10,8 @@ define([
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
+      this.TAG = this.TAG || this.constructor.displayName;
+      G.log(this.TAG, 'new view', this.getPageTitle());
       options = options || {};
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
@@ -34,8 +36,16 @@ define([
       }
       
       this.router = G.Router || Backbone.history;
-      var render = this.render;
       var refresh = this.refresh;
+      this.refresh = function() {
+        if (!this.rendered)
+          return this;
+        
+        G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
+        refresh && refresh.apply(this, arguments);
+      };
+      
+      var render = this.render;
       this.render = function(rOptions) {
         if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
          // to avoid rendering views 10 times in the background. Render when it's about to be visible
@@ -46,7 +56,7 @@ define([
 //          if (!this.TAG)
 //            debugger;
           
-          G.log(this.TAG, 'render', 'view is active, rendering');
+          G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
           render.apply(this, arguments);
           if (this.autoFinish !== false)
             this.finish();
@@ -61,7 +71,7 @@ define([
         }); // keep this
         
         if (active && this.__renderArgs) {
-          var method = this.rendered ? refresh : render;
+          var method = this.rendered ? this.refresh : render;
           var args = this.__renderArgs;
           this.__renderArgs = null;
           method.apply(this, args);
@@ -90,6 +100,13 @@ define([
       // override this
 //      this.render();
 //      this.restyle();
+    },
+    
+    refreshOrRender: function() {
+      if (this.rendered)
+        this.refresh.apply(this, arguments);
+      else
+        this.render.apply(this, arguments);
     },
     
     _getLoadingDeferreds: function() {
@@ -287,6 +304,9 @@ define([
       
       $.mobile.loading('hide');
     }
+  },
+  {
+    displayName: 'BasicView'
   });
 
   return BasicView; 

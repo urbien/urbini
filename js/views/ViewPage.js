@@ -15,14 +15,12 @@ define([
   'views/ControlPanel'
 ], function(G, U, Events, BasicView, Header, /*BackButton, LoginButton, AroundMeButton, MenuButton,*/ ResourceView, /*ResourceImageView,*/ ControlPanel) {
   return BasicView.extend({
-    TAG: 'ViewPage',
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       this.makeTemplate('resource', 'template', this.vocModel.type);
-      this.TAG = "ViewPage";
       this.router = G.Router || Backbone.History;
       this.viewId = options.viewId;
       
