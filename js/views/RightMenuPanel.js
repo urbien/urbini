@@ -19,6 +19,7 @@ define([
       this.makeTemplate('rightMenuP', 'template', this.vocModel.type);
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
+      this.makeTemplate('menuHeaderTemplate', 'headerTemplate', this.vocModel.type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
       Events.on('pageChange', this.destroy, this);
@@ -173,9 +174,14 @@ define([
       var json = this.resource && res.toJSON();
 //      var isSuperUser = isCreatorOrAdmin(res);
       this.$el.html(this.template(json));      
+      
 
       var ul = this.$('#rightMenuItems');
       var frag = document.createDocumentFragment();
+      
+      var title = this.resource ? 'Object Properties' : 'List Properties';
+      U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
+      
       var isItemListing = res.isA("ItemListing");
       var isBuyable = res.isA("Buyable");
       if (isItemListing || isBuyable) {
@@ -343,12 +349,20 @@ define([
         
         U.addToFrag(frag, this.menuItemTemplate({title: 'Follow', mobileUrl: '', id: 'subscribe'}));
       }
-      
+
+      var model = this.vocModel;
+      U.addToFrag(frag, this.groupHeaderTemplate({value: 'Page Assets'}));        
+      var wHash = U.getHash(true);
+      var params = {};
+      params.modelName = model.displayName;
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Templates', pageUrl: U.makePageUrl('templates', wHash, params)}));
+//      U.addToFrag(frag, this.menuItemTemplate({title: 'Views', pageUrl: U.makePageUrl('views', wHash, params)}));
+      U.addToFrag(frag, this.menuItemTemplate({title: 'Plugs', pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})}));      
+
       if (!this.resource)
         return this;
       
       var res = this.resource;
-      var model = this.vocModel;
       var isSuperUser = isCreatorOrAdmin(res);
       if (!isSuperUser)
         return this;
@@ -379,13 +393,6 @@ define([
           U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
       }
       
-      U.addToFrag(frag, this.groupHeaderTemplate({value: 'Page Assets'}));        
-      var wHash = U.getHash(true);
-      var params = {};
-      params.modelName = model.displayName;
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Templates', pageUrl: U.makePageUrl('templates', wHash, params)}));
-//      U.addToFrag(frag, this.menuItemTemplate({title: 'Views', pageUrl: U.makePageUrl('views', wHash, params)}));
-      U.addToFrag(frag, this.menuItemTemplate({title: 'Plugs', pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})}));      
       return this;
     },
 

@@ -324,6 +324,13 @@
   </li>
 </script>
 
+<script type="text/template" id="menuHeaderTemplate">
+  <!-- menu header -->
+  <li data-icon="{{= icon }}" data-theme="b">
+    {{= title }}
+  </li>
+</script>
+
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
   <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
@@ -806,6 +813,8 @@
 
 
 <script type="text/template" id="errorListTemplate">
+<!-- collapsible error list -->
+
 <!--
   <ul id="errList" data-split-theme="{{= G.theme.error || 'c' }}" data-role="listview" data-split-icon="delete" data-inset="true">
   {{  _.each(errors, function(err) {  }}
