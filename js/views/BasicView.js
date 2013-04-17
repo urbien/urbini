@@ -181,6 +181,15 @@ define([
       return parent;
     },
     
+    getPageTitle: function() {
+      var pageView = this.getPageView();
+      if (!pageView)
+        return null;
+      
+      var title = pageView.$('#pageTitle');
+      return title.length ? title.text() : null;
+    },
+    
     isActive: function() {
       if (this.active)
         return true;

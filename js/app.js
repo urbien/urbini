@@ -321,7 +321,8 @@ define('app', [
         var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
           model: U.getModel(grabType),
           params: {
-            submittedBy: G.currentUser._uri
+            submittedBy: G.currentUser._uri,
+            canceled: false
           }
         });
         

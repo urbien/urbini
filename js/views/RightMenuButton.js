@@ -24,7 +24,7 @@ define([
     menu: function(e) {
       Events.stopEvent(e);
       U.require('views/RightMenuPanel', function(RightMenuPanel) {
-        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model});
+        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
         menuPanel.render();        
       }, this);
 

@@ -21,8 +21,12 @@ define([
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
+      Events.on('pageChange', this.destroy, this);
     },
-    tabs: {},
+    destroy: function() {
+      this.$el.empty();
+      this.stopListening();
+    },
     events: {
       'click [data-grab]': 'grab',
       'click [data-release]': 'release',
@@ -73,6 +77,9 @@ define([
         success: function() {
           item['delete']();
           self.refresh();
+        },
+        error: function() {
+          debugger;
         }
       });
     },
@@ -226,11 +233,10 @@ define([
       if (G.currentUser.guest)
         return;
       
-      U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
       var grabType = G.commonTypes.Grab;      
       var res = this.resource;
       var isList = !res;
-      var pageTitle = $('#pageTitle').text();
+      var pageTitle = this.getPageTitle(); //$('#pageTitle').text();
       if (isList) {
         var grab = {
           filter: $.param(this.collection.params), 
@@ -241,8 +247,9 @@ define([
         if (this.grabExists(grab))
           return;
         
+        U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
         U.addToFrag(frag, this.menuItemTemplate({
-          title: 'List', 
+          title: pageTitle, 
           data: {
             grab: $.param(grab)
           }
@@ -261,9 +268,12 @@ define([
         title: pageTitle
       };
       
+      var addedHeader = false;
       var meta = this.vocModel.properties;
       var resName = U.getDisplayName(res);
       if (!this.grabExists(grab)) {
+        U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
+        addedHeader = true;
         U.addToFrag(frag, this.menuItemTemplate({
           title: resName, 
           data: {
@@ -288,6 +298,11 @@ define([
         if (this.grabExists(grab))
           continue;
         
+        if (!addedHeader) {
+          U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
+          addedHeader = true;
+        }
+
         U.addToFrag(frag, this.menuItemTemplate({
           title: propName, 
           data: {
