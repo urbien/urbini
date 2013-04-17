@@ -27,7 +27,7 @@ define([
       });
       
       var vocModel = this.vocModel = this.model;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'replace', 'onResourceChange'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -93,10 +93,10 @@ define([
         var resource = m instanceof Backbone.Model ? m : new this.vocModel(m, {silent: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
         
         // just in case we're already subscribed, unsubscribe
-        resource.off('replaced', this.replace); 
+//        resource.off('replaced', this.replace); 
         resource.off('change', this.onResourceChange);
         
-        resource.on('replaced', this.replace);
+//        resource.on('replaced', this.replace);
         resource.on('change', this.onResourceChange);
         return resource;
       }.bind(this));
@@ -113,15 +113,15 @@ define([
         Events.trigger('newResources', models);
       }
     },
-    replace: function(resource, oldUri) {
-      if (U.isModel(oldUri))
-        this.remove(oldUri)
-      else
-        this.remove(resource);
-      
-      this.add([resource]); // to make it act like multi-add, so it triggers an 'added' event
-      this.trigger('replaced', resource, oldUri);
-    },
+//    replace: function(resource, oldUri) {
+//      if (U.isModel(oldUri))
+//        this.remove(oldUri)
+//      else
+//        this.remove(resource);
+//      
+//      this.add([resource]); // to make it act like multi-add, so it triggers an 'added' event
+//      this.trigger('replaced', resource, oldUri);
+//    },
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
       this.offset += this.perPage;

@@ -738,6 +738,14 @@ define([
       }, {name: RM.SYNC_TASK_NAME, sequential: false, preventPileup: true, timeout: false});
     },
 
+    checkDelete: function(res) {
+      var canceled = U.getCloneOf(res.vocModel, 'Cancellable.cancelled');
+      if (!canceled || !canceled.length || !res.get(canceled[0]))
+        return;
+      
+      res['delete']();
+    },
+    
     saveToServer: function(updateInfo) {
       return $.Deferred(function(dfd) {
         var info = updateInfo,
@@ -755,7 +763,15 @@ define([
           fromDB: true,
           success: function(model, data, options) {
             if (!data) { // probably it was canceled and deleted
+              RM.checkDelete(model);
               dfd.resolve();
+              Events.trigger('synced:' + ref._uri, data, model);
+              return;
+            }
+            
+            if (RM.checkDelete(model)) {
+              dfd.resolve();
+              Events.trigger('synced:' + ref._uri, data, model);
               return;
             }
             

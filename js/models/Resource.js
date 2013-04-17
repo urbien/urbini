@@ -147,6 +147,11 @@ define([
       this.subscribedToUpdates = true;
     },
     onsynced: function(data, newModel) {
+      if (!data) {
+        this.trigger('sync');
+        return;
+      }
+
       var uri = this.getUri();
       var oldUri = data._oldUri;
       if (oldUri) {
@@ -166,16 +171,18 @@ define([
       if (newModel)
         this.setModel(newModel);
       
-      this.set(data);
-      this.url = this.getUrl();
-      if (this.collection) {
-        if (oldUri)
-          this.trigger('replaced', this, oldUri);
-//        else
-//          this.trigger('updated', this);
-      } 
+      this.id = oldUri; // HACK for remove from collection to work correctly;
+      if (oldUri && this.collection)
+        this.collection.remove(oldUri);
       
-      this.trigger('syncedWithServer');
+      this.set(data);
+      
+      if (oldUri && this.collection)
+        this.collection.add(this);
+      
+      this.id = uri;
+      this.url = this.getUrl();
+      this.trigger('sync');
     },
     cancel: function(options) {
       options = options || {};

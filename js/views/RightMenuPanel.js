@@ -71,17 +71,10 @@ define([
       var uri = target.dataset.release;
       var grabbed = G.currentUser.grabbed;
       var item = U.isTempUri(uri) ? grabbed.where({_oldUri: uri})[0] : grabbed.get(uri);
-      var self = this;
-      item.cancel({
-        sync: true,
-        success: function() {
-          item['delete']();
-          self.refresh();
-        },
-        error: function() {
-          debugger;
-        }
-      });
+      item.cancel();
+      grabbed.remove(item);
+      
+      this.refresh();
     },
     
     grab: function(e) {
