@@ -7,7 +7,7 @@
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
@@ -44,7 +44,7 @@
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
     <div class="ui-grid-{{= G.theme.list }}" style="width: 100%;padding-right:10px">
@@ -81,7 +81,7 @@
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
+  <ul data-role="none" data-theme="{{= G.theme.propertiesMenu }}" id="rightMenuItems" class="menuItems">
   </ul>
 </script>  
 
@@ -846,6 +846,7 @@
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
+<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
 <div id="headerDiv"></div>
 <div id="resourceEditView" data-role="content">
   <div id="resourceImage"></div>
