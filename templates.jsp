@@ -11,7 +11,7 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -47,9 +47,9 @@
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder"><!-- data-role="content" -->
-    <div class="ui-grid-{{= G.theme.list }}" style="width: 100%;padding-right:10px">
-      <div class="ui-block-{{= G.theme.list }}" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-{{= G.theme.list }}" style="width: 32%; min-width: 130px"></div>
+    <div class="ui-grid-a" style="width: 100%;padding-right:10px">
+      <div class="ui-block-a" id="resourceImage"></div>
+      <div id="mainGroup" class="ui-block-b" style="width: 32%; min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -234,23 +234,24 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
+  <div class="ui-btn-inner ui-li" style="border:none">
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
+      <div class="ui-btn-text" style="padding: .7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
-      <a href="{{= U.makePageUrl(action, _uri) }}">
+      <div class="ui-btn-text" style="min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
-    <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div class="ui-btn-text" style="padding:.7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
   
   {{= viewCols }}
-  </a>
+  </div>
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{= price.currency + price.value }}
@@ -270,6 +271,7 @@
   {{ if (obj.comment) { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
+  </div>
 </script>
 
   <!-- one item on the left-side slide-out menu panel -->
@@ -307,7 +309,7 @@
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li style="min-height:24px;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
+  <li style="min-height:24px;cursor:pointer;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
     <div style="font-size:16px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
     </div>
@@ -560,7 +562,8 @@
     </div>
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons">
+      <!--div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons" -->
+      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;" id="headerButtons">
       <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
