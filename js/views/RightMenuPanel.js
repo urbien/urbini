@@ -281,7 +281,7 @@ define([
           }
         }));
       }
-      
+      /*
       var backlinks = U.getBacklinks(meta);
       for (var bl in backlinks) {
         var blProp = backlinks[bl];
@@ -310,6 +310,7 @@ define([
           }
         }));
       }
+      */
     },
     
     buildGrabbed: function(frag) {
@@ -323,7 +324,7 @@ define([
           U.addToFrag(frag, this.menuItemTemplate({
             title: item.get('title'), 
             data: {
-              release: item.getUri(),
+              release: item.getUri()
             }
           }));
         }.bind(this));
