@@ -388,3 +388,18 @@ h3#pageTitle {margin: 10px 0 10px 0;}
 .menuItems .ui-li-static .ui-li {
   padding: .7em 0px 0 0px;
 }
+
+#headerDiv .ui-bar-a  {
+  background: #555;
+  border-top: 1px solid #777;
+}
+.ui-bar-a #headerButtons  {
+  background: #777;
+}
+#headerDiv .ui-bar-c {
+  background: #ddd;
+  border-top: 1px solid #777;
+}
+.ui-bar-c #headerButtons  {
+  background: #cccccc;
+}
