@@ -46,8 +46,8 @@ define([
       };
 
       var params = U.getParamMap(window.location.hash);
-      var isApp = U.isAssignableFrom(res, commonTypes.App);
-      var isAbout = this.isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
+      var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
+      var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fullScreen'];
       var commonParams = {
         model: res,
         parentView: this,
@@ -74,11 +74,13 @@ define([
       var self = this;
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
+      if (viewType) {
       U.require(viewType, function(viewMod) {
         self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
         self.readyDfd.resolve();
 //        renderDfd.done(self.imageView.finalize);
       });
+      }
 
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
@@ -152,7 +154,8 @@ define([
       return this;
     },
     edit: function(e) {
-      e.preventDefault();
+      Events.stopEvent(e);
+//      e.preventDefault();
       this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true});
       return this;
     },
@@ -173,7 +176,7 @@ define([
         });
       });
 
-      var viewTag = this.isAbout ? 'div#about' : 'ul#resourceView';
+      var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
       var views = {
         '#headerDiv'           : this.header
       };
