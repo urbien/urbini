@@ -395,7 +395,7 @@ define([
         return false;
       
       var roles = prop.allowRoles;
-      if (roles  &&  (roles.indexOf('self') == -1))
+      if (roles  &&  roles.indexOf('self') == -1  &&  !U.isUserInRole("admin"))
         return false;
       roles = prop.allowRolesToEdit;
       if (roles  &&  (roles.indexOf('self') == -1))
@@ -1548,8 +1548,8 @@ define([
       else if (prop.range == 'string') {
         if (isDisplayName)
           val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-        else
-          val = "<span style='opacity:0.5;'>" + val + "</span>";
+//        else
+//          val = "<span style='opacity:0.5;'>" + val + "</span>";
       }
       
       val = val || res.get(propName) || '';        
