@@ -239,39 +239,39 @@ define([
 //          $(link).attr("data-formel", "true");
           props[prop] = set;
           props[prop + '.displayName'] = innerHtml;
-//          this.resource.set(props, {skipValidation: true, skipRefresh: true});
+          this.resource.set(props, {skipValidation: true, skipRefresh: true});
           this.setValues(props, {skipValidation: true, skipRefresh: false});
 //          this.setResourceInputValue(link, innerHtml);
         }
         
-        else if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
-  //        Events.trigger('buy', this.model);
-          var price = chosenRes.get('price');
-          if (price  &&  price.value) { 
-            Events.stopEvent(e);
-            var $popup = $('#buy_popup');
-            var dn = U.getDisplayName(chosenRes);
-            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-            var href = chosenRes.getUri();          
-            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
-            if ($popup.length == 0) {
-              $($(document).find($('.ui-page-active'))[0]).append(html);
-              
-    //          $('body').append(html);
-              $popup = $('#buy_popup');
-            }
-            else {
-              $('#buyMsg').html(msg);
-              $('#buyLink').attr('href', href);
-              $('#tryLink').attr('href', href);
-              $('#buyName').html(dn);
-            }
-            $popup.trigger('create');
-            $popup.popup().popup("open");
-            return;
-          }
-        }
         else {
+          if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+    //        Events.trigger('buy', this.model);
+            var price = chosenRes.get('price');
+            if (price  &&  price.value) { 
+              Events.stopEvent(e);
+              var $popup = $('#buy_popup');
+              var dn = U.getDisplayName(chosenRes);
+              var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+              var href = chosenRes.getUri();          
+              var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+              if ($popup.length == 0) {
+                $($(document).find($('.ui-page-active'))[0]).append(html);
+                
+      //          $('body').append(html);
+                $popup = $('#buy_popup');
+              }
+              else {
+                $('#buyMsg').html(msg);
+                $('#buyLink').attr('href', href);
+                $('#tryLink').attr('href', href);
+                $('#buyName').html(dn);
+              }
+              $popup.trigger('create');
+              $popup.popup().popup("open");
+              return;
+            }
+          }
           var uri = chosenRes.getUri();
           props[prop] = uri;
           var resName = U.getDisplayName(chosenRes);
@@ -300,7 +300,6 @@ define([
             }
           }
         }
-        
         Events.trigger('back');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
