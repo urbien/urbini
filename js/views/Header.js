@@ -240,7 +240,7 @@ define([
       
       var commonTypes = G.commonTypes;
       var res = this.resource;
-      if (res  &&  !G.currentUser.guest  &&  !this.isAbout) {
+      if (res  &&  !this.isAbout) {
 //        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
 //          var tName = res.get('templateName');
 //          this.resetTemplate = tName && this.getOriginalTemplate(tName);
@@ -261,15 +261,17 @@ define([
           }
         }
 
-        else if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
+        else if (!G.currentUser.guest) {
+          if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
 //          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
 //          if (user == plugOwner)
-          if (!this.resource.isNew())
-            this.testPlug = true;            
-        }
-        else {
-          if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
-            this.enterTournament = true;
+            if (!this.resource.isNew())
+              this.testPlug = true;            
+          }
+          else {
+            if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+              this.enterTournament = true;
+          }
         }
       }
     },
