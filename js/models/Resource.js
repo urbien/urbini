@@ -162,6 +162,7 @@ define([
 //          // change vocModel
 //        }
         
+        this.trigger('uriChanged', oldUri);
         Events.off('synced:' + oldUri, this.onsynced);
         Events.on('synced:' + uri, this.onsynced);
         Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
@@ -172,15 +173,16 @@ define([
         this.setModel(newModel);
       
       this.id = oldUri; // HACK for remove from collection to work correctly;
-      if (oldUri && this.collection)
-        this.collection.remove(oldUri);
+      var col = this.collection;
+      if (oldUri && col)
+        col.remove(this);
       
       this.set(data);
       
-      if (oldUri && this.collection)
-        this.collection.add(this);
-      
       this.id = uri;
+//      if (oldUri && this.collection)
+//        this.collection.add(this);
+      
       this.url = this.getUrl();
       this.trigger('sync');
     },

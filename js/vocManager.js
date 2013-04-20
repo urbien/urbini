@@ -904,6 +904,10 @@ define([
   
 
   Events.on('inlineResourceList', function(baseResource, prop, inlineResources) {
+    if (baseResource._settingInlineList)
+      return;
+    
+    baseResource._settingInlineList = true;
     var range = U.getTypeUri(prop.range);
     Voc.getModels(range).done(function() {
       var model = U.getModel(range);
@@ -914,6 +918,7 @@ define([
       
 //      var rl = new ResourceList(inlineResources, {model: U.getModel(range)});
       baseResource.setInlineList(prop.shortName, rl);
+      baseResource._settingInlineList = false;
     });
   });
   

@@ -186,7 +186,7 @@ define([
               return;
             }
             
-            defer.reject(jqXHR, {code: jqXHR.status}, opts);                  
+            defer.reject(jqXHR, {status: jqXHR.status}, opts);                  
           }, 
           function(jqXHR, status, err) {
 //            debugger;

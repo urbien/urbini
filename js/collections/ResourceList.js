@@ -160,6 +160,7 @@ define([
       return url;
     },
     parseQuery: function(query) {
+      query = query || (this.params && $.param(this.params));
       if (!query)
         return;
       

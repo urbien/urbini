@@ -540,7 +540,7 @@ define([
           $.mobile.hidePageLoadingMsg();          
         });
         
-        res.on('sync', function() {          
+        res.once('sync', function() {          
           $.mobile.hidePageLoadingMsg();
           $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking complete, gently release your hair', false);
           setTimeout($.mobile.hidePageLoadingMsg, 3000);

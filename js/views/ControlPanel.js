@@ -134,9 +134,10 @@ define([
                 inlineList = new ResourceList(null, {model: U.getModel(type), params: params});
                 inlineList.fetch({
                   success: function() {
-//                    if (inlineList.size()) {
-//                      res.setInlineList(name, inlineList);
-//                    }
+                    var currentlyInlined =  res.inlineLists || {};
+                    if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name]) {
+                      res.setInlineList(name, inlineList);
+                    }
                     
                     _.each(['updated', 'added', 'reset'], function(event) {
                       self.stopListening(inlineList, event);

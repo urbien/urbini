@@ -308,8 +308,10 @@ define('app', [
 //        Voc.initPlugs(type);
 //      }
       
-      this.getGrabs();
-      RM.sync();
+      setTimeout(function() { 
+        this.getGrabs();
+        RM.sync();
+      }.bind(this), 100);
     },
     
     getGrabs: function() {
