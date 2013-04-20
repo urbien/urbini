@@ -224,9 +224,10 @@ define([
             if (i != 0)
               innerHtml += ', ';
             innerHtml += checked[i].name;
-            input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '_select"' + ' value="' + checked[i].value + '"' + ' style="display:none" />';
+            input = checked[i].value;
             $(link.parentNode).append($(input));
-
+            if (i != 0)
+              set += ',';
             set += input;
           }
 //          input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '"' + ' value="' + innerHtml + '" style="display:none" />';
@@ -237,11 +238,11 @@ define([
           var idx1 = html.indexOf('<br>');
           link.innerHTML = idx1 == -1 ? html.substring(0, idx + 8) + ' ' + innerHtml : html.substring(0, idx + 8) + ' ' + innerHtml;
 //          $(link).attr("data-formel", "true");
-          props[prop] = set;
+          props[prop] = innerHtml; //set;
           props[prop + '.displayName'] = innerHtml;
           this.resource.set(props, {skipValidation: true, skipRefresh: true});
           this.setValues(props, {skipValidation: true, skipRefresh: false});
-//          this.setResourceInputValue(link, innerHtml);
+          this.setResourceInputValue(link, set);
         }
         
         else {
@@ -684,7 +685,7 @@ define([
       
       var p = this.vocModel.properties[input.name];
       if (p  &&  p.multiValue)
-        val = input.innerHTML;
+        val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
       if (_.contains(input.classList, 'boolean'))
@@ -741,13 +742,16 @@ define([
 //          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
 //        }
 //        else {
-        if (name.indexOf('_select') != -1  &&  meta[name.substring(0, name.length - 7)].multiValue) {
-          var v = atts[name];
-          if (!v) {
-            v = [];
-            atts[name] = v;
-          }
-          v.push(val);
+        if (name.indexOf('_select') == -1  &&  meta[name].multiValue) {
+          atts[name] = res.get(name);
+          var v = val.split(',');
+          atts[name + '_select'] = v;
+//          var v = atts[name];
+//          if (!v) {
+//            v = [];
+//            atts[name] = v;
+//          }
+//          v.push(val);
         }
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
