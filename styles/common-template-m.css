@@ -112,7 +112,10 @@ html { height: 100%; }
 .field_comment .comment { margin-top: 5px; }
 
 
-.nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+.nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 12px; background-color: #ffffff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+
+.ui-body-a .ui-content .nab a { color: #757575; text-shadow: 0 1px 0 #fff } 
+
 /*#nabs_grid .nab { visibility: hidden; }*/
 .dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
 
@@ -262,7 +265,7 @@ h3#pageTitle {margin: 10px 0 10px 0;}
   .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
 }
 @media all and (min-width: 768px){
-  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
+  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 12px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
   .nab .anab .galleryItem_css3 img {max-width: 205px;}
   .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
   .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
@@ -402,4 +405,13 @@ h3#pageTitle {margin: 10px 0 10px 0;}
 }
 .ui-bar-c #headerButtons  {
   background: #cccccc;
+}
+.ui-bar-e #headerButtons  {
+  background: #fff9d7;
+}
+.ui-btn-up-e {
+  background: #fff9d7;
+}
+#editForm img {
+  height: 41px;padding-right:35px;float:right;
 }

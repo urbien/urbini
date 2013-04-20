@@ -125,7 +125,7 @@ label.req::before {
   color: #fdfdfd;
 }
 
-.ui-body-e .ui-link {
+.ui-body-e .ui-link, .ui-body-e .ui-link:visited {
   color: #757575;
 }
 
