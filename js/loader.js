@@ -833,7 +833,7 @@ define('fileCache', function() {
       spinner.id = 'loading-spinner-holder' + (options.name || '');
       if (!options.nonBlockingOverlay)
         spinner.setAttribute('class', 'spinner_bg');
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (G.tabs  &&  G.tabs[0].color ? ' style="' + G.tabs[0].color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (G.tabs  &&  G.tabs[0]  &&  G.tabs[0].color ? ' style="' + G.tabs[0].color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
