@@ -1560,8 +1560,9 @@ define([
       }
       
       var displayName = res.get(propName + '.displayName');
-      if (displayName)
-        val = {value: val, displayName: displayName};
+      if (displayName) {
+        val = (prop.multiValue) ? {value: displayName} : {value: val, displayName: displayName};
+      }
       else
         val = {value: val};
       
@@ -1667,7 +1668,11 @@ define([
       val.value = val.value || '';
       if (prop.range == 'resource') 
         val.uri = val.value;
-      
+      else if (prop.range.endsWith('/Image')) {
+        val.img = val.value;
+        var ix = val.value.lastIndexOf('/');
+        val.displayName = val.value.substring(ix + 1);
+      }
       if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       val.shortName = prop.shortName;
