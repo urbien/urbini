@@ -959,22 +959,5 @@ define([
     });
   });
 
-//  Events.on('newResource', function(resource) {
-//    if (resource._changingModel)
-//      return;
-//    
-//    var uri = resource.getUri();
-//    var type = resource.type;
-//    var actualType = U.getTypeUri(uri);
-//    if (actualType && type != actualType) {
-//      resource._changingModel = true;
-//      Voc.getModels(actualType).done(function() {
-//        var actualModel = U.getModel(actualType);
-//        resource.setModel(actualModel);
-//        resource._changingModel = false;
-//      });
-//    }
-//  });
-
   return (G.Voc = Voc);
 });

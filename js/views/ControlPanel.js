@@ -129,9 +129,10 @@ define([
             _.each(displayInline, function(prop, name) {
               var params = U.getListParams(res, prop);
               var type = U.getTypeUri(prop.range);
-              var inlineList = C.getResourceList(type, $.param(params));
+              var listModel = U.getModel(type);
+              var inlineList = C.getResourceList(listModel, U.getQueryString(params, true));
               if (!inlineList) {
-                inlineList = new ResourceList(null, {model: U.getModel(type), params: params});
+                inlineList = new ResourceList(null, {model: listModel, params: params});
                 inlineList.fetch({
                   success: function() {
                     var currentlyInlined =  res.inlineLists || {};

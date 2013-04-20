@@ -1002,17 +1002,21 @@ define([
       return filtered;
     },
     
-    getHashParams: function() {
-      var h = window.location.href;
-      var hashIdx = h.indexOf('#');
-      if (hashIdx === -1) 
-        return {};
+    getHashParams: function(hash) {
+      if (!hash) {
+        var h = window.location.href;
+        var hashIdx = h.indexOf('#');
+        if (hashIdx === -1) 
+          return {};
+          
+        hash = h.slice(hashIdx + 1);
+      }
       
-      var chopIdx = h.indexOf('?', hashIdx);
+      var chopIdx = hash.indexOf('?');
       if (chopIdx == -1)
         return {};
         
-      return h ? U.getParamMap(h.slice(chopIdx + 1)) : {};
+      return hash ? U.getParamMap(hash.slice(chopIdx + 1)) : {};
     },
     
     getParamMap: function(str, delimiter) {
@@ -1540,20 +1544,22 @@ define([
       var isDisplayName = info.isDisplayName || prop.displayNameElm;
       
       var cc = prop.colorCoding;
-      if (cc) {
-        cc = U.getColorCoding(cc, val);
+      if (!prop.code) {
         if (cc) {
-          if (cc.startsWith("icons"))
-            val = "<img src='" + cc + "' border='0'>&#160;" + val;
-          else
-            val = "<span style='color:" + cc + "'>" + val + "</span>";
+          cc = U.getColorCoding(cc, val);
+          if (cc) {
+            if (cc.startsWith("icons"))
+              val = "<img src='" + cc + "' border='0'>&#160;" + val;
+            else
+              val = "<span style='color:" + cc + "'>" + val + "</span>";
+          }
         }
-      }
-      else if (prop.range == 'string') {
-        if (isDisplayName)
-          val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-        else
-          val = "<span style='opacity:0.5;'>" + val + "</span>";
+        else if (prop.range == 'string') {
+          if (isDisplayName)
+            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
+          else
+            val = "<span style='opacity:0.5;'>" + val + "</span>";
+        }
       }
       
       val = val || res.get(propName) || '';        

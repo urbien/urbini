@@ -37,9 +37,15 @@ define([
       
       this.router = G.Router || Backbone.history;
       var refresh = this.refresh;
-      this.refresh = function() {
+      this.refresh = function(rOptions) {
         if (!this.rendered)
           return this;
+        
+        if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
+          // to avoid rendering views 10 times in the background. Render when it's about to be visible
+           this.__refreshArgs = arguments; 
+           return false;
+         }
         
         G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
         refresh && refresh.apply(this, arguments);
@@ -70,10 +76,19 @@ define([
           child.trigger('active', active);
         }); // keep this
         
-        if (active && this.__renderArgs) {
-          var method = this.rendered ? this.refresh : render;
-          var args = this.__renderArgs;
-          this.__renderArgs = null;
+        if (active && (this.__renderArgs || this.__refreshArgs)) {
+          var method, args;
+          if (this.rendered) {
+            method = refresh;
+            args = this.__refreshArgs;
+            this.__refreshArgs = null;
+          }
+          else {
+            method = render;
+            args = this.__renderArgs;
+            this.__renderArgs = null;
+          }
+          
           method.apply(this, args);
           this.finish();
         }        

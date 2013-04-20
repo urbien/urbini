@@ -219,7 +219,10 @@ define([
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
-      var list = C.getResourceList(typeUri, key);
+      if (query)
+        key = U.getQueryString(U.getQueryParams(key), true);
+      
+      var list = C.getResourceList(model, key);
       if (list && !list._lastFetchedOn)
         list = null;
       
@@ -438,38 +441,20 @@ define([
 //    },
 
     monitorCollection: function(collection) {
-      var params = collection.params;
-      if (!params)
-        return;
-      
-      var vocModel = collection.vocModel,
-          meta = vocModel.properties,
-          self = this;
-      
-      for (var param in params) {
-        var prop = meta[param];
-        if (!prop || !U.isResourceProp(prop))
-          continue;
-        
-        var uri = params[param];
-        if (!U.isTempUri(uri))
-          continue;
-        
-        Events.once('synced:' + uri, function(data) {
+      var self = this;
+      collection.on('queryChanged', function() {
+        debugger;
+        var updateHash = function() {
           debugger;
-          params[param] = data._uri;
-          var updateHash = function() {
-//            debugger;
-            self.navigate(U.makeMobileUrl('list', vocModel.type, params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
-          }
-          
-          var currentView = self.currentView;
-          if (currentView && currentView.collection === collection)
-            updateHash();
-          else
-            Events.once('navigateToList.' + collection.listId, updateHash);
-        });
-      }
+          self.navigate(U.makeMobileUrl('list', collection.vocModel.type, list.params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
+        }
+        
+        var currentView = self.currentView;
+        if (currentView && currentView.collection === collection)
+          updateHash();
+        else
+          Events.once('navigateToList.' + collection.listId, updateHash);
+      });
     },
     
     loadViews: function(views, caller, args) {
@@ -616,8 +601,8 @@ define([
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;
       
-      var typeCl = U.getModel(typeUri);
-      if (!typeCl)
+      var model = U.getModel(typeUri);
+      if (!model)
         return this;
 
       var res = C.getResource(uri);
@@ -654,7 +639,7 @@ define([
       var forceFetch = options.forceFetch;
       var collection;
       if (!res) {
-        var collections = C.getResourceList(typeUri);
+        var collections = C.getResourceList(model);
         if (collections) {
           var result = C.searchCollections(collections, uri);
           if (result) {
@@ -679,7 +664,7 @@ define([
         return this;
       }
       
-      var res = this.currentModel = new typeCl({_uri: uri, _query: query});
+      var res = this.currentModel = new model({_uri: uri, _query: query});
       var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
 //      if (action === 'view')
 //        views[uri] = v;

@@ -172,14 +172,14 @@ define([
       if (newModel)
         this.setModel(newModel);
       
-      this.id = oldUri; // HACK for remove from collection to work correctly;
-      var col = this.collection;
-      if (oldUri && col)
-        col.remove(this);
+//      this.id = oldUri; // HACK for remove from collection to work correctly;
+//      var col = this.collection;
+//      if (oldUri && col)
+//        col.remove(this);
       
       this.set(data);
       
-      this.id = uri;
+//      this.id = uri;
 //      if (oldUri && this.collection)
 //        this.collection.add(this);
       
@@ -241,7 +241,7 @@ define([
       return retUri;
     },
     isNew: function() {
-      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri()) || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
+      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri()); // || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;

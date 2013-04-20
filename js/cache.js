@@ -60,11 +60,15 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
         return fromResCache.concat(fromColCache || []);
       }
     },
-    getResourceList: function(typeUri, query) {
-      return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[query];
+    getResourceList: function(model, query) {
+      var typeUri = model.type;
+      return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[query || typeUri];
     },
     cacheResourceList: function(list) {
       var qs = list.query; // || $.param(list.params);
+//      if (qs) // taken care of in ResourceList
+//        qs = U.getQueryString(U.getQueryParams(qs, list.vocModel), true);
+        
       var typeUri = list.vocModel.type;
       return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[qs || typeUri] = list;
     },
@@ -200,28 +204,6 @@ define(['globals', 'underscore', 'jquery', 'events'], function(G, _, $, Events) 
     }
   });
   
-  Events.on('newResource', function(resource) {
-    C.cacheResource(resource);
-//    var cols = C.ResourceLists[resource.vocModel.type];
-//    for (var colQuery in cols) {
-//      var col = cols[colQuery];
-//      if (col.belongsInCollection(resource)) {
-//        col.add(resource, {refresh: true});
-//      }
-//    }
-  });
-  
-//  Events.on('newCodeMirror', function(uri, propName, editor) {
-//    var editors = C.codemirrors;
-//    var resEditors = editors[uri] = {};
-//    resEditors[propName] = editor;
-//  });
-//
-//  Events.on('newPlug', function(plug) {
-//    var plugs = {};
-//    plugs[plug.fromDavClassUri] = [plug];
-//    C.savePlugs(plugs); 
-//  });
-
+  Events.on('newResource', C.cacheResource);
   return G.Cache = cache;
 });

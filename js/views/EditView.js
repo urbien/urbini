@@ -973,7 +973,9 @@ define([
       }, options));
       
       if (set)
-        onValidated && onValidated();        
+        onValidated && onValidated();
+      
+      return set;
     },
     addProp: function(info) {
       var p = info.name;

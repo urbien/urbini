@@ -27,6 +27,7 @@ define([
       });
       
       var vocModel = this.vocModel = this.model;
+      var meta = vocModel.properties;
       _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
@@ -76,8 +77,31 @@ define([
       
 //      this.sync = this.constructor.sync;
       
+      this.monitorQueryChanges();
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
+    monitorQueryChanges: function() {
+      if (!this.params || !_.size(this.params))
+        return;
+      
+      var meta = this.vocModel.properties;
+      var params = this.params;
+      _.each(params, function(uri, param) {
+        var prop = meta[param];
+        if (!prop || !U.isResourceProp(prop))
+          return;
+        
+        if (!U.isTempUri(uri))
+          return;
+        
+        Events.once('synced:' + uri, function(data) {
+          debugger;
+          this.params[param] = data._uri;
+          this.trigger('queryChanged');
+        }.bind(this));
+      }.bind(this));
+    },
+    
     clone: function() {
       return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
     },
@@ -89,11 +113,23 @@ define([
     add: function(models, options) {
       var multiAdd = _.isArray(models);
       models = multiAdd ? models : [models];
+      if (!models.length)
+        return;
+      
       models = _.map(models, function(m) {
         var resource = m instanceof Backbone.Model ? m : new this.vocModel(m, {silent: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
         
         // just in case we're already subscribed, unsubscribe
-//        resource.off('replaced', this.replace); 
+//        resource.off('replaced', this.replace);
+        var uri = resource.getUri();
+        if (U.isTempUri(uri)) {
+          resource.once('uriChanged', function(oldUri) {
+            var newUri = resource.getUri();
+            this._byId[newUri] = this._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
+            delete this._byId[oldUri];
+          }.bind(this));
+        }
+        
         resource.off('change', this.onResourceChange);
         
 //        resource.on('replaced', this.replace);
@@ -164,7 +200,7 @@ define([
       if (!query)
         return;
       
-      this.query = query;
+//      this.query = query;
       query = query.split("&");
       var params = this.params = this.params || {};
       for (var i = 0; i < query.length; i++) {
@@ -183,6 +219,7 @@ define([
       }
       
       this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
+      this.query = U.getQueryString(U.getQueryParams(this), true); // sort params in alphabetical order for easier lookup
     },
     getKey: function() {
       return this.vocModel.type;
