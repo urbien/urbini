@@ -32,7 +32,6 @@ define([
       options = options || {};
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
-      this.on('sync', this.onsync);
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -58,8 +57,8 @@ define([
       }
       
       if (commonTypes.App == this.type) {
-        Events.on('saved', function(resource, options) {
-          var types = U.getTypes(resource.vocModel);
+        this.on('saved', function(options) {
+          var types = U.getTypes(this.vocModel);
           if (_.intersection(types, APP_TYPES).length) {
 //            debugger; // maybe check if the changes concern this app, or another
             this.set({'lastModifiedWebClass': +new Date()});
@@ -694,7 +693,7 @@ define([
           Events.trigger('newResource', this);
         }
         
-        Events.trigger('saved', this, options);
+        this.trigger('saved', this, options);
         this.unsavedChanges = {};
       }
       else {
@@ -721,35 +720,31 @@ define([
         options.success = function(resource, response, opts) {
           if (response && response.error)
             return;
-          
+
+          if (!options.fromDB)
+            this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+
+          success && success.apply(this, arguments);
           // trigger this first because "success" may want to redirect to mkresource for some app-related model
           if (isAppInstall)
-            Events.trigger('appInstall', self);
+            Events.trigger('appInstall', this);
           else if (isTemplate)
-            Events.trigger('templateUpdate:' + self.get('templateName'), self);
-//          else if (isNew && isApp)
-//            Events.trigger('newApp', self);
+            Events.trigger('templateUpdate:' + this.get('templateName'), this);
           
-          success && success.apply(this, arguments);
-//          G.cacheResource(self);
-          Events.trigger('updatedResources', [self]);
-          if (self.isNew()) // was a synchronous mkresource operation
-            Events.trigger('newResource', self);
-//          else if (isNew) { // completed sync with db
-//          }
-          
-          
-          self.triggerPlugs(options);
-          if (!options.fromDB) {
-            self.notifyContainers();
+          Events.trigger('updatedResources', [this]);
+          if (this.isNew()) // was a synchronous mkresource operation
+            Events.trigger('newResource', this);
+          else if (isNew) { 
+            // completed sync with db
           }
           
-          Events.trigger('saved', self, options);
+          this.trigger('saved', self, options);
+          this.triggerPlugs(options);
+          if (!options.fromDB)
+            this.notifyContainers();
           
-          // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
-          if (!options.fromDB) 
-            this.unsavedChanges = {};          
-        };
+          this.trigger('syncedWithServer');
+        }.bind(this);
         
         options.error = function(originalModel, err, opts) {
           var code = err.code || err.status;
@@ -763,7 +758,7 @@ define([
           }
           
           error && error.apply(this, arguments);
-        };
+        }.bind(this);
         
         saved = Backbone.Model.prototype.save.call(this, data, options);
       }
@@ -822,7 +817,7 @@ define([
 //      };
 //      
 ////      var error = options.error;
-////      options.error = function(reosurce, xhr, options) {
+////      options.error = function(resource, xhr, options) {
 ////        
 ////        error && error.apply(this, arguments);
 ////      }

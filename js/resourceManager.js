@@ -856,6 +856,7 @@ define([
             else
               toSave = resource.toJSON(); //_.extend(resource.toJSON(), errInfo);
             
+            resource.trigger('syncError', ref._error);
             ref._problematic = 1;
 //            if (status > 399 && status < 600) {
               RM.$db.transaction([type, REF_STORE.name], 1).fail(function() {

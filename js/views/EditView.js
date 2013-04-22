@@ -538,11 +538,11 @@ define([
         var preMsg = isFork ? 'Forking in progress, hold on to your hair.' : 'Setting up your app, hold on to your knickers.';
         var postMsg = isFork ? 'Forking complete, gently release your hair' : 'App setup complete';
         $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, preMsg, false);
-        res.on('error', function(error) {
+        res.on('syncError', function(error) {
           $.mobile.hidePageLoadingMsg();          
         });
         
-        res.once('sync', function() {
+        res.once('syncedWithServer', function() { // when app is created, the returned resource JSON is not up to date with models count, etc., so need to fetch again
           $.mobile.hidePageLoadingMsg();
           $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, postMsg, false);
           setTimeout($.mobile.hidePageLoadingMsg, 3000);
