@@ -95,7 +95,6 @@ define([
           return;
         
         Events.once('synced:' + uri, function(data) {
-          debugger;
           this.params[param] = data._uri;
           this.trigger('queryChanged');
         }.bind(this));

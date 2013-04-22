@@ -95,11 +95,11 @@ define([
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
-      if (this.previousFragment === fragment) {
-//      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
-        Events.trigger('back');
-        return;
-      }
+//      if (this.previousFragment === fragment) {
+////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
+//        Events.trigger('back');
+//        return;
+//      }
       
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + G.appRoot;

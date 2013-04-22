@@ -45,9 +45,9 @@ define([
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
         }
       }
-      if (options.swatch) {
-        this.$el.attr("data-theme", options.swatch);
-      }
+//      if (options.swatch) {
+//        this.$el.attr("data-theme", options.swatch);
+//      }
       if (this.resource.isA("Buyable"))
         this.$el.attr("data-icon", "false");
       else

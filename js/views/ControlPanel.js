@@ -217,7 +217,7 @@ define([
               continue;
             if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
               continue;
-            if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
+            if (!prop  ||  prop.mainBackLink  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
 //              delete json[p];
               continue;
             }

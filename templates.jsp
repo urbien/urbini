@@ -10,8 +10,8 @@
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" class="ui-content" role="main" data-role="content">
-    <ul id="sidebar"  data-role="listview" class="ui-listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+  <div id="sidebarDiv" class="ui-content" role="main">
+    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -46,17 +46,17 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="resourceViewHolder"><!-- data-role="content" -->
-    <div class="ui-grid-{{= G.theme.list }}" style="width: 100%;padding-right:10px">
-      <div class="ui-block-{{= G.theme.list }}" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-{{= G.theme.list }}" style="width: 32%; min-width: 130px"></div>
+  <div id="resourceViewHolder">
+    <div class="ui-grid-a" style="width: 100%;padding-right:10px">
+      <div class="ui-block-a" id="resourceImage"></div>
+      <div id="mainGroup" class="ui-block-b" style="width: 32%; min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <div id="photogrid" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
-    <div id="about" class="hidden" style="padding: 7px;" data-role="content" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
@@ -192,7 +192,7 @@
 <script type="text/template" id="listItemTemplate">
   <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
     <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
@@ -210,6 +210,7 @@
     {{= viewCols }}
   </div>
   </div>
+  <!--
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{ if (typeof price == 'object') { }} 
@@ -221,7 +222,8 @@
        {{= price < 10 ? '&nbsp;&nbsp;&nbsp;' : price < 100 ? '&nbsp;&nbsp;' : price < 1000 ? '&nbsp;' : ''}}
      {{ } }}
    </div>
-  {{ } }}  
+  {{ } }}
+  -->  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
   {{ } }}
@@ -234,23 +236,24 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
+  <div class="ui-btn-inner ui-li" style="border:none; cursor:pointer;"">
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
   {{ if (!obj.v_submitToTournament) { }}  
     {{ if (isJst) { }}
-      <a href="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
+      <div class="ui-btn-text" style="padding: .7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
     {{ } }}
     {{ if (!isJst) { }}
-      <a href="{{= U.makePageUrl(action, _uri) }}">
+      <div class="ui-btn-text" style="min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
-    <a href="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div class="ui-btn-text" style="padding:.7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
   
   {{= viewCols }}
-  </a>
+  </div>
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{= price.currency + price.value }}
@@ -270,6 +273,7 @@
   {{ if (obj.comment) { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
+  </div>
 </script>
 
   <!-- one item on the left-side slide-out menu panel -->
@@ -288,7 +292,7 @@
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
       
     <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <div class="ui-btn-text" style="float:left; min-height:24px;font-size:16px; {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
+    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -300,14 +304,14 @@
     </div>
     
     {{ if (obj.icon) { }}
-      <i class="ui-icon-{{= icon }}" style="float:right; font-size: 20px;"></i>
+      <i class="ui-icon-{{= icon }}" style="float:right; font-size: 16px;"></i>
     {{ }               }}
   </li>
 </script>
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li style="min-height:24px;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
+  <li style="min-height:24px;cursor:pointer;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
     <div style="font-size:16px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
     </div>
@@ -326,7 +330,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->
-  <li data-icon="{{= icon }}" data-theme="b">
+  <li data-icon="{{= icon }}" data-theme="{{= G.theme.menu}}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:16px;">
     {{= title }}
   </li>
 </script>
@@ -468,7 +472,7 @@
   <!-- popup for trial / purchase -->
   <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
     <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
-    <div data-role="content" data-theme="c" role="main">
+    <div data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
       <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">Buy<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
       <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">Try<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
@@ -567,7 +571,8 @@
     </div>
     <div id="name" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons">
+      <!--div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons" -->
+      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;" id="headerButtons">
       <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
@@ -848,7 +853,7 @@
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
 <div id="headerDiv"></div>
-<div id="resourceEditView" data-role="content">
+<div id="resourceEditView">
   <div id="resourceImage"></div>
   <form data-ajax="false" id="editForm" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
@@ -956,6 +961,7 @@
 </script>
 
 <script type="text/template" id="resourcePET">
+    {{= typeof img === 'undefined' ? '' : '<img src="' + img + '"/>' }}
   <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
@@ -963,7 +969,7 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
-  {{= typeof multiValue === 'undefined' ? '' : value }}
+  <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 
 <script type="text/template" id="multivaluePET">

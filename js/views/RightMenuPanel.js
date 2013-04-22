@@ -279,35 +279,36 @@ define([
           }
         }));
       }
-      
-//      var backlinks = U.getBacklinks(meta);
-//      for (var bl in backlinks) {
-//        var blProp = backlinks[bl];
-//        var backlink = blProp.backLink;
-//        var qParams = {};
-//        qParams[backlink] = uri;
-//        var propName = U.getPropDisplayName(blProp);
-//        var grab = {
-//          grabClass: U.getTypeUri(blProp.range),
-//          filter: $.param(qParams),
-//          title: resName + ' - ' + propName
-//        };
-//        
-//        if (this.grabExists(grab))
-//          continue;
-//        
-//        if (!addedHeader) {
-//          U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
-//          addedHeader = true;
-//        }
-//
-//        U.addToFrag(frag, this.menuItemTemplate({
-//          title: propName, 
-//          data: {
-//            grab: $.param(grab)
-//          }
-//        }));
-//      }
+      /*
+      var backlinks = U.getBacklinks(meta);
+      for (var bl in backlinks) {
+        var blProp = backlinks[bl];
+        var backlink = blProp.backLink;
+        var qParams = {};
+        qParams[backlink] = uri;
+        var propName = U.getPropDisplayName(blProp);
+        var grab = {
+          grabClass: U.getTypeUri(blProp.range),
+          filter: $.param(qParams),
+          title: resName + ' - ' + propName
+        };
+        
+        if (this.grabExists(grab))
+          continue;
+        
+        if (!addedHeader) {
+          U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grab'}));
+          addedHeader = true;
+        }
+
+        U.addToFrag(frag, this.menuItemTemplate({
+          title: propName, 
+          data: {
+            grab: $.param(grab)
+          }
+        }));
+      }
+      */
     },
     
     buildGrabbed: function(frag) {

@@ -94,10 +94,11 @@ define([
 
       var params = U.getParamMap(window.location.hash);
       var isApp = U.isAssignableFrom(res, G.commonTypes.App);
-      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
-      if (isAbout) {
+      var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fullScreen'];
+//      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
+      if (isAbout  &&  isApp) {
         this.$el.removeClass('hidden');
-        this.$el.html(res.get('description'));      
+        this.$el.html(res.get('description'));
         this.$el.trigger('create');      
         return this;
       }
@@ -117,7 +118,27 @@ define([
       
       var backlinks = U.getPropertiesWith(meta, "backLink");
 //      var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
-      
+
+      if (isAbout) {
+        var d = U.getCloneOf(vocModel, 'Submission.description');
+        if (d.length > 0) {
+          var val = res.get(d[0]);
+          if (val) {
+//            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: json[d]});
+//            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+            this.$el.removeClass('hidden');
+            U.addToFrag(frag, '<div id="Description">' + val + '</div>');
+            this.$el.html(frag);      
+            if (this.$el.hasClass('ui-listview')) {
+              this.$el.trigger('create');      
+              this.$el.listview('refresh');
+            }
+            else
+              this.$el.trigger('create');      
+            return this;
+          }
+        }
+      }
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;

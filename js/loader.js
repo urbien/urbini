@@ -833,7 +833,7 @@ define('fileCache', function() {
       spinner.id = 'loading-spinner-holder' + (options.name || '');
       if (!options.nonBlockingOverlay)
         spinner.setAttribute('class', 'spinner_bg');
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner">' + (options.content || '<i class="ui-icon-star-empty icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (G.tabs  &&  G.tabs[0]  &&  G.tabs[0].color ? ' style="' + G.tabs[0].color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
@@ -1480,7 +1480,7 @@ define('fileCache', function() {
         mobiscroll: 'lib/mobiscroll-datetime-min',
         jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
-        jqueryMobile: 'lib/jquery.mobile-1.3.0',
+        jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',
         backbone: 'lib/backbone',
         indexedDBShim: 'lib/IndexedDBShim',
@@ -1568,7 +1568,7 @@ define('fileCache', function() {
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
   var spinner = 'app init';
-  G.showSpinner({name: spinner, timeout: 3000});
+  G.showSpinner({name: spinner, timeout: 300000});
   
   G.files = {appcache: {}};
   for (var when in G.bundles) {

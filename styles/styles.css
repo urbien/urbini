@@ -120,11 +120,15 @@ label.req::before {
 }
 
 .ui-body-c .ui-link {color: #757575;}
-/*
-.ui-body-c {
-  font-family: Tahoma, Lucida Grande, Verdana, Arial, Helvetica, sans-serif; 
+
+.ui-body-a .ui-link {
+  color: #fdfdfd;
 }
-*/
+
+.ui-body-e .ui-link, .ui-body-e .ui-link:visited {
+  color: #757575;
+}
+
 label.error {
   color: red;
   font-size: 16px;
@@ -158,39 +162,6 @@ blockquote pre .script {
   font-family monospace;
   white-space: pre-wrap;
   text-align: center;
-}
-
-.spinner_bg {
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:white;
-  opacity:0.3;
-  z-index:2;  
-  background-size: 46px 46px;
-}
-
-#spinner_container {
-  position:absolute;
-  width:100%;
-  top: 50%;
-  left:0px;
-  height:1px;
-  overflow:visible;
-  opacity: 1;
-  background: transparent;
-}
-
-#spinner {
-  width: 31px;
-  height:31px;
-  margin-left:-15px;
-  position:absolute;
-/*  top:-15px; */
-  left:50%;
-  display:block;
 }
 /*
 .ui-li-link-alt .ui-btn-inner .ui-icon {
@@ -326,3 +297,5 @@ blockquote pre .script {
 #sidebar .ui-btn-inner {
   white-space: normal;
 }
+
+#resourceViewHolder .ui-grid-a .ui-block-a { clear: none; }
