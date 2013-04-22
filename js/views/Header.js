@@ -80,7 +80,7 @@ define([
         this.readyDfd.resolve();
       }, this);
       
-      this.calcTitle();
+//      this.calcTitle();
       this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
       _.each(['info', 'error'], function(event) {
         var handler = this._updateInfoErrorBar;
@@ -396,6 +396,7 @@ define([
       else
         this.$el.html(this.template());
 
+      this.refreshTitle();
       this.$el.prevObject.attr('data-title', this.pageTitle);
       this.$el.prevObject.attr('data-theme', G.theme.list);
       var frag = document.createDocumentFragment();

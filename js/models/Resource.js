@@ -273,7 +273,14 @@ define([
             }
           }.bind(this));
         }
+        
+        var sideEffects = resp._sideEffects;
+        if (sideEffects) {
+          delete resp._sideEffects;
+          Events.trigger('sideEffects', this, sideEffects);
+        }
       }
+      
       
       return resp;
     },
@@ -741,7 +748,7 @@ define([
           
           // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
           if (!options.fromDB) 
-            this.unsavedChanges = {};
+            this.unsavedChanges = {};          
         };
         
         options.error = function(originalModel, err, opts) {

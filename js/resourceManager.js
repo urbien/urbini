@@ -1723,5 +1723,45 @@ define([
     RM.deleteItem(res);
   });
 
+//  /**
+//   * sometimes when resources get created or edited, other resources get created/edited in the process.
+//   * this handles updating those "side effect modificaitons"
+//   */
+//  Events.on('sideEffects', function(res, sideEffects) {
+//    var isNew = res.isNew();
+//    if (!isNew)
+//      return; // TODO: notify that these resources changed
+//    
+//    var types = [];
+//    var typeToUris = {};
+//    _.each(sideEffects, function(uri) {
+//      if (isNew) {
+//        var type = U.getTypeUri(uri);
+//        if (type == null)
+//          sideEffects.splice(i, 1);
+//        else {
+//          var t = typeToUris[type] = typeToUris[type] || [];
+//          t.push(uri);
+//        }
+//      }
+//      else {
+//        // TODO: notify that these resources changed
+//      }
+//    });
+//    
+//    U.require('collections/ResourceList').done(function(ResourceList) {
+//      Voc.getModels(_.keys(typeToUris)).done(function() {
+//        _.each(typeToUris, function(uris, type) {
+//          var model = U.getModel(type);
+//          new ResourceList(null, {model: model, _query: '$in=SELF,' + uris.join(',')}).fetch({
+//            success: function() {
+//              debugger;
+//            }
+//          });
+//        });
+//      });
+//    });
+//  });
+  
   return (Lablz.ResourceManager = ResourceManager);
 });

@@ -2239,7 +2239,7 @@ define([
     },
     
     makeHeaderTitle: function(pre, post) {
-      return pre + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + post;
+      return pre === post ? pre : pre + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + post;
     },
 //    removeUnquotedWhitespace: function(text) {
 //      qStack = [];

@@ -516,7 +516,6 @@ define([
       }  
       
       if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
-        debugger;
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
         return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
@@ -534,15 +533,18 @@ define([
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
       }
-      else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && res.get('forkedFrom')) {
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking in progress, hold on to your hair.', false);
+      else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && G.online) {
+        var isFork = res.get('forkedFrom');
+        var preMsg = isFork ? 'Forking in progress, hold on to your hair.' : 'Setting up your app, hold on to your knickers.';
+        var postMsg = isFork ? 'Forking complete, gently release your hair' : 'App setup complete';
+        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, preMsg, false);
         res.on('error', function(error) {
           $.mobile.hidePageLoadingMsg();          
         });
         
-        res.once('sync', function() {          
+        res.once('sync', function() {
           $.mobile.hidePageLoadingMsg();
-          $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, 'Forking complete, gently release your hair', false);
+          $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, postMsg, false);
           setTimeout($.mobile.hidePageLoadingMsg, 3000);
           res.fetch({forceFetch: true});
         });
@@ -570,6 +572,11 @@ define([
       if (!redirectTo && params.$backLink) 
         redirectTo = U.getContainerProperty(vocModel);
  
+      if (!redirectAction) {
+        Events.trigger('back');
+        return;
+      }
+      
       switch (redirectAction) {
         case 'LIST':
           if (redirectTo) { 
