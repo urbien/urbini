@@ -833,7 +833,15 @@ define('fileCache', function() {
       spinner.id = 'loading-spinner-holder' + (options.name || '');
       if (!options.nonBlockingOverlay)
         spinner.setAttribute('class', 'spinner_bg');
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (G.tabs  &&  G.tabs[0]  &&  G.tabs[0].color ? ' style="' + G.tabs[0].color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      
+      var color;
+      if (G.tabs) {
+        var t0 = G.tabs[0];
+        if (t0)
+          color = t0.color;
+      }
+      
+      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (color ? ' style="' + color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
@@ -1568,7 +1576,7 @@ define('fileCache', function() {
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
   var spinner = 'app init';
-  G.showSpinner({name: spinner, timeout: 300000});
+  G.showSpinner({name: spinner, timeout: 5000});
   
   G.files = {appcache: {}};
   for (var when in G.bundles) {
@@ -1633,11 +1641,10 @@ require(['globals'], function(G) {
         css[i] = cssObj.name;
       }
       
-      require(['jquery', 'jqmConfig', 'app'].concat(css), function($, jqmConfig, App) {
+      require(['jquery', 'jqmConfig', 'events', 'app'].concat(css), function($, jqmConfig, Events, App) {
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
-        G.hideSpinner(spinner);
         G.startedTask('loading post-bundle');
         G.loadBundle(G.bundles.post, function() {
           G.finishedTask('loading post-bundle');
@@ -1648,6 +1655,10 @@ require(['globals'], function(G) {
           
           G.postBundleListeners.length = 0;
         }, true);
+        
+        Events.once('pageChange', function() {
+          G.hideSpinner(spinner);
+        });
       });
     });
   }
