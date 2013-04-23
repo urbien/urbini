@@ -7,35 +7,46 @@ define([
 ], function($, _, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'setStyle', 'resetStyle', 'isActive');
-      this.constructor.__super__.initialize.apply(this, arguments);
-      this.active = (options && options.active) || (this.isActive && this.isActive());
-      Events.on("changePage", this.resetStyle);
+      _.bindAll(this, 'setStyle', 'toggleStyle', 'setStyle', 'isOn', 'reset', 'resetStyle');
+      BasicView.prototype.initialize.apply(this, arguments);
+      this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
+      Events.on("changePage", this.reset);
     },
-    isActive: function() {
-      return this.active;
+    isOn: function() {
+//      return this.$('a').hasClass('ui-btn-active');
+      return this._isOn;
+    },
+    reset: function() {
+      this._isOn = this._onByDefault;
+      this.resetStyle();
     },
     resetStyle: function() {
-      this.active = this.isActive();
+      this.setStyle(this._onByDefault);
+    },
+    toggle: function() {
+      this._isOn = !this._isOn;
       this.setStyle();
+    },
+    toggleStyle: function() {
+      this.setStyle(!this._isOn);
       return this;
     },
-    setStyle: function() {
-      if (!this.id) {
-        console.log("Toggle button is missing 'id' property");
-        return this;
-      }
+    setStyle: function(on) {
+      on = _.isUndefined(on) ? this.isOn() : on;
+      var link = this.$('a');
+//      var persistCl = 'ui-state-persist';
+//      if (!link.hasClass(persistCl))
+//        link.addClass(persistCl);
       
-      this.$el.parent().find('#' + this.id)[this.active ? 'addClass' : 'removeClass']('ui-btn-active');
+      var activeCl = 'ui-btn-active';
+      if (on && !link.hasClass(activeCl))
+        link.addClass(activeCl);
+      else
+        link.removeClass(activeCl);
     },
     render: function(options) {
-      if (!this.template)
-        return this;
-      
-//      var html = this.template();
-//      this.setElement($(html));
       this.$el.html(this.template());
-      this.resetStyle();
+      this.setStyle();
       return this;
     }
   });

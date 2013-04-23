@@ -33,12 +33,9 @@ define([
       
       this.$el.html(this.template(settings));
       
-      var isGeo = !!((res.isA("Locatable") && res.get('latitude')) || 
-                     (res.isA("Shape") && res.get('shapeJson')));
-      
+      var isGeo = this.isGeo();
       this.buttons = {
         back: true,
-        aroundMe: isGeo,
         menu: true,
         rightMenu: !G.currentUser.guest,
         login: G.currentUser.guest

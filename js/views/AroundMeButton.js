@@ -1,32 +1,42 @@
 //'use strict';
 define([
   'globals',
-  'views/ToggleButton', 
-  'views/BasicView',
-  'utils'
-], function(G, ToggleButton, BasicView, U) {
+  'views/ToggleButton',
+  'utils',
+  'events'
+], function(G, ToggleButton, U, Events) {
   return ToggleButton.extend({
     TAG: 'AroundMeButton',
     id: 'aroundMe',
     tagName: 'li',
     templateName: 'aroundMeButtonTemplate',
     events: {
-      'click #aroundMe': 'toggleAroundMe'
+      'click': 'toggleAroundMe'
     },
     initialize: function(options) {      
-      _.bindAll(this, 'render', 'toggleAroundMe', 'isActive');
-      BasicView.prototype.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.vocModel.type);        
+      _.bindAll(this, 'render', 'toggleAroundMe', 'isOn');
+      this.constructor.__super__.initialize.apply(this, arguments);
+      this.makeTemplate(this.templateName, 'template', this.vocModel.type);
+      this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
       return this;
     },
-    isActive: function() {
-      return window.location.hash.indexOf('-item=me') != -1;
+    isOn: function() {
+      return !!U.getHashParams()['-item'];
+    },
+    reset: function() {
+      this._isOn = this._onByDefault;  
+    },
+    render: function(options) {
+      this.$el.html(this.template());
+      this.setStyle();
+      return this;
     },
     toggleAroundMe : function() {
-      this.active = !this.active;
+      this._isOn = !this._isOn;
       var vocModel = this.vocModel;
-      if (!this.active) {
-        Backbone.history.navigate(vocModel.shortName, {trigger: true});
+      if (!this._isOn) {
+        this.reset();
+        this.router.navigate(U.makeMobileUrl(null, vocModel.type), {trigger: true});
         return this;
       }
       
@@ -70,7 +80,9 @@ define([
           params = isCollection ? U.getQueryParams(this.model) : {};
 
       _.extend(params, {latitude: coords.latitude, longitude: coords.longitude, '-item': item || 'me', '$orderBy': 'distance'});
-      Backbone.history.navigate(encodeURIComponent(this.vocModel.type) + "?" + U.getQueryString(params), {trigger: true});
+      
+      this.reset();
+      this.router.navigate(U.makeMobileUrl(null, this.vocModel.type, params), {trigger: true});
       return this;
     }
   },

@@ -42,7 +42,7 @@ define([
                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
-      var isGeo = this.isGeo = (rl.isOneOf(["Locatable", "Shape"])); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
+      var isGeo = this.isGeo = this.isGeo(); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
         this.mapReady = this.mapReadyDfd.promise();
@@ -87,9 +87,10 @@ define([
         }
       }
 
-      this.buttons = {
+      this.headerButtons = {
         back: true,
         add: showAddButton,
+        aroundMe: isGeo,
         mapIt: isGeo,
         menu: true,
         rightMenu: !G.currentUser.guest,
@@ -97,7 +98,7 @@ define([
       };
 
       this.addChild('header', new Header(_.extend({
-        buttons: this.buttons,
+        buttons: this.headerButtons,
         viewId: this.cid
       }, commonParams)));
       

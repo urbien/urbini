@@ -19,9 +19,8 @@ define([
       return this;
     },
     mapIt: function(e) {
-      this.active = !this.active;
-      Events.trigger('mapIt', {active: this.active});
-      this.resetStyle();
+      this.toggle();
+      Events.trigger('mapIt', {active: this.isOn()});
       return this;
     }
   },

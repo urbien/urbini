@@ -25,19 +25,10 @@ define([
       this.viewId = options.viewId;
       
       var res = this.resource;
-      var isGeo = (res.isA("Locatable") && res.get('latitude')) || 
-                  (res.isA("Shape") && res.get('shapeJson'));
       
-//      this.buttons = {
-//        left: [BackButton],
-//        right: isGeo ? [AroundMeButton, MenuButton] : [MenuButton],
-//        log: [LoginButton]
-//      };
-
       var commonTypes = G.commonTypes;
-      this.buttons = {
+      this.headerButtons = {
         back: true,
-        aroundMe: isGeo,
         menu: true,
         rightMenu: !G.currentUser.guest,
         login: G.currentUser.guest
@@ -53,7 +44,6 @@ define([
       }
         
       this.addChild('header', new Header(_.extend({
-        buttons: this.buttons,
         viewId: this.cid
       }, commonParams)));
 
@@ -175,16 +165,16 @@ define([
       });
 
       var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
-      var views = {
-        '#headerDiv'           : this.header
-      };
-      
+      var views = {};
       views[viewTag] = this.view;
       if (this.cp)
         views['ul#cpView'] = this.cp;
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
       
+      var isGeo = this.isGeo();
+      this.headerButtons.aroundMe = isGeo;       
+      this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
       this.ready.done(function() {
         this.assign(this.imgDiv, this.imageView);

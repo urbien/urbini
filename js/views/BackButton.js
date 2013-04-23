@@ -8,7 +8,7 @@ define([
   return BasicView.extend({
     templateName: 'backButtonTemplate',
     tagName: 'li',
-    id: '#back',
+    id: 'back',
     events: {
       'click': 'back'
     },

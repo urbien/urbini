@@ -152,11 +152,11 @@ define([
 //          json['checked'] = 'checked';
       }
 
-//      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
-//      if (distanceProp) {
-//        var distance = m.get(distanceProp);
-//        json.distanceUnits = 'mi';
-//      }
+      var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
+      if (distanceProp) {
+        var distance = m.get(distanceProp);
+        json.distanceUnits = 'mi';
+      }
       
       if (!json._uri)
         G.log(RLIV.TAG, 'error', 'uri undefined 2', JSON.stringify(json));

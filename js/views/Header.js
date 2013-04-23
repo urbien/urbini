@@ -34,6 +34,23 @@ define([
         }, this);
       }
 
+      if (this.buttons)
+        this.getButtonViews();
+      
+//      this.calcTitle();
+      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
+      _.each(['info', 'error'], function(event) {
+        var handler = this._updateInfoErrorBar;
+        Events.off(event, handler);
+        Events.on(event, handler);
+      }.bind(this));
+
+      this.isGeo = this.isGeo();
+      this.autoFinish = false;
+      return this;
+    },
+    
+    getButtonViews: function() {
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = vocModel.type;
@@ -74,22 +91,11 @@ define([
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
-          this.buttonViews[btn] = this.addChild(btn + 'BtnView', new model(btnOptions));
+          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(btn + 'BtnView', new model(btnOptions));
         }
         
         this.readyDfd.resolve();
       }, this);
-      
-//      this.calcTitle();
-      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
-      _.each(['info', 'error'], function(event) {
-        var handler = this._updateInfoErrorBar;
-        Events.off(event, handler);
-        Events.on(event, handler);
-      }.bind(this));
-      
-      this.autoFinish = false;
-      return this;
     },
     
     checkErrorList: function(e) {
@@ -215,7 +221,13 @@ define([
       return this;
     },
     
-    render: function() {
+    render: function(options) {
+      options = options || {};
+      if (!this.buttons || options.buttons) {
+        this.buttons = options.buttons;
+        this.getButtonViews();
+      }
+        
       var args = arguments;
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
@@ -299,8 +311,6 @@ define([
           
           this.$('#{0}Btn'.format(option))[method]();
         }.bind(this));
-        
-        _.each()
       }
       
       var hash = window.location.hash;
@@ -401,19 +411,29 @@ define([
       this.$el.prevObject.attr('data-theme', G.theme.list);
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
-      _.each(['menu', 'back', 'mapIt', 'aroundMe', 'add', 'login', 'rightMenu'], function(btnName) {
+      var numBtns = _.size(btns);
+      var isMapItToggleable = !!this.collection;
+      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'login'];
+      if (numBtns < 6)
+        btnNames.push('rightMenu');
+      else
+        btnNames.splice(1, 0, 'rightMenu');
+      _.each(btnNames, function(btnName) {
         var btn = btns[btnName];
         if (!btn)
           return;
         
+        var btnOptions = {};
         if (btnName === 'mapIt') {
-          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
+//          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
           if (!this.isGeo)
             return;
+          
+          btnOptions.toggleable = isMapItToggleable;
         }
          
-        frag.appendChild(btn.render({force: true}).el);        
-      });      
+        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);        
+      }.bind(this));      
       
       var $ul = this.$('#headerUl');
       $ul.html(frag);

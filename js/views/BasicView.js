@@ -249,10 +249,17 @@ define([
       return false;
     },
     
-  //  assign: function (view, selector) {
-  //    view.setElement(this.$(selector)).render();
-  //  }
-  
+    isGeo: function() {
+      if (this.collection) {
+        return this.collection.isOneOf(["Locatable", "Shape"]);
+      }
+      else {
+        var res = this.resource;
+        return !!((res.isA("Locatable") && res.get('latitude') && res.get('longitude')) || 
+                  (res.isA("Shape") && res.get('shapeJson')))
+      }
+    },
+    
     assign: function (selector, view, renderOptions) {
       var selectors;
       if (_.isObject(selector)) {

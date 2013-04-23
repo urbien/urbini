@@ -9,7 +9,7 @@ define([
   var MenuPanel;
   return BasicView.extend({
     tagName: 'li',
-    id: '#menuBtn',
+    id: 'menuBtn',
     templateName: 'menuButtonTemplate',
     events: {
       'click': 'menu'
@@ -17,7 +17,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.vocModel.type);
+      this.makeTemplate(this.templateName, 'template', this.model.type);
       this.viewId = options.viewId;
       return this;
     },
