@@ -972,7 +972,7 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
-  {{ if (prop.range && prop.range.endsWith('model/portal/Image')) }}
+  {{ if (prop.range && prop.range.endsWith('model/portal/Image') && G.canWebcam) }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="{{= shortName }}"></a>
   {{                                                              }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->

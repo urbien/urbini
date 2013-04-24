@@ -827,6 +827,14 @@ define('fileCache', function() {
         });
       }
     },
+    canWebcam: (function() {
+      navigator.getMedia = (navigator.getUserMedia ||
+          navigator.webkitGetUserMedia ||
+          navigator.mozGetUserMedia ||
+          navigator.msGetUserMedia);
+      
+      return !!navigator.getMedia;
+    })(),
     showSpinner: function(options) {
       options = options || {};
       var spinner = document.createElement('div');
