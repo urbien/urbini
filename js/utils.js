@@ -1678,10 +1678,16 @@ define([
       val.value = val.value || '';
       if (prop.range == 'resource') 
         val.uri = val.value;
-      else if (prop.range.endsWith('/Image')) {
+      else if (prop.range.endsWith('model/portal/Image')) {
         val.img = val.value;
-        var ix = val.value.lastIndexOf('/');
-        val.displayName = val.value.substring(ix + 1);
+        if (!val.displayName) {
+          if (val.value.startsWith('data:'))
+            val.displayName = 'camera shot';
+          else {
+            var ix = val.value.lastIndexOf('/');
+            val.displayName = val.value.substring(ix + 1);
+          }
+        }
       }
       if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
@@ -2836,7 +2842,13 @@ define([
     },
     DEFAULT_HTML_PROP_VALUE: '<!-- put your HTML here buddy -->',
     DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
-    DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */'
+    DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */',
+    alert: function(options) {
+      var msg = options.msg;
+      $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+      if (!options.nofade)
+        setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+    }
   };
 
   for (var p in U.systemProps) {

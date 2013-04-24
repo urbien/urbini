@@ -18,7 +18,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'scrollEnum'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -72,9 +72,61 @@ define([
       'click input[data-duration]': 'scrollDuration',
       'click input[data-date]': 'scrollDate',
       'click select[data-enum]': 'scrollEnum',
+      'click .cameraCapture' : 'cameraCapture',
       'click': 'click'
     },
 
+    capturedImage: function(options) {
+      var prop = options.prop, 
+          data = options.data;
+      
+      var props = {};
+      props[prop] = data;
+      props[prop + '.displayName'] = 'camera shot';
+      this.setValues(props, {skipValidation: true, skipRefresh: false});
+//      var link = this.$('a.resourceProp[name="{0}"]'.format(prop));
+//      var maxHeight = link.parent().height();
+//      var width = options.width;
+//      var height = options.height;
+//      var scaleDown = maxHeight / height;
+//      width *= scaleDown;
+//      height *= scaleDown;
+//      var img = $("<img style='display:inline;' src='data:image/jpeg;base64,{0}' />'".format(data));
+//      var existingImg = $('img[name="{0}"]'.format(prop));
+//      if (existingImg)
+//        existingImg.replaceWith(img);
+//      else
+//        img.insertBefore(link);
+    },
+    
+    cameraCapture: function(e) {
+      Events.stopEvent(e);
+      var link = $(e.currentTarget);
+      U.require('views/CameraPopup').done(function(CameraPopup) {
+        if (this.CameraPopup) {
+          this.CameraPopup.destroy();
+          this.stopListening(this.CameraPopup);
+        }
+        
+        this.CameraPopup = new CameraPopup({model: this.model, parentView: this, prop: link.data('prop')});
+        this.CameraPopup.render();
+        this.listenTo(this.CameraPopup, 'image', this.capturedImage);
+      }.bind(this));
+      
+//      $('#cameraPopup').remove();
+//      var popupHtml = U.template('cameraPopupTemplate')();
+//      $(document.body).append(popupHtml);
+//      var $popup = $('#cameraPopup');
+////      if (onDismiss) {
+////        $popup.find('[data-cancel]').click(function() {
+////          onDismiss();
+////        });
+////      }
+//        
+//      $popup.trigger('create');
+//      $popup.popup().popup("open");
+    },
+    
     disable: function(msg) {
 //      var meta = this.vocModel.properties;
 //      this.getInputs().each(function() {

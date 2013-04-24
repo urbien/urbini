@@ -961,7 +961,10 @@
 </script>
 
 <script type="text/template" id="resourcePET">
-    {{= typeof img === 'undefined' ? '' : '<img src="' + img + '"/>' }}
+  {{ if (obj.img) { }}    
+    <img name="{{= shortName }}" src="{{= img }}"/>
+  {{ }              }}
+  
   <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
@@ -969,7 +972,24 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
+  {{ if (prop.range && prop.range.endsWith('model/portal/Image')) }}
+    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="{{= shortName }}"></a>
+  {{                                                              }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
+</script>
+
+<script type="text/template" id="cameraPopupTemplate">
+  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
+    <video id="video"></video>
+    <!--img src="./Interaction Cam_files/mozfest.png" alt="mozfest"-->
+    <canvas id="canvas" width="100%" height="0"></canvas>
+    <div data-role="fieldcontain">
+      <fieldset data-role="controlgroup" id="mvChooser">
+        <a data-role="button" data-icon="camera" id="cameraShootBtn" target="#">Shoot</a>
+        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#">I'll take it</a>
+      </fieldset>
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="multivaluePET">
