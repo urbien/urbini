@@ -186,6 +186,7 @@ define([
     },
     fileUpload: function(e) {
       Events.stopEvent(e);      
+      debugger;
       var params = U.getParamMap(window.location.hash);
       $('#fileUpload').attr('action', G.serverName + '/mkresource');
 //      var returnUri = $('$returnUri');
@@ -244,6 +245,7 @@ define([
       if (this.isEdit)
         return;
 
+      var params = U.getHashParams();
       _.each(SPECIAL_BUTTONS, function(btnName) {
         this[btnName] = false;
       }.bind(this));

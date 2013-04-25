@@ -84,21 +84,40 @@ define([
       props[prop] = data;
       props[prop + '.displayName'] = 'camera shot';
       this.setValues(props, {skipValidation: true, skipRefresh: false});
-//      var link = this.$('a.resourceProp[name="{0}"]'.format(prop));
-//      var maxHeight = link.parent().height();
-//      var width = options.width;
-//      var height = options.height;
-//      var scaleDown = maxHeight / height;
-//      width *= scaleDown;
-//      height *= scaleDown;
-//      var img = $("<img style='display:inline;' src='data:image/jpeg;base64,{0}' />'".format(data));
-//      var existingImg = $('img[name="{0}"]'.format(prop));
-//      if (existingImg)
-//        existingImg.replaceWith(img);
-//      else
-//        img.insertBefore(link);
     },
-    
+
+    capturedVideo: function(options) {
+      var attachmentsUrlProp = U.getCloneOf(this.vocModel.properties, 'FileSystem.attachmentsUrl');
+      if (!attachmentsUrlProp) {
+        debugger;
+        return;
+      }
+      
+      var prop = options.prop, 
+          data = options.data;
+
+      var fd = new FormData();
+      fd.append('fileName', 'cameraCapture.webm');
+      fd.append(prop, data); // webmBlob
+//      fd.append('file', data); // webmBlob
+      fd.append('-$action', 'upload');
+      fd.append('type', this.vocModel.type);
+      fd.append('forResource', this.resource.getUri());
+      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
+      U.ajax({
+        type: 'POST',
+        url: G.serverName + '/mkresource',
+        data: fd,
+        processData: false,
+        contentType: false
+      }).done(function(data) {
+        debugger;
+//        console.log(data);
+      }).fail(function() {
+        debugger;
+      });
+    },
+
     cameraCapture: function(e) {
       Events.stopEvent(e);
       var link = $(e.currentTarget);
@@ -111,43 +130,11 @@ define([
         this.CameraPopup = new CameraPopup({model: this.model, parentView: this, prop: link.data('prop')});
         this.CameraPopup.render();
         this.listenTo(this.CameraPopup, 'image', this.capturedImage);
+        this.listenTo(this.CameraPopup, 'video', this.capturedVideo);
       }.bind(this));
-      
-//      $('#cameraPopup').remove();
-//      var popupHtml = U.template('cameraPopupTemplate')();
-//      $(document.body).append(popupHtml);
-//      var $popup = $('#cameraPopup');
-////      if (onDismiss) {
-////        $popup.find('[data-cancel]').click(function() {
-////          onDismiss();
-////        });
-////      }
-//        
-//      $popup.trigger('create');
-//      $popup.popup().popup("open");
     },
     
     disable: function(msg) {
-//      var meta = this.vocModel.properties;
-//      this.getInputs().each(function() {
-//        var prop = meta[this.name];
-//        if (prop.script) {
-//          var codemirror = $.data(textarea, 'codemirror');
-//          if (codemirror) {
-//            
-//          }
-//        }
-//          
-//          
-//        switch (this.tagName.toLowerCase()) {
-//        case 'textarea':
-//          this.
-//        }
-//        
-//        $(this).addClass('ui-disabled');
-//      });
-//      
-//      this.$('*').attr('disabled', true);
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
@@ -453,7 +440,7 @@ define([
       var prModel = U.getModel(range);
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
       if (!isImage  &&  !prModel) {
-        var idx = range.indexOf('/Image');
+        var idx = range.indexOf('model/portal/Image');
         isImage = idx != -1  &&  idx == range.length - 6;
       }
       if (isImage) {

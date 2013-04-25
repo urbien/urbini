@@ -2848,6 +2848,17 @@ define([
       $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
       if (!options.nofade)
         setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+    },
+    removeClasses: function(element, pattern) {
+      element = element instanceof $ ? element : $(element); 
+      var classes = element.attr('class').split(/\s+/);
+      for(var i = 0; i < classes.length; i++){
+        var className = classes[i];
+
+        if(className.match(pattern)){
+          element.removeClass(className);
+        }
+      }
     }
   };
 

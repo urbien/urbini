@@ -129,6 +129,14 @@ label.req::before {
   color: #757575;
 }
 
+.red {
+  color: red;
+}
+
+.black {
+  color: black;
+}
+
 label.error {
   color: red;
   font-size: 16px;

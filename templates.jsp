@@ -972,8 +972,8 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
-  {{ if (prop.range && prop.range.endsWith('model/portal/Image') && G.canWebcam) }}
-    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="{{= shortName }}"></a>
+  {{ if (prop.range && (prop.range.endsWith('model/portal/Image') || prop.range.endsWith('model/portal/Video'))  && G.canWebcam) }}
+    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : 'camera' }}" data-prop="{{= shortName }}"></a>
   {{                                                              }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
@@ -981,12 +981,19 @@
 <script type="text/template" id="cameraPopupTemplate">
   <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
     <video id="camVideo" autoplay="autoplay"></video>
-    <!--img src="./Interaction Cam_files/mozfest.png" alt="mozfest"-->
     <canvas id="canvas" width="100%" height="0"></canvas>
+    {{ if (obj.video) { }}
+      <div id="camVideoPreview">
+      </div>
+    {{ }                }}
     <div data-role="fieldcontain">
       <fieldset data-role="controlgroup" id="mvChooser">
-        <a data-role="button" data-icon="camera" id="cameraShootBtn" target="#">Shoot</a>
-        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#">I'll take it</a>
+        <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled">{{= obj.video ? 'Record' : 'Shoot' }}</a>
+<!--        {{ if (obj.video) { }}
+          <a data-role="button" data-icon="play" id="cameraPlayBtn" target="#" class="ui-disabled">Play</a>
+        {{ }                }}
+-->
+        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled">I'll take it</a>
       </fieldset>
     </div>
   </div>
