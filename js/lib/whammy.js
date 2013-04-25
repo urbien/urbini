@@ -123,7 +123,7 @@ define(function() {
   								]
   							}
   						]
-  					},
+  					}
   
   					//cluster insertion point
   				]
