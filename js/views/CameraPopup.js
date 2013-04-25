@@ -85,7 +85,7 @@ define([
       $popup.popup().popup("open");
 
       var streaming     = false;
-      this.$video       = this.$('#video');
+      this.$video       = this.$('#camVideo');
       this.video        = this.$video[0];
       this.$canvas      = this.$('#canvas');
       this.canvas       = this.$canvas[0];
@@ -121,7 +121,7 @@ define([
       );
       
       /* Event Handlers */
-      video.addEventListener('canplay', function(ev) {
+      this.video.addEventListener('canplay', function(ev) {
         if (!streaming) {
           this.finalheight = this.video.videoHeight / (this.video.videoWidth / this.width);
           this.$video.attr('width', this.width);

@@ -980,7 +980,7 @@
 
 <script type="text/template" id="cameraPopupTemplate">
   <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
-    <video id="video"></video>
+    <video id="camVideo" autoplay="autoplay"></video>
     <!--img src="./Interaction Cam_files/mozfest.png" alt="mozfest"-->
     <canvas id="canvas" width="100%" height="0"></canvas>
     <div data-role="fieldcontain">
