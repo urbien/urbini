@@ -98,7 +98,7 @@ define([
 
       var fd = new FormData();
       fd.append('fileName', 'cameraCapture.webm');
-      fd.append(prop, data); // webmBlob
+      fd.append(prop, data); // audio and video blobs
 //      fd.append('file', data); // webmBlob
       fd.append('-$action', 'upload');
       fd.append('type', this.vocModel.type);

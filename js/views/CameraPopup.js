@@ -6,6 +6,8 @@ define([
   'events',
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
+  var recIndex = 0;
+  var Whammy, Recorder;
   var URL = window.URL || window.webkitURL;
 
   var requestAnimationFrame = window.requestAnimationFrame ||
@@ -15,6 +17,8 @@ define([
   var cancelAnimationFrame = window.cancelAnimationFrame ||
       window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame ||
       window.msCancelAnimationFrame || window.oCancelAnimationFrame;
+  
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
   
   return BasicView.extend({
     template: 'cameraPopupTemplate',
@@ -38,7 +42,11 @@ define([
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       if (this.isVideo)
-        U.require('lib/Whammy').done(this.readyDfd.resolve);
+        U.require(['lib/whammy', 'lib/recorder', 'lib/recorderWorker']).done(function(W, R) {
+          Whammy = W;
+          Recorder = R;
+          this.readyDfd.resolve();
+        }.bind(this));
       else
         this.readyDfd.resolve();
 
@@ -55,7 +63,16 @@ define([
 //      var data = ('mozGetAsFile' in canvas) ?
 //                 canvas.mozGetAsFile('webcam.png') :
 //                 canvas.toDataURL('image/png'); //.replace(/^data:image\/(png|jpg);base64,/, '');
-      var data = this.isVideo ? this.webmBlob : this.canvas.toDataURL('image/png');
+      var data;
+      if (this.isVideo) {
+        data = {
+          video: this.webmBlob,
+          audio: this.audioBlob
+        }
+      }
+      else 
+        data = this.canvas.toDataURL('image/png');
+      
       this.trigger(this.isVideo ? 'video' : 'image', {
         prop: this.prop, 
         data: data,
@@ -85,10 +102,18 @@ define([
 //    },
     record: function(e) {
       Events.stopEvent(e);
+      this.startTime = +new Date();
       this.setstate('recording');
       this.ctx = canvas.getContext('2d');
       this.frames = [];
       this.rafId = requestAnimationFrame(this.drawVideoFrame_);
+      
+      // start audio recording
+      if (!this.hasAudio)
+        return;
+      
+      this.audioRecorder.clear();
+      this.audioRecorder.record();
     },
     start: function(e) {
       Events.stopEvent(e);
@@ -96,9 +121,16 @@ define([
     },
     stop: function(e) {
       Events.stopEvent(e);
+      this.stopTime = +new Date();
       if (this.state == 'previewing')
         this.takepicture();
       
+      if (this.hasAudio) {
+        // stop audio recording
+        this.audioRecorder.stop();
+      }
+      
+//      this.audioRecorder.getBuffers( drawWave );
       this.setstate('reviewing');
     },
     render: function() {
@@ -133,6 +165,7 @@ define([
       $popup.trigger('create');
       $popup.popup().popup("open");
 
+      // video
       var streaming     = false;
       this.$video       = this.$('#camVideo');
       this.video        = this.$video[0];
@@ -149,21 +182,26 @@ define([
       this.frames       = null;
       this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
         
+      // audio
+      if (AudioContext) {
+        this.hasAudio = true;
+        this.audioContext = new AudioContext();
+        this.audioInput = null;
+        this.realAudioInput = null;
+        this.inputPoint = null;
+        this.audioRecorder = null;
+        this.recIndex = 0;
+      }
+      
       this.setstate('previewing');
       navigator.getMedia(
         {
           video: true,
-          audio: false
+          audio: this.hasAudio
         },
         function(stream) {
-          if (navigator.mozGetUserMedia) {
-            this.video.mozSrcObject = stream;
-          } else {
-            var vendorURL = window.URL || window.webkitURL;
-            this.video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
-          }
-          
-          this.video.play();
+          this.startVideo(stream);
+          this.startAudio(stream);
         }.bind(this),
         function(err) {
           U.alert({
@@ -197,12 +235,6 @@ define([
 //      media_events["pause"] = 0;
 //      media_events["ratechange"] = 0;
 //      media_events["volumechange"] = 0;
-//      
-//      _.each(media_events, function(event) {
-//        this.video.addEventListener(event, function(ev) {
-//          G.log(this.TAG, 'video event', event, 'videoWidth', this.video.videoWidth, 'videoHeight', this.video.videoHeight);
-//        }.bind(this));
-//      }.bind(this));
       
       /* Event Handlers */
       this.video.addEventListener('canplay', function(ev) {
@@ -212,30 +244,33 @@ define([
           streaming = true;
         }
       }.bind(this), false);
-
-//      video.addEventListener('click', function(ev){
-//        setstate('reviewing');
-//        takepicture();
-//      }, false);
-//
-//      startbutton.addEventListener('click', function(ev){
-//        if (state === 'uploaded') {
-//          setstate('previewing');
-//        }
-//        ev.preventDefault();
-//      }, false);
-//
-//      uploadbutton.addEventListener('click', function(ev){
-//        if (state === 'reviewing') {
-//          setstate('uploading');
-//          upload();
-//        }
-//        ev.preventDefault();
-//      }, false)
       
       this.finish();
       return this;
     },
+    
+    startVideo: function(stream) {
+      if (navigator.mozGetUserMedia) {
+        this.video.mozSrcObject = stream;
+      } else {
+        var vendorURL = window.URL || window.webkitURL;
+        this.video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+      }
+    },
+    
+    startAudio: function(stream) {
+      if (!this.hasAudio)
+        return;
+      
+      this.inputPoint = this.audioContext.createGainNode();
+
+      // Create an AudioNode from the stream.
+      this.realAudioInput = this.audioContext.createMediaStreamSource(stream);
+      this.audioInput = this.realAudioInput;
+      this.audioInput.connect(this.inputPoint);
+      this.audioRecorder = new Recorder(this.inputPoint);
+    },
+    
     setDimensions: function() {
       var vWidth, vHeight; 
       if (!this.video.videoWidth) {
@@ -338,14 +373,69 @@ define([
       if (this.isVideo) {
         if (this.state === 'reviewing') {
           cancelAnimationFrame(this.rafId);
+          this.video.pause();
           this.embedVideoPreview();
+          this.exportAudioForDownload();
           this.$canvas.hide();
           this.$video.hide();
         }
         else {
+          this.video.play();
           this.$videoPrev && this.$videoPrev.hide();
         }
       }
+    },
+    
+    exportAudioForDownload: function() {
+      if (!this.hasAudio)
+        return;
+      
+      this.audioRecorder.exportWAV(function(blob) {
+        if (typeof blob === 'string')
+          console.log(blob);
+        else {
+          this.audioBlob = blob;
+          this.syncAudioVideo();
+//          Recorder.forceDownload(blob, "myRecording" + ((this.recIndex < 10) ? "0" :"") + this.recIndex + ".wav" );
+        }
+      }.bind(this));
+    },
+    
+    syncAudioVideo: function(opt_url) {
+      if (!this.hasAudio)
+        return;
+      
+      var url = opt_url || null;
+      var audio = this.$('#camVideoPreview audio')[0] || null;
+//    var downloadLink = $('#camVideoPreview a[download]') || null;
+
+      if (!audio) {
+        audio = document.createElement('audio');
+        audio.controls = false;
+        audio.width = 0;
+        audio.height = 0;
+        this.videoPrevDiv.appendChild(audio);
+        this.$audioPrev = this.$('#camVideoPreview audio');
+        this.audioPrev = this.$audioPrev[0];
+      } else {
+        window.URL.revokeObjectURL(audio.src);
+      }
+  
+      if (!url) {
+        url = URL.createObjectURL(this.audioBlob);
+      }
+      
+      audio.src = url;
+      var vid = this.videoPrev;
+      vid.addEventListener('play', function() {
+        // play audio
+        audio.play();
+      });
+      
+      vid.addEventListener('pause', function() {
+        // pause audio
+        audio.pause();
+      });
     },
     
     embedVideoPreview: function(opt_url) {
@@ -355,7 +445,7 @@ define([
 
       if (!video) {
         video = document.createElement('video');
-        video.autoplay = true;
+//        video.autoplay = true;
         video.controls = true;
 //        video.loop = true;
         //video.style.position = 'absolute';
@@ -392,7 +482,8 @@ define([
           return f !== "data:,";
         });
         
-        this.webmBlob = Whammy.fromImageArray(this.frames, 1000 / 60);
+        var framesPerSecond = Math.round(this.frames.length / ((this.stopTime - this.startTime) / 1000));
+        this.webmBlob = Whammy.fromImageArray(this.frames, framesPerSecond);
         url = URL.createObjectURL(this.webmBlob);
       }
 
