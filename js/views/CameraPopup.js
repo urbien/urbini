@@ -50,11 +50,14 @@ define([
       else
         this.readyDfd.resolve();
 
+      Events.on('pageChange', this.destroy, this);
       this.autoFinish = false;
       return this;
     },
     destroy: function() {
       this.video && this.video.pause();
+      this.audio && this.audio.pause();
+      this.stream && this.stream.stop(); // turn off webcam
       this.$el.empty();
       this.$el.remove();
     },
@@ -169,6 +172,8 @@ define([
       var streaming     = false;
       this.$video       = this.$('#camVideo');
       this.video        = this.$video[0];
+      this.video.muted  = true;
+
       this.$videoPrevDiv = this.$('#camVideoPreview');
       this.videoPrevDiv = this.$videoPrevDiv[0];
       this.$canvas      = this.$('#canvas');
@@ -177,13 +182,12 @@ define([
       this.$submitBtn   = this.$('#cameraSubmitBtn');
       this.width        = this.innerWidth(); //width - this.padding();
       this.height       = 0;
-      this.finalheight  = 0;
       this.rafId        = null;
       this.frames       = null;
       this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
         
       // audio
-      if (AudioContext) {
+      if (this.isVideo && AudioContext) {
         this.hasAudio = true;
         this.audioContext = new AudioContext();
         this.audioInput = null;
@@ -200,6 +204,7 @@ define([
           audio: this.hasAudio
         },
         function(stream) {
+          this.stream = stream;
           this.startVideo(stream);
           this.startAudio(stream);
         }.bind(this),
@@ -272,22 +277,32 @@ define([
     },
     
     setDimensions: function() {
-      var vWidth, vHeight; 
+      var vWidth = this.width, vHeight;
       if (!this.video.videoWidth) {
-        vWidth = this.getPageView().innerWidth() - this.padding();
-        vHeight = Math.round(vWidth * 3 / 4);
+//        vWidth = this.getPageView().innerWidth() - this.padding();
+        vHeight = Math.round(this.width * 3 / 4);
       }
       else {
         vWidth = this.video.videoWidth;
         vHeight = this.video.videoHeight;
       }
       
-      var limitingDimension = this.width 
-      this.finalheight = Math.round(vHeight / (vWidth / this.width));
-      this.$video.attr('width', this.width);
-      this.$video.attr('height', this.finalheight);
-      this.$canvas.attr('width', this.width);
-      this.$canvas.attr('height', this.finalheight);
+//      if (vWidth / vHeight > 4/3)
+//        vWidth = Math.round(vHeight * 4/3);
+//      else
+//        vHeight = Math.round(vWidth * 3/4);
+//      
+//      this.finalheight = Math.round(vHeight / (vWidth / this.width));
+//      this.$video.attr('width', this.width);
+//      this.$video.attr('height', this.finalheight);
+//      this.$canvas.attr('width', this.width);
+//      this.$canvas.attr('height', this.finalheight);
+//      this.width = vWidth;
+      this.height = vHeight;
+      this.$video.attr('width', vWidth);
+      this.$video.attr('height', vHeight);
+      this.$canvas.attr('width', vWidth);
+      this.$canvas.attr('height', vHeight);
     },
     onresize: function(e) {
       this.setDimensions();
@@ -299,7 +314,7 @@ define([
 //      this.canvas.width = this.width;
 //      this.canvas.height = this.finalheight;
       if (!this.isVideo)
-        this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.width, this.finalheight);
+        this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.width, this.height);
 //      var img = new Image();
 //      img.src = 'mozfest.png';
 //      console.log(img);
@@ -326,6 +341,7 @@ define([
 //          shootRemoveCl = recording ? camCl : videoOn ? repeatCl : camCl,
 //          shootAddCl = recording ? stopCl : videoOn ? camCl : repeatCl;
 
+//      this.video.muted = false;
       switch (this.state) {
         case 'reviewing':
           shootAddCl = repeatCl;
@@ -338,6 +354,7 @@ define([
           shootBtnText = this.isVideo ? 'Record' : 'Shoot';
           break;
         case 'recording':
+//          this.video.muted = true;
           videoOn = this.isVideo;
           shootAddCl = stopCl;
           shootBtnText = 'Stop';
