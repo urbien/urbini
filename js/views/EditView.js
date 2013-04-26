@@ -87,6 +87,9 @@ define([
     },
 
     capturedVideo: function(options) {
+      if (true)
+        return;
+      
       var attachmentsUrlProp = U.getCloneOf(this.vocModel.properties, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {
         debugger;
@@ -96,26 +99,37 @@ define([
       var prop = options.prop, 
           data = options.data;
 
-      var fd = new FormData();
-      fd.append('fileName', 'cameraCapture.webm');
-      fd.append(prop, data); // audio and video blobs
-//      fd.append('file', data); // webmBlob
-      fd.append('-$action', 'upload');
-      fd.append('type', this.vocModel.type);
-      fd.append('forResource', this.resource.getUri());
-      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
-      U.ajax({
-        type: 'POST',
-        url: G.serverName + '/mkresource',
-        data: fd,
-        processData: false,
-        contentType: false
-      }).done(function(data) {
-        debugger;
-//        console.log(data);
-      }).fail(function() {
-        debugger;
+      var props = {};
+      props[prop] = data;
+//      for (var p in data) {
+//        props[prop + '.' + p] = data[p]; 
+//      }
+      
+      this.setValues(props, {skipValidation: true, skipRefresh: true});
+      this.resource.save(null, {
+        sync: true
       });
+      
+//      var fd = new FormData();
+//      fd.append('fileName', 'cameraCapture.webm');
+//      fd.append(prop, data); // audio and video blobs
+////      fd.append('file', data); // webmBlob
+//      fd.append('-$action', 'upload');
+//      fd.append('type', this.vocModel.type);
+//      fd.append('forResource', this.resource.getUri());
+//      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
+//      U.ajax({
+//        type: 'POST',
+//        url: G.serverName + '/mkresource',
+//        data: fd,
+//        processData: false,
+//        contentType: false
+//      }).done(function(data) {
+//        debugger;
+////        console.log(data);
+//      }).fail(function() {
+//        debugger;
+//      });
     },
 
     cameraCapture: function(e) {

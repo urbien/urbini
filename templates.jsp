@@ -490,7 +490,7 @@
     
     {{ _.forEach(nets, function(net) { }} 
 
-    <a data-role="button" href="{{= net.url }}">
+    <a data-role="button" href="{{= net.url }}" {{= net.socialNet == 'Facebook' ? ' target="_top"' : '' }}>
         <span class="big_symbol 
       {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
       {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
@@ -979,23 +979,21 @@
 </script>
 
 <script type="text/template" id="cameraPopupTemplate">
-  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
+  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" class="ui-content ui-body-d">
+    <div>
     <video id="camVideo" autoplay="autoplay"></video>
     <canvas id="canvas" width="100%" height="0"></canvas>
     {{ if (obj.video) { }}
       <div id="camVideoPreview">
       </div>
     {{ }                }}
-    <div data-role="fieldcontain">
-      <fieldset data-role="controlgroup" id="mvChooser">
-        <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled">{{= obj.video ? 'Record' : 'Shoot' }}</a>
+    </div>
+        <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">{{= obj.video ? 'Record' : 'Shoot' }}</a>
 <!--        {{ if (obj.video) { }}
-          <a data-role="button" data-icon="play" id="cameraPlayBtn" target="#" class="ui-disabled">Play</a>
+          <a data-role="button" data-icon="play" id="cameraPlayBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">Play</a>
         {{ }                }}
 -->
-        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled">I'll take it</a>
-      </fieldset>
-    </div>
+        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">I'll take it</a>
   </div>
 </script>
 

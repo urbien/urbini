@@ -89,8 +89,12 @@ define([
       
       var prop = vocModel.properties[propName];
       if (prop && !prop.backLink && U.isResourceProp(prop)) {
-        if (val)
-          return val.startsWith('data:') ? val : U.getLongUri1(val);
+        if (val) {
+          if (prop.range.endsWith('model/portal/Video'))
+            return val;
+          else
+            return val.startsWith('data:') ? val : U.getLongUri1(val);
+        }
         else
           return val;
       }

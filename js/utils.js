@@ -169,7 +169,39 @@ define([
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType'])).then(function(data, status, jqXHR) {
+//          var data = opts.data;
+//          if (data) {
+//            var my_form=document.createElement('FORM');
+//            my_form.name='form' + G.nextId();
+//            my_form.method='POST';
+//            my_form.action=opts.url;
+//            my_form.enctype = "multipart/form-data";            
+//            var fd = new FormData(my_form);
+//            for (var prop in data) {
+//              var val = data[prop];
+//              if (_.isObject(val)) {
+////                for (var subProp in val) {
+//////                  fd.append(prop + '.' + subProp, val[subProp]);
+////                  data[prop+ '.' + subProp] = val[subProp];                  
+////                }
+//                
+//                _.extend(opts, {
+//                  processData: false,
+//                  contentType: false
+//                });
+//                
+//                delete opts.dataType;
+//                delete opts.emulateJSON;
+//                delete opts.emulateHTTP;
+////                delete data[prop];
+//              }
+////                fd.append(prop, val);
+//            }
+//            
+////            opts.data = fd;
+//          }
+          
+          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
 //            debugger;
             if (status != 'success') {
               defer.reject(jqXHR, status, opts);
