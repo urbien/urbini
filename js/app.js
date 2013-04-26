@@ -117,6 +117,7 @@ define('app', [
       var self = this;
       self.doPreStartTasks().always(function() {
         self.startApp().always(function() {
+          Events.trigger('appStart');
           self.doPostStartTasks();
         });
       });
@@ -277,14 +278,6 @@ define('app', [
         if (App.started)
           return dfd.resolve();
         
-        Events.on("event", function() {
-          console.log("event");
-        });
-
-        Events.on("event:a", function() {
-          console.log("event:a");
-        });
-
         App.setupModuleCache();
         App.setupLoginLogout();
         

@@ -1664,9 +1664,16 @@ require(['globals'], function(G) {
           G.postBundleListeners.length = 0;
         }, true);
         
-        Events.once('pageChange', function() {
-          G.hideSpinner(spinner);
-        });
+        if (window.location.hash.length < 2) {
+          Events.once('appStart', function() {
+            G.hideSpinner(spinner);
+          });
+        }
+        else {
+          Events.once('pageChange', function() {
+            G.hideSpinner(spinner);
+          });
+        }
       });
     });
   }
