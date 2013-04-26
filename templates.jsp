@@ -988,6 +988,7 @@
       </div>
     {{ }                }}
     </div>
+        <a href="#" data-rel="back" data-role="button" id="cameraCancelBtn" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
         <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">{{= obj.video ? 'Record' : 'Shoot' }}</a>
 <!--        {{ if (obj.video) { }}
           <a data-role="button" data-icon="play" id="cameraPlayBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">Play</a>

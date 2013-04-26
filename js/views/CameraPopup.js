@@ -29,6 +29,7 @@ define([
       'click canvas'            : 'start',
       'click #cameraSubmitBtn'  : 'submit',
       'click #cameraShootBtn'   : 'startOrStop',
+      'click #cameraCancelBtn'  : 'destroy',
       'resize'                  : 'onresize',
       'orientationchange'       : 'onorientationchange'
     },
@@ -275,35 +276,53 @@ define([
       this.audioInput.connect(this.inputPoint);
       this.audioRecorder = new Recorder(this.inputPoint);
     },
-    
+
     setDimensions: function() {
-      var vWidth = this.width, vHeight;
+      var vWidth, vHeight; 
       if (!this.video.videoWidth) {
-//        vWidth = this.getPageView().innerWidth() - this.padding();
-        vHeight = Math.round(this.width * 3 / 4);
+        vWidth = this.getPageView().innerWidth() - this.padding();
+        vHeight = Math.round(vWidth * 3 / 4);
       }
       else {
         vWidth = this.video.videoWidth;
         vHeight = this.video.videoHeight;
       }
       
-//      if (vWidth / vHeight > 4/3)
-//        vWidth = Math.round(vHeight * 4/3);
-//      else
-//        vHeight = Math.round(vWidth * 3/4);
-//      
-//      this.finalheight = Math.round(vHeight / (vWidth / this.width));
-//      this.$video.attr('width', this.width);
-//      this.$video.attr('height', this.finalheight);
-//      this.$canvas.attr('width', this.width);
-//      this.$canvas.attr('height', this.finalheight);
-//      this.width = vWidth;
-      this.height = vHeight;
-      this.$video.attr('width', vWidth);
-      this.$video.attr('height', vHeight);
-      this.$canvas.attr('width', vWidth);
-      this.$canvas.attr('height', vHeight);
+      this.height = Math.round(vHeight / (vWidth / this.width));
+      this.$video.attr('width', this.width);
+      this.$video.attr('height', this.height);
+      this.$canvas.attr('width', this.width);
+      this.$canvas.attr('height', this.height);
     },
+    
+//    setDimensions: function() {
+//      var vWidth = this.width, vHeight;
+//      if (!this.video.videoWidth) {
+////        vWidth = this.getPageView().innerWidth() - this.padding();
+//        vHeight = Math.round(this.width * 3 / 4);
+//      }
+//      else {
+//        vWidth = this.video.videoWidth;
+//        vHeight = this.video.videoHeight;
+//      }
+//      
+////      if (vWidth / vHeight > 4/3)
+////        vWidth = Math.round(vHeight * 4/3);
+////      else
+////        vHeight = Math.round(vWidth * 3/4);
+////      
+////      this.finalheight = Math.round(vHeight / (vWidth / this.width));
+////      this.$video.attr('width', this.width);
+////      this.$video.attr('height', this.finalheight);
+////      this.$canvas.attr('width', this.width);
+////      this.$canvas.attr('height', this.finalheight);
+////      this.width = vWidth;
+//      this.height = vHeight;
+//      this.$video.attr('width', vWidth);
+//      this.$video.attr('height', vHeight);
+//      this.$canvas.attr('width', vWidth);
+//      this.$canvas.attr('height', vHeight);
+//    },
     onresize: function(e) {
       this.setDimensions();
     },
