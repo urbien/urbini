@@ -389,7 +389,12 @@ define([
       m.prototype.parse = Resource.prototype.parse;
       m.prototype.validate = Resource.prototype.validate;
       _.defaults(m.properties, Resource.properties);
-      m.superClasses = _.map(m.superClasses, U.getLongUri1);
+      m.superClasses = _.map(m.superClasses, function(type) {
+        if (/\//.test(type))
+          return U.getLongUri1(type);
+        else
+          return G.defaultVocPath + 'system/fog/' + type;
+      });
       _.extend(m.properties, U.systemProps);
       m.prototype.initialize = Voc.getInit.apply(m);
       setTimeout(function() {

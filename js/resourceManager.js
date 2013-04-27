@@ -1359,7 +1359,7 @@ define([
       if (latLonQuery)
         query = query ? query.and(latLonQuery) : latLonQuery;
       
-      if (orderBy) {
+      if (orderBy.length) {
         if (query) {  
           var distanceProp = positionProps.distance;
           for (var i = 0; i < orderBy.length; i++) {
@@ -1379,7 +1379,7 @@ define([
           }
         }
         else
-          query = RM.Index(orderBy.shortName, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+          query = RM.Index(orderBy[0].shortName, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
         
 //        }
 //        else
