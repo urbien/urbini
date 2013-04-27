@@ -802,7 +802,7 @@ define([
 //          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
 //        }
 //        else {
-        if (name.indexOf('_select') == -1  &&  meta[name].multiValue) {
+        if (val && name.indexOf('_select') == -1  &&  meta[name].multiValue) {
           atts[name] = res.get(name);
           var v = val.split(',');
           atts[name + '_select'] = v;

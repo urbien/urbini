@@ -75,15 +75,17 @@ define([
       return defaultErrorHandler;
     },
     errDialog: function(options) {
-      var msg = options.msg;
+      U.alert(options);
+//      var msg = options.msg;
       // TODO: fix this so we don't have to use alert
 
 //      alert(msg);
-      setTimeout(function() {
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
-        if (!options.nofade)
-          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
-      }, options.delay || 0);
+//      setTimeout(function() {
+//        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+//        if (!options.nofade)
+//          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+//      }, options.delay || 0);
+      
     }
   };
   

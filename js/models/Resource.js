@@ -732,12 +732,13 @@ define([
           if (!options.fromDB)
             this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
-          success && success.apply(this, arguments);
-          // trigger this first because "success" may want to redirect to mkresource for some app-related model
           if (isAppInstall)
             Events.trigger('appInstall', this);
           else if (isTemplate)
             Events.trigger('templateUpdate:' + this.get('templateName'), this);
+          
+          success && success.apply(this, arguments);
+          // trigger this first because "success" may want to redirect to mkresource for some app-related model
           
           Events.trigger('updatedResources', [this]);
           if (this.isNew()) // was a synchronous mkresource operation

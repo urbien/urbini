@@ -841,7 +841,7 @@ define([
 //      var APP_TERMS = 'Make sure you agree to this app\'s terms and conditions';
       var className = U.getModel(type).displayName;
       var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
-      var appInfo = appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
+      var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
       if (appInfo) {
         if (!appInfo.allowed) {
           var title = this._getInstallTitle(appInfo.davDisplayName);
@@ -966,7 +966,7 @@ define([
       var q = U.getQueryParams();
       var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
       if (msg)
-        Errors.errDialog({msg: msg});
+        U.alert({msg: msg, persist: true});
       
       this.errMsg = null, this.info = null;
     },

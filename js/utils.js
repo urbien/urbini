@@ -2876,10 +2876,12 @@ define([
     DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
     DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */',
     alert: function(options) {
-      var msg = options.msg;
-      $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
-      if (!options.nofade)
-        setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+      setTimeout(function() {
+        var msg = options.msg;
+        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+        if (!options.persist)
+          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+      }, options.delay || 0);
     },
     removeClasses: function(element, pattern) {
       element = element instanceof $ ? element : $(element); 

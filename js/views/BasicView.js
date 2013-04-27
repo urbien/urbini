@@ -13,6 +13,9 @@ define([
       this.TAG = this.TAG || this.constructor.displayName;
       G.log(this.TAG, 'new view', this.getPageTitle());
       options = options || {};
+      this.hash = U.getHash();
+      this.hashParams = U.getHashParams();
+
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
         this.rendered = true;

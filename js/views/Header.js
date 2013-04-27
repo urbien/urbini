@@ -59,8 +59,7 @@ define([
       this.makeTemplate('headerErrorBar', 'headerErrorBar', type);
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
-      var params = U.getHashParams();
-      this.info = params['-info'];
+      this.info = this.hashParams['-info'];
       
       var buttons = this.buttons;
       if (res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
@@ -157,8 +156,7 @@ define([
       
       if (!title) {
         if (hash) {
-          var params = U.getHashParams(hash);
-          title = params.$title;
+          title = this.hashParams.$title;
 //          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
         }
 
@@ -187,7 +185,6 @@ define([
     fileUpload: function(e) {
       Events.stopEvent(e);      
       debugger;
-      var params = U.getParamMap(window.location.hash);
       $('#fileUpload').attr('action', G.serverName + '/mkresource');
 //      var returnUri = $('$returnUri');
 //      if (returnUri) {
@@ -245,7 +242,6 @@ define([
       if (this.isEdit)
         return;
 
-      var params = U.getHashParams();
       _.each(SPECIAL_BUTTONS, function(btnName) {
         this[btnName] = false;
       }.bind(this));
@@ -281,7 +277,7 @@ define([
               this.testPlug = true;            
           }
           else {
-            if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+            if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  this.hashParams['-tournament'])
               this.enterTournament = true;
           }
         }
@@ -318,11 +314,10 @@ define([
       var hash = window.location.hash;
       var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
       if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
-        var params = U.getParamMap(hash);
-        var forResource = params['forResource'];
-        var location = params['$location'];
-        var returnUri = params['$returnUri'];
-        var pr = params['$prop'];
+        var forResource = this.hashParams['forResource'];
+        var location = this.hashParams['$location'];
+        var returnUri = this.hashParams['$returnUri'];
+        var pr = this.hashParams['$prop'];
         if (forResource  &&  location  &&  pr) {
           var type = U.getTypeUri(forResource);      
           var cModel = U.getModel(type);
@@ -379,7 +374,8 @@ define([
       this.info = null;
       this.$('#errList').find('.closeparent').click(this.checkErrorList);
       
-      if (!options.persist) {
+      var persistByDefault = !!(this.hashParams['-info'] || this.hashParams['-errMsg']);
+      if (options.persist === false || (_.isUndefined(options.persist) && !persistByDefault)) {
         setTimeout(function() {        
           $(errDiv).fadeOut(2000, function() {
             errDiv.html("");
