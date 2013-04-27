@@ -77,6 +77,14 @@ define([
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,
     
+    pruneProps: function(json) {
+      if (this.resource.isA("VideoResource")) {
+        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5")[0];
+        if (videoHtml5Prop)
+          delete json[videoHtml5Prop];
+      }
+    },
+    
     render: function() {
       var args = arguments;
 //      if (!this.ready)
@@ -106,6 +114,8 @@ define([
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
       var json = res.toJSON();
+      this.pruneProps(json);
+
       var frag = document.createDocumentFragment();
 
       var currentAppProps = U.getCurrentAppProps(meta);
