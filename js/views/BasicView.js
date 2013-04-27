@@ -15,7 +15,6 @@ define([
       options = options || {};
       this.hash = U.getHash();
       this.hashParams = U.getHashParams();
-
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
         this.rendered = true;
@@ -24,6 +23,8 @@ define([
       this._templates = [];
       this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
+      this.page = this.getPageView();
+      
       var res = this.data = this.model;
       if (this.model instanceof Backbone.Collection) {
         this.collection = res;

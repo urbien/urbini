@@ -51,7 +51,11 @@ define([
       else
         this.readyDfd.resolve();
 
-      Events.on('pageChange', this.destroy, this);
+      Events.on('pageChange', function() {
+        if (!this.page.isActive())
+          this.destroy();
+      }, this);
+      
       this.autoFinish = false;
       return this;
     },
@@ -60,6 +64,7 @@ define([
       this.audio && this.audio.pause();
       this.stream && this.stream.stop(); // turn off webcam
       this.$el && this.$el.empty() && this.$el.remove();
+      this.remove();
     },
     submit: function(e) {
       Events.stopEvent(e);
@@ -280,7 +285,7 @@ define([
     setDimensions: function() {
       var vWidth, vHeight; 
       if (!this.video.videoWidth) {
-        vWidth = this.getPageView().innerWidth() - this.padding();
+        vWidth = this.page.innerWidth() - this.padding();
         vHeight = Math.round(vWidth * 3 / 4);
       }
       else {
@@ -298,7 +303,7 @@ define([
 //    setDimensions: function() {
 //      var vWidth = this.width, vHeight;
 //      if (!this.video.videoWidth) {
-////        vWidth = this.getPageView().innerWidth() - this.padding();
+////        vWidth = this.page.innerWidth() - this.padding();
 //        vHeight = Math.round(this.width * 3 / 4);
 //      }
 //      else {
@@ -421,9 +426,9 @@ define([
         }
       }
       
-      if (!this.rendered) {
-        this.$popup.resize();
-      }
+//      if (!this.rendered) {
+//        this.$popup.resize();
+//      }
     },
     
     exportAudioForDownload: function() {
