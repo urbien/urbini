@@ -979,7 +979,7 @@
 </script>
 
 <script type="text/template" id="cameraPopupTemplate">
-  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" class="ui-content ui-body-d">
+  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
     <div>
     <video id="camVideo" autoplay="autoplay"></video>
     <canvas id="canvas" width="100%" height="0"></canvas>
@@ -988,13 +988,11 @@
       </div>
     {{ }                }}
     </div>
-        <a href="#" data-rel="back" data-role="button" id="cameraCancelBtn" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-        <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">{{= obj.video ? 'Record' : 'Shoot' }}</a>
-<!--        {{ if (obj.video) { }}
-          <a data-role="button" data-icon="play" id="cameraPlayBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">Play</a>
-        {{ }                }}
--->
-        <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">I'll take it</a>
+    <a href="#" data-rel="back" data-role="button" id="cameraCancelBtn" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+    <div style="text-align:center">
+      <a data-role="button" data-icon="{{= obj.video ? 'circle' : 'camera' }}" id="cameraShootBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">{{= obj.video ? 'Record' : 'Shoot' }}</a>
+      <a data-role="button" data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">I'll take it</a>
+    </div>
   </div>
 </script>
 

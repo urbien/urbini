@@ -59,8 +59,7 @@ define([
       this.video && this.video.pause();
       this.audio && this.audio.pause();
       this.stream && this.stream.stop(); // turn off webcam
-      this.$el.empty();
-      this.$el.remove();
+      this.$el && this.$el.empty() && this.$el.remove();
     },
     submit: function(e) {
       Events.stopEvent(e);
@@ -163,12 +162,13 @@ define([
      
       $('#cameraPopup').remove();
       $(doc.body).append(this.el);
-      var $popup = $('#cameraPopup');
-      this.setElement($popup[0]);
+      this.$popup = $('#cameraPopup');
+      this.setElement(this.$popup[0]);
 
-      $popup.trigger('create');
-      $popup.popup().popup("open");
-
+      this.$popup.trigger('create');
+      this.$popup.popup().popup("open");
+//      this.$popup.on('popupafterclose', this.destroy, this);
+      
       // video
       var streaming     = false;
       this.$video       = this.$('#camVideo');
@@ -419,6 +419,10 @@ define([
           this.video.play();
           this.$videoPrev && this.$videoPrev.hide();
         }
+      }
+      
+      if (!this.rendered) {
+        this.$popup.resize();
       }
     },
     

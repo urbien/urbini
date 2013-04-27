@@ -1099,7 +1099,8 @@ define([
     renderHelper: function(options) {
       var self = this;
       var args = arguments;
-      var meta = this.vocModel.properties;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
       
@@ -1120,9 +1121,9 @@ define([
       var editProps = editCols ? editCols.replace(/\s/g, '').split(',') : null;
         
       if (!editProps) {
-        propsForEdit = this.vocModel.propertiesForEdit;
+        propsForEdit = vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
-        if (!editProps  &&  this.action == 'make'  &&  this.vocModel.type.endsWith('WebProperty')) {
+        if (!editProps  &&  this.action == 'make'  &&  vocModel.type.endsWith('WebProperty')) {
           editProps = ['label', 'propertyType'];
         }  
       }
@@ -1307,6 +1308,11 @@ define([
         this.attachCodeMirror();
       }
       
+      if (!this.rendered) {
+        if (this.action === 'make' && res.isA("VideoResource") && U.getCloneOf(vocModel, "VideoResource.video").length)
+          $(this.$('a.cameraCapture')[0]).trigger('click');
+      }
+        
       return this;
     },
     

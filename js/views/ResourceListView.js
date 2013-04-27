@@ -322,10 +322,15 @@ define([
       }
       else {
         // HACK
-        setTimeout(function() {          
-          if (isMasonry || isModification)
+//        setTimeout(function() {
+        var aligned = false;
+        this.getPageView().$el.on('pageshow', function() {
+          if (!aligned && isMasonry || isModification) {
             this.alignBricks();
-        }.bind(this), 100);
+            aligned = true;
+          }
+        }.bind(this));
+//        }.bind(this), 100);
         // END HACK
         
         this.initializedListView = true;
