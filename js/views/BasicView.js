@@ -23,7 +23,7 @@ define([
       this._templates = [];
       this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
-      this.page = this.getPageView();
+      this.pageView = this.getPageView();
       
       var res = this.data = this.model;
       if (this.model instanceof Backbone.Collection) {

@@ -52,7 +52,7 @@ define([
         this.readyDfd.resolve();
 
       Events.on('pageChange', function() {
-        if (!this.page.isActive())
+        if (!this.pageView.isActive())
           this.destroy();
       }, this);
       
