@@ -80,28 +80,43 @@ define([
       this.photogridDfd = $.Deferred();
       this.photogridReady = this.photogridDfd.promise();
       var commonTypes = G.commonTypes;
+//      var inlineXBacklinks = U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}], true);
+//      if (_.size(inlineXBacklinks)) {
+//        this.doInlineBacklinks(inlineXBacklinks);
+//      }
+      
       var isApp = U.isAssignableFrom(res, commonTypes.App);
       var isUrbien = U.isAssignableFrom(res, commonTypes.Urbien);
-      if (isApp || isUrbien) {
+      var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist'));
+      if (isApp || isUrbien || isArtist) {
         var uri = res.getUri();
-        var friendType, friendName;
+        var friendType, friendName, title = 'Friends', friend1 = 'friend1', friend2 = 'friend2';
         if (isApp) {
           friendType = commonTypes.FriendApp;
           friendName = 'Connection'
         }
-        else {
+        else if (isUrbien) {
           friendType = commonTypes.Friend;
           friendName = 'Friend';
+        }
+        else if (isArtist) {
+          friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
+          friendName = 'ArtistImpression';
+          title = 'Impressions';
+          friend1 = 'impression';
+          friend2 = 'artist';
         }
 
         U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
           Voc.getModels(friendType).done(function() {              
+            var friendProps = {};
+            friendProps[friend1] = friendProps[friend2] = uri;
             self.friends = new ResourceList(null, {
               params: {
-                $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
+                $or: U.getQueryString(friendProps, {delimiter: '||'})
               },
               model: U.getModel(friendType),
-              title: 'Friends' //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+              title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
             });
             
             self.friends.fetch({
@@ -120,6 +135,45 @@ define([
       
       Events.on("mapReady", this.showMapButton);
     },
+//    doInlineBacklinks: function(bls) {
+//      var ranges = _.pluck(bls, "range");
+//      this.inlineXBacklinks = [];
+//      Voc.getModels(ranges).done(function() {
+//        _.each(inlineXBacklinks, function(bl) {
+//          var range = bl.range;
+//          var model = U.getModel(U.getTypeUri(range));
+//          if (U.isA(model, "Intersection")) {
+//            bl._model = model;
+//            self.inlineXBacklinks.push(bl);
+//          }
+//        });
+//        
+//        if (this.inlineXBacklinks.length) {
+//          U.require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
+//            _.each(self.inlineXBacklinks, function() {                
+//              self.friends = new ResourceList(null, {
+//                params: {
+//                  $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
+//                },
+//                model: U.getModel(friendType),
+//                title: 'Friends' //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+//              });
+//              
+//              self.friends.fetch({
+//                success: function() {
+//                  if (self.friends.size()) {
+//                    self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
+//                    self.photogridDfd.resolve();
+//    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
+//    //                header.insertBefore(self.photogrid.el);
+//                  }
+//                }
+//              });
+//            })
+//          });
+//        }
+//      });
+//    },
     events: {
       'click #edit': 'edit',
 //      'click': 'click',
