@@ -1536,6 +1536,9 @@ define([
      * @param className: class name or uri
      */
     isAssignableFrom: function(model, className) {
+      if (/\//.test(className))
+        className = U.getTypeUri(className);
+      
       model = U.isModel(model) || U.isCollection(model) ? model.vocModel : model;
       if (model.type == className ||  model.shortName == className || U.isA(model, className))
         return true;

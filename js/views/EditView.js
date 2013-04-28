@@ -1311,8 +1311,11 @@ define([
       if (!this.rendered) {
         if (this.action === 'make' && res.isA("VideoResource") && U.getCloneOf(vocModel, "VideoResource.video").length) {
           Events.on('pageChange', function() {
-            if (this.isActive())
-              $(this.$('a.cameraCapture')[0]).trigger('click');
+            if (this.isActive()) {
+              setTimeout(function() {
+                $(this.$('a.cameraCapture')[0]).trigger('click');
+              }.bind(this), 100);
+            }
           }.bind(this));
         }
       }

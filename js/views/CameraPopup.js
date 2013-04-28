@@ -285,7 +285,7 @@ define([
     setDimensions: function() {
       var vWidth, vHeight; 
       if (!this.video.videoWidth) {
-        vWidth = this.page.innerWidth() - this.padding();
+        vWidth = this.pageView.innerWidth() - this.padding();
         vHeight = Math.round(vWidth * 3 / 4);
       }
       else {

@@ -1359,7 +1359,7 @@ define([
       if (latLonQuery)
         query = query ? query.and(latLonQuery) : latLonQuery;
       
-      if (orderBy.length) {
+      if (orderBy && orderBy.length) {
         if (query) {  
           var distanceProp = positionProps.distance;
           for (var i = 0; i < orderBy.length; i++) {

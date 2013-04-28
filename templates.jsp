@@ -72,6 +72,15 @@
   </div>
 </script>  
 
+<script type="text/template" id="videoPlayerTemplate">
+  <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}"
+  {{ if (obj.poster) {               }}
+  {{= " poster='{0}'".format(poster) }}
+  {{ }                               }}
+  >
+    <source src="{{= src }}" type="video/mp4" />
+  </video>
+</script>
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->

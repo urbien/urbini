@@ -13,6 +13,24 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.twin = options.twin;
+      
+      var res = this.resource;
+      this.isVideo = res.isA('VideoResource');
+  
+//      this._videoProp = U.getCloneOf(this.vocModel, "VideoResource.video")[0];
+//      this.isLocalVideo = !!this._videoProp && res.get(this._videoProp);
+//      if (this.isLocalVideo) {
+//        this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
+//        this.videoDfd = $.Deferred();
+//        this.videoPromise = this.videoDfd.promise();
+//        if (this._videoProp && res.get(this._videoProp)) {
+//          this.isVideo = true;
+//          U.require(['lib/jplayer', 'lib/jplayer/jplayer.blue.monday.css'], function() {
+//            this.videoDfd.resolve();
+//          }.bind(this));
+//        }
+//      }
+      
       return this;
     },
     events: {
@@ -22,33 +40,85 @@ define([
       return this;
     },
     render: function(options) {
+      var res = this.resource;
       var meta = this.vocModel.properties;
       if (!meta)
         return this;
       
-      if (!this.resource.isA('ImageResource')) 
+      if (!res.isA('ImageResource')) 
         return this;
-      var json = this.resource.toJSON();
-      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('media/publishing/Video'))) {
-        var v = json.videoHtml5 || json.description;  
-        if (v) {
-          var frag = document.createDocumentFragment();
-          var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
-          U.addToFrag(frag, video);
-          if (json.videoHtml5)
-            delete json['videoHtml5'];
-          else
-            delete json['description'];
-          this.$el.html(frag);
-          return;
-        }
-      }
       
-//      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
       
+      var json = res.toJSON();
+      var self = this;
+      if (this.isVideo) {
+        if (this.hash.startsWith('edit/'))
+          return this;
+        
+        if (!_.has(this, '_videoUrl')) {
+          this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
+          this._videoUrl = res.get(this._videoUrlProp);
+          this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
+          this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
+        }
+        
+        if (this.isLocalVideo) {
+//          this.videoDfd.done(function() {
+          var info = {
+            src: this._videoUrl,
+            preload: 'auto'
+          };
+          
+          if (props.length)
+            info.poster = json[props[0]];
+
+          this.$el.html(this.template(info));
+            
+//            var settings = {
+//              m4v: json[self._videoprop]
+//            };
+//            
+//            if (props.length) {
+//              var poster = json[props[0]];
+//              if (poster)
+//                settings.poster = poster; 
+//            }
+//              
+//            self.$("#jquery_jplayer_1").jPlayer({
+//              ready: function () {
+//                $(this).jPlayer("setMedia", settings);
+//              },
+//              supplied: "m4v"
+//            });
+//          }.bind(this));
+        }
+        else {
+          var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
+          var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
+          var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
+          var desc = descProp && json[descProp];
+          
+          var v = videoHtml5 || desc;
+          if (v) {
+            var frag = document.createDocumentFragment();
+            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+            U.addToFrag(frag, video);
+            if (videoHtml5)
+              delete json[videoHtml5Prop];
+            else
+              delete json[descProp];
+            
+            this.$el.html(frag);
+          }
+        }
+        
+        return;
+      }
+      
+//      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var oWidth;
       var oHeight;
       if (props.length) {
