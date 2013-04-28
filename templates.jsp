@@ -73,7 +73,9 @@
 </script>  
 
 <script type="text/template" id="videoPlayerTemplate">
-  <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}"
+  <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}" 
+  {{= obj.width ? " width='{0}'.format(width)" : '' }}
+  {{= obj.height ? " height='{0}'.format(height)" : '' }}
   {{ if (obj.poster) {               }}
   {{= " poster='{0}'".format(poster) }}
   {{ }                               }}

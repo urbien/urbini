@@ -9,7 +9,7 @@ define([
 ], function(G, $, _, U, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.twin = options.twin;
@@ -34,6 +34,31 @@ define([
       return this;
     },
     events: {
+      'orientationchange': 'resizeVideo',
+      'resize': 'resizeVideo'
+    },
+    resizeVideo: function() {
+      if (!this.isLocalVideo || !this.video)
+        return;
+      
+      var padding = this.padding();
+      var maxWidth = this.pageView.innerWidth() - padding;
+      var maxHeight = this.pageView.innerHeight() - padding;
+      
+      var width = this.$video.width();
+      var height = this.$video.height();
+      if (!height) {
+        if (!width)
+          return;
+        
+        width = maxWidth;
+      }
+      
+      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight);
+      width /= downscaleRatio;
+      height /= downscaleRatio;
+      width && this.$video.attr('width', width);
+      width && this.$video.attr('height', height);
     },
     refresh: function() {
       G.log(this.TAG, "info", "refresh resource");
@@ -54,7 +79,7 @@ define([
       
       var json = res.toJSON();
       var self = this;
-      if (this.isVideo) {
+      if (this.isVideo && !this.video) {
         if (this.hash.startsWith('edit/'))
           return this;
         
@@ -75,8 +100,17 @@ define([
           if (props.length)
             info.poster = json[props[0]];
 
+//          var maxHeight = this.pageView.innerHeight() - padding;
+//          width && this.$video.attr('height', height);
+
           this.$el.html(this.template(info));
-            
+//          info.width = this.pageView.innerWidth() - this.padding();
+          this.$video = this.$('video');
+          this.video = this.$video[0];
+          this.video.addEventListener('loadstart', function() {
+            this.resizeVideo();
+          }.bind(this));
+          
 //            var settings = {
 //              m4v: json[self._videoprop]
 //            };
