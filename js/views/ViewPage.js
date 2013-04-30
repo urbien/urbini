@@ -5,15 +5,9 @@ define([
   'events',
   'views/BasicView',
   'views/Header',
-//  'views/BackButton',
-//  'views/LoginButton',
-//  'views/AroundMeButton',
-//  'views/MenuButton',
   'views/ResourceView',
-//  'views/ResourceImageView',
-//  'views/PhotogridView',
   'views/ControlPanel'
-], function(G, U, Events, BasicView, Header, /*BackButton, LoginButton, AroundMeButton, MenuButton,*/ ResourceView, /*ResourceImageView,*/ ControlPanel) {
+], function(G, U, Events, BasicView, Header, ResourceView, ControlPanel) {
   return BasicView.extend({
     clicked: false,
     initialize: function(options) {
@@ -56,20 +50,30 @@ define([
         else {
           viewType = 'views/ResourceImageView';
           this.imgDiv = 'div#resourceImage';
-        }
+        }        
       }
       
-      var self = this;
+      var self = this;        
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       if (viewType) {
-      U.require(viewType, function(viewMod) {
-        self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
-        self.readyDfd.resolve();
-//        renderDfd.done(self.imageView.finalize);
-      });
+        U.require(viewType, function(viewMod) {
+          self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
+          self.readyDfd.resolve();
+  //        renderDfd.done(self.imageView.finalize);
+        });
       }
 
+      this.hasChat = U.isUserInRole(U.getUserRole(), 'admin', res);
+      if (this.hasChat && !this.chat) {
+        this.chatDfd = $.Deferred();
+        this.chatPromise = this.chatDfd.promise();
+        U.require('views/Chat', function(chat) {
+          self.addChild('chat', new chat(_.extend({el: this.$('#chatbox'), video: true}, commonParams)));
+          self.chatDfd.resolve();
+        });
+      }
+      
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
         this.addChild('cpMain', new ControlPanel(_.extend({isMainGroup: true}, commonParams)));
@@ -78,7 +82,7 @@ define([
       
       this.addChild('view', new ResourceView(commonParams));
       this.photogridDfd = $.Deferred();
-      this.photogridReady = this.photogridDfd.promise();
+      this.photogridPromise = this.photogridDfd.promise();
       var commonTypes = G.commonTypes;
 //      var inlineXBacklinks = U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}], true);
 //      if (_.size(inlineXBacklinks)) {
@@ -201,20 +205,34 @@ define([
       this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true});
       return this;
     },
+
+    render: function() {
+      var args = arguments;
+      this.ready.done(function() {
+        this.renderHelper.apply(this, arguments);
+      }.bind(this));
+    },
     
-    render: function(options) {
+    renderHelper: function(options) {    
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;
       this.$el.html(this.template(json));      
       var self = this;
-      this.photogridReady.done(function() {        
+      this.photogridPromise.done(function() {        
         var pHeader = self.$('div#photogridHeader');
         var h3 = pHeader.find('h3');
         h3[0].innerHTML = self.friends.title;
         pHeader.removeClass('hidden');
         self.assign({
           'div#photogrid': self.photogrid
+        });
+      });
+
+      this.chatPromise.done(function() {        
+        var chatbox = self.$('div#chatbox');
+        self.assign({
+          'div#chatbox': self.chat
         });
       });
 
