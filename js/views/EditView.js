@@ -87,8 +87,8 @@ define([
     },
 
     capturedVideo: function(options) {
-      if (true)
-        return;
+//      if (true)
+//        return;
       
       var attachmentsUrlProp = U.getCloneOf(this.vocModel.properties, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {

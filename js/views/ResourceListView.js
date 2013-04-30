@@ -321,17 +321,11 @@ define([
           this.alignBricks();
       }
       else {
-        // HACK
-//        setTimeout(function() {
-        var aligned = false;
         this.getPageView().$el.on('pageshow', function() {
-          if (!aligned && isMasonry || isModification) {
+          if (isMasonry || isModification) {
             this.alignBricks();
-            aligned = true;
           }
         }.bind(this));
-//        }.bind(this), 100);
-        // END HACK
         
         this.initializedListView = true;
       }
@@ -551,14 +545,20 @@ define([
     },
     alignBricks: function(loaded) {
       // masonry is hidden
+      var self = this;
       if (this.$el.width() == 0) {
-        if (!loaded)
-          this.$el.load(function() {alignBricks(true)});
-        else
+        if (loaded) {
+          self.$el.masonry('reload');
           return;
+        }
+        else {
+          this.$el.load(function() {
+            G.log(self.TAG, 'event', 'masonry on $el load');
+            self.alignBricks(true);
+          });
+        }
       }
       
-      var self = this;
       var needToReload = false;
       // all bricks in masonry
       var $allBricks = $(this.$el.children());
@@ -584,13 +584,18 @@ define([
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
+        this.$el.masonry('reload');
         if (hasImgSize) {
-          this.$el.masonry( 'reload' );
           this.resumeScrollEventProcessing();
         }
-        else  
-          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self.resumeScrollEventProcessing(); });
-        return
+        else  {
+          this.$el.imagesLoaded( function(){ 
+            self.$el.masonry('reload'); 
+            self.resumeScrollEventProcessing(); 
+          });
+        }
+          
+        return;
       }
       
       //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
@@ -601,6 +606,7 @@ define([
         }
         else  
           this.$el.imagesLoaded( function(){ self.$el.masonry(); self.resumeScrollEventProcessing(); });
+        
         return;
       }
       

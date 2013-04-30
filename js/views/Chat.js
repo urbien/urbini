@@ -8,6 +8,36 @@ define([
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
   var WebRTC;
+//  var userId = G.currentUser._uri;
+//  
+//  userId = userId && U.getParamMap(userId).id
+//  function configWebRTC() {
+//    var createRoom = WebRTC.prototype.createRoom,
+//        joinRoom = WebRTC.prototype.joinRoom;
+//
+//    WebRTC.prototype.createPrivateRoom = function(name, cb) {
+//      this.roomIsPrivate = true;
+//      createRoom.apply(this, arguments);
+//    }
+//
+//    WebRTC.prototype.joinRoom = function(name) {
+//      if (!name.startsWith('private:')) {      
+//        joinRoom.apply(this, arguments);
+//      }
+//      else {
+//        if (G.currentUser.guest || !_.contains(name.slice(8).split(':'), userId)) {
+//          throw new Error("Oops! This is a private room, you can't join without an invitation");
+//          var participants = ;
+//        }
+//      }
+//    };
+//    
+//    WebRTC.prototype.inviteToRoom = function(name) {
+//      if (!this.participants)
+//        
+//    };
+//  }
+  
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
@@ -53,44 +83,53 @@ define([
     },
     
     startTextChat: function() {
-      var channel = new DataChannel();
-
-      // to create/open a new channel
-//      channel.open(encodeURIComponent(this.hash));
-      channel.onopen = function(userId) {
-        // to send text/data or file
-        debugger;
-        channel.send('first msg');        
-      };      
-
-      // error to open data ports
-      channel.onerror = function(event) {
-        debugger;
-      };
-    
-      // data ports suddenly dropped
-      channel.onclose = function(event) {
-        debugger;
-      };
+      var channel = new DataChannel('default-channel', {
+        // to create/open a new channel
+  //      channel.open(encodeURIComponent(this.hash));
+        onopen: function(userId) {
+          // to send text/data or file
+          debugger;
+          channel.send('first msg');        
+        },      
+  
+        // error to open data ports
+        onerror: function(event) {
+          debugger;
+        },
       
-      channel.onmessage = function(message, userid) {
-        debugger;
-      };
+        // data ports suddenly dropped
+        onclose: function(event) {
+          debugger;
+        },
+        
+        onmessage: function(message, userid) {
+          // send direct message to same user using his user-id
+          debugger;
+  //        channel.channels[userid].send('cool!');
+        },
+        
+        onleave: function(userid) {
+          // remove that user's photo/image using his user-id
+          debugger;
+        }
+//        ,
+//        openSignalingChannel: function(config) {
+//        
+//          var socket = io.connect('http://signaling.simplewebrtc.com:8888');
+//          socket.channel = config.channel || this.channel || 'default-channel';
+//          socket.on('message', config.onmessage);
+//          
+//          socket.send = function (data) {
+//            socket.emit('message', data);
+//          };
+//          
+//          if (config.onopen) setTimeout(config.onopen, 1);
+//          return socket;
+//        }
+      });
       
-      channel.open('urbien-channel');
+//      channel.open('urbien-channel');
 //      channel.connect('urbien-channel');
-//      channel.openSignalingChannel = function(config) {
-//        var socket = io.connect('http://signaling.simplewebrtc.com:8888');
-//        socket.channel = config.channel || this.channel || 'default-channel';
-//        socket.on('message', config.onmessage);
-//
-//        socket.send = function (data) {
-//          socket.emit('message', data);
-//        };
-//
-//        if (config.onopen) setTimeout(config.onopen, 1);
-//        return socket;
-//      };
     
 //      // if soemone already created a channel; to join it: use "connect" method
 //      channel.connect('channel-name');

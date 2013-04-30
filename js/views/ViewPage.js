@@ -64,7 +64,7 @@ define([
         });
       }
 
-      this.hasChat = U.isUserInRole(U.getUserRole(), 'admin', res);
+      this.hasChat = false;// U.isUserInRole(U.getUserRole(), 'admin', res);
       if (this.hasChat && !this.chat) {
         this.chatDfd = $.Deferred();
         this.chatPromise = this.chatDfd.promise();
@@ -229,7 +229,7 @@ define([
         });
       });
 
-      this.chatPromise.done(function() {        
+      this.chatPromise && this.chatPromise.done(function() {        
         var chatbox = self.$('div#chatbox');
         self.assign({
           'div#chatbox': self.chat

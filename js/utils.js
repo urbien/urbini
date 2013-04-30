@@ -9,6 +9,7 @@ define([
   'events'
 ], function(G, _, Backbone, Templates, $, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
+  var Blob = window.Blob;
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -169,8 +170,8 @@ define([
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-//          var data = opts.data;
-//          if (data) {
+          var data = opts.data;
+          if (data && Blob && U.filterObj(data, function(key, val) {val instanceof Blob}).length) {
 //            var my_form=document.createElement('FORM');
 //            my_form.name='form' + G.nextId();
 //            my_form.method='POST';
@@ -197,9 +198,9 @@ define([
 //              }
 ////                fd.append(prop, val);
 //            }
-//            
-////            opts.data = fd;
-//          }
+            
+//            opts.data = fd;
+          }
           
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
 //            debugger;
@@ -327,7 +328,9 @@ define([
         return G.commonTypes.Jst;
       }
       
-      route = hash.match('^view|menu|edit|make|chooser');
+      route = hash.match('^view|menu|edit|make|chooser|chat');
+//      debugger;
+//      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);
         if (sqlIdx == -1)
