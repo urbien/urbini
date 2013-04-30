@@ -16,6 +16,7 @@ define([
       
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
+      this.resource.on('change', this.refresh);
   
 //      this._videoProp = U.getCloneOf(this.vocModel, "VideoResource.video")[0];
 //      this.isLocalVideo = !!this._videoProp && res.get(this._videoProp);
@@ -41,27 +42,32 @@ define([
       if (!this.isLocalVideo || !this.video)
         return;
       
+      var v = this.video,
+          width = v.videoWidth || this.$video.width(),
+          height = v.videoHeight || this.$video.height(),
+          preventOversize = !!v.videoWidth;
+      
+      if (width && height) {
+        this._resizeVideo(width, v.videoHeight, preventOversize);
+        return;
+      }
+    },
+    
+    _resizeVideo: function(width, height, preventResizeOverOneHundredPercent) {
       var padding = this.padding();
       var maxWidth = this.pageView.innerWidth() - padding;
       var maxHeight = this.pageView.innerHeight() - padding;
-      
-      var width = this.$video.width();
-      var height = this.$video.height();
-      if (!height) {
-        if (!width)
-          return;
-        
-        width = maxWidth;
-      }
-      
-      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight);
-      width /= downscaleRatio;
-      height /= downscaleRatio;
-      width && this.$video.attr('width', width);
-      width && this.$video.attr('height', height);
+      width = width || maxWidth;
+      height = height || maxHeight;
+      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, preventResizeOverOneHundredPercent ? 1 : 0);
+      this.$video.attr('width', Math.round(width / downscaleRatio));
+      this.$video.attr('height', Math.round(height / downscaleRatio));
     },
+    
     refresh: function() {
       G.log(this.TAG, "info", "refresh resource");
+      this.$el.empty();
+      this.render();
       return this;
     },
     render: function(options) {
@@ -107,7 +113,7 @@ define([
 //          info.width = this.pageView.innerWidth() - this.padding();
           this.$video = this.$('video');
           this.video = this.$video[0];
-          this.video.addEventListener('loadstart', function() {
+          this.video.addEventListener('canplay', function() {
             this.resizeVideo();
           }.bind(this));
           
