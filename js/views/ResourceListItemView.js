@@ -13,7 +13,7 @@ define([
     tagName:"li",
     isCommonTemplate: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'recipeShoppingListHack', 'remove'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       this.checked = options.checked;
       this.resource.on('remove', this.remove, this);
@@ -60,7 +60,7 @@ define([
     },
     events: {
       'click': 'click',
-      'click .recipeShoppingList': 'recipeShoppingListHack',
+//      'click .recipeShoppingList': 'recipeShoppingListHack',
       'click .cancelItem': 'cancelItem'
     },
     cancelItem: function(e) {
@@ -75,45 +75,45 @@ define([
         }
       });
     },
-    recipeShoppingListHack: function(e) {
-      Events.stopEvent(e);
-      var self = this;
-      var args = arguments;
-      var rslModel = U.getModel('RecipeShoppingList');
-      if (!rslModel) {
-//        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
-        Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
-          self.recipeShoppingListHack.apply(self, args);
-        });
-        
-        return;
-      }
-        
-      var a = $(e.target).parent('a');
-      var href = a.attr('href') || a.attr('link');
-      var params = U.getQueryParams(href);
-      var recipeShoppingList = new rlsModel();
-      var props = {};
-      var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
-      var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
-      recipeShoppingList.save(props, {
-        success: function(model, response, options) {
-          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceFetch: true});
-        }, 
-        error: function(model, xhr, options) {
-          var json;
-          try {
-            json = JSON.parse(xhr.responseText).error;
-          } catch (err) {
-            G.log(self.TAG, 'error', 'couldn\'t create shopping list items, no error info from server');
-            return;
-          }
-          
-          Errors.errDialog({msg: json.details});
-          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
-        }
-      });
-    },
+//    recipeShoppingListHack: function(e) {
+//      Events.stopEvent(e);
+//      var self = this;
+//      var args = arguments;
+//      var rslModel = U.getModel('RecipeShoppingList');
+//      if (!rslModel) {
+////        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
+//        Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
+//          self.recipeShoppingListHack.apply(self, args);
+//        });
+//        
+//        return;
+//      }
+//        
+//      var a = $(e.target).parent('a');
+//      var href = a.attr('href') || a.attr('link');
+//      var params = U.getQueryParams(href);
+//      var recipeShoppingList = new rlsModel();
+//      var props = {};
+//      var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
+//      var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
+//      recipeShoppingList.save(props, {
+//        success: function(model, response, options) {
+//          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceFetch: true});
+//        }, 
+//        error: function(model, xhr, options) {
+//          var json;
+//          try {
+//            json = JSON.parse(xhr.responseText).error;
+//          } catch (err) {
+//            G.log(self.TAG, 'error', 'couldn\'t create shopping list items, no error info from server');
+//            return;
+//          }
+//          
+//          Errors.errDialog({msg: json.details});
+//          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
+//        }
+//      });
+//    },
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
