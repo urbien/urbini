@@ -51,14 +51,14 @@ define([
       }
       
       if (this.getUri() && !options.silent)
-        Events.trigger('newResource', this);
+        this.announceNewResource();
       else if (this.vocModel.type === commonTypes.Jst) {
         Events.trigger('newTemplate', this);
       }
       
       if (commonTypes.App == this.type) {
-        this.on('saved', function(options) {
-          var types = U.getTypes(this.vocModel);
+        Events.on('saved', function(res) {
+          var types = U.getTypes(res.vocModel);
           if (_.intersection(types, APP_TYPES).length) {
 //            debugger; // maybe check if the changes concern this app, or another
             this.set({'lastModifiedWebClass': +new Date()});
@@ -66,7 +66,16 @@ define([
         }.bind(this));
       }
       
+      this.on('saved', function() {
+        Events.trigger.apply(Events, ['saved', this].concat(U.slice.call(arguments)));
+      });
+      
       this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+    },
+    
+    announceNewResource: function() {
+      Events.trigger('newResource', this);
+      Events.trigger('newResource:' + this.type, this);
     },
     
     setModel: function(vocModel, options) {
@@ -698,7 +707,7 @@ define([
         this.triggerPlugs(options);
         this.notifyContainers();
         if (isNew) {
-          Events.trigger('newResource', this);
+          this.announceNewResource();
         }
         
         this.trigger('saved', this, options);
@@ -742,7 +751,7 @@ define([
           
           Events.trigger('updatedResources', [this]);
           if (this.isNew()) // was a synchronous mkresource operation
-            Events.trigger('newResource', this);
+            this.announceNewResource();
           else if (isNew) { 
             // completed sync with db
           }
