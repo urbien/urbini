@@ -64,7 +64,7 @@ define([
         });
       }
 
-      this.hasChat = false;// U.isUserInRole(U.getUserRole(), 'admin', res);
+      this.hasChat = false; //U.isUserInRole(U.getUserRole(), 'admin', res);
       if (this.hasChat && !this.chat) {
         this.chatDfd = $.Deferred();
         this.chatPromise = this.chatDfd.promise();
@@ -207,13 +207,6 @@ define([
     },
 
     render: function() {
-      var args = arguments;
-      this.ready.done(function() {
-        this.renderHelper.apply(this, arguments);
-      }.bind(this));
-    },
-    
-    renderHelper: function(options) {    
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;
