@@ -959,6 +959,7 @@ define([
     _.each(['updated', 'added', 'reset'], function(event) {
       Voc.stopListening(list, event);
       Voc.listenTo(list, event, function(resources) {
+        G.log(Voc.TAG, 'ajax', 'fetching linked/referred models for list:', list.query);
         Voc.fetchLinkedAndReferredModels(resources || list.models);
       });
     });
