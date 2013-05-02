@@ -280,7 +280,7 @@ define([
         $('form#mv').hide();
       if (!this.isEdit)
         $('form#editRlForm').hide();
-      if (this.vocModel.type === G.commonTypes.Handler) {
+      if (this.isPhotogrid) {
         this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
       }
