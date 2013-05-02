@@ -7,7 +7,19 @@ define([
   'events',
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
-  var WebRTC;
+//  var WebRTC;
+  
+//  var headID = document.getElementsByTagName("head")[0];         
+//  var newScript = document.createElement('script');
+//  newScript.type = 'text/javascript';
+//  newScript.src = 'http://simplewebrtc.com/latest.js';//
+//  headID.appendChild(newScript);
+//    var headID = document.getElementsByTagName("head")[0];         
+//    var newScript = document.createElement('script');
+//    newScript.type = 'text/javascript';
+//    newScript.src = 'https://raw.github.com/muaz-khan/WebRTC-Experiment/master/RTCMultiConnection/RTCMultiConnection-v1.2.js';
+//    headID.appendChild(newScript);
+  
 //  var userId = G.currentUser._uri;
 //  
 //  userId = userId && U.getParamMap(userId).id
@@ -46,12 +58,13 @@ define([
       this.hasVideo = options.video;
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
-      var req = ['lib/socket.io', 'lib/DataChannel'];
+//      var req = ['lib/socket.io', 'lib/DataChannel'];
+      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];
       if (this.hasVideo)
         req.push('lib/simplewebrtc');
       
       U.require(req).done(function(io, DC, simpleWebRTC) {
-        WebRTC = simpleWebRTC;
+        WebRTC = window.WebRTC || simpleWebRTC;
         this.readyDfd.resolve();
       }.bind(this));
       
@@ -77,64 +90,183 @@ define([
       }));
       
       if (!this.rendered) {
-        this.startTextChat();
-        this.hasVideo && this.startVideoChat();
+        this.startChat();
+//        this.startTextChat();
+//        this.hasVideo && this.startVideoChat();
       }
     },
     
-    startTextChat: function() {
-      var channel = new DataChannel('default-channel', {
-        // to create/open a new channel
-  //      channel.open(encodeURIComponent(this.hash));
+//    startTextChat: function() {
+//      var chatView = this;
+//      var i = 0;
+//      var channel = new DataChannel('urbien-channel', {
+//        onopen: function(userId) {
+//            // to send text/data or file
+//          channel.send('first msg');        
+//        },  
+//    
+//          // error to open data ports
+//        onerror: function(event) {
+//          debugger;
+//        },
+//        
+//          // data ports suddenly dropped
+//        onclose: function(event) {
+//          debugger;
+//        },
+//          
+//        onmessage: function(message, userid) {
+//          // send direct message to same user using his user-id        
+//          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
+//          if (i++ < 10)
+//            channel.send(message + i);
+//  //        channel.channels[userid].send('cool!');
+//        },
+//          
+//        onleave: function(userid) {
+//          // remove that user's photo/image using his user-id
+//          debugger;
+//        }
+////        ,
+////        openSignalingChannel: function(config) {
+////        
+////          var socket = io.connect('http://signaling.simplewebrtc.com:8888');
+////          socket.channel = config.channel || this.channel || 'default-channel';
+////          socket.on('message', config.onmessage);
+////          
+////          socket.send = function (data) {
+////            socket.emit('message', data);
+////          };
+////          
+////          if (config.onopen) setTimeout(config.onopen, 1);
+////          return socket;
+////        }
+//      });
+//      
+////      channel.open('urbien-channel');
+////      channel.connect('urbien-channel');
+//    
+////      // if soemone already created a channel; to join it: use "connect" method
+////      channel.connect('channel-name');
+//    },
+
+    startChat: function(options) {
+      var chatView = this;
+      var i = 0;
+//      var channel = new RTCMultiConnection('urbien', {
+//        onopen: function(userId) {
+//            // to send text/data or file
+//          debugger;
+//          channel.send('first msg');        
+//        },  
+//    
+//          // error to open data ports
+//        onerror: function(event) {
+//          debugger;
+//        },
+//        
+//          // data ports suddenly dropped
+//        onclose: function(event) {
+//          debugger;
+//        },
+//          
+//        onmessage: function(message, userid) {
+//          // send direct message to same user using his user-id        
+//          debugger;
+//          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
+//          if (i++ < 10)
+//            channel.send(message + i);
+//  //        channel.channels[userid].send('cool!');
+//        },
+//          
+//        onleave: function(userid) {
+//          // remove that user's photo/image using his user-id
+//          debugger;
+//        },
+//        
+//        onstream: function(stream){
+//          debugger;
+////          var video = stream.mediaElement;
+////
+////          // it is extra data passed from remote peer
+////          if (stream.type === 'remote') {
+////            var extra = stream.extra;
+////            video.poster = extra.username;
+////          }
+//          if (stream.type === 'local') {
+//            mainVideo.src = stream.blobURL;
+//          }
+//  
+//          if (stream.type === 'remote') {
+//            document.body.appendChild(stream.mediaElement);
+//          }
+//        }
+//      });
+      
+      var channelName = 'urbien';
+      var settings = {
+        channel: channelName,
+        session: this.hasVideo ? RTCSession.AudioVideo : this.hasAudio ? RTCSession.Audio : RTCSession.Data,
         onopen: function(userId) {
-          // to send text/data or file
+            // to send text/data or file
           debugger;
           channel.send('first msg');        
-        },      
-  
-        // error to open data ports
+        },  
+    
+          // error to open data ports
         onerror: function(event) {
           debugger;
         },
-      
-        // data ports suddenly dropped
+        
+          // data ports suddenly dropped
         onclose: function(event) {
           debugger;
         },
-        
+          
         onmessage: function(message, userid) {
-          // send direct message to same user using his user-id
+          // send direct message to same user using his user-id        
           debugger;
-  //        channel.channels[userid].send('cool!');
+          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
+          if (i++ < 10)
+            channel.send(message + i);
+    //        channel.channels[userid].send('cool!');
         },
-        
+          
         onleave: function(userid) {
           // remove that user's photo/image using his user-id
           debugger;
+        },
+        
+        onstream: function(stream){
+    //      // it is extra data passed from remote peer
+    //      if (stream.type === 'remote') {
+    //        var extra = stream.extra;
+    //        video.poster = extra.username;
+    //      }
+          
+          if (stream.type === 'local') {
+            var local = chatView.$('div#localVideo');
+            var localVideos = local.find('video');
+            if (localVideos.length)
+              localVideos.replaceWith(stream.mediaElement);
+            else
+              local.append(stream.mediaElement);
+          }
+    
+          if (stream.type === 'remote') {
+            var existing = chatView.$('div#remoteVideos video[src="{0}"]'.format(stream.blobURL));
+            if (existing.length)
+              existing.replaceWith(stream.mediaElement);
+            else
+              chatView.$('div#remoteVideos').append(stream.mediaElement);
+          }
         }
-//        ,
-//        openSignalingChannel: function(config) {
-//        
-//          var socket = io.connect('http://signaling.simplewebrtc.com:8888');
-//          socket.channel = config.channel || this.channel || 'default-channel';
-//          socket.on('message', config.onmessage);
-//          
-//          socket.send = function (data) {
-//            socket.emit('message', data);
-//          };
-//          
-//          if (config.onopen) setTimeout(config.onopen, 1);
-//          return socket;
-//        }
-      });
+      }
       
-//      channel.open('urbien-channel');
-//      channel.connect('urbien-channel');
-    
-//      // if soemone already created a channel; to join it: use "connect" method
-//      channel.connect('channel-name');
+      var channel = new RTCMultiConnection(channelName, settings);
+      channel.open();
     },
-    
+
     startVideoChat: function() {
       var webrtc = new WebRTC({
         // the id/element dom element that will hold "our" video
@@ -148,11 +280,8 @@ define([
       // we have to wait until it's ready
       var hash = this.hash;
       webrtc.on('readyToCall', function () {
-        debugger;
-      });
-      
-      webrtc.on('readyToCall', function () {
         // you can name it anything
+        debugger;
         webrtc.joinRoom(hash);
         self.$('div#localVideo video')[0].muted = true;
       });
