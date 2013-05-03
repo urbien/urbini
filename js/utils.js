@@ -1450,14 +1450,8 @@ define([
       var aCloneOf;
       var bCloneOf;
       var hasImgs;
-      if (U.isA(vocModel, 'ImageResource')) {
-        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
-          hasImgs = true;
-        else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
-          hasImgs = true;
-
-      }
-      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
+//      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
+      var isIntersection = this.isA(vocModel, 'Intersection'); 
       if (isIntersection) {
         aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured');
         bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured');
@@ -1465,6 +1459,13 @@ define([
           aCloneOf = aCloneOf[0], bCloneOf = bCloneOf[0];
           hasImgs = true;
         }
+      }
+      if (!hasImgs  &&  U.isA(vocModel, 'ImageResource')) {
+        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
+          hasImgs = true;
+        else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
+          hasImgs = true;
+
       }
       if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
