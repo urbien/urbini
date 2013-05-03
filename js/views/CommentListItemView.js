@@ -3,9 +3,10 @@ define([
   'globals',
   'jquery', 
   'underscore', 
-  'events', 
+  'events',
+  'utils',
   'views/BasicView'
-], function(G, $, _, Events, BasicView) {
+], function(G, $, _, Events, U, BasicView) {
   return BasicView.extend({
     tagName: 'tr',
     className: 'commentList',
