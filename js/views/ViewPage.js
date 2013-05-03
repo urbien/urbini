@@ -30,7 +30,7 @@ define([
 
       var params = U.getParamMap(window.location.hash);
       var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
-      var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fullScreen'];
+      var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
       var commonParams = {
         model: res,
         parentView: this,
@@ -64,7 +64,7 @@ define([
         });
       }
 
-      this.hasChat = U.isUserInRole(U.getUserRole(), 'admin', res);
+      this.hasChat = false; //U.isUserInRole(U.getUserRole(), 'admin', res);
       if (this.hasChat && !this.chat) {
         this.chatDfd = $.Deferred();
         this.chatPromise = this.chatDfd.promise();
@@ -91,8 +91,9 @@ define([
       
       var isApp = U.isAssignableFrom(res, commonTypes.App);
       var isUrbien = U.isAssignableFrom(res, commonTypes.Urbien);
-      var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist'));
-      if (isApp || isUrbien || isArtist) {
+      var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist')) || res.type.endsWith("/Artist");
+      var isMovie = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Movie')) || res.type.endsWith("/Movie");
+      if (isApp || isUrbien || isArtist  ||  isMovie) {
         var uri = res.getUri();
         var friendType, friendName, title = 'Friends', friend1 = 'friend1', friend2 = 'friend2';
         if (isApp) {
@@ -104,11 +105,20 @@ define([
           friendName = 'Friend';
         }
         else if (isArtist) {
-          friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
+//          friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
+          friendType = 'http://urbien.com/voc/dev/ImpressBackup/ArtistImpression';
           friendName = 'ArtistImpression';
           title = 'Impressions';
           friend1 = 'impression';
           friend2 = 'artist';
+        }
+        else if (isMovie) {
+  //        friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
+          friendType = 'http://urbien.com/voc/dev/ImpressBackup/MovieImpression';
+          friendName = 'MovieImpression';
+          title = 'Impressions';
+          friend1 = 'impression';
+          friend2 = 'movie';
         }
 
         U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
@@ -206,14 +216,7 @@ define([
       return this;
     },
 
-    render: function() {
-      var args = arguments;
-      this.ready.done(function() {
-        this.renderHelper.apply(this, arguments);
-      }.bind(this));
-    },
-    
-    renderHelper: function(options) {    
+    render: function(options) {
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;
@@ -229,7 +232,7 @@ define([
         });
       });
 
-      this.chatPromise.done(function() {        
+      this.chatPromise && this.chatPromise.done(function() {        
         var chatbox = self.$('div#chatbox');
         self.assign({
           'div#chatbox': self.chat
@@ -260,6 +263,8 @@ define([
      
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+      if (G.theme.backgroundImage) 
+        this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
       
 //      renderDfd.resolve();
 //      this.restyle();
