@@ -47,6 +47,12 @@ define([
 //        this.ready = true;
       
 //      this.setFilteredCollection();
+//      
+//      Events.on('pageChange', function() {
+//        if (this.isActive() && (this.isMasonry || this.isModification)) {
+//          this.forceReloadMasonry();
+//        }
+//      }.bind(this));
       return this;
     },
     events: {
@@ -58,7 +64,9 @@ define([
       var isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || 
                                        vocModel.type.endsWith('/Theme')      || 
                                        vocModel.type.endsWith('/App')        || 
-                                       vocModel.type.endsWith('/Goal') || 
+                                       vocModel.type.endsWith('/Goal')       ||
+                                       vocModel.type.endsWith('/Movie')      ||
+                                       U.isA(this.vocModel, "VideoResource") ||
                                        vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
 //      alert ('here we are');
       
@@ -126,7 +134,7 @@ define([
       var resources = rl.models;
       var vocModel = this.vocModel;
       var type = vocModel.type;
-      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
+      var isModification = this.isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
       canceled = canceled.length ? canceled[0] : null;
@@ -134,7 +142,7 @@ define([
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  && !this.isPhotogrid &&  _.any(['/Tournament', '/Theme', '/App', '/Goal', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Goal', '/Movie', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -322,15 +330,11 @@ define([
       }
       else {
         // HACK
-//        setTimeout(function() {
-        var aligned = false;
-        this.getPageView().$el.on('pageshow', function() {
-          if (!aligned && isMasonry || isModification) {
+        this.pageView.$el.on('pageshow', function() {
+          if (isMasonry || isModification) {
             this.alignBricks();
-            aligned = true;
           }
         }.bind(this));
-//        }.bind(this), 100);
         // END HACK
         
         this.initializedListView = true;
@@ -375,7 +379,14 @@ define([
 
     },
     
+    forceReloadMasonry: function() {
+      if (this.rendered)
+        this.$el.masonry('reload');
+    },
+    
     getNextPage: function() {
+      if (!this.rendered)
+        return this;
 //      var before = this.model.models.length;
 //
 //      console.log("called getNextPage");
@@ -551,14 +562,20 @@ define([
     },
     alignBricks: function(loaded) {
       // masonry is hidden
+      var self = this;
       if (this.$el.width() == 0) {
-        if (!loaded)
-          this.$el.load(function() {alignBricks(true)});
-        else
+        if (loaded) {
+          this.$el.masonry('reload');
           return;
+        }
+        else {
+          this.$el.load(function() {
+            G.log(self.TAG, 'event', 'masonry on $el load');
+            self.alignBricks(true);
+          });
+        }
       }
       
-      var self = this;
       var needToReload = false;
       // all bricks in masonry
       var $allBricks = $(this.$el.children());
@@ -584,13 +601,13 @@ define([
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
+        this.$el.masonry( 'reload' );
         if (hasImgSize) {
-          this.$el.masonry( 'reload' );
           this.resumeScrollEventProcessing();
         }
         else  
           this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self.resumeScrollEventProcessing(); });
-        return
+        return;
       }
       
       //  2. initial bricks alignment because there are no items with 'masonry-brick' class   
@@ -605,8 +622,10 @@ define([
       }
       
       // 3. nothing to align
-      if ($newBricks.length == 0)
+      if ($newBricks.length == 0) {
+        this.$el.masonry();
         return; // nothing to align
+      }
      
       // 4. align new bricks, on next page, only
       // filter unaligned "bricks" which do not have calculated, absolute position 
