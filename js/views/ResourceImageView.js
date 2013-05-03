@@ -144,7 +144,8 @@ define([
           var v = videoHtml5 || desc;
           if (v) {
             var frag = document.createDocumentFragment();
-            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+//            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+            var video = '<div align="center">' + v + '</div>';
             U.addToFrag(frag, video);
             if (videoHtml5)
               delete json[videoHtml5Prop];
@@ -227,7 +228,13 @@ define([
       var iTemplate = w ? "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "' />"
                         : "<img src='" + decodeURIComponent(propVal) +"' />";
       var li;
-
+/*
+      if (G.canWebcam  &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('commerce/urbien/Urbien'))  &&  this.resource.get('_uri') ==  G.currentUser._uri) {
+        var cOf = U.getCloneOf(this.vocModel, "FileSystem.attachments");
+        iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
+      }
+*/
+      
       var padding = w ? (15 - (maxW - w) / 2) : 0;
       padding = -padding;
       
