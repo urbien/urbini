@@ -49,13 +49,17 @@
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"></div>
-      <div id="mainGroup" class="ui-block-b" style="width: 32%; min-width: 130px"></div>
+      <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="chatbox"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
     <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
-    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="resourceView">
+    
+    {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
+          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">Woo me</a></div>
+    {{ } }}
+    <ul data-role="listview" data-inset="true" data-shadow="false" style="padding: 10px;" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
     
@@ -64,7 +68,7 @@
       <br/-->
     {{ } }}
     
-    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview">
+    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview" data-inset="true" style="padding: 10px;">
     </ul>
   </div>
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
@@ -112,7 +116,7 @@
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
-     <span style="white-space: normal;">{{= value }}</span>
+     <span style="white-space: normal;opacity:0.5;">{{= value }}</span>
   {{ } }}
   {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
@@ -593,40 +597,39 @@
       <ul id="headerUl">
       </ul>
     </div>
-    <div id="name" align="center">
+    <div id="name" class="resTitle" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <!--div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;border:1px solid #ccc;background: #ddd;" id="headerButtons" -->
-      <div align="center" class="{{= obj.className ? className : '' }}"  style="margin-top: -7px;" id="headerButtons">
-      <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
-        {{ if (obj.tryApp) { }}
-            {{= tryApp }}
-        {{ } }}
-      </div>
-      <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
-        {{ if (obj.forkMeApp) { }}
-            {{= forkMeApp }}
-        {{ } }}
-      </div>
-      <div style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
-        {{ if (obj.publishApp) { }}
-            {{= publish }}
-        {{ } }}
-      </div>
-      <div style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
-        {{ if (obj.testPlug) { }}
-            {{= testPlug }}
-        {{ } }}
-      </div>
-      <div style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
-        {{ if (obj.enterTournament) { }}
-            {{= enterTournament }}
-        {{ } }}
-      </div>
-      <div style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
-        {{ if (obj.resetTemplate) { }}
-            {{= resetTemplate }}
-        {{ } }}
-      </div>
+      <div align="center" {{= obj.className ? 'class="className"' : '' }} style="margin-top: -7px;" id="headerButtons">
+        <div style="max-width:200px; display: inline-block; padding-top:4px;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
+          {{ if (obj.tryApp) { }}
+              {{= tryApp }}
+          {{ } }}
+        </div>
+        <div style="max-width:200px; display: inline-block; padding-top:4px;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
+          {{ if (obj.forkMeApp) { }}
+              {{= forkMeApp }}
+          {{ } }}
+        </div>
+        <div style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
+          {{ if (obj.publishApp) { }}
+              {{= publish }}
+          {{ } }}
+        </div>
+        <div style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
+          {{ if (obj.testPlug) { }}
+              {{= testPlug }}
+          {{ } }}
+        </div>
+        <div style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
+          {{ if (obj.enterTournament) { }}
+              {{= enterTournament }}
+          {{ } }}
+        </div>
+        <div style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
+          {{ if (obj.resetTemplate) { }}
+              {{= resetTemplate }}
+          {{ } }}
+        </div>
       </div>
     </div>
     <div id="headerErrorBar">
@@ -652,8 +655,7 @@
   </a><br/>
   {{= (typeof description == 'undefined') ? title : description }}
   <br/>
-  <a class="like" data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'aspects/tags/Vote', {vote: 'Like', 'votable:' _uri, '-makeId': G.nextId()}) }}">
-  </a>
+  <a href="#" style="font-size: 12px" class="like"><i class="ui-icon-heart-empty"></i></a>
   <span>{{= typeof votes.count == 'undefined' ? '' : votes.count }}</span>
 </td>
 </script>
@@ -805,7 +807,7 @@
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
-        <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
+      <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
@@ -834,7 +836,6 @@
       </li>
       {{ if (arrow) { }}
          <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
-         <!--li style="float: left; top:60px; padding:0px; border:0;" data-inset="false"><i style="color: #FFC96C; font-size:20px;" class="ui-icon-chevron-right"></i></li-->
       {{ }                 }}
     {{ /items }}
     </ul>
@@ -877,7 +878,7 @@
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
 <div id="headerDiv"></div>
-<div id="resourceEditView">
+<div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>
   <form data-ajax="false" id="editForm" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
@@ -897,6 +898,11 @@
 
     </div>
   </form>
+  <br/>
+  {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
+    <table class="ui-btn-up-g" width="100%" style="padding: 5px" id="comments">
+    </table>
+  {{ } }}
 </div>
 
 
@@ -919,7 +925,7 @@
 
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
-  <li data-role="fieldcontain">{{= value }}
+  <li data-icon="false" data-role="fieldcontain">{{= value }}
   </li>
 </script>
 
@@ -996,7 +1002,7 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
-  {{ if (prop.range && (prop.range.endsWith('model/portal/Image') || prop.range.endsWith('model/portal/Video'))  && G.canWebcam) }}
+  {{ if (prop.range && ((prop.range.endsWith('model/portal/Image') && prop.camera) || prop.range.endsWith('model/portal/Video'))  && G.canWebcam) }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : 'camera' }}" data-prop="{{= shortName }}"></a>
   {{                                                              }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
