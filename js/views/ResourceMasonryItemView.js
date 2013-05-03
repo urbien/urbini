@@ -235,7 +235,7 @@ define([
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           comments = json[pMeta.shortName] || {count: 0};
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: comments.count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: comments.count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (m.isA('Votable')) {
@@ -245,7 +245,7 @@ define([
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
           votes = json[pMeta.shortName] || {count: 0};
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }
       
@@ -334,7 +334,7 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -343,7 +343,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -419,7 +419,7 @@ define([
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];          
-          tmpl_data.v_showCommentsFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -428,7 +428,7 @@ define([
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.encode(U.getLongUri1(rUri)), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
@@ -475,11 +475,11 @@ define([
       
       var commentsFor = tmpl_data.v_showCommentsFor;
       if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.encode(U.getLongUri1(json[commentsFor])); // + '&m_p=comments&b_p=forum');
+        tmpl_data['v_showCommentsFor'] = U.getLongUri1(json[commentsFor]); // + '&m_p=comments&b_p=forum');
   
       var votesFor = tmpl_data.v_showVotesFor;
       if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.encode(U.getLongUri1(json[votesFor])); //+ '&m_p=votes&b_p=votable');
+        tmpl_data['v_showVotesFor'] = U.getLongUri1(json[votesFor]); //+ '&m_p=votes&b_p=votable');
 
       var renabFor = tmpl_data.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
