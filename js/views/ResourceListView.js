@@ -565,11 +565,7 @@ define([
       var self = this;
       if (this.$el.width() == 0) {
         if (loaded) {
-<<<<<<< HEAD
           this.$el.masonry('reload');
-=======
-          self.$el.masonry('reload');
->>>>>>> 52a8d4ab22d1ece8dc9c8dbcb7d68715716cacf5
           return;
         }
         else {
@@ -605,14 +601,6 @@ define([
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
-<<<<<<< HEAD
-        this.$el.masonry( 'reload' );
-        if (hasImgSize) {
-          this.resumeScrollEventProcessing();
-        }
-        else  
-          this.$el.imagesLoaded( function(){ self.$el.masonry( 'reload' ); self.resumeScrollEventProcessing(); });
-=======
         this.$el.masonry('reload');
         if (hasImgSize) {
           this.resumeScrollEventProcessing();
@@ -624,7 +612,6 @@ define([
           });
         }
           
->>>>>>> 52a8d4ab22d1ece8dc9c8dbcb7d68715716cacf5
         return;
       }
       
