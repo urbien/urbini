@@ -125,6 +125,13 @@ define([
             U.copySubProps(currentUser, defaults, submittedBy);
           }
         }
+        
+        if (this.isNew()) {
+          var dateSubmitted = U.getCloneOf(vocModel, "Submission.dateSubmitted")[0];
+          if (dateSubmitted && !this.get(dateSubmitted)) {
+            defaults[dateSubmitted] = +new Date();
+          }          
+        }
       }
       
       if (!U.isAssignableFrom(this.vocModel, commonTypes.Jst)) { // templates.js is responsible for templates

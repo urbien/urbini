@@ -645,9 +645,9 @@ define([
       var forceFetch = options.forceFetch;
       var collection;
       if (!res) {
-        var collections = C.getResourceList(model);
-        if (collections) {
-          var result = collections[0].get(uri); // C.searchCollections(collections, uri);
+        var colCandidate = C.getResourceList(model);
+        if (colCandidate) {
+          var result = colCandidate.get(uri); // C.searchCollections(collections, uri);
           if (result) {
             collection = result.collection;
             res = result.resource;
