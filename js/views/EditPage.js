@@ -5,12 +5,16 @@ define([
   'underscore',
   'utils',
   'events',
+  'vocManager',
+  'cache',
+  'collections/ResourceList',
   'views/BasicView',
   'views/Header',
   'views/EditView',
   'views/ResourceImageView',
+  'views/ResourceListView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, BasicView, Header, EditView, ResourceImageView, ControlPanel) {
+], function(G, $, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     initialize: function(options) {
@@ -110,11 +114,56 @@ define([
         views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
-      if (this.header.noButtons)
-        this.header.$el.find('#headerButtons').css('display', 'none');
 
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+      if (G.theme.backgroundImage) 
+        this.$('#resourceEditView').css('background-image', 'url(' + G.theme.backgroundImage +')');
+
+      // Comments inline
+      var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));
+      if (!isComment) 
+        return this;
+      
+      var self = this;
+      var ranges = [];
+      ranges.push(this.vocModel.type);
+      var inlineLists = {};
+      Voc.getModels(ranges).done(function() {
+        var params = U.getParamMap(window.location.href);
+        var type = self.vocModel.type;
+        var listModel = U.getModel(type);
+        var inlineList = C.getResourceList(self.vocModel, U.getQueryString(params, true));
+        if (!inlineList) {
+          inlineList = new ResourceList(null, {model: self.vocModel, params: params});
+          inlineList.fetch({
+            success: function() {
+//              var currentlyInlined =  res.inlineLists || {};
+//              if (inlineList.size() && !res._settingInlineList) && !currentlyInlined[name]) {
+//                res.setInlineList(name, inlineList);
+//              }
+            self.addChild('commentsView', new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]}));
+            self.assign('#comments', self.commentsView);
+              
+//              _.each(['updated', 'added', 'reset'], function(event) {
+//                self.stopListening(inlineList, event);
+//                self.listenTo(inlineList, event, function(resources) {
+//                  resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+//                  var options = {};
+//                  options[event] = true;
+//                  var commonParams = {
+//                      model: rl,
+//                      parentView: this
+//                    };
+//
+//                  self.refresh(resources, options);
+//                });
+//              });
+            }
+          });
+        }
+      // end Comments
+      });
       
       return this;
     }
