@@ -1,3 +1,4 @@
+/*
 #homePage.demo:after {
   content: "";  
   z-index: -1;
@@ -10,6 +11,7 @@
   background: -o-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
   background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
 }
+*/
 #homePage.ui-body-c {background: none;background-image: none;text-shadow: 0 1px 0 #000; }
 #homePage span {color: #ddd; }
 .p div {color: #ddd; }
@@ -57,7 +59,7 @@ body {
   position:absolute;
   width:100%;
   bottom: 50%;
-  left:50%;
+  left:45%;
   height:1px;
   overflow:visible;
   opacity: 1;
