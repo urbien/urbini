@@ -39,19 +39,21 @@ define([
         else if (options.imageProperty) {
           this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
-          this.$el.attr("class", "image_fitted ui-btn ui-li ui-li-has-thumb");
+          this.$el.attr("class", "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static");
+          if (options.swatch)
+            this.$el.attr("class", "ui-li-up-" + options.swatch);
         }
         else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
         }
       }
-//      if (options.swatch) {
-//        this.$el.attr("data-theme", options.swatch);
-//      }
-      if (this.resource.isA("Buyable"))
+      if (options.swatch) {
+        this.$el.attr("data-theme", options.swatch);
+      }
+//      if (this.resource.isA("Buyable"))
         this.$el.attr("data-icon", "false");
-      else
-        this.$el.attr("data-icon", "chevron-right");
+//      else
+//        this.$el.attr("data-icon", "chevron-right");
    
    //      this.$el.attr("class", "image_fitted ui-btn ui-li-has-arrow ui-li ui-li-has-thumb ui-first-child ui-btn-up-c");
       // resourceListView will call render on this element
@@ -125,8 +127,16 @@ define([
           Events.stopEvent(e);
           Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         }
-        else 
-          this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        else { 
+          var pr;
+          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
+            this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+          else {
+            var r = U.getParamMap(window.location.href);
+            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
+          }
+            
+        }          
         return;
       }
       Events.stopEvent(e);
