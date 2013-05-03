@@ -110,7 +110,7 @@ define([
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getBacklinks(meta);
       var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
-      if (displayInline) {
+      if (displayInline && _.size(displayInline)) {
         res.off('inlineList', this.refreshOrRender, this);
         res.on('inlineList', this.refreshOrRender, this);
         if (_.size(res.inlineLists)) {
@@ -380,7 +380,11 @@ define([
 //        if (!this.innerHTML.startsWith('<i'))
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
-      
+//      
+//      this.$el.trigger('create');
+//      if (this.rendered)
+//        this.$el.listview('refresh');
+
       return this;
     }
   }, {
