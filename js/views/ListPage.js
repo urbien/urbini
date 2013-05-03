@@ -38,10 +38,22 @@ define([
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
       var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || 
-                                                        vocModel.type.endsWith('/Goal')       || 
+                                                        vocModel.type.endsWith('/Goal')             ||  
+                                                        vocModel.type.endsWith('/Movie')            ||
+                                                        U.isA(this.vocModel, "VideoResource")       || 
                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
+      /*
+      if (!this.isPhotogrid) {
+        if (U.isA(this.vocModel, "Intersection")) {
+          var af = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+          var bf = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
+          if (af.length  &&  bf.length)
+            this.isPhotogrid = true;
+        }
+      }
+      */
       var isGeo = this.isGeo = this.isGeo(); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
@@ -148,7 +160,9 @@ define([
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
       var isMasonry = this.isMasonry = !isChooser  &&  (this.vocModel.type.endsWith('/Tournament')                  || 
                                                         this.vocModel.type.endsWith('/Theme')                       || 
-                                                        this.vocModel.type.endsWith('/Goal')                        || 
+                                                        this.vocModel.type.endsWith('/Goal')                        ||
+                                                        U.isA(this.vocModel, "VideoResource")                       ||
+                                                        this.vocModel.type.endsWith('/Movie')                       ||
                                                         this.vocModel.type.endsWith('/App')                         || 
 //                                                        vocModel.type.endsWith('/NominationForConnecttion')    || 
                                                         this.vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
@@ -280,11 +294,14 @@ define([
         $('form#mv').hide();
       if (!this.isEdit)
         $('form#editRlForm').hide();
-      if (this.vocModel.type === G.commonTypes.Handler) {
+      if (this.isPhotogrid) {
         this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
       }
       
+      if (G.theme.backgroundImage) { 
+        this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
+      }
       return this;
     }
   }, {
