@@ -33,6 +33,7 @@ define([
 
     CollectionViews: {},
     MkResourceViews: {},
+    ChatViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -185,7 +186,26 @@ define([
     },
 
     chat: function(path) {
+      if (!this.ChatPage || !this.ChatView)
+        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
       
+      path = path.split("?");
+      var query = path[1];
+      path = path[0];
+      
+//      if (path === 'profile')
+//        path = U.getTypeUri(G.currentUser._uri);
+//      
+//      var typeUri = U.getTypeUri(decodeURIComponent(path));
+//      if (!this.isModelLoaded(typeUri, 'chat', arguments))
+//        return;
+      
+      var cPage = this.ChatViews[path];
+      if (!cPage)
+        cPage = this.ChatViews[path] = new this.ChatPage();
+//        cPage = this.ChatViews[path] = new this.ChatPage({model: U.getModel(typeUri)});
+      
+      this.changePage(cPage);
     },
     
     /**

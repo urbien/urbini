@@ -22,11 +22,12 @@ define([
     initialize: function(options) {
       _.bindAll.apply(_, [this, 'render'].concat(SPECIAL_BUTTONS));
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.template, 'template', this.vocModel.type);
+      var type = this.vocModel.type;
+      this.makeTemplate(this.template, 'template', type);
       
       _.each(SPECIAL_BUTTONS, function(btnName) {
         var tName = '{0}BtnTemplate'.format(btnName);
-        this.makeTemplate(tName, tName, this.vocModel.type);        
+        this.makeTemplate(tName, tName, type);        
       }.bind(this));
       
 //      this.makeTemplate('tryButtonTemplate', 'tryTemplate', this.vocModel.type);

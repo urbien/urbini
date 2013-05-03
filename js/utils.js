@@ -171,7 +171,7 @@ define([
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
           var data = opts.data;
-          if (data && Blob && U.filterObj(data, function(key, val) {val instanceof Blob}).length) {
+          if (data && Blob && U.filterObj(data, function(key, val) { return val instanceof Blob }).length) {
 //            var my_form=document.createElement('FORM');
 //            my_form.name='form' + G.nextId();
 //            my_form.method='POST';

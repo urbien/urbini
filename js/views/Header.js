@@ -38,14 +38,13 @@ define([
         this.getButtonViews();
       
 //      this.calcTitle();
-      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.vocModel.type);
+      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
       _.each(['info', 'error'], function(event) {
         var handler = this._updateInfoErrorBar;
         Events.off(event, handler);
         Events.on(event, handler);
       }.bind(this));
 
-      this.isGeo = this.isGeo();
       this.autoFinish = false;
       return this;
     },
@@ -53,7 +52,7 @@ define([
     getButtonViews: function() {
       var res = this.resource;
       var vocModel = this.vocModel;
-      var type = vocModel.type;
+      var type = vocModel && vocModel.type;
       
 //      _.extend(this, options);
       this.makeTemplate('headerErrorBar', 'headerErrorBar', type);
@@ -160,7 +159,7 @@ define([
 //          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
         }
 
-        if (!title) {
+        if (!title && res) {
           if (U.isCollection(res)) 
             title = U.getPlural(res);
           else {
@@ -223,6 +222,7 @@ define([
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
+        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe')) && this.isGeo();
         this.getButtonViews();
       }
         
@@ -405,8 +405,10 @@ define([
         this.$el.html(this.template());
 
       this.refreshTitle();
-      this.$el.prevObject.attr('data-title', this.pageTitle);
-      this.$el.prevObject.attr('data-theme', G.theme.list);
+//      this.$el.prevObject.attr('data-title', this.pageTitle);
+//      this.$el.prevObject.attr('data-theme', G.theme.list);
+      this.pageView.$el.attr('data-title', this.pageTitle);
+      this.pageView.$el.attr('data-theme', G.theme.list);
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var numBtns = _.size(btns);

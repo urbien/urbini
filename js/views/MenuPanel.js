@@ -14,12 +14,13 @@ define([
       _.bindAll(this, 'render','click', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.makeTemplate('menuP', 'template', this.vocModel.type);
-      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
-      this.makeTemplate('homeMenuItemTemplate', 'homeMenuItemTemplate', this.vocModel.type);
-      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
-      this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', this.vocModel.type);
-//      this.makeTemplate('filterTemplate', 'filterTemplate', this.vocModel.type);
+      var type = this.vocModel.type;
+      this.makeTemplate('menuP', 'template', type);
+      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
+      this.makeTemplate('homeMenuItemTemplate', 'homeMenuItemTemplate', type);
+      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
+      this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', type);
+//      this.makeTemplate('filterTemplate', 'filterTemplate', type);
       this.viewId = options.viewId;
       this.isPanel = true;
     },

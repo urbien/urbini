@@ -64,15 +64,15 @@ define([
         });
       }
 
-      this.hasChat = false; //U.isUserInRole(U.getUserRole(), 'admin', res);
-      if (this.hasChat && !this.chat) {
-        this.chatDfd = $.Deferred();
-        this.chatPromise = this.chatDfd.promise();
-        U.require('views/Chat', function(chat) {
-          self.addChild('chat', new chat(_.extend({el: this.$('#chatbox'), video: true}, commonParams)));
-          self.chatDfd.resolve();
-        });
-      }
+//      this.hasChat = U.isUserInRole(U.getUserRole(), 'admin', res);
+//      if (this.hasChat && !this.chat) {
+//        this.chatDfd = $.Deferred();
+//        this.chatPromise = this.chatDfd.promise();
+//        U.require('views/ChatView', function(chat) {
+//          self.addChild('chat', new chat(_.extend({el: this.$('#chatbox'), video: true}, commonParams)));
+//          self.chatDfd.resolve();
+//        });
+//      }
       
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {

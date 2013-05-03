@@ -14,9 +14,10 @@ define([
       _.bindAll(this, 'render','click', 'edit', 'buildActionsMenu', 'buildActionsMenuForList', 'buildActionsMenuForRes', 'swipeleft', 'swiperight');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.makeTemplate('menu', 'template', this.vocModel.type);
-      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
-      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
+      var type = this.vocModel.type;
+      this.makeTemplate('menu', 'template', type);
+      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
+      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
       this.router = G.Router || Backbone.history;
       Events.on("mapReady", this.showMapButton);
     },

@@ -30,17 +30,21 @@ define([
       this.pageView = this.getPageView();
       
       var res = this.data = this.model;
-      if (this.model instanceof Backbone.Collection) {
-        this.collection = res;
-        this.vocModel = res.model;
-      }
-      else {
-        this.resource = res;        
-        this.collection = res.collection;
-        this.vocModel = res.constructor;
-        res.on('modelChanged', function() {
-          this.vocModel = res.vocModel;
-        }.bind(this));
+      if (res) {
+        if (this.model instanceof Backbone.Collection) {
+          this.collection = res;
+          this.vocModel = res.model;
+        }
+        else {
+          this.resource = res;
+          this.collection = res.collection;
+          this.vocModel = res.constructor;
+          res.on('modelChanged', function() {
+            this.vocModel = res.vocModel;
+          }.bind(this));
+        }
+        
+        this.modelType = this.vocModel.type;
       }
       
       this.router = G.Router || Backbone.history;
@@ -300,7 +304,7 @@ define([
       var onePadding = this.$el.css('padding-' + one) || "0px",
           twoPadding = this.$el.css('padding-' + two) || "0px";
       
-      var padding = parseFloat(padding);
+      padding = parseFloat(padding);
       return (parseFloat(onePadding) || padding) 
            + (parseFloat(twoPadding) || padding);
     },

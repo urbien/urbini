@@ -17,7 +17,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.model.type);
+      this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
       return this;
     },
