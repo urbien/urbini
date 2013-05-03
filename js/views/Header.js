@@ -438,8 +438,12 @@ define([
       
       this.renderError();
       this.renderSpecialButtons();
-      this.$el.trigger('create');
       
+      this.$el.trigger('create');
+      if (this.isEdit  ||  this.noButtons) {
+        this.$el.find('#headerButtons').attr('class', 'hidden');
+//        this.$el.find('#name').removeClass('resTitle');
+      }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');
