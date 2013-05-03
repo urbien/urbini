@@ -193,12 +193,12 @@ define([
       var query = path[1];
       path = path[0];
       
-      if (path === 'profile')
-        path = U.getTypeUri(G.currentUser._uri);
-      
-      var typeUri = U.getTypeUri(decodeURIComponent(path));
-      if (!this.isModelLoaded(typeUri, 'chat', arguments))
-        return;
+//      if (path === 'profile')
+//        path = U.getTypeUri(G.currentUser._uri);
+//      
+//      var typeUri = U.getTypeUri(decodeURIComponent(path));
+//      if (!this.isModelLoaded(typeUri, 'chat', arguments))
+//        return;
       
       var cPage = this.ChatViews[path];
       if (!cPage)
