@@ -90,7 +90,7 @@ define([
       if (true)
         return;
       
-      var attachmentsUrlProp = U.getCloneOf(this.vocModel.properties, 'FileSystem.attachmentsUrl');
+      var attachmentsUrlProp = U.getCloneOf(this.vocModel, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {
         debugger;
         return;
@@ -1216,7 +1216,6 @@ define([
         this.$ul.trigger('create');
 
 //        this.$ul.listview('refresh');
-      
       var doc = document;
       var form = this.$form = this.$('form');
       var inputs = this.getInputs(); //form.find('input');
