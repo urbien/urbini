@@ -26,6 +26,12 @@ define([
       var colParams = U.getQueryParams(this.collection);
       colParams = colParams ? _.clone(colParams) : {};
       colParams['-makeId'] = G.nextId();
+      var params = U.getParamMap(window.location.href);
+      if (params['$type']) {
+        var forClass = U.isA(this.vocModel, "Referenceable") ? U.getCloneOf(this.vocModel, 'Referenceable.forClass') : (U.isA(this.vocModel, "Reference") ? U.getCloneOf(this.vocModel, 'Reference.forClass') : cl);
+        if (forClass  &&  forClass.length)
+          colParams[forClass[0]] = params['$type'];
+      }
       this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
       return this;
     },
