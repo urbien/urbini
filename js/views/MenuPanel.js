@@ -14,7 +14,7 @@ define([
       _.bindAll(this, 'render','click', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      var type = this.vocModel.type;
+      var type = this.modelType;
       this.makeTemplate('menuP', 'template', type);
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
       this.makeTemplate('homeMenuItemTemplate', 'homeMenuItemTemplate', type);
