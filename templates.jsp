@@ -77,14 +77,77 @@
   </div>
 </script>  
 
-<script type="text/template" id="chatTemplate">
-  <div id="chatHolder">
-    {{ if (obj.video) { }}
+<script type="text/template" id="chatPageTemplate">
+  <!-- Chat page -->
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="headerDiv"></div>
+  <div id="chatDiv" role="main">
+  </div>
+  
+  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
+  </div-->
+</script>  
+
+<script type="text/template" id="chatMessageTemplate">
+  <table width="100%">
+    <tr>
+      {{ if (!obj.self && obj.senderIcon) { }}
+        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /></td> 
+      {{ }                 }}
+      
+      <td width="100%">
+        <div class="{{= 'bubble' + (obj.sender ? (obj.self ? '-left' : '-right') : '') }}">
+          {{ if (obj.sender) { }}
+            <span class="{{= obj.self ? 'speaker-self' : 'speaker-other' }}">{{= sender }}</span> ({{= time }}): 
+          {{ }                 }}
+      
+          <span class="{{= obj.sender ? (obj.self ? 'chat-message-outgoing' : 'chat-message-incoming') : 'chat-info' }}">{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</span>
+        </div>
+      </td>
+      
+      {{ if (obj.self && obj.senderIcon) { }}
+        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-left:10px" /></td> 
+      {{ }                 }}
+    </tr>
+  </table>
+</script>
+
+<script type="text/template" id="chatViewTemplate">
+  <div id="chatHolder" class="chat-holder">
+  {{ if (obj.video) { }}
+    <div id="videoChat">
       <div id="localVideo"></div>
       <div id="remoteVideos"></div>
-    {{ }                }}
-  
-    <div id="textChat">
+    
+      <!--div data-role="fieldcontain">
+        <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
+          <label data-icon="video" for="toggleVideoBtn"></label>
+          <input type="checkbox" name="toggleAudioBtn" id="toggleAudioBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
+          <label data-icon="video" for="toggleAudioBtn"></label>
+        </fieldset>
+      </div-->
+      
+      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop video' : 'Send video' }}</button-->
+      <div data-role="fieldcontain" data-mini="true">
+        <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
+          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
+          <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Send video' }}</label>
+        </fieldset>
+      </div>
+
+      <br /><hr /><br />
+    </div>
+  {{ }                }}
+    <div id="textChat" style="margin: 0px 10px 0px 10px">
+      <!--h3>Text Chat</h3-->
+      <div id="messages" width="100%">
+      </div>
+      <div id="chatInputs">
+        <input type="text" id="chatMessageInput" value="" />
+        <button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button>
+      </div>
     </div>
   </div>
 </script>

@@ -15,10 +15,11 @@ define([
       _.bindAll(this, 'render', 'grab', 'release');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      this.makeTemplate('rightMenuP', 'template', this.vocModel.type);
-      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', this.vocModel.type);
-      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', this.vocModel.type);
-      this.makeTemplate('menuHeaderTemplate', 'headerTemplate', this.vocModel.type);
+      var type = this.vocModel.type;
+      this.makeTemplate('rightMenuP', 'template', type);
+      this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
+      this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
+      this.makeTemplate('menuHeaderTemplate', 'headerTemplate', type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
       Events.on('pageChange', this.destroy, this);

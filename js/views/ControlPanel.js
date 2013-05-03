@@ -15,12 +15,13 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', this.vocModel.type);
-      this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', this.vocModel.type);
-      this.makeTemplate('cpTemplate', 'cpTemplate', this.vocModel.type);
-      this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', this.vocModel.type);
-      this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', this.vocModel.type);
-      this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', this.vocModel.type);
+      var type = this.vocModel.type;
+      this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
+      this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
+      this.makeTemplate('cpTemplate', 'cpTemplate', type);
+      this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
+      this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', type);
+      this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.resource.on('change', this.refresh, this);
       this.isMainGroup = options.isMainGroup;
 //      this.resource.on('inlineList', this.setInlineList, this);

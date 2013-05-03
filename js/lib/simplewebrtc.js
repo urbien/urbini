@@ -207,8 +207,8 @@ function WebRTC(opts) {
         config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
             log: false,
-            localVideoEl: '',
-            remoteVideosEl: '',
+            localVideo: {},
+            remoteVideos: {},
             autoRequestMedia: false,
             // makes the entire PC config overridable
             peerConnectionConfig: {
@@ -308,18 +308,27 @@ WebRTC.prototype.getEl = function (idOrEl) {
 // and either the video tag itself or a container
 // that will be used to put the video tag into.
 WebRTC.prototype.getLocalVideoContainer = function () {
-    var el = this.getEl(this.config.localVideoEl);
+    var el = this.getEl(this.config.localVideo._el);
     if (el && el.tagName === 'VIDEO') {
         return el;
     } else {
         var video = document.createElement('video');
+        var options = this.config.localVideo;
+        if (options) {
+          for (var opt in options) {
+            if (!/_/.test(opt))
+              video[opt] = options[opt];
+          }
+        }
+        
         el.appendChild(video);
+        this.emit('appendedLocalVideo');
         return video;
     }
 };
 
 WebRTC.prototype.getRemoteVideoContainer = function () {
-    return this.getEl(this.config.remoteVideosEl);
+    return this.getEl(this.config.remoteVideos._el);
 };
 
 WebRTC.prototype.startVideoCall = function (id) {
@@ -359,8 +368,10 @@ WebRTC.prototype.testReadiness = function () {
         // This timeout is a workaround for the strange no-audio bug
         // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
         // remove timeout when this is fixed.
+        var sessionid = self.connection.socket.sessionid;
+        self.emit('sessionstart', sessionid);
         setTimeout(function () {
-            self.emit('readyToCall', self.connection.socket.sessionid);
+            self.emit('readyToCall', sessionid);
         }, 1000);
     }
 };
@@ -482,8 +493,17 @@ Conversation.prototype.answer = function () {
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
         el = document.createElement('video'),
-        container = this.parent.getRemoteVideoContainer();
+        container = this.parent.getRemoteVideoContainer(),
+        options = this.remoteVideos;
+    
     el.id = this.id;
+    if (options) {
+      for (var opt in options) {
+        if (!/_/.test(opt))
+          el[opt] = options[opt];
+      }
+    }
+
     attachMediaStream(el, stream);
     if (container) container.appendChild(el);
     this.emit('videoAdded', el);
