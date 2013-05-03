@@ -87,8 +87,8 @@ define([
     },
 
     capturedVideo: function(options) {
-      if (true)
-        return;
+//      if (true)
+//        return;
       
       var attachmentsUrlProp = U.getCloneOf(this.vocModel, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {
@@ -182,11 +182,12 @@ define([
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
       var modules = ['mobiscroll'];
-      if (scrollerType === 'duration')
+      var scrollers = self.getScrollers();
+      if (_.any(scrollers, function(s) { return s.dataset.duration }))
         modules.push('mobiscroll-duration');
       
       U.require(modules, function() {
-        _.each(self.getScrollers(), function(input) {
+        _.each(scrollers, function(input) {
           var name = input.name;
           var prop = meta[name];
           // default to enum
@@ -789,7 +790,7 @@ define([
           meta = vocModel.properties;
       
       var atts = {};
-      // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes
+      // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes (except for those with default values, like select lists)
       for (var i = 0; i < inputs.length; i++) {
         var input = inputs[i];
         var name = input.name;
@@ -816,6 +817,8 @@ define([
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
         }
+        else if (val)
+          atts[name] = val;
       }
       
       var succeeded = false;
@@ -1309,8 +1312,12 @@ define([
       
       if (!this.rendered) {
         if (this.action === 'make' && res.isA("VideoResource") && U.getCloneOf(vocModel, "VideoResource.video").length) {
+//          this.pageView.$el.one('pageshow', function() {
+//            $(this.$('a.cameraCapture')[0]).trigger('click');            
+//          }.bind(this));
           Events.on('pageChange', function() {
             if (this.isActive()) {
+              $.mobile.silentScroll(0);
               setTimeout(function() {
                 $(this.$('a.cameraCapture')[0]).trigger('click');
               }.bind(this), 100);

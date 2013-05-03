@@ -17,7 +17,11 @@ define([
       this.hashParams = U.getHashParams();
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
-        this.rendered = true;
+        if (!this.rendered) {
+          this.rendered = true;
+          if (this.pageView === this)
+            this.$el.one('pageshow', this.scrollToTop);
+        }
       }.bind(this));
       
       this._templates = [];
@@ -144,6 +148,10 @@ define([
     
     finish: function() {
       this._loadingDfd.resolve();
+    },
+    
+    scrollToTop: function() {
+      $.mobile.silentScroll(0);
     },
     
     getTemplate: function(templateName, type) {

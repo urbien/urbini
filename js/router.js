@@ -27,6 +27,7 @@ define([
       "edit/*path"                                             : "edit", 
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
+      "chat/*path"                                             : "chat", 
       ":type/:backlink"                                        : "list"
     },
 
@@ -47,6 +48,7 @@ define([
     urlsStack: [],
 //    LoginView: null,
     initialize: function () {
+//      G._routes = _.clone(this.routes);
       this.firstPage = true;
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
@@ -182,6 +184,10 @@ define([
       this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
+    chat: function(path) {
+      
+    },
+    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */

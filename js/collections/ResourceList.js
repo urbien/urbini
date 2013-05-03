@@ -43,7 +43,7 @@ define([
       this.parseQuery(options._query);
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
       if (options.cache !== false)
-        Events.trigger('newResourceList', this);
+        this.announceNewList();
       
 //      this.on('updated', function() {
 //        debugger;
@@ -57,17 +57,17 @@ define([
 //        debugger;
 //      });
 
-      Events.on('newResource', function(resource, options) {
+      Events.on('newResource:' + this.type, function(resource, options) {
         // we are adding this resource to this collection at the moment
-        if (this.adding)
+        if (this.adding || this.get(resource))
           return;
         
-        if (this.get(resource))
+        if (!resource.isNew() && resource.collection) // wait for newResourceList event and check all in bulk
           return;
         
-        var types = U.getTypes(resource.vocModel);
-        if (!_.contains(types, this.type))
-          return;
+//        var types = U.getTypes(resource.vocModel);
+//        if (!_.contains(types, this.type))
+//          return;
         
         if (this.belongsInCollection(resource)) {
           this.add(resource);
@@ -75,11 +75,44 @@ define([
         }
       }.bind(this));
       
+      
+      Events.on('newResourceList:' + this.type, function(list) {
+        if (list === this)
+          return;
+        
+//        var types = U.getTypes(list.vocModel);
+//        if (!_.contains(types, this.type))
+//          return;
+        
+        var candidates = list.filter(function(res) {
+          return !this.get(res);
+        }.bind(this));
+        
+        if (!candidates.length)
+          return;
+        
+        var added = [];
+        _.each(candidates, function(resource) {
+          if (this.belongsInCollection(resource))
+            this.add(resource) && added.push(resource);
+        }.bind(this));
+        
+        if (added.length)
+          this.trigger('added', added);
+        
+      }.bind(this));
+      
 //      this.sync = this.constructor.sync;
       
       this.monitorQueryChanges();
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
     },
+    
+    announceNewList: function() {
+      Events.trigger('newResourceList', this);
+      Events.trigger('newResourceList:' + this.type, this);
+    },
+    
     monitorQueryChanges: function() {
       if (!this.params || !_.size(this.params))
         return;

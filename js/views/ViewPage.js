@@ -216,7 +216,7 @@ define([
       return this;
     },
 
-    render: function(options) {
+    render: function() {
       var res = this.resource;
       var json = res.toJSON();
       json.viewId = this.cid;

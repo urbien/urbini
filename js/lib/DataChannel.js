@@ -19,7 +19,7 @@
 
         this.channels = {};
         this.onopen = function (userid) {
-            self.send(userid, 'is connected with you.');
+            self.send('is connected with you.');
         };
 
         this.onclose = function (event) {
@@ -235,6 +235,10 @@
         this.leave = function (userid) {
             dataConnector.leave(userid);
         };
+        
+        for (var extra in extras) {
+          this[extra] = extras[extra];
+        }
     };
 
     window.moz = !!navigator.mozGetUserMedia;
