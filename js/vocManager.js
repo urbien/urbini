@@ -127,7 +127,7 @@ define([
       }
       
 //      _.extend(Voc.mightBeStale, mightBeStaleModels);
-      return $.Deferred(function(defer) {
+      var modelsDfd = $.Deferred(function(defer) {
         if (G.online)
           return Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, willLoad, options).done(defer.resolve).fail(defer.reject);
           
@@ -136,7 +136,12 @@ define([
         });
         
         Voc.loadModels(_.union(willLoad, _.values(mightBeStale.models))).done(defer.resolve).fail(defer.reject);
-      }).promise();
+      });
+      
+      var modelsPromise = modelsDfd.promise();
+      modelsDfd.__modelsDeferredId = G.nextId();
+      modelsPromise.__modelsPromiseId = G.nextId();
+      return modelsPromise;
     },
         
     __fetchAndLoadModels: function(missingOrStale, mightBeStale, willLoad, options) {
