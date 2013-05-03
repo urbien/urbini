@@ -102,7 +102,7 @@ define([
 
       var params = U.getParamMap(window.location.hash);
       var isApp = U.isAssignableFrom(res, G.commonTypes.App);
-      var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fullScreen'];
+      var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
 //      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
       if (isAbout  &&  isApp) {
         this.$el.removeClass('hidden');
@@ -110,7 +110,7 @@ define([
         this.$el.trigger('create');      
         return this;
       }
-      
+
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
       var json = res.toJSON();
@@ -223,7 +223,7 @@ define([
           continue;
   
         if (numDisplayed  &&  !groupNameDisplayed) {
-          otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin:0px;">Other</h3><ul data-role="listview" style="margin: -10px 0px;">';
+          otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
