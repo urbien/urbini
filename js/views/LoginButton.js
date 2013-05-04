@@ -33,7 +33,7 @@ define([
 //      this.popupTemplate = this.makeTemplate(this.popupTemplate);
 //      this.makeTemplate(this.loginTemplate, 'loginTemplate');
 //      this.logoutTemplate = this.makeTemplate(this.logoutTemplate);
-      this.makeTemplate(this.loginTemplate, 'template', this.vocModel.type); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
+      this.makeTemplate(this.loginTemplate, 'template', this.modelType); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
       return this;
     },
 

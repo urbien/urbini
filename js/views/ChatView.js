@@ -150,8 +150,8 @@ define([
       
       var me = G.currentUser;
       if (me) {
-        this.myName = me.davDisplayName;
-        this.myIcon = me.thumb;
+        this.myName = me.davDisplayName || 'Anonymous';
+        this.myIcon = me.thumb || 'icons/male_thumb.jpg';
       }
       else {
         this.myName = 'Anonymous';
@@ -184,18 +184,27 @@ define([
         onmessage: function(message, userid) {
           // send direct message to same user using his user-id        
           G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
-          var userInfo;
-          if (!chatView.userIdToName[userid]) {
-            userInfo = JSON.parse(message);
-            chatView.userIdToName[userid] = userInfo;
-            chatView.$messages.append(chatView.messageTemplate({
-              message: userInfo.name + ' has entered the room',
-              self: false,
-              time: getTime()
-            }));
+          var data;
+          try {
+            data = JSON.parse(message);
+          } catch (err) {
+          }
+          
+          if (data) {
+            if (!chatView.userIdToName[userid]) {
+              chatView.userIdToName[userid] = data;
+              chatView.$messages.append(chatView.messageTemplate({
+                message: data.name + ' has entered the room',
+                self: false,
+                time: getTime()
+              }));
+            }
+            else {
+              debugger;
+            }
           }
           else {
-            userInfo = chatView.userIdToName[userid];
+            var userInfo = chatView.userIdToName[userid];
             chatView.$messages.append(chatView.messageTemplate({
               senderIcon: userInfo.icon,
               sender: userInfo.name,
