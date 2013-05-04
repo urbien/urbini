@@ -169,7 +169,7 @@ define([
         
           // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
-          debugger;
+//          debugger;
 //          chatView.chat = chat = null;
 //          setTimeout(chatView.resurrectTextChat, 1000); // doesn't work if called from onclose directly, i guess there's some cleanup still to be done
         },
@@ -191,9 +191,6 @@ define([
                 self: false,
                 time: getTime()
               });
-            }
-            else {
-              debugger;
             }
           }
           else {
