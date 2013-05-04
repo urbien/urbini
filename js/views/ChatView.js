@@ -86,6 +86,7 @@ define([
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
       this.autoFinish = false;
     },
+    
     events : {
       'orientationchange': 'resizeVideo',
       'resize': 'resizeVideo',
@@ -149,7 +150,7 @@ define([
       var chatView = this;
       var i = 0;
       this.disableChat();
-      var chat = this.chat = new DataChannel('urbien-channel', {
+      this.chat = new DataChannel('urbien-channel', {
         onopen: function(userId) {
             // to send text/data or file
           G.log(chatView.TAG, 'chat', 'connected with', userId);
@@ -169,8 +170,8 @@ define([
           // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
           debugger;
-          chatView.chat = chat = null;
-          setTimeout(chatView.resurrectTextChat, 1000); // doesn't work if called from onclose directly, i guess there's some cleanup still to be done
+//          chatView.chat = chat = null;
+//          setTimeout(chatView.resurrectTextChat, 1000); // doesn't work if called from onclose directly, i guess there's some cleanup still to be done
         },
           
         onmessage: function(message, userid) {
@@ -185,11 +186,11 @@ define([
           if (data) {
             if (!chatView.userIdToInfo[userid]) {
               chatView.userIdToInfo[userid] = data;
-              chatView.$messages.append(chatView.messageTemplate({
+              chatView.addMessage({
                 message: data.name + ' has entered the room',
                 self: false,
                 time: getTime()
-              }));
+              });
             }
             else {
               debugger;
@@ -197,13 +198,13 @@ define([
           }
           else {
             var userInfo = chatView.userIdToInfo[userid];
-            chatView.$messages.append(chatView.messageTemplate({
+            chatView.addMessage({
               senderIcon: userInfo.icon,
               sender: userInfo.name,
               message: message,
               self: false,
               time: getTime()
-            }));
+            });
           }
         },
           
@@ -211,11 +212,11 @@ define([
           // remove that user's photo/image using his user-id
           var whoLeft = chatView.userIdToInfo[userid];
           if (whoLeft) {
-            chatView.$messages.append(chatView.messageTemplate({
+            chatView.addMessage({
               message: whoLeft.name + ' has left the room',
               self: false,
               time: getTime()
-            }));
+            });
             
             delete chatView.userIdToInfo[userid];
             if (!_.size(chatView.userIdToInfo))
@@ -254,6 +255,17 @@ define([
       this.startTextChat();
     },
     
+    addMessage: function(info) {
+      var height = $(document).height();
+      var atBottom = this.atBottom();
+      this.$messages.append(this.messageTemplate(info));
+      if (atBottom) {
+        $('html, body').animate({
+          scrollTop: $(document).height()
+        }, 200);
+      }
+    },
+    
     sendMessage: function(e) {
       e && Events.stopEvent(e);
       var msg = this.chatInput.value;
@@ -261,13 +273,13 @@ define([
         return;
       
       this.chat.send(msg);
-      this.$messages.append(this.messageTemplate({
+      this.addMessage({
         sender: 'Me', //this.myName,
         senderIcon: this.myIcon,
         message: msg,
         self: true,
         time: getTime()
-      }));
+      });
       
       this.chatInput.value = '';
 //      this.restyle();

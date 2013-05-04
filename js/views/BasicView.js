@@ -196,6 +196,11 @@ define([
       return template;
     },  
     
+    atBottom: function() {
+      var $w = $(window);
+      return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
+    },
+    
     addChild: function(name, view) {
       this.children = this.children || {};
       this[name] = this.children[name] = view;
