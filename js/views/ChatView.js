@@ -16,7 +16,7 @@ define([
     var hours = now.getHours();
     var ampm = hours < 12 ? 'AM' : 'PM';
     hours = hours % 12;
-    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes() + ampm));
+    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes()) + ampm);
   }
   
   var WebRTC;
@@ -65,7 +65,7 @@ define([
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideo', 'resurrectTextChat'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.autoVideo = options.autoVideo;
@@ -120,11 +120,6 @@ define([
     },
     
     enableChat: function() {
-//      this.$('#chatInputs').children().each(function() {
-//        var $this = $(this);
-//        $this.find('input').removeClass('ui-disabled');
-//        $this.find('button').removeClass('ui-disabled');
-//      });
       this.$('#chatSendButton').button('enable');
       this.$('#chatMessageInput').removeClass('ui-disabled');
     },
@@ -132,38 +127,33 @@ define([
     disableChat: function() {
       this.$('#chatSendButton').button().button('disable');
       this.$('#chatMessageInput').addClass('ui-disabled');
-//      this.$('#chatInputs').children().each(function() {
-//        var $this = $(this);
-//        $this.find('input').addClass('ui-disabled');
-//        $this.find('button').addClass('ui-disabled');
-//      });
     },
     
     startTextChat: function() {
+      if (!this.rendered) {
+        this.$messages = this.$('#messages');
+        this.$sendMessageBtn = this.$('#chatSendButton');
+        this.$chatInput = this.$("#chatMessageInput");
+        this.chatInput = this.$chatInput[0];
+        this.userIdToInfo = {};      
+        var me = G.currentUser;
+        if (me) {
+          this.myName = me.davDisplayName || 'Anonymous';
+          this.myIcon = me.thumb || 'icons/male_thumb.jpg';
+        }
+        else {
+          this.myName = 'Anonymous';
+        }
+      }
+      
       var chatView = this;
       var i = 0;
-      this.$messages = chatView.$('#messages');
-      this.$sendMessageBtn = this.$('#chatSendButton');
-      this.$chatInput = this.$("#chatMessageInput");
-      this.chatInput = this.$chatInput[0];
-      this.userIdToName = {};
-      
-      var me = G.currentUser;
-      if (me) {
-        this.myName = me.davDisplayName;
-        this.myIcon = me.thumb;
-      }
-      else {
-        this.myName = 'Anonymous';
-      }
-      
       this.disableChat();
       var chat = this.chat = new DataChannel('urbien-channel', {
         onopen: function(userId) {
             // to send text/data or file
-//          channel.send('you have been connected to' + userId);
           G.log(chatView.TAG, 'chat', 'connected with', userId);
-          chat.send(JSON.stringify({
+          this.send(JSON.stringify({
             name: chatView.myName,
             icon: chatView.myIcon
           }));
@@ -176,26 +166,37 @@ define([
           debugger;
         },
         
-          // data ports suddenly dropped
+          // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
-//          debugger;
+          debugger;
+          chatView.chat = chat = null;
+          setTimeout(chatView.resurrectTextChat, 1000); // doesn't work if called from onclose directly, i guess there's some cleanup still to be done
         },
           
         onmessage: function(message, userid) {
           // send direct message to same user using his user-id        
           G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
-          var userInfo;
-          if (!chatView.userIdToName[userid]) {
-            userInfo = JSON.parse(message);
-            chatView.userIdToName[userid] = userInfo;
-            chatView.$messages.append(chatView.messageTemplate({
-              message: userInfo.name + ' has entered the room',
-              self: false,
-              time: getTime()
-            }));
+          var data;
+          try {
+            data = JSON.parse(message);
+          } catch (err) {
+          }
+          
+          if (data) {
+            if (!chatView.userIdToInfo[userid]) {
+              chatView.userIdToInfo[userid] = data;
+              chatView.$messages.append(chatView.messageTemplate({
+                message: data.name + ' has entered the room',
+                self: false,
+                time: getTime()
+              }));
+            }
+            else {
+              debugger;
+            }
           }
           else {
-            userInfo = chatView.userIdToName[userid];
+            var userInfo = chatView.userIdToInfo[userid];
             chatView.$messages.append(chatView.messageTemplate({
               senderIcon: userInfo.icon,
               sender: userInfo.name,
@@ -204,14 +205,11 @@ define([
               time: getTime()
             }));
           }
-//          if (i++ < 10)
-//            channel.send(message + i);
-  //        channel.channels[userid].send('cool!');
         },
           
         onleave: function(userid) {
           // remove that user's photo/image using his user-id
-          var whoLeft = chatView.userIdToName[userid];
+          var whoLeft = chatView.userIdToInfo[userid];
           if (whoLeft) {
             chatView.$messages.append(chatView.messageTemplate({
               message: whoLeft.name + ' has left the room',
@@ -219,34 +217,28 @@ define([
               time: getTime()
             }));
             
-            delete chatView.userIdToName[userid];
-            if (!_.size(chatView.userIdToName)) {
+            delete chatView.userIdToInfo[userid];
+            if (!_.size(chatView.userIdToInfo))
               chatView.disableChat();
-//              chat.leave();
-//              chatView.chat = null;
-            }
           }
         }
-//        ,
-//        openSignalingChannel: function(config) {
-//        
-//          var socket = io.connect('http://signaling.simplewebrtc.com:8888');
-//          socket.channel = config.channel || this.channel || 'default-channel';
-//          socket.on('message', config.onmessage);
-//          
-//          socket.send = function (data) {
-//            socket.emit('message', data);
-//          };
-//          
-//          if (config.onopen) setTimeout(config.onopen, 1);
-//          return socket;
-//        }
+    //    ,
+    //    openSignalingChannel: function(config) {
+    //    
+    //      var socket = io.connect('http://signaling.simplewebrtc.com:8888');
+    //      socket.channel = config.channel || this.channel || 'default-channel';
+    //      socket.on('message', config.onmessage);
+    //      
+    //      socket.send = function (data) {
+    //        socket.emit('message', data);
+    //      };
+    //      
+    //      if (config.onopen) setTimeout(config.onopen, 1);
+    //      return socket;
+    //    }
       });
       
-//      chat.open('urbien-channel');
-//      chat.connect('urbien-channel');
-    
-//      // if soemone already created a channel; to join it: use "connect" method
+//      // if someone already created a channel; to join it: use "connect" method
 //      channel.connect('channel-name');
       
       this.$chatInput.bind("keydown", function(event) {
@@ -256,8 +248,10 @@ define([
           chatView.$sendMessageBtn.trigger('click');
         }
       });
-      
-      this.restyle();
+    },
+    
+    resurrectTextChat: function() {
+      this.startTextChat();
     },
     
     sendMessage: function(e) {
@@ -397,6 +391,12 @@ define([
         autoRequestMedia: true
       });
       
+//      var webrtc = this.webrtc = new WebRTC({
+//        localVideoEl: 'localVideo', // the id/element dom element that will hold "our" video
+//        remoteVideosEl: 'remoteVideos', // the id/element dom element that will hold remote videos
+//        autoRequestMedia: true  // immediately ask for camera access
+//      });
+      
       // we have to wait until it's ready
       var hash = this.hash;
       webrtc.on('appendedLocalVideo', function () {
@@ -412,6 +412,7 @@ define([
       });
       
       webrtc.on('readyToCall', function () {
+        debugger;
         webrtc.joinRoom(hash);
       });
     },
