@@ -98,6 +98,12 @@ define([
       'click #endVideoCall': 'endVideoCall'
     },
     
+    getRoomName: function() {
+      var hash = this.hash.slice(this.hash.indexOf('/') + 1); // cut off chat/
+      var name = hash.replace(/[^a-zA-Z0-9]/ig, '');
+      return name;
+    },
+    
     render: function() {
       var args = arguments;
       this.ready.done(function() {
@@ -122,12 +128,16 @@ define([
     
     enableChat: function() {
       this.$('#chatSendButton').button('enable');
-      this.$('#chatMessageInput').removeClass('ui-disabled');
+      var $input = this.$('#chatMessageInput');
+      $input.removeClass('ui-disabled');
+      $input[0].value = '';
     },
     
     disableChat: function() {
       this.$('#chatSendButton').button().button('disable');
-      this.$('#chatMessageInput').addClass('ui-disabled');
+      var $input = this.$('#chatMessageInput');
+      $input.addClass('ui-disabled');
+      $input[0].value = 'Chat room is empty...';
     },
     
     startTextChat: function() {
@@ -150,7 +160,7 @@ define([
       var chatView = this;
       var i = 0;
       this.disableChat();
-      this.chat = new DataChannel('urbien-channel', {
+      this.chat = new DataChannel(this.getRoomName(), {
         onopen: function(userId) {
             // to send text/data or file
           G.log(chatView.TAG, 'chat', 'connected with', userId);
@@ -188,8 +198,9 @@ define([
               chatView.userIdToInfo[userid] = data;
               chatView.addMessage({
                 message: data.name + ' has entered the room',
-                self: false,
-                time: getTime()
+                time: getTime(),
+                senderIcon: data.icon,
+                info: true
               });
             }
           }
@@ -211,8 +222,9 @@ define([
           if (whoLeft) {
             chatView.addMessage({
               message: whoLeft.name + ' has left the room',
-              self: false,
-              time: getTime()
+              time: getTime(),
+              senderIcon: whoLeft.icon,
+              info: true
             });
             
             delete chatView.userIdToInfo[userid];
