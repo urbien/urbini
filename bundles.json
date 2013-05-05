@@ -9,7 +9,7 @@
     js: ['views/BasicView', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/AroundMeButton', 'views/ResourceImageView', 'views/MapItButton', 
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 'views/RightMenuPanel', 'views/MapView', 'views/PublishButton', 
          'lib/leaflet', 'lib/leaflet.markercluster', 'maps', 'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/codemirror', 'lib/codemirrorXMLMode', 'lib/codemirrorHTMLMode', 'lib/codemirrorJSMode', 'lib/codemirrorCSSMode', 'lib/swipeview', 'views/CameraPopup', 'lib/whammy',
-         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'lib/RTCMultiConnection', 'views/ChatView', 'views/ChatPage', 'views/ChatButton'],
+         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'views/ChatView', 'views/ChatPage', 'views/ChatButton'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css', '../styles/codemirror.css']
   },
   appcache: {
