@@ -132,11 +132,18 @@ define([
     
     getRoomName: function() {
       var hash = this.hash.slice(this.hash.indexOf('/') + 1); // cut off chat/
+      
       if (/\?/.test(hash))
         hash = hash.slice(0, hash.indexOf('?'));
       
+      hash = decodeURIComponent(hash);
+      if (hash === 'profile')
+        hash = G.currentUser._uri;
+      
+      if (hash.startsWith(G.sqlUrl))
+        hash = hash.slice(G.sqlUrl.length);
       var name = hash.replace(/[^a-zA-Z0-9]/ig, '');
-      return 'urbien-' + name;
+      return name;
     },
     
     render: function() {
