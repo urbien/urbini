@@ -185,28 +185,47 @@ define([
       this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
-    chat: function(path) {
-      if (!this.ChatPage || !this.ChatView)
-        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
-      
-      path = path.split("?");
-      var query = path[1];
-      path = path[0];
-      
-//      if (path === 'profile')
-//        path = U.getTypeUri(G.currentUser._uri);
+//    chat: function(path) {
+//      if (!this.ChatPage || !this.ChatView)
+//        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
 //      
-//      var typeUri = U.getTypeUri(decodeURIComponent(path));
+//      var params = U.getHashParams();
+//      var qIdx = path.indexOf("?");
+//      var uri = qIdx == -1 ? path : path.slice(0, qIdx);
+//      if (uri == 'profile') {
+//        var p = _.size(params) ? path.slice(qIdx + 1) : '';
+//        if (!G.currentUser.guest) {
+//          uri = G.currentUser._uri;
+//        }
+//        else {
+//          Events.trigger('req-login', 'Please login');
+//          return;
+//        }        
+//      }
+//      else
+//        uri = U.getLongUri1(decodeURIComponent(uri));
+//      
+//      var typeUri = U.getTypeUri(uri);
 //      if (!this.isModelLoaded(typeUri, 'chat', arguments))
 //        return;
-      
-      var cPage = this.ChatViews[path];
-      if (!cPage)
-        cPage = this.ChatViews[path] = new this.ChatPage();
-//        cPage = this.ChatViews[path] = new this.ChatPage({model: U.getModel(typeUri)});
-      
-      this.changePage(cPage);
-    },
+//      
+//      var res = C.getResource(uri);
+//      if (!res) {
+//        var model = U.getModel(typeUri);
+//        res = new model();
+//        res.fetch();
+//      }
+//      
+//      var cPage = this.ChatViews[uri];
+//      if (!cPage) {
+//        cPage = this.ChatViews[uri] = new this.ChatPage({
+//          model: res
+//        });
+//      }
+////        cPage = this.ChatViews[path] = new this.ChatPage({model: U.getModel(typeUri)});
+//      
+//      this.changePage(cPage);
+//    },
     
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
@@ -571,14 +590,36 @@ define([
       }
       else {
         try {
-          this.view.call(this, path, true);
+          this.view.call(this, path, 'edit');
         } finally {
           if (G.currentUser.guest)
             Events.trigger('req-login');
         }
       }
     },
-    
+
+    chat: function(path) {
+      if (!this.ChatPage || !this.ChatView)
+        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
+      else if (G.currentUser.guest) {
+        Events.trigger('req-login', {
+          onDismiss: function() {
+            Events.trigger('back');
+          }
+        });
+        
+        return;
+      }
+      else {
+        try {
+          this.view.call(this, path, 'chat');
+        } finally {
+          if (G.currentUser.guest)
+            Events.trigger('req-login');
+        }
+      }
+    },
+
     _updateCache: function(oldUri, newUri) {
       _.each([this.EditViews, this.Views, this.MkResourceViews], function(views) {
         var cached = views[oldUri];
@@ -587,13 +628,18 @@ define([
       });
     },
     
-    view: function (path, edit) {
-      if (!edit && !this.ViewPage)
-        return this.loadViews('ViewPage', this.view, arguments);
+    /**
+     * handles view, edit and chat mode (action)
+     */
+    view: function (path, action) {
+      var edit = action === 'edit',
+          chat = action === 'chat';
       
-      var action = edit ? 'edit' : 'view';
-      var views = this[edit ? 'EditViews' : 'Views'];
-      var viewPageCl = edit ? this.EditPage : this.ViewPage;
+      if (!edit && !chat && !this.ViewPage)
+        return this.loadViews('ViewPage', this.view, arguments);
+
+      var views = this[edit ? 'EditViews' : chat ? 'ChatViews' : 'Views'];
+      var viewPageCl = edit ? this.EditPage : chat ? this.ChatPage : this.ViewPage;
 
       var params = U.getHashParams();
       var qIdx = path.indexOf("?");
@@ -606,7 +652,13 @@ define([
         uri = path.slice(0, qIdx);
         query = path.slice(qIdx + 1);
       }
-      
+
+      if (chat && /[0-9]+/.test(uri)) {
+        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage();
+        this.changePage(chatPage);
+        return;
+      }      
+
       if (uri == 'profile') {
         var p = _.size(params) ? path.slice(qIdx + 1) : '';
         if (!G.currentUser.guest) {
@@ -704,7 +756,13 @@ define([
 //        Voc.fetchModelsForLinkedResources(res);
       };
       
-      res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
+      if (chat) {
+        res.fetch();
+        success();
+      }
+      else
+        res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
+      
       return true;
     },
     

@@ -46,6 +46,8 @@ define([
       }.bind(this));
 
       this.autoFinish = false;
+      this.isEdit = this.hash.startsWith('edit/');
+      this.isChat = this.hash.startsWith('chat/');
       return this;
     },
     
@@ -61,7 +63,7 @@ define([
       this.info = this.hashParams['-info'];
       
       var buttons = this.buttons;
-      if (res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
+      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
         buttons.publish = true;
       }
       
@@ -239,7 +241,7 @@ define([
     },
 
     calcSpecialButtons: function() {
-      if (this.isEdit)
+      if (this.isEdit || this.isChat)
         return;
 
       _.each(SPECIAL_BUTTONS, function(btnName) {
@@ -285,7 +287,7 @@ define([
     },
     
     renderSpecialButtons: function() {
-      if (this.isEdit)
+      if (this.isEdit || this.isChat)
         return;
       
       _.each(SPECIAL_BUTTONS, function(btn) {
@@ -442,7 +444,7 @@ define([
       this.renderSpecialButtons();
       
       this.$el.trigger('create');
-      if (this.isEdit  ||  this.noButtons) {
+      if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        this.$el.find('#name').removeClass('resTitle');
       }

@@ -80,6 +80,7 @@
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="chatDiv" role="main">
   </div>
@@ -106,7 +107,12 @@
             <img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /> 
           {{ }                 }}
           
-          <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</span>
+          <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">
+            {{ if (obj.isPrivate) { }}
+              <span class="private-message"><i> (Private message) </i></span> 
+            {{ }                 }}
+            {{= obj.sender ? message : '{0} ({1})'.format(message, time) }}
+          </span>
         </div>
       </td>
       
@@ -133,11 +139,11 @@
         </fieldset>
       </div-->
       
-      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop video' : 'Send video' }}</button-->
+      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</button-->
       <div data-role="fieldcontain" data-mini="true">
         <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
           <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
-          <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Send video' }}</label>
+          <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</label>
         </fieldset>
       </div>
 
@@ -543,7 +549,9 @@
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
-  <a target="#" data-icon="comments-alt">Chat</a>
+  <a href="{{= url }}" data-icon="comments-alt">Chat
+    {{= obj.unreadMessages ? '<span class="menuBadge">' + unreadMessages + '</span>' : '' }}
+  </a>
 </script>
 
 <script type="text/template" id="addButtonTemplate">
@@ -560,7 +568,8 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">Properties</a>
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + (obj.count ? '<span class="menuBadge">' + count + '</span>' : '') }}
+  </a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">

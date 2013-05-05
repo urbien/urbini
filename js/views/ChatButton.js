@@ -9,24 +9,25 @@ define([
     templateName: 'chatButtonTemplate',
     tagName: 'li',
     id: 'chat',
-    events: {
-      'click': 'chat'
-    },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'chat');
+      _.bindAll(this, 'render'); //, 'chat');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType); // fall back to default template if there is none specific to this particular model
       return this;
     },
-    chat: function(e) {
-      Events.stopEvent(e);
+    render: function(options) {
       var res = this.model;
       var uri = this.resource ? res.getUri() : res.getUrl();
-      this.router.navigate(U.makeMobileUrl('chat', uri), {trigger: true});
-      return this;
-    },
-    render: function(options) {
-      this.$el.html(this.template());
+      var hash = this.hash;
+      if (/\?/.test(hash))
+        hash = hash.slice(0, hash.indexOf('?'));
+      
+      var chatView = this.router.ChatViews[hash];
+      this.$el.html(this.template({
+        url: U.makePageUrl('chat', uri),
+        unreadMessages: chatView && chatView.getNumUnread()
+      }));
+      
       return this;
     }
   }, {
