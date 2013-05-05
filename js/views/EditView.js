@@ -749,6 +749,10 @@ define([
         val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
+
+      if (!_.isUndefined(val))
+        return val;
+        
       if (_.contains(input.classList, 'boolean'))
         return val === 'Yes' ? true : false;
       else {
@@ -757,9 +761,9 @@ define([
           if (data)
             return data;
         }
-        
-        return val;
       }
+      
+      return val;
     },
     submit: function(e) {
       if (G.currentUser.guest) {
@@ -1092,6 +1096,26 @@ define([
       input = input instanceof $ ? input : $(input);
       input.data('uri', value);
     },
+    isCameraRequired: function() {
+      var res = this.resource, 
+          vocModel = this.vocModel,
+          meta = vocModel.properties;
+      
+      if (res.isA("VideoResource")) {
+        var videoProp = U.getCloneOf(vocModel, "VideoResource.video")[0];
+        if (videoProp && !res.get(videoProp))
+          return true;
+      }
+      
+      var cameraProps = U.getPropertiesWith(meta, [{name: 'cameraOnly', value: true}], true);
+      if (cameraProps.length && _.any(cameraProps, function(p) {
+        return !res.get(p.shortName);
+      })) {
+        return true;
+      }
+      
+      return false;
+    },
     render: function() {
       var args = arguments;
       this.ready.done(function() {
@@ -1291,13 +1315,25 @@ define([
             
       var edits = res.getUnsavedChanges();
       form.find('.resourceProp').each(function() {
+        // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
         var name = this.name;
+        var prop = meta[name];
+        var $this = $(this);
+        if (prop && prop.cameraOnly) {
+          $('<span><i> (only live photo allowed)</i></span>').insertAfter($this.find('label'));
+        
+          $(this).click(function(e) {
+            Events.stopEvent(e);
+            self.$('[data-prop="{0}"]'.format(name)).trigger('click');
+          });
+        }
+
         var value = res.get(name);
         if (_.isUndefined(value))
           value = this.value;
         
-        this.setResourceInputValue(this, value);
-      }.bind(this));
+        self.setResourceInputValue(this, value);
+      });
       
 //      if (_.size(displayedProps) === 1) {
 //        var prop = meta[U.getFirstProperty(displayedProps)];
@@ -1311,12 +1347,9 @@ define([
       }
       
       if (!this.rendered) {
-        if (this.action === 'make' && res.isA("VideoResource") && U.getCloneOf(vocModel, "VideoResource.video").length) {
-//          this.pageView.$el.one('pageshow', function() {
-//            $(this.$('a.cameraCapture')[0]).trigger('click');            
-//          }.bind(this));
+        if (this.action === 'make' && this.isCameraRequired()) {
           Events.on('pageChange', function() {
-            if (this.isActive()) {
+            if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $.mobile.silentScroll(0);
               setTimeout(function() {
                 $(this.$('a.cameraCapture')[0]).trigger('click');
@@ -1326,6 +1359,7 @@ define([
         }
       }
         
+      
       return this;
     },
     

@@ -8,6 +8,10 @@ define([
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
   var SIGNALING_SERVER = 'http://urbien.com:8080';
+  function getGuestName() {
+    return 'Guest' + G.nextId();
+  }
+  
   function toDoubleDigit(digit) {
     return digit = digit < 10 ? '0' + digit : digit;
   }
@@ -146,6 +150,36 @@ define([
       $input[0].value = 'Chat room is empty...';
     },
     
+    addParticipant: function(userid, data) {
+      this.userIdToInfo[userid] = data;
+      this.participants = _.keys(this.userIdToInfo);
+      this.numberOfParticipants = this.participants.length;
+    },
+    
+    sendInfo: function() {
+      this.chat.send(JSON.stringify({
+        userInfo: {
+          name: this.myName,
+          icon: this.myIcon
+        }
+      }));
+    },
+
+    requestInfo: function(userid) {
+      var channel = this.chat.channels[userid];
+      if (channel) {
+        channel.send(JSON.stringify({
+          request: {
+            info: true
+          }
+        }));
+      }
+    },
+    
+    getUserInfo: function(userid) {
+      return this.userIdToInfo[userid];
+    },
+
     startTextChat: function() {
       if (!this.rendered) {
         this.$messages = this.$('#messages');
@@ -155,11 +189,11 @@ define([
         this.userIdToInfo = {};      
         var me = G.currentUser;
         if (me) {
-          this.myName = me.davDisplayName || 'Anonymous';
+          this.myName = me.davDisplayName || getGuestName();
           this.myIcon = me.thumb || 'icons/male_thumb.jpg';
         }
         else {
-          this.myName = 'Anonymous';
+          this.myName = getGuestName();
         }
       }
       
@@ -170,11 +204,7 @@ define([
         onopen: function(userId) {
             // to send text/data or file
           G.log(chatView.TAG, 'chat', 'connected with', userId);
-          this.send(JSON.stringify({
-            name: chatView.myName,
-            icon: chatView.myIcon
-          }));
-          
+          chatView.sendInfo();
           chatView.enableChat();
         },  
     
@@ -200,18 +230,34 @@ define([
           }
           
           if (data) {
-            if (!chatView.userIdToInfo[userid]) {
-              chatView.userIdToInfo[userid] = data;
-              chatView.addMessage({
-                message: data.name + ' has entered the room',
-                time: getTime(),
-                senderIcon: data.icon,
-                info: true
-              });
+            if (data.userInfo) {
+              var userInfo = data.userInfo;
+              var isUpdate = !!chatView.getUserInfo(userid);
+              chatView.addParticipant(userid, userInfo);
+              if (!isUpdate) {
+                chatView.addMessage({
+                  message: userInfo.name + ' has entered the room',
+                  time: getTime(),
+                  senderIcon: userInfo.icon,
+                  info: true
+                });
+              }
+            }
+            else if (data.request) {
+              if (data.request.info) {
+                chatView.sendInfo();
+              }
+              
+              return;
             }
           }
           else {
-            var userInfo = chatView.userIdToInfo[userid];
+            var userInfo = chatView.getUserInfo(userid);
+            if (!userInfo) {
+              chatView.requestInfo(userid);
+              return; // TODO: append message afterward
+            }
+            
             chatView.addMessage({
               senderIcon: userInfo.icon,
               sender: userInfo.name,
@@ -224,7 +270,7 @@ define([
           
         onleave: function(userid) {
           // remove that user's photo/image using his user-id
-          var whoLeft = chatView.userIdToInfo[userid];
+          var whoLeft = chatView.getUserInfo(userid);
           if (whoLeft) {
             chatView.addMessage({
               message: whoLeft.name + ' has left the room',
@@ -237,19 +283,22 @@ define([
             if (!_.size(chatView.userIdToInfo))
               chatView.disableChat();
           }
-        },
-        openSignalingChannel: function(config) {
-          var socket = io.connect(SIGNALING_SERVER);
-          socket.channel = config.channel || this.channel || 'default-channel';
-          socket.on('message', config.onmessage);
-          
-          socket.send = function (data) {
-            socket.emit('message', data);
-          };
-          
-          if (config.onopen) setTimeout(config.onopen, 1);
-          return socket;
         }
+//        ,
+//        openSignalingChannel: function(config) {
+//          var socket = io.connect(SIGNALING_SERVER);
+//          socket.channel = chatView.roomName;
+//          socket.on('message', function() {
+//            config.onmessage && config.onmessage.apply(this, arguments);
+//          });
+//
+//          socket.send = function (data) {
+//            socket.emit('message', data);
+//          };
+//
+//          if (config.onopen) setTimeout(config.onopen, 1);
+//          return socket;
+//        }
       });
       
       this.chat.__urbienId = G.nextId();
@@ -371,8 +420,8 @@ define([
         this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Stop Video');
       }
       else {
-//        this.$('#toggleVideoBtn').find('.ui-btn-text').html('Send Video');
-        this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Send Video');
+//        this.$('#toggleVideoBtn').find('.ui-btn-text').html('Start Video');
+        this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Start Video');
         if (this.webrtc) {
 //          this.stopVideo();
           this.endVideoCall();
