@@ -181,11 +181,12 @@ define([
       
       var myId = this.pageView.getUserId();
       var me = G.currentUser;
+      var myName = me.davDisplayName;
       var participants = this.pageView.getParticipants();
       participants[userid] = {
         userid: myId,
         uri: me._uri,
-        name: me.davDisplayName,
+        name: myName,
         icon: me.thumb
       };
       
@@ -194,7 +195,11 @@ define([
         if (!uri)
           return;
         
-        var mobileUrl = 'chat/{0}:{1}'.format(myId, userid); //U.makeMobileUrl('chat', uri);
+        var mobileUrl = U.makeMobileUrl('chat', '{0}:{1}'.format(myId, userid), {
+          $title: 'Private chat: {0} and {1}'.format(info.name, myName)
+        });
+        
+        //U.makeMobileUrl('chat', uri);
         var title = info.name;
         var img = info.icon;
         var common = {
