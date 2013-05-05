@@ -201,6 +201,12 @@ define([
       return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
     },
     
+    scrollToBottom: function() {
+      $('html, body').animate({
+        scrollTop: this.pageView.$el.height()
+      }, 200);
+    },
+    
     addChild: function(name, view) {
       this.children = this.children || {};
       this[name] = this.children[name] = view;

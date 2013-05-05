@@ -7,6 +7,7 @@ define([
   'events',
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
+  var SIGNALING_SERVER = 'http://urbien.com:8080';
   function toDoubleDigit(digit) {
     return digit = digit < 10 ? '0' + digit : digit;
   }
@@ -236,21 +237,19 @@ define([
             if (!_.size(chatView.userIdToInfo))
               chatView.disableChat();
           }
+        },
+        openSignalingChannel: function(config) {
+          var socket = io.connect(SIGNALING_SERVER);
+          socket.channel = config.channel || this.channel || 'default-channel';
+          socket.on('message', config.onmessage);
+          
+          socket.send = function (data) {
+            socket.emit('message', data);
+          };
+          
+          if (config.onopen) setTimeout(config.onopen, 1);
+          return socket;
         }
-    //    ,
-    //    openSignalingChannel: function(config) {
-    //    
-    //      var socket = io.connect('http://signaling.simplewebrtc.com:8888');
-    //      socket.channel = config.channel || this.channel || 'default-channel';
-    //      socket.on('message', config.onmessage);
-    //      
-    //      socket.send = function (data) {
-    //        socket.emit('message', data);
-    //      };
-    //      
-    //      if (config.onopen) setTimeout(config.onopen, 1);
-    //      return socket;
-    //    }
       });
       
       this.chat.__urbienId = G.nextId();
@@ -275,11 +274,8 @@ define([
       var height = $(document).height();
       var atBottom = this.atBottom();
       this.$messages.append(this.messageTemplate(info));
-      if (atBottom) {
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 200);
-      }
+      if (atBottom)
+        this.scrollToBottom();
     },
     
     sendMessage: function(e) {
@@ -417,7 +413,7 @@ define([
         },
         // immediately ask for camera access
         autoRequestMedia: true,
-        url: 'http://urbien.com:8080'
+        url: SIGNALING_SERVER
       });
       
 //      var webrtc = this.webrtc = new WebRTC({
