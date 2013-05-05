@@ -100,6 +100,9 @@ define([
     
     getRoomName: function() {
       var hash = this.hash.slice(this.hash.indexOf('/') + 1); // cut off chat/
+      if (/\?/.test(hash))
+        hash = hash.slice(0, hash.indexOf('?'));
+      
       var name = hash.replace(/[^a-zA-Z0-9]/ig, '');
       return name;
     },
@@ -160,7 +163,8 @@ define([
       var chatView = this;
       var i = 0;
       this.disableChat();
-      this.chat = new DataChannel(this.getRoomName(), {
+      this.roomName = this.getRoomName();
+      this.chat = new DataChannel(this.roomName, {
         onopen: function(userId) {
             // to send text/data or file
           G.log(chatView.TAG, 'chat', 'connected with', userId);
@@ -172,16 +176,16 @@ define([
           chatView.enableChat();
         },  
     
-          // error to open data ports
+        // error to open data ports
         onerror: function(event) {
           debugger;
         },
         
-          // data ports suddenly dropped, or chat creator left
+        // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
-//          debugger;
-//          chatView.chat = chat = null;
-//          setTimeout(chatView.resurrectTextChat, 1000); // doesn't work if called from onclose directly, i guess there's some cleanup still to be done
+          var chat = chatView.chat;
+          chat.leave();
+          chat.open(chatView.roomName);
         },
           
         onmessage: function(message, userid) {
@@ -247,6 +251,8 @@ define([
     //      return socket;
     //    }
       });
+      
+      this.chat.__urbienId = G.nextId();
       
 //      // if someone already created a channel; to join it: use "connect" method
 //      channel.connect('channel-name');

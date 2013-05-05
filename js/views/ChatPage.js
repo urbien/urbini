@@ -34,11 +34,17 @@ define([
         login: G.currentUser.guest
       };
 
-      this.addChild('header', new Header({
+      var headerOptions = {
         viewId: this.cid,
         parentView: this,
         buttons: this.headerButtons
-      }));
+      };
+      
+      var pageTitle = options.title;
+      if (pageTitle)
+        headerOptions.pageTitle = pageTitle;
+      
+      this.addChild('header', new Header(headerOptions));
   
       var params = U.getHashParams();
       this.video = params['-video'] === 'y';
