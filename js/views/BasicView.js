@@ -10,6 +10,7 @@ define([
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
+//      this._initOptions = options;
       this.TAG = this.TAG || this.constructor.displayName;
       G.log(this.TAG, 'new view', this.getPageTitle());
       options = options || {};
@@ -129,6 +130,10 @@ define([
 //      this.restyle();
     },
     
+//    forceRerender: function() {
+//      this.render(this._renderArguments);
+//    },
+    
     refreshOrRender: function() {
       if (this.rendered)
         this.refresh.apply(this, arguments);
@@ -211,6 +216,7 @@ define([
       this.children = this.children || {};
       this[name] = this.children[name] = view;
       view.parentView = view.parentView || this;
+      view.pageView = this.getPageView() || view.pageView;
       return view;
     },
     
