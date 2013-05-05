@@ -632,22 +632,7 @@
                         delete sockets[i];
                     }
                 }
-
-                /* closing all RTCDataChannels */
-                length = RTCDataChannels.length;
-                for (i = 0; i < length; i++) {
-                    var _channel = RTCDataChannels[i];
-                    if (_channel) {
-                        // closing peer connnections instead of just data channels!
-                        var peer = _channel.peer;
-                        if (peer) {
-                            peer.close();
-                            peer = null;
-                        }
-                        // if(_channel) _channel.close();
-                        delete RTCDataChannels[i];
-                    }
-                }
+        
                 that.left = true;
             }
 
