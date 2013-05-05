@@ -413,7 +413,7 @@ define([
       var btns = this.buttonViews;
       var numBtns = _.size(btns);
       var isMapItToggleable = !!this.collection;
-      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'login'];
+      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'chat', 'login'];
       if (numBtns < 6)
         btnNames.push('rightMenu');
       else

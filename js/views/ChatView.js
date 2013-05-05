@@ -9,7 +9,7 @@ define([
 ], function(G, $, _, U, Events, BasicView) {
   var SIGNALING_SERVER = 'http://urbien.com:8080';
   function getGuestName() {
-    return 'Guest' + G.nextId();
+    return 'Guest' + Math.round(Math.random() * 1000);
   }
   
   function toDoubleDigit(digit) {

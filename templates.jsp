@@ -541,6 +541,11 @@
   <a target="#" data-icon="chevron-left" class="back">Back</a>
 </script>
 
+<script type="text/template" id="chatButtonTemplate">
+  <!-- Button that opens up a chat page -->
+  <a target="#" data-icon="comments-alt">Chat</a>
+</script>
+
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
   <a target="#" data-icon="plus-sign">Create</a>
