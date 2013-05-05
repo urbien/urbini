@@ -128,6 +128,15 @@
                 },
                 direction: extras.direction || self.direction || 'many-to-many',
                 onChannelClosed: function (event) {
+                    var myChannels = self.channels,
+                        closedChannel = event.currentTarget;
+                    
+                    for (var userid in myChannels) {
+                      if (closedChannel === myChannels[userid].channel) {
+                        delete myChannels[userid];
+                      }
+                    }
+                    
                     self.onclose(event);
                 },
                 onChannelError: function (event) {
@@ -463,7 +472,7 @@
                 onChannelMessage: function (event) {
                     if (config.onChannelMessage) config.onChannelMessage(event.data, _config.userid);
                 },
-                onChannelClosed: config.onChannelClosed,
+                onChannelClosed: onChannelClosed,
                 onChannelError: config.onChannelError
             };
 
@@ -478,6 +487,14 @@
                 }
 
                 peer = RTCPeerConnection(peerConfig);
+            }
+            
+            function onChannelClosed(event) {
+              var idx = RTCDataChannels.indexOf(event.currentTarget);
+              if (idx != -1)
+                RTCDataChannels.splice(idx, 1);
+              
+              if (config.onChannelClosed) config.onChannelClosed(event);              
             }
 
             function onChannelOpened(channel) {
