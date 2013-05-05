@@ -664,7 +664,7 @@ define([
         if (!G.currentUser.guest) {
           var other = U.slice.call(arguments, 1);
           other = other.length ? other : undefined;
-          this.view(U.encode(G.currentUser._uri) + "?" + p, other);
+          this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
         }
         else {
           Events.trigger('req-login', 'Please login');
