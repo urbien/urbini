@@ -16,7 +16,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.vocModel.type);
+      this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
       return this;
     },
@@ -34,8 +34,12 @@ define([
       if (!this.template)
         return this;
       
-      var newAlerts = G.currentUser.newAlertsCount;
-      this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
+      var isChat = this.hash.startsWith('chat/');
+      var num;
+      if (isChat)
+        num = this.pageView.getNumParticipants();
+      
+      this.$el.html(this.template({viewId: this.viewId, count: num}));
       return this;
     }
   },

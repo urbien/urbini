@@ -12,10 +12,10 @@ define([
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'grab', 'release');
+      _.bindAll(this, 'render', 'grab', 'release', 'chat');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
-      var type = this.vocModel.type;
+      var type = this.modelType;
       this.makeTemplate('rightMenuP', 'template', type);
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
@@ -35,6 +35,7 @@ define([
       'click #add': 'add',
       'click #delete': 'delete',
       'click #subscribe': 'subscribe',
+      'click .chattee': 'chat',
       'click': 'click'
 //      'click #logout': 'logout',
     },
@@ -154,7 +155,70 @@ define([
       this.render();
     },
     
-    render:function (eventName) {
+    chat: function(e) {
+      Events.stopEvent(e);
+      var userid = $(e.currentTarget).find('[data-userid]').data('userid');
+      var chatPageUrl = e.currentTarget.dataset.href;
+      var qIdx = chatPageUrl.indexOf('?');
+      chatPageUrl += (qIdx == -1 ? '?' : '&') + '-privateChat=y';
+      if (userid) {
+        this.pageView.sendMessage({
+          channel: userid,
+          message: '<i><a href="{0}">Would you like to chat in private?</a></i>'.format(chatPageUrl)
+        })
+      }
+      
+      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true});
+    },
+    
+    renderChatParticipants: function() {
+      var p = $('#' + this.viewId);
+      p.empty();
+      
+      this.$el.html(this.template());
+      var frag = document.createDocumentFragment();
+      U.addToFrag(frag, this.groupHeaderTemplate({value: "Who's here"}));
+      
+      var myId = this.pageView.getUserId();
+      var participants = this.pageView.getParticipants();
+      _.each(participants, function(info, userid) {
+        var uri = info.uri;
+        if (!uri)
+          return;
+        
+        var mobileUrl = 'chat/{0}:{1}'.format(myId, userid); //U.makeMobileUrl('chat', uri);
+        var title = info.name;
+        var img = info.icon;
+        var common = {
+          title: title, 
+          mobileUrl: mobileUrl, 
+          cssClass: 'chattee', 
+          data: {
+            userid: userid 
+          }
+        };
+        
+        if (!img) 
+          U.addToFrag(frag, this.menuItemTemplate(common));
+        else
+          U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+        
+      }.bind(this));
+      
+      var ul = this.$('#rightMenuItems');
+      ul.append(frag);
+      var p = $('#' + this.viewId);
+      p.append(this.$el);
+      p.panel("open");
+      ul.listview();
+    },
+    
+    render: function (eventName) {
+      if (this.hash.startsWith('chat/')) {
+        this.renderChatParticipants();
+        return;
+      }
+      
       var mi = $('#' + this.viewId).find('ul#rightMenuItems');
       if (mi  &&  mi.length != 0) {
         $('#' + this.viewId).panel("open");

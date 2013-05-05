@@ -70,7 +70,7 @@ define([
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'resizeVideo', 'resurrectTextChat'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideo', 'resurrectTextChat', '_toggleVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.autoVideo = options.autoVideo;
@@ -91,18 +91,43 @@ define([
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
       
       this.roomName = this.getRoomName();
+      this.unreadMessages = 0;
+      this.participants = [];
       this.autoFinish = false;
+      
+      this.on('active', function(active) {
+        if (active)
+          this.unreadMessages = 0;
+        else
+          this.endVideoCall();
+      }.bind(this));
     },
     
     events : {
       'orientationchange': 'resizeVideo',
       'resize': 'resizeVideo',
-      'click #chatSendButton': 'sendMessage',
+      'click #chatSendButton': '_sendMessage',
 //      'submit form#chatMessageForm': 'sendMessage',
-      'change #toggleVideoBtn': 'toggleVideo',
+      'change #toggleVideoBtn': '_toggleVideo',
 //      'change #toggleAudioBtn': 'toggleAudio',
 //      'click #toggleVideoBtn': 'toggleVideo',
       'click #endVideoCall': 'endVideoCall'
+    },
+
+    getNumParticipants: function() {
+      return this.participants.length;
+    },
+
+    getUserId: function() {
+      return window.userid;
+    },
+    
+    getParticipants: function() {
+      return _.clone(this.userIdToInfo);
+    },
+    
+    getNumUnread: function() {
+      return this.unreadMessages;
     },
     
     getRoomName: function() {
@@ -115,25 +140,33 @@ define([
     },
     
     render: function() {
-      var args = arguments;
-      this.ready.done(function() {
-        this.renderHelper.apply(this, arguments);
-        this.finish();
-      }.bind(this));
-    },
-    
-    renderHelper: function(options) {    
+//      var args = arguments;
+//      this.ready.done(function() {
+//        this.renderHelper.apply(this, arguments);
+//        this.finish();
+//      }.bind(this));
+//    },
+//    
+//    renderHelper: function(options) {    
       this.$el.html(this.template({
         video: this.hasVideo
       }));
-      
-      if (!this.rendered) {
-//        this.startChat();
-        this.startTextChat();
-        if (this.autoVideo)
-          this.startVideoChat();
-        this.$el.trigger('create');
-      }
+
+      this.$el.trigger('create');
+      this.$('#toggleVideoBtn').checkboxradio().checkboxradio('disable');
+
+      this.ready.done(function() {        
+        if (!this.rendered) {
+  //        this.startChat();
+          this.startTextChat();
+          if (this.hasVideo)
+            this.$('#toggleVideoBtn').checkboxradio('enable');
+          if (this.autoVideo)
+            this.startVideoChat();
+          
+          this.finish();
+        }
+      }.bind(this));
     },
     
     enableChat: function() {
@@ -141,6 +174,7 @@ define([
       var $input = this.$('#chatMessageInput');
       $input.removeClass('ui-disabled');
       $input[0].value = '';
+      this.disabled = false;
     },
     
     disableChat: function() {
@@ -148,6 +182,11 @@ define([
       var $input = this.$('#chatMessageInput');
       $input.addClass('ui-disabled');
       $input[0].value = 'Chat room is empty...';
+      this.disabled = true;
+    },
+    
+    isDisabled: function() {
+      return this.disabled;
     },
     
     addParticipant: function(userid, data) {
@@ -157,22 +196,23 @@ define([
     },
     
     sendInfo: function() {
-      this.chat.send(JSON.stringify({
+      this.chat.send({
         userInfo: {
           name: this.myName,
-          icon: this.myIcon
+          icon: this.myIcon,
+          uri: this.myUri
         }
-      }));
+      });
     },
 
     requestInfo: function(userid) {
       var channel = this.chat.channels[userid];
       if (channel) {
-        channel.send(JSON.stringify({
+        channel.send({
           request: {
             info: true
           }
-        }));
+        });
       }
     },
     
@@ -191,6 +231,7 @@ define([
         if (me) {
           this.myName = me.davDisplayName || getGuestName();
           this.myIcon = me.thumb || 'icons/male_thumb.jpg';
+          this.myUri = me._uri;
         }
         else {
           this.myName = getGuestName();
@@ -220,38 +261,34 @@ define([
           chat.open(chatView.roomName);
         },
           
-        onmessage: function(message, userid) {
-          // send direct message to same user using his user-id        
-          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, message));
-          var data;
-          try {
-            data = JSON.parse(message);
-          } catch (err) {
-          }
+        onmessage: function(data, userid) {
+          // send direct message to same user using his user-id
+          if (chatView.isDisabled())
+            chatView.enableChat();
           
-          if (data) {
-            if (data.userInfo) {
-              var userInfo = data.userInfo;
-              var isUpdate = !!chatView.getUserInfo(userid);
-              chatView.addParticipant(userid, userInfo);
-              if (!isUpdate) {
-                chatView.addMessage({
-                  message: userInfo.name + ' has entered the room',
-                  time: getTime(),
-                  senderIcon: userInfo.icon,
-                  info: true
-                });
-              }
-            }
-            else if (data.request) {
-              if (data.request.info) {
-                chatView.sendInfo();
-              }
-              
-              return;
+          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(userid, JSON.stringify(data)));
+          var isPrivate = false;
+          if (data.userInfo) {
+            var userInfo = data.userInfo;
+            var isUpdate = !!chatView.getUserInfo(userid);
+            chatView.addParticipant(userid, userInfo);
+            if (!isUpdate) {
+              chatView.addMessage({
+                message: userInfo.name + ' has entered the room',
+                time: getTime(),
+                senderIcon: userInfo.icon,
+                info: true
+              });
             }
           }
-          else {
+          else if (data.request) {
+            if (data.request.info) {
+              chatView.sendInfo();
+            }
+            
+            return;
+          }
+          else if (data.message) {
             var userInfo = chatView.getUserInfo(userid);
             if (!userInfo) {
               chatView.requestInfo(userid);
@@ -261,10 +298,14 @@ define([
             chatView.addMessage({
               senderIcon: userInfo.icon,
               sender: userInfo.name,
-              message: message,
+              message: data.message,
+              isPrivate: data.isPrivate,
               self: false,
               time: getTime()
             });
+            
+            if (!chatView.isActive())
+              chatView.unreadMessages++;
           }
         },
           
@@ -327,21 +368,44 @@ define([
         this.scrollToBottom();
     },
     
-    sendMessage: function(e) {
+    sendMessage: function(message) {
+      var text = message.message;
+      var channel = message.channel;
+      if (channel) {
+        var chatChannel = this.chat.channels[channel];
+        if (chatChannel) {
+          chatChannel.send({
+            isPrivate: true,
+            message: text
+          });
+        }
+        else {
+          // bad
+        }
+      }
+      else {
+        this.chat.send({
+          message: text
+        });
+      }
+      
+      this.addMessage({
+        sender: 'Me', //this.myName,
+        senderIcon: this.myIcon,
+        message: text,
+        self: true,
+        time: getTime(),
+        isPrivate: !!channel
+      });
+    },
+    
+    _sendMessage: function(e) {
       e && Events.stopEvent(e);
       var msg = this.chatInput.value;
       if (!msg || !msg.length)
         return;
-      
-      this.chat.send(msg);
-      this.addMessage({
-        sender: 'Me', //this.myName,
-        senderIcon: this.myIcon,
-        message: msg,
-        self: true,
-        time: getTime()
-      });
-      
+
+      this.sendMessage({message: msg});
       this.chatInput.value = '';
 //      this.restyle();
     },
@@ -412,18 +476,27 @@ define([
 //      var channel = new RTCMultiConnection(channelName, settings);
 //      channel.open();
 //    },
-
-    toggleVideo: function(e) {
+    
+    toggleVideo: function() {
+      var $checkbox = this.$('#toggleVideoBtn');
+      if ($checkbox[0].checked)
+        $checkbox.attr("checked", false);
+      else
+        $checkbox.attr("checked", true);
+      
+      $checkbox.checkboxradio("refresh");
+    },
+    
+    _toggleVideo: function(e) {
       if (e.currentTarget.checked) {
+        this._videoOn = true;
         this.startVideoChat();
-//        this.$('#toggleVideoBtn').find('.ui-btn-text').html('Stop Video');
         this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Stop Video');
       }
       else {
-//        this.$('#toggleVideoBtn').find('.ui-btn-text').html('Start Video');
+        this._videoOn = false;
         this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Start Video');
         if (this.webrtc) {
-//          this.stopVideo();
           this.endVideoCall();
         }
       }
@@ -440,6 +513,7 @@ define([
         stream && stream.stop(); // turn off webcam
       }
       
+//      this.('#toggleVideoBtn').$checkbox.attr("checked", false).checkboxradio("refresh");
       this.$('div#localVideo').empty();
       this.webrtc = null;
     },
