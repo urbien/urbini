@@ -92,7 +92,7 @@
 <script type="text/template" id="chatMessageTemplate">
   <table width="100%">
     <tr>
-      {{ if (!obj.self && obj.senderIcon) { }}
+      {{ if (!obj.info && !obj.self && obj.senderIcon) { }}
         <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /></td> 
       {{ }                 }}
       
@@ -102,11 +102,15 @@
             <span class="{{= obj.self ? 'speaker-self' : 'speaker-other' }}">{{= sender }}</span> ({{= time }}): 
           {{ }                 }}
       
-          <span class="{{= obj.sender ? (obj.self ? 'chat-message-outgoing' : 'chat-message-incoming') : 'chat-info' }}">{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</span>
+          {{ if (obj.info && obj.senderIcon) { }}
+            <img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /> 
+          {{ }                 }}
+          
+          <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</span>
         </div>
       </td>
       
-      {{ if (obj.self && obj.senderIcon) { }}
+      {{ if (!obj.info && obj.self && obj.senderIcon) { }}
         <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-left:10px" /></td> 
       {{ }                 }}
     </tr>
