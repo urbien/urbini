@@ -416,7 +416,8 @@ define([
           _el: 'remoteVideos' // the id/element dom element that will hold remote videos
         },
         // immediately ask for camera access
-        autoRequestMedia: true
+        autoRequestMedia: true,
+        url: 'http://urbien.com:8080'
       });
       
 //      var webrtc = this.webrtc = new WebRTC({
@@ -440,8 +441,7 @@ define([
       });
       
       webrtc.on('readyToCall', function () {
-        debugger;
-        webrtc.joinRoom(this.roomName);
+        webrtc.joinRoom(chatView.roomName);
       });
     },
     
