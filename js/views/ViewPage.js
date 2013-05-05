@@ -25,7 +25,8 @@ define([
         back: true,
         menu: true,
         rightMenu: !G.currentUser.guest,
-        login: G.currentUser.guest
+        login: G.currentUser.guest,
+        chat: res.isA("CollaborationPoint")
       };
 
       var params = U.getParamMap(window.location.hash);
