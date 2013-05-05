@@ -180,7 +180,15 @@ define([
       U.addToFrag(frag, this.groupHeaderTemplate({value: "Who's here"}));
       
       var myId = this.pageView.getUserId();
+      var me = G.currentUser;
       var participants = this.pageView.getParticipants();
+      participants[userid] = {
+        userid: myId,
+        uri: me._uri,
+        name: me.davDisplayName,
+        icon: me.thumb
+      };
+      
       _.each(participants, function(info, userid) {
         var uri = info.uri;
         if (!uri)
