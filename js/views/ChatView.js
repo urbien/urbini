@@ -115,7 +115,7 @@ define([
     },
 
     getNumParticipants: function() {
-      return this.participants.length;
+      return this.participants.length + 1;
     },
 
     getUserId: function() {
@@ -193,6 +193,7 @@ define([
       this.userIdToInfo[userid] = data;
       this.participants = _.keys(this.userIdToInfo);
       this.numberOfParticipants = this.participants.length;
+      this.pageView.trigger('newParticipant', userid, data);
     },
     
     sendInfo: function() {
@@ -257,8 +258,10 @@ define([
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
           var chat = chatView.chat;
-          chat.leave();
-          chat.open(chatView.roomName);
+          if (!_.size(chat.channels)) {
+            chat.leave();
+            chat.open(chatView.roomName);
+          }
         },
           
         onmessage: function(data, userid) {
@@ -324,6 +327,8 @@ define([
             if (!_.size(chatView.userIdToInfo))
               chatView.disableChat();
           }
+          
+          chatView.parentView.trigger('participantLeft', userid);
         }
 //        ,
 //        openSignalingChannel: function(config) {

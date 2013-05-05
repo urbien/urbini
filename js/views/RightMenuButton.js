@@ -18,6 +18,7 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
+      this.isChat = this.hash.startsWith('chat/');
       return this;
     },
     menu: function(e) {
@@ -30,14 +31,21 @@ define([
       return this;
     },
     
+    refresh: function() {
+//      this.$el.empty();
+//      this.render();
+//      this.parentView.forceRerender();
+      var num = this.pageView.getNumParticipants();
+      this.$('.menuBadge').html(num);
+    },
+    
     render: function(options) {
-      if (!this.template)
-        return this;
-      
-      var isChat = this.hash.startsWith('chat/');
       var num;
-      if (isChat)
+      if (this.isChat) {
         num = this.pageView.getNumParticipants();
+        this.pageView.on('newParticipant', this.refresh, this);
+        this.pageView.on('participantLeft', this.refresh, this);
+      }
       
       this.$el.html(this.template({viewId: this.viewId, count: num}));
       return this;
