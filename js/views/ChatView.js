@@ -84,6 +84,8 @@ define([
       
       this.makeTemplate('chatViewTemplate', 'template', this.modelType);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
+      
+      this.roomName = this.getRoomName();
       this.autoFinish = false;
     },
     
@@ -104,7 +106,7 @@ define([
         hash = hash.slice(0, hash.indexOf('?'));
       
       var name = hash.replace(/[^a-zA-Z0-9]/ig, '');
-      return name;
+      return 'urbien-' + name;
     },
     
     render: function() {
@@ -163,7 +165,6 @@ define([
       var chatView = this;
       var i = 0;
       this.disableChat();
-      this.roomName = this.getRoomName();
       this.chat = new DataChannel(this.roomName, {
         onopen: function(userId) {
             // to send text/data or file
@@ -440,7 +441,7 @@ define([
       
       webrtc.on('readyToCall', function () {
         debugger;
-        webrtc.joinRoom(hash);
+        webrtc.joinRoom(this.roomName);
       });
     },
     
