@@ -183,12 +183,12 @@ define([
       var me = G.currentUser;
       var myName = me.davDisplayName;
       var participants = this.pageView.getParticipants();
-      participants[userid] = {
-        userid: myId,
-        uri: me._uri,
-        name: myName,
-        icon: me.thumb
-      };
+//      participants[userid] = { // add self to list
+//        userid: myId,
+//        uri: me._uri,
+//        name: myName,
+//        icon: me.thumb
+//      };
       
       _.each(participants, function(info, userid) {
         var uri = info.uri;

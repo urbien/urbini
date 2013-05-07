@@ -7,7 +7,11 @@ define([
   'events',
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
-  var SIGNALING_SERVER = 'http://urbien.com:8080';
+  var serverName = G.serverName;
+  if (/^http\:\/\/.+\//.test(serverName))
+    serverName = serverName.slice(0, serverName.indexOf('/', 7));
+  
+  var SIGNALING_SERVER = serverName + ':8081';
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -70,7 +74,7 @@ define([
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'resizeVideo', 'resurrectTextChat', '_toggleVideo'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideos', 'resurrectTextChat', '_toggleVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.autoVideo = options.autoVideo;
@@ -104,8 +108,8 @@ define([
     },
     
     events : {
-      'orientationchange': 'resizeVideo',
-      'resize': 'resizeVideo',
+      'orientationchange': 'resizeVideos',
+      'resize': 'resizeVideos',
       'click #chatSendButton': '_sendMessage',
 //      'submit form#chatMessageForm': 'sendMessage',
       'change #toggleVideoBtn': '_toggleVideo',
@@ -115,7 +119,7 @@ define([
     },
 
     getNumParticipants: function() {
-      return this.participants.length + 1;
+      return this.participants.length;
     },
 
     getUserId: function() {
@@ -195,12 +199,31 @@ define([
     isDisabled: function() {
       return this.disabled;
     },
+
+    removeParticipant: function(userid) {
+      var whoLeft = this.getUserInfo(userid);
+      delete this.userIdToInfo[userid];
+      if (!_.size(this.userIdToInfo))
+        this.disableChat();
     
+      this._updateParticipants();
+      this.pageView.trigger('chat:participantLeft', userid);
+    },
+
     addParticipant: function(userid, data) {
       this.userIdToInfo[userid] = data;
+      this._updateParticipants();
+      this.pageView.trigger('chat:newParticipant', userid, data);
+    },
+    
+    _updateParticipants: function() {
       this.participants = _.keys(this.userIdToInfo);
-      this.numberOfParticipants = this.participants.length;
-      this.pageView.trigger('newParticipant', userid, data);
+    },
+    
+    _checkChannels: function() {
+      if (_.filter(this.chat.channels, function(c) {return c.readyState === 'closed'}).length) {
+        debugger;
+      }
     },
     
     sendInfo: function() {
@@ -252,6 +275,7 @@ define([
       this.chat = new DataChannel(this.roomName, {
         onopen: function(userId) {
             // to send text/data or file
+          chatView._checkChannels();
           G.log(chatView.TAG, 'chat', 'connected with', userId);
           chatView.sendInfo();
           chatView.enableChat();
@@ -264,6 +288,7 @@ define([
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
+          chatView._checkChannels();
           var chat = chatView.chat;
           if (!_.size(chat.channels)) {
             chat.leave();
@@ -273,6 +298,7 @@ define([
           
         onmessage: function(data, userid) {
           // send direct message to same user using his user-id
+          chatView._checkChannels();
           if (chatView.isDisabled())
             chatView.enableChat();
           
@@ -321,6 +347,7 @@ define([
           
         onleave: function(userid) {
           // remove that user's photo/image using his user-id
+          chatView._checkChannels();          
           var whoLeft = chatView.getUserInfo(userid);
           if (whoLeft) {
             chatView.addMessage({
@@ -329,14 +356,65 @@ define([
               senderIcon: whoLeft.icon,
               info: true
             });
-            
-            delete chatView.userIdToInfo[userid];
-            if (!_.size(chatView.userIdToInfo))
-              chatView.disableChat();
           }
           
-          chatView.parentView.trigger('participantLeft', userid);
+          chatView.removeParticipant(userid);
         }
+//        ,
+//        openSignalingChannel: function(config) {
+//          config = config || {};
+//          channel = chatView.roomName;
+//          var connection = io.connect(SIGNALING_SERVER);
+////          connection.channel = channel;
+////          connection.on('connect', function () {
+////              self.emit('ready', connection.socket.sessionid);
+////              self.sessionReady = true;
+////              self.testReadiness();
+////          });
+////  
+////          connection.on('message', function (message) {
+////              var existing = self.pcs[message.from];
+////              if (existing) {
+////                  existing.handleMessage(message);
+////              } else {
+////                  // create the conversation object
+////                  self.pcs[message.from] = new Conversation({
+////                      id: message.from,
+////                      parent: self,
+////                      initiator: false
+////                  });
+////                  self.pcs[message.from].handleMessage(message);
+////              }
+////          });
+////  
+////          connection.on('joined', function (room) {
+////              logger.log('got a joined', room);
+////              if (!self.pcs[room.id]) {
+////                  self.startVideoCall(room.id);
+////              }
+////          });
+////          connection.on('left', function (room) {
+////              var conv = self.pcs[room.id];
+////              if (conv) conv.handleStreamRemoved();
+////          });
+//          
+//          connection.send = function (data) {
+////              this.push(data);
+//            data.to = data.broadcaster;
+//            data.from = window.userid;
+//            connection.emit('message', data);
+//          };
+//
+////          if (!self.socket) 
+////            self.socket = socket;
+////          
+////          if (channel != self.channel || (self.isInitiator && channel == self.channel))
+////              socket.onDisconnect().remove();
+////
+////          if (config.onopen) setTimeout(config.onopen, 1);
+//
+//          return connection; 
+//        }
 //        ,
 //        openSignalingChannel: function(config) {
 //          var socket = io.connect(SIGNALING_SERVER);
@@ -349,7 +427,13 @@ define([
 //            socket.emit('message', data);
 //          };
 //
-//          if (config.onopen) setTimeout(config.onopen, 1);
+//          socket.on('*', function() {
+//            debugger;
+//          });
+//          
+//          if (config.onopen) 
+//            setTimeout(config.onopen, 1);
+//          
 //          return socket;
 //        }
       });
@@ -560,7 +644,6 @@ define([
       // we have to wait until it's ready
       var hash = this.hash;
       webrtc.on('appendedLocalVideo', function () {
-        // you can name it anything
         var local = chatView.$('div#localVideo video');
         if (local.length > 1) {
           for (var i = 1; i < local.length; i++)
@@ -568,24 +651,30 @@ define([
         }
           
         local.prop('muted', true);
-        chatView.resizeVideo();
+        chatView.resizeVideos();
       });
-      
+
+      webrtc.on('videoAdded', function (video) {
+        var $video = chatView.$(video);
+        $video.prop('muted', true);
+        chatView.resizeVideos();
+      });
+
       webrtc.on('readyToCall', function () {
         webrtc.joinRoom(chatView.roomName);
       });
     },
     
-    resizeVideo: function() {
+    resizeVideos: function() {
+      var self = this;
       _.each(['div#localVideo', 'div#remoteVideos'], function(div) {        
         var $vidDiv = this.$(div);
         var $vid = $vidDiv.find('video');
-        if (!$vid.length)
-          return;
-        
-        var border = parseInt($vid.css("border-left-width"));
-        $vid.width(Math.min(640, $vidDiv.width() - 2 * (border || 0)));
-      });
+        if ($vid.length) {
+          var border = parseInt($vid.css("border-left-width"));
+          $vid.width(Math.min(640, $vidDiv.width() - 2 * (border || 0)));
+        }
+      });      
     }
   },
   {

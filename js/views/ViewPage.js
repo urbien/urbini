@@ -15,7 +15,6 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       this.makeTemplate('resource', 'template', this.vocModel.type);
-      this.router = G.Router || Backbone.History;
       this.viewId = options.viewId;
       
       var res = this.resource;

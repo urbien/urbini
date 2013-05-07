@@ -568,7 +568,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + (obj.count ? '<span class="menuBadge">' + count + '</span>' : '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count ? count : '') }}
   </a>
 </script>
 
