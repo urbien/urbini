@@ -18,7 +18,7 @@ define([
     edit: function(e) {
       Events.stopEvent(e);
       var hash = window.location.hash.slice(1);
-      (G.Router || Backbone.history).navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true});
+      this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true});
       return this;
     },
     render: function(options) {

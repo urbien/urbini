@@ -50,6 +50,7 @@ define([
 //    LoginView: null,
     initialize: function () {
 //      G._routes = _.clone(this.routes);
+      _.bindAll(this, '_backOrHome');
       this.firstPage = true;
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
@@ -520,19 +521,24 @@ define([
         });
       }
     },
+
+    _backOrHome: function() {
+      if (this.urlsStack.length)
+        Events.trigger('back');
+      else
+        window.location.href = G.pageRoot;
+    },
+
+    _requestLogin: function(options) {
+      Events.trigger('req-login', _.extend(options || {}));
+    },
     
     make: function(path) {
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
       
       if (G.currentUser.guest) {
-        Events.trigger('req-login', {
-          returnUri: window.location.href, 
-          onDismiss: function() {
-            Events.trigger('back');
-          }
-        });
-        
+        this._requestLogin();
         return;
       }
       
@@ -567,8 +573,9 @@ define([
       try {
         this.changePage(mPage);
       } finally {
-        if (G.currentUser.guest)
-          Events.trigger('req-login');
+        if (G.currentUser.guest) {
+          this._requestLogin();
+        }
       }
     },
 
@@ -580,12 +587,7 @@ define([
       if (!this.EditPage)
         return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
       else if (G.currentUser.guest) {
-        Events.trigger('req-login', {
-          onDismiss: function() {
-            Events.trigger('back');
-          }
-        });
-        
+        this._requestLogin();        
         return;
       }
       else {
@@ -593,7 +595,7 @@ define([
           this.view.call(this, path, 'edit');
         } finally {
           if (G.currentUser.guest)
-            Events.trigger('req-login');
+            this._requestLogin();
         }
       }
     },
@@ -602,12 +604,7 @@ define([
       if (!this.ChatPage || !this.ChatView)
         return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
       else if (G.currentUser.guest) {
-        Events.trigger('req-login', {
-          onDismiss: function() {
-            Events.trigger('back');
-          }
-        });
-        
+        this._requestLogin();
         return;
       }
       else {
@@ -615,7 +612,7 @@ define([
           this.view.call(this, path, 'chat');
         } finally {
           if (G.currentUser.guest)
-            Events.trigger('req-login');
+            this._requestLogin();
         }
       }
     },
@@ -653,7 +650,7 @@ define([
         query = path.slice(qIdx + 1);
       }
 
-      if (chat && /[0-9]+/.test(uri)) {
+      if (chat && /^[0-9]+/.test(uri)) {
         var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage();
         this.changePage(chatPage);
         return;
@@ -667,7 +664,7 @@ define([
           this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
         }
         else {
-          Events.trigger('req-login', 'Please login');
+          this._requestLogin();
 //          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         }
         
@@ -918,7 +915,10 @@ define([
       var appPath = U.getAppPath(type).toLowerCase();
       var user = G.currentUser;
       if (user.guest) {
-        Events.trigger('req-login', {msg: 'Please login before you use this app'});
+        this._requestLogin({
+          msg: 'Please login before you use this app', 
+        });
+        
         return false;
       }
       

@@ -768,7 +768,10 @@ define([
     submit: function(e) {
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
-        Events.trigger('req-login', {returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes)});
+        Events.trigger('req-login', {
+          returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes)
+        });
+        
         return;
       }
       
@@ -880,7 +883,9 @@ define([
           
           switch (code) {
             case 401:
-              Events.trigger('req-login');
+              Events.trigger('req-login', {
+                msg: 'You are not unauthorized to make these changes'
+              });
 //              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
 //              Events.on(401, msg || 'You are not unauthorized to make these changes');
               break;
