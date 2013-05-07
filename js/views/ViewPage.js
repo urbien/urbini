@@ -232,12 +232,12 @@ define([
         });
       });
 
-      this.chatPromise && this.chatPromise.done(function() {        
-        var chatbox = self.$('div#chatbox');
-        self.assign({
-          'div#chatbox': self.chat
-        });
-      });
+//      this.chatPromise && this.chatPromise.done(function() {        
+//        var chatbox = self.$('div#chatbox');
+//        self.assign({
+//          'div#chatbox': self.chat
+//        });
+//      });
 
       var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
       var views = {};

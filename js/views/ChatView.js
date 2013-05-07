@@ -11,7 +11,7 @@ define([
   if (/^http\:\/\/.+\//.test(serverName))
     serverName = serverName.slice(0, serverName.indexOf('/', 7));
   
-  var SIGNALING_SERVER = serverName + ':8081';
+  var SIGNALING_SERVER = serverName + ':8888';
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -135,30 +135,14 @@ define([
     },
     
     getRoomName: function() {
-      var hash = this.hash.slice(this.hash.indexOf('/') + 1); // cut off chat/
+      var shortUri = U.getShortUri(this.resource.getUri(), this.vocModel);
+      if (shortUri.startsWith(G.sqlUrl))
+        shortUri = shortUri.slice(G.sqlUrl.length);
       
-      if (/\?/.test(hash))
-        hash = hash.slice(0, hash.indexOf('?'));
-      
-      hash = decodeURIComponent(hash);
-      if (hash === 'profile')
-        hash = G.currentUser._uri;
-      
-      if (hash.startsWith(G.sqlUrl))
-        hash = hash.slice(G.sqlUrl.length);
-      var name = hash.replace(/[^a-zA-Z0-9]/ig, '');
-      return name;
+      return shortUri.replace(/[^a-zA-Z0-9]/ig, '');
     },
     
     render: function() {
-//      var args = arguments;
-//      this.ready.done(function() {
-//        this.renderHelper.apply(this, arguments);
-//        this.finish();
-//      }.bind(this));
-//    },
-//    
-//    renderHelper: function(options) {    
       this.$el.html(this.template({
         video: this.hasVideo
       }));
@@ -359,83 +343,32 @@ define([
           }
           
           chatView.removeParticipant(userid);
+        },
+        openSignalingChannel: function(config) {
+          var channel = this.channel || 'default-urbien-channel';
+          var sender = window.userid;
+          io.connect(SIGNALING_SERVER).emit('new-channel', {
+            channel: channel,
+            sender : sender
+          });
+          
+          var socket = io.connect(SIGNALING_SERVER + '/' + channel);
+          socket.channel = channel;
+          socket.on('connect', function () {
+            if (config.onopen) config.onopen(socket);
+//            if (config.callback) config.callback(socket);
+          });
+          
+          socket.on('message', config.onmessage);
+          socket.send = function (message) {
+            socket.emit('message', {
+              sender: sender,
+              data : message
+            });
+          };
+          
+          return socket;
         }
-//        ,
-//        openSignalingChannel: function(config) {
-//          config = config || {};
-//          channel = chatView.roomName;
-//          var connection = io.connect(SIGNALING_SERVER);
-////          connection.channel = channel;
-////          connection.on('connect', function () {
-////              self.emit('ready', connection.socket.sessionid);
-////              self.sessionReady = true;
-////              self.testReadiness();
-////          });
-////  
-////          connection.on('message', function (message) {
-////              var existing = self.pcs[message.from];
-////              if (existing) {
-////                  existing.handleMessage(message);
-////              } else {
-////                  // create the conversation object
-////                  self.pcs[message.from] = new Conversation({
-////                      id: message.from,
-////                      parent: self,
-////                      initiator: false
-////                  });
-////                  self.pcs[message.from].handleMessage(message);
-////              }
-////          });
-////  
-////          connection.on('joined', function (room) {
-////              logger.log('got a joined', room);
-////              if (!self.pcs[room.id]) {
-////                  self.startVideoCall(room.id);
-////              }
-////          });
-////          connection.on('left', function (room) {
-////              var conv = self.pcs[room.id];
-////              if (conv) conv.handleStreamRemoved();
-////          });
-//          
-//          connection.send = function (data) {
-////              this.push(data);
-//            data.to = data.broadcaster;
-//            data.from = window.userid;
-//            connection.emit('message', data);
-//          };
-//
-////          if (!self.socket) 
-////            self.socket = socket;
-////          
-////          if (channel != self.channel || (self.isInitiator && channel == self.channel))
-////              socket.onDisconnect().remove();
-////
-////          if (config.onopen) setTimeout(config.onopen, 1);
-//
-//          return connection; 
-//        }
-//        ,
-//        openSignalingChannel: function(config) {
-//          var socket = io.connect(SIGNALING_SERVER);
-//          socket.channel = chatView.roomName;
-//          socket.on('message', function() {
-//            config.onmessage && config.onmessage.apply(this, arguments);
-//          });
-//
-//          socket.send = function (data) {
-//            socket.emit('message', data);
-//          };
-//
-//          socket.on('*', function() {
-//            debugger;
-//          });
-//          
-//          if (config.onopen) 
-//            setTimeout(config.onopen, 1);
-//          
-//          return socket;
-//        }
       });
       
       this.chat.__urbienId = G.nextId();

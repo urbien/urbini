@@ -37,27 +37,19 @@ define([
       this.isPhotogrid = this.parentView.isPhotogrid;
       if (this.isPhotogrid)
         this.displayPerPage = 5;
-//      var self = this;
-//      if (this.isPhotogrid) {
-//        this.readyPromise = U.require('views/PhotogridView', function(PhotogridView) {
-//          self.PhotogridView = PhotogridView;
-//        }).promise();
-//      }
-//      else
-//        this.ready = true;
-      
-//      this.setFilteredCollection();
-//      
-//      Events.on('pageChange', function() {
-//        if (this.isActive() && (this.isMasonry || this.isModification)) {
-//          this.forceReloadMasonry();
-//        }
+
+//      // HACK
+//      Events.on('pageChange', function(previousView, currentView) {
+//        if (this.isActive())
+//          this.alignBricks();
+////          this.forceReloadMasonry();
 //      }.bind(this));
+//      // END HACK
+      
       return this;
     },
     events: {
       'orientationchange': 'orientationchange'
-//      'click': 'click'
     },
     orientationchange: function(e) {
       var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
@@ -330,7 +322,10 @@ define([
       }
       else {
         // HACK
-        this.pageView.$el.on('pageshow', function() {
+        Events.on('pageChange', function(previousView, currentView) {
+          if (currentView !== this.pageView)
+            return;
+//        this.pageView.$el.on('pageshow', function() {
           if (isMasonry || isModification) {
             this.alignBricks();
           }
@@ -503,7 +498,6 @@ define([
         }, 150));
       }
   
-      this.finish();
       return this;
     },
   
@@ -597,7 +591,8 @@ define([
       // if image(s) has width and height parameters then possible to align masonry
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
       var img = $('img', $allBricks[0]);
-      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
+//      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
+      var hasImgSize = (img.exist() && img.width() && img.height()) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {
@@ -621,8 +616,12 @@ define([
           this.$el.masonry();
           this.resumeScrollEventProcessing();
         }
-        else  
-          this.$el.imagesLoaded( function(){ self.$el.masonry(); self.resumeScrollEventProcessing(); });
+        else {  
+          this.$el.imagesLoaded( function(){ 
+            self.$el.masonry(); 
+            self.resumeScrollEventProcessing(); 
+          });
+        }
         
         return;
       }
@@ -640,7 +639,10 @@ define([
         this.resumeScrollEventProcessing();
       }
       else  
-        this.$el.imagesLoaded( function(){ self.$el.masonry('appended', $newBricks); self.resumeScrollEventProcessing(); });
+        this.$el.imagesLoaded( function(){ 
+          self.$el.masonry('appended', $newBricks); 
+          self.resumeScrollEventProcessing(); 
+        });
       
       this.$el.trigger('create');      
     },

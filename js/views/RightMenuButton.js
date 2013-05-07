@@ -35,23 +35,27 @@ define([
 //      this.$el.empty();
 //      this.render();
 //      this.parentView.forceRerender();
-      var num = this.pageView.getNumParticipants();
-      var $menuBadge = this.$('.menuBadge');
-      $menuBadge.html(num || '');
-      $menuBadge[num ? 'show' : 'hide']();
+      if (this.isChat) {
+        var num = this.pageView.getNumParticipants();
+        var $menuBadge = this.$('.menuBadge');
+        $menuBadge.html(num || '');
+        $menuBadge[num ? 'show' : 'hide']();
+      }
     },
     
     render: function(options) {
-      var num;
+      this.$el.html(this.template({viewId: this.viewId}));
+      this.finish();
+      
       if (this.isChat) {
-        num = this.pageView.getNumParticipants();
         this.pageView.on('chat:newParticipant', this.refresh, this);
         this.pageView.on('chat:participantLeft', this.refresh, this);
+        this.refresh();
+      }
+      else {
+        this.$('.menuBadge').hide();
       }
       
-      this.$el.html(this.template({viewId: this.viewId, count: num}));
-      this.finish();
-      this.refresh();
       return this;
     }
   },
