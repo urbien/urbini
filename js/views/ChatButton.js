@@ -4,8 +4,8 @@ define([
   'utils',
   'events', 
   'views/ToggleButton' 
-], function(_, U, Events, BasicView) {
-  return ToggleBurron.extend({
+], function(_, U, Events, ToggleButton) {
+  return ToggleButton.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
     id: 'chat',
