@@ -202,8 +202,9 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
 
 
 function WebRTC(opts) {
+    var options = opts || {};
+    this.hasMedia = options.localVideo || options.remoteVideos;
     var self = this,
-        options = opts || {},
         config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
             log: false,
@@ -215,7 +216,7 @@ function WebRTC(opts) {
                 iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
             },
             peerConnectionContraints: {
-                optional: [{"DtlsSrtpKeyAgreement": true}]
+                optional: browser != 'firefox' && !this.hasMedia ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
             },
             media: {
                 audio:true,
@@ -228,6 +229,7 @@ function WebRTC(opts) {
         item,
         connection;
 
+        
     // check for support
     if (!webRTCSupport) {
         console.error('Your browser doesn\'t seem to support WebRTC');
@@ -260,10 +262,12 @@ function WebRTC(opts) {
         } else {
             // create the conversation object
             self.pcs[message.from] = new Conversation({
-                id: message.from,
-                parent: self,
-                initiator: false
+              id: message.from,
+              parent: self,
+              initiator: false,
+              media: self.hasMedia
             });
+            
             self.pcs[message.from].handleMessage(message);
         }
     });
@@ -271,7 +275,10 @@ function WebRTC(opts) {
     connection.on('joined', function (room) {
         logger.log('got a joined', room);
         if (!self.pcs[room.id]) {
+          if (self.localStream)
             self.startVideoCall(room.id);
+          else
+            self.startTextChat(room.id);            
         }
     });
     connection.on('left', function (room) {
@@ -340,6 +347,16 @@ WebRTC.prototype.startVideoCall = function (id) {
     this.pcs[id].start();
 };
 
+WebRTC.prototype.startTextChat = function (id) {
+  this.pcs[id] = new Conversation({
+      id: id,
+      parent: this,
+      initiator: true
+  });
+  
+  this.pcs[id].start();
+};
+
 WebRTC.prototype.createRoom = function (name, cb) {
     if (arguments.length === 2) {
         this.connection.emit('create', name, cb);
@@ -364,15 +381,18 @@ WebRTC.prototype.leaveRoom = function () {
 
 WebRTC.prototype.testReadiness = function () {
     var self = this;
-    if (this.localStream && this.sessionReady) {
+    var sessionid = self.connection.socket.sessionid;
+    if (this.sessionReady) {
+      this.emit('readyToText', sessionid);
+      if (this.localStream) {
         // This timeout is a workaround for the strange no-audio bug
         // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
         // remove timeout when this is fixed.
         var sessionid = self.connection.socket.sessionid;
-        self.emit('sessionstart', sessionid);
         setTimeout(function () {
             self.emit('readyToCall', sessionid);
         }, 1000);
+      }
     }
 };
 
@@ -400,22 +420,53 @@ WebRTC.prototype.send = function (to, type, payload) {
 function Conversation(options) {
     var self = this;
 
-    this.id = options.id;
-    this.parent = options.parent;
-    this.initiator = options.initiator;
+    for (var o in options) {
+      this[o] = options[o];
+    }
+
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    this.pc.addStream(this.parent.localStream);
-    this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
-    this.pc.onremovestream = this.handleStreamRemoved.bind(this);
+    if (this.media) {
+      this.pc.addStream(this.parent.localStream);
+      this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
+      this.pc.onremovestream = this.handleStreamRemoved.bind(this);
+    }
+    
+    this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
+    this.channel = this.pc.createDataChannel(
+        'RTCDataChannel',
+        browser == 'firefox' ? {} : {
+          reliable: false
+        }
+    );
+    
+    if (browser == 'firefox') 
+      channel.binaryType = 'blob';
+    
+    this.channel.onmessage = function (event) {
+      self.onChannelMessage(event);
+    };
+    
+    this.channel.onopen = function (channel) {
+      self.onChannelOpened(channel);
+    };
+    this.channel.onclose = function (event) {
+      self.onChannelClosed(event);
+    };
+    this.channel.onerror = function (event) {
+      self.onChannelError(event);
+    };
+    
     // for re-use
     this.mediaConstraints = {
-        'mandatory': {
-            'OfferToReceiveAudio':true,
-            'OfferToReceiveVideo':true
+        optional: [],
+        mandatory: {
+            OfferToReceiveAudio: !!this.media,
+            OfferToReceiveVideo: !!this.media
         }
     };
+
     WildEmitter.call(this);
 
     // proxy events to parent
@@ -488,6 +539,63 @@ Conversation.prototype.answer = function () {
         logger.log('sending answer', sessionDescription);
         self.send('answer', sessionDescription);
     }, null, this.mediaConstraints);
+};
+
+Conversation.prototype.onChannelMessage = function(event) {
+  debugger;
+  var message = JSON.parse(event.data);
+  if (this.onmessage)
+    this.onmessage(message);
+};
+
+Conversation.prototype.onChannelOpened = function(event) {
+  debugger;
+  this.channel = event.currentTarget;
+  this.channel.peer = this.pc.peer;
+  this.broadcastMessage({message: 'I am here' + +new Date()});
+//  this.sendMessage({message: 'I am here for you'});
+};
+
+Conversation.prototype.broadcastMessage = function(message) {
+  // through the server
+  this.channel.send(JSON.stringify(message));
+};
+
+Conversation.prototype.sendMessage = function(message) {
+//  this.channel.send(JSON.stringify(message));
+  this.parent.connection.push(message);
+};
+
+Conversation.prototype.onChannelClosed = function(event) {
+  debugger;
+};
+
+Conversation.prototype.onChannelError = function(event) {
+  debugger;
+};
+
+Conversation.prototype.handleDataChannelAdded = function (event) {
+  debugger;
+  var channel = event.channel;
+  channel.binaryType = 'blob';
+  channel.onmessage = function (event) {
+    debugger;
+      if (options.onChannelMessage) options.onChannelMessage(event);
+  };
+  
+  channel.onopen = function () {
+    debugger;
+      if (options.onChannelOpened) options.onChannelOpened(channel);
+  };
+  channel.onclose = function (event) {
+    debugger;
+      if (options.onChannelClosed) options.onChannelClosed(event);
+  };
+  channel.onerror = function (event) {
+    debugger;
+      if (options.onChannelError) options.onChannelError(event);
+  };
+//  this.emit('videoAdded', el);
 };
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
