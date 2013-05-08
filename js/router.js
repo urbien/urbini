@@ -650,7 +650,7 @@ define([
         query = path.slice(qIdx + 1);
       }
 
-      if (chat && /^[0-9]+/.test(uri)) {
+      if (chat && /^_/.test(uri)) {
         var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage();
         this.changePage(chatPage);
         return;
@@ -916,7 +916,7 @@ define([
       var user = G.currentUser;
       if (user.guest) {
         this._requestLogin({
-          msg: 'Please login before you use this app', 
+          msg: 'Please login before you use this app' 
         });
         
         return false;

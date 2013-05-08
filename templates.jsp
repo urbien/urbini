@@ -138,7 +138,7 @@
         </fieldset>
       </div-->
       
-      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</button-->
+      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop Video' : 'Start Video' }}</button-->
       <div data-role="fieldcontain" data-mini="true">
         <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
           <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />

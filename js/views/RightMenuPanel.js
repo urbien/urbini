@@ -160,7 +160,6 @@ define([
       var userid = $(e.currentTarget).find('[data-userid]').data('userid');
       var chatPageUrl = e.currentTarget.dataset.href;
       var qIdx = chatPageUrl.indexOf('?');
-      chatPageUrl += (qIdx == -1 ? '?' : '&') + '-privateChat=y';
       if (userid) {
         this.pageView.sendMessage({
           channel: userid,
@@ -195,7 +194,7 @@ define([
         if (!uri)
           return;
         
-        var mobileUrl = U.makeMobileUrl('chat', '{0}:{1}'.format(myId, userid), {
+        var mobileUrl = U.makeMobileUrl('chat', '_{0}:{1}'.format(myId, userid), {
           $title: 'Private chat: {0} and {1}'.format(info.name, myName)
         });
         

@@ -49,7 +49,7 @@ define([
   
       var params = U.getHashParams();
 //      this.video = params['-video'] !== 'n';
-      this.video = params['-privateChat'] === 'y';
+      this.video = this.hash.startsWith('chat/_');
       this.autoVideo = params['-autoVideo'] === 'y';
       
       var type = this.vocModel ? this.vocModel.type : null;
