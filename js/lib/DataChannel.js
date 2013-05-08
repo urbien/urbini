@@ -53,7 +53,6 @@
                     channel = config.channel || self.channel || 'default-channel';
                     var socket = new window.Firebase('https://' + (extras.firebase || self.firebase || 'chat') + '.firebaseIO.com/' + channel);
                     socket.channel = channel;
-
                     socket.on('child_added', function (data) {
                         config.onmessage(data.val());
                     });

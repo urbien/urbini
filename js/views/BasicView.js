@@ -314,6 +314,14 @@ define([
     finalize: function () {
     },
 
+    isPortrait: function() {
+      return window.innerHeight > window.innerWidth;
+    },
+    
+    isLandscape: function() {
+      return !this.isPortrait();
+    },
+    
     padding: function(horizontal) {
       var one = horizontal ? 'left' : 'top';
       var two = horizontal ? 'right' : 'bottom';

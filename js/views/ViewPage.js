@@ -15,7 +15,6 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       this.makeTemplate('resource', 'template', this.vocModel.type);
-      this.router = G.Router || Backbone.History;
       this.viewId = options.viewId;
       
       var res = this.resource;
@@ -233,12 +232,12 @@ define([
         });
       });
 
-      this.chatPromise && this.chatPromise.done(function() {        
-        var chatbox = self.$('div#chatbox');
-        self.assign({
-          'div#chatbox': self.chat
-        });
-      });
+//      this.chatPromise && this.chatPromise.done(function() {        
+//        var chatbox = self.$('div#chatbox');
+//        self.assign({
+//          'div#chatbox': self.chat
+//        });
+//      });
 
       var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
       var views = {};

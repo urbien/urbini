@@ -7,6 +7,7 @@ define([
   'events',
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
+
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
@@ -39,27 +40,35 @@ define([
       'resize': 'resizeVideo'
     },
     resizeVideo: function() {
-      if (!this.isLocalVideo || !this.video)
+//      if (!this.isLocalVideo || !this.video)
+      if (!this.video)
         return;
       
       var v = this.video,
           width = v.videoWidth || this.$video.width(),
           height = v.videoHeight || this.$video.height(),
-          preventOversize = !!v.videoWidth;
+          preventOversize = !!width;
       
       if (width && height) {
-        this._resizeVideo(width, v.videoHeight, preventOversize);
+//        this._resizeVideo(width, v.videoHeight, preventOversize);
+        this._resizeVideo(width, height, preventOversize);
         return;
       }
     },
+
+//    _getMaxDimensions: function() {
+//      var maxWidth = this.pageView.innerWidth() - padding;
+//      var maxHeight = this.pageView.innerHeight() - padding;
+//      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, preventResizeOverOneHundredPercent ? 1 : 0);      
+//    },
     
     _resizeVideo: function(width, height, preventResizeOverOneHundredPercent) {
       var padding = this.padding();
-      var maxWidth = this.pageView.innerWidth() - padding;
-      var maxHeight = this.pageView.innerHeight() - padding;
+      var maxWidth = Math.min(this.pageView.innerWidth() - padding, 640);
+      var maxHeight = Math.min(this.pageView.innerHeight() - padding, 480);
       width = width || maxWidth;
       height = height || maxHeight;
-      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, preventResizeOverOneHundredPercent ? 1 : 0);
+      var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, false);
       this.$video.attr('width', Math.round(width / downscaleRatio));
       this.$video.attr('height', Math.round(height / downscaleRatio));
     },
@@ -70,7 +79,13 @@ define([
       this.render();
       return this;
     },
+    
+    _getVideoEl: function() {
+      return this.isLocalVideo ? this.$('video') : this.$('iframe');
+    },
+    
     render: function(options) {
+      var self = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
       if (!meta)
@@ -106,34 +121,7 @@ define([
           if (props.length)
             info.poster = json[props[0]];
 
-//          var maxHeight = this.pageView.innerHeight() - padding;
-//          width && this.$video.attr('height', height);
-
           this.$el.html(this.template(info));
-//          info.width = this.pageView.innerWidth() - this.padding();
-          this.$video = this.$('video');
-          this.video = this.$video[0];
-          this.video.addEventListener('canplay', function() {
-            this.resizeVideo();
-          }.bind(this));
-          
-//            var settings = {
-//              m4v: json[self._videoprop]
-//            };
-//            
-//            if (props.length) {
-//              var poster = json[props[0]];
-//              if (poster)
-//                settings.poster = poster; 
-//            }
-//              
-//            self.$("#jquery_jplayer_1").jPlayer({
-//              ready: function () {
-//                $(this).jPlayer("setMedia", settings);
-//              },
-//              supplied: "m4v"
-//            });
-//          }.bind(this));
         }
         else {
           var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
@@ -145,7 +133,7 @@ define([
           if (v) {
             var frag = document.createDocumentFragment();
 //            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
-            var video = '<div align="center">' + v + '</div>';
+            var video = '<div class="video-container" align="center">' + v + '</div>';
             U.addToFrag(frag, video);
             if (videoHtml5)
               delete json[videoHtml5Prop];
@@ -156,6 +144,27 @@ define([
           }
         }
         
+        this.$video = this._getVideoEl();
+        this.video = this.$video[0];
+        if (this.video.tagName === 'VIDEO') {
+          var checkSize = function(e) {
+            if (self.video.videoWidth) {
+              self.resizeVideo();
+              _.each(G.media_events, function(e) {
+                self.$video.off(e, checkSize);
+              });
+            }
+          };
+              
+          _.each(G.media_events, function(e) {
+            self.$video.one(e, checkSize);
+          });
+        }
+        else {
+          // iframe
+          this.video.onload = this.resizeVideo;
+        }
+
         return;
       }
       

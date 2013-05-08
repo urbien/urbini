@@ -370,9 +370,9 @@ define('app', [
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
-        var onDismiss = options.onDismiss;
+        var onDismiss = options.onDismiss || G.Router._backOrHome;
         $('#login_popup').remove();
-        var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online, dismissible: !onDismiss});
+        var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online, dismissible: false});
         $(document.body).append(popupHtml);
         var $popup = $('#login_popup');
         if (onDismiss) {

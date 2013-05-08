@@ -160,7 +160,6 @@ define([
       var userid = $(e.currentTarget).find('[data-userid]').data('userid');
       var chatPageUrl = e.currentTarget.dataset.href;
       var qIdx = chatPageUrl.indexOf('?');
-      chatPageUrl += (qIdx == -1 ? '?' : '&') + '-privateChat=y';
       if (userid) {
         this.pageView.sendMessage({
           channel: userid,
@@ -183,19 +182,19 @@ define([
       var me = G.currentUser;
       var myName = me.davDisplayName;
       var participants = this.pageView.getParticipants();
-      participants[userid] = {
-        userid: myId,
-        uri: me._uri,
-        name: myName,
-        icon: me.thumb
-      };
+//      participants[userid] = { // add self to list
+//        userid: myId,
+//        uri: me._uri,
+//        name: myName,
+//        icon: me.thumb
+//      };
       
       _.each(participants, function(info, userid) {
         var uri = info.uri;
         if (!uri)
           return;
         
-        var mobileUrl = U.makeMobileUrl('chat', '{0}:{1}'.format(myId, userid), {
+        var mobileUrl = U.makeMobileUrl('chat', '_{0}:{1}'.format(myId, userid), {
           $title: 'Private chat: {0} and {1}'.format(info.name, myName)
         });
         

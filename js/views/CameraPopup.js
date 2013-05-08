@@ -210,7 +210,13 @@ define([
           audio: this.hasAudio
         },
         function(stream) {
-          this.stream = stream;
+          this.stream = stream; // need to set this.stream to ensure this.destroy() has access to it to stop it
+          if (!this.$('#camVideo').length) {
+            // popup was canceled already
+            this.destroy();
+            return;
+          }
+          
           this.startVideo(stream);
           this.startAudio(stream);
         }.bind(this),
