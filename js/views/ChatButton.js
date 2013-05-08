@@ -3,9 +3,9 @@ define([
   'underscore', 
   'utils',
   'events', 
-  'views/BasicView' 
+  'views/ToggleButton' 
 ], function(_, U, Events, BasicView) {
-  return BasicView.extend({
+  return ToggleBurron.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
     id: 'chat',
@@ -15,18 +15,33 @@ define([
       this.makeTemplate(this.templateName, 'template', this.modelType); // fall back to default template if there is none specific to this particular model
       return this;
     },
-    render: function(options) {
+    render: function(options) {      
       var res = this.model;
-      var uri = this.resource ? res.getUri() : res.getUrl();
       var hash = this.hash;
       if (/\?/.test(hash))
         hash = hash.slice(0, hash.indexOf('?'));
       
-      var chatView = this.router.ChatViews[hash];
+      this.isChat = this.hash.startsWith('chat/');
+      var unread, uri, url;
+      if (!this.isChat) {
+        chatView = this.router.ChatViews[hash];
+        unread = chatView && chatView.getNumUnread();
+        uri = this.resource ? res.getUri() : res.getUrl();
+        url = U.makePageUrl('chat', uri);
+      }
+      
       this.$el.html(this.template({
-        url: U.makePageUrl('chat', uri),
-        unreadMessages: chatView && chatView.getNumUnread()
+        url: url,
+        unreadMessages: unread
       }));
+      
+      if (this.isChat) {
+        var chatPage = this.pageView;
+        this.$el.on('click', function(e) {
+          Events.stopEvent(e);
+          chatPage.trigger('toggleTextChat');
+        });
+      }
       
       return this;
     }

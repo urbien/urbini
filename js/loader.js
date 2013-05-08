@@ -817,6 +817,9 @@ define('fileCache', function() {
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
   var moreG = {
+    media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
+                    "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
+                    "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
     nukeAll: function(reload) {
       var ls = localStorage;
       ls && ls.clear && ls.clear();

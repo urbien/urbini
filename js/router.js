@@ -651,7 +651,10 @@ define([
       }
 
       if (chat && /^_/.test(uri)) {
-        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage();
+        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage({
+          'private': true
+        });
+        
         this.changePage(chatPage);
         return;
       }      

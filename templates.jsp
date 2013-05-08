@@ -84,9 +84,16 @@
   <div id="chatDiv" role="main">
   </div>
   
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-  </div-->
+  <div class="ui-bar" data-theme="{{= G.theme.footer }}" data-fullscreen="true" style="text-align:center" data-fixed="true">
+    <div data-role="navbar">
+      <ul id="chatFooterUl" class="navbarUl">
+        {{ if (this.hasVideo) { }}
+          <li data-icon="video"><a data-icon="video" id="toggleVideoBtn" target="#">Video</a></li>
+        {{ }                    }}
+        <li data-icon="comments-alt"><a data-icon="comments-alt" id="toggleChatBtn" target="#">Chat</a></li>
+      </ul>
+    </div>
+  </div>
 </script>  
 
 <script type="text/template" id="chatMessageTemplate">
@@ -107,7 +114,7 @@
           {{ }                 }}
           
           <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">
-            {{ if (obj.isPrivate) { }}
+            {{ if (obj['private']) { }}
               <span class="private-message"><i> (Private message) </i></span> 
             {{ }                 }}
             {{= obj.sender ? message : '{0} ({1})'.format(message, time) }}
@@ -125,29 +132,29 @@
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">
   {{ if (obj.video) { }}
-    <div id="videoChat">
+    <div id="videoChat" class="videoChat">
       <div id="localVideo"></div>
       <div id="remoteVideos"></div>
-    
-      <!--div data-role="fieldcontain">
-        <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-          <label data-icon="video" for="toggleVideoBtn"></label>
-          <input type="checkbox" name="toggleAudioBtn" id="toggleAudioBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-          <label data-icon="video" for="toggleAudioBtn"></label>
-        </fieldset>
-      </div-->
-      
-      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop Video' : 'Start Video' }}</button-->
-      <div data-role="fieldcontain" data-mini="true">
-        <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
-          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
-          <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</label>
-        </fieldset>
-      </div>
-
-      <br /><hr /><br />
     </div>
+    
+    <!--div data-role="fieldcontain">
+      <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+        <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
+        <label data-icon="video" for="toggleVideoBtn"></label>
+        <input type="checkbox" name="toggleAudioBtn" id="toggleAudioBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
+        <label data-icon="video" for="toggleAudioBtn"></label>
+      </fieldset>
+    </div-->
+    
+    <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop Video' : 'Start Video' }}</button-->
+    <!--div data-role="fieldcontain" data-mini="true">
+      <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
+        <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
+        <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</label>
+      </fieldset>
+    </div>
+
+    <br /><hr /><br /-->
   {{ }                }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
@@ -548,9 +555,14 @@
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
-  <a href="{{= url }}" data-icon="comments-alt">Chat
+  <a href="{{= url || '#' }}" data-icon="comments-alt">Chat
     {{= obj.unreadMessages ? '<span class="menuBadge">' + unreadMessages + '</span>' : '' }}
   </a>
+</script>
+
+<script type="text/template" id="videoButtonTemplate">
+  <!-- Button that toggles video chat -->
+  <a target="#" data-icon="video">Video</a>
 </script>
 
 <script type="text/template" id="addButtonTemplate">
@@ -674,7 +686,7 @@
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
     <div data-role="navbar">
-      <ul id="headerUl">
+      <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
     <div id="name" class="resTitle" align="center">

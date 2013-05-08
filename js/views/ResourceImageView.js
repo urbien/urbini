@@ -7,9 +7,6 @@ define([
   'events',
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
-  var media_events = ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
-                      "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
-                      "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"];
 
   return BasicView.extend({
     initialize: function(options) {
@@ -153,13 +150,13 @@ define([
           var checkSize = function(e) {
             if (self.video.videoWidth) {
               self.resizeVideo();
-              _.each(media_events, function(e) {
+              _.each(G.media_events, function(e) {
                 self.$video.off(e, checkSize);
               });
             }
           };
               
-          _.each(media_events, function(e) {
+          _.each(G.media_events, function(e) {
             self.$video.one(e, checkSize);
           });
         }

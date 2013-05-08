@@ -235,7 +235,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 */
 
 /* big symbols in the top navbar */
-#headerUl .ui-icon {
+.navbarUl .ui-icon {
     background: none;
     box-shadow: none;
 /*    color: #444444;*/
@@ -244,7 +244,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 }
 
 /* navbar no text - icons only */ 
-#headerUl .ui-btn-inner { font-size: 0px; }
+.navbarUl .ui-btn-inner { font-size: 0px; }
 /* #headerUl .ui-btn { padding: 3px 0px; } */
 
 @media (max-width: 328px) {

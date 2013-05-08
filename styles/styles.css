@@ -478,7 +478,10 @@ border: #7F7F7F solid 4px;
   color: #FFF;
 }
 
-.chat-holder {margin: 10px 10px 0px 10px;}
+.chat-holder {
+  margin: 10px 10px 0px 10px;
+  text-align: center;
+}
 
 @media (max-width: 328px) {  
   .chat-holder {margin: 10px 0px 0px 0px;}
@@ -488,10 +491,46 @@ border: #7F7F7F solid 4px;
 }
 
 video {
-  border: 5px solid #AAA;
-#  max-width: 100%;
-#  height: auto;
+  width: 100%    !important;
+  height: auto   !important;
+  #max-width: 100%;
+  #height: auto;
+  border: 5px solid #AAA;  
 }
+
+/*
+video.localVideo {
+  border: 5px solid #AAA;  
+}
+*/
+
+.videoChat {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  top: 50%;
+  left: 50%;
+  position:fixed;
+}
+
+.myVideo-overlay video {
+  max-width: 30%;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+/*
+video.remoteVideo:after {
+  content: "\f057"; 
+  font-family: FontAwesome;
+  color: #fff;
+  font-size: 20px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+*/
 
 /*
 .video-container {

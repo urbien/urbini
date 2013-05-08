@@ -322,7 +322,7 @@ WebRTC.prototype.getLocalVideoContainer = function () {
         }
         
         el.appendChild(video);
-        this.emit('appendedLocalVideo');
+        this.emit('appendedLocalVideo', video);
         return video;
     }
 };
