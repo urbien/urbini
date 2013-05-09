@@ -212,8 +212,25 @@ define([
         
         if (!img) 
           U.addToFrag(frag, this.menuItemTemplate(common));
-        else
-          U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+        else {
+          var oW = info.oW;
+          var oH = info.oH;
+          if (oW  &&  oH) {
+            
+            this.$el.addClass("menu_image_fitted");
+            
+            var dim = U.fitToFrame(44, 44, oW / oH)
+            width = dim.w;
+            height = dim.h;
+            top = dim.y;
+            right = dim.w - dim.x;
+            bottom = dim.h - dim.y;
+            left = dim.x;
+            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img, width: width, height: height, top: top, bottom: bottom, right: right, left: left}, common)));
+          }
+          else
+            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+        }
         
       }.bind(this));
       
@@ -255,7 +272,7 @@ define([
       var isBuyable = res.isA("Buyable");
       if (isItemListing || isBuyable) {
         var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
-        var license = res.get(licenceProp);
+        var license = res.get(licenseProp);
         if (license) {
           var ccEnum = U.getEnumModel('CCLicense');
           var licenseMeta = _.filter(ccEnum.values, function(val) {
