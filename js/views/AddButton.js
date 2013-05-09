@@ -28,7 +28,7 @@ define([
       colParams['-makeId'] = G.nextId();
       var params = U.getParamMap(window.location.href);
       if (params['$type']) {
-        var forClass = U.isA(this.vocModel, "Referenceable") ? U.getCloneOf(this.vocModel, 'Referenceable.forClass') : (U.isA(this.vocModel, "Reference") ? U.getCloneOf(this.vocModel, 'Reference.forClass') : cl);
+        var forClass = U.isA(this.vocModel, "Referenceable") ? U.getCloneOf(this.vocModel, 'Referenceable.forClass') : (U.isA(this.vocModel, "Reference") ? U.getCloneOf(this.vocModel, 'Reference.forClass') : null);
         if (forClass  &&  forClass.length)
           colParams[forClass[0]] = params['$type'];
       }
