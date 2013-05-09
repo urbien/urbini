@@ -265,7 +265,8 @@ define([
         $('body').append(this.$el);
       if (G.theme.backgroundImage) 
         this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
-      
+
+      this.$('#chatbox').css("display", "none");
 //      renderDfd.resolve();
 //      this.restyle();
       
