@@ -7,7 +7,7 @@
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
@@ -44,11 +44,11 @@
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
-      <div class="ui-block-a" id="resourceImage" style="width:auto;"></div>
+      <div class="ui-block-a" id="resourceImage" style="width:auto"></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
@@ -79,7 +79,7 @@
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="chatDiv" role="main">
   </div>
@@ -96,7 +96,7 @@
   </div>
 </script>  
 
-<script type="text/template" id="chatMessageTemplate">
+<script type="text/template" id="chatMessageTemplate1">
   <table width="100%">
     <tr>
       {{ if (!obj.info && !obj.self && obj.senderIcon) { }}
@@ -129,6 +129,39 @@
   </table>
 </script>
 
+<script type="text/template" id="chatMessageTemplate">
+  <table width="100%" class="height_tracker">
+    <tr>
+      <td width="100%">
+        <div class="{{= 'chat_msg ' + (obj.sender ? (obj.self ? 'msg_sent' : 'msg_recvd') : 'msg_recvd') }}">
+         <!--  {{ if (obj.sender) { }}
+            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div>
+          {{ }                 }}
+          {{ if (obj.info && obj.senderIcon) { }}
+         -->
+          {{ if (obj.senderIcon) { }}
+            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div> 
+          {{ }                 }}
+          
+          <div class="chat_copy">
+            {{ if (obj.isPrivate) { }}
+              <p class="private-message"><i> (Private message) </i></p> 
+            {{ }                 }}
+            <!-- p>{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</p -->
+            <p>{{= message }}</p>
+          </div>
+          <div class="posted_on">
+          <!-- {{ if (obj.sender) { }} -->
+            <strong>{{= sender }}</strong>&#160;&#160;{{= time }}
+          <!-- {{ }                 }} -->
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</script>
+
+
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">
   {{ if (obj.video) { }}
@@ -160,11 +193,14 @@
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
       </div>
-      <div id="chatInputs">
-        <input type="text" id="chatMessageInput" value="" />
-        <button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button>
+    </div>
+    <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
+      <div id="chatInputs" style="padding:10px;">
+        <div style="width:75%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
+        <div style="width:20%; padding-left:5px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
+    
   </div>
 </script>
 
@@ -188,7 +224,7 @@
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.propertiesMenu }}" id="rightMenuItems" class="menuItems">
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
   </ul>
 </script>  
 
@@ -343,7 +379,7 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; cursor:pointer;"">
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
@@ -398,7 +434,14 @@
   <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
       
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" 
+    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+      style="
+        width:{{= width }}px; height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+    {{ } }}
+    /> 
     <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
