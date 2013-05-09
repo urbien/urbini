@@ -432,7 +432,11 @@ define([
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
         return false;
-      
+      if (prop.avoidDisplayingInEdit  || prop.avoidDisplayingOnCreate) {
+        var hash = window.location.hash;
+        if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
+          return false;
+      }
       var roles = prop.allowRoles;
       if (roles  &&  roles.indexOf('self') == -1  &&  !U.isUserInRole("admin"))
         return false;
@@ -1594,11 +1598,19 @@ define([
           }
         }
         else if (prop.range == 'string') {
+          var href = window.location.hash;
+          var isView = href.startsWith("#view/");
+
           if (isDisplayName)
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-          else
+          else if (!isView  &&  prop.maxSize > 1000)
             val = "<span style='opacity:0.5;'>" + val + "</span>";
+          else
+            val = "<span>" + val + "</span>";
         }
+        else if (prop.range == 'enum') {
+          val = "<span>" + val + "</span>";
+        }  
       }
       
       val = val || res.get(propName) || '';        
