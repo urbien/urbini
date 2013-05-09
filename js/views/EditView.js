@@ -10,7 +10,7 @@ define([
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
   function willShow(res, prop, role) {
     var p = prop.shortName;
-    return !prop.formula  &&  !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
+    return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
   };
 
   var scrollerTypes = ['date', 'duration'];
@@ -25,7 +25,8 @@ define([
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
-
+      this.reqParams = U.getParamMap(window.location.href);
+      
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
 //      this.backlinkResource = options.backlinkResource;
@@ -1062,8 +1063,7 @@ define([
 //        delete json[p];
         return;
       }
-      
-      if (info.params[p]  &&  prop.containerMember) {
+      if (info.params[p]  &&  prop.containerMember && (this.action == 'edit' || this.reqParams[p])) {
         if (prop.required) {
           var rules = ' data-formEl="true"';
           var longUri = U.getLongUri1(info.params[p]);
