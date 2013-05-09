@@ -419,3 +419,6 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 #name.resTitle {
   padding-bottom: 7px;
 }
+.chattee img {
+  max-height: 44px;
+}
