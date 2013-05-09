@@ -176,7 +176,7 @@
   {{= " poster='{0}'".format(poster) }}
   {{ }                               }}
   >
-    <source src="{{= src }}" type="video/mp4" />
+    <source src="{{= src }}" type="{{= 'video/' + src.slice(src.lastIndexOf('.') + 1) }}" />
   </video>
 </script>
 
