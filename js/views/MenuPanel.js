@@ -65,6 +65,7 @@ define([
       
       if (typeof t === 'undefined' || !t)
         return;
+      
       text = U.removeHTML(text).trim();
       var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
       var idx = href.lastIndexOf('#');
@@ -77,7 +78,9 @@ define([
           return;
         }
       }
-      
+      if (href.indexOf("Alert?") != -1) 
+        G.currentUser.newAlertsCount = 0;
+
       this.router.navigate(href, {trigger: true});
 //      var link = $(t).attr('link');
 //      if (link) {
