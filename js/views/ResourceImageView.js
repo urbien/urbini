@@ -116,6 +116,7 @@ define([
           var info = {
             src: this._videoUrl,
             preload: 'auto'
+//            autoplay: 'autoplay'
           };
           
           if (props.length)
@@ -146,23 +147,25 @@ define([
         
         this.$video = this._getVideoEl();
         this.video = this.$video[0];
-        if (this.video.tagName === 'VIDEO') {
-          var checkSize = function(e) {
-            if (self.video.videoWidth) {
-              self.resizeVideo();
-              _.each(G.media_events, function(e) {
-                self.$video.off(e, checkSize);
-              });
-            }
-          };
-              
-          _.each(G.media_events, function(e) {
-            self.$video.one(e, checkSize);
-          });
-        }
-        else {
-          // iframe
-          this.video.onload = this.resizeVideo;
+        if (this.video) {
+          if (this.video.tagName === 'VIDEO') {
+            var checkSize = function(e) {
+              if (self.video.videoWidth) {
+                self.resizeVideo();
+                _.each(G.media_events, function(e) {
+                  self.$video.off(e, checkSize);
+                });
+              }
+            };
+                
+            _.each(G.media_events, function(e) {
+              self.$video.one(e, checkSize);
+            });
+          }
+          else {
+            // iframe
+            this.video.onload = this.resizeVideo;
+          }
         }
 
         return;
