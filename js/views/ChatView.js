@@ -718,7 +718,7 @@ define([
 //        this.webrtc.connection.emit('disconnect');
       }
       
-      this.$localVids.empty();
+      this.$localVids && this.$localVids.empty();
 //      this.webrtc = null;
     },
     
