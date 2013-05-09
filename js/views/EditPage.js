@@ -56,7 +56,8 @@ define([
       
       var reqParams = U.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
-      if (!editCols) {
+      this.isVideo = res.isA('VideoResource');
+      if (!editCols && !this.isVideo) {
         this.addChild('imageView', new ResourceImageView({model: res}));
       }
       

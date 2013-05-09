@@ -84,7 +84,7 @@
   <div id="chatDiv" role="main">
   </div>
   
-  <div class="ui-bar" data-theme="{{= G.theme.footer }}" data-fullscreen="true" style="text-align:center" data-fixed="true">
+  <!--div data-theme="{{= G.theme.footer }}" data-fullscreen="true" style="text-align:center" data-fixed="true">
     <div data-role="navbar">
       <ul id="chatFooterUl" class="navbarUl">
         {{ if (this.hasVideo) { }}
@@ -93,7 +93,7 @@
         <li data-icon="comments-alt"><a data-icon="comments-alt" id="toggleChatBtn" target="#">Chat</a></li>
       </ul>
     </div>
-  </div>
+  </div-->
 </script>  
 
 <script type="text/template" id="chatMessageTemplate1">
@@ -151,9 +151,9 @@
             <p>{{= message }}</p>
           </div>
           <div class="posted_on">
-          <!-- {{ if (obj.sender) { }} -->
+          {{ if (obj.sender) { }}
             <strong>{{= sender }}</strong>&#160;&#160;{{= time }}
-          <!-- {{ }                 }} -->
+          {{ }                 }}
           </div>
         </div>
       </td>
@@ -161,6 +161,34 @@
   </table>
 </script>
 
+<!--script type="text/template" id="requestVideoDialogTemplate">
+  <!--a href="#requestVideoDialog" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop" data-icon="delete" data-theme="b">Video Chat</a-->
+  <div data-role="popup" id="requestVideoDialog" data-overlay-theme="a" data-theme="c" data-dismissible="false" style="max-width:400px;" data-overlay-theme="{{= G.theme.menu }}" class="ui-corner-all">
+    <div data-role="header" data-theme="a" class="ui-corner-top">
+      <h1>Video Chat?</h1>
+    </div>
+    <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
+      <h3 class="ui-title">{{= sender + ' would like to video chat with you' }}</h3>
+      <!--p>This action cannot be undone.</p-->
+      <a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">Decline</a>
+      <a href="#" data-role="button" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">Accept</a>
+    </div>
+  </div>
+</script-->
+
+<script type="text/template" id="genericDialogTemplate">
+<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="false" class="ui-corner-all">
+  <div data-role="header" data-theme="a" class="ui-corner-top">
+    <h1>Video Chat?</h1>
+  </div>
+  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
+    <h3 class="ui-title">{{= title }}</h3>
+    <p>{{= obj.details ? details : '' }}</p>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= obj.cancel || 'Cancel' }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= obj.ok || 'Ok' }}</a>
+  </div>
+</div>
+</script>
 
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">

@@ -17,7 +17,7 @@ define([
       
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
-      this.resource.on('change', this.refresh);
+      this.resource.on('change', this.refresh, this);
   
 //      this._videoProp = U.getCloneOf(this.vocModel, "VideoResource.video")[0];
 //      this.isLocalVideo = !!this._videoProp && res.get(this._videoProp);
@@ -100,7 +100,7 @@ define([
       
       var json = res.toJSON();
       var self = this;
-      if (this.isVideo && !this.video) {
+      if (this.isVideo) {
         if (this.hash.startsWith('edit/'))
           return this;
         

@@ -12,31 +12,18 @@ define([
   var BTN_ACTIVE_CLASS = 'ui-btn-active';
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleVideo', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatOn', 'chatOff'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, _.pick(options, 'autoVideo', 'private'));
-      
-//      this.readyDfd = $.Deferred();
-//      this.ready = this.readyDfd.promise();
-//      var req = ['lib/socket.io', 'lib/DataChannel'];
-//      if (this.hasVideo)
-//        req.push('lib/simplewebrtc');
-//      
-//      U.require(req).done(function(io, DC, simpleWebRTC) {
-//        WebRTC = window.WebRTC || simpleWebRTC;
-//        this.readyDfd.resolve();
-//      }.bind(this));
       
       this.hasVideo = this['private'];
       this.headerButtons = {
         back: true,
         menu: true,
         login: G.currentUser.guest,
-        rightMenu: true
-//        ,
-//        chat: true,
-//        video: this.hasVideo
+        rightMenu: true,
+        video: this.hasVideo
       };
 
       var res = this.model;
@@ -62,8 +49,8 @@ define([
       this.makeTemplate('chatPageTemplate', 'template', type);
       this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model'))));
       
-      this.on('chat:on', this.chatOn, this);
-      this.on('chat:off', this.chatOff, this);
+      this.on('chat:on', this.chatFadeIn, this);
+      this.on('chat:off', this.chatFadeOut, this);
       this.on('video:on', this.videoFadeIn, this);
       this.on('video:fadeIn', this.videoFadeIn, this);
       this.on('video:fadeOut', this.videoFadeOut, this);
@@ -78,15 +65,22 @@ define([
     },
     
     events: {
-      'click #toggleVideoBtn': 'toggleVideo',
-      'click #toggleChatBtn': 'toggleChat'
+      'click #videoChat': 'toggleChat',
+      'click #textChat': 'toggleChat',
+      'click input': 'chatFadeIn'
     },
 
+    toggleChat: function(e) {
+      if (this._videoSolid)
+        this.chatFadeIn();
+      else if (this.chatView._videoOn)
+        this.videoFadeIn();        
+    },
+    
     videoFadeIn: function(e) {
-      if (!this.chatView._videoOn)
-        this.trigger('video:on');
+//      if (!this.chatView._videoOn)
+//        this.trigger('video:on');
         
-      this.$('#toggleVideoBtn').addClass('ui-btn-active');
       this._videoSolid = true;
       if (this._chatSolid)
         this.trigger('chat:off');
@@ -95,7 +89,6 @@ define([
     },
 
     videoFadeOut: function(e) {
-      this.$('#toggleVideoBtn').removeClass('ui-btn-active');
       this._videoSolid = false;
       if (!this._chatSolid)
         this.trigger('chat:on');
@@ -103,8 +96,7 @@ define([
       this.$('#videoChat').fadeTo(600, 0.2).css('z-index', 0);
     },
 
-    chatOn: function(e) {
-      this.$('#toggleChatBtn').addClass('ui-btn-active');
+    chatFadeIn: function(e) {
       this._chatSolid = true;
       if (this._videoSolid)
         this.trigger('video:fadeOut');
@@ -112,8 +104,7 @@ define([
       this.$('#textChat').fadeTo(600, 1).css('z-index', 10);
     },
 
-    chatOff: function(e) {
-      this.$('#toggleChatBtn').removeClass('ui-btn-active');
+    chatFadeOut: function(e) {
       this._chatSolid = false;
       if (!this._videoSolid && this.chatView._videoOn)
         this.trigger('video:fadeIn');
@@ -121,22 +112,6 @@ define([
       this.$('#textChat').fadeTo(600, 0.2).css('z-index', 0);
     },
     
-    toggleVideo: function(e) {
-      Events.stopEvent(e);
-      var btn = this.$('#toggleVideoBtn');
-      var active = btn.hasClass(BTN_ACTIVE_CLASS);
-      this.trigger(active ? 'video:fadeOut' : 'video:fadeIn');
-      var method = active ? 'removeClass' : 'addClass';
-      btn[method](BTN_ACTIVE_CLASS);
-    },
-
-    toggleChat: function(e) {
-      Events.stopEvent(e);
-      var btn = this.$('#toggleChatBtn');
-      var active = btn.hasClass(BTN_ACTIVE_CLASS);
-      this.trigger(active ? 'chat:off' : 'chat:on');
-    },
-
     render: function() {
       this.$el.html(this.template({
         viewId: this.cid
@@ -149,9 +124,6 @@ define([
       
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
-      
-//      this.finish();
-//      this.$el.trigger('create');
     }
   }, {
     displayName: 'ChatPage'

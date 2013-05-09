@@ -16,6 +16,9 @@ define([
     },
     getDefaultErrorHandler: function(errorHandler) {
       var defaultErrorHandler = function(originalModel, err, options) {
+        if (!err)
+          debugger;
+        
         var code = err.code || err.status;
         var type = err.type || err.statusText;
         if (options.sync) {

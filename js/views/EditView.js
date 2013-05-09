@@ -53,9 +53,10 @@ define([
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
           return;
         
-        var unsaved = this.resource.getUnsavedChanges();
-        if (_.size(unsaved))
-          this.resource.save();
+        this.$form.submit();
+//        var unsaved = this.resource.getUnsavedChanges();
+//        if (_.size(unsaved))
+//          this.resource.save();
       }.bind(this));
 
       Events.on('active', function(active) {
