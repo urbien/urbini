@@ -294,7 +294,14 @@ blockquote pre .script {
 #sidebar .ui-li-static .ui-btn-up-c {
   border: 0px;
 }
-#sidebar .ui-li-static .ui-li {
+#sidebar .ui-li .ui-btn-inner {
+  padding: 0;
+}
+
+#sidebar .ui-li .ui-li-static {
+  padding: 0;
+}
+#sidebar .ui-li-static.ui-li {
   padding: 0;
 }
 
@@ -489,7 +496,6 @@ border: #7F7F7F solid 4px;
 
 .chat-info {
 }
-
 video {
   width: 100%    !important;
   height: auto   !important;
@@ -552,7 +558,6 @@ video.remoteVideo:after {
 }
 */
 
-
 /*
 .video {
   border: #7F7F7F solid 4px;
@@ -575,3 +580,156 @@ video.remoteVideo:after {
   *zoom:1;
   font-size:14px
 }*/
+
+
+
+
+/****************** BUBBLES ******************/
+.chat_msgs {
+  max-height: 520px;
+  overflow-y: scroll;
+  border-top: 2px dotted rgb(221, 221, 221);
+  padding: 10px 0;
+}
+.msg_recvd {
+  background-color: rgb(118, 118, 118);
+  color: rgba(255, 255, 255, .85)!important;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 1px 2px!important;
+}
+.msg_sent {
+  background-color: rgb(207, 240, 158);
+}
+.chat_msg {
+  position: relative;
+  background: none;
+  margin-top: 10px;
+  padding: 0 20px;
+}
+.chat_user {
+/*  width: 60px; */
+  position: relative;
+  z-index: 10;
+}
+.msg_sent .chat_user {
+  float: right;
+}
+.msg_recvd .chat_user {
+  float: left;
+}
+.msg_sent .chat_user {
+  right: 0;
+}
+.posted_on, .follower_since {
+  font-size: 11px;
+}
+.posted_on, .msg_single, .follower_single, .follower_since {
+  color: rgb(119, 119, 119);
+  text-shadow: white 0px 1px 1px;
+  clear: both;
+}
+.msg_sent .posted_on {
+  text-align: right;
+  clear: right;
+}
+.chat_msg.msg_sent .chat_copy {
+  background-color: rgb(207, 240, 158);
+  float: right;
+  margin-right: 20px;
+}
+.chat_msg.msg_recvd .chat_copy {
+  margin-left: 20px;
+  background: white;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgb(243, 243, 243)), color-stop(0.28, rgb(231, 231, 231)), to(rgb(242, 242, 242))) no-repeat rgb(242, 242, 242);
+  background: -moz-linear-gradient(top left 90deg, rgb(243, 243, 243) 0%, rgb(231, 231, 231) 28% , rgb(242, 242, 242) 100%);
+  background-size: 100% 20px;
+}
+.chat_msg .chat_copy {
+  position: relative;
+  max-width: 65%;
+  display: inline-block;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  -moz-box-shadow: rgba(255,255,255,0.6) 0px -1px 0px inset, rgba(0,0,0,0.2) 0px 1px 2px;
+  -webkit-box-shadow: rgba(255, 255, 255, 0.6) 0px -1px 0px inset, rgba(0, 0, 0, 0.2) 0px 1px 2px;
+  box-shadow: rgba(255, 255, 255, 0.6) 0px -1px 0px inset, rgba(0, 0, 0, 0.2) 0px 1px 2px;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  background: -webkit-linear-gradient(rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.1) 28%, transparent 100%);
+  background: -moz-linear-gradient(top left 90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.1) 28% , transparent 100%);
+  background-color: rgba(69,159,255,1);
+}
+.chat_msg .chat_copy:before {
+  content: '';
+  border-color: transparent rgba(0,0,0,0.55) transparent transparent;
+  border-style: solid;
+  border-width: 6px;
+  height:0;
+  width:0;
+  position:absolute;
+  bottom:-3px;
+  left:-5px;
+  -webkit-transform: rotate(70deg);
+  -moz-transform: rotate(70deg);
+}
+.chat_msg .chat_copy:after {
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: 3px;
+  right: 3px;
+  border-radius: 5px;
+  height: 6px;
+  padding: 3px 0;
+  background: rgba(255,255,255,0.75);
+  background: -webkit-gradient(linear, 0% 0%, 0% 95%, from(white), to(rgba(255, 255, 255, 0.4)));
+  background: -webkit-linear-gradient(white, rgba(255, 255, 255, 0.4));
+  background: -moz-linear-gradient(white, rgba(255, 255, 255, 0.4));
+}
+.chat_msg.msg_sent .chat_copy:before {
+  border-color: transparent transparent transparent rgba(0,0,0,0.55);
+  -webkit-transform: rotate(-70deg);
+  -moz-transform: rotate(-70deg);
+  left: auto;
+  right: -5px;
+}
+.chat_msg .chat_copy p {
+  margin: 0;
+  padding: 5px 10px;
+  color: #333;
+  text-align: left;
+  text-shadow: rgba(255, 255, 255, 0.5) 0px 1px 0px;
+  position: relative;
+  z-index: 10;
+}
+.chat_msg .chat_copy p:after {
+  content: '';
+  border-color: transparent #A5FF45 transparent transparent;
+  border-style: solid;
+  border-width: 6px;
+  height:0;
+  width:0;
+  position:absolute;
+  bottom:-1px;
+  left:-3px;
+  -webkit-transform: rotate(70deg);
+  -moz-transform: rotate(70deg);
+}
+.chat_msg.msg_sent .chat_copy p:after {
+  border-color: transparent transparent transparent #CFF09E;
+  border-style: solid;
+  border-width: 6px;
+  left: auto;
+  right: -3px;
+  -webkit-transform: rotate(-70deg);
+  -moz-transform: rotate(-70deg);
+}
+.chat_msg.msg_recvd .chat_copy p:after {
+  border-color: transparent rgb(242, 242, 242) transparent transparent;
+}
+ 
+.med.user_pic {
+  width: 50px;
+/*  height: 50px; */
+  border: 1px solid #DFDFDF;
+  display: block;
+}
