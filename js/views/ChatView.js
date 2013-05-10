@@ -203,14 +203,14 @@ define([
       this.$('div#localVideo').hide();
 //      this.$('#toggleVideoBtn').checkboxradio().checkboxradio('disable');
 
+      if (!this.rendered) {
+        this.pageView.trigger('chat:on');
+        if (this.autoVideo)
+          this.pageView.trigger('video:on');
+      }
+        
       this.ready.done(function() {        
-        if (!this.rendered) {
-          this.pageView.trigger('chat:on');
-          if (this.autoVideo)
-            this.pageView.trigger('video:on');
-          
-          this.finish();
-        }
+        this.finish();
       }.bind(this));
     },
     
@@ -312,15 +312,16 @@ define([
       return this.userIdToInfo[userid];
     },
 
-    startTextChat: function() {
+    _startTextChat: function() {
+      if (this.chat)
+        return;
+      
       if (!this.rendered) {
         this.$messages = this.$('#messages');
         this.$sendMessageBtn = this.$('#chatSendButton');
         this.$chatInput = this.$("#chatMessageInput");
         this.chatInput = this.$chatInput[0];
       }
-      
-        
       
       var chatView = this;
       this.pageView.on('video:on', function() {
@@ -809,8 +810,25 @@ define([
       this.$localVids.show();
       this.restyleVideos();
     },
-    
+
+    startTextChat: function() {
+      var args = arguments, self = this;
+      this.ready.done(function() {
+        self._startTextChat.apply(self, args);
+      });
+    },
+      
     startVideoChat: function() {
+      var args = arguments, self = this;
+      this.ready.done(function() {
+        self._startVideoChat.apply(self, args);
+      });
+    },
+
+    _startVideoChat: function() {
+      if (this._videoOn)
+        return;
+      
       this._videoOn = true;
       var chatView = this;
       this.$localVids = this.$('div#localVideo');
