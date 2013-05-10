@@ -544,7 +544,7 @@
             function socketResponse(response) {
                 if (response.userToken == self.userToken) return;
 
-                console.debug('private socket:', response);
+//                console.debug('private socket:', response);
 
                 if (response.firstPart || response.secondPart || response.thirdPart) {
                     if (response.firstPart) {

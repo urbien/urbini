@@ -297,16 +297,16 @@ define([
       }
     },
 
-    requestVideo: function(userid) {
-      var chat = userid ? this.chat.channels[userid] : this.chat;
-      if (chat) {
-        chat.send({
-          request: {
-            video: true
-          }
-        });
-      }
-    },
+//    requestVideo: function(userid) {
+//      var chat = userid ? this.chat.channels[userid] : this.chat;
+//      if (chat) {
+//        chat.send({
+//          request: {
+//            video: true
+//          }
+//        });
+//      }
+//    },
 
     getUserInfo: function(userid) {
       return this.userIdToInfo[userid];
@@ -324,9 +324,9 @@ define([
       }
       
       var chatView = this;
-      this.pageView.on('video:on', function() {
-        chatView.requestVideo();
-      });
+//      this.pageView.on('video:on', function() {
+//        chatView.requestVideo();
+//      });
       
       var i = 0;
       this.disableChat();
@@ -352,6 +352,7 @@ define([
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
+//          debugger;
           chatView._checkChannels();
           var chat = chatView.chat;
           if (!_.size(chat.channels)) {
@@ -374,16 +375,16 @@ define([
             chatView.addParticipant(from, userInfo);
           }
           else if (data.response) {
-            var res = data.response;
-            if (_.has(res, 'video') && !res.video) {
-              chatView.addMessage({
-                senderIcon: userInfo.icon,
-                message: chatView.myName + ' has declined to video chat',
-                'private': true
-              });
-              
-              chatView.pageView.trigger('video:off');
-            }
+//            var res = data.response;
+//            if (_.has(res, 'video') && !res.video) {
+//              chatView.addMessage({
+//                senderIcon: userInfo.icon,
+//                message: chatView.myName + ' has declined to video chat',
+//                'private': true
+//              });
+//              
+//              chatView.pageView.trigger('video:off');
+//            }
           }
           else if (data.request) {
             var req = data.request;
@@ -391,32 +392,32 @@ define([
               chatView.sendInfo();
             }
             
-            if (req.video && !chatView._videoOn) {
-              $('#requestVideoDialog').remove();
-              var popupHtml = chatView.videoDialog({
-                id: 'requestVideoDialog',
-                title: userInfo.name + ' would like to video chat with you',
-                ok: 'Accept',
-                cancel: 'Decline'
-              });
-              
-              $(document.body).append(popupHtml);
-              var $popup = $('#requestVideoDialog');
-              $popup.find('[data-cancel]').click(function() {
-                chatView.chat.channels[from].send({
-                  response: {
-                    video: false
-                  }
-                });
-              });
-              
-              $popup.find('[data-ok]').click(function() {
-                chatView.pageView.trigger('video:on');
-              });
-              
-              $popup.trigger('create');
-              $popup.popup().popup("open");
-            }
+//            if (req.video && !chatView._videoOn) {
+//              $('#requestVideoDialog').remove();
+//              var popupHtml = chatView.videoDialog({
+//                id: 'requestVideoDialog',
+//                title: userInfo.name + ' would like to video chat with you',
+//                ok: 'Accept',
+//                cancel: 'Decline'
+//              });
+//              
+//              $(document.body).append(popupHtml);
+//              var $popup = $('#requestVideoDialog');
+//              $popup.find('[data-cancel]').click(function() {
+//                chatView.chat.channels[from].send({
+//                  response: {
+//                    video: false
+//                  }
+//                });
+//              });
+//              
+//              $popup.find('[data-ok]').click(function() {
+//                chatView.pageView.trigger('video:on');
+//              });
+//              
+//              $popup.trigger('create');
+//              $popup.popup().popup("open");
+//            }
             
             return;
           }
@@ -449,11 +450,12 @@ define([
               message: '<i>{0} has left the room</i>'.format(whoLeft.name),
               time: getTime(),
               senderIcon: whoLeft.icon,
+              sender: whoLeft.name,
               info: true
             });
+            
+            chatView.removeParticipant(from);
           }
-          
-          chatView.removeParticipant(from);
         },
         openSignalingChannel: function (config) {
           var channel = config.channel || this.channel || 'default-urbien-channel';
