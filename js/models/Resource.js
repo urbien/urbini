@@ -686,6 +686,7 @@ define([
       options = _.extend({patch: true, silent: true}, options || {});
       attrs = attrs || {};
       var isNew = this.isNew();
+      var data;
       if (isNew)
         data = _.extend({}, this.attributes, attrs);
       else
@@ -739,7 +740,7 @@ define([
           delete data._uri;
   
         var self = this;
-        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
+        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true, resource: this}, options, {data: data});
         var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
           if (response && response.error)

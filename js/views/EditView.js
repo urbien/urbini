@@ -108,6 +108,7 @@ define([
 //      }
       
       this.setValues(props, {skipValidation: true, skipRefresh: true});
+//      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
       this.resource.save(null, {
         sync: true
       });
@@ -119,7 +120,6 @@ define([
 //      fd.append('-$action', 'upload');
 //      fd.append('type', this.vocModel.type);
 //      fd.append('forResource', this.resource.getUri());
-//      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
 //      U.ajax({
 //        type: 'POST',
 //        url: G.serverName + '/mkresource',

@@ -254,13 +254,32 @@ define([
 //      media_events["volumechange"] = 0;
       
       /* Event Handlers */
-      this.video.addEventListener('canplay', function(ev) {
-        if (!streaming) {
+//      this.video.addEventListener('canplay', function(ev) {
+//        if (!streaming) {
+//          this.setDimensions();
+//          this.$shootBtn.removeClass('ui-disabled');
+//          streaming = true;
+//        }
+//      }.bind(this), false);
+      
+      var video = this.video, 
+          $video = $(video);
+      var checkSize = function(e) {
+        if (video.videoWidth) {
+//          if ($video.parents('#remoteVideos').length)
+//            $('<icon style="font-size:20px;position:absolute;top:0px;right:0px;color:#fff;" class="ui-icon-remove-circle"></icon>').insertAfter($video);          
+
           this.setDimensions();
           this.$shootBtn.removeClass('ui-disabled');
-          streaming = true;
+          _.each(G.media_events, function(e) {
+            $video.off(e, checkSize);
+          });
         }
-      }.bind(this), false);
+      }.bind(this);
+          
+      _.each(G.media_events, function(e) {
+        $video.one(e, checkSize);
+      });
       
       this.finish();
       return this;
@@ -289,21 +308,31 @@ define([
     },
 
     setDimensions: function() {
-      var vWidth, vHeight; 
-      if (!this.video.videoWidth) {
-        vWidth = this.pageView.innerWidth() - this.padding();
-        vHeight = Math.round(vWidth * 3 / 4);
-      }
-      else {
-        vWidth = this.video.videoWidth;
-        vHeight = this.video.videoHeight;
-      }
+      if (!this.video.videoWidth)
+        return;
+//      var vWidth, vHeight; 
+//      if (!this.video.videoWidth) {
+//        vWidth = this.pageView.innerWidth() - this.padding();
+//        vHeight = Math.round(vWidth * 3 / 4);
+//      }
+//      else {
+//        vWidth = this.video.videoWidth;
+//        vHeight = this.video.videoHeight;
+//      }
+//      
+//      var height = Math.round(vHeight / (vWidth / this.width));
+//      
+      var $window = $(window),
+          wWidth = $window.width(),
+          wHeight = $window.height(),
+          vWidth = this.video.videoWidth,
+          vHeight = this.video.videoHeight;
       
-      this.height = Math.round(vHeight / (vWidth / this.width));
-      this.$video.attr('width', this.width);
-      this.$video.attr('height', this.height);
-      this.$canvas.attr('width', this.width);
-      this.$canvas.attr('height', this.height);
+      this.$canvas.attr('width', vWidth);
+      this.$canvas.attr('height', vHeight);
+      var $popup = this.$el.parent();
+      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
+      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
     },
     
 //    setDimensions: function() {

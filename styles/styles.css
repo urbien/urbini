@@ -496,12 +496,12 @@ border: #7F7F7F solid 4px;
 
 .chat-info {
 }
+
 video {
   width: 100%    !important;
   height: auto   !important;
   #max-width: 100%;
   #height: auto;
-  border: 5px solid #AAA;  
 }
 
 /*
@@ -509,7 +509,6 @@ video.localVideo {
   border: 5px solid #AAA;  
 }
 */
-
 .videoChat {
   position: relative;
   display: inline-block;
@@ -517,6 +516,10 @@ video.localVideo {
   top: 50%;
   left: 50%;
   position:fixed;
+}
+
+.videoChat video {
+  border: 5px solid #AAA;
 }
 
 .myVideo-overlay video {

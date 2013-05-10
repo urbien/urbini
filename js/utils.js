@@ -10,6 +10,10 @@ define([
 ], function(G, _, Backbone, Templates, $, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
+  function hasBlobs(data) {
+    return data instanceof Blob || _.any(_.values(data), hasBlobs);
+  }
+  
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -171,35 +175,39 @@ define([
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
           var data = opts.data;
-          if (data && Blob && U.filterObj(data, function(key, val) { return val instanceof Blob }).length) {
-//            var my_form=document.createElement('FORM');
-//            my_form.name='form' + G.nextId();
-//            my_form.method='POST';
-//            my_form.action=opts.url;
-//            my_form.enctype = "multipart/form-data";            
-//            var fd = new FormData(my_form);
-//            for (var prop in data) {
-//              var val = data[prop];
-//              if (_.isObject(val)) {
-////                for (var subProp in val) {
-//////                  fd.append(prop + '.' + subProp, val[subProp]);
-////                  data[prop+ '.' + subProp] = val[subProp];                  
-////                }
-//                
-//                _.extend(opts, {
-//                  processData: false,
-//                  contentType: false
-//                });
-//                
-//                delete opts.dataType;
-//                delete opts.emulateJSON;
-//                delete opts.emulateHTTP;
-////                delete data[prop];
-//              }
-////                fd.append(prop, val);
-//            }
+          if (data && Blob && hasBlobs(data)) {
+            opts.url = G.serverName + '/mkresource.html';
+            var fd = new FormData();
+            if (opts.resource)
+              fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
+            fd.append('uri', data._uri);
+//            fd.append('video', 'video.webm');
+//            fd.append('data', this.webmBlob);
+            fd.append('type', U.getTypeUri(data._uri));
+            fd.append('enctype', "multipart/form-data");
+            fd.append('-$action', 'upload');            
+            for (var prop in data) {
+              var val = data[prop];
+              if (_.isObject(val)) {
+                for (var subProp in val) {
+//                  data[prop+ '_' + subProp] = val[subProp];                  
+                  fd.append(prop + '.' + subProp, val[subProp]);                  
+                }
+                
+                _.extend(opts, {
+                  processData: false,
+                  contentType: false
+                });
+                
+                delete opts.dataType;
+                delete opts.emulateJSON;
+                delete opts.emulateHTTP;
+                delete data[prop];
+              }
+//                fd.append(prop, val);
+            }
             
-//            opts.data = fd;
+            opts.data = fd;
           }
           
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
@@ -272,10 +280,13 @@ define([
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
       var resUri;
-      if (U.isCollection(res))
-        resUri = null; //res.models[0].getUri();
-      else  
-        resUri = res.getUri();
+      if (res) {
+        if (U.isCollection(res))
+          resUri = null; //res.models[0].getUri();
+        else  
+          resUri = res.getUri();
+      }
+      
       var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
@@ -289,7 +300,7 @@ define([
           if (r === 'self') { 
             if (iAmRes) return true;
           }
-          else if (r.endsWith('self')){
+          else if (res && r.endsWith('self')){
             r = r.split('==');
             var pName = r[0].trim();
             var selfUser = res.get(pName);

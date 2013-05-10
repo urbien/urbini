@@ -52,68 +52,18 @@ define([
     return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes()) + ampm);
   }
   
-  var WebRTC;
-  
-//  var headID = document.getElementsByTagName("head")[0];         
-//  var newScript = document.createElement('script');
-//  newScript.type = 'text/javascript';
-//  newScript.src = 'http://simplewebrtc.com/latest.js';
-//  headID.appendChild(newScript);
-//  
-//    var headID = document.getElementsByTagName("head")[0];         
-//    var newScript = document.createElement('script');
-//    newScript.type = 'text/javascript';
-//    newScript.src = 'https://raw.github.com/muaz-khan/WebRTC-Experiment/master/RTCMultiConnection/RTCMultiConnection-v1.2.js';
-//    headID.appendChild(newScript);
-  
-//  var userId = G.currentUser._uri;
-//  
-//  userId = userId && U.getParamMap(userId).id
-//  function configWebRTC() {
-//    var createRoom = WebRTC.prototype.createRoom,
-//        joinRoom = WebRTC.prototype.joinRoom;
-//
-//    WebRTC.prototype.createPrivateRoom = function(name, cb) {
-//      this.roomIsPrivate = true;
-//      createRoom.apply(this, arguments);
-//    }
-//
-//    WebRTC.prototype.joinRoom = function(name) {
-//      if (!name.startsWith('private:')) {      
-//        joinRoom.apply(this, arguments);
-//      }
-//      else {
-//        if (G.currentUser.guest || !_.contains(name.slice(8).split(':'), userId)) {
-//          throw new Error("Oops! This is a private room, you can't join without an invitation");
-//          var participants = ;
-//        }
-//      }
-//    };
-//    
-//    WebRTC.prototype.inviteToRoom = function(name) {
-//      if (!this.participants)
-//        
-//    };
-//  }
-  
+  var WebRTC;  
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'restyleVideoDiv', '_toggleVideo', 'onAppendedLocalVideo'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'restyleVideoDiv', 'onAppendedLocalVideo', 'onAppendedRemoteVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.autoVideo = options.autoVideo;
       this.hasVideo = this.autoVideo || options.video;
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
-      var req = ['lib/socket.io', 'lib/DataChannel'];
-//      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];
-      if (this.hasVideo)
-        req.push('lib/simplewebrtc');
-      
-      U.require(req).done(function(io, dc, simpleWebRTC) {
-        WebRTC = window.WebRTC || simpleWebRTC;
-        this.readyDfd.resolve();
-      }.bind(this));
+      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
+      U.require(req).done(this.readyDfd.resolve);
       
       this.makeTemplate('chatViewTemplate', 'template', this.modelType);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
@@ -131,21 +81,31 @@ define([
       else {
         this.myName = getGuestName();
       }
-      
+
+      this.myId = Math.round(Math.random() * +new Date());
+      this.myInfo = {
+        name: this.myName,
+        icon: this.myIcon,
+        uri: this.myUri,
+        _userid: this.myId
+      }
+
       var chatView = this;
-      this.pageView.on('video:off', this.endVideoCall, this);
-      this.pageView.on('video:on', this.startVideoChat, this);
-      this.pageView.once('chat:on', this.startTextChat, this);
-//      this.pageView.once('chat:on', this.startTextChatViaMultiConnection, this);
+      this.pageView.on('video:off', this.endChat, this);
+      this.pageView.on('video:on', this.startChat, this);
+      this.pageView.once('chat:on', this.startChat, this);
 
       this.makeTemplate('genericDialogTemplate', 'videoDialog', this.modelType);
       this.on('active', function(active) {
-        if (active)
+        if (active) {
           this.unreadMessages = 0;
+          if (this.rendered)
+            window.location.reload();
+        }
         else
-          this.endVideoCall();
+          this.endChat();
       }.bind(this));
-      
+
       this.autoFinish = false;
     },
     
@@ -158,7 +118,7 @@ define([
 //      'change #toggleVideoBtn': '_toggleVideo',
 //      'change #toggleAudioBtn': 'toggleAudio',
 //      'click #toggleVideoBtn': 'toggleVideo',
-      'click #endVideoCall': 'endVideoCall'
+      'click #endChat': 'endChat'
     },
 
     getNumParticipants: function() {
@@ -166,7 +126,7 @@ define([
     },
 
     getUserId: function() {
-      return window.userid;
+      return this.myInfo._userid;
     },
     
     getParticipants: function() {
@@ -231,6 +191,7 @@ define([
       var $input = this.$('#chatMessageInput');
       $input.addClass('ui-disabled');
       $input[0].value = 'Chat room is empty...';
+      this.$remoteVids && this.$remoteVids.empty();
       this.disabled = true;
     },
     
@@ -240,6 +201,20 @@ define([
 
     removeParticipant: function(userid) {
       var whoLeft = this.getUserInfo(userid);
+      if (whoLeft.media) {
+        $('video[src="{0}"]'.format(whoLeft.blobURL)).remove().each(function() {
+          this.pause();
+          $(this).remove();
+        });
+      }
+      
+//      // HACK: need to figure out why sometimes videos don't get removed
+//      this.$('#remoteVideos video').each(function() {
+//        if (this.videoWidth < 10)
+//          $(this).remove();
+//      });
+//      // END HACK
+      
       delete this.userIdToInfo[userid];
       if (!_.size(this.userIdToInfo))
         this.disableChat();
@@ -248,7 +223,8 @@ define([
       this.pageView.trigger('chat:participantLeft', userid);
     },
 
-    addParticipant: function(userid, userInfo) {
+    addParticipant: function(userInfo) {
+      var userid = userInfo._userid;
       var isUpdate = !!this.getUserInfo(userid);
       this.userIdToInfo[userid] = userInfo;
       this._updateParticipants();
@@ -262,7 +238,6 @@ define([
         });
       }
       
-      userInfo.userid = userid;
       this.pageView.trigger('chat:newParticipant', userInfo);
     },
     
@@ -270,19 +245,15 @@ define([
       this.participants = _.keys(this.userIdToInfo);
     },
     
-    _checkChannels: function() {
-      if (_.filter(this.chat.channels, function(c) {return c.readyState === 'closed'}).length) {
-        debugger;
-      }
-    },
+//    _checkChannels: function() {
+//      if (_.filter(this.chat.channels, function(c) {return c.readyState === 'closed'}).length) {
+//        debugger;
+//      }
+//    },
     
-    sendInfo: function(options) {
+    sendUserInfo: function(options) {
       this.chat.send({
-        userInfo: _.extend({
-          name: this.myName,
-          icon: this.myIcon,
-          uri: this.myUri
-        }, options || {})
+        userInfo: _.extend(_.pick(this.myInfo, ['_userid', 'name', 'icon', 'uri']), options || {})
       });
     },
 
@@ -297,208 +268,10 @@ define([
       }
     },
 
-//    requestVideo: function(userid) {
-//      var chat = userid ? this.chat.channels[userid] : this.chat;
-//      if (chat) {
-//        chat.send({
-//          request: {
-//            video: true
-//          }
-//        });
-//      }
-//    },
-
     getUserInfo: function(userid) {
       return this.userIdToInfo[userid];
     },
 
-    _startTextChat: function() {
-      if (this.chat)
-        return;
-      
-      if (!this.rendered) {
-        this.$messages = this.$('#messages');
-        this.$sendMessageBtn = this.$('#chatSendButton');
-        this.$chatInput = this.$("#chatMessageInput");
-        this.chatInput = this.$chatInput[0];
-      }
-      
-      var chatView = this;
-//      this.pageView.on('video:on', function() {
-//        chatView.requestVideo();
-//      });
-      
-      var i = 0;
-      this.disableChat();
-      var first = true;
-      this.chat = new DataChannel(this.roomName, {
-        onopen: function(from) {
-            // to send text/data or file
-          chatView._checkChannels();
-          G.log(chatView.TAG, 'chat', 'connected with', from);
-          chatView.sendInfo({
-            justEntered: first
-          });
-          
-          first = false;
-          chatView.sendInfo();
-          chatView.enableChat();
-        },  
-    
-        // error to open data ports
-        onerror: function(event) {
-          debugger;
-        },
-        
-        // data ports suddenly dropped, or chat creator left
-        onclose: function(event) {
-//          debugger;
-          chatView._checkChannels();
-          var chat = chatView.chat;
-          if (!_.size(chat.channels)) {
-            chat.leave();
-            chat.open(chatView.roomName);
-          }
-        },
-          
-        onmessage: function(data, from) {
-          // send direct message to same user using his user-id
-          chatView._checkChannels();
-          if (chatView.isDisabled())
-            chatView.enableChat();
-          
-          var userInfo = chatView.getUserInfo(from);
-          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(from, JSON.stringify(data)));
-          var isPrivate = false;
-          if (data.userInfo) {
-            userInfo = data.userInfo;
-            chatView.addParticipant(from, userInfo);
-          }
-          else if (data.response) {
-//            var res = data.response;
-//            if (_.has(res, 'video') && !res.video) {
-//              chatView.addMessage({
-//                senderIcon: userInfo.icon,
-//                message: chatView.myName + ' has declined to video chat',
-//                'private': true
-//              });
-//              
-//              chatView.pageView.trigger('video:off');
-//            }
-          }
-          else if (data.request) {
-            var req = data.request;
-            if (req.info) {
-              chatView.sendInfo();
-            }
-            
-//            if (req.video && !chatView._videoOn) {
-//              $('#requestVideoDialog').remove();
-//              var popupHtml = chatView.videoDialog({
-//                id: 'requestVideoDialog',
-//                title: userInfo.name + ' would like to video chat with you',
-//                ok: 'Accept',
-//                cancel: 'Decline'
-//              });
-//              
-//              $(document.body).append(popupHtml);
-//              var $popup = $('#requestVideoDialog');
-//              $popup.find('[data-cancel]').click(function() {
-//                chatView.chat.channels[from].send({
-//                  response: {
-//                    video: false
-//                  }
-//                });
-//              });
-//              
-//              $popup.find('[data-ok]').click(function() {
-//                chatView.pageView.trigger('video:on');
-//              });
-//              
-//              $popup.trigger('create');
-//              $popup.popup().popup("open");
-//            }
-            
-            return;
-          }
-          else if (data.message) {
-            if (!userInfo) {
-              chatView.requestInfo(from);
-              return; // TODO: append message afterward
-            }
-            
-            chatView.addMessage({
-              senderIcon: userInfo.icon,
-              sender: userInfo.name,
-              message: data.message,
-              'private': data['private'],
-              self: false,
-              time: getTime()
-            });
-            
-            if (!chatView.isActive())
-              chatView.unreadMessages++;
-          }
-        },
-          
-        onleave: function(from) {
-          // remove that user's photo/image using his user-id
-          chatView._checkChannels();          
-          var whoLeft = chatView.getUserInfo(from);
-          if (whoLeft) {
-            chatView.addMessage({
-              message: '<i>{0} has left the room</i>'.format(whoLeft.name),
-              time: getTime(),
-              senderIcon: whoLeft.icon,
-              sender: whoLeft.name,
-              info: true
-            });
-            
-            chatView.removeParticipant(from);
-          }
-        },
-        openSignalingChannel: function (config) {
-          var channel = config.channel || this.channel || 'default-urbien-channel';
-          var sender = window.userid;
-
-          io.connect(SIGNALING_SERVER).emit('new-channel', {
-            channel: channel,
-            sender : sender
-          });
-
-          var socket = io.connect(SIGNALING_SERVER + '/' + channel);
-          socket.channel = channel;
-          socket.on('connect', function () {
-              if (config.callback) config.callback(socket);
-              if (config.onopen) config.onopen(socket);
-          });
-
-          socket.send = function (message) {
-              socket.emit('message', {
-                  sender: sender,
-                  data  : message
-              });
-          };
-
-          socket.on('message', config.onmessage);
-          return socket;
-        }
-      });
-      
-      this.chat.__urbienId = G.nextId();
-      
-//      // if someone already created a channel; to join it: use "connect" method
-//      channel.connect('channel-name');
-      
-      this.$chatInput.bind("keydown", function(event) {
-        // track enter key
-        var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
-        if (keycode == 13) { // keycode for enter key
-          chatView.$sendMessageBtn.trigger('click');
-        }
-      });
-    },
-    
     addMessage: function(info) {
       info.time = info.time || getTime();
       var height = $(document).height();
@@ -549,257 +322,254 @@ define([
 
       this.sendMessage({message: msg});
       this.chatInput.value = '';
-//      this.restyle();
     },
 
-//    startTextChatViaMultiConnection: function(options) {
-//      if (!this.rendered) {
-//        this.$messages = this.$('#messages');
-//        this.$sendMessageBtn = this.$('#chatSendButton');
-//        this.$chatInput = this.$("#chatMessageInput");
-//        this.chatInput = this.$chatInput[0];
-//        this.$localVids = this.$('div#localVideo');
-//        this.$remoteVids = this.$('div#remoteVideos');
-//      }
-//      
-//      var chatView = this;
-//      var i = 0;
-//      this.disableChat();
-//      var settings = {
-//        channel: this.roomName,
-////        session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
-//        session: RTCSession.Data,
-//        onopen: function(from) {
-//            // to send text/data or file
-//          debugger;
-//          chatView._checkChannels();
-//          G.log(chatView.TAG, 'chat', 'connected with', from);
-//          chatView.sendInfo();
-//          chatView.enableChat();
-//        },  
-//    
-//        // error to open data ports
-//        onerror: function(event) {
-//          debugger;
-//        },
-//        
-//        // data ports suddenly dropped, or chat creator left
-//        onclose: function(event) {
-//          debugger;
-//          chatView._checkChannels();
-//          var chat = chatView.chat;
-//          if (!_.size(chat.channels)) {
-//            chat.leave();
-//            chat.open(chatView.roomName);
-//          }
-//        },
-//          
-//        onmessage: function(data, from) {
-//          debugger;
-//          // send direct message to same user using his user-id
-//          chatView._checkChannels();
-//          if (chatView.isDisabled())
-//            chatView.enableChat();
-//          
-//          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(from, JSON.stringify(data)));
-//          var isPrivate = false;
-//          if (data.userInfo) {
-//            var userInfo = data.userInfo;
-//            var isUpdate = !!chatView.getUserInfo(from);
-//            chatView.addParticipant(from, userInfo);
-//            if (!isUpdate) {
-//              chatView.addMessage({
-//                message: userInfo.name + ' has entered the room',
-//                time: getTime(),
-//                senderIcon: userInfo.icon,
-//                info: true
-//              });
-//            }
-//          }
-//          else if (data.request) {
-//            if (data.request.info) {
-//              chatView.sendInfo();
-//            }
-//            
-//            return;
-//          }
-//          else if (data.message) {
-//            var userInfo = chatView.getUserInfo(from);
-//            if (!userInfo) {
-//              chatView.requestInfo(from);
-//              return; // TODO: append message afterward
-//            }
-//            
-//            chatView.addMessage({
-//              senderIcon: userInfo.icon,
-//              sender: userInfo.name,
-//              message: data.message,
-//              'private': data['private'],
-//              self: false,
-//              time: getTime()
-//            });
-//            
-//            if (!chatView.isActive())
-//              chatView.unreadMessages++;
-//          }
-//        },
-//          
-//        onleave: function(from) {
-//          // remove that user's photo/image using his user-id
-//          debugger;
-//          chatView._checkChannels();          
-//          var whoLeft = chatView.getUserInfo(from);
-//          if (whoLeft) {
-//            chatView.addMessage({
-//              message: whoLeft.name + ' has left the room',
-//              time: getTime(),
-//              senderIcon: whoLeft.icon,
-//              info: true
-//            });
-//          }
-//          
-//          chatView.removeParticipant(from);
-//        },
-//        
-//        onLocalStream: function(stream){
-//          var $videos = chatView.$localVids.find('video');
-//          if ($videos.length)
-//            $videos.replaceWith(stream.mediaElement);
-//          else
-//            chatView.$localVids.append(stream.mediaElement);
-//          
-//          chatView.appendedLocalVideo(stream.mediaElement);
-//        },
-//        
-//        onRemoteStream: function(stream){
-//          var existing = chatView.$remoteVids.find('video[src="{0}"]'.format(stream.blobURL));
-//          if (existing.length)
-//            existing.replaceWith(stream.mediaElement);
-//          else
-//            chatView.$remoteVids.append(stream.mediaElement);
-//        },
-//        
-//        onNewSession: function(session) {
-//          console.log('session name', session.sessionid);
-//          console.log('user name', session.userid);
-//        },
-//        
-//        openSignalingChannel: function (config) {
-//          var channel = config.channel || this.channel || 'default-urbien-channel';
-//          var sender = Math.round(Math.random() * 60535) + 5000;
-//
-//          io.connect(SIGNALING_SERVER).emit('new-channel', {
-//            channel: channel,
-//            sender : sender
-//          });
-//
-//          var socket = io.connect(SIGNALING_SERVER + '/' + channel);
-//          socket.channel = channel;
-//          socket.on('connect', function () {
-//              if (config.callback) config.callback(socket);
-//          });
-//
-//          socket.send = function (message) {
-//              socket.emit('message', {
-//                  sender: sender,
-//                  data  : message
-//              });
-//          };
-//
-//          socket.on('message', config.onmessage);
-//          return socket;
-//        }
-//      }
-//      
-//      this.chat = new RTCMultiConnection(this.roomName, settings);
-////      this.chat.openSignalingChannel = settings.openSignalingChannel;
-//      this.chat.open(this.roomName);
-////      this.chat.open({
-////        extra: {
-////          username: this.myName
-////        }
-////      });
-//    },
+    startChat: function() {
+      var args = arguments, self = this;
+      this.ready.done(function() {
+        self._startChat.apply(self, args);
+      });
+    },
     
-//    toggleVideo: function() {
-//      var $checkbox = this.$('#toggleVideoBtn');
-//      if ($checkbox[0].checked)
-//        $checkbox.attr("checked", false);
-//      else
-//        $checkbox.attr("checked", true);
-//      
-//      $checkbox.checkboxradio("refresh");
-//    },
+    openChat: function() {
+      this.chat.open(this.roomName, {
+        extra: {
+          _userid: this.myInfo._userid
+        }
+      });
+    },
     
-    _toggleVideo: function(e) {
-      if (e.currentTarget.checked) {
-        this._videoOn = true;
-        this.startVideoChat();
-//        this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Stop Video');
+    _startChat: function(options) {
+      if (this.chat)
+        return;
+      
+      this._videoOn = this.hasVideo;
+      if (!this.rendered) {
+        this.$messages = this.$('#messages');
+        this.$sendMessageBtn = this.$('#chatSendButton');
+        this.$chatInput = this.$("#chatMessageInput");
+        this.chatInput = this.$chatInput[0];
+        this.$chatInput.bind("keydown", function(event) {
+          // track enter key
+          var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+          if (keycode == 13) { // keycode for enter key
+            chatView.$sendMessageBtn.trigger('click');
+          }
+        });
+        
+        this.$localVids = this.$('div#localVideo');
+        this.$remoteVids = this.$('div#remoteVideos');
       }
-      else {
-        this._videoOn = false;
-//        this.$('label[for="toggleVideoBtn"]').find('.ui-btn-text').html('Start Video');
-        if (this.webrtc) {
-          this.endVideoCall();
+      
+      
+      var chatView = this;
+      var i = 0;
+      this.disableChat();
+      var first = true;
+      this.chatSettings = {
+        channel: this.roomName,
+        session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+        onopen: function(from) {
+            // to send text/data or file
+//          chatView._checkChannels();
+          chatView.sendUserInfo({
+            justEntered: first
+          });
+          
+          first = false;
+          chatView.enableChat();
+        },  
+    
+        // error to open data ports
+        onerror: function(event) {
+          debugger;
+        },
+        
+        // data ports suddenly dropped, or chat creator left
+        onclose: function(event) {
+//          chatView._checkChannels();
+          var chat = chatView.chat;
+          if (!_.size(chatView.userIdToInfo)) {
+            chat.leave();
+            chat.reset();
+            chat.openNewSession(false);
+          }
+        },
+          
+        onmessage: function(data, extra) {
+          // send direct message to same user using his user-id
+//          chatView._checkChannels();
+          if (chatView.isDisabled())
+            chatView.enableChat();
+          
+          var userInfo = chatView.getUserInfo(extra._userid);
+          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(extra._userid, JSON.stringify(data)));
+          var isPrivate = false;
+          if (data.userInfo) {
+            userInfo = data.userInfo;
+            chatView.addParticipant(userInfo);
+          }
+          else if (data.response) {
+            // nothing here yet
+          }
+          else if (data.request) {
+            var req = data.request;
+            if (req.info) {
+              chatView.sendUserInfo();
+            }
+            
+            return;
+          }
+          else if (data.message) {
+            if (!userInfo) {
+              chatView.requestInfo(extra._userid);
+              return; // TODO: append message afterward
+            }
+            
+            chatView.addMessage({
+              senderIcon: userInfo.icon,
+              sender: userInfo.name,
+              message: data.message,
+              'private': data['private'],
+              self: false,
+              time: getTime()
+            });
+            
+            if (!chatView.isActive())
+              chatView.unreadMessages++;
+          }
+        },
+          
+        onleave: function(data, extra) {
+          // remove that user's photo/image using his user-id
+          extra = extra._userdid ? extra : extra.extra ? extra.extra : extra;
+//          chatView._checkChannels();          
+          var whoLeft = chatView.getUserInfo(extra._userid);
+          if (whoLeft) {
+            chatView.addMessage({
+              message: '<i>{0} has left the room</i>'.format(whoLeft.name),
+              time: getTime(),
+              senderIcon: whoLeft.icon,
+              sender: whoLeft.name,
+              info: true
+            });
+            
+            chatView.removeParticipant(whoLeft._userid);
+          }
+        },
+        openSignalingChannel: function (config) {
+          var channel = config.channel || this.channel || 'default-urbien-channel';  
+          io.connect(SIGNALING_SERVER).emit('new-channel', {
+            channel: channel,
+            sender : chatView.myId
+          });
+  
+          var socket = io.connect(SIGNALING_SERVER + '/' + channel);
+          socket.channel = channel;
+          socket.on('connect', function () {
+              if (config.callback) config.callback(socket);
+//              if (config.onopen) config.onopen(socket);
+          });
+  
+          socket.send = function (message) {
+            socket.emit('message', {
+              sender: chatView.myId,
+              data  : message
+            });
+          };
+  
+          socket.on('message', config.onmessage);
+        },
+
+        onstream: function(data) {
+          var method = data.type === 'local' ? 'onLocalStream' : 'onRemoteStream';
+          this[method].apply(this, arguments);
+        },
+        
+        onLocalStream: function(data){
+          var $videos = chatView.$localVids.find('video');
+          var video = data.mediaElement;
+          if ($videos.length)
+            $videos.replaceWith(data.mediaElement);
+          else
+            chatView.$localVids.append(data.mediaElement);
+          
+          chatView.onAppendedLocalVideo(video);
+        },
+        
+        onRemoteStream: function(data) {
+          var userid = data.extra._userid,
+              userInfo = userid && chatView.getUserInfo(userid),
+              media = data.mediaElement,
+              stream = data.stream,
+              existing = chatView.$remoteVids.find('video[src="{0}"]'.format(data.blobURL));
+          
+          if (userInfo) {
+            userInfo.media = media;
+            userInfo.stream = stream;
+            userInfo.blobURL = data.blobURL;
+          }
+          
+          if (existing.length)
+            existing.replaceWith(media);
+          else
+            chatView.$remoteVids.append(media);
+          
+          chatView.onAppendedRemoteVideo();
+        },
+        
+        onNewSession: function(session) {
+          if (chatView.chatSession) 
+            return false;
+
+          chatView.chatSession = session;
+          this.join(session, chatView.myInfo);
+        },
+        
+        openNewSession: function(isOpenNewSession) {
+          if (isOpenNewSession) {
+            if (this.isNewSessionOpened) 
+              return;
+            
+            this.isNewSessionOpened = true;
+
+            if (!this.joinedARoom) { 
+              chatView.openChat();
+            }
+          }
+
+          this.connect();
+          setTimeout(function () {
+            chatView.chat && chatView.chat.openNewSession(true);
+          }, 5000);
+        },
+        reset: function() {
+          this.isNewSessionOpened = this.joinedARoom = false;
         }
       }
+      
+      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
+      this.chat.openNewSession(false);
     },
     
-    stopVideo: function() {
-//      this.$('video').each(function() {
-//        this.pause();
-//      });
-      
-      this._videoOn = false;
-      if (this.webrtc) {
-        this.webrtc.leaveRoom();
-        var stream = this.webrtc.localStream;
-        // turn off webcam
-        stream && stream.stop();
-//        this.webrtc.connection.disconnect();
-//        this.webrtc.connection.emit('disconnect');
+    endChat: function() {
+      if (this.hasVideo) {
+        this._videoOn = false;
+        if (this.chat) {
+          this.chat.leave();
+          this.chatSession = null;
+//          this.chat = this.chatSession = null;
+        }
+        
+        this.$('video').each(function() {
+          this.pause();
+        }).remove();
+        
+        this.$localVids && this.$localVids.empty();
+        this.$remoteVids && this.$remoteVids.empty();
       }
-      
-      this.$localVids && this.$localVids.empty();
-//      this.webrtc = null;
     },
-    
-    endVideoCall: function() {
-      this.stopVideo();
-      this.$remoteVids && this.$remoteVids.empty();
-    },
-    
-//    startTextChat1: function() {
-//      if (!this.rendered) {
-//        this.$messages = this.$('#messages');
-//        this.$sendMessageBtn = this.$('#chatSendButton');
-//        this.$chatInput = this.$("#chatMessageInput");
-//        this.chatInput = this.$chatInput[0];
-//        this.userIdToInfo = {};      
-//        var me = G.currentUser;
-//        if (me) {
-//          this.myName = me.davDisplayName || getGuestName();
-//          this.myIcon = me.thumb || 'icons/male_thumb.jpg';
-//          this.myUri = me._uri;
-//        }
-//        else {
-//          this.myName = getGuestName();
-//        }
-//      }
-//      
-//      var chatView = this;
-//      var i = 0;
-//      this.disableChat();
-//      var chat = this.chat = new WebRTC({
-//        autoRequestMedia: false,
-//        url: SIGNALING_SERVER
-//      });
-//      
-//      chat.on('readyToText', function () {
-//        chat.joinRoom(chatView.roomName);
-//      });
-//    },
+
     onAppendedLocalVideo: function(video) {
       this.monitorVideoSize(video);
       var $local = this.$localVids.find('video');
@@ -808,84 +578,17 @@ define([
           $local[i].remove();
       }
         
-      $local.prop('muted', true).addClass('localVideo');
+      $local.prop('muted', true).prop('controls', false).addClass('localVideo');
       this.$localVids.show();
       this.restyleVideos();
     },
 
-    startTextChat: function() {
-      var args = arguments, self = this;
-      this.ready.done(function() {
-        self._startTextChat.apply(self, args);
-      });
-    },
-      
-    startVideoChat: function() {
-      var args = arguments, self = this;
-      this.ready.done(function() {
-        self._startVideoChat.apply(self, args);
-      });
-    },
-
-    _startVideoChat: function() {
-      if (this._videoOn)
-        return;
-      
-      this._videoOn = true;
-      var chatView = this;
-      this.$localVids = this.$('div#localVideo');
-      this.$remoteVids = this.$('div#remoteVideos');
-//      this.endVideoCall();
-      
-      var exists = !!this.webrtc;
-      var webrtc = this.webrtc = this.webrtc || new WebRTC({
-        localVideo: {
-          _el: 'localVideo', // the id/element dom element that will hold "our" video
-          muted: true
-        },
-        remoteVideos: {
-          _el: 'remoteVideos' // the id/element dom element that will hold remote videos
-        },
-        // immediately ask for camera access
-        autoRequestMedia: true,
-        url: SIGNALING_SERVER.replace('8889', '8888')
-      });
-      
-//      var webrtc = this.webrtc = new WebRTC({
-//        localVideoEl: 'localVideo', // the id/element dom element that will hold "our" video
-//        remoteVideosEl: 'remoteVideos', // the id/element dom element that will hold remote videos
-//        autoRequestMedia: true  // immediately ask for camera access
-//      });
-      
-      // we have to wait until it's ready
-      if (exists) {
-        webrtc.startLocalVideo();
-        this.$localVids.show();
-        return;
-      }
-      
-      var hash = this.hash;
-      webrtc.on('appendedLocalVideo', function (video) {
-        chatView.onAppendedLocalVideo(video);
-      });
-
-      webrtc.on('videoAdded', function (video) {
-        chatView.monitorVideoSize(video);
-//        $(video).prop('muted', true)
-        chatView.restyleVideos();
-      });
-
-      webrtc.on('videoRemoved', function (video) {
-        var $remote = chatView.$remoteVids.find('video');
-        if (!$remote.length)
-          chatView.$localVids.removeClass('myVideo-overlay')
-          
-        chatView.restyleVideos();
-      });
-
-      webrtc.on('readyToCall', function () {
-        webrtc.joinRoom(chatView.roomName);
-      });
+    onAppendedRemoteVideo: function(video) {
+      this.monitorVideoSize(video);
+      var $remote = this.$remoteVids.find('video');
+      $remote.prop('controls', false).addClass('remoteVideo');
+      this.$remoteVids.show();
+      this.restyleVideos();
     },
 
     monitorVideoSize: function(video) {
@@ -911,9 +614,7 @@ define([
     restyleVideoDiv: function() {
       var $vc = this.$('.videoChat');
       var width = Math.min($vc.width(), this.innerWidth());
-//      var height = _.reduce($vc.find('div#remoteVideos video'), function(memo, next)  {
-//        return memo + $(next).height() + parseInt($(next).css('padding-top')) * 2;
-//      }, 0);
+
       var height = $vc.height();
       $vc.css('margin-top', -(height / 2) + 'px');
       $vc.css('margin-left', -(width / 2) + 'px');
@@ -931,32 +632,6 @@ define([
       
       this.restyleVideoDiv();
     }
-//    ,
-//    resizeVideos: function() {
-//      var self = this;
-////      var $locals = this.$localVids.find('video'),
-////          $remotes = this.$remoteVids.find('video'),
-////          numRemotes = $remotes.length,
-////          numLocals = $remotes.length,
-////          overlayVids = [];
-////      if (numRemotes == 1) {
-////        
-////      }
-////      
-////      _.each([this.$localVids, this.$remoteVids], function($vidDiv) {        
-////        var divWidth = $vidDiv.width();
-////        $vidDiv.find('video').each(function() {
-////          var $vid = $(this);
-////          var width = $vid[0].videoWidth;
-////          if (!width) {
-////            var border = parseInt($vid.css("border-left-width"));
-////            width = divWidth - 2 * (border || 0);
-////          }
-////          
-////          $vid.width(Math.min(640, width));
-////        });
-////      });
-//    }
   },
   {
     displayName: 'Chat'
