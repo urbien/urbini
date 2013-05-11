@@ -253,22 +253,11 @@ define([
 //      media_events["ratechange"] = 0;
 //      media_events["volumechange"] = 0;
       
-      /* Event Handlers */
-//      this.video.addEventListener('canplay', function(ev) {
-//        if (!streaming) {
-//          this.setDimensions();
-//          this.$shootBtn.removeClass('ui-disabled');
-//          streaming = true;
-//        }
-//      }.bind(this), false);
       
       var video = this.video, 
           $video = $(video);
       var checkSize = function(e) {
         if (video.videoWidth) {
-//          if ($video.parents('#remoteVideos').length)
-//            $('<icon style="font-size:20px;position:absolute;top:0px;right:0px;color:#fff;" class="ui-icon-remove-circle"></icon>').insertAfter($video);          
-
           this.setDimensions();
           this.$shootBtn.removeClass('ui-disabled');
           _.each(G.media_events, function(e) {
@@ -310,18 +299,7 @@ define([
     setDimensions: function() {
       if (!this.video.videoWidth)
         return;
-//      var vWidth, vHeight; 
-//      if (!this.video.videoWidth) {
-//        vWidth = this.pageView.innerWidth() - this.padding();
-//        vHeight = Math.round(vWidth * 3 / 4);
-//      }
-//      else {
-//        vWidth = this.video.videoWidth;
-//        vHeight = this.video.videoHeight;
-//      }
-//      
-//      var height = Math.round(vHeight / (vWidth / this.width));
-//      
+        
       var $window = $(window),
           wWidth = $window.width(),
           wHeight = $window.height(),
