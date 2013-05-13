@@ -11,7 +11,7 @@ define([
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
   function hasBlobs(data) {
-    return data instanceof Blob || _.any(_.values(data), hasBlobs);
+    return data instanceof Blob || typeof data === 'object' && _.any(_.values(data), hasBlobs);
   }
   
   function isFileUpload(prop, val) {
@@ -182,13 +182,16 @@ define([
           if (data && Blob && hasBlobs(data)) {
 //            opts.url = G.serverName + '/mkresource.html';
             var fd = new FormData();
-            if (opts.resource)
+            if (opts.resource) {
               fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-            fd.append('_uri', data._uri);
-            fd.append('uri', data._uri);
-//            fd.append('video', 'video.webm');
-//            fd.append('data', this.webmBlob);
-            fd.append('type', U.getTypeUri(data._uri));
+              fd.append('type', opts.resource.vocModel.type);
+            }
+            
+            if (data._uri) {
+              fd.append('_uri', data._uri);
+              fd.append('uri', data._uri);
+            }
+            
             fd.append('enctype', "multipart/form-data");
             fd.append('-$action', 'upload');            
             for (var prop in data) {
@@ -1521,17 +1524,21 @@ define([
         }
       });
     },
-    /**
-     * given obj and path x.y.z, will return obj.x.y.z; 
-     */
-    leaf: function(obj, path, separator) {
-      if (typeof obj == 'undefined' || !obj)
-        return null; 
-     
-      separator = separator || '.';
-      var dIdx = path.indexOf(separator);
-      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-    },
+    
+//    _index: function(obj,i) {
+//      return obj[i]
+//    },
+//
+//    /**
+//     * given obj and path x.y.z, will return obj.x.y.z; 
+//     */
+//    leaf: function(obj, path, separator) {
+//      if (typeof obj == 'undefined' || !obj)
+//        return null;
+//      
+//      var index = U._index;
+//      return path.split(separator || '.').reduce(index, obj);
+//    },
     
     getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
@@ -1545,16 +1552,6 @@ define([
     makeOrGroup: function() {
       return slice.call(arguments).join('||');
     },
-    
-//    isAllowed: function(action, type) {
-//      if (!U.isAnAppClass(type))
-//        return true; // for now
-//      
-//      if (action === 'edit')
-//        return true; // for now;
-//      
-//      var app = type.slice(type.indexOf(''));
-//    },
     
     /**
      * @param className: class name or uri
@@ -2141,9 +2138,10 @@ define([
         var prop = vocProps[name];
         if (!prop || 
             (prop.parameter && !_.contains(preserve, 'parameter')) || 
-            (prop.virtual && !_.contains(preserve, 'virtual')) || 
-            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
+            (prop.virtual && !_.contains(preserve, 'virtual'))) { // || 
+//            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
           continue;
+        }
         
         flat[name] = U.getFlatValue(prop, val);
       }
@@ -2932,6 +2930,10 @@ define([
           element.removeClass(className);
         }
       }
+    },
+    objToPaths: function(obj) {
+      var paths = [];
+      
     }
   };
 

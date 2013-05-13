@@ -186,48 +186,6 @@ define([
       this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
-//    chat: function(path) {
-//      if (!this.ChatPage || !this.ChatView)
-//        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
-//      
-//      var params = U.getHashParams();
-//      var qIdx = path.indexOf("?");
-//      var uri = qIdx == -1 ? path : path.slice(0, qIdx);
-//      if (uri == 'profile') {
-//        var p = _.size(params) ? path.slice(qIdx + 1) : '';
-//        if (!G.currentUser.guest) {
-//          uri = G.currentUser._uri;
-//        }
-//        else {
-//          Events.trigger('req-login', 'Please login');
-//          return;
-//        }        
-//      }
-//      else
-//        uri = U.getLongUri1(decodeURIComponent(uri));
-//      
-//      var typeUri = U.getTypeUri(uri);
-//      if (!this.isModelLoaded(typeUri, 'chat', arguments))
-//        return;
-//      
-//      var res = C.getResource(uri);
-//      if (!res) {
-//        var model = U.getModel(typeUri);
-//        res = new model();
-//        res.fetch();
-//      }
-//      
-//      var cPage = this.ChatViews[uri];
-//      if (!cPage) {
-//        cPage = this.ChatViews[uri] = new this.ChatPage({
-//          model: res
-//        });
-//      }
-////        cPage = this.ChatViews[path] = new this.ChatPage({model: U.getModel(typeUri)});
-//      
-//      this.changePage(cPage);
-//    },
-    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
@@ -509,7 +467,7 @@ define([
       var unloaded = _.filter(views, function(v) {return !self[v]});
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        G.onPostBundleLoaded(function() {
+        G.onModulesLoaded(unloadedMods).done(function() {          
           U.require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
