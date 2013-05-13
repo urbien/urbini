@@ -1410,6 +1410,12 @@ define([
           isCollection = U.isCollection(data),
           vocModel = data.vocModel;
       
+      if (_.any(filter, function(val, key) {
+        return /\./.test(key);
+      })) {
+        return false;
+      }
+      
       if (!RM.storeExists(type)) {
         // don't upgrade here, upgrade when we add items to the db
 //        var dfd = $.Deferred();
