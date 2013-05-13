@@ -722,7 +722,7 @@ define([
         this.unsavedChanges = {};
       }
       else {
-        data = U.prepForSync(data, vocModel, ['parameter']);
+        data = U.prepForSync(data, vocModel, ['parameter', '_fileUpload']);
         if (_.size(data) == 0) {
           if (!isNew) {
             if (options.error)

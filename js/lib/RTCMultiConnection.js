@@ -73,7 +73,8 @@
                         textReceiver.receive(data, self.onmessage, extra);
                     else if (data.size || data.type === 'file')
                         fileReceiver.receive(data, self.config);
-                    else self.onmessage(data, extra);
+                    else
+                      self.onmessage(data, extra);
                 },
                 onChannelClosed: function (event) {
                     var myChannels = self.channels,
@@ -603,7 +604,7 @@
         function openDefaultSocket() {
             defaultSocket = config.openSignalingChannel({
                 onmessage: onDefaultSocketResponse,
-        callback : function (socket) {
+                callback : function (socket) {
                     defaultSocket = socket;
                 }
             });
@@ -865,9 +866,7 @@
 
                 if (response.playRoleOfBroadcaster) setTimeout(function () {
                     self.id = response.id;
-                    config.connection.open({
-                        extra: self.extra
-                    });
+                    config.connection.open(self.extra);
                     self.sockets = self.sockets.swap();
                 }, 600);
             }
@@ -978,7 +977,8 @@
                 extra = extra || {};
 
                 extra.interval = extra.interval || 3000;
-                self.extra = extra.extra = extra.extra || {};
+                self.extra = extra;
+//                self.extra = extra.extra = extra.extra || {};
 
                 (function transmit() {
                     defaultSocket && defaultSocket.send({
@@ -986,7 +986,7 @@
                         userid: self.id,
                         session: config.session,
                         direction: config.direction,
-                        extra: extra.extra
+                        extra: extra
                     });
 
                     if (!config.transmitRoomOnce && !that.leaving) {

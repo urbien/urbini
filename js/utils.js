@@ -14,6 +14,10 @@ define([
     return data instanceof Blob || _.any(_.values(data), hasBlobs);
   }
   
+  function isFileUpload(prop, val) {
+    return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
+  }
+  
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -176,10 +180,11 @@ define([
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
           var data = opts.data;
           if (data && Blob && hasBlobs(data)) {
-            opts.url = G.serverName + '/mkresource.html';
+//            opts.url = G.serverName + '/mkresource.html';
             var fd = new FormData();
             if (opts.resource)
               fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
+            fd.append('_uri', data._uri);
             fd.append('uri', data._uri);
 //            fd.append('video', 'video.webm');
 //            fd.append('data', this.webmBlob);
@@ -191,7 +196,7 @@ define([
               if (_.isObject(val)) {
                 for (var subProp in val) {
 //                  data[prop+ '_' + subProp] = val[subProp];                  
-                  fd.append(prop + '.' + subProp, val[subProp]);                  
+                  fd.append("blob", val[subProp], prop + '.' + subProp);                  
                 }
                 
                 _.extend(opts, {
@@ -2132,11 +2137,15 @@ define([
           continue;
         }
           
+        var val = m[name];
         var prop = vocProps[name];
-        if (!prop || (prop.parameter && !_.contains(preserve, 'parameter')) || (prop.virtual && !_.contains(preserve, 'virtual')))
+        if (!prop || 
+            (prop.parameter && !_.contains(preserve, 'parameter')) || 
+            (prop.virtual && !_.contains(preserve, 'virtual')) || 
+            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
           continue;
         
-        flat[name] = U.getFlatValue(prop, m[name]);
+        flat[name] = U.getFlatValue(prop, val);
       }
       
       return flat;

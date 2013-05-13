@@ -71,6 +71,9 @@ define([
     },
 
     toggleChat: function(e) {
+      if (_.isUndefined(this._videoSolid))
+        this._videoSolid = $('#videoChat').css('opacity') == 1;
+      
       if (this._videoSolid)
         this.chatFadeIn();
       else if (this.chatView._videoOn)

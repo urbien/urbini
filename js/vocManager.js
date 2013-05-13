@@ -355,7 +355,7 @@ define([
         var res = resources[i];
         for (var j = 0; j < tmp.length; j++) {
           var uri = res.get(tmp[j]);
-          if (!uri)
+          if (!uri || typeof uri === 'pbject') // could be a file upload
             continue;
           
           var idx = uri.indexOf("?");

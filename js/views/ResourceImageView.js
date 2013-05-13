@@ -8,6 +8,29 @@ define([
   'views/BasicView'
 ], function(G, $, _, U, Events, BasicView) {
 
+//  $(function() {
+//    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),
+//        $fluidEl = $("figure");
+//          
+//    $allVideos.each(function() {
+//      $(this)
+//        // jQuery .data does not work on object/embed elements
+//        .attr('data-aspectRatio', this.height / this.width)
+//        .removeAttr('height')
+//        .removeAttr('width');
+//    });
+//    
+//    $(window).resize(function() {
+//      var newWidth = $fluidEl.width();
+//      $allVideos.each(function() {
+//        var $el = $(this);
+//        $el.width(newWidth)
+//           .height(newWidth * $el.attr('data-aspectRatio'));
+//      });
+//    
+//    }).resize();
+//  });  
+
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
@@ -18,21 +41,6 @@ define([
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
       this.resource.on('change', this.refresh, this);
-  
-//      this._videoProp = U.getCloneOf(this.vocModel, "VideoResource.video")[0];
-//      this.isLocalVideo = !!this._videoProp && res.get(this._videoProp);
-//      if (this.isLocalVideo) {
-//        this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
-//        this.videoDfd = $.Deferred();
-//        this.videoPromise = this.videoDfd.promise();
-//        if (this._videoProp && res.get(this._videoProp)) {
-//          this.isVideo = true;
-//          U.require(['lib/jplayer', 'lib/jplayer/jplayer.blue.monday.css'], function() {
-//            this.videoDfd.resolve();
-//          }.bind(this));
-//        }
-//      }
-      
       return this;
     },
     events: {
