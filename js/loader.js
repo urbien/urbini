@@ -317,7 +317,7 @@ define('fileCache', function() {
   }
 
   function getMetadataURL(url) {
-    return url + ':metadata';
+    return 'metadata:' + url;
   }
 
   var moreG = {
@@ -835,17 +835,6 @@ define('fileCache', function() {
           metadata = JSON.parse(metadata);
           var dateSaved = metadata.dateModified;
           var minified = metadata.minified;
-//        if (saved) {
-//          try {
-//            saved = JSON.parse(saved);
-//          } catch (err) {
-//            debugger;
-//            pruned.push(url);
-//            G.localStorage.del(url);
-//            continue;
-//          }
-//          
-//          var dateSaved = saved.modified;
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
             var skip = false;
@@ -870,8 +859,6 @@ define('fileCache', function() {
 //            G.localStorage.del(url);
           }
         }
-//        else
-//          debugger;
         
         pruned.push(url);
       }

@@ -94,39 +94,48 @@ define([
           info = models[type] = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || info;
         }
         
-        var jModel = Voc.getModelFromLS(type);
-        if (!jModel) {
+        var storedInfo = Voc.getModelMetadataFromLS(type);
+        if (!storedInfo) {
           missingOrStale[type] = {};
           continue;
         }
         
         try {
-          jModel = JSON.parse(jModel);
+          storedInfo = JSON.parse(storedInfo);
         } catch (err) {
           debugger;
-          G.localStorage.del(type);
+          Voc.deleteModelFromLS(type);
           missingOrStale[type] = {};
           continue;
         }
         
         if (info.lastModified) {
           var lm = Math.max(info.lastModified, G.lastModified);
-          if (lm > jModel.lastModified)
+          if (lm > storedInfo.lastModified)
             missingOrStale[type] = {};
-          else
-            willLoad.push(jModel);
+          else {
+            var jModel = Voc.getModelFromLS(type);
+            if (jModel)
+              willLoad.push(jModel);
+            else
+              missingOrStale[type] = {};
+          }
         }
         else {
           // can't do this right away because we need to know that we actually have it in localStorage
-          mightBeStale.infos[type] = {
-            lastModified: jModel.lastModified
-          };
+          var jModel = Voc.getModelFromLS(type);
+          if (jModel) {
+            mightBeStale.infos[type] = {
+              lastModified: storedInfo.lastModified
+            };
           
-          mightBeStale.models[type] = jModel;
+            mightBeStale.models[type] = jModel;
+          }
+          else
+            missingOrStale[type] = {};            
         }
       }
       
-//      _.extend(Voc.mightBeStale, mightBeStaleModels);
       var modelsDfd = $.Deferred(function(defer) {
         if (G.online)
           return Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, willLoad, options).done(defer.resolve).fail(defer.reject);
@@ -739,16 +748,9 @@ define([
       if (!models.length)
         return;
     
-      var now = G.currentServerTime();
       var enumModels = {};
       _.each(models, function(model) {
-//        if (model.type.endsWith('#Resource'))
-//          return;
-        
         var modelJson = U.toJSON(model);
-        modelJson._dateStored = now;
-//        if (model.superClass)
-//          modelJson._super = model.superClass.type;
         if (model.enumeration)
           enumModels[model.type] = modelJson;
         else
@@ -805,14 +807,42 @@ define([
       }, 100);
     },
 
+    deleteModelFromLS: function(uri) {
+      G.localStorage.del('metadata:' + uri);
+      G.localStorage.del(type);
+    },
+    
+    getModelStorageURL: function(uri) {
+      return Voc.MODEL_PREFIX + uri;
+    },
+
+    getModelMetadataStorageURL: function(uri) {
+      return Voc.MODEL_PREFIX + 'metadata:' + uri;
+    },
+    
+    getModelMetadataFromLS: function(uri) {
+      return G.localStorage.get(Voc.getModelMetadataStorageURL(uri));
+    },
+
     getModelFromLS: function(uri) {
-      return G.localStorage.get(Voc.MODEL_PREFIX + uri);
+      var jModel = G.localStorage.get(Voc.getModelStorageURL(uri));
+      try {
+        return JSON.parse(jModel);
+      } catch (err) {
+        debugger;
+        Voc.deleteModelFromLS(uri);
+        return null;
+      }
     },
 
     storeModel: function(modelJson) {
       setTimeout(function() {
         var type = modelJson.type;
-        G.localStorage.putAsync(Voc.MODEL_PREFIX + type, JSON.stringify(modelJson));
+        G.localStorage.putAsync(Voc.getModelMetadataStorageURL(type), {
+          lastModified: modelJson.lastModified
+        });
+        
+        G.localStorage.putAsync(Voc.getModelStorageURL(type), JSON.stringify(modelJson));
         U.pushUniq(G.storedModelTypes, type);
       }, 100);
     },
