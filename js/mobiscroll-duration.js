@@ -1,5 +1,5 @@
 //'use strict';
-define(['jquery', 'mobiscroll'], function ($) {
+define(['mobiscroll'], function () {
 
   var ms = $.mobiscroll;
   var second = 1,

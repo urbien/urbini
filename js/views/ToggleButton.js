@@ -3,7 +3,7 @@ define([
   'underscore', 
   'events',
   'views/BasicView'
-], function($, _, Events, BasicView) {
+], function(_, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'setStyle', 'toggleStyle', 'setStyle', 'isOn', 'reset', 'resetStyle');

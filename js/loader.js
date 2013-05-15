@@ -1003,7 +1003,7 @@ define('fileCache', function() {
     requireConfig: {
       paths: {
         mobiscroll: 'lib/mobiscroll-datetime-min',
-        jquery: 'lib/jquery',
+//        jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',

@@ -3,7 +3,7 @@
  * Released under MIT license, http://cubiq.org/license
  */
  
-define(['jquery'], function ($) {
+define(function () {
 	var dummyStyle = document.createElement('div').style,
 		vendor = (function () {
 			var vendors = 't,webkitT,MozT,msT,OT'.split(','),

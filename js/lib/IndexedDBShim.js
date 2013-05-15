@@ -1,5 +1,5 @@
 //'use strict';
-define(['jquery', 'taskQueue'], function($, TaskQueue) {
+define(['taskQueue'], function(TaskQueue) {
 
 /**
  * An initialization file that checks for conditions, removes console.log and warn, etc

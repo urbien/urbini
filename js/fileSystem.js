@@ -1,4 +1,4 @@
-define(['globals', 'jquery'], function(G, $) {
+define(['globals'], function(G) {
   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
   if (!window.requestFileSystem)
     return null;
