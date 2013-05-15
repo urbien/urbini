@@ -604,7 +604,7 @@
         function openDefaultSocket() {
             defaultSocket = config.openSignalingChannel({
                 onmessage: onDefaultSocketResponse,
-                callback : function (socket) {
+                callback: function (socket) {
                     defaultSocket = socket;
                 }
             });
@@ -638,7 +638,7 @@
             var socketConfig = {
                 channel: _config.channel,
                 onmessage: socketResponse,
-        callback : function (_socket) {
+                callback: function (_socket) {
                     socket = _socket;
 
                     if (isofferer && !peer)

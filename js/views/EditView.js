@@ -114,13 +114,13 @@ define([
     cameraCapture: function(e) {
       Events.stopEvent(e);
       var link = $(e.currentTarget);
-      if (!G.navigator.isChrome) {
-        U.alert({
-          msg: "Your browser doesn't support recording video"
-        });
-        
-        return;
-      }
+//      if (!G.navigator.isChrome) {
+//        U.alert({
+//          msg: "Your browser doesn't support recording video"
+//        });
+//        
+//        return;
+//      }
       
       U.require('views/CameraPopup').done(function(CameraPopup) {
         if (this.CameraPopup) {

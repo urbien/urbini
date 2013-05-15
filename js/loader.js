@@ -1,3 +1,4 @@
+var __started = new Date();
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
@@ -131,21 +132,18 @@ define('globals', function() {
       ext = ext[0].slice(1).toLowerCase();
       
     var mCache = G.modules;
-    var inMemory = inAppcache || (mCache && mCache[url]);
+    var cached = inAppcache || (mCache && mCache[url]);
     var loadedCached = false;
-    if (inMemory) {// || hasLocalStorage) {
-      var loadSource = inMemory ? 'memory' : 'LS',
-          cached = inAppcache || mCache[url];
-
+    if (cached) {// || hasLocalStorage) {
       var loadedCached = cached;
       if (loadedCached) {            
         try {
-          G.log(G.TAG, 'cache', 'Loading from', loadSource, url);
+          G.log(G.TAG, 'cache', 'Loading from LS', url);
           loadModule(cached, url, context, name);
-          G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
+          G.log(G.TAG, 'cache', 'End loading from LS', url);
         } catch (err) {
           debugger;
-          G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
+          G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
           G.localStorage.del(url);
           loadedCached = false;
         }
@@ -314,6 +312,14 @@ define('fileCache', function() {
   
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
+  function getSpinnerId(name) {
+    return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
+  }
+
+  function getMetadataURL(url) {
+    return url + ':metadata';
+  }
+
   var moreG = {
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
@@ -338,7 +344,7 @@ define('fileCache', function() {
     })(),
     showSpinner: function(options) {
       options = options || {};
-      var id = 'loading-spinner-holder' + (options.name || '');
+      var id = getSpinnerId(options.name);
       var cl = options.nonBlockingOverlay ? '' : 'spinner_bg';
       var color;
       if (G.tabs) {
@@ -357,9 +363,7 @@ define('fileCache', function() {
       }
     },
     hideSpinner: function(name) {
-      var $spinner = $('#loading-spinner-holder' + (name || ''));
-      var parent = $spinner && $spinner.parent();
-      parent && parent.remove(spinner);
+      $('#' + getSpinnerId(name)).remove();
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -826,31 +830,35 @@ define('fileCache', function() {
           break;
         }
         
-        var saved = G.localStorage.get(url);
-        if (saved) {
-          try {
-            saved = JSON.parse(saved);
-          } catch (err) {
-            debugger;
-            pruned.push(url);
-            G.localStorage.del(url);
-            continue;
-          }
-          
-          var dateSaved = saved.modified;
+        var metadata = G.localStorage.get(getMetadataURL(url));
+        if (metadata) {
+          metadata = JSON.parse(metadata);
+          var dateSaved = metadata.dateModified;
+          var minified = metadata.minified;
+//        if (saved) {
+//          try {
+//            saved = JSON.parse(saved);
+//          } catch (err) {
+//            debugger;
+//            pruned.push(url);
+//            G.localStorage.del(url);
+//            continue;
+//          }
+//          
+//          var dateSaved = saved.modified;
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
-            var text = saved.text;
             var skip = false;
             if (G.isMinifiable(url)) {
-              if (((minify===true || (typeof minify ==='undefined' && def)) && !G.isMinified(url, text)) || 
-                  ((minify===false || (typeof minify ==='undefined' && !def)) && G.isMinified(url, text))) {
+              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
+                  (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
                 // wrong minification mode on this file
                 skip = true;
               }
             }
             
             if (!skip) {
+              var text = G.localStorage.get(url);
               G.modules[url] = text;
               continue;
             }
@@ -924,7 +932,12 @@ define('fileCache', function() {
         if (hasLocalStorage) {
           setTimeout(function() {
             for (var url in newModules) {
-              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
+              var text = newModules[url];
+              G.localStorage.put(url, text);
+              G.localStorage.put(getMetadataURL(url), {
+                dateModified: G.serverTime,
+                minified: G.isMinified(url, text)
+              });
             }
           }, 100);
         }
@@ -960,10 +973,6 @@ define('fileCache', function() {
         getBundleReq.success = complete; 
         G.sendXhr(getBundleReq);
       }        
-    },
-    
-    prepForStorage: function(text, date) {
-      return JSON.stringify({modified: date, text: text});
     },
     
     setCookie: function(name, value, exdays) {
@@ -1180,11 +1189,13 @@ require(['globals'], function(G) {
         if (window.location.hash.length < 2) {
           Events.once('appStart', function() {
             G.hideSpinner(spinner);
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
         else {
           Events.once('pageChange', function() {
             G.hideSpinner(spinner);
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
       });

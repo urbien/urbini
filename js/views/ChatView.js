@@ -515,7 +515,7 @@ define([
           else
             chatView.$remoteVids.append(media);
           
-          chatView.onAppendedRemoteVideo();
+          chatView.onAppendedRemoteVideo(media);
         },
         
         onNewSession: function(session) {
@@ -578,11 +578,14 @@ define([
     },
 
     onAppendedLocalVideo: function(video) {
-      this.monitorVideoSize(video);
+      this.checkVideoSize(video);
       var $local = this.$localVids.find('video');
-      if ($local.length > 1) {
-        for (var i = 1; i < $local.length; i++)
-          $local[i].remove();
+      if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
+        for (var i = 0; i < $local.length; i++) {
+          var v = $local[i];
+          if (v !== video)
+            $(v).remove();
+        }
       }
         
       $local.prop('muted', true).prop('controls', false).addClass('localVideo');
@@ -591,31 +594,23 @@ define([
     },
 
     onAppendedRemoteVideo: function(video) {
-      this.monitorVideoSize(video);
-      var $remote = this.$remoteVids.find('video');
-      $remote.prop('controls', false).addClass('remoteVideo');
+      this.checkVideoSize(video);
+      $(video).prop('controls', false).addClass('remoteVideo');
       this.$remoteVids.show();
       this.restyleVideos();
     },
 
-    monitorVideoSize: function(video) {
+    checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
       var chatView = this;
-      var $video = $(video);
-      var checkSize = function(e) {
-        if (video.videoWidth) {
-//          if ($video.parents('#remoteVideos').length)
-//            $('<icon style="font-size:20px;position:absolute;top:0px;right:0px;color:#fff;" class="ui-icon-remove-circle"></icon>').insertAfter($video);          
-
-          chatView.restyleVideoDiv();
-          _.each(G.media_events, function(e) {
-            $video.off(e, checkSize);
-          });
-        }
-      };
-          
-      _.each(G.media_events, function(e) {
-        $video.one(e, checkSize);
-      });
+      if (!video.videoWidth) {
+        setTimeout(function() {
+          chatView.checkVideoSize(video);
+        }, 100);
+        
+        return;
+      }
+      
+      this.restyleVideoDiv();
     },
     
     restyleVideoDiv: function() {

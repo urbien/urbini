@@ -34,7 +34,7 @@ define([
       'orientationchange'       : 'onorientationchange'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_');
+      _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.prop = options.prop;
@@ -109,7 +109,7 @@ define([
 //    },
     record: function(e) {
       Events.stopEvent(e);
-      this.setDimensions();
+//      this.setDimensions();
       this.startTime = +new Date();
       this.setstate('recording');
       this.ctx = canvas.getContext('2d');
@@ -219,20 +219,21 @@ define([
       var video = this.video, 
           $video = $(video);
       
-      var checkSize = function(e) {
-        if (video.videoWidth) {
-          this.$shootBtn.removeClass('ui-disabled');
-          this.setDimensions();
-          _.each(G.media_events, function(e) {
-            $video.off(e, checkSize);
-          });
-        }
-      }.bind(this);
-          
-      _.each(G.media_events, function(e) {
-        $video.one(e, checkSize);
-      });
-      
+//      var checkSize = function(e) {
+////        console.debug('video event', e.type, video.videoWidth, ' ', e.target.videoWidth);
+//        if (video.videoWidth) {
+//          this.$shootBtn.removeClass('ui-disabled');
+//          this.setDimensions();
+//          _.each(G.media_events, function(e) {
+//            $video.off(e, checkSize);
+//          });
+//        }
+//      }.bind(this);
+//          
+//      _.each(G.media_events, function(e) {
+//        $video.one(e, checkSize);
+//      });
+                  
       this.finish();
       return this;
     },
@@ -244,6 +245,18 @@ define([
         var vendorURL = window.URL || window.webkitURL;
         this.video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
       }
+      
+      this.checkVideoSize();
+    },
+    
+    checkVideoSize: function() { // in Firefox, videoWidth is not available on any events...annoying
+      if (!this.video.videoWidth) {
+        setTimeout(this.checkVideoSize, 100);
+        return;
+      }
+      
+      this.$shootBtn.removeClass('ui-disabled');
+      this.setDimensions();
     },
     
     startAudio: function(stream) {

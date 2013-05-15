@@ -39,7 +39,7 @@ define([
         fsPromise = fsDfd.promise();
     
     items = _.isArray(items) ? items : [items];
-    if (!FileSystem && canStoreFiles && _.any(items, function(item) {return _.any(item, function(val) { return val instanceof Blob || val._filePath })})) { // HACK, need to check model prop
+    if (!FileSystem && canStoreFiles && _.any(items, function(item) {return _.any(item, function(val) { return val && (val instanceof Blob || val._filePath) })})) { // HACK, need to check model prop
       fsPromise = U.require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       });
@@ -1528,17 +1528,20 @@ define([
               direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
               iterationPromise;
           
+          var promises = [];
           var filterResults = function(item) {
-            if (limit) {
-              if (results.length == limit)
-                return defer.resolve(results);
-              else if (results.length > limit)
-                return;
-            }
+            if (defer.state !== 'pending')
+              return;
             
-            var val = parseFromDB(item.value);
-            if (!valueTester || valueTester(val))
-              results.push(val);
+            var parsePromise = parse(item.value).done(function(item) {
+              if (!valueTester || valueTester(val)) {
+                results.push(val);
+                if (results.length == limit)
+                  defer.resolve(results);
+              }
+            });
+            
+            promises.push(parsePromise);
           };
 
               
@@ -1549,7 +1552,9 @@ define([
           
           iterationPromise.always(function() {
             G.log(RM.TAG, "db", 'Finished getItems Transaction, got {0} itmes'.format(results.length));
-            defer.resolve(results);
+            $.when.apply($, promises).always(function() {              
+              defer.resolve(results);
+            });
           });
         }).promise();
       }
