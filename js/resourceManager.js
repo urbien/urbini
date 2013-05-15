@@ -8,7 +8,7 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
-  var canStoreFiles = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
+  var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
   var Blob = window.Blob;
   var FileSystem;
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
@@ -38,8 +38,8 @@ define([
     var fsDfd = $.Deferred(), 
         fsPromise = fsDfd.promise();
     
-    items = _.isArray(items) ? items : [items];
-    if (!FileSystem && canStoreFiles && _.any(items, function(item) {return _.any(item, function(val) { return val && (val instanceof Blob || val._filePath) })})) { // HACK, need to check model prop
+    items = !items ? null : _.isArray(items) ? items : [items];
+    if (!items || (!FileSystem && storeFilesInFileSystem && _.any(items, function(item) {return _.any(item, function(val) { return val && (val instanceof Blob || val._filePath) })}))) { // HACK, need to check model prop
       fsPromise = U.require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       });
@@ -49,7 +49,7 @@ define([
     
     return fsPromise;
   },
-  
+
   prepForDB = function(item) {      
     return $.Deferred(function(defer) {
       getFileSystem(item).done(function() {
@@ -58,14 +58,18 @@ define([
         _.each(item, function(val, prop) {
           var val = item[prop];
           var dbPropName = prepPropNameForDB(prop);
-          if (canStoreFiles && val instanceof Blob) {
+          if (storeFilesInFileSystem && val instanceof Blob) {
             var dfd = FileSystem.writeFile({
               blob: val,
               filePath: getFileSystemPath(item, prop)
             }).done(function(fileEntry) {
-              _item[dbPropName] = {
+              var placeholder = _item[dbPropName] = item[prop] = {
                 _filePath: fileEntry.fullPath
               }
+              
+              var resource = C.getResource(item._uri);
+              if (resource)
+                resource.set(prop, placeholder, {silent: true});
             });
             
             dfds.push(dfd);
@@ -74,8 +78,11 @@ define([
             _item[dbPropName] = val;
         });
     
-        $.when.apply($, dfds).always(function() {
+        $.when.apply($, dfds).then(function() {
           defer.resolve(_item);
+        }, function() {
+          debugger;
+          defer.resolve(_item);          
         });
       })
     }).promise();
@@ -885,6 +892,18 @@ define([
             if (tempUri)
               ref._tempUri = tempUri;
             
+            if (storeFilesInFileSystem) {
+              var uploadProps = U.filterObj(atts, function(key, val) {return !!val._filePath});
+              if (_.size(uploadProps)) {
+                var filesToDel = _.pluck(_.values(uploadProps), '_filePath');
+                getFileSystem().done(function() {
+                  _.each(filesToDel, function(path) {
+                    FileSystem.deleteFile(path);
+                  });
+                });
+              }
+            }
+            
             RM.$db.transaction([type, REF_STORE.name], 1).done(function() {
               changeModelDfd.always(function(newModel) {                
                 Events.trigger('synced:' + oldUri, data, newModel);
@@ -1120,40 +1139,6 @@ define([
       });
     },
     
-//    saveItemHelper: function(itemRef, item) {
-//      return $.Deferred(function(addDefer) {
-//        var type = item.vocModel.type;
-//        if (itemRef._dirty) {
-//          // no need to save ref, it's already marked as dirty, just save the resource
-//          RM.addItems([item], type).done(function() {
-//            addDefer.resolve();
-//            RM.sync();
-//          }).fail(function() {
-//            addDefer.reject();
-//  //          RM.$db.objectStore("ref")["delete"](now);
-//          });        
-//        }
-//        else {
-//          itemRef._dirty = 1;
-//          itemRef._problematic = 0;
-//          var refStore = RM.$db.objectStore(REF_STORE.name);
-//          RM.put(itemRef, refStore).done(function() {            
-//            RM.addItems([item], type).done(function() {
-//              addDefer.resolve();
-//              RM.sync();
-//            }).fail(function() {
-//              addDefer.reject();
-//              debugger;
-//    //          RM.$db.objectStore("ref")["delete"](now);
-//            });
-//          }).fail(function() {
-//            addDefer.reject();
-//            debugger;
-//          });
-//        }
-//      }).promise();
-//    },
-
     saveItemHelper: function(itemRef, item) {
       return $.Deferred(function(addDefer) {
         var type = item.vocModel.type;
@@ -1174,7 +1159,7 @@ define([
         
         itemRef._problematic = 0;
         var refStore = RM.$db.objectStore(REF_STORE.name);
-        RM.put(itemRef, refStore).done(function() {            
+        RM.put(itemRef, refStore).done(function() {
           RM.addItems([item], type).done(function() {
             addDefer.resolve();
             RM.sync();
@@ -1187,32 +1172,6 @@ define([
           addDefer.reject();
           debugger;
         });
-        
-//        RM.$db.transaction(REF_STORE.name, 1).promise().done(function(transaction) {
-//          debugger;
-//        }).fail(function() {
-//          debugger;
-//        }).progress(function(transaction) {
-//          var refStore = transaction.objectStore(REF_STORE.name);
-//          refStore['delete'](itemRef._id).done(function() {
-//            debugger;
-//          }).fail(function() {
-//            debugger;            
-//          });
-//          
-//          RM.put(itemRef, refStore).done(function() {     
-//            RM.addItems([item], type).done(function() {
-//              addDefer.resolve();            
-//              RM.sync();
-//            }).fail(function() {
-//              addDefer.reject();
-//              debugger;
-//            });
-//          }).fail(function() {
-//            addDefer.reject();
-//            debugger;
-//          });
-//        });
       }).promise();
     },
 

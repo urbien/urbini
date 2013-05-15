@@ -7,11 +7,7 @@ define([
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
-  var serverName = G.serverName;
-  if (/^http\:\/\/.+\//.test(serverName))
-    serverName = serverName.slice(0, serverName.indexOf('/', 7));
-  
-  var SIGNALING_SERVER = serverName + ':8889';
+  var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)\//)[1] + ':8889';
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -586,15 +582,20 @@ define([
             $(v).remove();
         }
       }
-        
-      $local.prop('muted', true).prop('controls', false).addClass('localVideo');
+
+      video.muted = true;
+      video.controls = false;
+      video.play();
+      $(video).addClass('localVideo');
       this.$localVids.show();
       this.restyleVideos();
     },
 
     onAppendedRemoteVideo: function(video) {
       this.checkVideoSize(video);
-      $(video).prop('controls', false).addClass('remoteVideo');
+      video.controls = false;
+      video.play();
+      $(video).addClass('remoteVideo');
       this.$remoteVids.show();
       this.restyleVideos();
     },

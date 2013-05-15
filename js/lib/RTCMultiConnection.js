@@ -921,10 +921,12 @@
             // if room initiator is leaving the room; close the entire session
             if (isbroadcaster) {
                 if (config.autoCloseEntireSession) alert.closeEntireSession = true;
-                else self.sockets[0].send({
+                else if (self.sockets.length) { 
+                  self.sockets[0].send({
                     playRoleOfBroadcaster: true,
                     id: self.id
-                });
+                  });
+                }
             }
 
             if (!channel) {

@@ -126,53 +126,66 @@ define([
       var hasWebWorkers = G.hasWebWorkers;
       var opts = _.clone(options);
       opts.type = opts.method || opts.type;
-      // TODO: remove
-      if (opts.url.indexOf('backboneModel') >= 0 && opts.type !== 'POST')
-        debugger;
-        
       opts.dataType = opts.dataType || 'JSON';
       var useWorker = hasWebWorkers && !opts.sync;
       return new $.Deferred(function(defer) {
         var data = opts.data;
-        if (data && Blob && _.any(data, function(val, key) { return val instanceof Blob })) {
+        var blobProps = U.getBlobValueProps(data);
+        if (data && Blob && _.size(blobProps)) {
 //          opts.url = G.serverName + '/mkresource.html';
-          useWorker = false; // HACK: till we figure out how to do file upload in web worker
-          var fd = new FormData();
-          if (opts.resource) {
-            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-            fd.append('type', opts.resource.vocModel.type);
-          }
-          
-          if (data._uri) {
-            fd.append('_uri', data._uri);
-            fd.append('uri', data._uri);
-          }
-          
-          fd.append('enctype', "multipart/form-data");
-          fd.append('-$action', 'upload');
-          var blobbed = false;
-          for (var prop in data) {
-            var val = data[prop];
-            if (val instanceof Blob) {
-              if (!blobbed) {
-                blobbed = true;
-                _.extend(opts, {
-                  processData: false,
-                  contentType: false
-                });
-                
-                delete opts.dataType;
-                delete opts.emulateJSON;
-                delete opts.emulateHTTP;
-              }
+//          useWorker = false; // HACK: till we figure out how to do file upload in web worker
+//          var fd = new FormData();
+//          if (opts.resource) {
+//            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
+//            fd.append('type', opts.resource.vocModel.type);
+//          }
+//          
+//          if (data._uri) {
+//            fd.append('_uri', data._uri);
+//            fd.append('uri', data._uri);
+//          }
+//          
+//          fd.append('enctype', "multipart/form-data");
+//          fd.append('-$action', 'upload');
+//          var blobbed = false;
+//          for (var prop in data) {
+//            var val = data[prop];
+//            if (val instanceof Blob) {
+//              if (!blobbed) {
+//                blobbed = true;
+//                _.extend(opts, {
+//                  processData: false,
+//                  contentType: false
+//                });
+//                
+//                delete opts.dataType;
+//                delete opts.emulateJSON;
+//                delete opts.emulateHTTP;
+//              }
+//              
+//              fd.append(prop, val, prop);
+//            }
+//            else
+//              fd.append(prop, val);
+//          }
+//          
+          if (useWorker) {
+            var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
+            if (!attachmentsUrlProp) {
+              debugger;
+              Events.trigger('error', {
+                resource: resource,
+                error: "{0} don't support an attachments".format(getPlural(resource.vocModel.displayName))
+              });
               
-              fd.append(prop, val, prop);
+              return;
             }
-            else
-              fd.append(prop, val);
+            
+            fd.append('location', G.serverName + '/wf/' + resource.get(attachmentsUrlProp));
+            fd.append('type', resource.vocModel.type);
           }
-          
-          opts.data = fd;
+          else
+            opts.data = U.toFormData(data, opts);
         }
 
         if (opts.success) defer.done(opts.success);
@@ -206,7 +219,7 @@ define([
             };
             
             xhrWorker.onerror = function(err) {
-  //            debugger;
+              debugger;
               defer.reject({}, "error", err);
             };
             
@@ -220,7 +233,6 @@ define([
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);          
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-//            debugger;
             if (status != 'success') {
               defer.reject(jqXHR, status, opts);
               return;
@@ -232,6 +244,7 @@ define([
             }
             
             if (data && data.error) {
+//              debugger;
               defer.reject(jqXHR, data.error, opts);
               return;
             }
@@ -2117,6 +2130,9 @@ define([
         if (Blob && val instanceof Blob)
           return true;
         
+        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
+          return false;
+        
         if (/\./.test(key))
           return false;        
         
@@ -2944,6 +2960,52 @@ define([
       }
       
       return path;
+    },
+    
+    toFormData: function(data, opts) {
+      var fd = new FormData();      
+      var resource = opts.resource;
+      var vocModel = resource.vocModel;
+      var blobbed = false;
+      for (var prop in data) {
+        var val = data[prop];
+        if (!(val instanceof Blob)) {
+          fd.append(prop, val);
+          continue;
+        }
+        
+        if (!blobbed) {
+          blobbed = true;
+          var attachmentsUrlProp = U.getCloneOf(vocModel, "FileSystem.attachmentsUrl")[0];
+          if (!attachmentsUrlProp)
+            continue;
+          
+//          if (data._uri) {
+//            fd.append('_uri', data._uri);
+//            fd.append('uri', data._uri);
+//          }
+          
+//          fd.append('type', vocModel.type);
+          fd.append('enctype', "multipart/form-data");
+          fd.append('-$action', 'upload');
+          fd.append('location', G.serverName + '/wf/' + resource.get(attachmentsUrlProp));
+          _.extend(opts, {
+            processData: false,
+            contentType: false
+          });
+          
+          _.each(['dataType', 'emulateJSON', 'emulateHTTP'], function(option) {
+            delete opts[option];
+          });
+        }
+          
+        fd.append(prop, val, prop);
+      }
+      
+      return fd;
+    },
+    getBlobValueProps: function(data) {
+      return U.filterObj(data, function(key, val) { return val instanceof Blob });
     }
   };
 

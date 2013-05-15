@@ -1,4 +1,4 @@
-var __started = new Date();
+//var __started = new Date();
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
@@ -335,12 +335,13 @@ define('fileCache', function() {
       }
     },
     canWebcam: (function() {
-      navigator.getMedia = (navigator.getUserMedia ||
+      var m = (navigator.getMedia = (navigator.getUserMedia ||
           navigator.webkitGetUserMedia ||
           navigator.mozGetUserMedia ||
-          navigator.msGetUserMedia);
+          navigator.msGetUserMedia));
       
-      return !!navigator.getMedia;
+      m && m.bind(navigator);
+      return !!m;
     })(),
     showSpinner: function(options) {
       options = options || {};
@@ -1175,13 +1176,13 @@ require(['globals'], function(G) {
         if (window.location.hash.length < 2) {
           Events.once('appStart', function() {
             G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+//            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
         else {
           Events.once('pageChange', function() {
             G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+//            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
       });

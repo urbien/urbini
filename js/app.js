@@ -15,32 +15,6 @@ define('app', [
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
-//  _.extend(Backbone.History.prototype, {
-//
-//    // react to a back/forward button, or an href click.  a "soft" route
-//   checkUrl: function(e) {
-//      var current = this.getFragment();
-//      if (current == this.fragment && this.iframe)
-//          current = this.getFragment(this.getHash(this.iframe));
-//      if (current == this.fragment) return false;
-//      if (this.iframe) this.navigate(current);
-//      // CHANGE: tell loadUrl this is a soft route
-//      this.loadUrl(undefined, true) || this.loadUrl(this.getHash(), true);
-//    },
-//
-//    // this is called in the whether a soft route or a hard Router.navigate call
-//    loadUrl: function(fragmentOverride, soft) {
-//      var fragment = this.fragment = this.getFragment(fragmentOverride);
-//      var matched = _.any(this.handlers, function(handler) {
-//        if (handler.route.test(fragment)) {
-//          // CHANGE: tell Router if this was a soft route
-//          handler.callback(fragment, soft);
-//          return true;
-//        }
-//      });
-//      return matched;
-//    }
-//  });
   
   Backbone.View.prototype.close = function() {
     this.$el.detach();
@@ -50,35 +24,6 @@ define('app', [
     }
   };  
   
-//  /* Backbone.validateAll.js - v0.1.0 - 2012-08-29
-//  * http://www.gregfranko.com/Backbone.validateAll.js/
-//  * Copyright (c) 2012 Greg Franko; Licensed MIT */
-//  Backbone.Model.prototype._validate = function(attrs, options) {
-//    options = options || {};
-//    if (options.silent || options.skipValidation || !this.validate) {
-//      return true;
-//    }
-//    
-//    if (options.validateAll !== false) {
-//      attrs = _.extend({}, this.attributes, attrs);
-//    }
-//    
-//    var error = this.validate(attrs, options);
-//    if (!error) {
-//      if (options.validated)
-//        options.validated(this, options);
-//      
-//      return true;
-//    }
-//    if (options && options.error) {
-//      options.error(this, error, options);
-//    } else {
-//      this.trigger('error', this, error, options);
-//    }
-//    
-//    return false;
-//  };
-
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;
@@ -121,13 +66,6 @@ define('app', [
           self.doPostStartTasks();
         });
       });
-//      Voc.loadStoredModels();
-//      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
-//        RM.restartDB().always(App.startApp);
-//        return;
-//      }
-//
-//      this.prepModels();
     },
 
     doPreStartTasks: function() {

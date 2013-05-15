@@ -70,11 +70,11 @@ define(['globals'], function(G) {
   };
   
   function readFile(options) {
-    options = options || {};
-    var format = options.format || 'DataURL',
-        filePath = options.filePath;
-    
     return $.Deferred(function(defer) {
+      options = options || {};
+      var format = options.format || 'DataURL',
+          filePath = options.filePath;
+  
       var reader = new window.FileReader();
       var method = 'readAs' + format;
       var blobby = method === 'readAsBlob';
@@ -82,32 +82,32 @@ define(['globals'], function(G) {
         defer.reject();
         throw new Error('Invalid format ' + format);
       }
-
-      window.requestFileSystem(window.TEMPORARY, 0, onsuccess, onerror);
+  
+      getFileEntry(filePath).done(function(fileEntry) {
+        fileEntry.file(function(file) {
+          if (blobby)
+            method = 'readAsDataURL';
+          
+          reader[method](file);
+          reader.onload = function(e) {
+            var res = e.target.result;
+            defer.resolve(blobby ? dataURLToBlob(res) : res);
+          };
+          
+        }, getErrorFunc('file read error', defer));
+      }).fail(getErrorFunc('fileEntry error', defer));  
+    }).promise();
+  }
+  
+  function getFileEntry(filePath) {
+    return $.Deferred(function(defer) {
+      window.requestFileSystem(window.TEMPORARY, 0, onsuccess, getErrorFunc('requestFileSystem error', defer));
       function onsuccess(fileSystem) {
-        function onerror(e) {
-          error('fileEntry error', e, defer);            
-        }
-        
         function gotFile(fileEntry) {
-          fileEntry.file(function(file) {
-            if (blobby)
-              method = 'readAsDataURL';
-            
-            reader[method](file);
-            reader.onload = function(e) {
-              var res = e.target.result;
-              defer.resolve(blobby ? dataURLToBlob(res) : res);
-            };
-            
-          }, onerror);
+          defer.resolve(fileEntry);
         }
         
-        fileSystem.root.getFile(filePath, {create: false}, gotFile, onerror);
-      }
-      
-      function onerror(e) {
-        error('requestFileSystem error', e, defer);
+        fileSystem.root.getFile(filePath, {create: false}, gotFile, getErrorFunc('fileEntry error', defer));
       }
     }).promise();
   };
@@ -123,11 +123,26 @@ define(['globals'], function(G) {
     }).promise();
   };
   
+  function getErrorFunc(level, dfd1) {
+    return function(e, dfd2) {
+      error(level, e, dfd2 || dfd1);
+    }
+  }
+
   var FileSystem = {
     TAG: 'fileSystem',
     
     createDirectory: function(fileSystem, dir) {
       return this.getDirectory(fileSystem, dir, {create: true});
+    },
+    
+    deleteFile: function(path) {
+      debugger;
+      return $.Deferred(function(defer) {
+        getFileEntry(path).done(function(fileEntry) {
+          fileEntry.remove(defer.resolve, getErrorFunc('delete file', defer));
+        }).fail(getErrorFunc('fileEntry error', defer));
+      }).promise();
     },
     
     getDirectory: function(fileSystem, dir, options) {
@@ -164,7 +179,7 @@ define(['globals'], function(G) {
             type = blob.type,
             filePath = config.filePath;
     
-        window.requestFileSystem(window.TEMPORARY, size, onsuccess, onerror);    
+        window.requestFileSystem(window.TEMPORARY, size, onsuccess, getErrorFunc('requestfileSystem error', defer));    
         function onsuccess(fileSystem) {
             var directoryDfd = $.Deferred();
             var dirs = filePath.split(/[\\\/]/);
@@ -179,19 +194,17 @@ define(['globals'], function(G) {
               dirEntry.getFile(filePath, {
                   create: true,
                   exclusive: false
-              }, onsuccess, onerror);
+              }, onsuccess, getErrorFunc('fileSystem error', defer));
       
               function onsuccess(fileEntry) {
-                  fileEntry.createWriter(onsuccess, onerror);
+                  fileEntry.createWriter(onsuccess, getErrorFunc('fileEntry error', defer));
       
                   function onsuccess(fileWriter) {
                       fileWriter.onwriteend = function (e) {
                           defer.resolve(fileEntry);
                       };
       
-                      fileWriter.onerror = function (e) {
-                          error('fileWriter error', e, defer);
-                      };
+                      fileWriter.onerror = getErrorFunc('fileWriter error', defer);
       
                       blob = new Blob([blob], {
                           type: type
@@ -199,20 +212,8 @@ define(['globals'], function(G) {
       
                       fileWriter.write(blob);
                   }
-      
-                  function onerror(e) {
-                      error('fileEntry error', e, defer);
-                  }
-              }
-      
-              function onerror(e) {
-                  error('fileSystem error', e, defer);
               }
             }).fail(error);
-        }
-    
-        function onerror(e) {
-            error('requestFileSystem error', e, defer);
         }    
       }).promise();
     }

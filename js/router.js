@@ -48,17 +48,56 @@ define([
     viewsStack: [],
     urlsStack: [],
 //    LoginView: null,
+    _failToGoBack: function() {      
+      U.alert({
+        msg: "Oops! The browsing history ends here."
+      });
+    },
     initialize: function () {
 //      G._routes = _.clone(this.routes);
       _.bindAll(this, '_backOrHome');
       this.firstPage = true;
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
+      Events.on('home', function() {
+        self.goHome();
+      });
+      
       Events.on('back', function() {
         var now = +new Date();
         if (self.lastBackClick && now - self.lastBackClick < 100)
           debugger;
           
+        if (!self.urlsStack.length) {
+          var hash = U.getHash();
+          if (!hash) {
+            self._failToGoBack();
+            return;
+          }
+          
+          var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
+          if (!hashParts || !hashParts.length) {
+            self._failToGoBack();
+            return;
+          }
+            
+          var method = hashParts[1];
+          switch (method) {
+            case 'chat':
+            case 'edit':
+            case 'templates':
+              self.navigate('view/' + hashParts[2], {trigger: true});
+              return;
+            case 'make':
+            case 'view':
+              self._failToGoBack();
+              return;
+            case 'chooser':
+              Events.trigger('home');
+              return;
+          }
+        }
+        
         self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
@@ -484,9 +523,13 @@ define([
       if (this.urlsStack.length)
         Events.trigger('back');
       else
-        window.location.href = G.pageRoot;
+        this.goHome();
     },
 
+    goHome: function() {
+      window.location.href = G.pageRoot; 
+    },
+    
     _requestLogin: function(options) {
       Events.trigger('req-login', _.extend(options || {}));
     },
