@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView'
-], function(G, $, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
 
 //  $(function() {
 //    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),

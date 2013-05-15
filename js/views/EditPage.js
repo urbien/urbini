@@ -1,7 +1,6 @@
 //'use strict';
 define([
   'globals',
-  'jquery',
   'underscore',
   'utils',
   'events',
@@ -14,7 +13,7 @@ define([
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+], function(G, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     initialize: function(options) {

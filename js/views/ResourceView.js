@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+], function(G, _, Events, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);

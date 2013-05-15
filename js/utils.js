@@ -4,10 +4,9 @@ define([
   'underscore',
   'backbone',
   'templates',
-  'jquery',
   'cache',
   'events'
-], function(G, _, Backbone, Templates, $, C, Events) {
+], function(G, _, Backbone, Templates, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
 //  function hasBlobs(data) {

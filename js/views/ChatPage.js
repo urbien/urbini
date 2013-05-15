@@ -1,14 +1,13 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView',
   'views/ChatView',
   'views/Header'
-], function(G, $, _, U, Events, BasicView, ChatView, Header) {
+], function(G, _, U, Events, BasicView, ChatView, Header) {
   var BTN_ACTIVE_CLASS = 'ui-btn-active';
   return BasicView.extend({
     initialize: function(options) {

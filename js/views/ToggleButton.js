@@ -1,6 +1,5 @@
 //'use strict';
 define([
-  'jquery', 
   'underscore', 
   'events',
   'views/BasicView'

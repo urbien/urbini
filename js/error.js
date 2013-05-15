@@ -2,9 +2,8 @@
 define([
   'globals',
   'utils',
-  'jquery',
   'events'
-], function(G, U, $, Events) {
+], function(G, U, Events) {
   var Errors = {
     TAG: "Errors",
     msgs: {

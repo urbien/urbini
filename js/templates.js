@@ -2,10 +2,9 @@
 define([
   'globals',
   'fileCache!../templates.jsp',
-  'jquery', 
   'underscore',
   'events'
-], function(G, HTML, $, _, Events) {
+], function(G, HTML, _, Events) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g

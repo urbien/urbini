@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView'
-], function(G, $, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
   var serverName = G.serverName;
   if (/^http\:\/\/.+\//.test(serverName))

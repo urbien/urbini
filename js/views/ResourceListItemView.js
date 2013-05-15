@@ -1,14 +1,13 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'error', 
   'utils',
   'views/BasicView',
   'vocManager'
-], function(G, $, _, Events, Errors, U, BasicView, Voc) {
+], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
     tagName:"li",
     isCommonTemplate: true,

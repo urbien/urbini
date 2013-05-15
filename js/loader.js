@@ -1028,10 +1028,10 @@ define('fileCache', function() {
           exports: 'Backbone'
         },
         leafletMarkerCluster: ['leaflet'],
-        jqueryMasonry: ['jquery'],
-        jqueryImagesloaded: ['jquery'],
-        mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
-        jqueryIndexedDB: ['jquery', 'indexedDBShim'],
+//        jqueryMasonry: ['jquery'],
+//        jqueryImagesloaded: ['jquery'],
+        mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
+        jqueryIndexedDB: ['indexedDBShim'],
         indexedDBShim: ['taskQueue'],
         codemirrorJSMode: ['codemirror', 'codemirrorCss'],
         codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
@@ -1153,8 +1153,7 @@ require(['globals'], function(G) {
         css[i] = cssObj.name;
       }
       
-      require(['jquery', 'jqmConfig', 'events', 'app'].concat(css), function($, jqmConfig, Events, App) {
-        
+      require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {        
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();

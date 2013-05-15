@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+], function(G, _, Events, U, BasicView) {
   var MapView = BasicView.extend({
 //    css: [
 //      'leaflet.css', 
@@ -40,7 +39,7 @@ define([
 //    click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this, args = arguments;
-      U.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {
+      U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, L) {
         self.render1.apply(self, arguments);
       });
     },

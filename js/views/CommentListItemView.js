@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'events',
   'utils',
   'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+], function(G, _, Events, U, BasicView) {
   return BasicView.extend({
     tagName: 'tr',
     className: 'commentList',

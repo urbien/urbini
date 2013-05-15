@@ -1,7 +1,6 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
@@ -9,7 +8,7 @@ define([
   'vocManager',
   'collections/ResourceList',
   'cache'
-], function(G, $, _, Events, U, BasicView, Voc, ResourceList, C) {
+], function(G, _, Events, U, BasicView, Voc, ResourceList, C) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {

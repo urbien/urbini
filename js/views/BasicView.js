@@ -1,12 +1,11 @@
 //'use strict';
 define([
   'globals',
-  'jquery',
   'backbone',
   'utils',
   'templates',
   'events'
-], function(G, $, Backbone, U, Templates, Events) {
+], function(G, Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {

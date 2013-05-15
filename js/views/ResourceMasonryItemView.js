@@ -1,14 +1,13 @@
 //'use strict';
 define([
   'globals',
-  'jquery',
   'underscore',
   'utils',
   'events',
   'views/BasicView',
   'jqueryMasonry',
   'jqueryImagesloaded'
-], function(G, $, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',

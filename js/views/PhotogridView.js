@@ -1,13 +1,12 @@
 //'use strict';
 define([
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView',
   '/../styles/jqm-grid-listview.css'
-], function(G, $, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
   var SwipeView;
   function adjustSlide(images) {
     if (images.length === 2) {
