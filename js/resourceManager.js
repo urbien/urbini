@@ -8,6 +8,9 @@ define([
   'vocManager',
   'queryIndexedDB'
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
+  var canStoreFiles = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
+  var Blob = window.Blob;
+  var FileSystem;
   var useWebSQL = window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  window.idbModules.DEBUG = G.minify === false;
@@ -26,49 +29,114 @@ define([
   parsePropNameFromDB = function(propName) {
     return propName.startsWith('_') ? propName.slice(1) : propName;
   },
-    
-  prepForDB = function(item) {
-    var _item = {};
-    for (var prop in item) {
-      _item[prepPropNameForDB(prop)] = item[prop];
-    }
 
-    return _item;
+  getFileSystemPath = function(item, prop) {
+    return U.getPath(item._uri) + '/' + prop;
+  },
+  
+  getFileSystem = function(items) {
+    var fsDfd = $.Deferred(), 
+        fsPromise = fsDfd.promise();
+    
+    items = _.isArray(items) ? items : [items];
+    if (!FileSystem && canStoreFiles && _.any(items, function(item) {return _.any(item, function(val) { return val instanceof Blob || val._filePath })})) { // HACK, need to check model prop
+      fsPromise = U.require('fileSystem').done(function(fs) { 
+        FileSystem = fs;
+      });
+    }
+    else
+      fsDfd.resolve();
+    
+    return fsPromise;
+  },
+  
+  prepForDB = function(item) {      
+    return $.Deferred(function(defer) {
+      getFileSystem(item).done(function() {
+        var dfds = [];
+        var _item = {};
+        _.each(item, function(val, prop) {
+          var val = item[prop];
+          var dbPropName = prepPropNameForDB(prop);
+          if (canStoreFiles && val instanceof Blob) {
+            var dfd = FileSystem.writeFile({
+              blob: val,
+              filePath: getFileSystemPath(item, prop)
+            }).done(function(fileEntry) {
+              _item[dbPropName] = {
+                _filePath: fileEntry.fullPath
+              }
+            });
+            
+            dfds.push(dfd);
+          }
+          else
+            _item[dbPropName] = val;
+        });
+    
+        $.when.apply($, dfds).always(function() {
+          defer.resolve(_item);
+        });
+      })
+    }).promise();
   },
   
   parseFromDB = function(_items) {
-    if (!_items)
-      return _items;
-    
-    var returnObj = U.getObjectType(_items) === '[object Object]';
-    if (returnObj)
-      _items = [_items];
-    
-    var items = _.map(_items, function(_item) {
-      var item = {};
-      for (var prop in _item) {
-        item[parsePropNameFromDB(prop)] = _item[prop];
-      }
-      
-      return item;
-    });
-    
-    return returnObj ? items[0] : items;
+    return $.Deferred(function(defer) {
+      getFileSystem(_items).done(function() {        
+        if (!_items)
+          return defer.resolve(_items);
+        
+        var dfds = [];
+        var returnObj = U.getObjectType(_items) === '[object Object]';
+        if (returnObj)
+          _items = [_items];
+        
+        var items = _.map(_items, function(_item) {
+          var item = {};
+          _.each(_item, function(val, prop) {
+            var parsedPropName = parsePropNameFromDB(prop);
+            var val = _item[prop];  
+            if (val._filePath) {
+              var dfd = $.Deferred();
+              FileSystem.readAsBlob(val._filePath).done(function(blob) {
+                item[parsedPropName] = blob;
+                dfd.resolve();
+              }).fail(dfd.reject);
+              
+              dfds.push(dfd);
+            }
+            else
+              item[parsedPropName] = val;
+          });
+          
+          return item;
+        });
+        
+        $.when.apply($, dfds).always(function() {        
+          defer.resolve(returnObj ? items[0] : items);
+        })
+      });
+    }).promise();
   },
   
   Index = idbq.Index,
   REF_STORE = {
     name: 'ref',
-    indices: prepForDB({
+    indices: {
       _uri: {unique: true, multiEntry: false},
       _dirty: {unique: false, multiEntry: false},
       _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
       _problematic: {unique: false, multiEntry: false}
 //      ,
 //      _alert: {unique: false, multiEntry: false}      
-    })
+    }
   };
 
+  prepForDB(REF_STORE.indices).done(function(indices) {
+    REF_STORE.indices = indices;
+  });
+  
   function getRefStoreProps() {
     return _.map(_.keys(REF_STORE.indices), parsePropNameFromDB).concat('_id');
   }
@@ -300,7 +368,13 @@ define([
         items = [items];
       
       return $.when.apply($, _.map(items, function(item) {
-        return store.put(prepForDB(item));
+        var dfd = $.Deferred();
+        prepForDB(item).done(function(i) {
+          store.put(i).done(dfd.resolve).fail(dfd.reject);
+        });
+        
+        return dfd;
+//        return store.put(prepForDB(item));
       }));
     },
     
@@ -712,25 +786,30 @@ define([
 //          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
         RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-          if (!results.length) {
-            defer.resolve();
-            return;
-          }
-          
-          results = parse(results);
-          var types = [];
-          for (var i = 0; i < results.length; i++) {
-            var r = results[i];
-            U.pushUniq(types, U.getTypeUri(r._uri));
-          }
-          
-          Voc.getModels(types, {sync: false}).done(function() {
-            RM.syncResources(results).done(defer.resolve).fail(defer.reject);
+          parse(results).done(function(results) {
+            if (!results.length) {
+              defer.resolve();
+              return;
+            }
+            
+            var types = [];
+            for (var i = 0; i < results.length; i++) {
+              var r = results[i];
+              U.pushUniq(types, U.getTypeUri(r._uri));
+            }
+            
+            Voc.getModels(types, {sync: false}).done(function() {
+              RM.syncResources(results).done(defer.resolve).fail(defer.reject);
+            }).fail(function() {
+              debugger;
+              defer.reject();
+              setTimeout(RM.sync, 2000);
+            });
           }).fail(function() {
             debugger;
             defer.reject();
             setTimeout(RM.sync, 2000);
-          });            
+          });
         }).fail(function(error, event) {
           debugger;
           defer.reject(error, event);
@@ -928,7 +1007,10 @@ define([
             RM.put(ref, refStore).done(function() {
               var resStore = RM.$db.objectStore(type, 1);
               resStore.get(uri).done(function(item) {
-                RM.put(_.extend(parse(item), ref), resStore).always(dfd.resolve);
+                debugger;
+                parse(item).done(function(item) {
+                  RM.put(_.extend(item, ref), resStore).always(dfd.resolve);
+                }).fail(dfd.resolve);
               }).fail(dfd.resolve);
             }).fail(dfd.resolve);
           }
@@ -1016,14 +1098,17 @@ define([
         var dfd;
         if (uri) {
           RM.Index('_uri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-            results = parse(results);
-            if (!results.length)
-              RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
-            else {
-              var result = results[0];
-              _.extend(result, itemJson);
-              RM.saveItemHelper(result, item).done(defer.resolve).fail(defer.reject);
-            }
+            parse(results).done(function(results) {              
+              if (!results.length)
+                RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
+              else {
+                var result = results[0];
+                _.extend(result, itemJson);
+                RM.saveItemHelper(result, item).done(defer.resolve).fail(defer.reject);
+              }
+            }).fail(function() {
+              debugger;
+            });
           }).fail(function() {
             RM.saveItemHelper(itemRef, item).done(defer.resolve).fail(defer.reject);
           });
@@ -1146,14 +1231,15 @@ define([
         
         var refStore = trans.objectStore(REF_STORE.name);
         RM.Index('_uri').eq(uri).getAll(refStore).done(function(results) {
-          if (results.length) {
-            results = parse(results);
-            _.each(results, function(res) {
-              refStore['delete'](res._id).done(function() {
-                G.log(RM.TAG, 'db', 'deleted from ref store', uri);                
+          parse(results).done(function(results) {            
+            if (results.length) {
+              _.each(results, function(res) {
+                refStore['delete'](res._id).done(function() {
+                  G.log(RM.TAG, 'db', 'deleted from ref store', uri);                
+                });
               });
-            });
-          }
+            }
+          });
         });
       });
     },
@@ -1503,31 +1589,40 @@ define([
         var store = RM.$db.objectStore(type, IDBTransaction.READ_ONLY);
         if (uri) {
           store.get(uri).always(function(result) {
-            if (result)
-              qDefer.resolve(parse(result));
-            else {
-              if (!isTemp) {
-                qDefer.resolve();
-                return;
-              }
-              
-              RM.Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-                if (results.length) {
-                  uri = parse(results[0])._uri;
-                  store.get(uri).always(function(result) {
-                    if (result)
-                      qDefer.resolve(parse(result));
-                    else
-                      qDefer.resolve();
-                  });
+            parse(result).done(function(result) {              
+              if (result)
+                qDefer.resolve(result);
+              else {
+                if (!isTemp) {
+                  qDefer.resolve();
+                  return;
                 }
-                else
-                  qDefer.resolve();                    
-              }).fail(function() {
-                debugger;
-                qDefer.resolve();
-              });
-            }
+                
+                RM.Index('_tempUri').eq(uri).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+                  parse(results).done(function(results) {                    
+                    if (results.length) {
+                      uri = results[0]._uri;
+                      store.get(uri).always(function(result) {
+                        if (result)
+                          qDefer.resolve(result);
+                        else
+                          qDefer.resolve();
+                      });
+                    }
+                    else
+                      qDefer.resolve();                    
+                  }).fail(function() {
+                    debugger;
+                    qDefer.resolve();
+                  });
+                }).fail(function() {
+                  debugger;
+                  qDefer.resolve();
+                });
+              }
+            }).fail(function() {
+              debugger;
+            });
           });
 //          if (isTemp) {
 //            RM.$db.objectStore(REF_STORE.name, 0).index(prepPropNameForDB('_tempUri')).get(uri).done(function(result) {
@@ -1542,7 +1637,7 @@ define([
         if (query) {
           G.log(RM.TAG, "db", 'Starting getItems Transaction, query via index(es)');
           query.getAll(store).done(function(results) {
-            qDefer.resolve(parse(results));
+            parse(results).done(qDefer.resolve);
           }).fail(function() {
             G.log(RM.TAG, "db", 'couldn\'t query via index(es), time for plan B');
             queryWithoutIndex().done(qDefer.resolve).fail(qDefer.reject);
@@ -1576,10 +1671,12 @@ define([
       return RM.runTask(function() {
         var defer = this;        
         RM.Index('_tempUri').oneof(_.values(temps)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-          if (results.length)
-            defer.resolve(parse(results));
-          else
-            defer.reject();
+          parse(results).done(function() {            
+            if (results.length)
+              defer.resolve(results);
+            else
+              defer.reject();
+          });
         }).fail(function() {
           debugger;
           defer.reject();
@@ -1664,37 +1761,45 @@ define([
     });
     
     RM.Index('parentFolder').eq(appUri).getAll(RM.$db.objectStore(wClType, 0)).done(function(webCls) {
-      if (!webCls) {
-        dfd.resolve();
-        return;
-      }
-      
-      webCls = parse(webCls);
-      var webClUris = _.pluck(webCls, '_uri');
-      // find all classes 
-      var refStore = RM.$db.objectStore(REF_STORE.name);
-      var isDesignObj = RM.Index('_uri').betweeq(designerPkg, designerPkg + '\uffff');
-      var isBroken = RM.Index('_problematic').eq(1);
-      isDesignObj.and(isBroken).getAll(refStore).done(function(results) {
-        if (!results.length) {
+      parse(webCls).done(function(webCls) {        
+        if (!webCls) {
           dfd.resolve();
           return;
         }
         
-        results = parse(results);
-        var badBoys = [];
-        _.each(results, function(designerObj) {
-          designerObj._error  = designerObj._error || {code: 400, details: 'Problems here. Help us out?'};
-          if (webClUris.indexOf(designerObj._uri) >= 0 || webClUris.indexOf(designerObj.domain) >= 0) {
-            badBoys.push(designerObj);
-          }
-        });
-        
-        if (!badBoys.length)
+        var webClUris = _.pluck(webCls, '_uri');
+        // find all classes 
+        var refStore = RM.$db.objectStore(REF_STORE.name);
+        var isDesignObj = RM.Index('_uri').betweeq(designerPkg, designerPkg + '\uffff');
+        var isBroken = RM.Index('_problematic').eq(1);
+        isDesignObj.and(isBroken).getAll(refStore).done(function(results) {
+          parse(results).done(function(results) {            
+            if (!results.length) {
+              dfd.resolve();
+              return;
+            }
+            
+            var badBoys = [];
+            _.each(results, function(designerObj) {
+              designerObj._error  = designerObj._error || {code: 400, details: 'Problems here. Help us out?'};
+              if (webClUris.indexOf(designerObj._uri) >= 0 || webClUris.indexOf(designerObj.domain) >= 0) {
+                badBoys.push(designerObj);
+              }
+            });
+            
+            if (!badBoys.length)
+              dfd.resolve();
+            else
+              dfd.reject(badBoys);
+          }).fail(function() {
+            debugger;
+            dfd.resolve();
+          });
+        }).fail(function() {
           dfd.resolve();
-        else
-          dfd.reject(badBoys);
+        });
       }).fail(function() {
+        debugger;
         dfd.resolve();
       });
     }).fail(function(err, e){
@@ -1769,6 +1874,6 @@ define([
 //      });
 //    });
 //  });
-  
+    
   return (Lablz.ResourceManager = ResourceManager);
 });

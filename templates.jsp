@@ -627,7 +627,7 @@
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
   <a href="{{= url || '#' }}" data-icon="comments-alt">Chat
-    {{= obj.unreadMessages ? '<span class="menuBadge">' + unreadMessages + '</span>' : '' }}
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
   </a>
 </script>
 
@@ -644,13 +644,13 @@
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
   <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-    {{= typeof newAlerts == 'undefined'  ||  !newAlerts ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count ? count : '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
 </script>
 

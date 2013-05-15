@@ -21,6 +21,7 @@ define([
       this.isChat = this.hash.startsWith('chat/');
       return this;
     },
+    
     menu: function(e) {
       Events.stopEvent(e);
       U.require('views/RightMenuPanel', function(RightMenuPanel) {
@@ -32,9 +33,6 @@ define([
     },
     
     refresh: function() {
-//      this.$el.empty();
-//      this.render();
-//      this.parentView.forceRerender();
       if (this.isChat) {
         var num = this.pageView.getNumParticipants();
         var $menuBadge = this.$('.menuBadge');

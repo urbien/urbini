@@ -240,16 +240,16 @@ define([
       });
     },
 
-    requestInfo: function(userid) {
-      var channel = this.chat.channels[userid];
-      if (channel) {
-        channel.send({
-          request: {
-            info: true
-          }
-        });
-      }
-    },
+//    requestInfo: function(userid) {
+//      var channel = this.chat.channels[userid];
+//      if (channel) {
+//        channel.send({
+//          request: {
+//            info: true
+//          }
+//        });
+//      }
+//    },
 
     getUserInfo: function(userid) {
       return this.userIdToInfo[userid];
@@ -267,25 +267,25 @@ define([
     sendMessage: function(message) {
       var text = message.message;
       var channel = message.channel;
-      if (channel) {
-        var chatChannel = this.chat.channels[channel];
-        if (chatChannel) {
-          chatChannel.send({
-            'private': true,
-            message: text,
-            time: +new Date()//getTime()
-          });
-        }
-        else {
-          // bad
-        }
-      }
-      else {
+//      if (channel) {
+//        var chatChannel = this.chat.channels[channel];
+//        if (chatChannel) {
+//          chatChannel.send({
+//            'private': true,
+//            message: text,
+//            time: +new Date()//getTime()
+//          });
+//        }
+//        else {
+//          // bad
+//        }
+//      }
+//      else {
         this.chat.send({
           message: text,
           time: +new Date() // getTime()
         });
-      }
+//      }
       
       this.addMessage({
         sender: 'Me', //this.myName,
@@ -351,7 +351,7 @@ define([
       var chatView = this;
       var i = 0;
       this.disableChat();
-      var first = true;
+      this.connected = false;
 //      var session = {
 //        audio: this.hasAudio || this.hasVideo,
 //        video: this.hasVideo,
@@ -366,10 +366,10 @@ define([
             // to send text/data or file
 //          chatView._checkChannels();
           chatView.sendUserInfo({
-            justEntered: first
+            justEntered: !chatView.connected
           });
           
-          first = false;
+          chatView.connected = true;
           chatView.enableChat();
         },  
     
@@ -417,7 +417,8 @@ define([
           }
           else if (data.message) {
             if (!userInfo) {
-              chatView.requestInfo(extra._userid);
+//              chatView.requestInfo(extra._userid);
+              debugger;
               return; // TODO: append message afterward
             }
             
@@ -560,7 +561,7 @@ define([
     
     endChat: function(onclose) {
       if (this.chat) {
-        if (!onclose)
+        if (!onclose && this.connected)
           this.chat.leave();
         this.chatSession = null;
       }

@@ -18,7 +18,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -29,13 +29,11 @@ define([
       
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
-//      this.backlinkResource = options.backlinkResource;
+      this.isEdit = this.action === 'edit';
       
       // maybe move this to router
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
-//      this.resource.set(init, {silent: true});
-//      this.edited = {};
       
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
@@ -53,15 +51,20 @@ define([
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
           return;
         
-        this.$form.submit();
+        if (!this._submitted)
+          this.$form.submit();
+        if (this.isActive())
+          this.redirect();
 //        var unsaved = this.resource.getUnsavedChanges();
 //        if (_.size(unsaved))
 //          this.resource.save();
       }.bind(this));
 
       Events.on('active', function(active) {
-        if (active)
-          this.canceled = false;
+        if (active) {
+          this._canceled = false;
+          this._submitted = false;
+        }
       }.bind(this));
       
       this.autoFinish = false;
@@ -89,9 +92,6 @@ define([
     },
 
     capturedVideo: function(options) {
-//      if (true)
-//        return;
-      
       var attachmentsUrlProp = U.getCloneOf(this.vocModel, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {
         debugger;
@@ -103,35 +103,12 @@ define([
 
       var props = {};
       props[prop] = data;
-//      for (var p in data) {
-//        props[prop + '.' + p] = data[p]; 
-//      }
+      for (var p in data) {
+        props[prop + '.' + p] = data[p]; 
+      }
       
+      delete props[prop];
       this.setValues(props, {skipValidation: true, skipRefresh: true});
-//      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
-      this.resource.save(null, {
-        sync: true
-      });
-      
-//      var fd = new FormData();
-//      fd.append('fileName', 'cameraCapture.webm');
-//      fd.append(prop, data); // audio and video blobs
-////      fd.append('file', data); // webmBlob
-//      fd.append('-$action', 'upload');
-//      fd.append('type', this.vocModel.type);
-//      fd.append('forResource', this.resource.getUri());
-//      U.ajax({
-//        type: 'POST',
-//        url: G.serverName + '/mkresource',
-//        data: fd,
-//        processData: false,
-//        contentType: false
-//      }).done(function(data) {
-//        debugger;
-////        console.log(data);
-//      }).fail(function() {
-//        debugger;
-//      });
     },
 
     cameraCapture: function(e) {
@@ -184,7 +161,7 @@ define([
       Events.stopEvent(e);
       
 //      // mobiscrollers don't disappear on their own when you hit the back button
-//      Events.once('changePage', function() {
+//      Events.once('pageChange', function() {
 //        $('.jqm, .dw-modal').remove();
 //      });
       
@@ -558,6 +535,9 @@ define([
     },
     
     redirect: function(options) {
+      if (!this.isActive()) // already redirected
+        return;
+        
       var params = U.getQueryParams();
       var options = _.extend({replace: true, trigger: true}, options || {});
 
@@ -571,11 +551,7 @@ define([
           self = this;
 
       if (this.action === 'edit') {
-//        if (U.isAssignableFrom(vocModel, webPropType))
-//          this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
-//        else
-          Events.trigger('back');
-        
+        Events.trigger('back');
         return;
       }  
       
@@ -585,9 +561,6 @@ define([
         return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
-//        var wClName = U.getValueDisplayName(res, 'domain');
-//        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
-//        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));
         var propType = res.get('propertyType');
         switch (propType) {
           case 'Link':
@@ -776,6 +749,13 @@ define([
       return val;
     },
     submit: function(e) {
+      Events.stopEvent(e);
+      if (this._submitted) {
+        if (!this.isActive())
+          return;
+      }
+
+      this._submitted = true;
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
@@ -785,14 +765,11 @@ define([
         return;
       }
       
-      Events.stopEvent(e);
-      var isEdit = (this.action === 'edit');
       var res = this.resource, 
           uri = res.getUri();
       
-      if (!isEdit && uri) {
+      if (!this.isEdit && uri) {
 //        this.incrementBLCount();
-        debugger;
         this.redirect({forceFetch: true});
         return;
       }
@@ -838,102 +815,6 @@ define([
           atts[name] = val;
       }
       
-      var succeeded = false;
-      var onSuccess = function() {
-        if (succeeded)
-          return;
-        
-        succeeded = true;
-        var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
-//        var props = atts;
-        if (isEdit && !_.size(props)) {
-          debugger; // user didn't modify anything?
-          self.redirect();
-          return;
-        }
-        
-        var onSaveError = function(resource, xhr, options) {
-          var err;
-          if (resource.status) {
-            err = xhr;
-            xhr = resource;
-            resource = null;
-          }
-          
-          self.getInputs().attr('disabled', false);
-          var code = xhr ? xhr.code || xhr.status : 0;
-          if (!code || xhr.statusText === 'error') {
-            Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
-            return;
-          }
-          
-          var json = {};
-          try {
-            json = JSON.parse(xhr.responseText);
-          } catch (err) {
-          }
-          
-          var msg = json.error.details;
-          // TODO: undo this hack
-          if (msg && msg.startsWith("You don't have enough funds")) {
-            Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
-            var successUrl = window.location.href; 
-            setTimeout(function() {
-              var params = {
-                toAccount: G.currentUser._uri,
-                transactionType: 'Deposit',
-                successUrl: successUrl
-//                successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
-              };
-              
-              window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
-            }, 2000);
-            return;
-          }
-          
-          switch (code) {
-            case 401:
-              Events.trigger('req-login', {
-                msg: 'You are not unauthorized to make these changes'
-              });
-//              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//              Events.on(401, msg || 'You are not unauthorized to make these changes');
-              break;
-            case 404:
-              debugger;
-              Errors.errDialog({msg: msg || 'Item not found', delay: 100});
-              break;
-            case 409:
-              debugger;
-              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
-              break;
-            default:
-              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
-//              debugger;
-              break;
-          }
-        };
-        
-        res.save(props, {
-          sync: !U.canAsync(this.vocModel),
-          success: function(resource, response, options) {
-            self.getInputs().attr('disabled', false);
-            res.lastFetchOrigin = null;
-            self.disable('Changes submitted');
-            self.redirect();
-          }, 
-//          skipRefresh: true,
-          error: onSaveError
-        });
-      }.bind(this);
-      
-      var onError = function(errors) {
-        res.off('change', onSuccess, this);
-        this.fieldError.apply(this, arguments);
-        inputs.attr('disabled', false);
-//        alert('There are errors in the form, please review');
-      }.bind(this);
-//
       switch (action) {
         case 'make':
           url += 'm/' + encodeURIComponent(vocModel.type);
@@ -951,11 +832,11 @@ define([
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
-        onSuccess();
+        this.onsuccess();
         self.getInputs().attr('disabled', false);
       }
       else
-        onError(errors);
+        this.onerror(errors);
     },
     cancel: function(e) {
       Events.stopEvent(e);
@@ -964,9 +845,103 @@ define([
         this.resource.set(this.originalResource);
       }
         
-      this.canceled = true;
+      this._canceled = this._submitted = true;
       Events.trigger('back');
     },
+    
+    onSaveError: function(resource, xhr, options) {
+      this._submitted = false;
+      var err;
+      if (resource.status) {
+        err = xhr;
+        xhr = resource;
+        resource = null;
+      }
+      
+      this.getInputs().attr('disabled', fale);
+      var code = xhr ? xhr.code || xhr.status : 0;
+      if (!code || xhr.statusText === 'error') {
+        Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
+        return;
+      }
+      
+      var json = {};
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch (err) {
+      }
+      
+      var msg = json.error.details;
+      // TODO: undo this hack
+      if (msg && msg.startsWith("You don't have enough funds")) {
+        Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
+        var successUrl = window.location.href; 
+        setTimeout(function() {
+          var params = {
+            toAccount: G.currentUser._uri,
+            transactionType: 'Deposit',
+            successUrl: successUrl
+//            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
+          };
+          
+          window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
+        }, 2000);
+        return;
+      }
+      
+      switch (code) {
+        case 401:
+          Events.trigger('req-login', {
+            msg: 'You are not unauthorized to make these changes'
+          });
+//          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+//          Events.on(401, msg || 'You are not unauthorized to make these changes');
+          break;
+        case 404:
+          debugger;
+          Errors.errDialog({msg: msg || 'Item not found', delay: 100});
+          break;
+        case 409:
+          debugger;
+          Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
+          break;
+        default:
+          Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+//          debugger;
+          break;
+      }
+    },
+    
+    onsuccess: function() {
+      var self = this, res = this.resource;
+      var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
+//      var props = atts;
+      if (this.isEdit && !_.size(props)) {
+        debugger; // user didn't modify anything?
+        this.redirect();
+        return;
+      }
+            
+      res.save(props, {
+        sync: !U.canAsync(this.vocModel),
+        success: function(resource, response, options) {
+          self.getInputs().attr('disabled', false);
+          res.lastFetchOrigin = null;
+          self.disable('Changes submitted');
+          self.redirect();
+        }, 
+//        skipRefresh: true,
+        error: self.onSaveError
+      });
+    },
+    
+    onerror: function(errors) {
+      res.off('change', onsuccess, this);
+      this.fieldError.apply(this, arguments);
+      inputs.attr('disabled', false);
+//      alert('There are errors in the form, please review');
+    },
+
     refresh: function(data, options) {
       if (options && options.skipRefresh)
         return;
@@ -987,14 +962,8 @@ define([
         Events.stopEvent(e);
         return;
       }
-//      var data = from.dataset;
-//      if (data.duration)
-//        Events.stopEvent(e) && this.scrollDuration(e);
-//      else if (data.date)
-//        Events.stopEvent(e) && this.scrollDate(e);
       
       return true;
-//      return Events.defaultClickHandler(e);
     },
     onSelected: function(e) {
       var atts = {};
@@ -1028,7 +997,7 @@ define([
         var t = e.target;
         atts[t.name] = t.value;
       }
-//      Events.stopEvent(e);
+
       this.setValues(atts, {onValidationError: this.fieldError});
     },
     
@@ -1041,7 +1010,7 @@ define([
         (atts = {})[key] = val;
       }
       
-      if (this.canceled)
+      if (this._canceled)
         return false;
       
       options = options || {};

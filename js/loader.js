@@ -1,6 +1,12 @@
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
+  
+  var idx = text.indexOf('//@ sourceURL');
+  idx = idx == -1 ? 0 : idx;
+  var length = idx ? 100 : text.length - idx;
+  Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
+  
   if (Lablz.minify) {
     var nav = Lablz.navigator;
     if (nav.isChrome) // || nav.isSafari)
@@ -23,7 +29,9 @@ define('globals', function() {
   
   var doc = document,
       $head = $('head'),
-      $body = $('body');
+      head = $head[0],
+      $body = $('body'),
+      body = $body[0];
   
   Function.prototype.async = function(constantTimeout) {
     var self = this;
@@ -477,6 +485,8 @@ define('fileCache', function() {
       return new Date().getTime() - G.timeOffset;
     },
     hasLocalStorage: hasLocalStorage,
+    hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
+    hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
@@ -990,8 +1000,8 @@ define('fileCache', function() {
         script.text = text;
       }
 
-      $head.append(script);
-      $head.remove(script);
+      head.appendChild(script);
+      head.removeChild(script);
     },
     
     requireConfig: {

@@ -15,7 +15,7 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.modelType); // fall back to default template if there is none specific to this particular model
+      this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
     },
     back: function(e) {
@@ -24,20 +24,7 @@ define([
       return this;
     },
     render: function(options) {
-      if (!this.template)
-        return this;
-      
-      this.$el.html(this.template());
-      
-//      var noBack = window.history.length <= 1;
-//      var a = this.$('a'), disabled = 'ui-disabled';
-//      if (noBack)
-//        a.addClass(disabled);
-//      else {
-//        if (a.hasClass(disabled))
-//          a.removeClass(disabled);
-//      }
-      
+      this.$el.html(this.template());      
       return this;
     }
   }, {

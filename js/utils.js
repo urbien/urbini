@@ -10,9 +10,9 @@ define([
 ], function(G, _, Backbone, Templates, $, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
-  function hasBlobs(data) {
-    return data instanceof Blob || typeof data === 'object' && _.any(_.values(data), hasBlobs);
-  }
+//  function hasBlobs(data) {
+//    return data instanceof Blob || typeof data === 'object' && _.any(_.values(data), hasBlobs);
+//  }
   
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
@@ -134,6 +134,48 @@ define([
       opts.dataType = opts.dataType || 'JSON';
       var useWorker = hasWebWorkers && !opts.sync;
       return new $.Deferred(function(defer) {
+        var data = opts.data;
+        if (data && Blob && _.any(data, function(val, key) { return val instanceof Blob })) {
+//          opts.url = G.serverName + '/mkresource.html';
+          useWorker = false; // HACK: till we figure out how to do file upload in web worker
+          var fd = new FormData();
+          if (opts.resource) {
+            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
+            fd.append('type', opts.resource.vocModel.type);
+          }
+          
+          if (data._uri) {
+            fd.append('_uri', data._uri);
+            fd.append('uri', data._uri);
+          }
+          
+          fd.append('enctype', "multipart/form-data");
+          fd.append('-$action', 'upload');
+          var blobbed = false;
+          for (var prop in data) {
+            var val = data[prop];
+            if (val instanceof Blob) {
+              if (!blobbed) {
+                blobbed = true;
+                _.extend(opts, {
+                  processData: false,
+                  contentType: false
+                });
+                
+                delete opts.dataType;
+                delete opts.emulateJSON;
+                delete opts.emulateHTTP;
+              }
+              
+              fd.append(prop, val, prop);
+            }
+            else
+              fd.append(prop, val);
+          }
+          
+          opts.data = fd;
+        }
+
         if (opts.success) defer.done(opts.success);
         if (opts.error) defer.fail(opts.error);
         if (useWorker) {
@@ -177,47 +219,7 @@ define([
           });
         }
         else {
-          G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-          var data = opts.data;
-          if (data && Blob && hasBlobs(data)) {
-//            opts.url = G.serverName + '/mkresource.html';
-            var fd = new FormData();
-            if (opts.resource) {
-              fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-              fd.append('type', opts.resource.vocModel.type);
-            }
-            
-            if (data._uri) {
-              fd.append('_uri', data._uri);
-              fd.append('uri', data._uri);
-            }
-            
-            fd.append('enctype', "multipart/form-data");
-            fd.append('-$action', 'upload');            
-            for (var prop in data) {
-              var val = data[prop];
-              if (_.isObject(val)) {
-                for (var subProp in val) {
-//                  data[prop+ '_' + subProp] = val[subProp];                  
-                  fd.append("blob", val[subProp], prop + '.' + subProp);                  
-                }
-                
-                _.extend(opts, {
-                  processData: false,
-                  contentType: false
-                });
-                
-                delete opts.dataType;
-                delete opts.emulateJSON;
-                delete opts.emulateHTTP;
-                delete data[prop];
-              }
-//                fd.append(prop, val);
-            }
-            
-            opts.data = fd;
-          }
-          
+          G.log(U.TAG, 'xhr', '$.ajax', opts.url);          
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
 //            debugger;
             if (status != 'success') {
@@ -2113,8 +2115,12 @@ define([
       preserve = preserve || [];
       var props = vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
+        if (Blob && val instanceof Blob)
+          return true;
+        
         if (/\./.test(key))
-          return false;
+          return false;        
+        
         var prop = props[key];
         return prop && !U.isSystemProp(key) && 
             (_.contains('backLink', preserve) || !prop.backLink) && 
@@ -2931,9 +2937,14 @@ define([
         }
       }
     },
-    objToPaths: function(obj) {
-      var paths = [];
+    getPath: function(uri) {
+      var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
+      var params = U.getParamMap(uri);
+      for (var param in params) {
+        path += '/' + encodeURIComponent(params[param]);
+      }
       
+      return path;
     }
   };
 

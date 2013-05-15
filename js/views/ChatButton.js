@@ -12,36 +12,47 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render'); //, 'chat');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.modelType); // fall back to default template if there is none specific to this particular model
+      this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
+    },
+    refresh: function() {
+      if (!this.isChat) { // we're on another page that links to this chat, we want to know how many messages we missed
+        var hash = this.hash;
+        if (/\?/.test(hash))
+          hash = hash.slice(0, hash.indexOf('?'));
+
+        var chatView = this.router.ChatViews[hash];
+        var unread = chatView && chatView.getNumUnread();
+        var $menuBadge = this.$('.menuBadge');
+        $menuBadge.html(unread || '');
+        $menuBadge[unread ? 'show' : 'hide']();
+      }
     },
     render: function(options) {      
       var res = this.model;
-      var hash = this.hash;
-      if (/\?/.test(hash))
-        hash = hash.slice(0, hash.indexOf('?'));
-      
-      this.isChat = this.hash.startsWith('chat/');
-      var unread, uri, url;
+      this.isChat = this.hash.startsWith('#chat/');
+      var uri, url;
       if (!this.isChat) {
-        chatView = this.router.ChatViews[hash];
-        unread = chatView && chatView.getNumUnread();
         uri = this.resource ? res.getUri() : res.getUrl();
         url = U.makePageUrl('chat', uri);
       }
       
       this.$el.html(this.template({
-        url: url,
-        unreadMessages: unread
+        url: url
       }));
       
+      this.finish();
       if (this.isChat) {
         var chatPage = this.pageView;
         this.$el.on('click', function(e) {
           Events.stopEvent(e);
-          chatPage.trigger('toggleTextChat');
+          chatPage.trigger('chat:on');
         });
+        
+        this.$('.menuBadge').hide();
       }
+      else
+        this.refresh();
       
       return this;
     }

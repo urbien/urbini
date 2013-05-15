@@ -68,12 +68,11 @@ define([
     },
     submit: function(e) {
       Events.stopEvent(e);
-//      var data = ('mozGetAsFile' in canvas) ?
-//                 canvas.mozGetAsFile('webcam.png') :
-//                 canvas.toDataURL('image/png'); //.replace(/^data:image\/(png|jpg);base64,/, '');
       var data;
       if (this.isVideo) {
         data = {
+//          video: this.videoUrl,
+//          audio: this.audioUrl
           video: this.webmBlob,
           audio: this.audioBlob
         }
@@ -110,6 +109,7 @@ define([
 //    },
     record: function(e) {
       Events.stopEvent(e);
+      this.setDimensions();
       this.startTime = +new Date();
       this.setstate('recording');
       this.ctx = canvas.getContext('2d');
@@ -221,8 +221,8 @@ define([
       
       var checkSize = function(e) {
         if (video.videoWidth) {
-          this.setDimensions();
           this.$shootBtn.removeClass('ui-disabled');
+          this.setDimensions();
           _.each(G.media_events, function(e) {
             $video.off(e, checkSize);
           });
@@ -418,6 +418,7 @@ define([
         url = URL.createObjectURL(this.audioBlob);
       }
       
+      this.audioUrl = url;
       audio.src = url;
       var vid = this.videoPrev;
       vid.addEventListener('play', function() {
@@ -455,21 +456,22 @@ define([
         });
         
         var framesPerSecond = Math.round(this.frames.length / ((this.stopTime - this.startTime) / 1000));
-        if (G.navigator.isFirefox) {
-          var encoder = new Whammy.Video(framesPerSecond);
-          this.frames.forEach(function(dataURL, i) {
-            encoder.add(dataURL);
-          });
-          
-          this.webmBlob = encoder.compile();
-        }
-        else {
+//        if (G.navigator.isFirefox) {
+//          var encoder = new Whammy.Video(framesPerSecond);
+//          this.frames.forEach(function(dataURL, i) {
+//            encoder.add(dataURL);
+//          });
+//          
+//          this.webmBlob = encoder.compile();
+//        }
+//        else {
           this.webmBlob = Whammy.fromImageArray(this.frames, framesPerSecond);
-        }
+//        }
         
         url = URL.createObjectURL(this.webmBlob);
       }
 
+      this.videoUrl = url;
       video.src = url;
 //      downloadLink.href = url;
       this.$videoPrev.show();
