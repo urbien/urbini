@@ -9,9 +9,6 @@ define([
 ], function(G, _, Backbone, Templates, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
-//  function hasBlobs(data) {
-//    return data instanceof Blob || typeof data === 'object' && _.any(_.values(data), hasBlobs);
-//  }
   
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
@@ -282,7 +279,7 @@ define([
     },
 
     isAnAppClass: function(type) {
-      return type.indexOf("/voc/dev/") != -1;
+      return type.indexOf("/voc/dev/" + G.currentApp.appPath) != -1;
     },
     
     getTypes: function(vocModel) {
@@ -477,7 +474,7 @@ define([
       if (roles  &&  (roles.indexOf('self') == -1))
         return false;
       
-      var resExists = !!res.getUri();
+      var resExists = res  &&  !!res.getUri();
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
           return false;
@@ -1571,6 +1568,9 @@ define([
      * @param className: class name or uri
      */
     isAssignableFrom: function(model, className) {
+      if (!model)
+        return false;
+      
       if (/\//.test(className))
         className = U.getTypeUri(className);
       
