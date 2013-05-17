@@ -9424,7 +9424,10 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     },
     // Create a deferred object that hooks into the DOM-ready event.
     domReady = $.Deferred(function(deferred) {
-      $(deferred.resolve);
+      $(function() {
+        console.log('dom ready');
+        deferred.resolve();
+      });
     }).promise();
     
     
@@ -9483,13 +9486,14 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 //    var defineDfd = defineMap[url] = defineMap[url] || $.Deferred();
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
     defineMap[name] = true;
-    domReady.done(require(deps, function() {
+    require(deps, function() {
       finish(name);
       dfd.resolve(cb.apply(root, arguments));
-    }));
+    });
   }
   
   function finish(name) {
+    console.log('loaded', name);
     var idx = waitingOn.indexOf(name);
     if (idx != -1)
       waitingOn.splice(idx, 1);
@@ -9535,12 +9539,17 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
     $.each(modules, function(idx, name) {
+      if (name === '__domReady__') {
+        prereqs.push(domReady);
+        return;
+      }
+      
       var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
         waitingOn.push(name);
         dfd = moduleMap[url] = $.Deferred();
-        console.log("loading", name);
+//        console.log("loading", name);
         require.load(name, url).then(function() {
           if (dfd.state() === 'resolved')
             return;
@@ -9579,7 +9588,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     promise = $.when.apply($, prereqs);
     if (cb) {
       promise.done(function() {
-        var args = arguments;
         cb.apply(root, arguments);
       });
     }
@@ -9591,7 +9599,10 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     $.extend(config, cfg);
   };
   
-  define.amd = true;  
+  define.amd = {
+    jQuery: true
+  };  
+  
   require.waitingOn = waitingOn;
   require.load = load;
   require.toUrl = toUrl;

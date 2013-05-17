@@ -121,19 +121,18 @@ define('globals', function() {
       if (/\.(jsp|css|html)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
   
-      var inAppcache = false;
-//      var inAppcache = G.isInAppcacheBundle(url);
-//      if (inAppcache) {
-//        var path = G.requireConfig.paths[name];
-//        path = path || name;
-//        var realPath = G.files.appcache[path].fullName;
-//  //      var realPath = G.files[path].name;
-//        arguments[2] = url.replace(path, realPath);
-//        if (!/\.(jsp|css|html)$/.test(url)) {
-//          orgLoad.apply(self, args);
-//          return;
-//        }
-//      }
+      var inAppcache = G.isInAppcacheBundle(url);
+      if (inAppcache) {
+        var path = G.requireConfig.paths[name];
+        path = path || name;
+        var realPath = G.files.appcache[path].fullName;
+  //      var realPath = G.files[path].name;
+        arguments[2] = url.replace(path, realPath);
+        if (!/\.(jsp|css|html)$/.test(url)) {
+          orgLoad.apply(self, args);
+          return;
+        }
+      }
   
         
       var ext;
@@ -1206,4 +1205,4 @@ require(['globals'], function(G) {
       });
     });
   }
-})
+});

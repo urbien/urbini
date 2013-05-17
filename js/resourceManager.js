@@ -6,7 +6,8 @@ define('resourceManager', [
   'taskQueue',
   'cache',
   'vocManager',
-  'queryIndexedDB'
+  'queryIndexedDB',
+  '__domReady__'
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
   var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
   var Blob = window.Blob;
@@ -574,7 +575,7 @@ define('resourceManager', [
       }
       
       G.log(RM.TAG, "db", 'opening db');
-      var dbPromise = $.Deferred();
+      var dbDefer = $.Deferred();
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
         RM.db = db;
@@ -597,22 +598,22 @@ define('resourceManager', [
         RM.VERSION = version = typeof version === 'number' ? Math.max(version, currentVersion) : currentVersion; // just in case we want it later on, don't know for what yet 
         if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
-          dbPromise.resolve();
+          dbDefer.resolve();
           return;
         }
 
         // Queue up upgrade
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
-        dbPromise.resolve();
+        dbDefer.resolve();
       }).fail(function(error, event) {
         debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
-        dbPromise.reject();
+        dbDefer.reject();
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
             G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
-            dbPromise.reject();
+            dbDefer.reject();
             RM.restartDB();
             break;
           case 'upgradeneeded':
@@ -621,7 +622,7 @@ define('resourceManager', [
         G.log(RM.TAG, 'db', event.type);
       });
       
-      return dbPromise;
+      return dbDefer.promise();
     },
     
     getIndexNames: function(vocModel) {

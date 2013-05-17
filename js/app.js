@@ -78,7 +78,7 @@ define('app', [
             dbDfd.resolve();
           else
             RM.restartDB().always(dbDfd.resolve);
-        }
+        };
         
         var loadModels = function() {
           Voc.getModels().done(function() {
