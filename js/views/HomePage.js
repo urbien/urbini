@@ -3,7 +3,7 @@ define('views/HomePage', [
   'globals',
   'events',
   'backbone'
-], function(G, Events, Backbone) {
+], function(G, Events) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {

@@ -14,6 +14,7 @@ define('templates', [
   
   var Templates = {
     // Hash of preloaded templates for the app
+    TAG: 'Templates',
     templates: {},
     propTemplates: {
       "string": "stringPT",

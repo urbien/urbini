@@ -5,7 +5,7 @@ define('views/PhotogridView', [
   'utils',
   'events',
   'views/BasicView',
-  '/../styles/jqm-grid-listview.css'
+  '../styles/jqm-grid-listview.css'
 ], function(G, _, U, Events, BasicView) {
   var SwipeView;
   function adjustSlide(images) {

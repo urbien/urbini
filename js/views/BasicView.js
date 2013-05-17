@@ -5,7 +5,7 @@ define('views/BasicView', [
   'utils',
   'templates',
   'events'
-], function(G, Backbone, U, Templates, Events) {
+], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {

@@ -9408,23 +9408,30 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     moduleMap = {}, 
+    defineMap = {}, 
     require,
     initDefer = $.Deferred(function(defer) {$(defer.resolve)}),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
     body = doc.getElementsByTagName('head')[0],
     isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
-    readyRegExp = /^(complete|loaded)$/,
+//    readyRegExp = /^(complete|loaded)$/,
+    extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
     currentlyAddingScript = null,
+    waitingOn = [],
     config = {
       baseUrl: ''
-    };
+    },
+    // Create a deferred object that hooks into the DOM-ready event.
+    domReady = $.Deferred(function(deferred) {
+      $(deferred.resolve);
+    }).promise();
     
     
   function toUrl(name) {
     var paths = config.paths;
     var url = config.baseUrl + ((paths && paths[name]) || name);
-    return /\.[a-zA-Z]+$/.test(url) ? url : url + '.js';
+    return url.match(extRegExp) ? url : url + '.js';
   }
 
   function removeListener(node, func, name, ieName) {
@@ -9452,31 +9459,40 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   /**
   * @param name - name of the module - currently required
   **/
-  var define = function(name, deps, cb) {
-  switch (arguments.length) {
-    // case 1: // TODO: allow anonymous define modules
-      // cb = name;
-      // name = deps = null;
-      // break;
-    case 2:
-      cb = deps;
-      deps = null;
-      break;
-  }
-
-  // if (!name) {
-    // var node = currentlyAddingScript; // || getInteractiveScript();
-    // if (node)
-      // name = node.getAttribute('data-requiremodule');
-    // else
-      // debugger;
-  // }
-      
-  return require(deps).done(function() {
+  function define(name, deps, cb) {
+    switch (arguments.length) {
+      // case 1: // TODO: allow anonymous define modules
+        // cb = name;
+        // name = deps = null;
+        // break;
+      case 2:
+        cb = deps;
+        deps = null;
+        break;
+    }
+  
+    // if (!name) {
+      // var node = currentlyAddingScript; // || getInteractiveScript();
+      // if (node)
+        // name = node.getAttribute('data-requiremodule');
+      // else
+        // debugger;
+    // }
+        
     var url = toUrl(name);
+//    var defineDfd = defineMap[url] = defineMap[url] || $.Deferred();
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
-    dfd.resolve(cb.apply(root, arguments));
-  });
+    defineMap[name] = true;
+    domReady.done(require(deps, function() {
+      finish(name);
+      dfd.resolve(cb.apply(root, arguments));
+    }));
+  }
+  
+  function finish(name) {
+    var idx = waitingOn.indexOf(name);
+    if (idx != -1)
+      waitingOn.splice(idx, 1);
   }
   
   /**
@@ -9514,7 +9530,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     }).promise();
   }
   
-  // var id = 0;
+//   var id = 0;
   function require(modules, cb) {
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
@@ -9522,52 +9538,78 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
-      dfd = moduleMap[url] = $.Deferred(function(dfd) {
+        waitingOn.push(name);
+        dfd = moduleMap[url] = $.Deferred();
+        console.log("loading", name);
         require.load(name, url).then(function() {
-          var shim = config.shim && config.shim[name],
-              deps = shim && shim.deps;
-            
-          if (shim) { // non AMD - don't wait for them to resolve their dependencies
-            if (deps)
-              require(deps, dfd.resolve);
-            else
-              moduleMap[url].resolve() && dfd.resolve();
+          if (dfd.state() === 'resolved')
+            return;
+          
+          if (arguments.length) {
+            finish(name);
+            return dfd.resolve.apply(dfd, arguments);
           }
-            else
-              moduleMap[url].promise().then(dfd.resolve, dfd.reject); // wait for the define call to resolve dependencies
-        }, dfd.reject);
-      });
-    }
-        
-      prereqs.push(dfd.promise());
+          
+          var shim = config.shim && config.shim[name],
+              deps = shim && (shim.deps || shim),
+              exports = shim && shim.exports;
+            
+          if (shim) { // non AMD
+            require(deps, function() {
+              finish(name);
+              if (exports)
+                dfd.resolve(root[exports]);
+              else
+                dfd.resolve();
+            });
+          }
+          else if (!defineMap[name]) { // non AMD, no deps
+            dfd.resolve();
+            finish(name);
+          }
+          
+        }, dfd.reject);        
+      }
+
+      var prereq = dfd.promise();
+      prereq._name = name;
+      prereqs.push(prereq);
     });
     
     promise = $.when.apply($, prereqs);
-  // promise._promiseId = id++;
-  if (cb) {
-    promise.done(function() {
-      cb.apply(root, arguments);
-    });
-  }
-  
-  return promise;
+    if (cb) {
+      promise.done(function() {
+        var args = arguments;
+        cb.apply(root, arguments);
+      });
+    }
+    
+    return promise;
   }
   
   require.config = function(cfg) {
     $.extend(config, cfg);
   };
   
+  define.amd = true;  
+  require.waitingOn = waitingOn;
   require.load = load;
   require.toUrl = toUrl;
   root.require = require;
   root.define = define;
-  var main = $('[data-main]')[0].dataset.main + '.js';
-  if (/\//.test(main))
-    config.baseUrl = main.slice(0, main.lastIndexOf('/') + 1);
-  var s = doc.createElement('script'); 
-  s.type = 'text/javascript';
-  s.charset = 'utf-8';
-  s.async = true;
-  s.src = main; 
-  head.appendChild(s);
+  var main = $('[data-main]')[0];
+  if (main) {
+    main = main.dataset.main + '.js';
+    var idx = main.lastIndexOf('/');
+    if (idx>=0) {
+      config.baseUrl = main.slice(0, idx + 1);
+    }
+    
+    var s = doc.createElement('script'); 
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.async = true;
+    s.src = main; 
+    head.appendChild(s);
+  }
 })(window, jQuery, undefined);

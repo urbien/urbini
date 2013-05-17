@@ -2,21 +2,24 @@
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     moduleMap = {}, 
-  require,
+    require,
     initDefer = $.Deferred(function(defer) {$(defer.resolve)}),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
     body = doc.getElementsByTagName('head')[0],
-        isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
-    readyRegExp = /^(complete|loaded)$/,
-  currentlyAddingScript = null,
-  config = {};
+    isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
+//    readyRegExp = /^(complete|loaded)$/,
+    extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
+    currentlyAddingScript = null,
+    config = {
+      baseUrl: ''
+    };
     
     
-  function getUrl(name) {
+  function toUrl(name) {
     var paths = config.paths;
-    var url = (config.baseUrl || '') + ((paths && paths[name]) || name);
-    return /\.[a-zA-Z]+$/.test(url) ? url : url + '.js';
+    var url = config.baseUrl + ((paths && paths[name]) || name);
+    return extRegExp.test(url) ? url : url + '.js';
   }
 
   function removeListener(node, func, name, ieName) {
@@ -44,30 +47,37 @@
   /**
   * @param name - name of the module - currently required
   **/
-  var define = function(name, deps, cb) {
-  switch (arguments.length) {
-    // case 1: // TODO: allow anonymous define modules
-      // cb = name;
-      // name = deps = null;
-      // break;
-    case 2:
-      cb = deps;
-      deps = null;
-      break;
-  }
-
-  // if (!name) {
-    // var node = currentlyAddingScript; // || getInteractiveScript();
-    // if (node)
-      // name = node.getAttribute('data-requiremodule');
-    // else
-      // debugger;
-  // }
+  function define(name, deps, cb) {
+    switch (arguments.length) {
+      // case 1: // TODO: allow anonymous define modules
+        // cb = name;
+        // name = deps = null;
+        // break;
+      case 2:
+        cb = deps;
+        deps = null;
+        break;
+    }
+  
+    // if (!name) {
+      // var node = currentlyAddingScript; // || getInteractiveScript();
+      // if (node)
+        // name = node.getAttribute('data-requiremodule');
+      // else
+        // debugger;
+    // }
+        
+    var url = toUrl(name);
+    var defineDfd = $.Deferred();
+    var reqDfd = moduleMap[url];
+    if (reqDfd)
+      defineDfd.done(reqDfd.resolve).fail(reqDfd.reject);
+    else
+      moduleMap[url] = defineDfd;
       
-  return require(deps).done(function() {
-    var url = getUrl(name);
-    moduleMap[url].resolve(cb.apply(root, arguments));
-  });
+    return require(deps).done(function() {
+      defineDfd.resolve(cb.apply(root, arguments));
+    });
   }
   
   /**
@@ -110,52 +120,67 @@
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
     $.each(modules, function(idx, name) {
-      var url = getUrl(name);
+      var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
-      dfd = moduleMap[url] = $.Deferred(function(dfd) {
-        require.load(name, url).then(function() {
-          var shim = config.shim && config.shim[name],
-              deps = shim && shim.deps;
+        dfd = moduleMap[url] = $.Deferred(function(dfd) {
+          require.load(name, url).then(function() {
+            if (arguments.length)
+              return dfd.resolveWith(arguments);
             
-          if (shim) { // non AMD - don't wait for them to resolve their dependencies
-            if (deps)
+            var shim = config.shim && config.shim[name],
+                deps = shim && shim.deps;
+              
+            var defineDfd = moduleMap[url];
+            if (shim) { // non AMD
               require(deps, dfd.resolve);
-            else
-              moduleMap[url].resolve() && dfd.resolve();
-          }
-            else
-              moduleMap[url].promise().then(dfd.resolve, dfd.reject); // wait for the define call to resolve dependencies
-        }, dfd.reject);
-      });
-    }
-        
-      prereqs.push(dfd.promise());
+            }
+            else {
+              if (!defineDfd) {
+                dfd.resolve.apply(root, arguments);
+              }
+            }
+          }, dfd.reject);
+        });
+      }
+
+      var prereq = dfd.promise();
+      prereqs.push(prereq);
+//      prereq.done(function(module) {
+//        debugger;
+//      });
     });
     
     promise = $.when.apply($, prereqs);
   // promise._promiseId = id++;
-  if (cb) {
-    promise.done(function() {
-      cb.apply(root, arguments);
-    });
-  }
-  
-  return promise;
+    if (cb) {
+      promise.done(function(modules) {
+        cb.apply(root, arguments);
+      });
+    }
+    
+    return promise;
   }
   
   require.config = function(cfg) {
-  config = cfg;
+    $.extend(config, cfg);
   };
   
   require.load = load;
+  require.toUrl = toUrl;
   root.require = require;
   root.define = define;
-  var main = $('[data-main]')[0].dataset.main;
-  var s = d.createElement('script'); 
-  s.type = 'text/javascript';
-  s.charset = 'utf-8';
-  s.async = true;
-  s.src = main; 
-  $('head').append(s);
+  var main = $('[data-main]')[0];
+  if (main) {
+    main = main.dataset.main + '.js';
+    if (/\//.test(main)) {
+      config.baseUrl = main.slice(0, main.lastIndexOf('/') + 1);
+    }
+    var s = doc.createElement('script'); 
+    s.type = 'text/javascript';
+    s.charset = 'utf-8';
+    s.async = true;
+    s.src = main; 
+    head.appendChild(s);
+  }
 })(window, jQuery, undefined);

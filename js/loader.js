@@ -12,7 +12,7 @@ define('globals', function() {
     var idx = text.indexOf('//@ sourceURL');
     idx = idx == -1 ? 0 : idx;
     var length = idx ? 100 : text.length - idx;
-    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
+//    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
     
     if (Lablz.minify) {
       var nav = Lablz.navigator;
@@ -59,6 +59,7 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
+  // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
   var loadModule = function(name, url, text) {
     return $.Deferred(function(defer) {        
       var ext = url.match(/\.[a-zA-Z]+$/g)[0];
@@ -78,13 +79,14 @@ define('globals', function() {
           
           G.log(G.TAG, 'cache', 'cache.get: ' + url);
 //          context.completeLoad(name); // pseudonym for onLoad
+          defer.resolve(name);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
         case '.html':
         case '.jsp':
           G.log(G.TAG, 'cache', 'cache.get: ' + url);
 //          onLoad(text);
-          addModule(text);
+          defer.resolve(text);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
         default:
@@ -96,34 +98,42 @@ define('globals', function() {
             text += '*/\n';
 //          requirejs.exec(text);
           addModule(text);
+          defer.resolve();
 //          context.completeLoad(name); // JQM hack
           break;
       }
       
-      defer.resolve(); // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
+//      defer.resolve(); 
     }).promise();
   };
 
   var orgLoad = require.load;
   require.load = function (name, url) {
     url = G.getCanonicalPath(url);
+    var args = arguments,
+        self = this;
+    
     return $.Deferred(function(defer) {
+      if (name === 'globals')
+        return defer.resolve(G);
+      
       var cached;  
       if (/\.(jsp|css|html)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
-          
-      var inAppcache = G.isInAppcacheBundle(url);
-      if (inAppcache) {
-        var path = G.requireConfig.paths[name];
-        path = path || name;
-        var realPath = G.files.appcache[path].fullName;
-  //      var realPath = G.files[path].name;
-        arguments[2] = url.replace(path, realPath);
-        if (!/\.(jsp|css|html)$/.test(url)) {
-          orgLoad.apply(this, arguments);
-          return;
-        }
-      }
+  
+      var inAppcache = false;
+//      var inAppcache = G.isInAppcacheBundle(url);
+//      if (inAppcache) {
+//        var path = G.requireConfig.paths[name];
+//        path = path || name;
+//        var realPath = G.files.appcache[path].fullName;
+//  //      var realPath = G.files[path].name;
+//        arguments[2] = url.replace(path, realPath);
+//        if (!/\.(jsp|css|html)$/.test(url)) {
+//          orgLoad.apply(self, args);
+//          return;
+//        }
+//      }
   
         
       var ext;
@@ -139,10 +149,11 @@ define('globals', function() {
         if (loadedCached) {            
           try {
             G.log(G.TAG, 'cache', 'Loading from LS', url);
-            loadModule(name, url, cached);
+            loadModule(name, url, cached).done(defer.resolve);
             G.log(G.TAG, 'cache', 'End loading from LS', url);
           } catch (err) {
             debugger;
+            defer.reject();
             G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
             G.localStorage.del(url);
             loadedCached = false;
@@ -156,9 +167,11 @@ define('globals', function() {
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
       G.loadBundle(name, function() {
         if (G.modules[url])
-          loadModule(name, url, G.modules[url]);
-        else
+          loadModule(name, url, G.modules[url]).done(defer.resolve);
+        else {
           G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
+          defer.reject();
+        }
       });        
     }).promise();
   };
@@ -807,12 +820,13 @@ define('globals', function() {
             continue;
           
 //          var inAppcache = !!appcache[name];
-          var ext = name.match(/\.[a-zA-Z]+$/g);
-          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
-            name += '.js';
 
           info = {};
           var path = G.getCanonicalPath(require.toUrl(name));
+//          var ext = name.match(/\.[a-zA-Z]+$/g);
+//          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
+//            path += '.js';
+          
           if (G.modules[path])
             continue;
           
@@ -1037,8 +1051,6 @@ define('globals', function() {
         },
         leafletMarkerCluster: ['leaflet'],
         mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
-        jqueryIndexedDB: ['indexedDBShim'],
-        indexedDBShim: ['taskQueue'],
         codemirrorJSMode: ['codemirror', 'codemirrorCss'],
         codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
         codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
@@ -1050,6 +1062,22 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
   
+  var bundles = G.bundles;
+  G.files = {appcache: {}};
+  for (var when in bundles) {
+    var bundle = bundles[when];
+    for (var type in bundle) {
+      var bt = bundle[type];
+      for (var i = 0; i < bt.length; i++) {
+        var info = bt[i];
+        G.files[info.name] = info;
+        if (when === 'appcache') {
+          G.files.appcache[info.name] = info;
+        }
+      }
+    }
+  }  
+
   G.apiUrl = G.serverName + '/api/v1/';
   var c = G.commonTypes, d = G.defaultVocPath;
   for (var type in c) {
@@ -1096,21 +1124,6 @@ require(['globals'], function(G) {
   G.showSpinner({name: spinner, timeout: 5000});
   
   var bundles = G.bundles;
-  G.files = {appcache: {}};
-  for (var when in bundles) {
-    var bundle = bundles[when];
-    for (var type in bundle) {
-      var bt = bundle[type];
-      for (var i = 0; i < bt.length; i++) {
-        var info = bt[i];
-        G.files[info.name] = info;
-        if (when === 'appcache') {
-          G.files.appcache[info.name] = info;
-        }
-      }
-    }
-  }
-  
   var pre = bundles.pre;
   var priorities = [];
   var appcache = G.files.appcache;
