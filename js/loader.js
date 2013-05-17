@@ -1,4 +1,4 @@
-//var __started = new Date();
+var __started = new Date();
 requirejs.exec = function(text) {
 //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
   // Script Injection
@@ -242,10 +242,13 @@ define('fileCache', function() {
             return /^model\:/.test(key);
           });
           
-          if (!cleaning) // TODO: unhack this garbage
-	        G.Voc && G.Voc.saveModelsToStorage();
+          if (!ls.cleaning) { // TODO: unhack this garbage
+            ls.cleaning = true;
+            G.Voc && G.Voc.saveModelsToStorage();
+          }
           
           force && ls.put(key, value);
+          ls.cleaning = false;
         } else {
           debugger;
           G.hasLocalStorage = false;
@@ -1002,9 +1005,9 @@ define('fileCache', function() {
     },
     
     requireConfig: {
+//      baseUrl: 'js',
       paths: {
         mobiscroll: 'lib/mobiscroll-datetime-min',
-//        jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',
@@ -1029,8 +1032,6 @@ define('fileCache', function() {
           exports: 'Backbone'
         },
         leafletMarkerCluster: ['leaflet'],
-//        jqueryMasonry: ['jquery'],
-//        jqueryImagesloaded: ['jquery'],
         mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
         jqueryIndexedDB: ['indexedDBShim'],
         indexedDBShim: ['taskQueue'],
@@ -1176,13 +1177,13 @@ require(['globals'], function(G) {
         if (window.location.hash.length < 2) {
           Events.once('appStart', function() {
             G.hideSpinner(spinner);
-//            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
         else {
           Events.once('pageChange', function() {
             G.hideSpinner(spinner);
-//            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
       });
