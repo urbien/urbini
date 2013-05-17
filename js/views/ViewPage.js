@@ -263,6 +263,7 @@ define('views/ViewPage', [
      
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+      this.$el.attr("data-theme", G.theme.swatch);
       if (G.theme.backgroundImage) 
         this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
 

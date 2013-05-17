@@ -24,6 +24,7 @@ define('views/Header', [
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
+      this.locationHref = window.location.hash;
       if (this.resource) {
         this.resource.on('change', function(res, options) {
 //          G.log(this.TAG, 'events', 'change event received for', U.getDisplayName(this.resource));
@@ -181,7 +182,8 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload': 'fileUpload'
+      'change #fileUpload': 'fileUpload',
+      'click #categories': 'showCategories'
     },
     fileUpload: function(e) {
       Events.stopEvent(e);      
@@ -209,6 +211,18 @@ define('views/Header', [
       });
       */    
 
+    },
+    showCategories: function(e) {
+      Events.stopEvent(e);
+      var self = this;
+      Voc.getModels("aspects/tags/Tag").done(function() {
+//        var options = U.getParamMap(self.locationHref);
+//        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, _.extend({application: self.vocModel.type, $title: "Categories"}, options));
+        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, {application: self.vocModel.type, $title: "Categories"}); //, $orderBy: "tagUsesCount", $asc: "-1"});
+        self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true});
+      }).fail(function() {
+        self.router.navigate(U.makeMobileUrl('list', self.vocModel.type));
+      });
     },
     
     refresh: function() {
@@ -402,7 +416,7 @@ define('views/Header', [
         this.$el.html("");
       
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
-        this.$el.html(this.template({className: 'ui-grid-a'}));
+        this.$el.html(this.template({className: 'ui-grid-b'}));
       else
         this.$el.html(this.template());
 
@@ -446,8 +460,10 @@ define('views/Header', [
       this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
         this.$el.find('#headerButtons').attr('class', 'hidden');
-//        this.$el.find('#name').removeClass('resTitle');
+//        
       }
+      if (!this.noButton)
+        this.$el.find('#name').removeClass('resTitle');
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');

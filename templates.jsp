@@ -48,7 +48,7 @@
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
-      <div class="ui-block-a" id="resourceImage" style="width:auto"></div>
+      <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
@@ -223,9 +223,9 @@
       </div>
     </div>
     <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
-      <div id="chatInputs" style="padding:10px;">
+      <div id="chatInputs" style="padding:0 0 0 10px;">
         <div style="width:75%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-left:5px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
+        <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
     
@@ -406,6 +406,47 @@
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
+  <!-- one row on a list page (no image) -->
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
+  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
+  {{ if (!obj.v_submitToTournament) { }}  
+    <div class="ui-btn-text"
+    {{ if (isJst) { }}
+      style="padding: .7em 10px 10px 0px;"
+    {{ } }}
+    {{ if (!isJst) { }}
+      style="min-height:39px;"
+    {{ } }}
+  {{ } }}
+  {{ if (obj.v_submitToTournament) { }}
+    style="padding:.7em 10px 10px 0px;min-height:39px;"
+  {{ } }}
+   data-uri="{{= liUri }}">
+  {{= viewCols }}
+  </div>
+  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
+   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+     {{= price.currency + price.value }}
+     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
+   </div>
+  {{ } }}  
+  {{ var distanceProp = U.getCloneOf(this.vocModel.properties, 'Distance.distance')[0]; }}
+  {{ if (typeof distanceProp != 'undefined') { }}
+    <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
+  {{ } }}
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
+  {{ } }}
+  -->  
+  
+  {{ if (obj.comment) { }}
+    <p style="padding-left: 15px;">{{= comment }}</p>
+  {{ } }}
+  </div>
+</script>
+
+<script type="text/template" id="listItemTemplateNoImage1">
   <!-- one row on a list page (no image) -->
   <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
   {{ var action = action ? action : 'view'; }}
@@ -633,7 +674,7 @@
 
 <script type="text/template" id="videoButtonTemplate">
   <!-- Button that toggles video chat -->
-  <a target="#" data-icon="video">Video</a>
+  <a target="#" data-icon="facetime-video">Video</a>
 </script>
 
 <script type="text/template" id="addButtonTemplate">
@@ -760,9 +801,10 @@
       <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
-    <div id="name" class="resTitle" align="center">
+    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
+    <div id="name" class="resTitle" style="min-height: 20px" align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" {{= obj.className ? 'class="className"' : '' }} style="margin-top: -7px;" id="headerButtons">
+      <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block; padding-top:4px;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}

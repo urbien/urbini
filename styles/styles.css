@@ -84,6 +84,10 @@ label.req::before {
   padding:0; 
   border:0;border-collapse:collapse 
 }
+#other .ui-collapsible-content {
+  border:0;
+  background: none; 
+}
 /*
 .ui-icon-facebook {
   background-image: url(/icons/facebook-mid.png);

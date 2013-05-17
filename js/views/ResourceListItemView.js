@@ -126,14 +126,29 @@ define('views/ResourceListItemView', [
           Events.stopEvent(e);
           Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         }
-        else { 
-          var pr;
-          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-            this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
-          else {
-            var r = U.getParamMap(window.location.href);
-            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
+        else {
+          
+          if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
+            var params = U.getParamMap(window.location.href);
+            var app = params.application; 
+            if (app) {
+              delete params.application;
+              params.$title = this.resource.get('tag');
+              params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+//              params['tagUses.tag.application'] = app; 
+              this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+              return;
+            }
           }
+
+          
+          var pr;
+//          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
+            this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+//          else {
+//            var r = U.getParamMap(window.location.href);
+//            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
+//          }
             
         }          
         return;
@@ -223,8 +238,9 @@ define('views/ResourceListItemView', [
         }
         if (params['modelName'])
           json.$title = U.makeHeaderTitle(params['modelName'], json.templateName);
+        var detached = this.resource.detached;
+        json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : json._uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title})
       }
-
       
       json['action'] = action;
       if (this.isEdit) {
@@ -273,6 +289,12 @@ define('views/ResourceListItemView', [
         json['image'] = json[this.imageProperty];
       _.extend(json);
       
+      if (!json.liUri) {
+        if (json['v_submitToTournament'])
+          json.liUri = U.makePageUrl(action, json._uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name});
+        else
+          json.liUri = U.makePageUrl(action, json._uri);
+      }  
       this.$el.html(this.template(json));
       return this;
     },

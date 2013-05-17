@@ -363,10 +363,11 @@ define('views/ResourceMasonryItemView', [
     },
     renderIntersectionTile: function(delegateTo, cloneOf) {
       var m = this.resource;
-      var meta = this.vocModel.properties;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
-      
+
       var img;
       var json = m.toJSON();
       if (cloneOf == 'Intersection.a') {
