@@ -4,10 +4,11 @@ define([
   'events', 
   'utils',
   'error',
+  'vocManager',
   'views/BasicView',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, BasicView, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicView, ResourceListView, Header) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -65,9 +66,21 @@ define([
         }, this);
       }      
 
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || (vocModel.skipAccessControl  &&  (isOwner  ||  (rl.models.length  &&  U.isUserInRole(U.getUserRole(), 'siteOwner', rl.models[0]))));
-      if (showAddButton  &&  U.isA(this.vocModel, "Reference"))
-        showAddButton = false;
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || 
+                           U.isAnAppClass(type)                   || 
+                           (vocModel.skipAccessControl  &&  (isOwner  ||  (rl.models.length  &&  U.isUserInRole(U.getUserRole(), 'siteOwner', rl.models[0]))));
+      if (showAddButton) { 
+        if (U.isA(this.vocModel, "Reference"))
+          showAddButton = false;
+      }
+      else if (isOwner) {
+        Voc.getModels("model/social/App").done(function() {
+          var m = U.getModel("App");
+          var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+          if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+            showAddButton = true;
+        });
+      }
       var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
