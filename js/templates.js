@@ -1,7 +1,8 @@
 //'use strict';
 define('templates', [
   'globals',
-  'fileCache!../templates.jsp',
+//  'fileCache!../templates.jsp',
+  '../templates.jsp',
   'underscore',
   'events'
 ], function(G, HTML, _, Events) {

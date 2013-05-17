@@ -82,45 +82,48 @@ define('utils', [
   var U = {
     TAG: 'Utils',
     require: function(modules, callback, context) {
-      modules = $.isArray(modules) ? modules : [modules];
-      var mods = [], newModNames = [], newModFullNames = [];
-      for (var i = 0; i < modules.length; i++) {
-        var fullName = modules[i], name = fullName;
-//        if (!fullName)
-//          G.log(U.TAG, 'error', 'match undefined 1');
-        var moduleViaPlugin = fullName.match(/\!(.*)$/);
-        if (moduleViaPlugin) {
-          name = moduleViaPlugin[1]; 
-        }
-        
-        var mod = C.modCache[name];
-        if (!mod) {
-          mod = C.modCache[name] = $.Deferred();
-          newModFullNames.push(fullName);
-          newModNames.push(name);
-        }
-        
-        mods.push(mod);
-      }
-      
-      if (newModNames.length) {
-        G.loadBundle(newModNames, function() {
-          require(newModFullNames, function() {
-            for (var i = 0; i < newModNames.length; i++) {
-//              var name = newModNames[i];
-//              var module = arguments[i];
-//              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
-//              C.modCache[name].resolve(module);
-              C.modCache[newModNames[i]].resolve(arguments[i]);
-            }
-          });
-        });
-      }
-      
-      return $.when.apply($, mods).then(function() {
-        callback && callback.apply(context, arguments);
-      }).promise();
+      return require(modules, context ? callback.bind(context) : callback);
     },
+//    require: function(modules, callback, context) {
+//      modules = $.isArray(modules) ? modules : [modules];
+//      var mods = [], newModNames = [], newModFullNames = [];
+//      for (var i = 0; i < modules.length; i++) {
+//        var fullName = modules[i], name = fullName;
+////        if (!fullName)
+////          G.log(U.TAG, 'error', 'match undefined 1');
+//        var moduleViaPlugin = fullName.match(/\!(.*)$/);
+//        if (moduleViaPlugin) {
+//          name = moduleViaPlugin[1]; 
+//        }
+//        
+//        var mod = C.modCache[name];
+//        if (!mod) {
+//          mod = C.modCache[name] = $.Deferred();
+//          newModFullNames.push(fullName);
+//          newModNames.push(name);
+//        }
+//        
+//        mods.push(mod);
+//      }
+//      
+//      if (newModNames.length) {
+//        G.loadBundle(newModNames, function() {
+//          require(newModFullNames, function() {
+//            for (var i = 0; i < newModNames.length; i++) {
+////              var name = newModNames[i];
+////              var module = arguments[i];
+////              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
+////              C.modCache[name].resolve(module);
+//              C.modCache[newModNames[i]].resolve(arguments[i]);
+//            }
+//          });
+//        });
+//      }
+//      
+//      return $.when.apply($, mods).then(function() {
+//        callback && callback.apply(context, arguments);
+//      }).promise();
+//    },
     
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers;

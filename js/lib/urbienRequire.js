@@ -151,4 +151,11 @@
   require.load = load;
   root.require = require;
   root.define = define;
+  var main = $('[data-main]')[0].dataset.main;
+  var s = d.createElement('script'); 
+  s.type = 'text/javascript';
+  s.charset = 'utf-8';
+  s.async = true;
+  s.src = main; 
+  $('head').append(s);
 })(window, jQuery, undefined);

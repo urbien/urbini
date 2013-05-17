@@ -1,32 +1,32 @@
-var __started = new Date();
-requirejs.exec = function(text) {
-//  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
-  // Script Injection
-  
-  var idx = text.indexOf('//@ sourceURL');
-  idx = idx == -1 ? 0 : idx;
-  var length = idx ? 100 : text.length - idx;
-  Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
-  
-  if (Lablz.minify) {
-    var nav = Lablz.navigator;
-    if (nav.isChrome) // || nav.isSafari)
-      Lablz.inject(text);
-    else if (nav.isFirefox)
-      return window.eval(text);
-//      return window.eval.call({}, text);  
-    else // Safari
-      return window.eval(text);
-  } 
-  else
-    return window.eval(text);
-}
-                    
+var __started = new Date();                    
 //'use strict';
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
+  
+  function addModule(text) {
+  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
+    // Script Injection
+    
+    var idx = text.indexOf('//@ sourceURL');
+    idx = idx == -1 ? 0 : idx;
+    var length = idx ? 100 : text.length - idx;
+    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
+    
+    if (Lablz.minify) {
+      var nav = Lablz.navigator;
+      if (nav.isChrome) // || nav.isSafari)
+        Lablz.inject(text);
+      else if (nav.isFirefox)
+        return window.eval(text);
+  //      return window.eval.call({}, text);  
+      else // Safari
+        return window.eval(text);
+    } 
+    else
+      return window.eval(text);
+  }
   
   var doc = document,
       $head = $('head'),
@@ -59,107 +59,108 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-  var loadModule = function(text, url, contextOrOnLoad, name) {
-    var context,
-        onLoad,
-        ext = url.match(/\.[a-zA-Z]+$/g)[0];
-    
-    var appcache = G.files.appcache;
-    if (ext === '.jsp')
-      onLoad = contextOrOnLoad;
-    else
-      context = contextOrOnLoad;
-      
-    switch (ext) {
-      case '.css':
-        text += '\r\n/*//@ sourceURL=' + url + '*/';
-        if (appcache[name])
-          G.linkCSS(G.serverName + '/' + url);
-        else
-          G.appendCSS(text);
+  var loadModule = function(name, url, text) {
+    return $.Deferred(function(defer) {        
+      var ext = url.match(/\.[a-zA-Z]+$/g)[0];
+      var appcache = G.files.appcache;
+//      if (ext === '.jsp')
+//        onLoad = contextOrOnLoad;
+//      else
+//        context = contextOrOnLoad;
         
-        G.log(G.TAG, 'cache', 'cache.get: ' + url);
-        context.completeLoad(name); // pseudonym for onLoad
-        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
-        break;
-      case '.html':
-      case '.jsp':
-        G.log(G.TAG, 'cache', 'cache.get: ' + url);
-        onLoad(text);
-        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
-        break;
-      default:
-        if (G.navigator.isIE) 
-          text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-        text += '\n//@ sourceMappingURL=' + url + '.map';
-        text += '\n//@ sourceURL=' + url;
-        if (G.navigator.isIE) 
-          text += '*/\n';
-        requirejs.exec(text);
-        context.completeLoad(name); // JQM hack
-        break;
-    }        
+      switch (ext) {
+        case '.css':
+          text += '\r\n/*//@ sourceURL=' + url + '*/';
+          if (appcache[name])
+            G.linkCSS(G.serverName + '/' + url);
+          else
+            G.appendCSS(text);
+          
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+//          context.completeLoad(name); // pseudonym for onLoad
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
+        case '.html':
+        case '.jsp':
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+//          onLoad(text);
+          addModule(text);
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
+        default:
+          if (G.navigator.isIE) 
+            text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+          text += '\n//@ sourceMappingURL=' + url + '.map';
+          text += '\n//@ sourceURL=' + url;
+          if (G.navigator.isIE) 
+            text += '*/\n';
+//          requirejs.exec(text);
+          addModule(text);
+//          context.completeLoad(name); // JQM hack
+          break;
+      }
+      
+      defer.resolve(); // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
+    }).promise();
   };
 
-  var orgRJSLoad = requirejs.load;
-  requirejs.load = function (context, name, url, config) {
-//    console.log(G.TAG, 'cache', 'loading', url);
-//    var completeLoad = context.completeLoad,
-    var url = G.getCanonicalPath(url),
-        config = config || (context && context.config) || {},
-        cached;
-
-    if (/\.(jsp|css|html)\.js$/.test(url))
-      url = url.replace(/\.js$/, '');
-        
-    var inAppcache = G.isInAppcacheBundle(url);
-    if (inAppcache) {
-      var path = G.requireConfig.paths[name];
-      path = path || name;
-      var realPath = G.files.appcache[path].fullName;
-//      var realPath = G.files[path].name;
-      arguments[2] = url.replace(path, realPath);
-      if (!/\.(jsp|css|html)$/.test(url)) {
-        orgRJSLoad.apply(this, arguments);
-        return;
-      }
-    }
-
-      
-    var ext;
-    var isText = ext = name.match(/\.[a-zA-Z]+$/g);
-    if (ext)
-      ext = ext[0].slice(1).toLowerCase();
-      
-    var mCache = G.modules;
-    var cached = inAppcache || (mCache && mCache[url]);
-    var loadedCached = false;
-    if (cached) {// || hasLocalStorage) {
-      var loadedCached = cached;
-      if (loadedCached) {            
-        try {
-          G.log(G.TAG, 'cache', 'Loading from LS', url);
-          loadModule(cached, url, context, name);
-          G.log(G.TAG, 'cache', 'End loading from LS', url);
-        } catch (err) {
-          debugger;
-          G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
-          G.localStorage.del(url);
-          loadedCached = false;
+  var orgLoad = require.load;
+  require.load = function (name, url) {
+    url = G.getCanonicalPath(url);
+    return $.Deferred(function(defer) {
+      var cached;  
+      if (/\.(jsp|css|html)\.js$/.test(url))
+        url = url.replace(/\.js$/, '');
+          
+      var inAppcache = G.isInAppcacheBundle(url);
+      if (inAppcache) {
+        var path = G.requireConfig.paths[name];
+        path = path || name;
+        var realPath = G.files.appcache[path].fullName;
+  //      var realPath = G.files[path].name;
+        arguments[2] = url.replace(path, realPath);
+        if (!/\.(jsp|css|html)$/.test(url)) {
+          orgLoad.apply(this, arguments);
+          return;
         }
-      } 
-    }
-    
-    if (loadedCached)
-      return;
-    
-    /// use 'sendXhr' instead of 'req' so we can store to localStorage
-    G.loadBundle(name, function() {
-      if (G.modules[url])
-        loadModule(G.modules[url], url, context, name);
-      else
-        G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
-    });        
+      }
+  
+        
+      var ext;
+      var isText = ext = name.match(/\.[a-zA-Z]+$/g);
+      if (ext)
+        ext = ext[0].slice(1).toLowerCase();
+        
+      var mCache = G.modules;
+      var cached = inAppcache || (mCache && mCache[url]);
+      var loadedCached = false;
+      if (cached) {// || hasLocalStorage) {
+        var loadedCached = cached;
+        if (loadedCached) {            
+          try {
+            G.log(G.TAG, 'cache', 'Loading from LS', url);
+            loadModule(name, url, cached);
+            G.log(G.TAG, 'cache', 'End loading from LS', url);
+          } catch (err) {
+            debugger;
+            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
+            G.localStorage.del(url);
+            loadedCached = false;
+          }
+        } 
+      }
+      
+      if (loadedCached)
+        return;
+      
+      /// use 'sendXhr' instead of 'req' so we can store to localStorage
+      G.loadBundle(name, function() {
+        if (G.modules[url])
+          loadModule(name, url, G.modules[url]);
+        else
+          G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
+      });        
+    }).promise();
   };
 
   
@@ -189,24 +190,27 @@ define('globals', function() {
         return supported;
       })();
 
-  define('fileCache', function() {
-    var cache = {
-      TAG: 'fileCache',
-      load: function (name, req, onLoad, config) {
-        // hack for jsp, otherwise define callback function will not get jsp text
-        var url = G.getCanonicalPath(req.toUrl(name));
-        if (G.isInAppcacheBundle(url)) {
-          req([name], function() {
-            onLoad(name);
-          });
-        }
-        else
-          requirejs.load(onLoad, name, req.toUrl(name), config);
-      }
-    };
-
-    return cache;
-  });
+//  define('fileCache', function() {
+//    var cache = {
+//      TAG: 'fileCache',
+//      load: function (name, url) {
+//        return $.Deferred(function(defer) {          
+//          // hack for jsp, otherwise define callback function will not get jsp text
+//          var url = G.getCanonicalPath(req.toUrl(name));
+//          if (G.isInAppcacheBundle(url)) {
+//            require([name], function() {
+////              onLoad(name);
+//              defer.resolve();
+//            });
+//          }
+//          else
+//            require.load(name, req.toUrl(name));
+//        }).promise();
+//      }
+//    };
+//
+//    return cache;
+//  });
 
   G.serverName = (function() {     
     var s = $('base')[0].href;

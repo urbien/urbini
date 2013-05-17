@@ -9408,20 +9408,22 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     moduleMap = {}, 
-  require,
+    require,
     initDefer = $.Deferred(function(defer) {$(defer.resolve)}),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
     body = doc.getElementsByTagName('head')[0],
-        isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
+    isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
     readyRegExp = /^(complete|loaded)$/,
-  currentlyAddingScript = null,
-  config = {};
+    currentlyAddingScript = null,
+    config = {
+      baseUrl: ''
+    };
     
     
-  function getUrl(name) {
+  function toUrl(name) {
     var paths = config.paths;
-    var url = (config.baseUrl || '') + ((paths && paths[name]) || name);
+    var url = config.baseUrl + ((paths && paths[name]) || name);
     return /\.[a-zA-Z]+$/.test(url) ? url : url + '.js';
   }
 
@@ -9471,8 +9473,9 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   // }
       
   return require(deps).done(function() {
-    var url = getUrl(name);
-    moduleMap[url].resolve(cb.apply(root, arguments));
+    var url = toUrl(name);
+    var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
+    dfd.resolve(cb.apply(root, arguments));
   });
   }
   
@@ -9516,7 +9519,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
     $.each(modules, function(idx, name) {
-      var url = getUrl(name);
+      var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
       dfd = moduleMap[url] = $.Deferred(function(dfd) {
@@ -9551,10 +9554,20 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   }
   
   require.config = function(cfg) {
-  config = cfg;
+    $.extend(config, cfg);
   };
   
   require.load = load;
+  require.toUrl = toUrl;
   root.require = require;
   root.define = define;
+  var main = $('[data-main]')[0].dataset.main + '.js';
+  if (/\//.test(main))
+    config.baseUrl = main.slice(0, main.lastIndexOf('/') + 1);
+  var s = doc.createElement('script'); 
+  s.type = 'text/javascript';
+  s.charset = 'utf-8';
+  s.async = true;
+  s.src = main; 
+  head.appendChild(s);
 })(window, jQuery, undefined);

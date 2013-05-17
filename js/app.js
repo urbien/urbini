@@ -2,7 +2,8 @@
 define('app', [
   'globals',
   'backbone',
-  'fileCache!jqueryMobile',
+//  'fileCache!jqueryMobile',
+  'jqueryMobile',
   'templates', 
   'utils', 
   'events',
