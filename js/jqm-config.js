@@ -1,6 +1,6 @@
 // see: http://jquerymobile.com/test/docs/pages/backbone-require.html
 //'use strict';
-define(function() {
+define('jqmConfig', function() {
   $(document).bind("mobileinit", function () {
 //      console.log('mobileinit');
       $.mobile.ajaxEnabled = false;

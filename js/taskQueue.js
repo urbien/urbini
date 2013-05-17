@@ -1,5 +1,5 @@
 //'use strict';
-define(['globals', 'utils'], function(G, U) {
+define('taskQueue', ['globals', 'utils'], function(G, U) {
   var TaskQueue = function(name) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);

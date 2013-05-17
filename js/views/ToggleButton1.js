@@ -30,7 +30,7 @@ define([
 
 
 //'use strict';
-define([
+define('views/ToggleButton1', [
   'underscore', 
   'utils',
   'events', 

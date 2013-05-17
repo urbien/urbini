@@ -1,4 +1,4 @@
-define(['globals'], function(G) {
+define('fileSystem', ['globals'], function(G) {
   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
   if (!window.requestFileSystem)
     return null;

@@ -9,7 +9,7 @@
 //      });
 //    }
 //    else {
-      define(['leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(L) {
+      define('maps', ['leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(L) {
         // Export global even in AMD case in case this script is loaded with
         // others that may still expect a global Mapper.
         return (root.Mapper = factory(root, L));

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/EditButton', [
   'globals',
   'events',
   'views/BasicView'

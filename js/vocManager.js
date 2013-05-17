@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('vocManager', [
   'globals',
   'utils', 
   'error', 

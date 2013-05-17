@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('resourceManager', [
   'globals',
   'utils', 
   'events', 

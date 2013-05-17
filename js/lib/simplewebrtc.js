@@ -1,4 +1,4 @@
-;define(['lib/socket.io'], function () {
+;define('lib/simplewebrtc', ['lib/socket.io'], function () {
 
 var logger = {
     log: function (){},

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/MapView', [
   'globals',
   'underscore', 
   'events', 

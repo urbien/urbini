@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('models/Resource', [
   'globals',
   'utils',
   'error',

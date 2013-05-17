@@ -104,8 +104,8 @@ define('globals', function() {
   var orgRJSLoad = requirejs.load;
   requirejs.load = function (context, name, url, config) {
 //    console.log(G.TAG, 'cache', 'loading', url);
-    var completeLoad = context.completeLoad,
-        url = G.getCanonicalPath(url),
+//    var completeLoad = context.completeLoad,
+    var url = G.getCanonicalPath(url),
         config = config || (context && context.config) || {},
         cached;
 
@@ -189,7 +189,7 @@ define('globals', function() {
         return supported;
       })();
 
-define('fileCache', function() {
+  define('fileCache', function() {
     var cache = {
       TAG: 'fileCache',
       load: function (name, req, onLoad, config) {

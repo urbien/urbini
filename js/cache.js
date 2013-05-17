@@ -1,4 +1,4 @@
-define(['globals', 'underscore', 'events'], function(G, _, Events) {
+define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   var C;
   var C = cache = {
     // Models
