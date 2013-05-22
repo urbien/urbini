@@ -47,8 +47,8 @@ define([
       }.bind(this));
 
       this.autoFinish = false;
-      this.isEdit = this.hash.startsWith('edit/');
-      this.isChat = this.hash.startsWith('chat/');
+      this.isEdit = /^(edit|make)\//.test(this.hash);
+      this.isChat = /^chat\//.test(this.hash);
       return this;
     },
     

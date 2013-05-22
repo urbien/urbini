@@ -39,6 +39,8 @@ define([
       
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
+      this.isAudio = res.isA('AudioResource');
+      this.isImage = res.isA('ImageResource');
       this.resource.on('change', this.refresh, this);
       return this;
     },
@@ -91,91 +93,107 @@ define([
       return this.isLocalVideo ? this.$('video') : this.$('iframe');
     },
     
+    renderVideo: function() {
+      if (this.hash.startsWith('edit/'))
+        return this;
+      
+      if (!_.has(this, '_videoUrl')) {
+        this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
+        this._videoUrl = res.get(this._videoUrlProp);
+        this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
+        this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
+      }
+      
+      if (this.isLocalVideo) {
+//        this.videoDfd.done(function() {
+        var info = {
+          src: this._videoUrl,
+          preload: 'auto'
+//          autoplay: 'autoplay'
+        };
+        
+        if (this.imageProps)
+          info.poster = json[this.imageProp];
+
+        this.$el.html(this.template(info));
+      }
+      else {
+        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
+        var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
+        var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
+        var desc = descProp && json[descProp];
+        
+        var v = videoHtml5 || desc;
+        if (v) {
+          var frag = document.createDocumentFragment();
+//          var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+          var video = '<div class="video-container" align="center">' + v + '</div>';
+          U.addToFrag(frag, video);
+          if (videoHtml5)
+            delete json[videoHtml5Prop];
+          else
+            delete json[descProp];
+          
+          this.$el.html(frag);
+        }
+      }
+      
+      this.$video = this._getVideoEl();
+      this.video = this.$video[0];
+      if (this.video) {
+        if (this.video.tagName === 'VIDEO') {
+          var checkSize = function(e) {
+            if (self.video.videoWidth) {
+              self.resizeVideo();
+              _.each(G.media_events, function(e) {
+                self.$video.off(e, checkSize);
+              });
+            }
+          };
+              
+          _.each(G.media_events, function(e) {
+            self.$video.one(e, checkSize);
+          });
+        }
+        else {
+          // iframe
+          this.video.onload = this.resizeVideo;
+        }
+      }
+    },
+    
     render: function(options) {
+      if (!this.isImage && !(this.isVideo || this.isAudio))
+        return this;
+      
       var self = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
       if (!meta)
         return this;
-      
-      if (!res.isA('ImageResource')) 
-        return this;
-      
+
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
       
+      this.imageProp = props[0];
       var json = res.toJSON();
       var self = this;
       if (this.isVideo) {
-        if (this.hash.startsWith('edit/'))
-          return this;
-        
-        if (!_.has(this, '_videoUrl')) {
-          this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
-          this._videoUrl = res.get(this._videoUrlProp);
-          this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
-          this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
-        }
-        
-        if (this.isLocalVideo) {
-//          this.videoDfd.done(function() {
-          var info = {
-            src: this._videoUrl,
-            preload: 'auto'
-//            autoplay: 'autoplay'
-          };
-          
-          if (props.length)
-            info.poster = json[props[0]];
-
-          this.$el.html(this.template(info));
+        this.renderVideo();
+      }
+      else if (this.isAudio) {
+        var audio = U.getClonedPropertyValue(res, 'AudioResource.audio');
+        if (audio) {
+          this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
+//          return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);
+          this.$el.html(this.template({
+            sources: [U.getExternalFileUrl(audio)]
+          }));
         }
         else {
-          var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
-          var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
-          var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
-          var desc = descProp && json[descProp];
-          
-          var v = videoHtml5 || desc;
-          if (v) {
-            var frag = document.createDocumentFragment();
-//            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
-            var video = '<div class="video-container" align="center">' + v + '</div>';
-            U.addToFrag(frag, video);
-            if (videoHtml5)
-              delete json[videoHtml5Prop];
-            else
-              delete json[descProp];
-            
-            this.$el.html(frag);
-          }
+          // no audio, no player, fall back to imageresource
         }
-        
-        this.$video = this._getVideoEl();
-        this.video = this.$video[0];
-        if (this.video) {
-          if (this.video.tagName === 'VIDEO') {
-            var checkSize = function(e) {
-              if (self.video.videoWidth) {
-                self.resizeVideo();
-                _.each(G.media_events, function(e) {
-                  self.$video.off(e, checkSize);
-                });
-              }
-            };
-                
-            _.each(G.media_events, function(e) {
-              self.$video.one(e, checkSize);
-            });
-          }
-          else {
-            // iframe
-            this.video.onload = this.resizeVideo;
-          }
-        }
-
-        return;
       }
       
 //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
@@ -263,7 +281,7 @@ define([
       else
         li = '<div><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate + '</a></div>';
       U.addToFrag(frag, li);
-      this.$el.html(frag);
+      this.$el[this.isAudio ? 'append' : 'html'](frag);
       return this;
     }
   },

@@ -151,7 +151,9 @@ define([
     },
     
     whenDoneLoading: function(callback) {
-      $.when.apply($, this._getLoadingDeferreds()).then(callback);
+      var promise = $.when.apply($, this._getLoadingDeferreds());
+      callback && promise.then(callback);
+      return promise;
     },
     
     finish: function() {

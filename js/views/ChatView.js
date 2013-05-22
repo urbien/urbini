@@ -551,6 +551,7 @@ define([
       
       this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
       this.chat.openNewSession(false);
+//      this.enableChat();
 //      this.chat.open();
     },
     

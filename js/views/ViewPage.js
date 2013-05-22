@@ -121,29 +121,31 @@ define([
           friend2 = 'movie';
         }
 
-        U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
-          Voc.getModels(friendType).done(function() {              
-            var friendProps = {};
-            friendProps[friend1] = friendProps[friend2] = uri;
-            self.friends = new ResourceList(null, {
-              params: {
-                $or: U.getQueryString(friendProps, {delimiter: '||'})
-              },
-              model: U.getModel(friendType),
-              title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
-            });
-            
-            self.friends.fetch({
-              success: function() {
-                if (self.friends.size()) {
-                  self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
-                  self.photogridDfd.resolve();
-  //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
-  //                header.insertBefore(self.photogrid.el);
+        this.whenDoneLoading(function() {          
+          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
+            Voc.getModels(friendType).done(function() {              
+              var friendProps = {};
+              friendProps[friend1] = friendProps[friend2] = uri;
+              self.friends = new ResourceList(null, {
+                params: {
+                  $or: U.getQueryString(friendProps, {delimiter: '||'})
+                },
+                model: U.getModel(friendType),
+                title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+              });
+              
+              self.friends.fetch({
+                success: function() {
+                  if (self.friends.size()) {
+                    self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
+                    self.photogridDfd.resolve();
+    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
+    //                header.insertBefore(self.photogrid.el);
+                  }
                 }
-              }
-            });
-          });        
+              });
+            });        
+          });
         });
       }
       

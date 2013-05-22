@@ -232,6 +232,15 @@
   </div>
 </script>
 
+<script type="text/template" id="audioPlayerTemplate">
+  <audio controls>
+    _.each(sources, function(source) {      
+      <source src="{{= source }}" type="{{= 'audio/' + source.slice(source.lastIndexOf('.') + 1) }}">
+      Your browser does not support this audio player
+    });
+  </audio>
+</script>
+
 <script type="text/template" id="videoPlayerTemplate">
   <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}" 
   {{= obj.width ? " width='{0}'.format(width)" : '' }}
