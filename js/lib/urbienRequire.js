@@ -2,8 +2,9 @@
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     moduleMap = {}, 
+    defineMap = {}, 
     require,
-    initDefer = $.Deferred(function(defer) {$(defer.resolve)}),
+    domReady = $.Deferred(function(defer) {$(defer.resolve)}).promise(),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
     body = doc.getElementsByTagName('head')[0],
@@ -11,6 +12,7 @@
 //    readyRegExp = /^(complete|loaded)$/,
     extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
     currentlyAddingScript = null,
+//    useInteractive = false,
     config = {
       baseUrl: ''
     };
@@ -19,7 +21,7 @@
   function toUrl(name) {
     var paths = config.paths;
     var url = config.baseUrl + ((paths && paths[name]) || name);
-    return extRegExp.test(url) ? url : url + '.js';
+    return url.match(extRegExp) ? url : url + '.js';
   }
 
   function removeListener(node, func, name, ieName) {
@@ -36,14 +38,7 @@
       node.removeEventListener(name, func, false);
     }
   }
-  
-  function resolve(defer) {
-    var args = slice.call(arguments, 1);
-    initDefer.done(function() {
-      defer.resolve.apply(defer, args);
-    });
-  };
-  
+    
   /**
   * @param name - name of the module - currently required
   **/
@@ -53,6 +48,7 @@
         // cb = name;
         // name = deps = null;
         // break;
+        throw new Error("this loader library doesn't support anonymous 'define' statements (yet)");
       case 2:
         cb = deps;
         deps = null;
@@ -68,23 +64,20 @@
     // }
         
     var url = toUrl(name);
-    var defineDfd = $.Deferred();
-    var reqDfd = moduleMap[url];
-    if (reqDfd)
-      defineDfd.done(reqDfd.resolve).fail(reqDfd.reject);
-    else
-      moduleMap[url] = defineDfd;
-      
-    return require(deps).done(function() {
-      defineDfd.resolve(cb.apply(root, arguments));
+    var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
+    defineMap[name] = true;
+    require(deps, function() {
+      dfd.resolve(cb.apply(root, arguments));
     });
   }
   
   /**
   * feel free to override, but make sure to return a Promise
   **/ 
-  function load(name, url) {
+  function load(name) {
     return $.Deferred(function(defer) {
+      var url = require.toUrl(name);
+      currentlyAddingScript = name;
       var node = document.createElement('script');
       node.type = config.scriptType || 'text/javascript';
       node.charset = 'utf-8';
@@ -94,6 +87,7 @@
       //node.setAttribute('data-requiremodule', name);
 
       var success = function(evt) {
+        currentlyAddingScript = null;
         var node = evt.currentTarget || evt.srcElement;
 
         //Remove the listeners once here.
@@ -103,7 +97,7 @@
       };
       
       if (node.attachEvent &&!(node.attachEvent.toString && node.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
-        useInteractive = true;
+//        useInteractive = true;
         node.attachEvent('onreadystatechange', success);
       } else {
         node.addEventListener('load', success, false);
@@ -115,46 +109,54 @@
     }).promise();
   }
   
-  // var id = 0;
   function require(modules, cb) {
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
     $.each(modules, function(idx, name) {
+      if (name === '__domReady__') {
+        prereqs.push(domReady);
+        return;
+      }
+      
       var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
-        dfd = moduleMap[url] = $.Deferred(function(dfd) {
-          require.load(name, url).then(function() {
-            if (arguments.length)
-              return dfd.resolveWith(arguments);
+        dfd = moduleMap[url] = $.Deferred();
+        require.load(name).then(function() {
+          if (dfd.state() === 'resolved')
+            return;
+          
+          if (arguments.length) {
+            return dfd.resolve.apply(dfd, arguments);
+          }
+          
+          var shim = config.shim && config.shim[name],
+              deps = shim && (shim.deps || shim),
+              exports = shim && shim.exports;
             
-            var shim = config.shim && config.shim[name],
-                deps = shim && shim.deps;
-              
-            var defineDfd = moduleMap[url];
-            if (shim) { // non AMD
-              require(deps, dfd.resolve);
-            }
-            else {
-              if (!defineDfd) {
-                dfd.resolve.apply(root, arguments);
-              }
-            }
-          }, dfd.reject);
-        });
+          if (shim) { // non AMD
+            require(deps, function() {
+              if (exports)
+                dfd.resolve(root[exports]);
+              else
+                dfd.resolve();
+            });
+          }
+          else if (!defineMap[name]) { // non AMD, no deps
+            dfd.resolve();
+          }
+          
+        }, dfd.reject);        
       }
 
       var prereq = dfd.promise();
+      prereq._name = name;
       prereqs.push(prereq);
-//      prereq.done(function(module) {
-//        debugger;
-//      });
     });
     
     promise = $.when.apply($, prereqs);
-  // promise._promiseId = id++;
     if (cb) {
-      promise.done(function(modules) {
+      promise.done(function() {
         cb.apply(root, arguments);
       });
     }
@@ -166,6 +168,10 @@
     $.extend(config, cfg);
   };
   
+  define.amd = {
+    jQuery: true
+  };  
+  
   require.load = load;
   require.toUrl = toUrl;
   root.require = require;
@@ -173,9 +179,11 @@
   var main = $('[data-main]')[0];
   if (main) {
     main = main.dataset.main + '.js';
-    if (/\//.test(main)) {
-      config.baseUrl = main.slice(0, main.lastIndexOf('/') + 1);
+    var idx = main.lastIndexOf('/');
+    if (idx>=0) {
+      config.baseUrl = main.slice(0, idx + 1);
     }
+    
     var s = doc.createElement('script'); 
     s.type = 'text/javascript';
     s.charset = 'utf-8';

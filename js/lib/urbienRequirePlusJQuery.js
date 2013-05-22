@@ -9404,9 +9404,10 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 })( window );
 
 
-(function(root, $) {
+(function($) {
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
+    root = this,
     moduleMap = {}, 
     defineMap = {}, 
     require,
@@ -9418,7 +9419,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 //    readyRegExp = /^(complete|loaded)$/,
     extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
     currentlyAddingScript = null,
-    waitingOn = [],
 //    useInteractive = false,
     config = {
       baseUrl: ''
@@ -9451,10 +9451,11 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   **/
   function define(name, deps, cb) {
     switch (arguments.length) {
-      // case 1: // TODO: allow anonymous define modules
+       case 1: // TODO: allow anonymous define modules
         // cb = name;
         // name = deps = null;
         // break;
+        throw new Error("this loader library doesn't support anonymous 'define' statements (yet)");
       case 2:
         cb = deps;
         deps = null;
@@ -9470,20 +9471,11 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     // }
         
     var url = toUrl(name);
-//    var defineDfd = defineMap[url] = defineMap[url] || $.Deferred();
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
     defineMap[name] = true;
     require(deps, function() {
-      finish(name);
       dfd.resolve(cb.apply(root, arguments));
     });
-  }
-  
-  function finish(name) {
-    console.log('loaded', name);
-    var idx = waitingOn.indexOf(name);
-    if (idx != -1)
-      waitingOn.splice(idx, 1);
   }
   
   /**
@@ -9536,14 +9528,12 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
-        waitingOn.push(name);
         dfd = moduleMap[url] = $.Deferred();
         require.load(name).then(function() {
           if (dfd.state() === 'resolved')
             return;
           
           if (arguments.length) {
-            finish(name);
             return dfd.resolve.apply(dfd, arguments);
           }
           
@@ -9553,7 +9543,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
             
           if (shim) { // non AMD
             require(deps, function() {
-              finish(name);
               if (exports)
                 dfd.resolve(root[exports]);
               else
@@ -9562,7 +9551,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
           }
           else if (!defineMap[name]) { // non AMD, no deps
             dfd.resolve();
-            finish(name);
           }
           
         }, dfd.reject);        
@@ -9591,7 +9579,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     jQuery: true
   };  
   
-  require.waitingOn = waitingOn;
   require.load = load;
   require.toUrl = toUrl;
   root.require = require;
@@ -9611,6 +9598,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     s.src = main; 
     head.appendChild(s);
   }
-})(window, jQuery, undefined);
+})(jQuery, undefined);
 
 
