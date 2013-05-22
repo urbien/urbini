@@ -748,6 +748,20 @@ define('views/EditView', [
       
       return val;
     },
+    
+    submitInputs: function() {
+      var allGood = true;
+      var changed = $(this.inputs).filter(function() {return $(this).data("modified") === true});
+      for (var i = 0; i < changed.length; i++) {
+        var input = changed[i];
+        allGood = this.setValues(input.name, this.getValue(input), {onValidationError: this.fieldError});
+        if (!allGood)
+          return false;
+      }
+      
+      return true;
+    },
+    
     submit: function(e) {
       Events.stopEvent(e);
       if (this._submitted) {
@@ -755,7 +769,6 @@ define('views/EditView', [
           return;
       }
 
-      this._submitted = true;
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
@@ -774,7 +787,12 @@ define('views/EditView', [
         return;
       }
       
-      var inputs = this.getInputs();
+      var allGood = this.submitInputs();
+      if (!allGood)
+        return;
+      
+      this._submitted = true;
+      var inputs = this.inputs;
       inputs.attr('disabled', true);
       var self = this,
           action = this.action, 
@@ -783,6 +801,7 @@ define('views/EditView', [
           vocModel = this.vocModel,
           meta = vocModel.properties;
       
+      var unsaved = res.getUnsavedChanges();
       var atts = {};
       // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes (except for those with default values, like select lists)
       for (var i = 0; i < inputs.length; i++) {
@@ -811,8 +830,8 @@ define('views/EditView', [
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
         }
-        else if (val)
-          atts[name] = val;
+//        else if (!_.has(unsaved, name) && val)
+//          atts[name] = val;
       }
       
       switch (action) {
@@ -977,16 +996,16 @@ define('views/EditView', [
         switch (settings.__type) {
           case 'date': {
             var millis = atts[name] = new Date(val).getTime();
-            $(input).data('data-date', millis);
+//            $(input).data('data-date', millis);
             break;
           }
           case 'duration': {
             var secs = atts[name] = scroller.getSeconds();
-            $(input).data('data-duration', secs);
+//            $(input).data('data-duration', secs);
             break;
           }
           case 'enum': {
-            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
+//            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
             break;
           }
           default:
@@ -1146,18 +1165,10 @@ define('views/EditView', [
       var userRole = U.getUserRole();
       var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
       if (propGroups.length  &&  !editCols) {
-        if (propGroups.length > 1  &&  propGroups[0].shortName != 'general') {
-          var generalGroup = $.grep(propGroups, function(item, i) {
-            return item.shortName == 'general';
-          });
-          
-          if (generalGroup.length) {
-            $.each(propGroups, function(i){
-              if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
-            });
-            propGroups.unshift(generalGroup[0]);
-          }
-        }
+        propGroups.sort(function(a, b) {
+          return a.shortName === 'general' ? -1 : 1;
+        });
+        
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
@@ -1228,7 +1239,7 @@ define('views/EditView', [
 //        this.$ul.listview('refresh');
       var doc = document;
       var form = this.$form = this.$('form');
-      var inputs = this.getInputs(); //form.find('input');
+      var inputs = this.inputs = this.getInputs(); //form.find('input');
       
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
@@ -1247,9 +1258,11 @@ define('views/EditView', [
           }, 500);
           
           $in.on('input', function() {
-            if ($(this).data('codemirror'))
+            var $this = $(this);
+            if ($this.data('codemirror'))
               return;
             
+            $this.data('modified', true);
             setValues.apply(this, arguments);
           });
           

@@ -55,7 +55,7 @@ define('router', [
     },
     initialize: function () {
 //      G._routes = _.clone(this.routes);
-      _.bindAll(this, '_backOrHome');
+//      _.bindAll(this, '_backOrHome');
       this.firstPage = true;
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
@@ -64,11 +64,29 @@ define('router', [
       });
       
       Events.on('back', function() {
-        var now = +new Date();
-        if (self.lastBackClick && now - self.lastBackClick < 100)
-          debugger;
+//        var now = +new Date();
+//        if (self.lastBackClick && now - self.lastBackClick < 100)
+//          debugger;
+
+//        debugger;
+        
+        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
+        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);
+//        if (self._hashChanged) { 
+//          if (haveHistory) {
+//            window.history.back();
+//            return;
+//          }
+//        }
+        
+        if (haveHistory) {
+          window.history.back();
+          return;
+        }
           
-        if (!self.urlsStack.length) {
+        if (_.isUndefined(self.previousHash)) { 
+          // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
+          // they probably don't want to exit the app, so let's go somewhere sane
           var hash = U.getHash();
           if (!hash) {
             self._failToGoBack();
@@ -77,6 +95,7 @@ define('router', [
           
           var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
           if (!hashParts || !hashParts.length) {
+            // we're probably at a list view
             self._failToGoBack();
             return;
           }
@@ -98,8 +117,8 @@ define('router', [
           }
         }
         
-        self.lastBackClick = now;
-        self.previousFragment = null;
+//        self.lastBackClick = now;
+        self.previousHash = null;
         self.backClicked = true;
         window.history.back();
       });
@@ -128,6 +147,24 @@ define('router', [
 //        debugger;
 //        console.log('pop: ' + e.originalEvent.state);
 //      });
+      
+      
+      $(window).hashchange(function() {
+        self._hashChanged = true;        
+      });
+      
+      Events.on('pageChange', function() {
+        self._hashChanged = false;
+        console.debug('currentUrl:', self.currentUrl);
+        console.debug('previousHash:', self.previousHash);
+      });
+      
+//      _.each(['list', 'view', 'make', 'templates', 'home'], function(method) {
+//        var fn = self[method];
+//        self[method] = function() {
+//          self.previousHash = self.currentHash;
+//        }
+//      });
     },
     
     defaultOptions: {
@@ -138,7 +175,7 @@ define('router', [
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
-//      if (this.previousFragment === fragment) {
+//      if (this.previousHash === fragment) {
 ////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
 //        Events.trigger('back');
 //        return;
@@ -160,7 +197,7 @@ define('router', [
       this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect'));
       _.extend(this, {
         previousView: this.currentView, 
-        previousFragment: U.getHash() 
+        previousHash: U.getHash() 
       });
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
@@ -181,6 +218,7 @@ define('router', [
 //    },
     route: function() {
       var currentView = this.currentView;
+      this.previousHash = U.getHash(); 
       try {
         return Backbone.Router.prototype.route.apply(this, arguments);
       } finally {
@@ -198,6 +236,7 @@ define('router', [
     },
 
     home: function() {
+      var prev = this.currentView;
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();
         if (!this.currentView) {
@@ -212,13 +251,15 @@ define('router', [
 //            this.currentView = $.mobile.firstPage;
         }
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
       else {
         this.currentUrl = window.location.href;
         this.homePage.render();
         this.currentView = this.homePage;
       }
+      
+      Events.trigger('pageChange', prev, this.currentView);
+      $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
     },
     
     choose: function(path) { //, checked, props) {
@@ -519,12 +560,12 @@ define('router', [
       }
     },
 
-    _backOrHome: function() {
-      if (this.urlsStack.length)
-        Events.trigger('back');
-      else
-        this.goHome();
-    },
+//    _backOrHome: function() {
+//      if (this.urlsStack.length)
+//        Events.trigger('back');
+//      else
+//        this.goHome();
+//    },
 
     goHome: function() {
       window.location.href = G.pageRoot; 
@@ -566,7 +607,7 @@ define('router', [
       }
       else {
         var model = U.getModel(type);
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousFragment});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
       }
       
       this.currentModel = mPage.resource;
@@ -630,6 +671,21 @@ define('router', [
      * handles view, edit and chat mode (action)
      */
     view: function (path, action) {
+      if (path == 'profile') {
+        var p = _.size(params) ? path.slice(qIdx + 1) : '';
+        if (!G.currentUser.guest) {
+          var other = U.slice.call(arguments, 1);
+          other = other.length ? other : undefined;
+          this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
+        }
+        else {
+          this._requestLogin();
+//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
+        }
+        
+        return;
+      }
+      
       var edit = action === 'edit',
           chat = action === 'chat';
       
@@ -660,21 +716,6 @@ define('router', [
         return;
       }      
 
-      if (uri == 'profile') {
-        var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (!G.currentUser.guest) {
-          var other = U.slice.call(arguments, 1);
-          other = other.length ? other : undefined;
-          this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
-        }
-        else {
-          this._requestLogin();
-//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
-        }
-        
-        return;
-      }
-      
       uri = U.getLongUri1(decodeURIComponent(uri));
       var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
@@ -730,7 +771,7 @@ define('router', [
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousHash});
 //        if (action === 'view')
 //          views[uri] = v;
         
@@ -744,7 +785,7 @@ define('router', [
       }
       
       var res = this.currentModel = new model({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousHash});
 //      if (action === 'view')
 //        views[uri] = v;
       

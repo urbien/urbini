@@ -471,11 +471,16 @@ define('utils', [
         if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
           return false;
       }
-      var roles = prop.allowRoles;
-      if (roles  &&  roles.indexOf('self') == -1  &&  !U.isUserInRole("admin"))
-        return false;
-      roles = prop.allowRolesToEdit;
-      if (roles  &&  (roles.indexOf('self') == -1))
+      
+      var isAdmin = U.isUserInRole("admin");
+      var cantEdit = false;
+      _.each(['allowRoles', 'allowRolesToEdit'], function(p) {        
+        var roles = prop[p];
+        if (roles  &&  roles.indexOf('self') == -1  &&  !isAdmin)
+          return false;
+      });
+      
+      if (cantEdit)
         return false;
       
       var resExists = res  &&  !!res.getUri();
@@ -3010,6 +3015,18 @@ define('utils', [
     },
     getBlobValueProps: function(data) {
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
+    },
+    getClonedPropertyValue: function(res, iProp) {
+      var vocModel = res.vocModel;
+      var meta = vocModel.properties;
+      var clone = U.getCloneOf(meta, iProp);
+      if (clone && clone.length)
+        return res.get(clone[0]);
+      else
+        return null;
+    },
+    getExternalFileUrl: function(uri) {
+      return G.serverName + '/' + U.getParamMap(uri).url;
     }
   };
 
