@@ -340,6 +340,9 @@ define('globals', function() {
   }
 
   var moreG = {
+    isUsingDBShim: (function() {
+      return G.navigator.isChrome || !window.indexedDB;
+    })(),
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],

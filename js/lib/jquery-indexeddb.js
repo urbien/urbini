@@ -5,30 +5,31 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
-
 //  window.shimIndexedDB.__useShim();
 //
-	var usingShim, indexedDB;
-	if (typeof window.webkitIndexedDB !== 'undefined') {
-	  indexedDB =  window.shimIndexedDB;
-	  usingShim = true;
-	} 
-	else {
-	  indexedDB = window.indexedDB;
-	}
-
-	/**
-	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
-	 * supports strings
-	 */
-	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
-
-	function getDefaultTransaction(mode) {
-		var result = null;
+	var usingShim = G.isUsingDBShim;
+//	if (typeof window.webkitIndexedDB !== 'undefined') {
+//	  indexedDB =  window.shimIndexedDB;
+//	  usingShim = true;
+//	} 
+//	else {
+//	  indexedDB = window.indexedDB;
+//	}
+	
+//  if (usingShim)
+//    window.shimIndexedDB.__debug(true);  
+//	/**
+//	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
+//	 * supports strings
+//	 */
+//	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+	
+	function getDefaultTransaction(mode){
 		switch (mode) {
 			case 0:
 			  return usingShim ? mode : "readonly";
 			case 1:
+        return usingShim ? mode : "readwrite";
 			case "readwrite":
 			case "readonly":
 				return mode;
@@ -36,20 +37,20 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 				return IDBTransaction.READ_WRITE || "readwrite";
 		}
 	}
-
+	
 	$.extend({
 		/**
 		 * The IndexedDB object used to open databases
 		 * @param {Object} dbName - name of the database
 		 * @param {Object} config - version, onupgradeneeded, onversionchange, schema
 		 */
-		"indexedDB": function(dbName, config) {
+		"indexedDB": function(dbName, config){
 			if (config) {
 				// Parse the config argument
 				if (typeof config === "number") config = {
 					"version": config
 				};
-
+				
 				var version = config.version;
 				if (config.schema && !version) {
 					var max = -1;
@@ -59,22 +60,31 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 					version = config.version || max;
 				}
 			}
-
-
+			
 			var wrap = {
-				"request": function(req, args) {
-					return $.Deferred(function(dfd) {
+				"request": function(req, args){
+					return $.Deferred(function(dfd){
+//					  dfd.__lablzId = G.nextId();
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
 							idbRequest.onsuccess = function(e) {
-								dfd.resolveWith(idbRequest, [idbRequest.result, e]);
+						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
+<<<<<<< HEAD
 							idbRequest.onerror = function(e) {
 								console.log("Error", idbRequest, e, this);
 								dfd.rejectWith(idbRequest, [idbRequest.error, e]);
 							};
 							if (typeof idbRequest.onblocked !== "undefined" && idbRequest.onblocked === null) {
 								idbRequest.onblocked = function(e) {
+=======
+							idbRequest.onerror = function(e){
+								//console.log("Error", idbRequest, e, this);
+								dfd.rejectWith(idbRequest, [idbRequest.error, e]);
+							};
+							if (typeof idbRequest.onblocked !== "undefined" && idbRequest.onblocked === null) {
+								idbRequest.onblocked = function(e){
+>>>>>>> master
 									console.log("Blocked", idbRequest, e, this);
 									var res;
 									try {
@@ -86,7 +96,7 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 								};
 							}
 							if (typeof idbRequest.onupgradeneeded !== "undefined" && idbRequest.onupgradeneeded === null) {
-								idbRequest.onupgradeneeded = function(e) {
+								idbRequest.onupgradeneeded = function(e){								  
 									dfd.notifyWith(idbRequest, [idbRequest.result, e]);
 								};
 							}
@@ -97,9 +107,9 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 					});
 				},
 				// Wraps the IDBTransaction to return promises, and other dependent methods
-				"transaction": function(idbTransaction) {
+				"transaction": function(idbTransaction){
 					return {
-						"objectStore": function(storeName) {
+						"objectStore": function(storeName){
 							try {
 								return wrap.objectStore(idbTransaction.objectStore(storeName));
 							} catch (e) {
@@ -107,21 +117,21 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 								return wrap.objectStore(null);
 							}
 						},
-						"createObjectStore": function(storeName, storeParams) {
+						"createObjectStore": function(storeName, storeParams){
 							try {
 								return wrap.objectStore(idbTransaction.db.createObjectStore(storeName, storeParams));
 							} catch (e) {
 								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
 							}
 						},
-						"deleteObjectStore": function(storeName) {
+						"deleteObjectStore": function(storeName){
 							try {
 								idbTransaction.db.deleteObjectStore(storeName);
 							} catch (e) {
 								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
 							}
 						},
-						"abort": function() {
+						"abort": function(){
 							idbTransaction.abort();
 						}
 					};
@@ -131,17 +141,17 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 					// Define CRUD operations
 					var crudOps = ["add", "put", "get", "delete", "clear", "count"];
 					for (var i = 0; i < crudOps.length; i++) {
-						result[crudOps[i]] = (function(op) {
-							return function() {
-								return wrap.request(function(args) {
+						result[crudOps[i]] = (function(op){
+							return function(){
+								return wrap.request(function(args){
 									return idbObjectStore[op].apply(idbObjectStore, args);
 								}, arguments);
 							};
 						})(crudOps[i]);
 					}
-
-					result.each = function(callback, range, direction) {
-						return wrap.cursor(function() {
+					
+					result.each = function(callback, range, direction){
+						return wrap.cursor(function(){
 							if (direction) {
 								return idbObjectStore.openCursor(wrap.range(range), direction);
 							} else {
@@ -149,7 +159,7 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 							}
 						}, callback);
 					};
-
+					
           result.getAll = function(range, direction) {
             return result._getAll(range, direction);
           };
@@ -182,13 +192,13 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
             }).promise();
 					};
 					
-					result.index = function(name) {
-						return wrap.index(function() {
+					result.index = function(name){
+						return wrap.index(function(){
 							return idbObjectStore.index(name);
 						});
 					};
-
-					result.createIndex = function(prop, options, indexName) {
+					
+					result.createIndex = function(prop, options, indexName){
 						if (arguments.length === 2 && typeof options === "string") {
 							indexName = arguments[1];
 							options = null;
@@ -196,19 +206,20 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 						if (!indexName) {
 							indexName = prop;
 						}
-						return wrap.index(function() {
+						
+						return wrap.index(function(){
 							return idbObjectStore.createIndex(indexName, prop, options);
 						});
 					};
-
-					result.deleteIndex = function(indexName) {
+					
+					result.deleteIndex = function(indexName){
 						return idbObjectStore.deleteIndex(indexName);
 					};
-
+					
 					return result;
 				},
-
-				"range": function(r) {
+				
+				"range": function(r){
 					if ($.isArray(r)) {
 						if (r.length === 1) {
 							return IDBKeyRange.only(r[0]);
@@ -227,31 +238,36 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 						return typeof r === IDBKeyRange ? r : IDBKeyRange.only(r);
 					}
 				},
-
-				"cursor": function(idbCursor, callback) {
-					return $.Deferred(function(dfd) {
+				
+				"cursor": function(idbCursor, callback){
+					return $.Deferred(function(dfd){
 						try {
 							console.log("Cursor request created", idbCursor);
 							var cursorReq = typeof idbCursor === "function" ? idbCursor() : idbCursor;
+<<<<<<< HEAD
 							cursorReq.onsuccess = function(e) {
 								console.log("Cursor successful");
+=======
+							cursorReq.onsuccess = function(e){
+								//console.log("Cursor successful");
+>>>>>>> master
 								if (!cursorReq.result) {
 									dfd.resolveWith(cursorReq, [null, e]);
 									return;
 								}
 								var elem = {
 									// Delete, update do not move 
-									"delete": function() {
-										return wrap.request(function() {
+									"delete": function(){
+										return wrap.request(function(){
 											return cursorReq.result["delete"]();
 										});
 									},
-									"update": function(data) {
-										return wrap.request(function() {
+									"update": function(data){
+										return wrap.request(function(){
 											return cursorReq.result["update"](data);
 										});
 									},
-									"next": function(key) {
+									"next": function(key){
 										this.data = key;
 									},
 									"key": cursorReq.result.key,
@@ -275,8 +291,13 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 									dfd.rejectWith(cursorReq, [cursorReq.result, e]);
 								}
 							};
+<<<<<<< HEAD
 							cursorReq.onerror = function(e) {
 								console.log("Cursor request errored out", e);
+=======
+							cursorReq.onerror = function(e){
+								//console.log("Cursor request errored out", e);
+>>>>>>> master
 								dfd.rejectWith(cursorReq, [cursorReq.result, e]);
 							};
 						} catch (e) {
@@ -286,8 +307,8 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 						}
 					});
 				},
-
-				"index": function(index) {
+				
+				"index": function(index){
 					try {
 						var idbIndex = (typeof index === "function" ? index() : index);
 					} catch (e) {
@@ -296,18 +317,19 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 					}
 					
 					var indexWrapper = {
-						"each": function(callback, range, direction) {
-							return wrap.cursor(function() {
+						"each": function(callback, range, direction){
+					  debugger;
+							return wrap.cursor(function(){
 								if (direction) {
 									return idbIndex.openCursor(wrap.range(range), direction);
 								} else {
 									return idbIndex.openCursor(wrap.range(range));
 								}
-
+								
 							}, callback);
 						},
-						"eachKey": function(callback, range, direction) {
-							return wrap.cursor(function() {
+						"eachKey": function(callback, range, direction){
+							return wrap.cursor(function(){
 								if (direction) {
 									return idbIndex.openKeyCursor(wrap.range(range), direction);
 								} else {
@@ -315,21 +337,14 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 								}
 							}, callback);
 						},
-						"get": function(key) {
+						"get": function(key){
 							if (typeof idbIndex.get === "function") {
 								return wrap.request(idbIndex.get(key));
 							} else {
 								return idbIndex.openCursor(wrap.range(key));
 							}
 						},
-						"count": function() {
-							if (typeof idbIndex.count === "function") {
-								return wrap.request(idbIndex.count());
-							} else {
-								throw "Count not implemented for cursors";
-							}
-						},
-						"getKey": function(key) {
+						"getKey": function(key){
 							if (typeof idbIndex.getKey === "function") {
 								return wrap.request(idbIndex.getKey(key));
 							} else {
@@ -366,15 +381,137 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 //            "getAllKeys": function(callback, range, direction){
 //              return this._getAll.apply(this, [callback, range, direction, true]);
 //            }
-						
 					};
 					
 					return indexWrapper;
 				}
 			};
-
-
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
+			var openReqShim = function(dbName, version) {
+				var me = this;
+				var IDBRequest = function(){
+					this.onsuccess = this.onerror = this.onblocked = this.onupgradeneeded = null;
+				};
+				
+				function copyReq(req){
+					req = req || dbOpenReq;
+					for (var key in req) {
+						if (typeof result[key] === "undefined") {
+							result[key] = req[key];
+						}
+					}
+				}
+				
+				function callback(fn, context, argArray, func){
+					//window.setTimeout(function(){
+					(typeof context[fn] === "function") && context[fn].apply(context, argArray);
+					(typeof func === "function") && func();
+					//}, 1);
+				}
+				
+				//console.log("openReqShim: opening DB with", version);
+				var dbOpenReq = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
+				var result = new IDBRequest();
+				dbOpenReq.onsuccess = function(e){
+					copyReq();
+					var db = dbOpenReq.result;
+					if (typeof db.setVersion === "function") {
+						var oldVersion = parseInt(db.version || 0, 10);
+						var newVersion = typeof version === "undefined" ? (oldVersion === 0 ? 1 : oldVersion) : parseInt(version, 10);
+						if (oldVersion < newVersion) {
+			        //console.log("using setVersion");
+							var versionReq = db.setVersion(newVersion);
+              //console.log("invoked setVersion");
+							versionReq.onsuccess = function(upgradeEvent){
+//							  debugger;
+								result.transaction = versionReq.result;
+								var event = new $.Event("upgradeneeded");
+								event.oldVersion = oldVersion;
+								event.newVersion = newVersion;
+								for (key in upgradeEvent) {
+									if (key !== "type") {
+										event[key] = upgradeEvent[key];
+									}
+								}
+								callback("onupgradeneeded", result, [event]);
+								// Version transaction is now complete, to open ordinary transaction
+								versionReq.result.db.close();
+								console.log("Database closed, and will try to open again, with same version");
+								var newDbOpenReq = indexedDB.open(dbName);
+								delete result.transaction;
+								delete result.result;
+								
+								newDbOpenReq.onsuccess = function(e){
+									console.log("DB Opened without version change", newDbOpenReq.result);
+									copyReq(newDbOpenReq);
+									callback("onsuccess", result, [e], function(){
+//										newDbOpenReq.result.close();
+									});
+//									newDbOpenReq.result.close();
+								};
+								newDbOpenReq.onerror = function(e){
+									copyReq(newDbOpenReq);
+									callback("onerror", result, [e], function(){
+										console.log("Closed database in newRequest on error", newDbOpenReq);
+//										newDbOpenReq.result.close();
+									});
+								};
+								newDbOpenReq.onblocked = function(e){
+									console.log("DB Blocked without version change", newDbOpenReq.result);
+									copyReq(newDbOpenReq);
+									callback("onblocked", result, [e], function(){
+										console.log("Closed database in newRequest on blocked", newDbOpenReq);
+										newDbOpenReq.result.close();
+									});
+								};
+							};
+							versionReq.onerror = function(){
+								callback("onerror", result, [e]);
+								versionReq.result.close();
+							};
+							versionReq.onblocked = function(e){
+								// This always gets called, resulting the blocking the DB upgrade
+								console.log("Version transaction blocked, so calling the on blocked method");
+								callback("onblocked", result, [e]);
+							};
+						} else if (oldVersion === newVersion) {
+							callback("onsuccess", result, [e]);
+//							db.close();
+						} else {
+							callback("onerror", result, [e]);
+//							db.close();
+						}
+					} else {
+						callback("onsuccess", result, [e]);
+					}
+				};
+				dbOpenReq.onerror = function(e){
+					copyReq();
+					console.log("Error", dbOpenReq);
+					callback("onerror", result, [e]);
+				};
+				dbOpenReq.onblocked = function(e){
+					copyReq();
+					callback("onblocked", result, [e]);
+				};
+				dbOpenReq.onupgradeneeded = function(e){
+					copyReq();
+					if (typeof result["onupgradeneeded"] === "function") {
+						result["onupgradeneeded"](e);
+					}
+				};
+				
+				return result;
+			};
+			
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
+			
 			// Start with opening the database
+<<<<<<< HEAD
 			var dbPromise = wrap.request(function() {
 				console.log("Trying to open DB with", version);
 				return version ? indexedDB.open(dbName, parseInt(version)) : indexedDB.open(dbName);
@@ -382,15 +519,29 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 			dbPromise.then(function(db, e) {
 				console.log("DB opened at", db.version);
 				db.onversionchange = function() {
+=======
+			var dbPromise = wrap.request(function(){
+				//console.log("Trying to open DB with", version);
+				return version ? openReqShim(dbName, version) : openReqShim(dbName);
+			});
+			dbPromise.then(function(db, e){
+				//console.log("DB opened at", db.version);
+				db.onversionchange = function(){
+>>>>>>> master
 					// Try to automatically close the database if there is a version change request
 					if (!(config && config.onversionchange && config.onversionchange() !== false)) {
 						db.close();
 					}
 				};
+<<<<<<< HEAD
 			}, function(error, e) {
 				console.log(error, e);
+=======
+			}, function(error, e){
+				//console.logerror, e);
+>>>>>>> master
 				// Nothing much to do if an error occurs
-			}, function(db, e) {
+			}, function(db, e){
 				if (e && e.type === "upgradeneeded") {
 					if (config && config.schema) {
 						// Assuming that version is always an integer 
@@ -404,51 +555,62 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 					}
 				}
 			});
-
+			
 			return $.extend(dbPromise, {
-				"cmp": function(key1, key2) {
+				"cmp": function(key1, key2){
 					return indexedDB.cmp(key1, key2);
 				},
-				"deleteDatabase": function() {
+				"deleteDatabase": function(){
 					// Kinda looks ugly coz DB is opened before it needs to be deleted. 
 					// Blame it on the API 
-					return $.Deferred(function(dfd) {
-						dbPromise.then(function(db, e) {
+					return $.Deferred(function(dfd){
+						dbPromise.then(function(db, e){
 							db.close();
-							wrap.request(function() {
+							wrap.request(function(){
 								return indexedDB.deleteDatabase(dbName);
-							}).then(function(result, e) {
+							}).then(function(result, e){
 								dfd.resolveWith(this, [result, e]);
-							}, function(error, e) {
+							}, function(error, e){
 								dfd.rejectWith(this, [error, e]);
-							}, function(db, e) {
+							}, function(db, e){
 								dfd.notifyWith(this, [db, e]);
 							});
-						}, function(error, e) {
+						}, function(error, e){
 							dfd.rejectWith(this, [error, e]);
-						}, function(db, e) {
+						}, function(db, e){
 							dfd.notifyWith(this, [db, e]);
 						});
 					});
 				},
-				"transaction": function(storeNames, mode) {
+				"transaction": function(storeNames, mode){
 					!$.isArray(storeNames) && (storeNames = [storeNames]);
 					mode = getDefaultTransaction(mode);
-					return $.Deferred(function(dfd) {
-						dbPromise.then(function(db, e) {
+					return $.Deferred(function(dfd){
+						dbPromise.then(function(db, e){
 							var idbTransaction;
 							try {
+<<<<<<< HEAD
 								console.log("DB Opened, now trying to create a transaction", storeNames, mode);
 								idbTransaction = db.transaction(storeNames, mode);
 								console.log("Created a transaction", idbTransaction, mode, storeNames);
 								idbTransaction.onabort = idbTransaction.onerror = function(e) {
+=======
+								//console.log("DB Opened, now trying to create a transaction", storeNames, mode);
+								idbTransaction = db.transaction(storeNames, mode);
+								//console.log("Created a transaction", idbTransaction, mode, storeNames);
+								idbTransaction.onabort = idbTransaction.onerror = function(e){
+>>>>>>> master
 									dfd.rejectWith(idbTransaction, [e]);
 								};
-								idbTransaction.oncomplete = function(e) {
+								idbTransaction.oncomplete = function(e){
 									dfd.resolveWith(idbTransaction, [e]);
 								};
 							} catch (e) {
+<<<<<<< HEAD
 								console.log("Creating a traction failed", e, storeNames, mode, this);
+=======
+								console.log("Creating a transaction failed", e, storeNames, mode, this);
+>>>>>>> master
 								e.type = "exception";
 								dfd.rejectWith(this, [e]);
 								return;
@@ -459,40 +621,58 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 								e.type = "exception";
 								dfd.rejectWith(this, [e]);
 							}
-						}, function(err, e) {
+						}, function(err, e){
 							dfd.rejectWith(this, [e, err]);
+<<<<<<< HEAD
 						}, function(res, e) {
+=======
+						}, function(res, e){
+>>>>>>> master
 							console.log("Database event on open: ", e.type, res);
 							//dfd.notifyWith(this, ["", e]);
 						});
-
+						
 					});
 				},
 				"objectStore": function(storeName, mode) {
-					var me = this,
-						result = {};
-
+					var me = this, result = {};
+					
 					function op(callback) {
-						return $.Deferred(function(dfd) {
-							function onTransactionProgress(trans, callback) {
+						return $.Deferred(function(dfd){
+							function onTransactionProgress(trans, callback){
 								try {
+<<<<<<< HEAD
 									console.log("Finally, returning the object store", trans);
 									callback(trans.objectStore(storeName)).then(function(result, e) {
+=======
+									//console.log("Finally, returning the object store", trans);
+									callback(trans.objectStore(storeName)).then(function(result, e){
+>>>>>>> master
 										dfd.resolveWith(this, [result, e]);
-									}, function(err, e) {
+									}, function(err, e){
 										dfd.rejectWith(this, [err, e]);
 									});
 								} catch (e) {
+<<<<<<< HEAD
 									console.log("Duh, an exception occured", e);
+=======
+									//console.log("Duh, an exception occured", e);
+>>>>>>> master
 									e.name = "exception";
 									dfd.rejectWith(trans, [e, e]);
 								}
 							}
+<<<<<<< HEAD
 							me.transaction(storeName, getDefaultTransaction(mode)).then(function() {
 								console.log("Transaction completed");
+=======
+							me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
+								//console.log("Transaction completed");
+>>>>>>> master
 								// Nothing to do when transaction is complete
-							}, function(err, e) {
+							}, function(err, e){
 								// If transaction fails, CrudOp fails
+<<<<<<< HEAD
 								if (err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
 									console.log("Object Not found, so will try to create one now");
 									var db = this.result;
@@ -504,25 +684,49 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 									dbPromise.then(function(db, e) {
 										console.log("Database opened, tto open transaction", db.version);
 										db.onversionchange = function() {
+=======
+								if (err && err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
+									//console.log("Object Not found, so will try to create one now");
+									var db = this.result;
+									db.close();
+									dbPromise = wrap.request(function(){
+										//console.log("Now trying to open the database again", db.version);
+										return openReqShim(dbName, (parseInt(db.version, 10) || 1) + 1);
+									});
+									dbPromise.then(function(db, e){
+										//console.log("Database opened, tto open transaction", db.version);
+										db.onversionchange = function(){
+>>>>>>> master
 											// Try to automatically close the database if there is a version change request
 											if (!(config && config.onversionchange && config.onversionchange() !== false)) {
 												db.close();
 											}
 										};
+<<<<<<< HEAD
 										me.transaction(storeName, getDefaultTransaction(mode)).then(function() {
 											console.log("Transaction completed when trying to create object store");
+=======
+										me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
+//											console.log("Transaction completed when trying to create object store");
+>>>>>>> master
 											// Nothing much to do
-										}, function(err, e) {
+										}, function(err, e){
 											dfd.rejectWith(this, [err, e]);
+<<<<<<< HEAD
 										}, function(trans, e) {
 											console.log("Transaction in progress, when object store was not found", this, trans, e);
+=======
+										}, function(trans, e){
+											//console.log("Transaction in progress, when object store was not found", this, trans, e);
+>>>>>>> master
 											onTransactionProgress(trans, callback);
 										});
-									}, function(err, e) {
+									}, function(err, e){
 										dfd.rejectWith(this, [err, e]);
-									}, function(db, e) {
+									}, function(db, e){
 										if (e.type === "upgradeneeded") {
 											try {
+<<<<<<< HEAD
 												console.log("Now trying to create an object store", e.type);
 												db.createObjectStore(storeName, mode === true ? {
 													"autoIncrement": true
@@ -530,11 +734,22 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 												console.log("Object store created", storeName, db);
 											} catch (ex) {
 												console.log("Exception when trying ot create a new object store", ex);
+=======
+												//console.log("Now trying to create an object store", e.type);
+												db.createObjectStore(storeName, mode === true ? {
+													"autoIncrement": true
+												} : mode);
+												//console.log("Object store created", storeName, db);
+											} catch (ex) {
+												//console.log("Exception when trying ot create a new object store", ex);
+>>>>>>> master
 												dfd.rejectWith(this, [ex, e]);
 											}
 										}
 									});
 								} else {
+								  debugger;
+									console.log("Error in transaction inside object store", err);
 									dfd.rejectWith(this, [err, e]);
 								}
 							}, function(trans) {
@@ -543,45 +758,42 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 							});
 						});
 					}
-
-					function crudOp(opName, args) {
-						return op(function(wrappedObjectStore) {
+					
+					function crudOp(opName, args){
+						return op(function(wrappedObjectStore){
 							return wrappedObjectStore[opName].apply(wrappedObjectStore, args);
 						});
 					}
-
-					function indexOp(opName, indexName, args) {
-						return op(function(wrappedObjectStore) {
+					
+					function indexOp(opName, indexName, args){
+						return op(function(wrappedObjectStore){
 							var index = wrappedObjectStore.index(indexName);
 							return index[opName].apply(index[opName], args);
 						});
 					}
-
+					
 					var crud = ["add", "delete", "get", "put", "clear", "count", "each", "getAll", "getAllKeys"];
 					for (var i = 0; i < crud.length; i++) {
-						result[crud[i]] = (function(op) {
-							return function() {
+						result[crud[i]] = (function(op){
+							return function(){
 								return crudOp(op, arguments);
 							};
 						})(crud[i]);
 					}
-
-					result.index = function(indexName) {
+					
+					result.index = function(indexName){
 						return {
-							"each": function(callback, range, direction) {
+							"each": function(callback, range, direction){
 								return indexOp("each", indexName, [callback, range, direction]);
 							},
-							"eachKey": function(callback, range, direction) {
-								return indexOp("eachKey", indexName, [callback, range, direction]);
+							"eachKey": function(callback, range, direction){
+                return indexOp("eachKey", indexName, [callback, range, direction]);
 							},
-							"get": function(key) {
+							"get": function(key){
 								return indexOp("get", indexName, [key]);
 							},
-							"count": function() {
-								return indexOp("count", indexName, []);
-							},
-							"getKey": function(key) {
-								return indexOp("getKey", indexName, [key]);
+							"getKey": function(callback, range, direction){
+								return indexOp("getKey", indexName, [callback, range, direction]);
 							},
 							"getAll": function(range, direction){
 							  return indexOp("_getAll", indexName, [range, direction]);
@@ -591,13 +803,13 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
               }
 						};
 					};
-
+					
 					return result;
 				}
 			});
 		}
 	});
-
+	
 	if (usingShim) {
 	  $.indexedDB.IDBCursor = idbModules.IDBCursor;
 	  $.indexedDB.IDBTransaction = idbModules.IDBTransaction;
