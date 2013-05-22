@@ -9419,6 +9419,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
     currentlyAddingScript = null,
     waitingOn = [],
+//    useInteractive = false,
     config = {
       baseUrl: ''
     };
@@ -9511,7 +9512,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       };
       
       if (node.attachEvent &&!(node.attachEvent.toString && node.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
-        useInteractive = true;
+//        useInteractive = true;
         node.attachEvent('onreadystatechange', success);
       } else {
         node.addEventListener('load', success, false);
@@ -9523,7 +9524,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     }).promise();
   }
   
-//   var id = 0;
   function require(modules, cb) {
     modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
@@ -9538,7 +9538,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       if (!dfd) {
         waitingOn.push(name);
         dfd = moduleMap[url] = $.Deferred();
-//        console.log("loading", name);
         require.load(name).then(function() {
           if (dfd.state() === 'resolved')
             return;
