@@ -4,7 +4,8 @@
 DOMReady.add( function () {
   'use strict';
   var l = Lablz,
-      div = d.createElement('div');
+      div = d.createElement('div'),
+      head = d.getElementsByTagName('head')[0];
   
   if (localStorage  &&  localStorage.getItem)
     localStorage.setItem('homePage', l.homePage);
@@ -15,6 +16,7 @@ DOMReady.add( function () {
   }
   d.getElementById('page').appendChild(div);
   /*setTimeout(function() {*/
+  
       var s = d.createElement('script'); 
       s.type = 'text/javascript';
       s.charset = 'utf-8';
@@ -22,10 +24,9 @@ DOMReady.add( function () {
       
       s.src = l.initScript.src; 
       s.setAttribute('data-main', l.initScript['data-main']);
-      var head = d.getElementsByTagName('head')[0];
       head.appendChild(s);
 /*  }, 0); */
-    
+  
     l.serverName = (function() {     
       var s = d.getElementsByTagName('base')[0].href;
       return s.match("/$") ? s.slice(0, s.length - 1) : s;

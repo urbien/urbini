@@ -105,7 +105,7 @@ define('resourceManager', [
           _.each(_item, function(val, prop) {
             var parsedPropName = parsePropNameFromDB(prop);
             var val = _item[prop];  
-            if (val._filePath) {
+            if (val && val._filePath) {
               var dfd = $.Deferred();
               FileSystem.readAsBlob(val._filePath).done(function(blob) {
                 item[parsedPropName] = blob;
@@ -845,6 +845,7 @@ define('resourceManager', [
         var refStoreProps = getRefStoreProps();
         var atts = _.omit(ref, refStoreProps);
         atts.$returnMade = true;
+        
         resource.save(atts, { // ref has only the changes the user made
           sync: true, 
           fromDB: true,
@@ -1053,7 +1054,7 @@ define('resourceManager', [
         
         var info = {resource: existingRes, reference: ref, references: refs};
         RM.saveToServer(info).always(function(updatedRef) {
-          if (!_.isEqual(ref, updatedRef)) {
+          if (updatedRef && !_.isEqual(ref, updatedRef)) {
             var idx = refs.indexOf(ref);
             refs[idx] = updatedRef;
           }
@@ -1095,7 +1096,7 @@ define('resourceManager', [
       return $.Deferred(function(defer) {
         var vocModel = item.vocModel;
         if (!RM.isSyncPostponable(vocModel)) {
-          item.save(undefined, _.extend(options, {sync: true}));
+          item.save(null, _.extend(options, {sync: true}));
           defer.resolve();
           return;
         }

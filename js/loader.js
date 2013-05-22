@@ -108,8 +108,8 @@ define('globals', function() {
   };
 
   var orgLoad = require.load;
-  require.load = function (name, url) {
-    url = G.getCanonicalPath(url);
+  require.load = function (name) {
+    var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;
     

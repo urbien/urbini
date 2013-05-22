@@ -9410,7 +9410,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     moduleMap = {}, 
     defineMap = {}, 
     require,
-    initDefer = $.Deferred(function(defer) {$(defer.resolve)}),
+    domReady = $.Deferred(function(defer) {$(defer.resolve)}).promise(),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
     body = doc.getElementsByTagName('head')[0],
@@ -9421,14 +9421,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     waitingOn = [],
     config = {
       baseUrl: ''
-    },
-    // Create a deferred object that hooks into the DOM-ready event.
-    domReady = $.Deferred(function(deferred) {
-      $(function() {
-        console.log('dom ready');
-        deferred.resolve();
-      });
-    }).promise();
+    };
     
     
   function toUrl(name) {
@@ -9451,14 +9444,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       node.removeEventListener(name, func, false);
     }
   }
-  
-  function resolve(defer) {
-    var args = slice.call(arguments, 1);
-    initDefer.done(function() {
-      defer.resolve.apply(defer, args);
-    });
-  };
-  
+    
   /**
   * @param name - name of the module - currently required
   **/
@@ -9502,8 +9488,10 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   /**
   * feel free to override, but make sure to return a Promise
   **/ 
-  function load(name, url) {
+  function load(name) {
     return $.Deferred(function(defer) {
+      var url = require.toUrl(name);
+      currentlyAddingScript = name;
       var node = document.createElement('script');
       node.type = config.scriptType || 'text/javascript';
       node.charset = 'utf-8';
@@ -9513,6 +9501,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       //node.setAttribute('data-requiremodule', name);
 
       var success = function(evt) {
+        currentlyAddingScript = null;
         var node = evt.currentTarget || evt.srcElement;
 
         //Remove the listeners once here.
@@ -9550,7 +9539,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
         waitingOn.push(name);
         dfd = moduleMap[url] = $.Deferred();
 //        console.log("loading", name);
-        require.load(name, url).then(function() {
+        require.load(name).then(function() {
           if (dfd.state() === 'resolved')
             return;
           
@@ -9624,3 +9613,5 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     head.appendChild(s);
   }
 })(window, jQuery, undefined);
+
+
