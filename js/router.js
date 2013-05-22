@@ -155,8 +155,8 @@ define([
       
       Events.on('pageChange', function() {
         self._hashChanged = false;
-        console.debug('currentUrl:', self.currentUrl);
-        console.debug('previousHash:', self.previousHash);
+//        console.debug('currentUrl:', self.currentUrl);
+//        console.debug('previousHash:', self.previousHash);
       });
       
 //      _.each(['list', 'view', 'make', 'templates', 'home'], function(method) {
