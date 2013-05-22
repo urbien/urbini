@@ -1,6 +1,7 @@
-(function(root, $) {
+(function($) {
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
+    root = this,
     moduleMap = {}, 
     defineMap = {}, 
     require,
@@ -44,7 +45,7 @@
   **/
   function define(name, deps, cb) {
     switch (arguments.length) {
-      // case 1: // TODO: allow anonymous define modules
+       case 1: // TODO: allow anonymous define modules
         // cb = name;
         // name = deps = null;
         // break;
@@ -191,4 +192,4 @@
     s.src = main; 
     head.appendChild(s);
   }
-})(window, jQuery, undefined);
+})(jQuery, undefined);

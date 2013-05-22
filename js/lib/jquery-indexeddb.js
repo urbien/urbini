@@ -27,9 +27,11 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 	function getDefaultTransaction(mode){
 		switch (mode) {
 			case 0:
-			  return usingShim ? mode : "readonly";
+//			  return usingShim ? mode : "readonly";
+			  return "readonly";
 			case 1:
-        return usingShim ? mode : "readwrite";
+			  return "readwrite";
+//        return usingShim ? mode : "readwrite";
 			case "readwrite":
 			case "readonly":
 				return mode;
