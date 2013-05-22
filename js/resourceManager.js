@@ -11,7 +11,7 @@ define([
   var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
   var Blob = window.Blob;
   var FileSystem;
-  var useWebSQL = false;//window.webkitIndexedDB && window.shimIndexedDB;
+  var useWebSQL = G.isUsingDBShim;//window.webkitIndexedDB && window.shimIndexedDB;
   useWebSQL && window.shimIndexedDB.__useShim();
 //  window.idbModules.DEBUG = G.minify === false;
   var parse = function(items) {

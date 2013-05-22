@@ -7,13 +7,13 @@ define(['globals', 'indexedDBShim'], function(G) {
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
 //  window.shimIndexedDB.__useShim();
 //
-	var usingShim;
+	var usingShim = G.isUsingDBShim;
 //	if (typeof window.webkitIndexedDB !== 'undefined') {
 //	  indexedDB =  window.shimIndexedDB;
 //	  usingShim = true;
 //	} 
 //	else {
-	  indexedDB = window.indexedDB;
+//	  indexedDB = window.indexedDB;
 //	}
 	
 //  if (usingShim)
