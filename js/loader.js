@@ -64,10 +64,6 @@ define('globals', function() {
     return $.Deferred(function(defer) {        
       var ext = url.match(/\.[a-zA-Z]+$/g)[0];
       var appcache = G.files.appcache;
-//      if (ext === '.jsp')
-//        onLoad = contextOrOnLoad;
-//      else
-//        context = contextOrOnLoad;
         
       switch (ext) {
         case '.css':
@@ -78,7 +74,6 @@ define('globals', function() {
             G.appendCSS(text);
           
           G.log(G.TAG, 'cache', 'cache.get: ' + url);
-//          context.completeLoad(name); // pseudonym for onLoad
           defer.resolve(name);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
@@ -96,14 +91,11 @@ define('globals', function() {
           text += '\n//@ sourceURL=' + url;
           if (G.navigator.isIE) 
             text += '*/\n';
-//          requirejs.exec(text);
+
           addModule(text);
           defer.resolve();
-//          context.completeLoad(name); // JQM hack
           break;
-      }
-      
-//      defer.resolve(); 
+      }      
     }).promise();
   };
 
@@ -315,7 +307,7 @@ define('globals', function() {
   };
   
   function testCSS(prop) {
-    return prop in document.documentElement.style;
+    return prop in doc.documentElement.style;
   }
   
   
