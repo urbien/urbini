@@ -9448,18 +9448,16 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     
   /**
   * @param name - name of the module - currently required
+  * TODO: allow anonymous define modules
   **/
   function define(name, deps, cb) {
-    switch (arguments.length) {
-       case 1: // TODO: allow anonymous define modules
-        // cb = name;
-        // name = deps = null;
-        // break;
-        throw new Error("this loader library doesn't support anonymous 'define' statements (yet)");
-      case 2:
-        cb = deps;
-        deps = null;
-        break;
+    if (typeof name !== 'string')
+      throw new Error("this loader library doesn't support anonymous 'define' statements (yet)");
+    
+    if (arguments.length == 2) {
+      cb = deps;
+      deps = null;
+      break;
     }
   
     // if (!name) {
