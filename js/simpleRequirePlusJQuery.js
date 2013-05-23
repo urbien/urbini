@@ -9583,9 +9583,9 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   require.toUrl = toUrl;
   root.require = require;
   root.define = define;
-  var main = $('[data-main]')[0];
+  var main = $('[data-main]');
   if (main) {
-    main = main.dataset.main + '.js';
+    main = main.data('main') + '.js';
     var idx = main.lastIndexOf('/');
     if (idx>=0) {
       config.baseUrl = main.slice(0, idx + 1);
