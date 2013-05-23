@@ -325,7 +325,10 @@ define('fileCache', function() {
 
   var moreG = {
     isUsingDBShim: (function() {
-      return G.navigator.isChrome || !window.indexedDB;
+      var using = G.navigator.isChrome || !window.indexedDB;
+      if (using)
+        console.debug('using indexeddb shim');
+      return using;
     })(),
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 

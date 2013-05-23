@@ -1,12 +1,11 @@
 //'use strict';
 define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
-	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+  var usingShim = G.isUsingDBShim;
+	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
-
-	var usingShim = G.isUsingDBShim;
 	
 	function getDefaultTransaction(mode){
 		switch (mode) {
