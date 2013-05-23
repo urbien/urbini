@@ -404,6 +404,11 @@ define([
             if (!U.isPropVisible(res, prop1))
               continue;
   
+            if (prop1.backLink) { 
+              if (json[p].count) 
+                json['showCount'] = p;
+              continue;
+            }
             if (first) {
               first = false;
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + U.getPropDisplayName(prop) + '</u></i></div>';                
@@ -421,6 +426,11 @@ define([
             viewCols += '&#160;';
           }
           firstProp = false;
+          continue;
+        }
+        if (prop.backLink) { 
+          if (json[pName].count) 
+            json['showCount'] = pName;
           continue;
         }
 
