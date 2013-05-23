@@ -754,8 +754,9 @@ define([
           var vocModel = U.getModel(classUri);
           for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            item = U.isModel(item) ? item.toJSON() : item;
-            items[i] = U.flattenModelJson(item, vocModel);
+            items[i] = U.isModel(item) ? item.toJSON() : item;
+//            item = U.isModel(item) ? item.toJSON() : item;
+//            items[i] = U.flattenModelJson(item, vocModel);
           }
           
           G.log(RM.TAG, "db", 'Starting addItems Transaction');
