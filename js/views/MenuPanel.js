@@ -48,7 +48,11 @@ define([
     home: function(e) {
       Events.stopEvent(e);
       var here = window.location.href;
-      if (e.target.id == 'home123')
+      var t = e.target;
+      while (t.tagName.toLowerCase() != 'li') 
+        t = t.parentNode;
+      
+      if (t.id == 'home123')
         window.location.href = here.slice(0, here.indexOf('#'));
       else
         window.location.href = G.serverName + '/app/UrbienApp';
