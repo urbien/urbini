@@ -739,7 +739,13 @@ define('globals', function() {
     workers: {},
     workerQueues: {},
     isWorkerAvailable: function(worker) {
-      return !worker.onerror && !worker.onmessage;
+//      return !worker.onerror && !worker.onmessage;
+      return !worker.__lablzTaken;
+    },
+    
+    captureWorker: function(worker) {
+      worker.__lablzTaken = true;
+      return worker;
     },
     
     /**
@@ -755,8 +761,9 @@ define('globals', function() {
         
         var w = G.workers[taskType];
         w._taskType = taskType;
-        if (G.isWorkerAvailable(w))
-          dfd.resolve(w);
+        if (G.isWorkerAvailable(w)) {
+          dfd.resolve(G.captureWorker(w));
+        }
         else {
           G.workerQueues[taskType] = G.workerQueues[taskType] || [];
           G.workerQueues[taskType].push(dfd);
