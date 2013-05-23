@@ -3013,15 +3013,6 @@ define([
     getBlobValueProps: function(data) {
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
     },
-    getClonedPropertyValue: function(res, iProp) {
-      var vocModel = res.vocModel;
-      var meta = vocModel.properties;
-      var clone = U.getCloneOf(meta, iProp);
-      if (clone && clone.length)
-        return res.get(clone[0]);
-      else
-        return null;
-    },
     getExternalFileUrl: function(uri) {
       return G.serverName + '/' + U.getParamMap(uri).url;
     }
