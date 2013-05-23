@@ -11,7 +11,7 @@ define(function() {
       $.mobile.touchOverflowEnabled = true;
 //      $.mobile.loadingMessageTextVisible = true;
 //      $.mobile.hidePageLoadingMsg();
-      $.mobile.buttonMarkup.hoverDelay = 25;
+//      $.mobile.buttonMarkup.hoverDelay = 25;
 //      $.event.special.swipe.scrollSupressionThreshold (default: 10px) – More than this horizontal displacement, and we will suppress scrolling.
 //      $.event.special.swipe.durationThreshold = 1000;// (default: 1000ms) – More time than this, and it isn't a swipe.
 //      $.event.special.swipe.horizontalDistanceThreshold (default: 30px) – Swipe horizontal displacement must be more than this.
