@@ -1,28 +1,18 @@
 //'use strict';
 define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
-	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+  var usingShim = G.isUsingDBShim;
+	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
-//  window.shimIndexedDB.__useShim();
-//
-	var usingShim = G.isUsingDBShim;
-	
-//  if (usingShim)
-//    window.shimIndexedDB.__debug(true);  
-//	/**
-//	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
-//	 * supports strings
-//	 */
-//	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 	
 	function getDefaultTransaction(mode){
 		switch (mode) {
 			case 0:
-			  return "readonly";
+			  return usingShim ? mode : "readonly";
 			case 1:
-        return "readwrite";
+        return usingShim ? mode : "readwrite";
 			case "readwrite":
 			case "readonly":
 				return mode;
@@ -600,7 +590,6 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 							me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
 								//console.log("Transaction completed");
 								// Nothing to do when transaction is complete
-							  mode = mode;
 							}, function(err, e){
 								// If transaction fails, CrudOp fails
 								if (err && err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
