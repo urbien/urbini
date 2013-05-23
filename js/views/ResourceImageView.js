@@ -114,70 +114,76 @@ define([
         if (!_.has(this, '_videoUrl')) {
           this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
           this._videoUrl = res.get(this._videoUrlProp);
-          this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
-          this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
-        }
-        
-        if (this.isLocalVideo) {
-//          this.videoDfd.done(function() {
-          var info = {
-            src: this._videoUrl,
-            preload: 'auto'
-//            autoplay: 'autoplay'
-          };
-          
-          if (props.length)
-            info.poster = json[props[0]];
-
-          this.$el.html(this.template(info));
-        }
-        else {
-          var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
-          var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
-          var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
-          var desc = descProp && json[descProp];
-          
-          var v = videoHtml5 || desc;
-          if (v) {
-            var frag = document.createDocumentFragment();
-//            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
-            var video = '<div class="video-container" align="center">' + v + '</div>';
-            U.addToFrag(frag, video);
-            if (videoHtml5)
-              delete json[videoHtml5Prop];
-            else
-              delete json[descProp];
-            
-            this.$el.html(frag);
+          if (this._videoUrl) {
+            this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
+            this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
           }
+          else
+            this.isVideo = false;
         }
         
-        this.$video = this._getVideoEl();
-        this.video = this.$video[0];
-        if (this.video) {
-          if (this.video.tagName === 'VIDEO') {
-            var checkSize = function(e) {
-              if (self.video.videoWidth) {
-                self.resizeVideo();
-                _.each(G.media_events, function(e) {
-                  self.$video.off(e, checkSize);
-                });
-              }
+        if (this.isVideo) {
+          if (this.isLocalVideo) {
+        
+  //          this.videoDfd.done(function() {
+            var info = {
+              src: this._videoUrl,
+              preload: 'auto'
+  //            autoplay: 'autoplay'
             };
-                
-            _.each(G.media_events, function(e) {
-              self.$video.one(e, checkSize);
-            });
+            
+            if (props.length)
+              info.poster = json[props[0]];
+  
+            this.$el.html(this.template(info));
           }
           else {
-            // iframe
-            this.video.onload = this.resizeVideo;
+            var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
+            var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
+            var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
+            var desc = descProp && json[descProp];
+            
+            var v = videoHtml5 || desc;
+            if (v) {
+              var frag = document.createDocumentFragment();
+  //            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
+              var video = '<div class="video-container" align="center">' + v + '</div>';
+              U.addToFrag(frag, video);
+              if (videoHtml5)
+                delete json[videoHtml5Prop];
+              else
+                delete json[descProp];
+              
+              this.$el.html(frag);
+            }
           }
+          
+          this.$video = this._getVideoEl();
+          this.video = this.$video[0];
+          if (this.video) {
+            if (this.video.tagName === 'VIDEO') {
+              var checkSize = function(e) {
+                if (self.video.videoWidth) {
+                  self.resizeVideo();
+                  _.each(G.media_events, function(e) {
+                    self.$video.off(e, checkSize);
+                  });
+                }
+              };
+                  
+              _.each(G.media_events, function(e) {
+                self.$video.one(e, checkSize);
+              });
+            }
+            else {
+              // iframe
+              this.video.onload = this.resizeVideo;
+            }
+          }
+  
+          return;
         }
-
-        return;
       }
-      
 //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
       var oWidth;
       var oHeight;
