@@ -415,6 +415,8 @@ define([
       if (this.rendered)
         this.$el.html("");
       
+      if (U.isAssignableFrom(this.vocModel, G.commonTypes.App) && !res)
+        this.categories = true;
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-b'}));
       else
@@ -462,7 +464,7 @@ define([
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      if (!this.noButton)
+      if (!this.noButton  &&  !this.categories)
         this.$el.find('#name').removeClass('resTitle');
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
