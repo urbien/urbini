@@ -1425,7 +1425,7 @@ define([
     },
     
     toHTMLElement: function(html) {
-      return $(html)[0];
+      return $(html.trim())[0];
     },
     
     getShortName: function(uri) {
