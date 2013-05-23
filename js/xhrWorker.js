@@ -1,3 +1,4 @@
+var canBlob = typeof Blob !== 'undefined';
 function sendXhr(options) {
   var url = options.url;
   
@@ -12,7 +13,7 @@ function sendXhr(options) {
     var tmp = [];
     for (var name in params) {
       var val = params[name];
-      if (Blob && val instanceof Blob) {
+      if (canBlob && val instanceof Blob) {
         params = toFormData(params);
         upload = true;
         break;
@@ -85,7 +86,7 @@ function toFormData(data) {
   var blobbed = false;
   for (var prop in data) {
     var val = data[prop];
-    if (Blob && val instanceof Blob) {
+    if (canBlob && val instanceof Blob) {
       if (!blobbed) {
         blobbed = true;
 //        fd.append('enctype', "multipart/form-data");

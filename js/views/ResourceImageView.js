@@ -97,6 +97,9 @@ define('views/ResourceImageView', [
       if (this.hash.startsWith('edit/'))
         return this;
       
+      var res = this.resource,
+          self = this;
+      
       if (!_.has(this, '_videoUrl')) {
         this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
         this._videoUrl = res.get(this._videoUrlProp);
@@ -160,6 +163,8 @@ define('views/ResourceImageView', [
           this.video.onload = this.resizeVideo;
         }
       }
+      
+      return this;
     },
     
     render: function(options) {
@@ -180,7 +185,7 @@ define('views/ResourceImageView', [
       var json = res.toJSON();
       var self = this;
       if (this.isVideo) {
-        this.renderVideo();
+        return this.renderVideo();
       }
       else if (this.isAudio) {
         var audio = U.getClonedPropertyValue(res, 'AudioResource.audio');
@@ -190,6 +195,8 @@ define('views/ResourceImageView', [
           this.$el.html(this.template({
             sources: [U.getExternalFileUrl(audio)]
           }));
+          
+          return this;
         }
         else {
           // no audio, no player, fall back to imageresource
