@@ -91,7 +91,12 @@ define('models/Resource', [
     },
     
     get: function(propName) {
-      var val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
+      var val;
+      if (/^[A-Z]+\./.test(propName)) // is sth like ImageResource.originalImage
+        val = U.getClonedPropertyValue(this, propName);
+      else
+        val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
+        
       var vocModel = this.vocModel;
       if (!vocModel)
         return val;
@@ -281,7 +286,7 @@ define('models/Resource', [
       if (!this.vocModel)
         this.setModel();
       
-      resp = this.parseHelper.call(this, resp);
+      resp = this.preParse.call(this, resp);
       if (resp) {
         var meta = this.vocModel.properties;
         var unsaved = this.getUnsavedChanges();
@@ -304,10 +309,9 @@ define('models/Resource', [
         }
       }
       
-      
       return resp;
     },
-    parseHelper: function (resp) {
+    preParse: function (resp) {
       var lf;
       switch (this.lastFetchOrigin) {
         case 'db':
@@ -401,18 +405,21 @@ define('models/Resource', [
           return true;
       }
       
-      if (!options.sync) {
-        var displayNameChanged = false;
-        for (var shortName in props) {
+      var displayNameChanged = false;
+      for (var shortName in props) {
+        var val = props[shortName];
+        if (!val)
+          continue;
+        
+        var prop = meta[shortName];
+        if (!prop)
+          continue;
+        
+        if (!prop.backLink)
+          props[shortName] = U.getFlatValue(prop, val);
+        
+        if (!options.sync) {
           if (/\./.test(shortName))
-            continue;
-          
-          var prop = meta[shortName];
-          if (!prop)
-            continue;
-          
-          var val = props[shortName];
-          if (!val)
             continue;
           
           if (prop.displayNameElm) {
@@ -430,19 +437,24 @@ define('models/Resource', [
             }
           }
         }
-        
-        if (this.loaded && displayNameChanged) {
-          var displayNameProps = _.defaults({}, props, this.attributes);
-          delete displayNameProps.davDisplayName;
-          var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
-          if (newDisplayName)
-            props.davDisplayName = newDisplayName;
-        }
+      }
+      
+      if (this.loaded && displayNameChanged) {
+        var displayNameProps = _.defaults({}, props, this.attributes);
+        delete displayNameProps.davDisplayName;
+        var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
+        if (newDisplayName)
+          props.davDisplayName = newDisplayName;
       }
       
       if (options.userEdit)
         this.lastFetchOrigin = 'edit';
-        
+
+//      for (var p in props) {
+//        var prop = meta[p];
+//        props[p] = U.getFlatValue(prop, props[p]);
+//      }
+      
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
         if (options.userEdit) {
@@ -722,7 +734,7 @@ define('models/Resource', [
         this.unsavedChanges = {};
       }
       else {
-        data = U.prepForSync(data, vocModel, ['parameter']);
+        data = U.prepForSync(data, vocModel);
         if (_.size(data) == 0) {
           if (!isNew) {
             if (options.error)

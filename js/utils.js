@@ -2152,32 +2152,33 @@ define('utils', [
             /^[a-zA-Z]+[^\.]*$/.test(key);  // is writeable, starts with a letter and doesn't contain a '.'
       }); 
       
-      return U.flattenModelJson(filtered, vocModel, preserve);
+//      return U.flattenModelJson(filtered, vocModel, preserve);
+      return filtered;
     },
-    
-    flattenModelJson: function(m, vocModel, preserve) {
-      var vocProps = vocModel.properties;
-      var flat = {};
-      for (var name in m) {
-        if (name.indexOf(".") != -1) {
-          flat[name] = m[name];
-          continue;
-        }
-          
-        var val = m[name];
-        var prop = vocProps[name];
-        if (!prop || 
-            (prop.parameter && !_.contains(preserve, 'parameter')) || 
-            (prop.virtual && !_.contains(preserve, 'virtual'))) { // || 
-//            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
-          continue;
-        }
-        
-        flat[name] = U.getFlatValue(prop, val);
-      }
-      
-      return flat;
-    },
+
+//    flattenModelJson: function(m, vocModel, preserve) {
+//      var vocProps = vocModel.properties;
+//      var flat = {};
+//      for (var name in m) {
+//        if (name.indexOf(".") != -1) {
+//          flat[name] = m[name];
+//          continue;
+//        }
+//          
+//        var val = m[name];
+//        var prop = vocProps[name];
+//        if (!prop || 
+//            (prop.parameter && !_.contains(preserve, 'parameter')) || 
+//            (prop.virtual && !_.contains(preserve, 'virtual'))) { // || 
+////            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
+//          continue;
+//        }
+//        
+//        flat[name] = U.getFlatValue(prop, val);
+//      }
+//      
+//      return flat;
+//    },
     
     getFlatValue: function(prop, val) {
       if (U.isNully(val))

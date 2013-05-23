@@ -936,7 +936,7 @@ define('views/EditView', [
       var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
 //      var props = atts;
       if (this.isEdit && !_.size(props)) {
-        debugger; // user didn't modify anything?
+//        debugger; // user didn't modify anything?
         this.redirect();
         return;
       }
