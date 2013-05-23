@@ -1132,6 +1132,18 @@ define([
         this.originalResource = res.toJSON();
       
       var type = res.type;
+      
+      if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
+        var iCl = res.get('interfaceClass');
+        if (iCl) {
+          var m = G.getModel(iCl);
+          var imeta = m.properties;
+          if (imeta) {
+            
+          }
+        }
+      }
+      
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
