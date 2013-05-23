@@ -671,21 +671,6 @@ define('router', [
      * handles view, edit and chat mode (action)
      */
     view: function (path, action) {
-      if (path == 'profile') {
-        var p = _.size(params) ? path.slice(qIdx + 1) : '';
-        if (!G.currentUser.guest) {
-          var other = U.slice.call(arguments, 1);
-          other = other.length ? other : undefined;
-          this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
-        }
-        else {
-          this._requestLogin();
-//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
-        }
-        
-        return;
-      }
-      
       var edit = action === 'edit',
           chat = action === 'chat';
       
@@ -707,6 +692,20 @@ define('router', [
         query = path.slice(qIdx + 1);
       }
 
+      if (uri == 'profile') {
+        if (!G.currentUser.guest) {
+          var other = U.slice.call(arguments, 1);
+          other = other.length ? other : undefined;
+          this.view.apply(this, [U.encode(G.currentUser._uri) + (query ? "?" + query : '')].concat(other));
+        }
+        else {
+          this._requestLogin();
+//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
+        }
+        
+        return;
+      }
+      
       if (chat && /^_/.test(uri)) {
         var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage({
           'private': true
