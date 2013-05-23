@@ -20,9 +20,9 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 	function getDefaultTransaction(mode){
 		switch (mode) {
 			case 0:
-			  return usingShim ? mode : "readonly";
+			  return "readonly";
 			case 1:
-        return usingShim ? mode : "readwrite";
+        return "readwrite";
 			case "readwrite":
 			case "readonly":
 				return mode;
@@ -600,6 +600,7 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 							me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
 								//console.log("Transaction completed");
 								// Nothing to do when transaction is complete
+							  mode = mode;
 							}, function(err, e){
 								// If transaction fails, CrudOp fails
 								if (err && err.code === err.NOT_FOUND_ERR && (mode === true || typeof mode === "object")) {
