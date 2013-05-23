@@ -1177,6 +1177,7 @@ require(['globals'], function(G) {
       }
       
       require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {        
+        console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
