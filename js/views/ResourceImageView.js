@@ -174,7 +174,7 @@ define('views/ResourceImageView', [
         return this.renderVideo();
       }
       else if (this.isAudio) {
-        var audio = U.getClonedPropertyValue(res, 'AudioResource.audio');
+        var audio = res,get('AudioResource.audio');
         if (audio) {
           this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
 //          return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);

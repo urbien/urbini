@@ -91,13 +91,21 @@ define('models/Resource', [
     },
     
     get: function(propName) {
-      var val;
-      if (/^[A-Z]+\./.test(propName)) // is sth like ImageResource.originalImage
-        val = U.getClonedPropertyValue(this, propName);
+      var val,
+          vocModel = this.vocModel,
+          meta = vocModel && vocModel.properties;
+      
+      if (/^[A-Z]+\./.test(propName)) { // is sth like ImageResource.originalImage
+        var clone = U.getCloneOf(meta, iProp);
+        if (clone && clone.length)
+          val = this.get(clone[0]);
+        else
+          val = null;
+//        val = U.getClonedPropertyValue(this, propName);
+      }
       else
         val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
         
-      var vocModel = this.vocModel;
       if (!vocModel)
         return val;
       
