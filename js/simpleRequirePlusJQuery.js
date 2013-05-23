@@ -9457,7 +9457,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     if (arguments.length == 2) {
       cb = deps;
       deps = null;
-      break;
     }
   
     // if (!name) {
