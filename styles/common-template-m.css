@@ -242,11 +242,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
     font-size: 32px;
     margin-left: -14px;
 }
-
 /* navbar no text - icons only */ 
 .navbarUl .ui-btn-inner { font-size: 0px; }
 /* #headerUl .ui-btn { padding: 3px 0px; } */
-
+#sell .ui-btn-inner { border: none; }
 @media (max-width: 328px) {
 
 /*@media all and (min-width: 298px) { */
@@ -255,6 +254,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
   #resourceImage img {max-width: 320px;}
+/*  #sidebar {margin: 0} */
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
   .connect i { font-size:16px; color: #888;}
 }
