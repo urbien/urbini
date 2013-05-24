@@ -228,7 +228,7 @@ define([
           });
         }
         else {
-          G.log(U.TAG, 'xhr', '$.ajax', opts.url);          
+          G.log(U.TAG, 'xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
             if (status != 'success') {
               defer.reject(jqXHR, status, opts);
@@ -467,7 +467,8 @@ define([
         if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
           return false;
       }
-      
+
+      var isMkResource = res.isNew();
       var isAdmin = U.isUserInRole("admin");
       var cantEdit = false;
       _.each(['allowRoles', 'allowRolesToEdit'], function(p) {        
@@ -478,7 +479,7 @@ define([
       
       if (cantEdit)
         return false;
-      
+
       var resExists = res  &&  !!res.getUri();
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
@@ -560,6 +561,7 @@ define([
         if (vals.length)
           results[iProp] = vals;
       }
+      
       var size = _.size(results);
       return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
     },
@@ -1026,7 +1028,7 @@ define([
       model = collection = params = url = args.length && args[0];
       if (!url || typeof url === 'string') {
         params = U.getParamMap(url || window.location.href);
-        return args.length > 1 ? U.getQueryParams(params, slice.call(args, 1)) : params;
+        return args.length > 1 ? U.getQueryParams.apply(U, [params].concat(slice.call(args, 1))) : params;
       }
 
       if (U.isCollection(model)) { // if it's a collection

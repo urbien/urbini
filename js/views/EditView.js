@@ -437,7 +437,17 @@ define([
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      
+      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor")) { 
+        var rParams = {
+            $prop: pr.shortName,
+            $type:  this.vocModel.type,
+            $title: 'Add-ons',
+            $forResource: this.resource.get('implementor')
+          };
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+        return;
+      }
+
       var range = U.getLongUri1(pr.range);
       var prModel = U.getModel(range);
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
@@ -569,6 +579,9 @@ define([
           default: 
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
+      }
+      else if (G.commonTypes.Connection  &&  U.isAssignableFrom(vocModel, G.commonTypes.Connection)) {
+        return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && G.online) {
         var isFork = res.get('forkedFrom');
@@ -1138,6 +1151,18 @@ define([
         this.originalResource = res.toJSON();
       
       var type = res.type;
+      
+      if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
+        var iCl = res.get('interfaceClass');
+        if (iCl) {
+          var m = G.getModel(iCl);
+          var imeta = m.properties;
+          if (imeta) {
+            
+          }
+        }
+      }
+      
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
@@ -1152,8 +1177,13 @@ define([
       if (!editProps) {
         propsForEdit = vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
-        if (!editProps  &&  this.action == 'make'  &&  vocModel.type.endsWith('WebProperty')) {
-          editProps = ['label', 'propertyType'];
+        if (!editProps  &&  this.action == 'make') {
+          if (vocModel.type.endsWith('WebProperty')) {
+            editProps = ['label', 'propertyType'];
+          }
+          else if (vocModel.type.endsWith('Connection')) {
+            editProps = ['fromApp', 'connectionType', 'effect'];
+          }
         }  
       }
       

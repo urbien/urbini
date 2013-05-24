@@ -4,6 +4,8 @@
 DOMReady.add( function () {
   'use strict';
   var div = d.createElement('div');
+  div.className = 'mainDiv';
+  div.style.background = 'none';
   if (localStorage  &&  localStorage.getItem)
     localStorage.setItem('homePage', Lablz.homePage);
     

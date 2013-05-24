@@ -80,6 +80,10 @@ define([
         this.addChild('cp', new ControlPanel(_.extend({isMainGroup: false}, commonParams)));
       }  
       
+      this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
+      if (this.isPurchasable) 
+        this.addChild('buyGroup', new ResourceView(_.extend({isBuyGroup: true}, commonParams)));
+        
       this.addChild('view', new ResourceView(commonParams));
       this.photogridDfd = $.Deferred();
       this.photogridPromise = this.photogridDfd.promise();
@@ -248,9 +252,14 @@ define([
         views['ul#cpView'] = this.cp;
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
+
+      if (this.isPurchasable) 
+        views['div#buyGroup'] = this.buyGroup;         
       
       var isGeo = this.isGeo();
-      this.headerButtons.aroundMe = isGeo;       
+      this.headerButtons.aroundMe = isGeo;
+      
+      
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
       this.ready.done(function() {
