@@ -210,7 +210,8 @@ define('views/EditView', [
                 settings.wheels = ['days', 'hours', 'minutes'];
               
               scroller = $(input).mobiscroll()[scrollerType](settings);
-              var val = input.value && parseInt(input.value);
+              var val = self.getValue(input) && parseInt(input.value);
+//              val = val && parseInt(val); // parseInt(input.value);
               if (typeof val === 'number')
                 scroller.mobiscroll(isDuration ? 'setSeconds' : 'setDate', isDuration ? val : new Date(val), true);
               

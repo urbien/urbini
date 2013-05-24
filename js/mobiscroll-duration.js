@@ -107,8 +107,8 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
       inst.getSeconds = function(d) {
         d = d || inst.temp;
         var sum = 0;
-        for (var i = 0; i < secs.length; i++)
-          sum += d[i] * secs[i];
+        for (var i = 0; i < wheelNames.length; i++)
+          sum += d[i] * secs[units.indexOf(wheelNames[i])];
         
         return sum; //d[0] * secs[0] + d[1] * day + d[2] * hour + d[3] * minute + d[4];
       };
