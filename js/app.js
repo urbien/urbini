@@ -71,8 +71,10 @@ define('app', [
 
     doPreStartTasks: function() {
       return $.Deferred(function(defer) {        
-        var modelsDfd = $.Deferred();
-        var dbDfd = $.Deferred();
+        var modelsDfd = $.Deferred(),
+            dbDfd = $.Deferred(),
+            grabDfd = $.Deferred();
+
         var startDB = function() {
           if (RM.db)
             dbDfd.resolve();
@@ -83,6 +85,7 @@ define('app', [
         var loadModels = function() {
           Voc.getModels().done(function() {
             startDB();
+            App.initGrabs().done(grabDfd.resolve).fail(grabDfd.reject);
             modelsDfd.resolve();
           }).fail(function()  {
             if (G.online) {
@@ -241,9 +244,22 @@ define('app', [
 //      }
       
       setTimeout(function() { 
-//        this.getGrabs();
         RM.sync();
       }.bind(this), 100);
+    },
+    
+    initGrabs: function() {
+      return $.Deferred(function(defer) {
+        if (G.currentUser.guest)
+          return defer.resolve();
+        
+        G.currentUser.grabbed = new ResourceList(G.currentUser.grabbed, {
+          model: U.getModel(G.commonTypes.Grab),
+          params: {
+            submittedBy: G.currentUser._uri
+          }
+        });
+      }).promise();
     },
     
 //    getGrabs: function() {
