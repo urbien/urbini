@@ -64,7 +64,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
   
   ms.presets.duration = function(inst) {
     var settings = inst.settings || {},
-        wheelNames = settings._durationWheels || ['days', 'hours', 'minutes'],
+        wheelNames = settings.durationWheels || ['days', 'hours', 'minutes'],
         wheels = [],
         wheelNames,
         defaultVals = settings.defaults || [],
@@ -74,7 +74,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
     
       $.each(wheelNames, function(idx, name) {
           name = name.toLowerCase();
-          var data = [], //wheelData[name] = {},
+          var data = {}, //wheelData[name] = {},
               w = wheels[idx] = {};
           
           setDefaults && defaultVals.push(idx ? 0 : 1);

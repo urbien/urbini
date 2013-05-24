@@ -157,6 +157,7 @@ define('views/EditView', [
         theme: 'jqm',
         display: 'modal',
         mode:'scroller',
+        durationWheels: ['days', 'hours', 'minutes', 'seconds'],
         label: U.getPropDisplayName(prop),
         shortName: prop.shortName,
         onSelect: this.onSelected,
