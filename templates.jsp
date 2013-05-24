@@ -1252,8 +1252,8 @@
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
   <select name="{{= shortName }}" id="{{= id }}" {{= rules }} data-role="slider" class="formElement boolean" data-mini="true">
-    <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
-    <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
+    <option {{= !obj.value ? 'selected="selected"' : '' }}>No</option>
+    <option {{= obj.value ? 'selected="selected"' : '' }}>Yes</option>
   </select>
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </script>
