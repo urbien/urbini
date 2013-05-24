@@ -23,11 +23,6 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
           seconds: 0
       };
 
-  function clone(obj) {
-    if (!_.isObject(obj)) return obj;
-    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
-  };
-
   function isNum(str) {
     return /^\d+$/.test(str);
   };
@@ -70,15 +65,13 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
   ms.presets.duration = function(inst) {
     var settings = inst.settings || {},
         wheelNames = settings._durationWheels || ['days', 'hours', 'minutes'],
-        value = 0,
         wheels = [],
         wheelNames,
         defaultVals = settings.defaults || [],
-//        wheelData = {},
-        elm = $(this);
-        // 'this' refers to the DOM element on which the plugin is called
+        setDefaults = !defaultVals.length,
+        elm = $(this); // 'this' refers to the DOM element on which the plugin is called
+        
     
-      var setDefaults = !defaultVals.length;
       $.each(wheelNames, function(idx, name) {
           name = name.toLowerCase();
           var data = [], //wheelData[name] = {},
@@ -93,7 +86,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
               
               break;
             case 'days': 
-              for (var i = 0; i < 365; i++)
+              for (var i = 0; i <= 365; i++)
                 data[i] = i;
               
               break;
@@ -106,10 +99,6 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
               break;
           }
       });
-      
-      // Custom preset logic which is executed
-      // when the scroller instance is created, 
-      // e.g. create the custom wheels
       
       inst.setDuration = function (d, fill, time, temp) {
         this.temp = clean(d);
@@ -127,11 +116,10 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
         for (var i = 0; i < wheelNames.length; i++)
           sum += d[i] * secs[units.indexOf(wheelNames[i])];
         
-        return sum; //d[0] * secs[0] + d[1] * day + d[2] * hour + d[3] * minute + d[4];
+        return sum;
       };
       
       return {
-          // Typically a preset defines the 'wheels', 'formatResult', and 'parseValue' settings
           wheels: wheels,
           methods: {
             setSeconds: inst.setSeconds,
@@ -163,12 +151,12 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
           parseValue: function() {
             var val = elm.val();
             if (!val)
-              return clone(defaultVals);
+              return defaultVals.slice(0);
             
             if (typeof val === 'string') {
               val = val.trim();
               if (!val.length)
-                return clone(defaultVals);
+                return defaultVals.slice(0);
 
               if (val === '(none)')
                 return zeroes(wheelNames.length);
