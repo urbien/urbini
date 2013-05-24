@@ -1,49 +1,95 @@
 //'use strict';
 define('mobiscroll-duration', ['mobiscroll'], function () {
 
-  var ms = $.mobiscroll;
-  var second = 1,
+  var ms = $.mobiscroll,
+      second = 1,
       minute = 60,
       hour = 3600,
       day = 86400,
-      week = 604800;
-  var secs = [week, day, hour, minute, second];
-      
-  var defaults = {
-      // Default options for the preset
-      vals: [0, 1, 0, 0, 0],
-      weeks: 0,
-      days: 1,
-      hours: 0,
-      minutes: 0,
-      seconds: 0
-  }
+      week = 604800,
+      secs = [week, day, hour, minute, second],
+      units = ['weeks', 'days', 'hours', 'minutes', 'seconds'],
+      abbreviations = {
+        hours: 'hrs',
+        minutes: 'mins',
+        seconds: 'secs'
+      },
+      defaults = {
+          // Default options for the preset
+          weeks: 0,
+          days: 1,
+          hours: 0,
+          minutes: 0,
+          seconds: 0
+      };
 
-  var clean = function(d) {
+  function isNum(str) {
+    return /^\d+$/.test(str);
+  };
+  
+  function clean(d) {
     for (var i = 0; i < d.length; i++) {
       d[i] = d[i] ? parseInt(d[i]) : 0;
     }
     
     return d;
-  }
+  };
+
+  function getWheelValues(seconds, names) {
+    var d = [];
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i],
+          idx = units.indexOf(name);
+      
+      d[i] = Math.floor(seconds / secs[idx]);
+      seconds = d[i] === 0 ? seconds : seconds - d[i] * secs[idx];        
+    }
+    
+    return d;
+  };
+  
+  function getUnitWheelName(unit) {
+    return abbreviations[unit] || unit;
+  };
   
   ms.presets.duration = function(inst) {
-      var weeks = {}, days = {}, hours = {}, minutes = {}, seconds = {};
-      for (var i = 0; i < 100; i++)
-        weeks[i] = i;
-      for (var i = 0; i < 8; i++)
-        days[i] = i;
-      for (var i = 0; i < 61; i++)
-        hours[i] = minutes[i] = seconds[i] = i;
-  
-//      var s = $.extend({}, defaults, inst.settings), 
-          // Extend settings with preset defaults
-      var wheels = [{'Weeks': weeks}, {'Days': days}, {'Hours': hours}, {'Minutes': minutes}, {'Seconds': seconds}],
-          value = 0,
-          // Create custom wheels
-          elm = $(this);
-          // 'this' refers to the DOM element on which the plugin is called
-
+    var settings = inst.settings || {},
+        wheelNames = settings.wheels || ['days', 'hours', 'minutes'],
+        value = 0,
+        wheels = [],
+        wheelNames,
+        defaultVals = settings.defaults || [],
+//        wheelData = {},
+        elm = $(this);
+        // 'this' refers to the DOM element on which the plugin is called
+    
+      var setDefaults = !defaultVals.length;
+      $.each(wheelNames, function(idx, name) {
+          name = name.toLowerCase();
+          var data = [], //wheelData[name] = {},
+              w = wheels[idx] = {};
+          
+          setDefaults && defaultVals.push(0);
+          w[getUnitWheelName(name)] = data;
+          switch (name) {
+            case 'weeks': 
+              for (var i = 0; i < 100; i++)
+                data[i] = i;
+              
+              break;
+            case 'days': 
+              for (var i = 0; i < 8; i++)
+                data[i] = i;
+              
+              break;
+            case 'hours':
+            case 'minutes':
+            case 'seconds':
+              data[i] = i;
+              break;
+          }
+      });
+      
       // Custom preset logic which is executed
       // when the scroller instance is created, 
       // e.g. create the custom wheels
@@ -54,12 +100,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
       };
       
       inst.setSeconds = function(s, fill, time, temp) {
-        var d = [];
-        for (var i = 0; i < secs.length; i++) {
-          d[i] = Math.floor(s / secs[i]);
-          s = d[i] === 0 ? s : s - d[i] * secs[i];        
-        }
-        
+        var d = getWheelValues(s, wheelNames);
         inst.setDuration(d, fill, time, temp);
       };
       
@@ -81,41 +122,63 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
             getSeconds: inst.getSeconds
           },
           formatResult: function(d) {
-            for (var i = 0; i < d.length; i++)
-              d[i] = parseInt(d[i]);
-              
-            var numDays = (d[0] || 0) * 7 + (d[1] || 0);
-            var str = (numDays ? numDays + ' day{0}, '.format(numDays === 1 ? '' : 's') : '') +
-                      (d[2] ? d[2] + ' hour{0}, '.format(d[2] === 1 ? '' : 's') : '') +
-                      (d[3] ? d[3] + ' minute{0}, '.format(d[3] === 1 ? '' : 's') : '') +
-                      (d[4] ? d[4] + ' second{0}, '.format(d[4] === 1 ? '' : 's') : '');                      
+            clean(d);
+            var str = '';
+            $.each(units, function(idx, unit) {
+              var idx = wheelNames.indexOf(unit);
+              if (idx >= 0) {
+                var val = d[idx];
+                if (val == 0)
+                  return;
+                else                  
+                  str += d[idx] + ' ' + unit;
                 
+                if (val == 1) 
+                  str = str.slice(0, str.length - 1); // make it singular (2 minutes but 1 minute)
+                
+                str += ', ';
+              }
+            });
+            
             return str.length ? str.slice(0, str.length - 2) : str;
           },
+          
           parseValue: function() {
             var val = elm.val();
             if (!val)
-              return defaults.vals;
+              return defaultVals;
             
-            var match = elm.val().match(/((\d+) week[s]?)?[ ,]*((\d+) day[s]?)?[ ,]*((\d+) hour[s]?)?[ ,]*((\d+) minute[s]?)?[ ,]*((\d+) second[s]?)?[ ,]*/);
-            if (!match)
-              return defaults.vals;
-            else {
-              var d = [match[2], match[5], match[8], match[11], match[14]];
-              return clean(d);
-//              w = w ? parseInt(w) : 0;
-//              d = d ? parseInt(d) : 0;
-//              h = h ? parseInt(h) : 0;
-//              m = m ? parseInt(m) : 0;
-//              s = s ? parseInt(s) : 0;
-//              return w * week + d * day + h * hour + m * minute + s;
-//              return [w ? parseInt(w) : 0,
-//                     d = d ? parseInt(d) : 0,
-//                     h = h ? parseInt(h) : 0,
-//                     m = m ? parseInt(m) : 0,
-//                     s = s ? parseInt(s) : 0];
+            if (typeof val === 'string') {
+              val = val.trim();
+              if (!val.length)
+                return defaultVals;
+              
+              if (isNum(val))
+                val = parseInt(val);
             }
-//            return  //[elm.val()];
+            
+            if (typeof val === 'number')
+              return getWheelValues(val, wheelNames);
+            
+            var d = [];
+            $.each(wheelNames, function(idx, name) {
+              var nIdx = val.indexOf(name.slice(0, name.length - 1)); // singular
+              if (nIdx >= 0) {
+                var startComma = Math.max(val.lastIndexOf(',', nIdx), 0),
+                    endComma = val.indexOf(',', nIdx);
+                
+                endComma = endComma < 0 ? val.length : endComma;
+                var numsMatch = val.slice(startComma, endComma).match(/(\d+)/);
+                if (numsMatch && numsMatch.length) {
+                  d.push(parseInt(numsMatch[0]));
+                  return;
+                }
+              }
+              
+              d.push(0);
+            });
+            
+            return d.length ? clean(d) : defaultVals;
           },
           // The preset may override any other core settings
           headerText: function (v) {

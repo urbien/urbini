@@ -1805,10 +1805,16 @@ define('utils', [
       if (prop.code)
         rules['data-code'] = prop.code;
       
-      if (U.isDateProp(prop))
+      if (U.isDateProp(prop)) {
         rules['data-date'] = true;
-      else if (U.isTimeProp(prop))
+        if (val.value)
+          val.val /= 1000; // seconds
+      }
+      else if (U.isTimeProp(prop)) {
         rules['data-duration'] = true;
+        if (val.value)
+          val.value /= 1000; // seconds
+      }
       else if (U.isEnumProp(prop))
         rules['data-enum'] = true;
             

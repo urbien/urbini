@@ -8,6 +8,10 @@ define('views/EditView', [
   'vocManager',
   'views/BasicView'
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
+  var scrollerClass = 'i-txt',
+      switchClass = 'boolean';
+      
+  
   function willShow(res, prop, role) {
     var p = prop.shortName;
     return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
@@ -16,9 +20,16 @@ define('views/EditView', [
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     initialize: function(options) {
+      var self = this;
+      _.each(scrollerTypes, function(s) {
+        self['scroll' + s.camelize(true)] = function(e) {
+          self.mobiscroll.apply(self, [e, s].concat(U.slice.call(arguments, 1)));
+        }
+      });
+    
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -140,19 +151,7 @@ define('views/EditView', [
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-    scrollDate: function(e) {
-      this.mobiscroll(e, 'date');
-    },
-
-    scrollDuration: function(e) {
-      this.mobiscroll(e, 'duration');
-    },
-
-    scrollEnum: function(e) {
-      this.mobiscroll(e, 'enum');
-    },
-
-    mobiscroll: function(e, scrollerType) {
+    mobiscroll: function(e, scrollerType, dontClick) {
       var inits = this.initializedScrollers = this.initializedScrollers || {};
       if (inits[scrollerType])
         return;
@@ -206,11 +205,14 @@ define('views/EditView', [
           switch (scrollerType) {
             case 'date':
             case 'duration':
-              var isDate = scrollerType === 'date';
+              var isDuration = scrollerType === 'duration';
+              if (isDuration)
+                settings.wheels = ['days', 'hours', 'minutes'];
+              
               scroller = $(input).mobiscroll()[scrollerType](settings);
               var val = input.value && parseInt(input.value);
               if (typeof val === 'number')
-                scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+                scroller.mobiscroll(isDuration ? 'setSeconds' : 'setDate', isDuration ? val : new Date(val), true);
               
               break;
 //            default:
@@ -224,7 +226,7 @@ define('views/EditView', [
 //              break;            
           }
           
-          if (name === thisName)
+          if (!dontClick && name === thisName)
             scroller.click().focus();
         });
       });
@@ -495,11 +497,11 @@ define('views/EditView', [
       return this.$form.find('[data-formEl]');
     },
     getScrollers: function() {
-      return this.$form.find('.i-txt');
+      return this.$form.find('.' + scrollerClass);
     },
     isScroller: function(input) {
       input = input instanceof $ ? input : $(input);
-      return input.hasClass('i-txt');
+      return input.hasClass(scrollerClass);
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -744,24 +746,13 @@ define('views/EditView', [
       var val;
       
       var p = this.vocModel.properties[input.name];
-      if (p  &&  p.multiValue)
+      if (_.contains(input.classList, switchClass))
+        val = input.value === 'Yes' ? true : false;
+      else if (p.multiValue)
         val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
 
-      if (!_.isUndefined(val))
-        return val;
-        
-      if (_.contains(input.classList, 'boolean'))
-        return val === 'Yes' ? true : false;
-      else {
-        for (var i = 0; i < scrollerTypes.length; i++) {
-          var data = jInput.data('data-' + scrollerTypes[i]);
-          if (data)
-            return data;
-        }
-      }
-      
       return val;
     },
     
@@ -810,6 +801,7 @@ define('views/EditView', [
       this._submitted = true;
       var inputs = this.inputs;
       inputs.attr('disabled', true);
+      inputs = inputs.not(scrollerClass).not(switchClass);
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -1011,12 +1003,12 @@ define('views/EditView', [
         
         switch (settings.__type) {
           case 'date': {
-            var millis = atts[name] = new Date(val).getTime();
+            atts[name] = new Date(val).getTime();
 //            $(input).data('data-date', millis);
             break;
           }
           case 'duration': {
-            var secs = atts[name] = scroller.getSeconds();
+            atts[name] = scroller.getSeconds() * 1000;
 //            $(input).data('data-duration', secs);
             break;
           }
@@ -1030,7 +1022,11 @@ define('views/EditView', [
       }
       else {
         var t = e.target;
-        atts[t.name] = t.value;
+//        if (_.contains(input.classList, 'boolean'))
+//          atts[t.name] = val === 'Yes' ? true : false;
+//        else
+//          atts[t.name] = t.value;
+        atts[t.name] = this.getValue(t);
       }
 
       this.setValues(atts, {onValidationError: this.fieldError});
@@ -1338,7 +1334,7 @@ define('views/EditView', [
           return;
         
         if (this.value)
-          self.setValues(name, this.value);
+          self.setValues(name, self.getValue(this));
       });
       
       form.find("input").bind("keydown", function(event) {
@@ -1411,6 +1407,12 @@ define('views/EditView', [
         }
       }
         
+      _.each(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) {
+        var scrollers = self.$(scrollerType);
+        if (scrollers.length) {
+          $(scrollers[0]).trigger('click', [true]);
+        }
+      });
       
       return this;
     },
