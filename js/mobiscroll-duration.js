@@ -1,25 +1,24 @@
 //'use strict';
 define('mobiscroll-duration', ['mobiscroll'], function () {
 
-  var ms = $.mobiscroll;
-  var second = 1,
+  var ms = $.mobiscroll,
+      second = 1,
       minute = 60,
       hour = 3600,
       day = 86400,
-      week = 604800;
-  var secs = [week, day, hour, minute, second];
-      
-  var defaults = {
-      // Default options for the preset
-      vals: [0, 1, 0, 0, 0],
-      weeks: 0,
-      days: 1,
-      hours: 0,
-      minutes: 0,
-      seconds: 0
-  }
+      week = 604800,
+      secs = [week, day, hour, minute, second],
+      defaults = {
+          // Default options for the preset
+          vals: [0, 1, 0, 0, 0],
+          weeks: 0,
+          days: 1,
+          hours: 0,
+          minutes: 0,
+          seconds: 0
+      }
 
-  var clean = function(d) {
+  function clean(d) {
     for (var i = 0; i < d.length; i++) {
       d[i] = d[i] ? parseInt(d[i]) : 0;
     }
@@ -72,13 +71,28 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
         return sum; //d[0] * secs[0] + d[1] * day + d[2] * hour + d[3] * minute + d[4];
       };
       
-      return {
+      function parseValue() {
+        var val = elm.val();
+        if (!val)
+          return defaults.vals;
+        
+        var match = elm.val().match(/((\d+) week[s]?)?[ ,]*((\d+) day[s]?)?[ ,]*((\d+) hour[s]?)?[ ,]*((\d+) minute[s]?)?[ ,]*((\d+) second[s]?)?[ ,]*/);
+        if (!match)
+          return defaults.vals;
+        else {
+          var d = [match[2], match[5], match[8], match[11], match[14]];
+          return clean(d);
+        }
+      }
+      
+      var scroller = {
           // Typically a preset defines the 'wheels', 'formatResult', and 'parseValue' settings
           wheels: wheels,
           methods: {
             setSeconds: inst.setSeconds,
             setDuration: inst.setDuration,
-            getSeconds: inst.getSeconds
+            getSeconds: inst.getSeconds,
+            parseValue: parseValue
           },
           formatResult: function(d) {
             for (var i = 0; i < d.length; i++)
@@ -92,36 +106,14 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
                 
             return str.length ? str.slice(0, str.length - 2) : str;
           },
-          parseValue: function() {
-            var val = elm.val();
-            if (!val)
-              return defaults.vals;
-            
-            var match = elm.val().match(/((\d+) week[s]?)?[ ,]*((\d+) day[s]?)?[ ,]*((\d+) hour[s]?)?[ ,]*((\d+) minute[s]?)?[ ,]*((\d+) second[s]?)?[ ,]*/);
-            if (!match)
-              return defaults.vals;
-            else {
-              var d = [match[2], match[5], match[8], match[11], match[14]];
-              return clean(d);
-//              w = w ? parseInt(w) : 0;
-//              d = d ? parseInt(d) : 0;
-//              h = h ? parseInt(h) : 0;
-//              m = m ? parseInt(m) : 0;
-//              s = s ? parseInt(s) : 0;
-//              return w * week + d * day + h * hour + m * minute + s;
-//              return [w ? parseInt(w) : 0,
-//                     d = d ? parseInt(d) : 0,
-//                     h = h ? parseInt(h) : 0,
-//                     m = m ? parseInt(m) : 0,
-//                     s = s ? parseInt(s) : 0];
-            }
-//            return  //[elm.val()];
-          },
+          parseValue: parseValue,
           // The preset may override any other core settings
           headerText: function (v) {
             return inst.settings.label; // inst.temp;
           }
       };
+      
+      return scroller;
   };
 
   // Add this line if you want to be able to use your preset like 
