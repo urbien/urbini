@@ -157,7 +157,7 @@ define('views/EditView', [
         theme: 'jqm',
         display: 'modal',
         mode:'scroller',
-        durationWheels: ['days', 'hours', 'minutes', 'seconds'],
+        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
         label: U.getPropDisplayName(prop),
         shortName: prop.shortName,
         onSelect: this.onSelected,
@@ -1009,7 +1009,7 @@ define('views/EditView', [
             break;
           }
           case 'duration': {
-            var secs = atts[name] = scroller.getSeconds();
+            atts[name] = scroller.getSeconds();
 //            $(input).data('data-duration', secs);
             break;
           }

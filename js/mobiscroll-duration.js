@@ -7,8 +7,10 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
       hour = 3600,
       day = 86400,
       week = 604800,
-      secs = [week, day, hour, minute, second],
-      units = ['weeks', 'days', 'hours', 'minutes', 'seconds'],
+      month = 30 * day,
+      year = 365.25 * day,
+      secs = [year, month, week, day, hour, minute, second],
+      units = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'],
 //      abbreviations = {
 //        hours: 'hrs',
 //        minutes: 'mins',
@@ -80,6 +82,8 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
           setDefaults && defaultVals.push(idx ? 0 : 1);
           w[getUnitWheelName(name)] = data;
           switch (name) {
+            case 'years':
+            case 'months':
             case 'weeks': 
               for (var i = 0; i < 100; i++)
                 data[i] = i;

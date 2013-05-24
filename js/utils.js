@@ -1313,7 +1313,7 @@ define('utils', [
         return "none";
       
       var now = G.currentServerTime();
-      var date = U.getFormattedDate(now + time).toLowerCase();
+      var date = U.getFormattedDate(now + time * 1000).toLowerCase();
       if (date === 'just now')
         return 'none';
       else if (date.startsWith("in "))
@@ -1807,13 +1807,13 @@ define('utils', [
       
       if (U.isDateProp(prop)) {
         rules['data-date'] = true;
-        if (val.value)
-          val.val /= 1000; // seconds
+//        if (val.value)
+//          val.val /= 1000; // seconds
       }
       else if (U.isTimeProp(prop)) {
         rules['data-duration'] = true;
-        if (val.value)
-          val.value /= 1000; // seconds
+//        if (val.value)
+//          val.value /= 1000; // seconds
       }
       else if (U.isEnumProp(prop))
         rules['data-enum'] = true;
