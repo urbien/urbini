@@ -793,7 +793,7 @@ define([
       RM.runTask(function() {
 //          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
         var defer = this; 
-        RM.Index('_problematic').neq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
+        RM.Index('_problematic').neq(1).and(RM.Index('_dirty').eq(1)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           parse(results).done(function(results) {
             if (!results.length) {
               defer.resolve();
