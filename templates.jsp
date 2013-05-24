@@ -50,6 +50,7 @@
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
       <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
+      <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -403,6 +404,7 @@
      {{ } }}
    </div>
   {{ } }}
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   -->  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
@@ -443,6 +445,7 @@
   {{ if (typeof distanceProp != 'undefined') { }}
     <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
   {{ } }}
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   <!--
   {{ if (typeof v_submitToTournament != 'undefined') { }}
     <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
@@ -509,9 +512,10 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="cursor: pointer;"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
-      
+    
+    {{ if (!obj.homePage) { }}   
     <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
@@ -520,7 +524,8 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
     /> 
-    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
+    {{ } }}
+    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon && !obj.homePage ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' :  'margin-left:15px;' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -528,10 +533,13 @@
       {{ }                                            }}
     >
     
+    {{ if (obj.icon  &&  obj.homePage) { }}
+      <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
+    {{ }               }}
       {{= title }}
     </div>
     
-    {{ if (obj.icon) { }}
+    {{ if (obj.icon  &&  !obj.homePage) { }}
       <i class="ui-icon-{{= icon }}" style="float:right; font-size: 16px;"></i>
     {{ }               }}
   </li>
@@ -548,9 +556,9 @@
 
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
-  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
     <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id == 'undefined' ? 'home123' : id }}" target="#">
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
   </li>
@@ -591,6 +599,31 @@
      {{ } }}
      </a>
    </li>
+</script>
+
+<script type="text/template" id="priceTemplate">
+   <div data-role="button" data-shortName="{{= shortName }}" style="cursor: pointer;text-align:left; background:none; background-color: {{= color }}" href="#">
+     {{= name }}<br/> 
+     <span style="font-size: 20px;cursor:pointer;">{{= shortName == 'discount' ? '' : '$' }}{{= value }}{{= shortName == 'discount' ? '%' : '' }}</span>
+   </div>
+</script>
+
+<script type="text/template" id="buyTemplate">
+<!-- button for an important buyable resource on the resource's view page -->
+<div>
+   <a data-role="button" id="buy" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">
+      <span style="float:right;padding-left:3px;">Buy for<br/><span style="font-size: 20px;"> ${{= value }}</span></span><i class="ui-icon-shopping-cart" style="color:red; margin-left: -10px; font-size:35px;top:35%;"></i>
+   </a>
+</div>   
+</script>
+
+<script type="text/template" id="sellTemplate">
+<!-- button for an important backlink on a resource on the resource's view page -->
+<div>
+   <a data-role="button" id="sell" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none;  padding: 6px 0;background-color: {{= background }}; color: {{= color }};" href="#">
+      <span style="font-size: 24px; border: none;">Sell</span>
+   </a>
+</div>   
 </script>
 
 <script type="text/template" id="cpMainGroupTemplate">
@@ -810,8 +843,9 @@
       <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
-    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
-    <div id="name" class="resTitle" style="min-height: 20px" align="center">
+    {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
+<!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
+    <div id="name" class="resTitle" {{= this.categories ? '' : 'style="min-height: 20px"' }} align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block; padding-top:4px;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
@@ -1109,7 +1143,11 @@
         <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
       </fieldset>
     {{ }                    }}
+    </div>
 
+    <div data-role="fieldcontain">
+      <fieldset data-role="controlgroup" id="interfaceProps">
+      </fieldset>
     </div>
   </form>
   <br/>
@@ -1131,6 +1169,18 @@
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
   <label for="{{= id }}">{{= davDisplayName }}</label>
 </script>
+
+<script type="text/template" id="interfacePropTemplate">
+  <!-- a multivalue input for edit forms -->
+  <!--li data-icon="false" data-role="fieldcontain"-->
+  <div class="ui-controlgroup-controls">
+  {{ var id = G.nextId() }}
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+  <label for="{{= id }}">{{= davDisplayName }}</label>
+  </div>
+  <!--/li-->
+</script>
+
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>

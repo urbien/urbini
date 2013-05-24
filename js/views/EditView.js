@@ -25,6 +25,7 @@ define('views/EditView', [
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
+      this.makeTemplate('interfacePropTemplate', 'interfacePropTemplate', type);
       this.reqParams = U.getParamMap(window.location.href);
       
       this.resource.on('change', this.refresh, this);
@@ -319,6 +320,8 @@ define('views/EditView', [
           var resName = U.getDisplayName(chosenRes);
           if (resName)
             props[prop + '.displayName'] = resName;
+          if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
+            props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
           this.setValues(props, {skipValidation: true, skipRefresh: false});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
@@ -437,7 +440,17 @@ define('views/EditView', [
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      
+      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor")) { 
+        var rParams = {
+            $prop: pr.shortName,
+            $type:  this.vocModel.type,
+            $title: 'Add-ons',
+            $forResource: this.resource.get('implementor')
+          };
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+        return;
+      }
+
       var range = U.getLongUri1(pr.range);
       var prModel = U.getModel(range);
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
@@ -569,6 +582,9 @@ define('views/EditView', [
           default: 
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
+      }
+      else if (G.commonTypes.Connection  &&  U.isAssignableFrom(vocModel, G.commonTypes.Connection)) {
+        return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && G.online) {
         var isFork = res.get('forkedFrom');
@@ -1138,6 +1154,7 @@ define('views/EditView', [
         this.originalResource = res.toJSON();
       
       var type = res.type;
+      
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
@@ -1152,8 +1169,13 @@ define('views/EditView', [
       if (!editProps) {
         propsForEdit = vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
-        if (!editProps  &&  this.action == 'make'  &&  vocModel.type.endsWith('WebProperty')) {
-          editProps = ['label', 'propertyType'];
+        if (!editProps  &&  this.action == 'make') {
+          if (vocModel.type.endsWith('WebProperty')) {
+            editProps = ['label', 'propertyType'];
+          }
+          else if (vocModel.type.endsWith('Connection')) {
+            editProps = ['fromApp', 'connectionType', 'effect'];
+          }
         }  
       }
       
@@ -1236,6 +1258,40 @@ define('views/EditView', [
       else
         this.$ul.trigger('create');
 
+      if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
+        var iCl = res.get('interfaceClass.davClassUri');
+        if (iCl) {
+          var self = this;
+          Voc.getModels(iCl).done(function() {
+            var frag = document.createDocumentFragment();
+            
+            var m = U.getModel(iCl);
+            var imeta = m.properties;
+            var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
+            for (var prop in mustImpl) {
+              var p = mustImpl[prop];
+              U.addToFrag(frag, self.interfacePropTemplate({davDisplayName: p.shortName, _uri: U.getLongUri1(p.range) + '/' + p.shortName, _checked: 'y'}));
+            }
+              
+            for (var prop in imeta) {
+              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop])
+                continue;
+              var p = imeta[prop];
+              U.addToFrag(frag, self.interfacePropTemplate({davDisplayName: p.shortName, _uri: U.getLongUri1(p.range) + '/' + p.shortName}));
+            }
+            (this.$ul1 = $('#interfaceProps')).html(frag);
+            if (this.$ul1.hasClass('ui-listview')) {
+              this.$ul1.trigger('create');
+              this.$ul1.listview('refresh');
+            }
+            else
+              this.$ul1.trigger('create');
+          });
+        }
+      }
+      
+
+      
 //        this.$ul.listview('refresh');
       var doc = document;
       var form = this.$form = this.$('form');
