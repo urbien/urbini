@@ -241,35 +241,35 @@ define('app', [
 //      }
       
       setTimeout(function() { 
-        this.getGrabs();
+//        this.getGrabs();
         RM.sync();
       }.bind(this), 100);
     },
     
-    getGrabs: function() {
-      if (G.currentUser.guest)
-        return;
-      
-      var grabType = G.commonTypes.Grab;
-      Voc.getModels(grabType).done(function() {          
-        var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
-          model: U.getModel(grabType),
-          params: {
-            submittedBy: G.currentUser._uri,
-            canceled: false
-          }
-        });
-        
-        grabsRL.fetch({
-          success: function() {
-//            debugger;
-          },
-          error: function() {
-//            debugger;
-          }
-        });
-      });
-    },
+//    getGrabs: function() {
+//      if (G.currentUser.guest)
+//        return;
+//      
+//      var grabType = G.commonTypes.Grab;
+//      Voc.getModels(grabType).done(function() {          
+//        var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
+//          model: U.getModel(grabType),
+//          params: {
+//            submittedBy: G.currentUser._uri,
+//            canceled: false
+//          }
+//        });
+//        
+//        grabsRL.fetch({
+//          success: function() {
+////            debugger;
+//          },
+//          error: function() {
+////            debugger;
+//          }
+//        });
+//      });
+//    },
     
     setupLoginLogout: function() {
       Events.on('req-login', function(options) {
