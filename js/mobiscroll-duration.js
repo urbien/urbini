@@ -9,11 +9,11 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
       week = 604800,
       secs = [week, day, hour, minute, second],
       units = ['weeks', 'days', 'hours', 'minutes', 'seconds'],
-      abbreviations = {
-        hours: 'hrs',
-        minutes: 'mins',
-        seconds: 'secs'
-      },
+//      abbreviations = {
+//        hours: 'hrs',
+//        minutes: 'mins',
+//        seconds: 'secs'
+//      },
       defaults = {
           // Default options for the preset
           weeks: 0,
@@ -23,13 +23,19 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
           seconds: 0
       };
 
+  function clone(obj) {
+    if (!_.isObject(obj)) return obj;
+    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+  };
+
   function isNum(str) {
     return /^\d+$/.test(str);
   };
   
   function clean(d) {
     for (var i = 0; i < d.length; i++) {
-      d[i] = d[i] ? parseInt(d[i]) : 0;
+      var num = d[i];
+      d[i] = num && isNum(num) ? parseInt(num) : 0;
     }
     
     return d;
@@ -48,13 +54,22 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
     return d;
   };
   
+  function zeroes(length) {
+    var arr = [], i = 0;
+    for (; i < length; i++)
+      arr[i] = 0;
+    
+    return arr;
+  }
+  
   function getUnitWheelName(unit) {
-    return abbreviations[unit] || unit;
+//    return unit; //abbreviations[unit] || unit;
+    return unit.slice(0,1).toUpperCase() + unit.slice(1);
   };
   
   ms.presets.duration = function(inst) {
     var settings = inst.settings || {},
-        wheelNames = settings.wheels || ['days', 'hours', 'minutes'],
+        wheelNames = settings._durationWheels || ['days', 'hours', 'minutes'],
         value = 0,
         wheels = [],
         wheelNames,
@@ -69,7 +84,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
           var data = [], //wheelData[name] = {},
               w = wheels[idx] = {};
           
-          setDefaults && defaultVals.push(0);
+          setDefaults && defaultVals.push(idx ? 0 : 1);
           w[getUnitWheelName(name)] = data;
           switch (name) {
             case 'weeks': 
@@ -78,14 +93,16 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
               
               break;
             case 'days': 
-              for (var i = 0; i < 8; i++)
+              for (var i = 0; i < 365; i++)
                 data[i] = i;
               
               break;
             case 'hours':
             case 'minutes':
             case 'seconds':
-              data[i] = i;
+              for (var i = 0; i < 60; i++)
+                data[i] = i;
+              
               break;
           }
       });
@@ -128,7 +145,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
               var idx = wheelNames.indexOf(unit);
               if (idx >= 0) {
                 var val = d[idx];
-                if (val == 0)
+                if (val == 0 || !isNum(val))
                   return;
                 else                  
                   str += d[idx] + ' ' + unit;
@@ -140,18 +157,21 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
               }
             });
             
-            return str.length ? str.slice(0, str.length - 2) : str;
+            return str.length ? str.slice(0, str.length - 2) : '(none)';
           },
           
           parseValue: function() {
             var val = elm.val();
             if (!val)
-              return defaultVals;
+              return clone(defaultVals);
             
             if (typeof val === 'string') {
               val = val.trim();
               if (!val.length)
-                return defaultVals;
+                return clone(defaultVals);
+
+              if (val === '(none)')
+                return zeroes(wheelNames.length);
               
               if (isNum(val))
                 val = parseInt(val);

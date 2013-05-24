@@ -23,7 +23,7 @@ define('views/EditView', [
       var self = this;
       _.each(scrollerTypes, function(s) {
         self['scroll' + s.camelize(true)] = function(e) {
-          self.mobiscroll.apply(self, [e, s].concat(U.slice.call(arguments, 1)));
+          self.mobiscroll.apply(self, [e, s]);//.concat(U.slice.call(arguments, 1)));
         }
       });
     
@@ -207,7 +207,7 @@ define('views/EditView', [
             case 'duration':
               var isDuration = scrollerType === 'duration';
               if (isDuration)
-                settings.wheels = ['days', 'hours', 'minutes'];
+                settings._durationWheels = ['days', 'hours', 'minutes'];
               
               scroller = $(input).mobiscroll()[scrollerType](settings);
               var val = self.getValue(input) && parseInt(input.value);
@@ -1408,12 +1408,12 @@ define('views/EditView', [
         }
       }
         
-      _.each(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) {
-        var scrollers = self.$(scrollerType);
-        if (scrollers.length) {
-          $(scrollers[0]).trigger('click', [true]);
-        }
-      });
+//      _.each(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) {
+//        var scrollers = self.$(scrollerType);
+//        if (scrollers.length) {
+//          $(scrollers[0]).trigger('click', [true]);
+//        }
+//      });
       
       return this;
     },
