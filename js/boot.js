@@ -7,6 +7,8 @@ DOMReady.add( function () {
       div = d.createElement('div'),
       head = d.getElementsByTagName('head')[0];
   
+  div.className = 'mainDiv';
+  div.style.background = 'none';
   if (localStorage  &&  localStorage.getItem)
     localStorage.setItem('homePage', l.homePage);
     

@@ -1046,7 +1046,8 @@ define('globals', function() {
         leaflet: 'lib/leaflet',
         leafletMarkerCluster: 'lib/leaflet.markercluster',
         jqueryImagesloaded: 'lib/jquery.imagesloaded',
-        jqueryMasonry: 'lib/jquery.masonry'
+        jqueryMasonry: 'lib/jquery.masonry',
+        jqueryAnyStretch: 'lib/jquery.anystretch'
       },
       shim: {
         backbone: {
@@ -1125,7 +1126,7 @@ define('globals', function() {
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
   var spinner = 'app init';
-  G.showSpinner({name: spinner, timeout: 5000});
+  G.showSpinner({name: spinner, timeout: 10000});
   
   var bundles = G.bundles;
   var pre = bundles.pre;

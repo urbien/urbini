@@ -188,7 +188,6 @@ define('views/ResourceImageView', [
           // no audio, no player, fall back to imageresource
         }
       }
-      
 //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
 //      var json = res.toJSON();
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');

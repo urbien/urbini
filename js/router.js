@@ -304,7 +304,7 @@ define('router', [
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       if (query)
-        key = U.getQueryString(U.getQueryParams(key), true);
+        key = U.getQueryString(U.getQueryParams(key, model), true);
       
       var list = C.getResourceList(model, key);
       if (list && !list._lastFetchedOn)
@@ -324,7 +324,7 @@ define('router', [
         return this;
       }      
       
-      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
+      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
       var listView = new ListPage({model: list});
       
       this.CollectionViews[typeUri][key] = listView;
@@ -334,7 +334,7 @@ define('router', [
 //        update: true,
         sync: true,
         forceFetch: forceFetch,
-        _rUri: oParams,
+        rUri: oParams,
         success: _.once(function() {
           self.changePage(listView);
 //          self.loadExtras(oParams);

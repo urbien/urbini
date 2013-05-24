@@ -2,12 +2,14 @@
 define('views/HomePage', [
   'globals',
   'events',
-  'backbone'
-], function(G, Events) {
+  'utils',
+  'backbone',
+  'jqueryAnyStretch'
+], function(G, Events, U, Backbone, Jas) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow');
+      _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow', 'click');
 //      Events.on('pagehide', this.pagehide);
 //      $(document).on('pagehide',       this.pagehide);
 //      $(document).on('pagebeforeshow', this.pagebeforeshow);
@@ -21,7 +23,8 @@ define('views/HomePage', [
     },
     events: {
       'pagehide': 'pagehide',
-      'pagebeforeshow': 'pagebeforeshow'
+      'pagebeforeshow': 'pagebeforeshow',
+      'click': 'click' 
     },
 
     pagehide: function(e) {
@@ -30,7 +33,17 @@ define('views/HomePage', [
     pagebeforeshow: function(e) {
       $('#bg').show();
     },
-        
+    
+    click: function(e) {
+      var id = e.target.id;
+      if (!id  ||  !id.startsWith('hpRightPanel'))
+        return;
+      Events.stopEvent(e);
+      U.require(["views/RightMenuPanel"]).done(function(MP) {
+        self.menuPanel = new MP({viewId: 'viewHome'}).render();
+      });
+    },
+    
     render: function(options) {
       var item = $('#homePage');
       if (!item || item.length == 0) { 
@@ -40,9 +53,12 @@ define('views/HomePage', [
           $(itemS).appendTo('body');
 //          $(itemS).appendTo('#page');
         }
-      } 
+      }
+      if ($('#homePage').attr("data-stretch"))
+        $('#homePage').anystretch();
 //      if (this.first)
 //        $.mobile.initializePage();
+//      $(".demo").anystretch();
       this.first = false;
 //      this.finish();
       return this;

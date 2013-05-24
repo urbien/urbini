@@ -19,6 +19,7 @@ define('views/MapItButton', [
       return this;
     },
     mapIt: function(e) {
+      Events.stopEvent(e);
       this.toggle();
       Events.trigger('mapIt', {active: this.isOn()});
       return this;

@@ -105,7 +105,7 @@ define('resourceManager', [
           _.each(_item, function(val, prop) {
             var parsedPropName = parsePropNameFromDB(prop);
             var val = _item[prop];  
-            if (val && val._filePath) {
+            if (val  &&  val._filePath) {
               var dfd = $.Deferred();
               FileSystem.readAsBlob(val._filePath).done(function(blob) {
                 item[parsedPropName] = blob;
@@ -1096,11 +1096,11 @@ define('resourceManager', [
     saveItem: function(item, options) {
       return $.Deferred(function(defer) {
         var vocModel = item.vocModel;
-        if (!RM.isSyncPostponable(vocModel)) {
-          item.save(null, _.extend(options, {sync: true}));
-          defer.resolve();
-          return;
-        }
+//        if (!RM.isSyncPostponable(vocModel)) {
+//          item.save(undefined, _.extend(options, {sync: true}));
+//          defer.resolve();
+//          return;
+//        }
         
         var now = RM.makeTempID(),
             uri = item.getUri(),

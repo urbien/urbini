@@ -7,7 +7,7 @@ define('views/ChatView', [
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
-  var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)\//)[1] + ':8889';
+  var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -356,7 +356,9 @@ define('views/ChatView', [
       this.chatSettings = {
         channel: this.roomName,
 //        session: session,
-        session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+        
+        session: this.hasVideo ? (G.navigator.isFirefox ? RTCSession.AudioVideo : RTCSession.AudioVideoData) : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+        //session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
         onopen: function(from) {
             // to send text/data or file
 //          chatView._checkChannels();
@@ -553,6 +555,8 @@ define('views/ChatView', [
       this.chat.openNewSession(false);
 //      this.enableChat();
 //      this.chat.open();
+      
+//      this.enableChat();
     },
     
     endChat: function(onclose) {
