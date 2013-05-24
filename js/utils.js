@@ -1355,7 +1355,7 @@ define('utils', [
 //      }
     },
 
-    getFormattedDate: function(time, firstLevel) {
+    getFormattedDate: function(time, pieceOfDate) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
       var now = G.currentServerTime();
@@ -1399,22 +1399,26 @@ define('utils', [
         }
         else {
           var years = Math.round( absDayDiff / 365 );
-          var rest = (absDayDiff % 365);
+          var rest = (day_diff % 365);
           var date = '';
           if (years == 1)
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0  ||  firstLevel) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
+          
+          str = (rest == 0  ||  pieceOfDate) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000), true);
         }
         
-        var ret = '';
-        if (str.indexOf('In') == -1)
-          ret += pre;
-        ret += str;
-        if (str.indexOf(' ago') == -1)
-          ret += post;
-        return ret;
+//        var ret = '';
+//        if (str.indexOf('In') == -1)
+//          ret += pre;
+//        ret += str;
+//        if (str.indexOf(' ago') == -1)
+//          ret += post;
+        
+        pre = future && !str.startsWith(pre) && !pieceOfDate ? pre : '';
+        post = future || str.endsWith(post) || pieceOfDate ? '' : post;
+        return  pre + str + post;
       }
       
 //      var years;
