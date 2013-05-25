@@ -513,6 +513,7 @@ define('globals', function() {
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
+    hasSimplePush: !G.currentUser.guest && G.navigator.isFirefox && navigator.push,
     TAG: 'globals',
     checkpoints: [],
     tasks: {},

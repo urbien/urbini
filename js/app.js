@@ -245,7 +245,103 @@ define('app', [
       
       setTimeout(function() { 
         RM.sync();
+        App.setUpSimplePush();
       }.bind(this), 100);
+    },
+
+    _registerSimplePushChannel: function(channels) {
+      channels = _.isArray(channels) ? channels : [channels];
+      return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
+    },
+
+    _registerSimplePushChannels: function(channel) {
+      return $.Deferred(function(defer) {        
+        if (!G.hasSimplePush) {
+          defer.resolve(); // resolve so we can use $.when
+          return;
+        }
+        
+        var getSPModel = Voc.getModels(spType);
+        var reqChannel = navigator.push.register();
+        reqChannel.onsuccess = function(e) {
+          var endpoint = e.target.result;
+          getSPModel.done(function() {
+            var spModel = U.getModel(spType);
+            var simplePushAppEndpoint = new spModel({
+              endpoint: endpoint,
+              channel: channel
+            });
+            
+            simplePushAppEndpoint.save(null, {
+              success: function() {
+                defer.resolve(simplePushAppEndpoint);
+              },
+              error: function(originalModel, err, opts) {
+                debugger;
+                var code = err.code || err.status;
+                if (code === 409) {
+//                  defer.resolve(endpoint);
+                  simplePushAppEndpoint.fetch({
+                    success: function() {
+                      defer.resolve(simplePushAppEndpoint);
+                    },
+                    error: defer.resolve // resolve so we can use $.when
+                  })
+                }
+                else
+                  defer.resolve(); // resolve so we can use $.when
+              }
+            });
+          });          
+        }
+      }).promise();
+    },
+    
+    _subscribeToNotifications: function(endpointsList) {
+      navigator.mozSetMessageHandler('push', function(message) {
+        var endpoint = endpointsList.where({
+          endpoint: message.pushEndpoint;
+        })[0];
+        
+        if (!endpoint)
+          return;
+        
+        var action = endpoint.get('action');
+        var resource = U.getCachedResource(action);
+        var gotModel = Voc.getModels(actionType), 
+            gotResource = $.Deferred();
+        
+        gotModel.done(function() {
+          if (!resource) {
+            /// get resource
+            gotResource.resolve(resource);
+          }
+        });
+        
+        gotResource.done(function(resource) {
+          // run action
+        });
+      });
+    },
+    
+    setUpSimplePush: function() {
+      if (!G.hasSimplePush || G.currentUser.guest)
+        return;
+      
+      var channels = G.notificationChannels || [];
+      if (!channels.length)
+        return;
+      
+      require('simplePush', function(SimplePush) {
+        App._registerSimplePushChannels(channels).done(function(endpoints) {
+          endpoints = _.compact(endpoints);  // nuke all that failed to load
+          var endpointsList = new ResourceList(endpoints);
+          App._subscribeToNotifications(endpointsList);
+        });
+        
+        if (navigator.mozSetMessageHandler)
+          navigator.mozSetMessageHandler('push-register', App.setUpSimplePush);
+      });
     },
     
     initGrabs: function() {

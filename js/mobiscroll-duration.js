@@ -7,7 +7,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
       hour = 3600,
       day = 86400,
       week = 604800,
-      month = 30 * day,
+      month = 30.4 * day,
       year = 365.25 * day,
       secs = [year, month, week, day, hour, minute, second],
       units = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'],
