@@ -808,7 +808,7 @@ define('views/EditView', [
         return;
       
       this._submitted = true;
-      var inputs = this.inputs;
+      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
       var self = this,
           action = this.action, 
@@ -832,7 +832,7 @@ define('views/EditView', [
 //          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
 //        }
 //        else {
-        if (val && name.indexOf('_select') == -1  &&  meta[name].multiValue) {
+        if (val && name.indexOf('_select') == -1  &&  meta[name]  &&  meta[name].multiValue) { //((meta[name]  &&  meta[name].multiValue)  ||  (input.type == 'checkbox'  &&  input.checked))) {
           atts[name] = res.get(name);
           var v = val.split(',');
           atts[name + '_select'] = v;
@@ -1228,7 +1228,7 @@ define('views/EditView', [
           continue;
         _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
         
-        var h =  '<input data-formel="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+        var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
         U.addToFrag(info.frag, h);
 //        this.addProp(info);
         displayedProps[p] = true;
@@ -1260,6 +1260,8 @@ define('views/EditView', [
 
       if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
         var iCl = res.get('interfaceClass.davClassUri');
+        if (!iCl)
+          iCl = reqParams['interfaceClass.davClassUri'];
         if (iCl) {
           var self = this;
           Voc.getModels(iCl).done(function() {
@@ -1270,14 +1272,21 @@ define('views/EditView', [
             var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
             for (var prop in mustImpl) {
               var p = mustImpl[prop];
-              U.addToFrag(frag, self.interfacePropTemplate({davDisplayName: p.shortName, _uri: U.getLongUri1(p.range) + '/' + p.shortName, _checked: 'y'}));
+              var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: iCl + '/' + p.shortName};
+              if (p.comment)
+                params['comment'] = p.comment;
+
+              U.addToFrag(frag, self.interfacePropTemplate(params));
             }
               
             for (var prop in imeta) {
-              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop])
+              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
                 continue;
               var p = imeta[prop];
-              U.addToFrag(frag, self.interfacePropTemplate({davDisplayName: p.shortName, _uri: U.getLongUri1(p.range) + '/' + p.shortName}));
+              var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
+              if (p.comment)
+                params['comment'] = p.comment;
+              U.addToFrag(frag, self.interfacePropTemplate(params));
             }
             (this.$ul1 = $('#interfaceProps')).html(frag);
             if (this.$ul1.hasClass('ui-listview')) {
@@ -1332,7 +1341,7 @@ define('views/EditView', [
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select').change(this.onSelected).each(function() {
+      form.find('select', 'input[type="checkbox"]').change(this.onSelected).each(function() {
         var name = this.name;
         if (_.isUndefined(res.get(name)))
           return;

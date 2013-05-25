@@ -32,7 +32,40 @@ define('views/AddButton', [
         if (forClass  &&  forClass.length)
           colParams[forClass[0]] = params['$type'];
       }
-      this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
+      if (!U.isAssignableFrom(this.vocModel, 'Intersection')) {
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
+        return this;
+      }
+        
+      var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
+      var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
+      var aUri = colParams[a];
+      if (!aUri  &&  !bUri) {
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
+        return this;
+      }
+          
+      var title = U.getParamMap(window.location.hash)['$title'];
+      if (aUri) {
+        var params = {
+          $forResource: aUri,
+          $propA: a,
+          $propB: b,
+          $type: this.vocModel.type, 
+          $title: title
+        };
+        this.router.navigate('chooser/' + encodeURIComponent(this.vocModel.properties[b].range) + "?" + $.param(params) , {trigger: true});
+      }
+      else if (bUri) {
+        var params = {
+          $forResource: bUri,
+          $propA: a,
+          $propB: b,
+          $title: title,
+          $type: this.vocModel.type
+        };
+        this.router.navigate('chooser/' + encodeURIComponent(this.vocModel.properties[a].range) + "?" + $.param(params) , {trigger: true});
+      }
       return this;
     },
     render: function(options) {
