@@ -439,7 +439,7 @@ define('views/RightMenuPanel', [
         return;
       
       var grabbed = G.currentUser.grabbed; // maybe it should just be a regular collection, req'd after stuff loads
-      if (grabbed.length) {
+      if (grabbed  &&  grabbed.length) {
         U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grabbed'}));
         grabbed.each(function(item) {
           U.addToFrag(frag, this.menuItemTemplate({
