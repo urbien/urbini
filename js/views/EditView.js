@@ -1007,7 +1007,22 @@ define('views/EditView', [
       return true;
     },
     onSelected: function(e) {
-      var atts = {};
+      var atts = {}, res = this.resource, input = e.target;
+      if (this.isForInterfaceImplementor && input.type === 'checkbox') {
+        var checked = input.checked;
+        var val = res.get('interfaceClass.properties');
+        var props = val.split(',');
+        var idx = props.indexOf(input.value);
+        if (idx == -1 && checked)
+          this.setValues('interfaceClass.properties', val += ',' + input.value);
+        else if (idx != -1 && !checked) {
+          props.splice(idx, 1);
+          this.setValues('interfaceClass.properties', props.join(','));
+        }
+          
+        return;
+      }
+      
       if (arguments.length > 1) {
         var val = arguments[0];
         var scroller = arguments[1];
@@ -1285,7 +1300,7 @@ define('views/EditView', [
         for (var prop in mustImpl) {
           var p = mustImpl[prop];
           props += p.shortName + ',';
-          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: iCl + '/' + p.shortName};
+          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
           if (p.comment)
             params['comment'] = p.comment;
 
@@ -1364,19 +1379,11 @@ define('views/EditView', [
       // set initial values on resource
       selected.each(function() {
         var name = this.name;
-        if (_.isUndefined(res.get(name)))
+        if (_.isUndefined(res.get(name)) || self.isForInterfaceImplementor)
           return;
         
-        if (this.value) {
-          var val = this.value;
-//          if (self.isForInterfaceImplementor) {
-//            var val = res.get('interfaceClass.properties');
-//            if (val.split(',').indexOf(this.value) == -1)
-//              val += ',' + U.getShortName(this.value);         
-//          }
-          
-          self.setValues(name, val);
-        }
+        if (this.value)
+          self.setValues(name, this.value);
       });
 
       form.find("input").bind("keydown", function(event) {
