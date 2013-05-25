@@ -120,43 +120,54 @@ define('views/ResourceListItemView', [
 //        Events.defaultClickHandler(e);  
       if (this.mvProp) 
         return;
-      if (!U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
-        var p = this.parentView;
-        if (p && p.mode == G.LISTMODES.CHOOSER) {
-          Events.stopEvent(e);
-          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
-        }
-        else {
-          
-          if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
-            var params = U.getParamMap(window.location.href);
-            var app = params.application; 
-            if (app) {
-              delete params.application;
-              params.$title = this.resource.get('tag');
-              params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
+        Events.stopEvent(e);
+        var atype = this.resource.get('alertType');
+        var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
+        this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+        return;
+      }
+      var params = U.getParamMap(window.location.href);
+      if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
+        Events.stopEvent(e);
+        var type = params['$type'];
+        var p1 = params['$propA'];
+        var p2 = params['$propB'];
+        var rParams = {};
+        rParams[p1] = params['$forResource'];
+        rParams[p2] = this.resource.get('_uri');
+        rParams.$title = this.resource.get('davDisplayName');
+        if (U.isAssignableFrom(this.vocModel, "WebClass"))
+          rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
+        this.router.navigate('make/' + encodeURIComponent(type) + '?' + $.param(rParams), {trigger: true, forceFetch: true});        
+//        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+        return;        
+      }
+      var p = this.parentView;
+      if (p && p.mode == G.LISTMODES.CHOOSER) {
+        Events.stopEvent(e);
+        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+        return;
+      }
+      if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
+        var params = U.getParamMap(window.location.href);
+        var app = params.application; 
+        if (app) {
+          delete params.application;
+          params.$title = this.resource.get('tag');
+          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
 //              params['tagUses.tag.application'] = app; 
-              this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
-              return;
-            }
-          }
-
-          
-          var pr;
+          this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+          return;
+        }
+      }
+      var pr;
 //          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-            this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
 //          else {
 //            var r = U.getParamMap(window.location.href);
 //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
 //          }
-            
-        }          
-        return;
-      }
-      Events.stopEvent(e);
-      var atype = this.resource.get('alertType');
-      var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
     },
     
     render: function(options) {
