@@ -1026,7 +1026,10 @@ define('views/EditView', [
         atts[t.name] = this.getValue(t);
       }
 
-      this.setValues(atts, {onValidationError: this.fieldError});
+      var $input = $(this);
+      this.setValues(atts, {onValidationError: this.fieldError, onValidated: function() {
+        $input.parent().find('label.error').remove();
+      }});
     },
     
     setValues: function(key, val, options) {
@@ -1325,7 +1328,7 @@ define('views/EditView', [
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select').change(this.onSelected).each(function() {
+      form.find('select,input[type="checkbox"]').change(this.onSelected).each(function() {
         var name = this.name;
         if (_.isUndefined(res.get(name)))
           return;
@@ -1333,7 +1336,7 @@ define('views/EditView', [
         if (this.value)
           self.setValues(name, this.value);
       });
-      
+            
       form.find("input").bind("keydown", function(event) {
         // track enter key
         var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));

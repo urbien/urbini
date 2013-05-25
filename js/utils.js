@@ -220,7 +220,7 @@ define('utils', [
             };
             
             xhrWorker.onerror = function(err) {
-              debugger;
+//              debugger;
               defer.reject({}, "error", err);
             };
             

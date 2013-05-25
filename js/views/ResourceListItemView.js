@@ -239,7 +239,7 @@ define('views/ResourceListItemView', [
         if (params['modelName'])
           json.$title = U.makeHeaderTitle(params['modelName'], json.templateName);
         var detached = this.resource.detached;
-        json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : json._uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title})
+        json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : json._uri, detached && {templateName: json.templateName, modelDavClassUri: json.modelDavClassUri, forResource: G.currentApp._uri, $title: json.$title})
       }
       
       json['action'] = action;
