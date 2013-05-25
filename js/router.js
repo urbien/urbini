@@ -180,7 +180,7 @@ define('router', [
 //      }
       
       if (fragment.startsWith('http://')) {
-        var appPath = G.serverName + '/' + G.appRoot;
+        var appPath = G.serverName + '/' + G.pageRoot;
         if (fragment.startsWith(appPath))
           fragment = fragment.slice(appPath.length);
         else {
