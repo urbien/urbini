@@ -2144,30 +2144,6 @@ define('utils', [
       return decode ? decodeURIComponent(hash) : hash;
     },
     
-    prepForSync: function(item, vocModel, preserve) {
-      preserve = preserve || [];
-      var props = vocModel.properties;
-      var filtered = U.filterObj(item, function(key, val) {
-        if (Blob && val instanceof Blob)
-          return true;
-        
-        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
-          return false;
-        
-        if (/\./.test(key))
-          return false;        
-        
-        var prop = props[key];
-        return prop && !U.isSystemProp(key) && 
-            (_.contains('backLink', preserve) || !prop.backLink) && 
-            (U.isResourceProp(prop) || (_.contains('readOnly', preserve) || !prop.readOnly)) && // sometimes if it's readOnly, we still need it - like if it's a backlink
-            /^[a-zA-Z]+[^\.]*$/.test(key);  // is writeable, starts with a letter and doesn't contain a '.'
-      }); 
-      
-//      return U.flattenModelJson(filtered, vocModel, preserve);
-      return filtered;
-    },
-
 //    flattenModelJson: function(m, vocModel, preserve) {
 //      var vocProps = vocModel.properties;
 //      var flat = {};

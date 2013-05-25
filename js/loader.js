@@ -362,6 +362,9 @@ define('globals', function() {
     })(),
     showSpinner: function(options) {
       options = options || {};
+      if (typeof options === 'string')
+        options = {name: options};
+      
       var id = getSpinnerId(options.name);
       var cl = options.nonBlockingOverlay ? '' : 'spinner_bg';
       var color;
@@ -371,7 +374,8 @@ define('globals', function() {
           color = t0.color;
       }
       
-      var innerHTML = '<div id="spinner_container"><div id="spinner"' + (color ? ' style="' + color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
+      var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       var $spinner = $('<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>');
       $body.append($spinner);
       if (options.timeout) {
@@ -391,15 +395,14 @@ define('globals', function() {
       try {
         v = JSON.parse(v);
       } catch (err) {
-        v = {
-          All: 0, 
-          Models: 0, 
-          JS: 0, 
-          CSS: 0
-        };
       }
       
-      return v;
+      return v || {
+        All: 0, 
+        Models: 0, 
+        JS: 0, 
+        CSS: 0
+      };
     },
     
     setVersion: function(version) {

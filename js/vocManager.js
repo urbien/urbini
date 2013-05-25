@@ -138,13 +138,14 @@ define('vocManager', [
       
       var modelsDfd = $.Deferred(function(defer) {
         if (G.online)
-          return Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, willLoad, options).done(defer.resolve).fail(defer.reject);
+          Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, willLoad, options).done(defer.resolve).fail(defer.reject);
+        else {
+          Events.once('online', function(online) {
+            Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, [], _.extend({}, options, {sync: false, overwrite: true}));
+          });
           
-        Events.once('online', function(online) {
-          Voc.__fetchAndLoadModels(missingOrStale, mightBeStale, [], _.extend({}, options, {sync: false, overwrite: true}));
-        });
-        
-        Voc.loadModels(_.union(willLoad, _.values(mightBeStale.models))).done(defer.resolve).fail(defer.reject);
+          Voc.loadModels(_.union(willLoad, _.values(mightBeStale.models))).done(defer.resolve).fail(defer.reject);
+        }
       });
       
       var modelsPromise = modelsDfd.promise();

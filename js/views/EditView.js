@@ -8,6 +8,7 @@ define('views/EditView', [
   'vocManager',
   'views/BasicView'
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
+  var spinner = 'loading edit view';
   var scrollerClass = 'i-txt',
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
@@ -44,21 +45,33 @@ define('views/EditView', [
       this.action = options && options.action || 'edit';
       this.isEdit = this.action === 'edit';
       
-      // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length;
+      this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
       
-      var readyDfd = $.Deferred(function(defer) {
-        if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          }, this);
+      var self = this;
+      var modelsDfd = $.Deferred(function(defer) {
+        if (self.isForInterfaceImplementor) {
+          self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
+          Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
           defer.resolve();        
-      }.bind(this));
+      });
       
-      this.ready = readyDfd.promise();
+      // maybe move this to router
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
+      this.isCode = codemirrorModes.length;
+
+      var codemirrorDfd = $.Deferred(function(defer) {
+        if (self.isCode) {
+          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+            defer.resolve();
+          });
+        }
+        else
+          defer.resolve();        
+      });
+      
+      this.ready = $.when(codemirrorDfd.promise(), modelsDfd.promise());
       Events.on('pageChange', function(from, to) {
         // don't autosave new resources, they have to hit submit on this one...or is that weird
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
@@ -744,7 +757,7 @@ define('views/EditView', [
       var p = this.vocModel.properties[input.name];
       if (_.contains(input.classList, switchClass))
         val = input.value === 'Yes' ? true : false;
-      else if (p.multiValue)
+      else if (p && p.multiValue)
         val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
@@ -797,7 +810,7 @@ define('views/EditView', [
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
-      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass);
+      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -1130,10 +1143,15 @@ define('views/EditView', [
       
       return false;
     },
+    /**
+     * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
+     */
     render: function() {
       var args = arguments;
       this.ready.done(function() {
+        G.showSpinner(spinner);
         this.renderHelper.apply(this, args);
+        G.hideSpinner(spinner);
         this.finish();
       }.bind(this));
     },
@@ -1254,48 +1272,51 @@ define('views/EditView', [
       else
         this.$ul.trigger('create');
 
-      if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
-        var iCl = res.get('interfaceClass.davClassUri');
-        if (!iCl)
-          iCl = reqParams['interfaceClass.davClassUri'];
-        if (iCl) {
-          var self = this;
-          Voc.getModels(iCl).done(function() {
-            var frag = document.createDocumentFragment();
-            
-            var m = U.getModel(iCl);
-            var imeta = m.properties;
-            var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
-            for (var prop in mustImpl) {
-              var p = mustImpl[prop];
-              var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: iCl + '/' + p.shortName};
-              if (p.comment)
-                params['comment'] = p.comment;
+      if (this.isForInterfaceImplementor) {
+        var start = +new Date();
+       
+        var frag = document.createDocumentFragment();
+        var iCl = this._interfaceUri;
+        var m = U.getModel(iCl);
+        var imeta = m.properties;
+        var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
+        var props = '';
+        this.$ul1 = $('#interfaceProps');
+        for (var prop in mustImpl) {
+          var p = mustImpl[prop];
+          props += p.shortName + ',';
+          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: iCl + '/' + p.shortName};
+          if (p.comment)
+            params['comment'] = p.comment;
 
-              U.addToFrag(frag, self.interfacePropTemplate(params));
-            }
-              
-            for (var prop in imeta) {
-              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
-                continue;
-              var p = imeta[prop];
-              var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
-              if (p.comment)
-                params['comment'] = p.comment;
-              U.addToFrag(frag, self.interfacePropTemplate(params));
-            }
-            (this.$ul1 = $('#interfaceProps')).html(frag);
-            if (this.$ul1.hasClass('ui-listview')) {
-              this.$ul1.trigger('create');
-              this.$ul1.listview('refresh');
-            }
-            else
-              this.$ul1.trigger('create');
-          });
+//          U.addToFrag(frag, this.interfacePropTemplate(params));
+          this.$ul1.append(this.interfacePropTemplate(params));
         }
+          
+        props = props.slice(0, props.length - 1);
+        this.setValues('interfaceClass.properties', props);
+        
+        for (var prop in imeta) {
+          if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+            continue;
+          var p = imeta[prop];
+          var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
+          if (p.comment)
+            params['comment'] = p.comment;
+          
+//          U.addToFrag(frag, this.interfacePropTemplate(params));
+          this.$ul1.append(this.interfacePropTemplate(params));
+        }
+//        (this.$ul1 = $('#interfaceProps')).html(frag);
+        if (this.$ul1.hasClass('ui-listview')) {
+          this.$ul1.trigger('create');
+          this.$ul1.listview('refresh');
+        }
+        else
+          this.$ul1.trigger('create');
+        
+        console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
       }
-      
-
       
 //        this.$ul.listview('refresh');
       var doc = document;
@@ -1337,15 +1358,27 @@ define('views/EditView', [
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select,input[type="checkbox"]').change(this.onSelected).each(function() {
+      var selected = form.find('select[value],input["checkbox"][checked="checked"]');
+      selected.change(this.onSelected);
+      
+      // set initial values on resource
+      selected.each(function() {
         var name = this.name;
         if (_.isUndefined(res.get(name)))
           return;
         
-        if (this.value)
-          self.setValues(name, this.value);
+        if (this.value) {
+          var val = this.value;
+//          if (self.isForInterfaceImplementor) {
+//            var val = res.get('interfaceClass.properties');
+//            if (val.split(',').indexOf(this.value) == -1)
+//              val += ',' + U.getShortName(this.value);         
+//          }
+          
+          self.setValues(name, val);
+        }
       });
-            
+
       form.find("input").bind("keydown", function(event) {
         // track enter key
         var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
