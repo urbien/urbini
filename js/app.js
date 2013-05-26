@@ -25,6 +25,24 @@ define('app', [
     }
   };  
   
+  // provide a promise-based interface to the SimplePush API
+  var SimplePush = {};
+  _.each(['register', 'unregister', 'registrations'], function(method) {
+    SimplePush[method] = function() {
+      var args = arguments;
+      return $.Deferred(function(defer) {
+        var req = navigator.push[method];
+        req.onsuccess = function(e) {
+          defer.resolve(e.target.result);
+        };
+        
+        req.onerror = function() {
+          defer.reject.apply(defer, arguments);
+        };
+      }).promise();
+    }
+  });
+  
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;
@@ -253,6 +271,10 @@ define('app', [
       channels = _.isArray(channels) ? channels : [channels];
       return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
     },
+    
+    _unregisterSimplePushEndpoint: function(endpoint) {
+      return SimplePush.unregister();
+    },
 
     _registerSimplePushChannels: function(channel) {
       return $.Deferred(function(defer) {        
@@ -262,38 +284,34 @@ define('app', [
         }
         
         var getSPModel = Voc.getModels(spType);
-        var reqChannel = navigator.push.register();
-        reqChannel.onsuccess = function(e) {
-          var endpoint = e.target.result;
-          getSPModel.done(function() {
-            var spModel = U.getModel(spType);
-            var simplePushAppEndpoint = new spModel({
-              endpoint: endpoint,
-              channel: channel
-            });
-            
-            simplePushAppEndpoint.save(null, {
-              success: function() {
-                defer.resolve(simplePushAppEndpoint);
-              },
-              error: function(originalModel, err, opts) {
-                debugger;
-                var code = err.code || err.status;
-                if (code === 409) {
+        $.when(SimplePush.register(), getSPModel).done(function(endpoint) {
+          var spModel = U.getModel(spType);
+          var simplePushAppEndpoint = new spModel({
+            endpoint: endpoint,
+            channel: channel
+          });
+          
+          simplePushAppEndpoint.save(null, {
+            success: function() {
+              defer.resolve(simplePushAppEndpoint);
+            },
+            error: function(originalModel, err, opts) {
+              debugger;
+              var code = err.code || err.status;
+              if (code === 409) {
 //                  defer.resolve(endpoint);
-                  simplePushAppEndpoint.fetch({
-                    success: function() {
-                      defer.resolve(simplePushAppEndpoint);
-                    },
-                    error: defer.resolve // resolve so we can use $.when
-                  })
-                }
-                else
-                  defer.resolve(); // resolve so we can use $.when
+                simplePushAppEndpoint.fetch({
+                  success: function() {
+                    defer.resolve(simplePushAppEndpoint);
+                  },
+                  error: defer.resolve // resolve so we can use $.when
+                })
               }
-            });
-          });          
-        }
+              else
+                defer.resolve(); // resolve so we can use $.when
+            }
+          });
+        });
       }).promise();
     },
     
@@ -332,7 +350,11 @@ define('app', [
       if (!channels.length)
         return;
       
-      require('simplePush', function(SimplePush) {
+      SimplePush.registrations().done(function(registrations) {
+        channels = _.filter(channels, function() {
+          
+        });
+        
         App._registerSimplePushChannels(channels).done(function(endpoints) {
           endpoints = _.compact(endpoints);  // nuke all that failed to load
           var endpointsList = new ResourceList(endpoints);
