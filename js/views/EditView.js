@@ -1001,42 +1001,42 @@ define('views/EditView', [
       this.refreshScrollers();
     },
     click: function(e) {
-      var from = e.target;
-      if (from.tagName === 'select') {
-        Events.stopEvent(e);
-        return;
-      }
-      var div = from;
-      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
-        div = div.parentElement; 
-        continue;
-      }
-      var inp = $(div).find('input[type="checkbox"]');
-      if (!inp  ||  !inp.length) 
-        return;
-//      Events.stopEvent(e);
-//      var val = this.resource.get('interfaceClass.properties');
-      var name = inp[0].name;
-      var val = this.resource.get(name);
-      var iVal = inp[0].value;
-      var idx = iVal.lastIndexOf('/');
-      if (idx != -1)
-        iVal = iVal.substring(idx + 1);
-      var props = val.split(',');
-      var idx = props.indexOf(iVal);
-      if (!inp[0].checked) {
-//        inp[0].checked = true;
-        if (idx == -1)
-          this.setValues(name, val += ',' + iVal);
-//          this.setValues('interfaceClass.properties', val += ',' + iVal);
-      }
-      else if (idx != -1) {
-//        inp[0].checked = false;
-        props.splice(idx, 1);
-        this.setValues(name, props.join(','));
-//        this.setValues('interfaceClass.properties', props.join(','));
-      }
-      return true;
+//      var from = e.target;
+//      if (from.tagName === 'select') {
+//        Events.stopEvent(e);
+//        return;
+//      }
+//      var div = from;
+//      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
+//        div = div.parentElement; 
+//        continue;
+//      }
+//      var inp = $(div).find('input[type="checkbox"]');
+//      if (!inp  ||  !inp.length) 
+//        return;
+////      Events.stopEvent(e);
+////      var val = this.resource.get('interfaceClass.properties');
+//      var name = inp[0].name;
+//      var val = this.resource.get(name);
+//      var iVal = inp[0].value;
+//      var idx = iVal.lastIndexOf('/');
+//      if (idx != -1)
+//        iVal = iVal.substring(idx + 1);
+//      var props = val.split(',');
+//      var idx = props.indexOf(iVal);
+//      if (!inp[0].checked) {
+////        inp[0].checked = true;
+//        if (idx == -1)
+//          this.setValues(name, val += ',' + iVal);
+////          this.setValues('interfaceClass.properties', val += ',' + iVal);
+//      }
+//      else if (idx != -1) {
+////        inp[0].checked = false;
+//        props.splice(idx, 1);
+//        this.setValues(name, props.join(','));
+////        this.setValues('interfaceClass.properties', props.join(','));
+//      }
+//      return true;
     },
     onSelected: function(e) {
       var atts = {}, res = this.resource, input = e.target;
@@ -1374,6 +1374,8 @@ define('views/EditView', [
             else
               self.$ul1.trigger('create');
             
+            var checked = self.$form.find('input[type="checkbox"]');
+            checked.change(self.onSelected);
             console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
           });
         }
@@ -1419,7 +1421,7 @@ define('views/EditView', [
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      var selected = form.find('select[value],input["checkbox"][checked="checked"]');
+      var selected = form.find('select');
       selected.change(this.onSelected);
       
       // set initial values on resource
