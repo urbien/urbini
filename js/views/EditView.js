@@ -1003,7 +1003,32 @@ define('views/EditView', [
         Events.stopEvent(e);
         return;
       }
-      
+      var div = from;
+      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
+        div = div.parentElement; 
+        continue;
+      }
+      var inp = $(div).find('input[type="checkbox"]');
+      if (!inp  ||  !inp.length) 
+        return;
+//      Events.stopEvent(e);
+      var val = this.resource.get('interfaceClass.properties');
+      var iVal = inp[0].value;
+      var idx = iVal.lastIndexOf('/');
+      if (idx != -1)
+        iVal = iVal.substring(idx + 1);
+      var props = val.split(',');
+      var idx = props.indexOf(iVal);
+      if (!inp[0].checked) {
+//        inp[0].checked = true;
+        if (idx == -1)
+          this.setValues('interfaceClass.properties', val += ',' + iVal);
+      }
+      else if (idx != -1) {
+//        inp[0].checked = false;
+        props.splice(idx, 1);
+        this.setValues('interfaceClass.properties', props.join(','));
+      }
       return true;
     },
     onSelected: function(e) {
