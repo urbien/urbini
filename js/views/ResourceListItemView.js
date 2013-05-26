@@ -161,13 +161,17 @@ define('views/ResourceListItemView', [
           return;
         }
       }
-      var pr;
+      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
+        this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+      else {
+        var pr;
 //          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
         this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
 //          else {
 //            var r = U.getParamMap(window.location.href);
 //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
 //          }
+      }
     },
     
     render: function(options) {
@@ -238,7 +242,7 @@ define('views/ResourceListItemView', [
         return this;
       }
       var params = U.getQueryParams(window.location.hash);
-      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
+      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
       if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
         var text = json.templateText;
@@ -566,6 +570,8 @@ define('views/ResourceListItemView', [
       }
       
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
+//      var action = U.isAssignableFrom(this.vocModel, "InterfaceImplementor") ? 'edit' : 'view';
+      
 //      tmpl_data['_uri'] = rUri;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)

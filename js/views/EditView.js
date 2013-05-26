@@ -46,17 +46,19 @@ define('views/EditView', [
       this.isEdit = this.action === 'edit';
       
       this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
-      
       var self = this;
+      /*
       var modelsDfd = $.Deferred(function(defer) {
         if (self.isForInterfaceImplementor) {
           self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
+          if (!self._interfaceUri)
+            defer.resolve();   
           Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
           defer.resolve();        
       });
-      
+      */
       // maybe move this to router
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
@@ -71,7 +73,7 @@ define('views/EditView', [
           defer.resolve();        
       });
       
-      this.ready = $.when(codemirrorDfd.promise(), modelsDfd.promise());
+      this.ready = $.when(codemirrorDfd.promise());
       Events.on('pageChange', function(from, to) {
         // don't autosave new resources, they have to hit submit on this one...or is that weird
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
@@ -439,7 +441,7 @@ define('views/EditView', [
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor")) { 
+      if (this.isForInterfaceImplementor) { 
         var rParams = {
             $prop: pr.shortName,
             $type:  this.vocModel.type,
@@ -579,7 +581,7 @@ define('views/EditView', [
         return;
       }  
       
-      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
+      if (this.isForInterfaceImplementor) {
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
         return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
@@ -810,7 +812,8 @@ define('views/EditView', [
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
-      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -1003,21 +1006,54 @@ define('views/EditView', [
         Events.stopEvent(e);
         return;
       }
-      
+      var div = from;
+      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
+        div = div.parentElement; 
+        continue;
+      }
+      var inp = $(div).find('input[type="checkbox"]');
+      if (!inp  ||  !inp.length) 
+        return;
+//      Events.stopEvent(e);
+//      var val = this.resource.get('interfaceClass.properties');
+      var name = inp[0].name;
+      var val = this.resource.get(name);
+      var iVal = inp[0].value;
+      var idx = iVal.lastIndexOf('/');
+      if (idx != -1)
+        iVal = iVal.substring(idx + 1);
+      var props = val.split(',');
+      var idx = props.indexOf(iVal);
+      if (!inp[0].checked) {
+//        inp[0].checked = true;
+        if (idx == -1)
+          this.setValues(name, val += ',' + iVal);
+//          this.setValues('interfaceClass.properties', val += ',' + iVal);
+      }
+      else if (idx != -1) {
+//        inp[0].checked = false;
+        props.splice(idx, 1);
+        this.setValues(name, props.join(','));
+//        this.setValues('interfaceClass.properties', props.join(','));
+      }
       return true;
     },
     onSelected: function(e) {
       var atts = {}, res = this.resource, input = e.target;
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
         var checked = input.checked;
-        var val = res.get('interfaceClass.properties');
+//        var val = res.get('interfaceClass.properties');
+        var val = res.get(input.name);
         var props = val.split(',');
         var idx = props.indexOf(input.value);
         if (idx == -1 && checked)
-          this.setValues('interfaceClass.properties', val += ',' + input.value);
+//          this.setValues('interfaceClass.properties', val += ',' + input.value);
+          this.setValues(input.name, val += ',' + input.value);
+
         else if (idx != -1 && !checked) {
           props.splice(idx, 1);
-          this.setValues('interfaceClass.properties', props.join(','));
+          this.setValues(input.name, props.join(','));
+//          this.setValues('interfaceClass.properties', props.join(','));
         }
           
         return;
@@ -1289,48 +1325,58 @@ define('views/EditView', [
 
       if (this.isForInterfaceImplementor) {
         var start = +new Date();
-       
-        var frag = document.createDocumentFragment();
-        var iCl = this._interfaceUri;
-        var m = U.getModel(iCl);
-        var imeta = m.properties;
-        var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
-        var props = '';
-        this.$ul1 = $('#interfaceProps');
-        for (var prop in mustImpl) {
-          var p = mustImpl[prop];
-          props += p.shortName + ',';
-          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
-          if (p.comment)
-            params['comment'] = p.comment;
-
-//          U.addToFrag(frag, this.interfacePropTemplate(params));
-          this.$ul1.append(this.interfacePropTemplate(params));
+        var iCl = res.get('interfaceClass.davClassUri');
+        if (!iCl)
+          iCl = reqParams['interfaceClass.davClassUri'];
+        if (iCl) {
+          var self = this;
+          Voc.getModels(iCl).done(function() {
+            var frag = document.createDocumentFragment();
+            var m = U.getModel(iCl);
+            var imeta = m.properties;
+            var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
+            var props = '';
+            self.$ul1 = $('#interfaceProps');
+            for (var prop in mustImpl) {
+              var p = mustImpl[prop];
+              props += p.shortName + ',';
+              var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
+              if (p.comment)
+                params['comment'] = p.comment;
+    
+    //          U.addToFrag(frag, this.interfacePropTemplate(params));
+              self.$ul1.append(self.interfacePropTemplate(params));
+            }
+              
+            props = props.slice(0, props.length - 1);
+            self.setValues('interfaceProperties', props);
+    //        this.setValues('interfaceClass.properties', props);
+            var interfaceProperties = self.resource.get('interfaceProperties');
+            var ip = interfaceProperties ? interfaceProperties.split(',') : null;
+            
+            for (var prop in imeta) {
+              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+                continue;
+              var p = imeta[prop];
+              var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
+              if (p.comment)
+                params['comment'] = p.comment;
+              if (ip  &&  ip.indexOf(prop) != -1)
+                params['checked'] = 'y';
+    //          U.addToFrag(frag, this.interfacePropTemplate(params));
+              self.$ul1.append(self.interfacePropTemplate(params));
+            }
+    //        (this.$ul1 = $('#interfaceProps')).html(frag);
+            if (self.$ul1.hasClass('ui-listview')) {
+              self.$ul1.trigger('create');
+              self.$ul1.listview('refresh');
+            }
+            else
+              self.$ul1.trigger('create');
+            
+            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
+          });
         }
-          
-        props = props.slice(0, props.length - 1);
-        this.setValues('interfaceClass.properties', props);
-        
-        for (var prop in imeta) {
-          if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
-            continue;
-          var p = imeta[prop];
-          var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
-          if (p.comment)
-            params['comment'] = p.comment;
-          
-//          U.addToFrag(frag, this.interfacePropTemplate(params));
-          this.$ul1.append(this.interfacePropTemplate(params));
-        }
-//        (this.$ul1 = $('#interfaceProps')).html(frag);
-        if (this.$ul1.hasClass('ui-listview')) {
-          this.$ul1.trigger('create');
-          this.$ul1.listview('refresh');
-        }
-        else
-          this.$ul1.trigger('create');
-        
-        console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
       }
       
 //        this.$ul.listview('refresh');
