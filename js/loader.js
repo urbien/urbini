@@ -742,7 +742,6 @@ define('globals', function() {
     workers: {},
     workerQueues: {},
     isWorkerAvailable: function(worker) {
-//      return !worker.onerror && !worker.onmessage;
       return !worker.__lablzTaken;
     },
     
@@ -778,8 +777,8 @@ define('globals', function() {
      * when you're done with a worker, let it go with this method so that others can use it
      */
     recycleXhrWorker: function(worker) {
-//      worker.onerror = null;
-//      worker.onmessage = null;
+      worker.onerror = null;
+      worker.onmessage = null;
       worker.__lablzTaken = false;
       var q = G.workerQueues[worker._taskType];
       if (q && q.length)

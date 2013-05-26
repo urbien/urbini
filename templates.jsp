@@ -1134,22 +1134,22 @@
     </ul>
     
     <div name="errors" style="float:left"></div>
+    <div data-role="fieldcontain" id="ip">
+      <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">Uncheck All</a></div>
+      </fieldset>
+      <fieldset data-role="controlgroup" id="interfaceProps">
+      </fieldset>
+    </div>
+    
     <div class="ui-body ui-body-b">
-    {{ if (obj.noCancel) {  }} 
-        <button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button>
-    {{ }                    }}
-    {{ if (!obj.noCancel) { }}
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
         <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
       </fieldset>
-    {{ }                    }}
     </div>
 
-    <div data-role="fieldcontain" id="ip">
-      <fieldset data-role="controlgroup" id="interfaceProps">
-      </fieldset>
-    </div>
   </form>
   <br/>
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
@@ -1173,12 +1173,14 @@
 
 <script type="text/template" id="interfacePropTemplate">
   <!-- a interface props chooser input for edit forms -->
-  <div class="ui-controlgroup-controls">
+  <div class="ui-controlgroup-controls" style="width:100%">
     {{ var id = G.nextId() }}
     <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
-    <input data-formel="true" type="checkbox" name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
-    <label for="{{= id }}">{{= davDisplayName }}
-    {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
+    <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <label for="{{= id }}">
+      {{= davDisplayName }} 
+      {{= obj.required ? '(Required)' : '' }}
+      {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
     </label>
   </div>
 </script>

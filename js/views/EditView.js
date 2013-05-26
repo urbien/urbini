@@ -31,7 +31,8 @@ define('views/EditView', [
     
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
+                      'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -99,14 +100,30 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click .cancel': 'cancel',
-      'submit form': 'submit',
-      'click .resourceProp': 'chooser',
-      'click input[data-duration]': 'scrollDuration',
-      'click input[data-date]': 'scrollDate',
+      'click .cancel'                     :'cancel',
+      'submit form'                       :'submit',
+      'click .resourceProp'               :'chooser',
+      'click input[data-duration]'        :'scrollDuration',
+      'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
-      'click .cameraCapture' : 'cameraCapture',
-      'click': 'click'
+      'click .cameraCapture'              :'cameraCapture',
+      'click #check-all'                  :'checkAll',
+      'click #uncheck-all'                :'uncheckAll',
+      'click'                             :'click'
+    },
+
+    /** 
+     * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    checkAll: function() {
+      this.$form.find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+    },
+
+    /**
+     * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    uncheckAll: function() {
+      this.$form.find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
     },
 
     capturedImage: function(options) {
@@ -584,7 +601,10 @@ define('views/EditView', [
       if (this.isForInterfaceImplementor) {
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {
+          domain: res.get('implementor'), 
+          $title: title
+        }), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
         var propType = res.get('propertyType');
@@ -1324,7 +1344,7 @@ define('views/EditView', [
         this.$ul.trigger('create');
 
       if (this.isForInterfaceImplementor) {
-        var start = +new Date();
+//        var start = +new Date();
         var iCl = res.get('interfaceClass.davClassUri');
         if (!iCl)
           iCl = reqParams['interfaceClass.davClassUri'];
@@ -1333,40 +1353,36 @@ define('views/EditView', [
           Voc.getModels(iCl).done(function() {
             var frag = document.createDocumentFragment();
             var m = U.getModel(iCl);
-            var imeta = m.properties;
-            var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
+            var imeta = _.toArray(m.properties).sort(function(a, b) {
+              return a.mustImplement ? -1 : 1;
+            });
+            
+            var interfaceProperties = self.resource.get('interfaceProperties');
+            var ip = interfaceProperties ? interfaceProperties.split(',') : [];
             var props = '';
             self.$ul1 = $('#interfaceProps');
-            for (var prop in mustImpl) {
-              var p = mustImpl[prop];
-              props += p.shortName + ',';
-              var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
-              if (p.comment)
-                params['comment'] = p.comment;
-    
-    //          U.addToFrag(frag, this.interfacePropTemplate(params));
-              self.$ul1.append(self.interfacePropTemplate(params));
-            }
+            _.each(imeta, function(p) {
+              var prop = p.shortName;
+              if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+                return;
               
+              if (p.mustImplement || ip.indexOf(prop) != -1)
+                props += prop + ',';
+              
+              U.addToFrag(frag, self.interfacePropTemplate({
+                davDisplayName: U.getPropDisplayName(p), 
+                _checked: p.mustImplement || _.contains(ip, prop) ? 'y' : undefined,
+                disabled: p.mustImplement,
+                required: p.mustImplement,
+                interfaceProps: prop, 
+                comment: p.comment
+              }));
+            });
+            
             props = props.slice(0, props.length - 1);
             self.setValues('interfaceProperties', props);
-    //        this.setValues('interfaceClass.properties', props);
-            var interfaceProperties = self.resource.get('interfaceProperties');
-            var ip = interfaceProperties ? interfaceProperties.split(',') : null;
             
-            for (var prop in imeta) {
-              if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
-                continue;
-              var p = imeta[prop];
-              var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
-              if (p.comment)
-                params['comment'] = p.comment;
-              if (ip  &&  ip.indexOf(prop) != -1)
-                params['checked'] = 'y';
-    //          U.addToFrag(frag, this.interfacePropTemplate(params));
-              self.$ul1.append(self.interfacePropTemplate(params));
-            }
-    //        (this.$ul1 = $('#interfaceProps')).html(frag);
+            (this.$ul1 = $('#interfaceProps')).html(frag);
             if (self.$ul1.hasClass('ui-listview')) {
               self.$ul1.trigger('create');
               self.$ul1.listview('refresh');
@@ -1374,9 +1390,9 @@ define('views/EditView', [
             else
               self.$ul1.trigger('create');
             
-            var checked = self.$form.find('input[type="checkbox"]');
-            checked.change(self.onSelected);
-            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
+            var checkboxes = self.$form.find('input[type="checkbox"]');
+            checkboxes.change(self.onSelected);
+//            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
           });
         }
       }
@@ -1516,6 +1532,10 @@ define('views/EditView', [
         }
       });
       
+      form.find('fieldset input[type="checkbox"]').each(function() {
+        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
+      });
+
       return this;
     },
     
