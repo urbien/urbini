@@ -1175,7 +1175,8 @@
   <!-- a interface props chooser input for edit forms -->
   <div class="ui-controlgroup-controls">
     {{ var id = G.nextId() }}
-    <input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+    <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
+    <input data-formel="true" type="checkbox" name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
     <label for="{{= id }}">{{= davDisplayName }}
     {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
     </label>
