@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/EditView', [
   'globals',
   'events', 
   'error', 
@@ -8,44 +8,70 @@ define([
   'vocManager',
   'views/BasicView'
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
+  var spinner = 'loading edit view';
+  var scrollerClass = 'i-txt',
+      switchClass = 'boolean',
+      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
+      
+  
   function willShow(res, prop, role) {
     var p = prop.shortName;
     return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
   };
-
+  
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     initialize: function(options) {
+      var self = this;
+      _.each(scrollerTypes, function(s) {
+        self['scroll' + s.camelize(true)] = function(e) {
+          self.mobiscroll.apply(self, [e, s].concat(U.slice.call(arguments, 1)));
+        }
+      });
+    
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
+      this.makeTemplate('interfacePropTemplate', 'interfacePropTemplate', type);
       this.reqParams = U.getParamMap(window.location.href);
       
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
       this.isEdit = this.action === 'edit';
       
-      // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length;
+      this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
       
-      var readyDfd = $.Deferred(function(defer) {
-        if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          }, this);
+      var self = this;
+      var modelsDfd = $.Deferred(function(defer) {
+        if (self.isForInterfaceImplementor) {
+          self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
+          Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
           defer.resolve();        
-      }.bind(this));
+      });
       
-      this.ready = readyDfd.promise();
+      // maybe move this to router
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
+      this.isCode = codemirrorModes.length;
+
+      var codemirrorDfd = $.Deferred(function(defer) {
+        if (self.isCode) {
+          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+            defer.resolve();
+          });
+        }
+        else
+          defer.resolve();        
+      });
+      
+      this.ready = $.when(codemirrorDfd.promise(), modelsDfd.promise());
       Events.on('pageChange', function(from, to) {
         // don't autosave new resources, they have to hit submit on this one...or is that weird
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
@@ -60,7 +86,7 @@ define([
 //          this.resource.save();
       }.bind(this));
 
-      Events.on('active', function(active) {
+      this.on('active', function(active) {
         if (active) {
           this._canceled = false;
           this._submitted = false;
@@ -76,7 +102,7 @@ define([
       'click .resourceProp': 'chooser',
       'click input[data-duration]': 'scrollDuration',
       'click input[data-date]': 'scrollDate',
-      'click select[data-enum]': 'scrollEnum',
+//      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture' : 'cameraCapture',
       'click': 'click'
     },
@@ -139,24 +165,43 @@ define([
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-    scrollDate: function(e) {
-      this.mobiscroll(e, 'date');
+    getScroller: function(prop, input) {
+      var settings = {
+        theme: 'jqm',
+        display: 'modal',
+        mode:'scroller',
+        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
+        label: U.getPropDisplayName(prop),
+        shortName: prop.shortName,
+        onSelect: this.onSelected,
+        input: input
+      };
+      
+      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+        return _.has(input.dataset, type);
+      });
+
+      var scroller;
+      switch (scrollerType) {
+        case 'date':
+        case 'duration':
+          var isDate = scrollerType === 'date';
+          scroller = $(input).mobiscroll()[scrollerType](settings);
+          var val = input.value && parseInt(input.value);
+          if (typeof val === 'number')
+            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+          
+          break;
+      }
+      
+      return scroller;
     },
 
-    scrollDuration: function(e) {
-      this.mobiscroll(e, 'duration');
-    },
-
-    scrollEnum: function(e) {
-      this.mobiscroll(e, 'enum');
-    },
-
-    mobiscroll: function(e, scrollerType) {
-      var inits = this.initializedScrollers = this.initializedScrollers || {};
-      if (inits[scrollerType])
+    mobiscroll: function(e, scrollerType, dontClick) {
+      if (this.fetchingScrollers)
         return;
       
-      inits[scrollerType] = true;
+      this.fetchingScrollers = true;
       $(e.target).blur(); // hack to suppress keyboard that would open on this input field
       Events.stopEvent(e);
       
@@ -174,58 +219,13 @@ define([
         modules.push('mobiscroll-duration');
       
       U.require(modules, function() {
-        _.each(scrollers, function(input) {
-          var name = input.name;
-          var prop = meta[name];
-          // default to enum
-          var settings = {
-            theme: 'jqm',
-            display: 'modal',
-            mode:'scroller',
-            label: U.getPropDisplayName(prop),
-            shortName: name,
-            onSelect: self.onSelected,
-            input: input
-          };
-
-          scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-            return _.has(input.dataset, type);
-          });
-//          var scroller;
-//          if (scrollerType === 'enum') {
-//            var type = U.getLongUri1(prop.facet),
-//                values = _.pluck(G.typeToEnum[type].values, 'displayName');
-//            
-//            scrollerModule.makeEnumScroller(type, values);
-//            scroller = $(this).mobiscroll()[type](settings);
-//          }
-//          else
-          var scroller;
-//          var scroller = $(this).mobiscroll()['duration'](settings);
-          switch (scrollerType) {
-            case 'date':
-            case 'duration':
-              var isDate = scrollerType === 'date';
-              scroller = $(input).mobiscroll()[scrollerType](settings);
-              var val = input.value && parseInt(input.value);
-              if (typeof val === 'number')
-                scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-              
-              break;
-//            default:
-//              var wheel = _.pluck(G.typeToEnum[U.getLongUri1(prop.facet)].values, 'displayName');
-//              settings.wheels = [wheel];
-//              scroller = $(input).mobiscroll().select(settings);
-//              var val = input.value;
-//              if (val)
-//                scroller.mobiscroll('setValue', val, true);
-//              
-//              break;            
-          }
-          
-          if (name === thisName)
-            scroller.click().focus();
-        });
+        self.loadedScrollers = true;
+        self.refreshScrollers();
+        if (!dontClick) {
+          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
+          if (scroller)
+            $(scroller).click().focus();
+        }
       });
     },
 
@@ -319,6 +319,8 @@ define([
           var resName = U.getDisplayName(chosenRes);
           if (resName)
             props[prop + '.displayName'] = resName;
+          if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
+            props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
           this.setValues(props, {skipValidation: true, skipRefresh: false});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
@@ -492,11 +494,23 @@ define([
       return this.$form.find('[data-formEl]');
     },
     getScrollers: function() {
-      return this.$form.find('.i-txt');
+      return this.$form.find('.' + scrollerClass);
+    },
+    
+    refreshScrollers: function() {
+      if (this.loadedScrollers) {
+        var meta = this.vocModel.properties;
+        var self = this;
+        this.getScrollers().each(function() {
+          $(this).mobiscroll('destroy');
+          var prop = meta[this.name];
+          self.getScroller(prop, this);
+        });
+      }
     },
     isScroller: function(input) {
       input = input instanceof $ ? input : $(input);
-      return input.hasClass('i-txt');
+      return input.hasClass(scrollerClass);
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -741,24 +755,13 @@ define([
       var val;
       
       var p = this.vocModel.properties[input.name];
-      if (p  &&  p.multiValue)
+      if (_.contains(input.classList, switchClass))
+        val = input.value === 'Yes' ? true : false;
+      else if (p && p.multiValue)
         val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
 
-      if (!_.isUndefined(val))
-        return val;
-        
-      if (_.contains(input.classList, 'boolean'))
-        return val === 'Yes' ? true : false;
-      else {
-        for (var i = 0; i < scrollerTypes.length; i++) {
-          var data = jInput.data('data-' + scrollerTypes[i]);
-          if (data)
-            return data;
-        }
-      }
-      
       return val;
     },
     
@@ -805,8 +808,9 @@ define([
         return;
       
       this._submitted = true;
-      var inputs = this.inputs;
+      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
+      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -829,7 +833,7 @@ define([
 //          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
 //        }
 //        else {
-        if (val && name.indexOf('_select') == -1  &&  meta[name].multiValue) {
+        if (val && name.indexOf('_select') == -1  &&  meta[name]  &&  meta[name].multiValue) { //((meta[name]  &&  meta[name].multiValue)  ||  (input.type == 'checkbox'  &&  input.checked))) {
           atts[name] = res.get(name);
           var v = val.split(',');
           atts[name + '_select'] = v;
@@ -986,7 +990,12 @@ define([
           return this;
       }
       
+      this.getScrollers().each(function() {
+        $(this).mobiscroll('destroy');        
+      });
+      
       this.render();
+      this.refreshScrollers();
     },
     click: function(e) {
       var from = e.target;
@@ -998,7 +1007,22 @@ define([
       return true;
     },
     onSelected: function(e) {
-      var atts = {};
+      var atts = {}, res = this.resource, input = e.target;
+      if (this.isForInterfaceImplementor && input.type === 'checkbox') {
+        var checked = input.checked;
+        var val = res.get('interfaceClass.properties');
+        var props = val.split(',');
+        var idx = props.indexOf(input.value);
+        if (idx == -1 && checked)
+          this.setValues('interfaceClass.properties', val += ',' + input.value);
+        else if (idx != -1 && !checked) {
+          props.splice(idx, 1);
+          this.setValues('interfaceClass.properties', props.join(','));
+        }
+          
+        return;
+      }
+      
       if (arguments.length > 1) {
         var val = arguments[0];
         var scroller = arguments[1];
@@ -1008,12 +1032,12 @@ define([
         
         switch (settings.__type) {
           case 'date': {
-            var millis = atts[name] = new Date(val).getTime();
+            atts[name] = new Date(val).getTime();
 //            $(input).data('data-date', millis);
             break;
           }
           case 'duration': {
-            var secs = atts[name] = scroller.getSeconds();
+            atts[name] = scroller.getSeconds();
 //            $(input).data('data-duration', secs);
             break;
           }
@@ -1027,10 +1051,13 @@ define([
       }
       else {
         var t = e.target;
-        atts[t.name] = t.value;
+        atts[t.name] = this.getValue(t);
       }
 
-      this.setValues(atts, {onValidationError: this.fieldError});
+      var $input = $(this);
+      this.setValues(atts, {onValidationError: this.fieldError, onValidated: function() {
+        $input.parent().find('label.error').remove();
+      }});
     },
     
     setValues: function(key, val, options) {
@@ -1131,10 +1158,15 @@ define([
       
       return false;
     },
+    /**
+     * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
+     */
     render: function() {
       var args = arguments;
       this.ready.done(function() {
+        G.showSpinner(spinner);
         this.renderHelper.apply(this, args);
+        G.hideSpinner(spinner);
         this.finish();
       }.bind(this));
     },
@@ -1151,17 +1183,6 @@ define([
         this.originalResource = res.toJSON();
       
       var type = res.type;
-      
-      if (U.isAssignableFrom(vocModel, "system/designer/InterfaceImplementor")) {
-        var iCl = res.get('interfaceClass');
-        if (iCl) {
-          var m = G.getModel(iCl);
-          var imeta = m.properties;
-          if (imeta) {
-            
-          }
-        }
-      }
       
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
@@ -1236,7 +1257,7 @@ define([
           continue;
         _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
         
-        var h =  '<input data-formel="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+        var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
         U.addToFrag(info.frag, h);
 //        this.addProp(info);
         displayedProps[p] = true;
@@ -1266,6 +1287,52 @@ define([
       else
         this.$ul.trigger('create');
 
+      if (this.isForInterfaceImplementor) {
+        var start = +new Date();
+       
+        var frag = document.createDocumentFragment();
+        var iCl = this._interfaceUri;
+        var m = U.getModel(iCl);
+        var imeta = m.properties;
+        var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
+        var props = '';
+        this.$ul1 = $('#interfaceProps');
+        for (var prop in mustImpl) {
+          var p = mustImpl[prop];
+          props += p.shortName + ',';
+          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
+          if (p.comment)
+            params['comment'] = p.comment;
+
+//          U.addToFrag(frag, this.interfacePropTemplate(params));
+          this.$ul1.append(this.interfacePropTemplate(params));
+        }
+          
+        props = props.slice(0, props.length - 1);
+        this.setValues('interfaceClass.properties', props);
+        
+        for (var prop in imeta) {
+          if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+            continue;
+          var p = imeta[prop];
+          var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
+          if (p.comment)
+            params['comment'] = p.comment;
+          
+//          U.addToFrag(frag, this.interfacePropTemplate(params));
+          this.$ul1.append(this.interfacePropTemplate(params));
+        }
+//        (this.$ul1 = $('#interfaceProps')).html(frag);
+        if (this.$ul1.hasClass('ui-listview')) {
+          this.$ul1.trigger('create');
+          this.$ul1.listview('refresh');
+        }
+        else
+          this.$ul1.trigger('create');
+        
+        console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
+      }
+      
 //        this.$ul.listview('refresh');
       var doc = document;
       var form = this.$form = this.$('form');
@@ -1306,15 +1373,19 @@ define([
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select').change(this.onSelected).each(function() {
+      var selected = form.find('select[value],input["checkbox"][checked="checked"]');
+      selected.change(this.onSelected);
+      
+      // set initial values on resource
+      selected.each(function() {
         var name = this.name;
-        if (_.isUndefined(res.get(name)))
+        if (_.isUndefined(res.get(name)) || self.isForInterfaceImplementor)
           return;
         
         if (this.value)
           self.setValues(name, this.value);
       });
-      
+
       form.find("input").bind("keydown", function(event) {
         // track enter key
         var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
@@ -1385,6 +1456,17 @@ define([
         }
       }
         
+      // only trigger the first you find
+      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
+        var scrollers = self.$(scrollerType);
+        if (scrollers.length) {
+          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
+          if (scrollerWithValue) {
+            $(scrollerWithValue).trigger('click', [true]);
+            return true;
+          }
+        }
+      });
       
       return this;
     },

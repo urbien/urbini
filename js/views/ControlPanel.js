@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/ControlPanel', [
   'globals',
   'underscore', 
   'events', 
@@ -43,16 +43,67 @@ define([
       
       Events.stopEvent(e);
       var shortName = t.dataset.shortname;
-      var prop = this.vocModel.properties[shortName];
-      var params = {
-        '$backLink': prop.backLink,
-        '-makeId': G.nextId(),
-        '$title': t.dataset.title
-      };
+      this.prop = this.vocModel.properties[shortName];
 
-      params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
-      G.log(this.TAG, 'add', 'user wants to add to backlink');
+      var self = this;       
+      Voc.getModels(this.prop.range).done(function() {
+        var prop = self.prop;
+        var pModel = U.getModel(prop.range);
+        function noIntersection(prop) {
+          var params = {
+            '$backLink': prop.backLink,
+            '-makeId': G.nextId(),
+            '$title': t.dataset.title
+          };
+    
+          params[prop.backLink] = self.resource.getUri();
+          
+          self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+          G.log(self.TAG, 'add', 'user wants to add to backlink');
+        };
+        if (!U.isAssignableFrom(pModel, 'Intersection')) { 
+          noIntersection(prop);
+          return;
+        }
+        var a = U.getCloneOf(pModel, 'Intersection.a')[0];
+        var b = U.getCloneOf(pModel, 'Intersection.b')[0];
+        if (!a  &&  !b) {
+          noIntersection(prop);
+          return;
+        }
+        var meta = pModel.properties;
+        var title = U.getParamMap(window.location.hash).$title;
+        if (!title)
+          title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
+        var aUri = a == prop.backLink ? self.resource.get('_uri') :null;
+        var bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
+        if (!aUri  &&  !bUri) {
+          noIntersection(prop);
+          return;
+        }
+        var uri = aUri == null ? bUri : aUri;
+        var rtype = aUri == null ? meta[a].range : meta[b].range;
+        var params = {
+            $forResource: uri,
+            $propA: a,
+            $propB: b,
+            $type:  pModel.type, 
+            $title: title
+          };
+
+        self.router.navigate('chooser/' + encodeURIComponent(rtype) + '?' + $.param(params), {trigger: true});
+        G.log(self.TAG, 'add', 'user wants to add to backlink');
+//        var params = {
+//          '$backLink': prop.backLink,
+//          '-makeId': G.nextId(),
+//          '$title': t.dataset.title
+//        };
+//  
+//        params[prop.backLink] = self.resource.getUri();
+//        
+//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+//        G.log(self.TAG, 'add', 'user wants to add to backlink');
+      });
     },
     
     refresh: function(res, options) {

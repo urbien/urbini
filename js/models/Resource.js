@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('models/Resource', [
   'globals',
   'utils',
   'error',
@@ -742,7 +742,7 @@ define([
         this.unsavedChanges = {};
       }
       else {
-        data = U.prepForSync(data, vocModel);
+        data = this.prepForSync(data);
         if (_.size(data) == 0) {
           if (!isNew) {
             if (options.error)
@@ -826,49 +826,30 @@ define([
 //      else {
 //        res.set(attrs, options);
 //      }
+    },
+    
+    prepForSync: function(item) {
+      var props = this.vocModel.properties;
+      var filtered = U.filterObj(item, function(key, val) {
+        if (key == 'interfaceClass.properties') // HACK
+          return true;
+        
+        if (window.Blob && val instanceof window.Blob)
+          return true;
+        
+        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
+          return false;
+        
+        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
+          return false;        
+        
+        var prop = props[key];
+        return prop && !U.isSystemProp(key); 
+      }); 
+      
+//      return U.flattenModelJson(filtered, vocModel, preserve);
+      return filtered;
     }
-
-//    save: function(attrs, options) {
-//      options = options || {};
-//      var data = U.flattenModelJson(options.data || attrs || this.attributes, this.vocModel);
-//      var isNew = this.isNew();
-//      if (options.$returnMade !== false)
-//        data.$returnMade = 'y';
-//      if (!isNew)
-//        data._uri = this.getUri();
-//
-//      var self = this;
-//      var qs = U.getQueryString(data);
-//      if (options.queryString)
-//        qs += '&' + options.queryString;
-//      options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: qs});
-//      
-//      var success = options.success;
-//      options.success = function(resource, response, opts) {
-//        success && success.apply(this, arguments);
-//        if (response.error)
-//          return;
-//        
-//        Events.trigger('updatedResources', [self]);
-//        var method = isNew ? 'add.' : 'edit.';
-//        if (!G.currentUser.guest) {
-//          var json = self.toJSON();
-//          json._type = self.vocModel.type;
-//          Events.trigger(method + self.vocModel.type, json);
-//          var sup = self.vocModel;
-//          while (sup = sup.superClass) {
-//            Events.trigger(method + sup.type, self);
-//          }
-//        }
-//      };
-//      
-////      var error = options.error;
-////      options.error = function(resource, xhr, options) {
-////        
-////        error && error.apply(this, arguments);
-////      }
-//      
-//      return Backbone.Model.prototype.save.call(this, attrs, options);
   },
   {
 //    type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",

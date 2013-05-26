@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('events', [
   'globals', 
   'underscore',
   'backbone'

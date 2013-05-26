@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('collections/ResourceList', [
   'globals',
   'utils', 
   'error', 

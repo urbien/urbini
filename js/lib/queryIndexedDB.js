@@ -12,7 +12,7 @@
  */
 
 //'use strict';
-define(['jqueryIndexedDB'], function() {
+define('queryIndexedDB', ['jqueryIndexedDB'], function() {
   var IDBCursor = $.indexedDB.IDBCursor;
   var DEFAULT_PRIMARY_KEY = '__uri';
   function Index(name) {

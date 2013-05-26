@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/MapItButton', [
   'events', 
   'views/ToggleButton', 
   'views/BasicView' 

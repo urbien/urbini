@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/ToggleButton', [
   'underscore', 
   'events',
   'views/BasicView'

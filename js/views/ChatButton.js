@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/ChatButton', [
   'underscore', 
   'utils',
   'events', 

@@ -3320,6 +3320,6 @@ var io = ('undefined' === typeof module ? {} : module.exports);
 );
 
 if (typeof define === "function" && define.amd) {
-  define([], function () { return io; });
+  define('lib/socket.io', [], function () { return io; });
 }
 })();

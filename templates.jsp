@@ -365,7 +365,7 @@
 
 <script type="text/template" id="editListItemTemplate">
   <!-- one row of a list in edit mode -->
-  <input data-formel="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
+  <input data-formEl="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
   {{= viewCols }}
 </script>
 
@@ -432,7 +432,8 @@
   {{ if (obj.v_submitToTournament) { }}
     style="padding:.7em 10px 10px 0px;min-height:39px;"
   {{ } }}
-   data-uri="{{= liUri }}">
+  >
+   <!-- data-uri="{{= liUri }}" -->
   {{= viewCols }}
   </div>
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
@@ -453,7 +454,7 @@
   -->  
   
   {{ if (obj.comment) { }}
-    <p style="padding-left: 15px;">{{= comment }}</p>
+    <p>{{= comment }}</p>
   {{ } }}
   </div>
 </script>
@@ -1143,7 +1144,11 @@
         <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
       </fieldset>
     {{ }                    }}
+    </div>
 
+    <div data-role="fieldcontain" id="ip">
+      <fieldset data-role="controlgroup" id="interfaceProps">
+      </fieldset>
     </div>
   </form>
   <br/>
@@ -1165,6 +1170,18 @@
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
   <label for="{{= id }}">{{= davDisplayName }}</label>
 </script>
+
+<script type="text/template" id="interfacePropTemplate">
+  <!-- a interface props chooser input for edit forms -->
+  <div class="ui-controlgroup-controls">
+    {{ var id = G.nextId() }}
+    <input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+    <label for="{{= id }}">{{= davDisplayName }}
+    {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
+    </label>
+  </div>
+</script>
+
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>

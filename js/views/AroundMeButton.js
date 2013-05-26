@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/AroundMeButton', [
   'globals',
   'views/ToggleButton',
   'utils',

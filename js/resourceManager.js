@@ -1,12 +1,13 @@
 //'use strict';
-define([
+define('resourceManager', [
   'globals',
   'utils', 
   'events', 
   'taskQueue',
   'cache',
   'vocManager',
-  'queryIndexedDB'
+  'queryIndexedDB',
+  '__domReady__'
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
   var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
   var Blob = window.Blob;
@@ -574,7 +575,7 @@ define([
       }
       
       G.log(RM.TAG, "db", 'opening db');
-      var dbPromise = $.Deferred();
+      var dbDefer = $.Deferred();
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
         RM.db = db;
@@ -597,22 +598,22 @@ define([
         RM.VERSION = version = typeof version === 'number' ? Math.max(version, currentVersion) : currentVersion; // just in case we want it later on, don't know for what yet 
         if (currentVersion === version) {
           G.log(RM.TAG, 'db', "done prepping db");
-          dbPromise.resolve();
+          dbDefer.resolve();
           return;
         }
 
         // Queue up upgrade
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
-        dbPromise.resolve();
+        dbDefer.resolve();
       }).fail(function(error, event) {
         debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
-        dbPromise.reject();
+        dbDefer.reject();
       }).progress(function(db, event) {
         switch (event.type) {
           case 'blocked':
             G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
-            dbPromise.reject();
+            dbDefer.reject();
             RM.restartDB();
             break;
           case 'upgradeneeded':
@@ -621,7 +622,7 @@ define([
         G.log(RM.TAG, 'db', event.type);
       });
       
-      return dbPromise;
+      return dbDefer.promise();
     },
     
     getIndexNames: function(vocModel) {
@@ -845,6 +846,7 @@ define([
         var refStoreProps = getRefStoreProps();
         var atts = _.omit(ref, refStoreProps);
         atts.$returnMade = true;
+        
         resource.save(atts, { // ref has only the changes the user made
           sync: true, 
           fromDB: true,
@@ -1053,7 +1055,7 @@ define([
         
         var info = {resource: existingRes, reference: ref, references: refs};
         RM.saveToServer(info).always(function(updatedRef) {
-          if (!_.isEqual(ref, updatedRef)) {
+          if (updatedRef && !_.isEqual(ref, updatedRef)) {
             var idx = refs.indexOf(ref);
             refs[idx] = updatedRef;
           }

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/ListPage', [
   'globals',
   'events', 
   'utils',

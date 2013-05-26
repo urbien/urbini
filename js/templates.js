@@ -1,7 +1,8 @@
 //'use strict';
-define([
+define('templates', [
   'globals',
-  'fileCache!../templates.jsp',
+//  'fileCache!../templates.jsp',
+  '../templates.jsp',
   'underscore',
   'events'
 ], function(G, HTML, _, Events) {
@@ -13,6 +14,7 @@ define([
   
   var Templates = {
     // Hash of preloaded templates for the app
+    TAG: 'Templates',
     templates: {},
     propTemplates: {
       "string": "stringPT",

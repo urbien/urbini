@@ -562,7 +562,7 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
 						}, function(err, e){
 							dfd.rejectWith(this, [e, err]);
 						}, function(res, e){
-							console.log("Database event on open: ", e.type, res);
+//							console.log("Database event on open: ", e.type, res);
 							//dfd.notifyWith(this, ["", e]);
 						});
 						

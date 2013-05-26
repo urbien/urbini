@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('router', [
   'globals',
   'utils', 
   'events', 
@@ -84,37 +84,35 @@ define([
           return;
         }
           
-        if (_.isUndefined(self.previousHash)) { 
-          // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
-          // they probably don't want to exit the app, so let's go somewhere sane
-          var hash = U.getHash();
-          if (!hash) {
-            self._failToGoBack();
-            return;
-          }
+        // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
+        // they probably don't want to exit the app, so let's go somewhere sane
+        var hash = U.getHash();
+        if (!hash) {
+          self._failToGoBack();
+          return;
+        }
+        
+        var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
+        if (!hashParts || !hashParts.length) {
+          // we're probably at a list view
+          self._failToGoBack();
+          return;
+        }
           
-          var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
-          if (!hashParts || !hashParts.length) {
-            // we're probably at a list view
+        var method = hashParts[1];
+        switch (method) {
+          case 'chat':
+          case 'edit':
+          case 'templates':
+            self.navigate('view/' + hashParts[2], {trigger: true});
+            return;
+          case 'make':
+          case 'view':
             self._failToGoBack();
             return;
-          }
-            
-          var method = hashParts[1];
-          switch (method) {
-            case 'chat':
-            case 'edit':
-            case 'templates':
-              self.navigate('view/' + hashParts[2], {trigger: true});
-              return;
-            case 'make':
-            case 'view':
-              self._failToGoBack();
-              return;
-            case 'chooser':
-              Events.trigger('home');
-              return;
-          }
+          case 'chooser':
+            Events.trigger('home');
+            return;
         }
         
 //        self.lastBackClick = now;
@@ -182,7 +180,7 @@ define([
 //      }
       
       if (fragment.startsWith('http://')) {
-        var appPath = G.serverName + '/' + G.appRoot;
+        var appPath = G.serverName + '/' + G.pageRoot;
         if (fragment.startsWith(appPath))
           fragment = fragment.slice(appPath.length);
         else {

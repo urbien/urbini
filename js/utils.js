@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('utils', [
   'globals',
   'underscore',
   'backbone',
@@ -79,45 +79,49 @@ define([
   var U = {
     TAG: 'Utils',
     require: function(modules, callback, context) {
-      modules = $.isArray(modules) ? modules : [modules];
-      var mods = [], newModNames = [], newModFullNames = [];
-      for (var i = 0; i < modules.length; i++) {
-        var fullName = modules[i], name = fullName;
-//        if (!fullName)
-//          G.log(U.TAG, 'error', 'match undefined 1');
-        var moduleViaPlugin = fullName.match(/\!(.*)$/);
-        if (moduleViaPlugin) {
-          name = moduleViaPlugin[1]; 
-        }
-        
-        var mod = C.modCache[name];
-        if (!mod) {
-          mod = C.modCache[name] = $.Deferred();
-          newModFullNames.push(fullName);
-          newModNames.push(name);
-        }
-        
-        mods.push(mod);
-      }
-      
-      if (newModNames.length) {
-        G.loadBundle(newModNames, function() {
-          require(newModFullNames, function() {
-            for (var i = 0; i < newModNames.length; i++) {
-//              var name = newModNames[i];
-//              var module = arguments[i];
-//              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
-//              C.modCache[name].resolve(module);
-              C.modCache[newModNames[i]].resolve(arguments[i]);
-            }
-          });
-        });
-      }
-      
-      return $.when.apply($, mods).then(function() {
-        callback && callback.apply(context, arguments);
-      }).promise();
+      return require(modules, context ? callback.bind(context) : callback);
     },
+    
+//    require: function(modules, callback, context) {
+//      modules = $.isArray(modules) ? modules : [modules];
+//      var mods = [], newModNames = [], newModFullNames = [];
+//      for (var i = 0; i < modules.length; i++) {
+//        var fullName = modules[i], name = fullName;
+////        if (!fullName)
+////          G.log(U.TAG, 'error', 'match undefined 1');
+//        var moduleViaPlugin = fullName.match(/\!(.*)$/);
+//        if (moduleViaPlugin) {
+//          name = moduleViaPlugin[1]; 
+//        }
+//        
+//        var mod = C.modCache[name];
+//        if (!mod) {
+//          mod = C.modCache[name] = $.Deferred();
+//          newModFullNames.push(fullName);
+//          newModNames.push(name);
+//        }
+//        
+//        mods.push(mod);
+//      }
+//      
+//      if (newModNames.length) {
+//        G.loadBundle(newModNames, function() {
+//          require(newModFullNames, function() {
+//            for (var i = 0; i < newModNames.length; i++) {
+////              var name = newModNames[i];
+////              var module = arguments[i];
+////              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
+////              C.modCache[name].resolve(module);
+//              C.modCache[newModNames[i]].resolve(arguments[i]);
+//            }
+//          });
+//        });
+//      }
+//      
+//      return $.when.apply($, mods).then(function() {
+//        callback && callback.apply(context, arguments);
+//      }).promise();
+//    },
     
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers;
@@ -216,7 +220,7 @@ define([
             };
             
             xhrWorker.onerror = function(err) {
-              debugger;
+//              debugger;
               defer.reject({}, "error", err);
             };
             
@@ -1309,7 +1313,7 @@ define([
         return "none";
       
       var now = G.currentServerTime();
-      var date = U.getFormattedDate(now + time).toLowerCase();
+      var date = U.getFormattedDate(now + time * 1000).toLowerCase();
       if (date === 'just now')
         return 'none';
       else if (date.startsWith("in "))
@@ -1351,7 +1355,7 @@ define([
 //      }
     },
 
-    getFormattedDate: function(time, firstLevel) {
+    getFormattedDate: function(time, pieceOfDate) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
       var now = G.currentServerTime();
@@ -1395,22 +1399,26 @@ define([
         }
         else {
           var years = Math.round( absDayDiff / 365 );
-          var rest = (absDayDiff % 365);
+          var rest = (day_diff % 365);
           var date = '';
           if (years == 1)
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0  ||  firstLevel) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
+          
+          str = (rest == 0  ||  pieceOfDate) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000), true);
         }
         
-        var ret = '';
-        if (str.indexOf('In') == -1)
-          ret += pre;
-        ret += str;
-        if (str.indexOf(' ago') == -1)
-          ret += post;
-        return ret;
+//        var ret = '';
+//        if (str.indexOf('In') == -1)
+//          ret += pre;
+//        ret += str;
+//        if (str.indexOf(' ago') == -1)
+//          ret += post;
+        
+        pre = future && !str.startsWith(pre) && !pieceOfDate ? pre : '';
+        post = future || str.endsWith(post) || pieceOfDate ? '' : post;
+        return  pre + str + post;
       }
       
 //      var years;
@@ -1801,10 +1809,16 @@ define([
       if (prop.code)
         rules['data-code'] = prop.code;
       
-      if (U.isDateProp(prop))
+      if (U.isDateProp(prop)) {
         rules['data-date'] = true;
-      else if (U.isTimeProp(prop))
+//        if (val.value)
+//          val.val /= 1000; // seconds
+      }
+      else if (U.isTimeProp(prop)) {
         rules['data-duration'] = true;
+//        if (val.value)
+//          val.value /= 1000; // seconds
+      }
       else if (U.isEnumProp(prop))
         rules['data-enum'] = true;
             
@@ -2130,30 +2144,6 @@ define([
       return decode ? decodeURIComponent(hash) : hash;
     },
     
-    prepForSync: function(item, vocModel, preserve) {
-      preserve = preserve || [];
-      var props = vocModel.properties;
-      var filtered = U.filterObj(item, function(key, val) {
-        if (Blob && val instanceof Blob)
-          return true;
-        
-        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
-          return false;
-        
-        if (/\./.test(key))
-          return false;        
-        
-        var prop = props[key];
-        return prop && !U.isSystemProp(key) && 
-            (_.contains('backLink', preserve) || !prop.backLink) && 
-            (U.isResourceProp(prop) || (_.contains('readOnly', preserve) || !prop.readOnly)) && // sometimes if it's readOnly, we still need it - like if it's a backlink
-            /^[a-zA-Z]+[^\.]*$/.test(key);  // is writeable, starts with a letter and doesn't contain a '.'
-      }); 
-      
-//      return U.flattenModelJson(filtered, vocModel, preserve);
-      return filtered;
-    },
-
 //    flattenModelJson: function(m, vocModel, preserve) {
 //      var vocProps = vocModel.properties;
 //      var flat = {};
