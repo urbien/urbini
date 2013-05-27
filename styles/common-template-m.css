@@ -404,6 +404,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   background: #ddd;
   border-top: 1px solid #777;
 }
+
+#headerDiv #callInProgress {
+  text-align: center;
+  color: #FFF;
+  background: #0F2;
+}
+
 .ui-bar-c #headerButtons  {
   background: #cccccc;
 }
