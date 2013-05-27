@@ -26,7 +26,7 @@ define('app', [
   };  
   
   // provide a promise-based interface to the SimplePush API
-  var SimplePush = {};
+  var SimplePush = {}, endpointType = 'model/social/SimplePushNotificationEndpoint';
   _.each(['register', 'unregister', 'registrations'], function(method) {
     SimplePush[method] = function() {
       var args = arguments;
@@ -180,6 +180,15 @@ define('app', [
             viewsDfd.resolve();
         }; 
 
+        //// START detect app install for current app /////
+        var currentApp = G.currentApp._uri;
+        var app = _.filter(G.currentUser.installedApps, function(app) {
+          return app._uri === currentApp;
+        })[0];
+        
+        G.currentAppInstall = app && app.install;
+        //// END detect app install for current app /////
+        
         App.setupWorkers();
         App.setupCleaner();
         loadModels();
@@ -278,17 +287,18 @@ define('app', [
 
     _registerSimplePushChannels: function(channel) {
       return $.Deferred(function(defer) {        
-        if (!G.hasSimplePush) {
-          defer.resolve(); // resolve so we can use $.when
-          return;
-        }
+//        if (!G.hasSimplePush) {
+//          defer.resolve(); // resolve so we can use $.when
+//          return;
+//        }
         
         var getSPModel = Voc.getModels(spType);
         $.when(SimplePush.register(), getSPModel).done(function(endpoint) {
           var spModel = U.getModel(spType);
           var simplePushAppEndpoint = new spModel({
             endpoint: endpoint,
-            channel: channel
+            channel: channel.channel,
+            appInstall: G.currentAppInstall
           });
           
           simplePushAppEndpoint.save(null, {
@@ -315,51 +325,88 @@ define('app', [
       }).promise();
     },
     
-    _subscribeToNotifications: function(endpointsList) {
+    _subscribeToNotifications: function(endpoints) {
+      endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
       navigator.mozSetMessageHandler('push', function(message) {
-        var endpoint = endpointsList.where({
-          endpoint: message.pushEndpoint;
+        var pushEndpoint = message.pushEndpoint;
+        var storedEndpoint = _.filter(endpoints, function(e) {
+          return e.endpoint === pushEndpoint;
         })[0];
         
-        if (!endpoint)
+        if (!storedEndpoint) {
+          debugger; // this shouldn't happen, but i guess we can fetch the endpoint at this junction
           return;
+        }
         
         var action = endpoint.get('action');
-        var resource = U.getCachedResource(action);
+        if (!action)
+          return;
+        
+        var actionRes = C.getResource(action);
         var gotModel = Voc.getModels(actionType), 
-            gotResource = $.Deferred();
+            gotAction = $.Deferred();
         
         gotModel.done(function() {
-          if (!resource) {
+          if (!actionRes) {
             /// get resource
-            gotResource.resolve(resource);
+            var actionModel = U.getModel(actionType);
+            actionRes = new actionModel({
+              _uri: action
+            });
+            
+            actionRes.fetch({
+              success: function() {
+                gotAction.resolve(actionRes);
+              },
+              error: defer.reject
+            });
           }
+          else
+            gotAction.resolve(actionRes);
         });
         
-        gotResource.done(function(resource) {
+        gotAction.done(function(actionRes) {
+          debugger;
           // run action
         });
       });
     },
     
     setUpSimplePush: function() {
-      if (!G.hasSimplePush || G.currentUser.guest)
+      var installedApps = G.currentUser.installedApps,
+          currentApp = G.currentApp;
+          
+      if (!G.hasSimplePush || G.currentUser.guest || installedApps.length || !G.currentAppInstall)
         return;
       
       var channels = G.notificationChannels || [];
       if (!channels.length)
         return;
       
-      SimplePush.registrations().done(function(registrations) {
-        channels = _.filter(channels, function() {
-          
+      $.when(
+        SimplePush.registrations(), 
+        Voc.getModels()
+      ).done(function(registrations) {
+        var endpointList = new ResourceList(G.currentUser.notificationEndpoints, {
+          model: U.getModel(endpointType),
+          query: $.param({
+            appInstall: appInstall
+          })
         });
         
-        App._registerSimplePushChannels(channels).done(function(endpoints) {
-          endpoints = _.compact(endpoints);  // nuke all that failed to load
-          var endpointsList = new ResourceList(endpoints);
-          App._subscribeToNotifications(endpointsList);
+        var toRegister = _.filter(channels, function(channel) {
+          return endpointList.where({
+            channel: channel
+          }).length;
         });
+        
+        if (toRegister.length) {
+          App._registerSimplePushChannels(channels).done(function(endpoints) {
+            endpoints = _.compact(endpoints);  // nuke all that failed to load
+//            var endpointsList = new ResourceList(endpoints);
+            App._subscribeToNotifications(endpointsList);
+          });
+        }
         
         if (navigator.mozSetMessageHandler)
           navigator.mozSetMessageHandler('push-register', App.setUpSimplePush);
