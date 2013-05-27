@@ -31,7 +31,8 @@ define('views/EditView', [
     
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
+                      'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -46,17 +47,19 @@ define('views/EditView', [
       this.isEdit = this.action === 'edit';
       
       this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
-      
       var self = this;
+      /*
       var modelsDfd = $.Deferred(function(defer) {
         if (self.isForInterfaceImplementor) {
           self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
+          if (!self._interfaceUri)
+            defer.resolve();   
           Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
           defer.resolve();        
       });
-      
+      */
       // maybe move this to router
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
@@ -71,7 +74,7 @@ define('views/EditView', [
           defer.resolve();        
       });
       
-      this.ready = $.when(codemirrorDfd.promise(), modelsDfd.promise());
+      this.ready = $.when(codemirrorDfd.promise());
       Events.on('pageChange', function(from, to) {
         // don't autosave new resources, they have to hit submit on this one...or is that weird
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
@@ -97,14 +100,30 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click .cancel': 'cancel',
-      'submit form': 'submit',
-      'click .resourceProp': 'chooser',
-      'click input[data-duration]': 'scrollDuration',
-      'click input[data-date]': 'scrollDate',
+      'click .cancel'                     :'cancel',
+      'submit form'                       :'submit',
+      'click .resourceProp'               :'chooser',
+      'click input[data-duration]'        :'scrollDuration',
+      'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
-      'click .cameraCapture' : 'cameraCapture',
-      'click': 'click'
+      'click .cameraCapture'              :'cameraCapture',
+      'click #check-all'                  :'checkAll',
+      'click #uncheck-all'                :'uncheckAll',
+      'click'                             :'click'
+    },
+
+    /** 
+     * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    checkAll: function() {
+      this.$form.find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+    },
+
+    /**
+     * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    uncheckAll: function() {
+      this.$form.find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
     },
 
     capturedImage: function(options) {
@@ -439,7 +458,7 @@ define('views/EditView', [
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor")) { 
+      if (this.isForInterfaceImplementor) { 
         var rParams = {
             $prop: pr.shortName,
             $type:  this.vocModel.type,
@@ -579,10 +598,13 @@ define('views/EditView', [
         return;
       }  
       
-      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
+      if (this.isForInterfaceImplementor) {
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {
+          domain: res.get('implementor'), 
+          $title: title
+        }), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
         var propType = res.get('propertyType');
@@ -810,7 +832,8 @@ define('views/EditView', [
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
-      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -998,26 +1021,59 @@ define('views/EditView', [
       this.refreshScrollers();
     },
     click: function(e) {
-      var from = e.target;
-      if (from.tagName === 'select') {
-        Events.stopEvent(e);
-        return;
-      }
-      
-      return true;
+//      var from = e.target;
+//      if (from.tagName === 'select') {
+//        Events.stopEvent(e);
+//        return;
+//      }
+//      var div = from;
+//      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
+//        div = div.parentElement; 
+//        continue;
+//      }
+//      var inp = $(div).find('input[type="checkbox"]');
+//      if (!inp  ||  !inp.length) 
+//        return;
+////      Events.stopEvent(e);
+////      var val = this.resource.get('interfaceClass.properties');
+//      var name = inp[0].name;
+//      var val = this.resource.get(name);
+//      var iVal = inp[0].value;
+//      var idx = iVal.lastIndexOf('/');
+//      if (idx != -1)
+//        iVal = iVal.substring(idx + 1);
+//      var props = val.split(',');
+//      var idx = props.indexOf(iVal);
+//      if (!inp[0].checked) {
+////        inp[0].checked = true;
+//        if (idx == -1)
+//          this.setValues(name, val += ',' + iVal);
+////          this.setValues('interfaceClass.properties', val += ',' + iVal);
+//      }
+//      else if (idx != -1) {
+////        inp[0].checked = false;
+//        props.splice(idx, 1);
+//        this.setValues(name, props.join(','));
+////        this.setValues('interfaceClass.properties', props.join(','));
+//      }
+//      return true;
     },
     onSelected: function(e) {
       var atts = {}, res = this.resource, input = e.target;
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
         var checked = input.checked;
-        var val = res.get('interfaceClass.properties');
+//        var val = res.get('interfaceClass.properties');
+        var val = res.get(input.name);
         var props = val.split(',');
         var idx = props.indexOf(input.value);
         if (idx == -1 && checked)
-          this.setValues('interfaceClass.properties', val += ',' + input.value);
+//          this.setValues('interfaceClass.properties', val += ',' + input.value);
+          this.setValues(input.name, val += ',' + input.value);
+
         else if (idx != -1 && !checked) {
           props.splice(idx, 1);
-          this.setValues('interfaceClass.properties', props.join(','));
+          this.setValues(input.name, props.join(','));
+//          this.setValues('interfaceClass.properties', props.join(','));
         }
           
         return;
@@ -1288,49 +1344,57 @@ define('views/EditView', [
         this.$ul.trigger('create');
 
       if (this.isForInterfaceImplementor) {
-        var start = +new Date();
-       
-        var frag = document.createDocumentFragment();
-        var iCl = this._interfaceUri;
-        var m = U.getModel(iCl);
-        var imeta = m.properties;
-        var mustImpl = U.getPropertiesWith(imeta, 'mustImplement');
-        var props = '';
-        this.$ul1 = $('#interfaceProps');
-        for (var prop in mustImpl) {
-          var p = mustImpl[prop];
-          props += p.shortName + ',';
-          var params = {davDisplayName: U.getPropDisplayName(p), _checked: 'y', interfaceProps: p.shortName};
-          if (p.comment)
-            params['comment'] = p.comment;
-
-//          U.addToFrag(frag, this.interfacePropTemplate(params));
-          this.$ul1.append(this.interfacePropTemplate(params));
+//        var start = +new Date();
+        var iCl = res.get('interfaceClass.davClassUri');
+        if (!iCl)
+          iCl = reqParams['interfaceClass.davClassUri'];
+        if (iCl) {
+          var self = this;
+          Voc.getModels(iCl).done(function() {
+            var frag = document.createDocumentFragment();
+            var m = U.getModel(iCl);
+            var imeta = _.toArray(m.properties).sort(function(a, b) {
+              return a.mustImplement ? -1 : 1;
+            });
+            
+            var interfaceProperties = self.resource.get('interfaceProperties');
+            var ip = interfaceProperties ? interfaceProperties.split(',') : [];
+            var props = '';
+            self.$ul1 = $('#interfaceProps');
+            _.each(imeta, function(p) {
+              var prop = p.shortName;
+              if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+                return;
+              
+              if (p.mustImplement || ip.indexOf(prop) != -1)
+                props += prop + ',';
+              
+              U.addToFrag(frag, self.interfacePropTemplate({
+                davDisplayName: U.getPropDisplayName(p), 
+                _checked: p.mustImplement || _.contains(ip, prop) ? 'y' : undefined,
+                disabled: p.mustImplement,
+                required: p.mustImplement,
+                interfaceProps: prop, 
+                comment: p.comment
+              }));
+            });
+            
+            props = props.slice(0, props.length - 1);
+            self.setValues('interfaceProperties', props);
+            
+            (this.$ul1 = $('#interfaceProps')).html(frag);
+            if (self.$ul1.hasClass('ui-listview')) {
+              self.$ul1.trigger('create');
+              self.$ul1.listview('refresh');
+            }
+            else
+              self.$ul1.trigger('create');
+            
+            var checkboxes = self.$form.find('input[type="checkbox"]');
+            checkboxes.change(self.onSelected);
+//            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
+          });
         }
-          
-        props = props.slice(0, props.length - 1);
-        this.setValues('interfaceClass.properties', props);
-        
-        for (var prop in imeta) {
-          if (!/^[a-zA-Z]/.test(prop)  ||  mustImpl[prop]  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
-            continue;
-          var p = imeta[prop];
-          var params = {davDisplayName: U.getPropDisplayName(p), interfaceProps: iCl + '/' + p.shortName};
-          if (p.comment)
-            params['comment'] = p.comment;
-          
-//          U.addToFrag(frag, this.interfacePropTemplate(params));
-          this.$ul1.append(this.interfacePropTemplate(params));
-        }
-//        (this.$ul1 = $('#interfaceProps')).html(frag);
-        if (this.$ul1.hasClass('ui-listview')) {
-          this.$ul1.trigger('create');
-          this.$ul1.listview('refresh');
-        }
-        else
-          this.$ul1.trigger('create');
-        
-        console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
       }
       
 //        this.$ul.listview('refresh');
@@ -1373,7 +1437,7 @@ define('views/EditView', [
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      var selected = form.find('select[value],input["checkbox"][checked="checked"]');
+      var selected = form.find('select');
       selected.change(this.onSelected);
       
       // set initial values on resource
@@ -1468,6 +1532,10 @@ define('views/EditView', [
         }
       });
       
+      form.find('fieldset input[type="checkbox"]').each(function() {
+        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
+      });
+
       return this;
     },
     

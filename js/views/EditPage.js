@@ -31,7 +31,7 @@ define('views/EditPage', [
       var settings = {viewId: this.cid}
       if (U.isAssignableFrom(res, "AppInstall")) {
         settings.submit = 'Allow';
-        settings.noCancel = true;
+//        settings.noCancel = true;
       }
       
       this.$el.html(this.template(settings));

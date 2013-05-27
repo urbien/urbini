@@ -563,6 +563,9 @@ define('models/Resource', [
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },
+    isAssignableFrom: function(interfaceName) {
+      return U.isAssignableFrom(this, interfaceName);
+    },
     fetch: function(options) {
       var self = this;
       options = options || {};
