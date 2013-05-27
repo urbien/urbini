@@ -837,9 +837,14 @@
   <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">Test this plug</a>
 </script>
 
+<script type="text/template" id="callInProgressHeaderTemplate">
+  <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
+</script>
+
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
+    <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>

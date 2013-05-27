@@ -35,7 +35,7 @@ define('fileSystem', ['globals'], function(G) {
       error: level + ': ' + msg
     });
   };
-    
+  
   function dataURLToBlob(dataURL) {
     var BASE64_MARKER = ';base64,';
     if (dataURL.indexOf(BASE64_MARKER) == -1) {
@@ -106,12 +106,12 @@ define('fileSystem', ['globals'], function(G) {
     }).promise();
   };
   
-  function getFileEntry(filePath) {
+  function getFileEntry(filePath, options) {
     return $.Deferred(function(defer) {
       getFileSystem({
         type: TEMP
       }).done(function(fileSystem) {
-        fileSystem.root.getFile(filePath, {create: false}, defer.resolve, getErrorFunc('fileEntry error', defer));
+        fileSystem.root.getFile(filePath, options || {create: false}, defer.resolve, getErrorFunc('fileEntry error', defer));
       }).fail(getErrorFunc('requestFileSystem error', defer));
     }).promise();
   };

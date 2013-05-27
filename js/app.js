@@ -188,6 +188,7 @@ define('app', [
         
         App.setupModuleCache();
         App.setupLoginLogout();
+        App.setupRTCCallMonitor();
         
         G.app = App;
         App.started = true;
@@ -362,6 +363,21 @@ define('app', [
     setupModuleCache: function() {
 //      var originalRequire = window.require;
 //      window.require = function(modules, callback, context) {
+    },
+    
+    setupRTCCallMonitor: function() {
+      G.callInProgress = null;
+      Events.on('newRTCCall', function(rtcCall) {
+        if (G.callInProgress)
+          Events.trigger('endRTCCall', G.callInProgress);
+        
+        G.callInProgress = rtcCall;
+      });
+      
+      Events.on('endRTCCall', function(rtcCall) {
+        if (G.callInProgress == rtcCall)
+          G.callInProgress = null;
+      });
     },
     
     setupWorkers: function() {

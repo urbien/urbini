@@ -40,6 +40,8 @@ define('views/Header', [
       
 //      this.calcTitle();
       this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
+      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
+
       _.each(['info', 'error'], function(event) {
         var handler = this._updateInfoErrorBar;
         Events.off(event, handler);
@@ -49,6 +51,18 @@ define('views/Header', [
       this.autoFinish = false;
       this.isEdit = /^(edit|make)\//.test(this.hash);
       this.isChat = /^chat\//.test(this.hash);
+
+      var self = this;
+      if (!this.isChat) {
+        Events.on('newRTCCall', function(call) {
+          self.refresh();
+        });
+  
+        Events.on('endRTCCall', function() {
+          self.refresh();
+        });
+      }
+
       return this;
     },
     
@@ -226,6 +240,7 @@ define('views/Header', [
     },
     
     refresh: function() {
+      this.refreshCallInProgressHeader();
       this.refreshTitle();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
@@ -248,7 +263,23 @@ define('views/Header', [
         this.finish();
       }.bind(this)); 
     },
-    
+
+    refreshCallInProgressHeader: function() {
+      if (G.callInProgress) {
+        var $cipDiv = this.$('#callInProgress');
+        $cipDiv.html(this.callInProgressHeaderTemplate(G.callInProgress));
+        (function pulse(){
+          if (!G.callInProgress)
+            return;
+          
+          $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
+        })();
+      }
+      else {
+        this.$('#callInProgress').html("");
+      }
+    },
+
     refreshTitle: function() {
       this.calcTitle();
       this.$('#pageTitle').html(this.title);
@@ -474,6 +505,8 @@ define('views/Header', [
         header.addClass(barClass);
       
       // END HACK
+      
+      this.refreshCallInProgressHeader();
       this.finish();
       return this;
     }

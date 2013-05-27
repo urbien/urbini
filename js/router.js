@@ -64,61 +64,57 @@ define('router', [
       });
       
       Events.on('back', function() {
-//        var now = +new Date();
-//        if (self.lastBackClick && now - self.lastBackClick < 100)
-//          debugger;
-
-//        debugger;
-        
-        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
-        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);
-//        if (self._hashChanged) { 
-//          if (haveHistory) {
-//            window.history.back();
-//            return;
-//          }
-//        }
-        
-        if (haveHistory) {
-          window.history.back();
-          return;
-        }
+        var now = +new Date();
+        if (self.lastBackClick && now - self.lastBackClick < 100)
+          debugger;
           
-        // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
-        // they probably don't want to exit the app, so let's go somewhere sane
-        var hash = U.getHash();
-        if (!hash) {
-          self._failToGoBack();
-          return;
-        }
-        
-        var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
-        if (!hashParts || !hashParts.length) {
-          // we're probably at a list view
-          self._failToGoBack();
-          return;
-        }
-          
-        var method = hashParts[1];
-        switch (method) {
-          case 'chat':
-          case 'edit':
-          case 'templates':
-            self.navigate('view/' + hashParts[2], {trigger: true});
-            return;
-          case 'make':
-          case 'view':
-            self._failToGoBack();
-            return;
-          case 'chooser':
-            Events.trigger('home');
-            return;
-        }
-        
-//        self.lastBackClick = now;
-        self.previousHash = null;
+        self.lastBackClick = now;
+        self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
+        
+//        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
+//        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);        
+//        if (haveHistory) {
+//          window.history.back();
+//          return;
+//        }
+//          
+//        // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
+//        // they probably don't want to exit the app, so let's go somewhere sane
+//        var hash = U.getHash();
+//        if (!hash) {
+//          self._failToGoBack();
+//          return;
+//        }
+//        
+//        var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
+//        if (!hashParts || !hashParts.length) {
+//          // we're probably at a list view
+//          self._failToGoBack();
+//          return;
+//        }
+//          
+//        var method = hashParts[1];
+//        switch (method) {
+//          case 'chat':
+//          case 'edit':
+//          case 'templates':
+//            self.navigate('view/' + hashParts[2], {trigger: true});
+//            return;
+//          case 'make':
+//          case 'view':
+//            self._failToGoBack();
+//            return;
+//          case 'chooser':
+//            Events.trigger('home');
+//            return;
+//        }
+//        
+////        self.lastBackClick = now;
+//        self.previousHash = null;
+//        self.backClicked = true;
+//        window.history.back();
       });
 
       // a hack to prevent browser address bar from dropping down

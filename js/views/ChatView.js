@@ -76,18 +76,30 @@ define('views/ChatView', [
       this.pageView.once('chat:on', this.startChat, this);
 
       this.makeTemplate('genericDialogTemplate', 'videoDialog', this.modelType);
+//      this.on('active', function(active) {
+//        if (active) {
+//          this.unreadMessages = 0;
+//          if (this.rendered) {
+////            this.chat.openNewSession = function() {};
+//            window.location.reload();
+////            this.restartChat();
+//          }
+//        }
+//        else
+//          this.endChat();
+//      }.bind(this));
+
+      var self = this;
       this.on('active', function(active) {
-        if (active) {
-          this.unreadMessages = 0;
-          if (this.rendered) {
-//            this.chat.openNewSession = function() {};
-            window.location.reload();
-//            this.restartChat();
-          }
-        }
-        else
-          this.endChat();
-      }.bind(this));
+        var method = active ? 'show' : 'hide';
+        self.$localVids && self.$localVids[method]();
+        self.$remoteVids && self.$remoteVids[method]();
+      });
+      
+//      Events.on('endRTCCall', function(rtcCall) {
+//        if (self.chat === rtcCall.connection)
+//          self.endChat();
+//      });
 
       this.autoFinish = false;
     },
@@ -184,7 +196,12 @@ define('views/ChatView', [
           this.pause();
           $(this).remove();
         });
+
+        this.pageView.trigger('video:off');
       }
+      
+      if (this.rtcCall)
+        Events.trigger('endRTCCall', this.rtcCall);
       
 //      // HACK: need to figure out why sometimes videos don't get removed
 //      this.$('#remoteVideos video').each(function() {
@@ -194,8 +211,10 @@ define('views/ChatView', [
 //      // END HACK
       
       delete this.userIdToInfo[userid];
-      if (!_.size(this.userIdToInfo))
-        this.disableChat();
+      if (!_.size(this.userIdToInfo)) {
+//        this.disableChat();
+        this.endChat();
+      }
     
       this._updateParticipants();
       this.pageView.trigger('chat:participantLeft', userid);
@@ -491,7 +510,7 @@ define('views/ChatView', [
           else
             chatView.$localVids.append(video);
           
-          chatView.onAppendedLocalVideo(video);
+          chatView.onAppendedLocalVideo(video, data.stream);
         },
         
         onRemoteStream: function(data) {
@@ -513,6 +532,14 @@ define('views/ChatView', [
             chatView.$remoteVids.append(media);
           
           chatView.onAppendedRemoteVideo(media);
+          var title = chatView.getPageTitle();
+          chatView.rtcCall = {
+            connection: chatView.chat,
+            url: window.location.href,
+            title: 'Call in progress' + (title ? ': ' : '') + title
+          };
+          
+          Events.trigger('newRTCCall', chatView.rtcCall);
         },
         
         onNewSession: function(session) {
@@ -554,6 +581,14 @@ define('views/ChatView', [
       this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
       this.chat.openNewSession(false);
       this.enableChat();
+      
+      $(window).unload(function() {
+        chatView.endChat();
+      });
+      
+      if (this.hasVideo)
+        this.pageView.trigger('video:on');
+
 //      this.chat.open();
     },
     
@@ -561,7 +596,9 @@ define('views/ChatView', [
       if (this.chat) {
         if (!onclose && this.connected)
           this.chat.leave();
+        
         this.chatSession = null;
+        this.chat = null;
       }
       
       if (this.hasVideo) {
@@ -572,10 +609,12 @@ define('views/ChatView', [
         
         this.$localVids && this.$localVids.empty();
         this.$remoteVids && this.$remoteVids.empty();
+        this.localStream && this.localStream.stop();
       }
     },
 
-    onAppendedLocalVideo: function(video) {
+    onAppendedLocalVideo: function(video, localStream) {
+      this.localStream = localStream;
       this.checkVideoSize(video);
       var $local = this.$localVids.find('video');
       if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
