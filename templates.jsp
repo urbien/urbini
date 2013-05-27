@@ -1134,6 +1134,7 @@
     </ul>
     
     <div name="errors" style="float:left"></div>
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
@@ -1142,6 +1143,7 @@
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
+    {{                                                             }}
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">

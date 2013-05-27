@@ -57,6 +57,7 @@ define('error', [
             switch (type) {
               case 'offline':
               case 'timeout':
+                debugger;
                 Events.trigger('back');
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;

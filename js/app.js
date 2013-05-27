@@ -181,40 +181,6 @@ define('app', [
       }).promise();
     },
     
-//    prepModels: function() {
-//      var self = this;
-//      var error = function(xhr, err, options) {
-////        debugger;
-//        if (!G.online) {
-//          Errors.offline();
-//        }
-//        else if (xhr) {
-//          if (xhr.status === 0) {
-//            if (G.online)
-//              self.prepModels(); // keep trying
-//            else {
-//  //            window.location.hash = '';
-//  //            window.location.reload();
-//              Errors.offline();
-//            }
-//          }
-//        }
-//        else if (err) {
-//          throw new Error('failed to load app: ' + JSON.stringify(err));            
-//        }
-//        else {
-//          throw new Error('failed to load app');
-//        }
-//      };
-//      
-//      Voc.getModels(null, {sync: true}).done(function() {
-//        if (RM.db)
-//          self.startApp();
-//        else
-//          RM.restartDB().always(App.startApp);
-//      }).fail(error);
-//    },
-    
     startApp: function() {
       return $.Deferred(function(dfd) {        
         if (App.started)
