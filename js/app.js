@@ -12,7 +12,8 @@ define('app', [
   'vocManager',
   'resourceManager',
   'router',
-  'collections/ResourceList'
+  'collections/ResourceList',
+  'lib/push'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -253,11 +254,6 @@ define('app', [
 
     _registerSimplePushChannels: function(channel) {
       return $.Deferred(function(defer) {        
-//        if (!G.hasSimplePush) {
-//          defer.resolve(); // resolve so we can use $.when
-//          return;
-//        }
-        
         var getSPModel = Voc.getModels(spType);
         $.when(SimplePush.register(), getSPModel).done(function(endpoint) {
           var spModel = U.getModel(spType);
