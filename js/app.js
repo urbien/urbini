@@ -12,8 +12,7 @@ define('app', [
   'vocManager',
   'resourceManager',
   'router',
-  'collections/ResourceList',
-  'lib/push'
+  'collections/ResourceList'
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -339,7 +338,7 @@ define('app', [
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp;
           
-      if (!G.hasSimplePush || G.currentUser.guest || installedApps.length || !G.currentAppInstall)
+      if (G.currentUser.guest || installedApps.length || !G.currentAppInstall)
         return;
       
       var channels = G.notificationChannels || [];
