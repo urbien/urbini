@@ -201,12 +201,11 @@
     </div>    
   {{ }                }}
   
-  {{ if (this.waitingRoom) { }}
-    <div>
-      <video id="localFakeVideo" autoplay="autoplay"></video>
-      <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
+    <div id="localVideoMonitors">
+      {{ if (this.waitingRoom) {  }}
+        <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
+      {{ }                        }}
     </div>
-  {{ }                        }}
   
   {{ if (!this.waitingRoom) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">

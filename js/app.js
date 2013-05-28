@@ -378,6 +378,14 @@ define('app', [
         if (G.callInProgress == rtcCall)
           G.callInProgress = null;
       });
+      
+      Events.on('localVideoMonitor:on', function(stream) {
+        G.localVideoMonitor = stream;
+      });
+      
+      Events.on('localVideoMonitor:off', function() {
+        G.localVideoMonitor = null;
+      });
     },
     
     setupWorkers: function() {

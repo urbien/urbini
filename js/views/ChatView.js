@@ -167,9 +167,29 @@ define('views/ChatView', [
       this.ready.done(function() {
         if (this.waitingRoom)
           this.startLocalVideo();
+        else if (G.localVideoMonitor)
+          this.attachLocalVideoMonitor(G.localVideoMonitor);
         
         this.finish();
       }.bind(this));
+    },
+    
+    attachLocalVideoMonitor: function(stream) {
+      var $localMonitors = this.$('#localVideoMonitors');
+      var video = document.createElement('video');
+      video.autoplay = true;
+      if (navigator.mozGetUserMedia) {
+        video.mozSrcObject = stream;
+      } else {
+        var vendorURL = window.URL || window.webkitURL;
+        video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+      }
+      
+      $localMonitors.append(video);
+      Events.on('localVideoMonitor:off', function() {
+        stream && stream.stop();
+        $localMonitors.html("");
+      });
     },
     
     startLocalVideo: function() {
@@ -179,21 +199,16 @@ define('views/ChatView', [
           audio: chatView.hasAudio
         },
         function(stream) {
-          var localFake = chatView.$('#localFakeVideo')[0];
-          if (navigator.mozGetUserMedia) {
-            localFake.mozSrcObject = stream;
-          } else {
-            var vendorURL = window.URL || window.webkitURL;
-            localFake.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
-          }
-        }.bind(this),
+          Events.trigger('localVideoMonitor:on', stream);
+          chatView.attachLocalVideoMonitor(stream);
+        },
         function(err) {
           U.alert({
             msg: "If you change your mind, enable this app to use your camera before trying again"
           });
           
-          this.destroy();
-        }.bind(this)
+          chatView.endChat();
+        }
       );
     },
     
@@ -415,15 +430,15 @@ define('views/ChatView', [
         channel: this.roomName,
 //        session: session,
         
-//        session: this.hasVideo ? (G.navigator.isFirefox ? RTCSession.AudioVideo : RTCSession.AudioVideoData) : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
-        session: {
-          video: this.hasVideo,
-          audio: this.hasVideo || this.hasAudio,
-          data: !this.waitingRoom
-        },
+        session: this.hasVideo ? (G.navigator.isFirefox ? RTCSession.AudioVideo : RTCSession.AudioVideoData) : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+//        session: {
+//          video: this.hasVideo,
+//          audio: this.hasVideo || this.hasAudio,
+//          data: !this.waitingRoom
+//        },
         //session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
         onopen: function(from) {
-          debugger;
+//          debugger;
             // to send text/data or file
 //          chatView._checkChannels();
           chatView.sendUserInfo({
@@ -442,7 +457,7 @@ define('views/ChatView', [
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
-          debugger;
+//          debugger;
 //          var chat = chatView.chat;
           if (!_.size(chatView.userIdToInfo)) {
             chatView.endChat(true);
@@ -453,7 +468,7 @@ define('views/ChatView', [
         },
           
         onmessage: function(data, extra) {
-          debugger;
+//          debugger;
           if (extra.extra)
             debugger;
           // send direct message to same user using his user-id
@@ -505,7 +520,7 @@ define('views/ChatView', [
         },
           
         onleave: function(data, extra) {
-          debugger;
+//          debugger;
           // remove that user's photo/image using his user-id
           extra = extra._userdid ? extra : extra.extra ? extra.extra : extra;
 //          chatView._checkChannels();          
@@ -567,7 +582,7 @@ define('views/ChatView', [
         },
         
         onRemoteStream: function(data) {
-          debugger;
+//          debugger;
           var userid = data.extra._userid,
               userInfo = userid && chatView.getUserInfo(userid),
               media = data.mediaElement,
@@ -626,16 +641,16 @@ define('views/ChatView', [
           }, 5000);
         },
         reset: function() {
-          debugger;
+//          debugger;
           this.isNewSessionOpened = this.joinedARoom = false;
         }
 //        ,
 //        transmitRoomOnce: true
       }
       
-      this.chat = new RTCMultiConnection(this.roomName);//, this.chatSettings);
-//      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
-      _.extend(this.chat, this.chatSettings);
+//      this.chat = new RTCMultiConnection(this.roomName);//, this.chatSettings);
+      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
+//      _.extend(this.chat, this.chatSettings);
         
       this.chat.openNewSession(false);
       this.enableChat();
@@ -656,7 +671,7 @@ define('views/ChatView', [
           this.chat.leave();
         
         this.chatSession = null;
-        this.chat = null;
+//        this.chat = null;
       }
       
       if (this.hasVideo) {
@@ -683,12 +698,15 @@ define('views/ChatView', [
         }
       }
 
-      video.muted = true;
-      video.controls = false;
-      video.play();
-      $(video).addClass('localVideo');
-      this.$localVids.show();
-      this.restyleVideos();
+//      $("#localVideoMonitors video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
+        Events.trigger('localVideoMonitor:off');
+        video.muted = true;
+        video.controls = false;
+        video.play();
+        $(video).addClass('localVideo');
+        this.$localVids.show();
+        this.restyleVideos();
+//      });
     },
 
     onAppendedRemoteVideo: function(video) {
