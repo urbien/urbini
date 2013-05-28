@@ -167,7 +167,7 @@ define('views/RightMenuPanel', [
         })
       }
       
-      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true});
+      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true, replace: this.hashParams['-waitingRoom'] == 'y'});
     },
     
     renderChatParticipants: function() {
