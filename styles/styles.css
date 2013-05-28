@@ -513,6 +513,18 @@ video.localVideo {
   border: 5px solid #AAA;  
 }
 */
+
+.parentCenter {
+  max-width: 100%;
+  text-align: center;
+  position: absolute;
+  top:50%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0px auto;
+}
+
 .videoChat {
   position: relative;
   display: inline-block;

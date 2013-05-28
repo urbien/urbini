@@ -195,29 +195,20 @@
   <div id="chatHolder" class="chat-holder">
   {{ if (obj.video) { }}
     <div id="videoChat" class="videoChat">
-      <div id="localVideo"></div>
+      <div id="localVideo">
+      </div>
       <div id="remoteVideos"></div>
-    </div>
-    
-    <!--div data-role="fieldcontain">
-      <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-        <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-        <label data-icon="video" for="toggleVideoBtn"></label>
-        <input type="checkbox" name="toggleAudioBtn" id="toggleAudioBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-        <label data-icon="video" for="toggleAudioBtn"></label>
-      </fieldset>
-    </div-->
-    
-    <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop Video' : 'Start Video' }}</button-->
-    <!--div data-role="fieldcontain" data-mini="true">
-      <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
-        <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
-        <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</label>
-      </fieldset>
-    </div>
-
-    <br /><hr /><br /-->
+    </div>    
   {{ }                }}
+  
+  {{ if (this.waitingRoom) { }}
+    <div>
+      <video id="localFakeVideo" autoplay="autoplay"></video>
+      <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
+    </div>
+  {{ }                        }}
+  
+  {{ if (!this.waitingRoom) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
@@ -229,7 +220,7 @@
         <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
-    
+  {{ }                       }}
   </div>
 </script>
 

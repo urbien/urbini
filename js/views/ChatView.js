@@ -38,8 +38,8 @@ define('views/ChatView', [
       _.bindAll(this, 'render', 'restyleVideoDiv', 'onAppendedLocalVideo', 'onAppendedRemoteVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
-      this.autoVideo = options.autoVideo;
-      this.hasVideo = this.autoVideo || options.video;
+      _.extend(this, _.pick(options, 'autoVideo', 'waitingRoom'));
+      this.hasVideo = this.autoVideo || options.video; // HACK, waiting room might not have video
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
@@ -75,7 +75,7 @@ define('views/ChatView', [
       this.pageView.on('video:on', this.startChat, this);
       this.pageView.once('chat:on', this.startChat, this);
 
-      this.makeTemplate('genericDialogTemplate', 'videoDialog', this.modelType);
+      this.makeTemplate('genericDialogTemplate', 'serviceRequestDialog', this.modelType);
 //      this.on('active', function(active) {
 //        if (active) {
 //          this.unreadMessages = 0;
@@ -101,6 +101,7 @@ define('views/ChatView', [
 //          self.endChat();
 //      });
 
+      this._isClient = this.isClient();
       this.autoFinish = false;
     },
     
@@ -111,6 +112,10 @@ define('views/ChatView', [
       'click #endChat': 'endChat'
     },
 
+    isClient: function() {
+      return this.waitingRoom; // HACK for now
+    },
+    
     getNumParticipants: function() {
       return this.participants.length;
     },
@@ -159,9 +164,37 @@ define('views/ChatView', [
           this.pageView.trigger('video:on');
       }
         
-      this.ready.done(function() {        
+      this.ready.done(function() {
+        if (this.waitingRoom)
+          this.startLocalVideo();
+        
         this.finish();
       }.bind(this));
+    },
+    
+    startLocalVideo: function() {
+      var chatView = this;
+      navigator.getMedia({
+          video: true,
+          audio: chatView.hasAudio
+        },
+        function(stream) {
+          var localFake = chatView.$('#localFakeVideo')[0];
+          if (navigator.mozGetUserMedia) {
+            localFake.mozSrcObject = stream;
+          } else {
+            var vendorURL = window.URL || window.webkitURL;
+            localFake.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+          }
+        }.bind(this),
+        function(err) {
+          U.alert({
+            msg: "If you change your mind, enable this app to use your camera before trying again"
+          });
+          
+          this.destroy();
+        }.bind(this)
+      );
     },
     
 //    switchToChat: function(e) {
@@ -171,16 +204,22 @@ define('views/ChatView', [
     enableChat: function() {
       this.$('#chatSendButton').button('enable');
       var $input = this.$('#chatMessageInput');
-      $input.removeClass('ui-disabled');
-      $input[0].value = '';
+      if ($input.length) {
+        $input.removeClass('ui-disabled');
+        $input[0].value = '';
+      }
+      
       this.disabled = false;
     },
     
     disableChat: function() {
       this.$('#chatSendButton').button().button('disable');
       var $input = this.$('#chatMessageInput');
-      $input.addClass('ui-disabled');
-      $input[0].value = 'Chat room is empty...';
+      if ($input.length) {
+        $input.addClass('ui-disabled');
+        $input[0].value = 'Chat room is empty...';
+      }
+      
       this.$remoteVids && this.$remoteVids.empty();
       this.disabled = true;
     },
@@ -376,13 +415,20 @@ define('views/ChatView', [
         channel: this.roomName,
 //        session: session,
         
-        session: this.hasVideo ? (G.navigator.isFirefox ? RTCSession.AudioVideo : RTCSession.AudioVideoData) : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+//        session: this.hasVideo ? (G.navigator.isFirefox ? RTCSession.AudioVideo : RTCSession.AudioVideoData) : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
+        session: {
+          video: this.hasVideo,
+          audio: this.hasVideo || this.hasAudio,
+          data: !this.waitingRoom
+        },
         //session: this.hasVideo ? RTCSession.AudioVideoData : this.hasAudio ? RTCSession.AudioData : RTCSession.Data,
         onopen: function(from) {
+          debugger;
             // to send text/data or file
 //          chatView._checkChannels();
           chatView.sendUserInfo({
-            justEntered: !chatView.connected
+            justEntered: !chatView.connected,
+            client: chatView._isClient
           });
           
           chatView.connected = true;
@@ -396,6 +442,7 @@ define('views/ChatView', [
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
+          debugger;
 //          var chat = chatView.chat;
           if (!_.size(chatView.userIdToInfo)) {
             chatView.endChat(true);
@@ -406,6 +453,7 @@ define('views/ChatView', [
         },
           
         onmessage: function(data, extra) {
+          debugger;
           if (extra.extra)
             debugger;
           // send direct message to same user using his user-id
@@ -419,6 +467,10 @@ define('views/ChatView', [
           if (data.userInfo) {
             userInfo = data.userInfo;
             chatView.addParticipant(userInfo);
+            if (userInfo.client && !chatView._isClient) {
+              // offer to serve the person
+              chatView.showServiceRequestDialog(userInfo);
+            }
           }
           else if (data.response) {
             // nothing here yet
@@ -453,6 +505,7 @@ define('views/ChatView', [
         },
           
         onleave: function(data, extra) {
+          debugger;
           // remove that user's photo/image using his user-id
           extra = extra._userdid ? extra : extra.extra ? extra.extra : extra;
 //          chatView._checkChannels();          
@@ -479,7 +532,10 @@ define('views/ChatView', [
           var socket = io.connect(SIGNALING_SERVER + '/' + channel);
           socket.channel = channel;
           socket.on('connect', function () {
-              if (config.callback) config.callback(socket);
+              if (config.callback) 
+                config.callback(socket);
+              else
+                debugger;
 //              if (config.onopen) config.onopen(socket);
           });
   
@@ -514,6 +570,7 @@ define('views/ChatView', [
         },
         
         onRemoteStream: function(data) {
+          debugger;
           var userid = data.extra._userid,
               userInfo = userid && chatView.getUserInfo(userid),
               media = data.mediaElement,
@@ -572,13 +629,17 @@ define('views/ChatView', [
           }, 5000);
         },
         reset: function() {
+          debugger;
           this.isNewSessionOpened = this.joinedARoom = false;
         }
 //        ,
 //        transmitRoomOnce: true
       }
       
-      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
+      this.chat = new RTCMultiConnection(this.roomName);//, this.chatSettings);
+//      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
+      _.extend(this.chat, this.chatSettings);
+        
       this.chat.openNewSession(false);
       this.enableChat();
       
@@ -675,6 +736,39 @@ define('views/ChatView', [
 //        $locals.removeClass('myVideo-overlay');
       
       this.restyleVideoDiv();
+    },
+    
+    showServiceRequestDialog: function(userInfo) {
+      $('#serviceRequestDialog').remove();
+      var popupHtml = chatView.serviceRequestDialog({
+        id: 'requestVideoDialog',
+        title: userInfo.name + ' is cold and alone and needs your help',
+        ok: 'Accept',
+        cancel: 'Decline'
+      });
+      
+      $(document.body).append(popupHtml);
+      var $popup = $('#requestVideoDialog');
+      $popup.find('[data-cancel]').click(function() {
+        chatView.chat.send({
+          serviceRequest: {
+            accepted: false
+          }
+        });
+      });
+      
+      $popup.find('[data-ok]').click(function() {
+        chatView.chat.send({
+          serviceRequest: {
+            accepted: true
+          }
+        });
+//        chatView.pageView.trigger('video:on');
+      });
+      
+      $popup.trigger('create');
+      $popup.popup().popup("open");
+
     }
   },
   {

@@ -14,6 +14,9 @@ define('views/ChatPage', [
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
+      
+      this.autoVideo = this.hashParams['-autoVideo'] === 'y';
+      this.waitingRoom = this.hashParams['-waitingRoom'] === 'y';
       _.extend(this, _.pick(options, 'autoVideo', 'private'));
       
       this.hasVideo = this['private'];
@@ -39,14 +42,12 @@ define('views/ChatPage', [
       
       this.addChild('header', new Header(headerOptions));
   
-      var params = U.getHashParams();
 //      this.video = params['-video'] !== 'n';
       this.video = this.hash.startsWith('chat/_');
-      this.autoVideo = params['-autoVideo'] === 'y';
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model'))));
+      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model', 'waitingRoom'))));
       
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);
