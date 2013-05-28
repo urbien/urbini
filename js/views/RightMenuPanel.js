@@ -167,7 +167,16 @@ define('views/RightMenuPanel', [
         })
       }
       
-      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true, replace: this.hashParams['-waitingRoom'] == 'y'});
+      var isWaitingRoom = this.hashParams['-waitingRoom'] == 'y';
+      var redirectOptions = {
+        trigger: true, 
+        replace: isWaitingRoom
+      };
+      
+      if (isWaitingRoom)
+        redirectOptions.transition = 'none';
+      
+      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
     },
     
     renderChatParticipants: function() {

@@ -194,6 +194,9 @@ define('router', [
         previousHash: U.getHash() 
       });
       
+      if (options.transition)
+        this.nextTransition = options.transition;
+      
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       _.extend(this, this.defaultOptions);
       return ret;
@@ -1203,7 +1206,8 @@ define('router', [
         view.trigger('active', true);
       
       // perform transition        
-      $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
+      $.mobile.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;
     }
