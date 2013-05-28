@@ -532,10 +532,7 @@ define('views/ChatView', [
           var socket = io.connect(SIGNALING_SERVER + '/' + channel);
           socket.channel = channel;
           socket.on('connect', function () {
-              if (config.callback) 
-                config.callback(socket);
-              else
-                debugger;
+            if (config.callback) config.callback(socket);
 //              if (config.onopen) config.onopen(socket);
           });
   
