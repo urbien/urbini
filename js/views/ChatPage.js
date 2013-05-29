@@ -17,6 +17,7 @@ define('views/ChatPage', [
       
       this.autoVideo = this.hashParams['-autoVideo'] === 'y';
       this.waitingRoom = this.hashParams['-waitingRoom'] === 'y';
+      this.isAgent = this.hashParams['-agent'] === 'y';
       _.extend(this, _.pick(options, 'autoVideo', 'private'));
       
       this.hasVideo = this['private'];
@@ -47,7 +48,7 @@ define('views/ChatPage', [
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model', 'waitingRoom'))));
+      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model', 'waitingRoom', 'isAgent'))));
       
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);

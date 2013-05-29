@@ -180,10 +180,11 @@
 <script type="text/template" id="genericDialogTemplate">
 <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="false" class="ui-corner-all">
   <div data-role="header" data-theme="a" class="ui-corner-top">
-    <h1>Video Chat?</h1>
+    <h1>{{= header }}</h1>
   </div>
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
     <h3 class="ui-title">{{= title }}</h3>
+    {{= obj.img ? '<img src="{0}" />'.format(img) : '' }}
     <p>{{= obj.details ? details : '' }}</p>
     <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= obj.cancel || 'Cancel' }}</a>
     <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= obj.ok || 'Ok' }}</a>
@@ -202,12 +203,12 @@
   {{ }                }}
   
     <div id="localVideoMonitors">
-      {{ if (this.waitingRoom) {  }}
+      {{ if (this.waitingRoom && this.isClient) {  }}
         <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
       {{ }                        }}
     </div>
   
-  {{ if (!this.waitingRoom) { }}
+  {{ if (!this.waitingRoom || this.isAgent) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">

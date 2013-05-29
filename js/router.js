@@ -62,6 +62,10 @@ define('router', [
       Events.on('home', function() {
         self.goHome();
       });
+
+      Events.on('navigate', function(fragment, options) {
+        self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
+      });
       
       Events.on('back', function() {
         var now = +new Date();
