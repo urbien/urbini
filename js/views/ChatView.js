@@ -38,8 +38,11 @@ define('views/ChatView', [
       _.bindAll(this, 'render', 'restyleVideoDiv', 'onAppendedLocalVideo', 'onAppendedRemoteVideo'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
-      _.extend(this, _.pick(options, 'autoVideo', 'waitingRoom', 'isAgent', 'isPrivate'));
-      this.isClient = !this.isAgent;
+      _.extend(this, _.pick(options, 'autoVideo'));
+      this.isWaitingRoom = U.isWaitingRoom();
+      this.isPrivate = U.isPrivateChat();
+      this.isAgent = this.hashParams['-agent'] === 'y';
+      this.isClient = this.isWaitingRoom && !this.isAgent;
       this.hasVideo = this.autoVideo || this.isPrivate; // HACK, waiting room might not have video
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
@@ -150,7 +153,11 @@ define('views/ChatView', [
       
       name = name.replace(/[^a-zA-Z0-9]/ig, '');
       if (this.isPrivate)
-        name = '_' + name;
+        name = 'p_' + name;
+      else if (this.isWaitingRoom)
+        name = 'l_' + name;
+      
+      return name;
     },
     
     render: function() {
@@ -169,17 +176,41 @@ define('views/ChatView', [
       }
         
       this.ready.done(function() {
-        if (this.waitingRoom && this.isClient)
+        if (this.isWaitingRoom && this.isClient)
           this.startLocalVideo();
         else if (G.localVideoMonitor)
           this.attachLocalVideoMonitor(G.localVideoMonitor);
+        
+//        if (this.resource)
+//          this.loadResourceUI();
         
         this.finish();
       }.bind(this));
     },
     
-    attachLocalVideoMonitor: function(stream) {
-      var $localMonitors = this.$('#localVideoMonitors');
+//    loadResourceUI: function() {
+//      if (this.backlinks)
+//        return;
+//      
+//      var chatView = this;
+//      require(['views/ControlPanel']).done(function(ControlPanel) {
+//        var $bl = chatView.$('#inChatBacklinks');
+//        chatView.addChild('backlinks', new ControlPanel({
+//          isMainGroup: true,
+//          model: chatView.resource,
+//          el: $bl[0]
+//        }));
+//        
+//        chatView.backlinks.render();
+//        $bl.css('z-index', 100).drags();
+//      });
+//    },
+
+    _attachLocalVideoMonitor: function(stream) {
+      var $localMonitors = this.$('#localVideoMonitor');
+      if ($localMonitors.find('video').length)
+        return;
+      
       var video = document.createElement('video');
       video.autoplay = true;
       if (navigator.mozGetUserMedia) {
@@ -194,6 +225,16 @@ define('views/ChatView', [
       Events.on('localVideoMonitor:off', function() {
         stream && stream.stop();
         $localMonitors.html("");
+      });
+    },
+    
+    attachLocalVideoMonitor: function(stream) {
+      if (this.isActivePage())
+        return this._attachLocalVideoMonitor(stream);
+      
+      var self = this;
+      Events.once('pageChange', function() {
+        self._attachLocalVideoMonitor(stream);
       });
     },
     
@@ -256,7 +297,7 @@ define('views/ChatView', [
           $(this).remove();
         });
 
-        this.pageView.trigger('video:off');
+//        this.pageView.trigger('video:off');
       }
       
       if (this.rtcCall)
@@ -270,10 +311,10 @@ define('views/ChatView', [
 //      // END HACK
       
       delete this.userIdToInfo[userid];
-      if (!_.size(this.userIdToInfo)) {
+//      if (!_.size(this.userIdToInfo)) {
 //        this.disableChat();
-        this.endChat();
-      }
+//        this.endChat();
+//      }
     
       this._updateParticipants();
       var dfd = this._otherRequestPromises[userid];
@@ -484,7 +525,7 @@ define('views/ChatView', [
             justEntered: !chatView.connected
           });
           
-          if (chatView.waitingRoom && chatView.isClient) {
+          if (chatView.isWaitingRoom && chatView.isClient) {
             chatView.request({
               title: 'Hi, can someone help me please?',
               type: 'service'
@@ -493,7 +534,7 @@ define('views/ChatView', [
               chatView.leave();
               var from = responseData.from;
               var privateRoom = responseData.response.privateRoom;
-              Events.trigger('navigate', U.makeMobileUrl('chatp', privateRoom), {replace: true});
+              Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true});
             }).progress(function(responseData) {
               // request has been denied by responseData.from, or anonymously if responseData.from is undefined
               debugger;
@@ -511,14 +552,9 @@ define('views/ChatView', [
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
-//          debugger;
-//          var chat = chatView.chat;
-          if (!_.size(chatView.userIdToInfo)) {
-            chatView.endChat(true);
-//            if (chatView.isActive()) {
-//              chatView.restartChat();
-//            }
-          }
+//          if (!_.size(chatView.userIdToInfo)) {
+//            chatView.endChat(true);
+//          }
         },
           
         onmessage: function(data, extra) {
@@ -534,7 +570,7 @@ define('views/ChatView', [
           data.from = from;
           var userInfo = chatView.getUserInfo(from);
 //          G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(extra._userid, JSON.stringify(data)));
-          var isPrivate = chatView.isPrivate || !!data.to;
+          var isPrivate = !!data.to;
           if (data.userInfo) {
             userInfo = data.userInfo;
             chatView.addParticipant(userInfo);
@@ -729,6 +765,7 @@ define('views/ChatView', [
 //      _.extend(this.chat, this.chatSettings);
         
       var create = this.hashParams['-create'] === 'y';
+      Events.trigger('navigate', U.replaceParam(U.getHash(), '-create', null), {repalce: true, trigger: false}); // don't create room on refresh (assume you're refreshing cause you lost the connection)
       this.chat.openNewSession(create);
       this.enableChat();
       
@@ -779,7 +816,7 @@ define('views/ChatView', [
         }
       }
 
-//      $("#localVideoMonitors video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
+//      $("#localVideoMonitor video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
         Events.trigger('localVideoMonitor:off');
         video.muted = true;
         video.controls = false;
@@ -788,8 +825,21 @@ define('views/ChatView', [
         this.$localVids.show();
         this.restyleVideos();
 //      });
+        
+      this.monitorVideoHealth(video);
     },
 
+    monitorVideoHealth: function(video) {
+      var $video = $(video);
+      _.each(["suspend", "abort", "error", "ended"], function(event) {
+        video.addEventListener(event, function() {
+          debugger;
+          var isLocal = $video.parents('#localVideo');
+          $video.remove();
+        });
+      });
+    },
+    
     onAppendedRemoteVideo: function(video) {
       this.checkVideoSize(video);
       video.controls = false;
@@ -797,6 +847,7 @@ define('views/ChatView', [
       $(video).addClass('remoteVideo');
       this.$remoteVids.show();
       this.restyleVideos();
+      this.monitorVideoHealth(video);
     },
 
     checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
@@ -845,7 +896,7 @@ define('views/ChatView', [
             request: request.id
           };
         
-      var isServiceReq = this.waitingRoom && request.type == 'service';
+      var isServiceReq = this.isWaitingRoom && request.type == 'service';
       if (isServiceReq) {
         response.privateRoom = userUri;
         this.chat.send({
@@ -853,7 +904,7 @@ define('views/ChatView', [
         });
         
         this.leave(); // leave waitingRoom
-        Events.trigger('navigate', U.makeMobileUrl('chatp', response.privateRoom, {'-create': 'y'}), {replace: true});   
+        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-create': 'y'}), {replace: true});   
       }
       else {
         this.chat.send({

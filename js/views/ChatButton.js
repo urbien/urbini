@@ -21,8 +21,14 @@ define('views/ChatButton', [
         if (/\?/.test(hash))
           hash = hash.slice(0, hash.indexOf('?'));
 
-        var chatView = this.router[(U.isPrivateChat() ? 'Private' : 'Public') + 'ChatViews'][hash]; // HACK
-        var unread = chatView && chatView.getNumUnread();
+        var self = this;
+        // HACK
+        var cachedChatView = _.compact(_.map(['Private', 'Public', 'Lobby'], function(type) {
+          var cache = self.router[type + 'ChatViews'];
+          return cache && cache[hash]; 
+        }))[0];
+        
+        var unread = cachedChatView && cachedChatView.getNumUnread();
         var $menuBadge = this.$('.menuBadge');
         $menuBadge.html(unread || '');
         $menuBadge[unread ? 'show' : 'hide']();

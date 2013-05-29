@@ -82,6 +82,7 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
+  <div id="inChatBacklinks"></div>
   <div id="chatDiv" role="main" data-role="content">
   </div>
 </script>  
@@ -176,13 +177,14 @@
     </div>    
   {{ }                }}
   
-    <div id="localVideoMonitors">
-      {{ if (this.waitingRoom && this.isClient) {  }}
+    <div id="localVideoMonitor">
+      {{ if (this.isWaitingRoom && this.isClient) {  }}
         <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
-      {{ }                        }}
+      {{ }                                           }}
     </div>
+    
   
-  {{ if (!this.waitingRoom || this.isAgent) { }}
+  {{ if (!this.isWaitingRoom || this.isAgent) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
@@ -194,7 +196,7 @@
         <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
-  {{ }                       }}
+  {{ }                                          }}
   </div>
 </script>
 

@@ -351,6 +351,10 @@ define('views/BasicView', [
 //      this.$el.page();
     },
     
+    isActivePage: function() {
+      return $.mobile.activePage === this.pageView.$el;
+    },
+    
     showLoadingIndicator: function(timeout) {
       $.mobile.loading('show');
       // in case if fetch failed to invoke a callback

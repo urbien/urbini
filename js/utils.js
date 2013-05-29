@@ -362,7 +362,7 @@ define('utils', [
         return G.commonTypes.Jst;
       }
       
-      route = hash.match('^view|menu|edit|make|chooser|chat|chatp');
+      route = hash.match(/^view|menu|edit|make|chooser|chat|chat[a-zA-Z]+/);
 //      debugger;
 //      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
@@ -1016,7 +1016,14 @@ define('utils', [
       url = url.split('?');
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
-      q[name] = value;
+      if (value)
+        q[name] = value;
+      else
+        delete q[name];
+      
+      if (!_.size(q))
+        return url[0];
+      
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
@@ -3004,11 +3011,29 @@ define('utils', [
     getExternalFileUrl: function(uri) {
       return G.serverName + '/' + U.getParamMap(uri).url;
     },
+    _chatRoutes: {
+      'private': 'chatPrivate',
+      'public': 'chat',
+      'lobby': 'chatLobby'
+    },
     isChatPage: function() {
-      return /^chatp?\//.test(U.getHash());
+      return /^chat/.test(U.getHash());
+    },
+    isAgentChat: function() {
+      return /chat\//.test(U.getHash());
     },
     isPrivateChat: function() {
-      return /^chatp\//.test(U.getHash());
+      return U.getHash().startsWith('chatPrivate');
+    },
+    isWaitingRoom: function() {
+      return U.getHash().startsWith('chatLobby');
+    },
+    getRoute: function() {
+      var hash = U.getHash();
+      if (/[a-zA-Z]+\//.test(hash))
+        return hash.match(/([a-zA-Z]+)\//)[1];
+      else
+        return '';
     }
   };
 

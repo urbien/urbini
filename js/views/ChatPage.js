@@ -16,9 +16,7 @@ define('views/ChatPage', [
       options = options || {};
       
       this.autoVideo = options.autoVideo || this.hashParams['-autoVideo'] === 'y';
-      this.waitingRoom = this.hashParams['-waitingRoom'] === 'y';
-      this.isAgent = this.hashParams['-agent'] === 'y';
-      
+      this.isWaitingRoom = U.isWaitingRoom();
       this.isPrivate = U.isPrivateChat();
       this.headerButtons = {
         back: true,
@@ -47,8 +45,24 @@ define('views/ChatPage', [
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'autoVideo', 'model', 'waitingRoom', 'isAgent', 'isPrivate'))));
+      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'autoVideo', 'model'))));
       
+      var readyDfd = $.Deferred();
+      this.ready = readyDfd.promise();
+//      var self = this;
+//      if (this.resource) {
+//        require(['views/ControlPanel']).done(function(ControlPanel) {
+//          self.addChild('backlinks', new ControlPanel({
+//            isMainGroup: true,
+//            model: self.resource
+//          }));
+//          
+//          readyDfd.resolve();
+//        });
+//      }
+//      else
+        readyDfd.resolve();
+
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);
       this.on('video:on', this.videoFadeIn, this);
@@ -117,6 +131,13 @@ define('views/ChatPage', [
     },
     
     render: function() {
+      var args = arguments, self = this;
+      this.ready.done(function() {
+        self.renderHelper.apply(self, args);
+      });
+    },
+    
+    renderHelper: function() {
       this.$el.html(this.template({
         viewId: this.cid
       }));
@@ -124,8 +145,32 @@ define('views/ChatPage', [
       this.assign({
         'div#headerDiv' : this.header,
         'div#chatDiv': this.chatView
+//        ,
+//        'div#inChatBacklinks': this.backlinks 
       });
-      
+
+      var self = this;
+      if (this.resource) {
+        require(['views/ControlPanel']).done(function(ControlPanel) {
+          var $bl = self.$("div#inChatBacklinks");
+          self.addChild('backlinks', new ControlPanel({
+            isMainGroup: true,
+            model: self.resource,
+            el: $bl[0]
+          }));
+          
+          self.backlinks.render();
+          self.restyle();
+//          self.assign('div#inChatBacklinks', self.backlinks);
+//          readyDfd.resolve();
+          $bl.css('z-index', 100).drags();
+        });
+      }
+//      else
+
+//      if (this.resource)
+//        this.loadResourceUI();      
+
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
     }

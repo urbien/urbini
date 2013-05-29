@@ -253,7 +253,7 @@ define('views/Header', [
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
-        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe')) && this.isGeo();
+        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
         this.getButtonViews();
       }
         

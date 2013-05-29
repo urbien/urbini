@@ -41,7 +41,11 @@ define('views/ControlPanel', [
       if (!t)
         return;
       
-      Events.stopEvent(e);
+//      Events.stopEvent(e);
+      e.preventDefault();
+      if ($(t).parents('.__dragged__').length)
+        return;
+      
       var shortName = t.dataset.shortname;
       this.prop = this.vocModel.properties[shortName];
 
@@ -139,8 +143,9 @@ define('views/ControlPanel', [
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
-      if (this.isMainGroup  &&  !mainGroup)
+      if (this.isMainGroup  &&  !mainGroup.length)
         return;
+      
       var isHorizontal;      
       if (this.isMainGroup) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {

@@ -28,14 +28,16 @@ define('router', [
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
       "chat/*path"                                             : "chat", 
-      "chatp/*path"                                            : "chat", 
+      "chatPrivate/*path"                                      : "chat", 
+      "chatLobby/*path"                                        : "chat", 
       ":type/:backlink"                                        : "list"
     },
 
     CollectionViews: {},
     MkResourceViews: {},
     PrivateChatViews: {},
-    PublicChatViews: {},
+    ChatViews: {},
+    LobbyChatViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -682,24 +684,9 @@ define('router', [
       if (!edit && !chat && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
 
-      switch (action) {
-        case 'chat':
-          views = U.isPrivateChat() ? 'PrivateChatViews' : 'PublicChatViews';
-          viewPageCl = this.ChatPage;
-          break;
-        case 'edit':
-          views = 'EditView';
-          viewPageCl = this.EditPage;
-          break;
-        default:
-          views = 'Views';
-          viewPageCl = this.ViewPage;
-      }
-
-      views = this[views];
-      
       var params = U.getHashParams(),
           qIdx = path.indexOf("?"),
+          route = U.getRoute(),
           uri, 
           query;
       
@@ -711,6 +698,22 @@ define('router', [
         uri = path.slice(0, qIdx);
         query = path.slice(qIdx + 1);
       }
+      
+      switch (action) {
+        case 'chat':
+          views = route.slice(4) + 'ChatViews';
+          viewPageCl = this.ChatPage;
+          break;
+        case 'edit':
+          views = 'EditView';
+          viewPageCl = this.EditPage;
+          break;
+        default:
+          views = 'Views';
+          viewPageCl = this.ViewPage;
+      }
+
+    views = this[views];
 
       if (uri == 'profile') {
         if (!G.currentUser.guest) {
