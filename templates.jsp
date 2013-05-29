@@ -82,19 +82,8 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="chatDiv" role="main">
+  <div id="chatDiv" role="main" data-role="content">
   </div>
-  
-  <!--div data-theme="{{= G.theme.footer }}" data-fullscreen="true" style="text-align:center" data-fixed="true">
-    <div data-role="navbar">
-      <ul id="chatFooterUl" class="navbarUl">
-        {{ if (this.hasVideo) { }}
-          <li data-icon="video"><a data-icon="video" id="toggleVideoBtn" target="#">Video</a></li>
-        {{ }                    }}
-        <li data-icon="comments-alt"><a data-icon="comments-alt" id="toggleChatBtn" target="#">Chat</a></li>
-      </ul>
-    </div>
-  </div-->
 </script>  
 
 <script type="text/template" id="chatMessageTemplate1">
@@ -162,23 +151,8 @@
   </table>
 </script>
 
-<!--script type="text/template" id="requestVideoDialogTemplate">
-  <!--a href="#requestVideoDialog" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop" data-icon="delete" data-theme="b">Video Chat</a-->
-  <div data-role="popup" id="requestVideoDialog" data-overlay-theme="a" data-theme="c" data-dismissible="false" style="max-width:400px;" data-overlay-theme="{{= G.theme.menu }}" class="ui-corner-all">
-    <div data-role="header" data-theme="a" class="ui-corner-top">
-      <h1>Video Chat?</h1>
-    </div>
-    <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
-      <h3 class="ui-title">{{= sender + ' would like to video chat with you' }}</h3>
-      <!--p>This action cannot be undone.</p-->
-      <a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">Decline</a>
-      <a href="#" data-role="button" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">Accept</a>
-    </div>
-  </div>
-</script-->
-
 <script type="text/template" id="genericDialogTemplate">
-<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="false" class="ui-corner-all">
+<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="false" class="ui-content">
   <div data-role="header" data-theme="a" class="ui-corner-top">
     <h1>{{= header }}</h1>
   </div>

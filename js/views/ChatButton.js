@@ -21,7 +21,7 @@ define('views/ChatButton', [
         if (/\?/.test(hash))
           hash = hash.slice(0, hash.indexOf('?'));
 
-        var chatView = this.router.ChatViews[hash];
+        var chatView = this.router[(U.isPrivateChat() ? 'Private' : 'Public') + 'ChatViews'][hash]; // HACK
         var unread = chatView && chatView.getNumUnread();
         var $menuBadge = this.$('.menuBadge');
         $menuBadge.html(unread || '');
@@ -30,7 +30,7 @@ define('views/ChatButton', [
     },
     render: function(options) {      
       var res = this.model;
-      this.isChat = this.hash.startsWith('#chat/');
+      this.isChat = U.isChatPage();
       var uri, url;
       if (!this.isChat) {
         uri = this.resource ? res.getUri() : res.getUrl();

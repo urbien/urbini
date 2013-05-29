@@ -50,7 +50,7 @@ define('views/Header', [
 
       this.autoFinish = false;
       this.isEdit = /^(edit|make)\//.test(this.hash);
-      this.isChat = /^chat\//.test(this.hash);
+      this.isChat = U.isChatPage();
 
       var self = this;
       if (!this.isChat) {

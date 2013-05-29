@@ -15,18 +15,17 @@ define('views/ChatPage', [
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
-      this.autoVideo = this.hashParams['-autoVideo'] === 'y';
+      this.autoVideo = options.autoVideo || this.hashParams['-autoVideo'] === 'y';
       this.waitingRoom = this.hashParams['-waitingRoom'] === 'y';
       this.isAgent = this.hashParams['-agent'] === 'y';
-      _.extend(this, _.pick(options, 'autoVideo', 'private'));
       
-      this.hasVideo = this['private'];
+      this.isPrivate = U.isPrivateChat();
       this.headerButtons = {
         back: true,
         menu: true,
         login: G.currentUser.guest,
         rightMenu: true,
-        video: this.hasVideo
+        video: this.isPrivate
       };
 
       var res = this.model;
@@ -44,11 +43,11 @@ define('views/ChatPage', [
       this.addChild('header', new Header(headerOptions));
   
 //      this.video = params['-video'] !== 'n';
-      this.video = this.hash.startsWith('chat/_');
+      this.video = this.isPrivate;
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'video', 'autoVideo', 'model', 'waitingRoom', 'isAgent'))));
+      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'autoVideo', 'model', 'waitingRoom', 'isAgent', 'isPrivate'))));
       
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);

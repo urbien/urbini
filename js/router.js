@@ -28,12 +28,14 @@ define('router', [
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
       "chat/*path"                                             : "chat", 
+      "chatp/*path"                                            : "chat", 
       ":type/:backlink"                                        : "list"
     },
 
     CollectionViews: {},
     MkResourceViews: {},
-    ChatViews: {},
+    PrivateChatViews: {},
+    PublicChatViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -673,17 +675,34 @@ define('router', [
      */
     view: function (path, action) {
       var edit = action === 'edit',
-          chat = action === 'chat';
+          chat = action === 'chat',
+          views, 
+          viewPageCl;
       
       if (!edit && !chat && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
 
-      var views = this[edit ? 'EditViews' : chat ? 'ChatViews' : 'Views'];
-      var viewPageCl = edit ? this.EditPage : chat ? this.ChatPage : this.ViewPage;
+      switch (action) {
+        case 'chat':
+          views = U.isPrivateChat() ? 'PrivateChatViews' : 'PublicChatViews';
+          viewPageCl = this.ChatPage;
+          break;
+        case 'edit':
+          views = 'EditView';
+          viewPageCl = this.EditPage;
+          break;
+        default:
+          views = 'Views';
+          viewPageCl = this.ViewPage;
+      }
 
-      var params = U.getHashParams();
-      var qIdx = path.indexOf("?");
-      var uri, query;
+      views = this[views];
+      
+      var params = U.getHashParams(),
+          qIdx = path.indexOf("?"),
+          uri, 
+          query;
+      
       if (qIdx == -1) {
         uri = path;
         query = '';
@@ -708,10 +727,7 @@ define('router', [
       }
       
       if (chat && /^_/.test(uri)) {
-        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage({
-          'private': true
-        });
-        
+        var chatPage = views[uri] = views[uri] || new this.ChatPage();
         this.changePage(chatPage);
         return;
       }      

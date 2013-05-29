@@ -362,7 +362,7 @@ define('utils', [
         return G.commonTypes.Jst;
       }
       
-      route = hash.match('^view|menu|edit|make|chooser|chat');
+      route = hash.match('^view|menu|edit|make|chooser|chat|chatp');
 //      debugger;
 //      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
@@ -1720,10 +1720,6 @@ define('utils', [
       switch (action) {
         case 'list':
           break;
-        case 'make':
-        case 'view':
-        case 'edit':
-        case 'chooser':
         default: 
           url += action + '/';
           break;
@@ -3007,6 +3003,12 @@ define('utils', [
     },
     getExternalFileUrl: function(uri) {
       return G.serverName + '/' + U.getParamMap(uri).url;
+    },
+    isChatPage: function() {
+      return /^chatp?\//.test(U.getHash());
+    },
+    isPrivateChat: function() {
+      return /^chatp\//.test(U.getHash());
     }
   };
 

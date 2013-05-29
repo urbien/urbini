@@ -18,7 +18,7 @@ define('views/RightMenuButton', [
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
-      this.isChat = this.hash.startsWith('chat/');
+      this.isChat = U.isChatPage();
       return this;
     },
     
