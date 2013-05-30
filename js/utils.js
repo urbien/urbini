@@ -361,6 +361,8 @@ define('utils', [
 //        hash = U.decode(hash.slice(10));
         return G.commonTypes.Jst;
       }
+      else if (hash.startsWith('home'))
+        return null;
       
       route = hash.match(/^view|menu|edit|make|chooser|chat|chat[a-zA-Z]+/);
 //      debugger;
@@ -1013,6 +1015,20 @@ define('utils', [
       if (!url)
         return name + '=' + U.encode(value);
       
+      if (_.isObject(name)) {
+        var newUrl = url,
+            params = name,
+            sort = value;
+        
+        for (var p in params) {
+          if (_.has(params, p)) {
+            newUrl = U.replaceParam(newUrl, p, params[p], value);
+          }
+        }
+        
+        return newUrl;
+      }
+        
       url = url.split('?');
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
@@ -2941,6 +2957,33 @@ define('utils', [
         if (!options.persist)
           setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
       }, options.delay || 0);
+    },
+    /**
+     * @param options: specify id, header, title, img, ok, cancel, details 
+     * @example 
+     *    U.dialog({
+     *      id: 'chatRequestDialog',
+     *      header: 'Chat Invitation',
+     *      title: 'Chat with me?',
+     *      details: 'you will not regret it...',
+     *      ok: 'Accept',         // pass true to get default string 'Ok', or false to not have a button
+     *      cancel: 'Decline',    // pass true to get default string 'Cancel', or false to not have a button
+     *      img: 'http://urbien.com/path/to/img'
+     *    });
+     *  
+     */
+    dialog: function(options) {
+      var id = options.id = options.id || 'dialog' + G.nextId();
+      $('#' + id).remove();
+      var dialogHtml = U.template('genericDialogTemplate')(_.defaults(options, {
+        ok: true,
+        cancel: true
+      }));
+      
+      $(document.body).append(dialogHtml);
+      var $dialog = $('#' + id);
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
     },
     removeClasses: function(element, pattern) {
       element = element instanceof $ ? element : $(element); 

@@ -404,7 +404,7 @@ define('resourceManager', [
 //    useUpgradeNeeded: !!window.IDBOpenDBRequest,
     defaultSync: function(method, data, options) {
       if (options.sync)
-        options.timeout = 5000;
+        options.timeout = 10000;
       
       var tName = 'sync ' + options.url;
       G.startedTask(tName);

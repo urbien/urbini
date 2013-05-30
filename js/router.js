@@ -20,6 +20,7 @@ define('router', [
     TAG: 'Router',
     routes:{
       ""                                                       : "home",
+      "home/*path"                                             : "home",
       ":type"                                                  : "list", 
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
@@ -265,6 +266,11 @@ define('router', [
       
       Events.trigger('pageChange', prev, this.currentView);
       $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      var mainDiv = $('.mainDiv');
+      if (mainDiv.is(':hidden'))
+        mainDiv.show();
+
+      this.checkErr();
     },
     
     choose: function(path) { //, checked, props) {
@@ -1111,12 +1117,30 @@ define('router', [
     },
     
     checkErr: function() {
-      var q = U.getQueryParams();
-      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
-      if (msg)
-        U.alert({msg: msg, persist: true});
-      
-      this.errMsg = null, this.info = null;
+//      var q = U.getQueryParams();
+//      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
+//      if (msg)
+//        U.alert({msg: msg, persist: true});
+//      
+//      this.errMsg = null, this.info = null;
+      var params = U.getHashParams();
+      var info = params['-info'],
+          error = params['-error'];
+          
+      if (info || error) {
+        U.dialog({
+          header: 'FYI',
+          title: info || error,
+          ok: false,
+          cancel: false
+        });
+        
+        var hash = U.getHash().slice(1);
+        delete params['-info'];
+        delete params['-error']; 
+        // so the dialog doesn't show again on refresh 
+        Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+      }
     },
     changePage: function(view) {
       try {

@@ -474,6 +474,7 @@ define('globals', function() {
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
+    appUrl: G.serverName + '/' + G.pageRoot,
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',

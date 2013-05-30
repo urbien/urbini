@@ -638,8 +638,8 @@ define('views/EditView', [
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
-        if (!redirect.length)
-          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
+//        if (!redirect.length)
+//          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
         if (redirect.length) {
           redirect = res.get(redirect);
           if (redirect) {
@@ -981,13 +981,23 @@ define('views/EditView', [
         return;
       }
             
+      var sync = !U.canAsync(this.vocModel);
+      if (sync) {
+        G.showSpinner({
+          content: 'Saving...',
+          name: 'saving-resource'
+        });
+      }
+        
       res.save(props, {
-        sync: !U.canAsync(this.vocModel),
+        sync: sync,
         success: function(resource, response, options) {
           self.getInputs().attr('disabled', false);
           res.lastFetchOrigin = null;
           self.disable('Changes submitted');
           self.redirect();
+          if (sync)
+            G.hideSpinner('saving-resource');
         }, 
 //        skipRefresh: true,
         error: self.onSaveError

@@ -22,7 +22,7 @@ define('views/ResourceListView', [
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.onNewItemsAppend);
+      Events.on('pageChange', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
 //      this.collection.on('reset', this.render, this);
 //      this.collection.on('add', this.onadd, this);

@@ -17,7 +17,7 @@ define('views/MapView', [
       _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
-      Events.on("changePage", this.resetMap);
+      Events.on("pageChange", this.resetMap);
       
 //      var self = this;
 //      csses = _.map(this.css, function(c) {return '../styles/leaflet/' + c});

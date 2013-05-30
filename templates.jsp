@@ -152,16 +152,29 @@
 </script>
 
 <script type="text/template" id="genericDialogTemplate">
-<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="false" class="ui-content">
+<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
+  {{ if (obj.header) { }}
   <div data-role="header" data-theme="a" class="ui-corner-top">
     <h1>{{= header }}</h1>
   </div>
+  {{ }                 }}
+  
+  {{ if (obj.ok === false && obj.cancel === false) { }}
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+  {{ }                 }}
+
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
-    <h3 class="ui-title">{{= title }}</h3>
-    {{= obj.img ? '<img src="{0}" />'.format(img) : '' }}
-    <p>{{= obj.details ? details : '' }}</p>
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= obj.cancel || 'Cancel' }}</a>
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= obj.ok || 'Ok' }}</a>
+    {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
+    {{= obj.img ? '<img src="{0}" />'.format(img)                 : '' }}
+    {{= obj.details ? '<p>{0}</p>'.format(details)                 : '' }}
+    
+    {{ if (obj.cancel) { }}
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= typeof cancel === 'string' ? cancel : 'Cancel' }}</a>
+    {{ }                 }}
+    
+    {{ if (obj.ok) { }}
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= typeof ok === 'string' ? ok : 'Ok' }}</a>
+    {{ }                 }}
   </div>
 </div>
 </script>
@@ -1215,7 +1228,7 @@
 
 <script type="text/template" id="moneyPET">
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
-  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value.value }}" {{= rules }} data-mini="true"></input>
+  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} data-mini="true"></input>
 </script>
 
 <script type="text/template" id="telPET">
@@ -1237,7 +1250,7 @@
     <img name="{{= shortName }}" src="{{= img }}"/>
   {{ }              }}
   
-  <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
+  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
     {{ if (!obj.value) { }}
