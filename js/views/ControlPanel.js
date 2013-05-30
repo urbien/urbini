@@ -148,7 +148,7 @@ define('views/ControlPanel', [
         return;
       
       var isHorizontal;      
-      if (this.isMainGroup  && !this.dontStyle) {
+      if (this.isMainGroup && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
           this.$el.css("float", "left");
           this.$el.css("width", "100%");

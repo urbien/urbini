@@ -161,10 +161,15 @@ label.error {
 }
 
 em { color: red; font-weight: bold; padding-right: .25em; }
-#editForm .ui-select, #mv .ui-field-contain .ui-controlgroup-controls, , #interfaceProps .ui-field-contain .ui-controlgroup-controls {
+#editForm .ui-select, #mv .ui-field-contain .ui-controlgroup-controls {
   width: 100%;
 }
-
+#ip.ui-field-contain {
+  margin: 0;
+}
+#interfaceProps .ui-controlgroup-controls {
+  width: 100%;
+}
 .hidden {
   display: none;
   visibility: hidden;
@@ -210,6 +215,59 @@ blockquote pre .script {
 /*  color: #fff; */
   content:"\f044"
 }
+.ui-icon-check:before {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  font-size: 17px;
+  background: none;
+  background-image: none;
+/*  color: #fff; */
+  content:"\f046"
+}
+
+#check-all .ui-icon, #uncheck-all .ui-icon  {
+  background-color: rgba(0,0,0,0.0);
+}
+#interfaceProps .ui-icon {
+  background-color: rgba(0,0,0,0.0);
+}
+
+.ui-icon-checkbox-on:before {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  font-size: 17px;
+  background: none;
+  background-color: none;
+/*  color: #fff; */
+  content:"\f046"
+}
+.ui-icon-checkbox-off:before {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  font-size: 17px;
+  background: none;
+  background-color: none;
+  color: #757575; 
+  content:"\f0c8"
+}
+.ui-icon-sign-blank:before {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:-2px;
+  left:-1px;
+  font-size: 17px;
+  background: none;
+  background-color: none;
+/*  color: #fff; */
+  content:"\f0c8" 
+}
+
 .ui-icon-searchfield:after {
   position:absolute;
   font-family: FontAwesome !important;
