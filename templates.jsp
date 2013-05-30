@@ -82,9 +82,8 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="inChatBacklinks"></div>
-  <div id="chatDiv" role="main" data-role="content">
-  </div>
+  <div id="inChatBacklinks" style="padding: 50px 50px 50px 50px; position:absolute;"></div>
+  <div id="chatDiv" role="main" data-role="content"></div>
 </script>  
 
 <script type="text/template" id="chatMessageTemplate1">
@@ -192,7 +191,8 @@
     </div>
     <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
       <div id="chatInputs" style="padding:0 0 0 10px;">
-        <div style="width:75%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
+        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureButton" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
+        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
         <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>

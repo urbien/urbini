@@ -23,6 +23,7 @@ define('views/ControlPanel', [
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.resource.on('change', this.refresh, this);
       this.isMainGroup = options.isMainGroup;
+      this.dontStyle = this.isMainGroup && options.dontStyle
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
@@ -147,7 +148,7 @@ define('views/ControlPanel', [
         return;
       
       var isHorizontal;      
-      if (this.isMainGroup) {
+      if (this.isMainGroup  && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
           this.$el.css("float", "left");
           this.$el.css("width", "100%");

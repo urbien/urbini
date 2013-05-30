@@ -175,6 +175,7 @@ define('views/ChatView', [
           this.pageView.trigger('video:on');
       }
         
+      this.$('#chatCaptureButton').button().button('disable');
       this.ready.done(function() {
         if (this.isWaitingRoom && this.isClient)
           this.startLocalVideo();
@@ -534,7 +535,7 @@ define('views/ChatView', [
               chatView.leave();
               var from = responseData.from;
               var privateRoom = responseData.response.privateRoom;
-              Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true});
+              Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true, transition: 'none'});
             }).progress(function(responseData) {
               // request has been denied by responseData.from, or anonymously if responseData.from is undefined
               debugger;

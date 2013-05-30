@@ -54,6 +54,7 @@ define('views/ChatPage', [
 //        require(['views/ControlPanel']).done(function(ControlPanel) {
 //          self.addChild('backlinks', new ControlPanel({
 //            isMainGroup: true,
+//            dontStyle: true,
 //            model: self.resource
 //          }));
 //          
@@ -144,7 +145,7 @@ define('views/ChatPage', [
 
       this.assign({
         'div#headerDiv' : this.header,
-        'div#chatDiv': this.chatView
+        'div#chatDiv'   : this.chatView
 //        ,
 //        'div#inChatBacklinks': this.backlinks 
       });
@@ -153,17 +154,22 @@ define('views/ChatPage', [
       if (this.resource) {
         require(['views/ControlPanel']).done(function(ControlPanel) {
           var $bl = self.$("div#inChatBacklinks");
+          $bl.css('z-index', 100).drags();
           self.addChild('backlinks', new ControlPanel({
             isMainGroup: true,
-            model: self.resource,
-            el: $bl[0]
+            dontStyle: true,
+            model: self.resource
+//            ,
+//            el: $bl[0]
           }));
           
-          self.backlinks.render();
-          self.restyle();
-//          self.assign('div#inChatBacklinks', self.backlinks);
+          self.assign('div#inChatBacklinks', self.backlinks);
+//          self.backlinks.render();
 //          readyDfd.resolve();
-          $bl.css('z-index', 100).drags();
+//          .find('a').click(function() {
+//            debugger;
+//            return false; // Disable links inside the backlinks box
+//          });;
         });
       }
 //      else
