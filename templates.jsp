@@ -82,8 +82,10 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="inChatBacklinks"></div>
+  <div>
   <div id="chatDiv" role="main" data-role="content">
+  </div>
+  <div style="position:absolute; bottom: 0px;" id="inChatBacklinks"></div>
   </div>
 </script>  
 
@@ -1101,7 +1103,7 @@
 <div id="headerDiv"></div>
 <div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>
-  <form data-ajax="false" id="editForm" action="#">
+  <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
@@ -1147,7 +1149,7 @@
 
 <script type="text/template" id="interfacePropTemplate">
   <!-- a interface props chooser input for edit forms -->
-  <div class="ui-controlgroup-controls" style="width:100%">
+  <div class="ui-controlgroup-controls">
     {{ var id = G.nextId() }}
     <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
     <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
