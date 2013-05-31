@@ -156,8 +156,7 @@
     <ul data-role="listview" data-inset="true" data-theme="d">
       <li data-role="divider" data-theme="e">{{= title }}</li>
       {{ _.each(options, function(option) { }}
-        <li><a href="{{= option.href }}">{{= option.text }}</a></li>
-        
+        <li><a href="{{= option.href || '#' }}" id="{{= option.id }}" >{{= option.text }}</a></li>
       {{ })                                 }}
     </ul>
   </div>

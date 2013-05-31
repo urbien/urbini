@@ -492,7 +492,8 @@ define('globals', function() {
       JS: 'system/designer/JS',
       Css: 'system/designer/Css',
       Grab: 'model/social/Grab',
-      AppInstall: 'model/social/AppInstall'
+      AppInstall: 'model/social/AppInstall',
+      Transaction: 'aspects/commerce/Transaction'
     },
 //    commonTypes: {
 //      model: {

@@ -2986,6 +2986,27 @@ define('utils', [
       $dialog.popup().popup("open");
     },
     
+    deposit: function(params) {
+      return $.Deferred(function(defer) {
+        var trType = G.commonTypes.Transaction;
+        require('vocManager').done(function(Voc) {          
+          Voc.getModels(trType).done(function() {
+            var transactionModel = U.getModel(trType);
+            var transaction = new transactionModel(params);
+            transaction.save(null, {
+              sync: !U.canAsync(trType),
+              success: function() {
+                defer.resolve(transaction);
+              },
+              error: function(trans, err, options) {
+                defer.reject(err);
+              }
+            });
+          });
+        });
+      }).promise();;
+    },
+    
     /**
      * @param title - title in the header of the popup 
      * @param options - choices, each in the form of 
@@ -2997,14 +3018,24 @@ define('utils', [
     optionsDialog: function(title, options) {
       var id = 'optionsDialog' + G.nextId();
       $('#' + id).remove();
+      _.each(options, function(option) {
+        option.id = option.id || 'option' + G.nextId();
+      });
+      
       var dialogHtml = U.template('genericOptionsDialogTemplate')({
         id: id,
         title: title,
         options: options
       });
 
-      ($.mobile.activePage || $(document.body)).append(dialogHtml);
-      var $dialog = $('#' + id);
+      
+      var $dialog = ($.mobile.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      _.each(options, function(option) {
+        if (option.action) {
+          $dialog.find('#' + option.id).click(option.action);
+        }
+      });
+      
       $dialog.trigger('create');
       $dialog.popup().popup("open");
     },
