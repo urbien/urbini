@@ -267,7 +267,7 @@ define('views/ChatView', [
       var chatView = this;
       navigator.getMedia({
           video: true,
-          audio: chatView.hasAudio
+          audio: false
         },
         function(stream) {
           chatView.attachLocalVideoMonitor(stream);

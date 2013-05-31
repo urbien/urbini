@@ -2999,6 +2999,13 @@ define('utils', [
                 defer.resolve(transaction);
               },
               error: function(trans, err, options) {
+                var err = err.responseText || err;
+                if (typeof err === 'string') {
+                  try {
+                    err = JSON.parse(err);
+                  } catch (e) {}
+                }
+                
                 defer.reject(err);
               }
             });
