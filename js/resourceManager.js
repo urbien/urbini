@@ -141,6 +141,10 @@ define('resourceManager', [
     }
   };
 
+  MODULE_STORE = {
+    name: 'modules'      
+  };
+
   prepForDB(REF_STORE.indices).done(function(indices) {
     REF_STORE.indices = indices;
   });
@@ -538,8 +542,12 @@ define('resourceManager', [
       if (toMake.indexOf('http://www.hudsonfog.com/voc/model/crm/SupportIssue') != -1)
         debugger;
       
-      if (RM.db && !RM.storeExists(REF_STORE.name))
-        toMake.push(REF_STORE.name);
+      if (RM.db) {
+        if (!RM.storeExists(REF_STORE.name))
+          toMake.push(REF_STORE.name);
+        if (!RM.storeExists(MODULE_STORE.name))
+          toMake.push(MODULE_STORE.name);
+      }
       
       var needUpgrade = function() {
         return !!(toKill.length || toMake.length) ;
@@ -666,6 +674,10 @@ define('resourceManager', [
             store.createIndex(index, indices[index]);
           }
           
+          continue;
+        }
+        else if (type === MODULE_STORE.name) {
+          var store = trans.createObjectStore(type, {keyPath: 'url', autoIncrement: false});
           continue;
         }
         
@@ -1796,6 +1808,10 @@ define('resourceManager', [
         });
       }, settings);
     }, settings);
+  });
+  
+  Events.on("saveToDB", function(resource) {
+    
   });
   
   Events.on('delete', function(res) {
