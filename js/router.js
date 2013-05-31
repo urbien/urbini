@@ -266,7 +266,9 @@ define('router', [
       
       Events.trigger('pageChange', prev, this.currentView);
       $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
-      var mainDiv = $('.mainDiv');
+      
+      // HACK, this div is hidden for some reason when going to #home/...
+      var mainDiv = $('.mainDiv'); 
       if (mainDiv.is(':hidden'))
         mainDiv.show();
 
@@ -1128,12 +1130,19 @@ define('router', [
           error = params['-error'];
           
       if (info || error) {
-        U.dialog({
-          header: 'FYI',
-          title: info || error,
-          ok: false,
-          cancel: false
-        });
+        if (/home\//.test(U.getHash())) {
+          var errorBar = $.mobile.activePage.find('#headerErrorBar');
+          errorBar.html("");
+          errorBar.html(U.template('headerErrorBar')({error: error, info: info}));
+        }
+        else {
+          U.dialog({
+            header: 'FYI',
+            title: info || error,
+            ok: false,
+            cancel: false
+          });
+        }
         
         var hash = U.getHash().slice(1);
         delete params['-info'];

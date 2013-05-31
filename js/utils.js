@@ -2980,11 +2980,35 @@ define('utils', [
         cancel: true
       }));
       
-      $(document.body).append(dialogHtml);
+      ($.mobile.activePage || $(document.body)).append(dialogHtml);
       var $dialog = $('#' + id);
       $dialog.trigger('create');
       $dialog.popup().popup("open");
     },
+    
+    /**
+     * @param title - title in the header of the popup 
+     * @param options - choices, each in the form of 
+     * {
+     *   href: 'http://.....some/url', 
+     *   text: 'Link text'
+     * } 
+     */
+    optionsDialog: function(title, options) {
+      var id = 'optionsDialog' + G.nextId();
+      $('#' + id).remove();
+      var dialogHtml = U.template('genericOptionsDialogTemplate')({
+        id: id,
+        title: title,
+        options: options
+      });
+
+      ($.mobile.activePage || $(document.body)).append(dialogHtml);
+      var $dialog = $('#' + id);
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
+    },
+    
     removeClasses: function(element, pattern) {
       element = element instanceof $ ? element : $(element); 
       var classes = element.attr('class').split(/\s+/);

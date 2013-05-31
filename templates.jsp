@@ -151,6 +151,18 @@
   </table>
 </script>
 
+<script type="text/template" id="genericOptionsDialogTemplate">
+  <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
+    <ul data-role="listview" data-inset="true" data-theme="d">
+      <li data-role="divider" data-theme="e">{{= title }}</li>
+      {{ _.each(options, function(option) { }}
+        <li><a href="{{= option.href }}">{{= option.text }}</a></li>
+        
+      {{ })                                 }}
+    </ul>
+  </div>
+</script>
+
 <script type="text/template" id="genericDialogTemplate">
 <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
   {{ if (obj.header) { }}
