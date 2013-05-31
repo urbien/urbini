@@ -106,7 +106,12 @@ define('views/ChatView', [
 //        if (self.chat === rtcCall.connection)
 //          self.endChat();
 //      });
-
+//
+//      Events.on('pageChange', function() {
+//        if (!self.isActive())
+//          Events.trigger('localVideoMonitor:off');
+//      });
+      
       this.autoFinish = false;
     },
     
@@ -189,6 +194,18 @@ define('views/ChatView', [
       }.bind(this));
     },
     
+    playRingtone: function() {
+      this.$('#ringtoneHolder').append("<audio id='ringtone' src='ringtone.mp3' loop='true' />");
+      this.$('#ringtoneHolder').find('audio')[0].play();
+    },
+
+    stopRingtone: function() {
+      this.$('#ringtoneHolder').find('audio').each(function() {
+        this.pause();
+        this.src = null;
+      }).remove();
+    },
+
 //    loadResourceUI: function() {
 //      if (this.backlinks)
 //        return;
@@ -214,6 +231,7 @@ define('views/ChatView', [
       
       var video = document.createElement('video');
       video.autoplay = true;
+      video.muted = true;
       if (navigator.mozGetUserMedia) {
         video.mozSrcObject = stream;
       } else {
@@ -221,11 +239,17 @@ define('views/ChatView', [
         video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
       }
       
-      video.play();
+//      video.play();
+      var self = this;
       $localMonitors.append(video);
+      Events.on('localVideoMonitor:on', function() {
+        self.playRingtone();
+      });
+      
       Events.on('localVideoMonitor:off', function() {
         stream && stream.stop();
         $localMonitors.html("");
+        self.stopRingtone();
       });
     },
     
@@ -246,8 +270,8 @@ define('views/ChatView', [
           audio: chatView.hasAudio
         },
         function(stream) {
-          Events.trigger('localVideoMonitor:on', stream);
           chatView.attachLocalVideoMonitor(stream);
+          Events.trigger('localVideoMonitor:on', stream);
         },
         function(err) {
           U.alert({

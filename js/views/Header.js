@@ -265,9 +265,10 @@ define('views/Header', [
     },
 
     refreshCallInProgressHeader: function() {
-      if (G.callInProgress) {
+      var cip = G.callInProgress;
+      if (cip && window.location.href !== cip.url) {
         var $cipDiv = this.$('#callInProgress');
-        $cipDiv.html(this.callInProgressHeaderTemplate(G.callInProgress));
+        $cipDiv.html(this.callInProgressHeaderTemplate(cip));
         (function pulse(){
           if (!G.callInProgress)
             return;

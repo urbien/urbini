@@ -177,9 +177,10 @@
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
     {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{= obj.img ? '<img src="{0}" />'.format(img)                 : '' }}
-    {{= obj.details ? '<p>{0}</p>'.format(details)                 : '' }}
+    {{= obj.img ? '<img style="display:block" src="{0}" />'.format(img)                 : '' }}
+    {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
     
+    <div style="display:block">
     {{ if (obj.cancel) { }}
     <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= typeof cancel === 'string' ? cancel : 'Cancel' }}</a>
     {{ }                 }}
@@ -187,6 +188,7 @@
     {{ if (obj.ok) { }}
     <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= typeof ok === 'string' ? ok : 'Ok' }}</a>
     {{ }                 }}
+    </div>
   </div>
 </div>
 </script>
@@ -207,6 +209,8 @@
       {{ }                                           }}
     </div>
     
+    <div id="ringtoneHolder" style="visibility: hidden; display: none;">
+    </div>
   
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
