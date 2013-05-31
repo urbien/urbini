@@ -364,7 +364,7 @@ define('utils', [
       else if (hash.startsWith('home'))
         return null;
       
-      route = hash.match(/^view|menu|edit|make|chooser|chat|chat[a-zA-Z]+/);
+      route = hash.match(/^view|menu|edit|make|chooser|chat([a-zA-Z]+)?/);
 //      debugger;
 //      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
