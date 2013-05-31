@@ -275,6 +275,10 @@ define('views/Header', [
           
           $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
         })();
+        
+        $cipDiv.css('cursor', 'pointer').click(function() {
+          window.location.href = $('a', this).attr('href');
+        });
       }
       else {
         this.$('#callInProgress').html("");
