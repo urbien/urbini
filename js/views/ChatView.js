@@ -1016,7 +1016,7 @@ define('views/ChatView', [
     
     endCall: function() {
       var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
-      if (!nurseInfo || this.call)
+      if (!nurseInfo || !this.call)
         return;
       
       self.call.save({
