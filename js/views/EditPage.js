@@ -57,10 +57,10 @@ define('views/EditPage', [
       var editCols =  reqParams['$editCols'];
       this.isVideo = res.isA('VideoResource');
       if (!editCols && !this.isVideo) {
-        this.addChild('imageView', new ResourceImageView({model: res}));
+        this.addChild('imageView', new ResourceImageView({model: res, parentView: this}));
       }
       
-      this.addChild('editView', new EditView(_.extend({model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions)));
+      this.addChild('editView', new EditView(_.extend({model: res, parentView: this}, this.editOptions)));
       if (this.editParams)
         this.editView.set(this.editParams);
     },

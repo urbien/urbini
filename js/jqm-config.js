@@ -97,6 +97,9 @@ define('jqmConfig', function() {
                       pos_y = $selected.offset().top + drg_h - e.pageY,
                       pos_x = $selected.offset().left + drg_w - e.pageX;
                   $selected.on("mousemove", function(e) {
+                      if (!$selected)
+                        return;
+                      
                       $selected.offset({
                           top: e.pageY + pos_y - drg_h,
                           left: e.pageX + pos_x - drg_w
@@ -104,6 +107,9 @@ define('jqmConfig', function() {
                       
                       $selected.addClass(opt.draggedClass);
                   }).on("mouseup", function(e) {                    
+                      if (!$selected)
+                        return;
+                      
                       $selected.off("mouseup");
                       $selected.off("mousemove");
                       $selected.removeClass(opt.draggableClass);

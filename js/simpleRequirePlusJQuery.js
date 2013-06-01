@@ -9559,9 +9559,13 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     });
     
     promise = $.when.apply($, prereqs);
+    var called = false;
     if (cb) {
       promise.done(function() {
-        cb.apply(root, arguments);
+        if (!called) {
+          called = true;
+          cb.apply(root, arguments);
+        }
       });
     }
     
