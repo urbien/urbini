@@ -8,6 +8,8 @@ define('views/ChatView', [
 ], function(G, _, U, Events, BasicView) {
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
   var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
+  var nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call"; // HACK for nursem
+  var Voc;
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -32,7 +34,6 @@ define('views/ChatView', [
 //    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes()) + ampm);
 //  }
   
-  var callType = 'model/social/Call'
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'restyleVideoDiv', 'onAppendedLocalVideo', 'onAppendedRemoteVideo'); // fixes loss of context for 'this' within methods
@@ -42,7 +43,7 @@ define('views/ChatView', [
       this.isWaitingRoom = U.isWaitingRoom();
       this.isPrivate = U.isPrivateChat();
       this.isAgent = this.hashParams['-agent'] === 'y';
-      this.isClient = this.isWaitingRoom && !this.isAgent;
+      this.isClient = !this.isAgent;
       this.hasVideo = this.autoVideo || this.isPrivate; // HACK, waiting room might not have video
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
@@ -112,19 +113,6 @@ define('views/ChatView', [
 //          Events.trigger('localVideoMonitor:off');
 //      });
       
-//      if (this.isPrivate) {
-//        Voc.getModels(callType).done(function() {
-//          var callModel = U.getModel(callType);
-//          self.call = new callModel({
-//            String complaint/symptom
-//            dateTime started, ended;
-//            Contact nurse;
-//            Contact patient;
-//          });
-//          
-//          self.call.save();
-//        });
-//      }
       
       this.autoFinish = false;
     },
@@ -591,6 +579,8 @@ define('views/ChatView', [
         
         // data ports suddenly dropped, or chat creator left
         onclose: function(event) {
+          if (chatView.isPrivate && chatView.isClient && G.pageRoot.toLowerCase() == 'app/nursme1')
+            chatView.endCall();
 //          if (!_.size(chatView.userIdToInfo)) {
 //            chatView.endChat(true);
 //          }
@@ -676,6 +666,9 @@ define('views/ChatView', [
           extra = extra._userdid ? extra : extra.extra ? extra.extra : extra;
 //          chatView._checkChannels();          
           var whoLeft = chatView.getUserInfo(extra._userid);
+          if (chatView.isPrivate && chatView.isClient && G.pageRoot.toLowerCase() == 'app/nursme1')
+            chatView.endCall();
+
           if (whoLeft) {
             chatView.addMessage({
               message: '<i>{0} has left the room</i>'.format(whoLeft.name),
@@ -688,6 +681,7 @@ define('views/ChatView', [
             chatView.removeParticipant(whoLeft._userid);
           }
         },
+        
         openSignalingChannel: function (config) {
           var channel = config.channel || this.channel || 'default-urbien-channel';  
           io.connect(SIGNALING_SERVER).emit('new-channel', {
@@ -760,6 +754,10 @@ define('views/ChatView', [
           };
           
           Events.trigger('newRTCCall', chatView.rtcCall);
+          
+          // HACK for NursMe
+          if (chatView.isPrivate && chatView.isClient && G.pageRoot.toLowerCase() == 'app/nursme')
+            chatView.makeCall();
         },
         
         onNewSession: function(session) {
@@ -945,7 +943,7 @@ define('views/ChatView', [
         });
         
         this.leave(); // leave waitingRoom
-        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-create': 'y'}), {replace: true});   
+        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-create': 'y', '-agent': 'y'}), {replace: true});   
       }
       else {
         this.chat.send({
@@ -993,7 +991,38 @@ define('views/ChatView', [
       $popup.trigger('create');
       $popup.popup().popup("open");
       return $popup;
-    }    
+    },
+    
+    makeCall: function() {
+      var self = this,
+          nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      
+      if (!nurseInfo)
+        return;
+      
+      require('vocManager').done(function(V) {
+        Voc = V;
+        Voc.getModels(nurseMeCallType).done(function() {
+          var callModel = U.getModel(nurseMeCallType);
+          self.call = new callModel({
+            complaint: 'stomach hurts',
+            nurse: nurseInfo.uri
+          });
+          
+          self.call.save();
+        });
+      });
+    },
+    
+    endCall: function() {
+      var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      if (!nurseInfo || this.call)
+        return;
+      
+      self.call.save({
+        end: +new Date()
+      });
+    }
   },
   {
     displayName: 'Chat'
