@@ -8,10 +8,12 @@ define('views/ChatPage', [
   'views/ChatView',
   'views/Header'
 ], function(G, _, U, Events, BasicView, ChatView, Header) {
+  // To avoid shortest-path interpolation.
+  var D3Widgets;
   var BTN_ACTIVE_CLASS = 'ui-btn-active';
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
@@ -83,7 +85,9 @@ define('views/ChatPage', [
     events: {
       'click #videoChat': 'toggleChat',
       'click #textChat': 'toggleChat',
-      'click input': 'chatFadeIn'
+      'click input': 'chatFadeIn',
+      'resize': 'resize',
+      'orientationchange' : 'resize'
     },
 
     toggleChat: function(e) {
@@ -150,27 +154,9 @@ define('views/ChatPage', [
 //        'div#inChatBacklinks': this.backlinks 
       });
 
-      var self = this;
       if (this.resource) {
-        require(['views/ControlPanel']).done(function(ControlPanel) {
-          var $bl = self.$("div#inChatBacklinks");
-          $bl.css('z-index', 100).drags();
-          self.addChild('backlinks', new ControlPanel({
-            isMainGroup: true,
-            dontStyle: true,
-            model: self.resource
-//            ,
-//            el: $bl[0]
-          }));
-          
-          self.assign('div#inChatBacklinks', self.backlinks);
-//          self.backlinks.render();
-//          readyDfd.resolve();
-//          .find('a').click(function() {
-//            debugger;
-//            return false; // Disable links inside the backlinks box
-//          });;
-        });
+        this.paintInChatBacklinks();
+        this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
       }
 //      else
 
@@ -179,6 +165,98 @@ define('views/ChatPage', [
 
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+    },
+    
+    getStats: function() {
+      var max = 300;
+      var w = document.width || max;
+      var h = document.height || max;
+      return {
+        width: Math.min(w, max),
+        height: Math.min(w, max),
+        circles: [{
+          degrees: 200,
+          text: 'Activity',
+          fill: '#f00',
+          opacity: 0.2
+        },
+        {
+          percent: 85,
+          text: 'Sleep',
+          fill: '#0f0',
+          opacity: 0.2
+        },
+        {
+          percent: 140,
+          text: 'Pain',
+          fill: '#00f',
+          opacity: 0.2
+        }
+//        ,
+//        {
+//          degrees: 250,
+//          text: 'Blah1',
+//          fill: '#ff0',
+//          opacity: 0.5
+//        },
+//        {
+//          degrees: 100,
+//          text: 'Blah2',
+//          fill: '#f0f',
+//          opacity: 0.5
+//        }
+        ]
+      };
+    },
+    
+    paintInChatBacklinks: function() {
+      var self = this;
+      require(['views/ControlPanel']).done(function(ControlPanel) {
+        var $bl = self.$("div#inChatBacklinks");
+        $bl.drags();
+        self.addChild('backlinks', new ControlPanel({
+          isMainGroup: true,
+          dontStyle: true,
+          model: self.resource,
+          parentView: self
+//          ,
+//          el: $bl[0]
+        }));
+        
+        self.assign('div#inChatBacklinks', self.backlinks);
+//        self.backlinks.render();
+//        readyDfd.resolve();
+//        .find('a').click(function() {
+//          debugger;
+//          return false; // Disable links inside the backlinks box
+//        });;
+      });
+    },
+   
+    resize: function() {
+      if (this.resource)
+        this.paintConcentricStats('inChatStats', this.getStats());
+    },
+    
+    paintConcentricStats: function(divId, options) {
+      var self = this, args = arguments;
+      require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {
+        D3Widgets = widgets;
+        self._paintConcentricStats(divId, options);
+      });      
+    },
+    
+    /**
+     * @param circles - array of circle objects, from innermost to outermost, a single circle object having the properties:
+     * {
+     *   degrees: 50, // value: 0 to 360, effect: a circle painted "degrees" degrees of the way around, starting from 12 o'clock, clockwise
+     *   percent: 50, // value: 0 to 100, effect: a circle painted "percent" of the way around, starting from 12 o'clock, clockwise
+     *   fill: #555, // circle color
+     *   fill: #555, // circle color
+     * }
+     */
+    _paintConcentricStats: function(divId, options) {
+      D3Widgets.concentricCircles(this.$('#' + divId), options);
     }
   }, {
     displayName: 'ChatPage'

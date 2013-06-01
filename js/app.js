@@ -310,6 +310,7 @@ define('app', [
       
       var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
       Events.on('logout', function(options) {
+        debugger;
         options = _.extend({}, defaults, options);
         var url = G.serverName + '/j_security_check?j_signout=true';
         $.get(url, function() {

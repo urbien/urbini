@@ -81,7 +81,9 @@ define('views/BasicView', [
           return this;
         }
       }.bind(this);
-      
+
+      this._activeDfd = $.Deferred();
+      this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
         _.each(this.children, function(child) {
@@ -103,18 +105,32 @@ define('views/BasicView', [
           
           method.apply(this, args);
           this.finish();
-        }        
+        }
+        
+        if (active) {
+          this._activeDfd.resolve();
+          this._inactiveDfd = $.Deferred();
+        }
+        else {
+          this._inactiveDfd.resolve();
+          this._activeDfd = $.Deferred();
+        }
       }.bind(this));
 ////////// comment end
       
-      _.each(['onorientationchange', 'onresize'], function(listener) {
-        if (listener in window) {
-          var event = listener.slice(2);
-          window.addEventListener(event, function() {
-            this.$el.trigger(event);
-          }.bind(this), false);
-        }
-      }.bind(this));
+      if (this.getPageView() == this) {
+        var self = this;
+        _.each(['onorientationchange', 'onresize'], function(listener) {
+          if (listener in window) {
+            var event = listener.slice(2);
+            window.addEventListener(event, function() {
+              self.onActive(function() {
+                self.$el.trigger(event);
+              });
+            }, false);
+          }
+        });
+      }
       
       return this;
     }
@@ -212,6 +228,14 @@ define('views/BasicView', [
         scrollTop: this.pageView.$el.height()
       }, 200);
     },
+
+    onInactive: function(callback) {
+      this._inactiveDfd.done(callback);
+    },
+
+    onActive: function(callback) {
+      this._activeDfd.done(callback);
+    },
     
     addChild: function(name, view) {
       this.children = this.children || {};
@@ -235,6 +259,7 @@ define('views/BasicView', [
     },
     
     isPageView: function(view) {
+      view = view || this;
       return view && view.cid === this.getPageView().cid;
     },
     

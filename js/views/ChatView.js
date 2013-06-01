@@ -32,7 +32,7 @@ define('views/ChatView', [
 //    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes()) + ampm);
 //  }
   
-  var WebRTC;  
+  var callType = 'model/social/Call'
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'restyleVideoDiv', 'onAppendedLocalVideo', 'onAppendedRemoteVideo'); // fixes loss of context for 'this' within methods
@@ -111,6 +111,20 @@ define('views/ChatView', [
 //        if (!self.isActive())
 //          Events.trigger('localVideoMonitor:off');
 //      });
+      
+//      if (this.isPrivate) {
+//        Voc.getModels(callType).done(function() {
+//          var callModel = U.getModel(callType);
+//          self.call = new callModel({
+//            String complaint/symptom
+//            dateTime started, ended;
+//            Contact nurse;
+//            Contact patient;
+//          });
+//          
+//          self.call.save();
+//        });
+//      }
       
       this.autoFinish = false;
     },
@@ -790,7 +804,9 @@ define('views/ChatView', [
 //      _.extend(this.chat, this.chatSettings);
         
       var create = this.hashParams['-create'] === 'y';
-      Events.trigger('navigate', U.replaceParam(U.getHash(), '-create', null), {repalce: true, trigger: false}); // don't create room on refresh (assume you're refreshing cause you lost the connection)
+      if (create)
+        Events.trigger('navigate', U.replaceParam(U.getHash(), '-create', null), {replace: true, trigger: false}); // don't create room on refresh (assume you're refreshing cause you lost the connection)
+      
       this.chat.openNewSession(create);
       this.enableChat();
       
@@ -977,7 +993,7 @@ define('views/ChatView', [
       $popup.trigger('create');
       $popup.popup().popup("open");
       return $popup;
-    }
+    }    
   },
   {
     displayName: 'Chat'

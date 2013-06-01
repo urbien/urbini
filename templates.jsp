@@ -82,7 +82,10 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="inChatBacklinks" style="padding: 25px 25px 25px 25px; position:absolute;"></div>
+  <div id="inChatGoodies" style="position:absolute; z-index: 100">
+    <div id="inChatBacklinks" style="position:absolute;"></div>
+    <div id="inChatStats" style="position:relative;"></div>
+  </div>
   <div id="chatDiv" role="main" data-role="content"></div>
 </script>  
 
