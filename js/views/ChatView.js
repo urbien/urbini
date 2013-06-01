@@ -954,6 +954,7 @@ define('views/ChatView', [
     },
     
     showRequestDialog: function(data) {
+      this.playRingtone();
       var request = data.request;
       var userInfo = this.getUserInfo(data.from);
       var chatView = this;
@@ -975,6 +976,7 @@ define('views/ChatView', [
       var $popup = $('#' + id);
       $popup.find('[data-cancel]').click(function() {
         Events.stopEvent(e);
+        chatView.stopRingtone();
         chatView.chat.send({
           response: {
             granted: false,
@@ -984,6 +986,7 @@ define('views/ChatView', [
       });
       
       $popup.find('[data-ok]').click(function(e) {
+        chatView.stopRingtone();
         Events.stopEvent(e);
         chatView.engageClient(data);
       });
