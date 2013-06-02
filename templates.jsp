@@ -199,8 +199,7 @@
   <div id="chatHolder" class="chat-holder">
   {{ if (obj.video) { }}
     <div id="videoChat" class="videoChat">
-      <div id="localVideo">
-      </div>
+      <div id="localVideo"></div>
       <div id="remoteVideos"></div>
     </div>    
   {{ }                }}

@@ -567,7 +567,7 @@ define('views/ChatView', [
               Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-create': 'y'}), {replace: true, transition: 'none'});
             }).progress(function(responseData) {
               // request has been denied by responseData.from, or anonymously if responseData.from is undefined
-              debugger;
+//              debugger;
             });
           }
           
@@ -785,6 +785,8 @@ define('views/ChatView', [
             if (!this.joinedARoom) { 
               chatView.openChat();
             }
+            
+            return;
           }
 
           this.connect();
@@ -796,8 +798,8 @@ define('views/ChatView', [
 //          debugger;
           this.isNewSessionOpened = this.joinedARoom = false;
         }
-//        ,
-//        _stream: G.localVideoMonitor
+        ,
+        _stream: G.localVideoMonitor
 //        ,
 //        transmitRoomOnce: true
       }
@@ -861,7 +863,6 @@ define('views/ChatView', [
       }
 
 //      $("#localVideoMonitor video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
-        Events.trigger('localVideoMonitor:off');
         video.muted = true;
         video.controls = false;
         video.play();
@@ -870,14 +871,19 @@ define('views/ChatView', [
         this.restyleVideos();
 //      });
         
+      Events.trigger('localVideoMonitor:off');
       this.monitorVideoHealth(video);
     },
 
     monitorVideoHealth: function(video) {
       var $video = $(video);
-      _.each(["suspend", "abort", "error", "ended"], function(event) {
+      _.each(["suspend", "abort", "error", "ended", "pause"], function(event) {
         video.addEventListener(event, function() {
-          debugger;
+          if ((event.type || event) == "pause") {
+            video.play();
+            return;
+          }
+          
           var isLocal = $video.parents('#localVideo');
           $video.remove();
         });
@@ -947,8 +953,11 @@ define('views/ChatView', [
           response: response
         });
         
-        this.leave(); // leave waitingRoom
-        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-agent': 'y'}), {replace: true});   
+        // give the client time to setup the room 
+//        setTimeout(function() {          
+          this.leave(); // leave waitingRoom
+          Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-agent': 'y'}), {replace: true});   
+//        }.bind(this), 1000);
       }
       else {
         this.chat.send({
