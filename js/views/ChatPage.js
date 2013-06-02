@@ -257,7 +257,10 @@ define('views/ChatPage', [
      * }
      */
     _paintConcentricStats: function(divId, options) {
-      D3Widgets.concentricCircles(this.$('#' + divId), options);
+      var self = this;
+      D3Widgets.concentricCircles(this.$('#' + divId), options).done(function() {
+        self.$('#inChatStats svg').drags();
+      });
     }
   }, {
     displayName: 'ChatPage'
