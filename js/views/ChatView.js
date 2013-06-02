@@ -51,7 +51,7 @@ define('views/ChatView', [
       this.isPrivate = U.isPrivateChat();
       this.isAgent = this.hashParams['-agent'] === 'y';
       this.isClient = !this.isAgent;
-      this.hasVideo = this.autoVideo || this.isPrivate; // HACK, waiting room might not have video
+      this.hasVideo = this.autoVideo = this.autoVideo|| this.isPrivate; // HACK, waiting room might not have video
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
@@ -185,11 +185,8 @@ define('views/ChatView', [
       this.$('div#localVideo').hide();
 //      this.$('#toggleVideoBtn').checkboxradio().checkboxradio('disable');
 
-      if (!this.rendered) {
+      if (!this.rendered)
         this.pageView.trigger('chat:on');
-        if (this.autoVideo)
-          this.pageView.trigger('video:on');
-      }
         
       this.$('#chatCaptureButton').button().button('disable');
       this.ready.done(function() {
@@ -881,6 +878,7 @@ define('views/ChatView', [
 //      });
         
       Events.trigger('localVideoMonitor:off');
+      this.pageView.trigger('video:on');
       this.monitorVideoHealth(video);
     },
 
@@ -907,6 +905,7 @@ define('views/ChatView', [
       this.$remoteVids.show();
       this.restyleVideos();
       this.monitorVideoHealth(video);
+      this.pageView.trigger('video:on');
     },
 
     checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
