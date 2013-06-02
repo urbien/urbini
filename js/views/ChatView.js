@@ -18,6 +18,13 @@ define('views/ChatView', [
     return digit = digit < 10 ? '0' + digit : digit;
   }
 
+  function unbindVideoEvents(video) {
+    var $video = $(video);
+    _.each(G.media_events, function(e) {            
+      $video.unbind(e);
+    })
+  }
+  
   function getTimeString(date) {
     date = new Date(date);
     var hours = date.getHours();
@@ -322,6 +329,7 @@ define('views/ChatView', [
       var whoLeft = this.getUserInfo(userid);
       if (whoLeft.media) {
         this.$('video[src="{0}"]'.format(whoLeft.blobURL)).remove().each(function() {
+          unbindVideoEvents(this);
           this.pause();
           $(this).remove();
         });
@@ -841,6 +849,7 @@ define('views/ChatView', [
       if (this.hasVideo) {
         this._videoOn = false;
         this.$('video').each(function() {
+          unbindVideoEvents(this);
           this.pause();
         }).remove();
         
@@ -876,9 +885,9 @@ define('views/ChatView', [
     },
 
     monitorVideoHealth: function(video) {
-      var $video = $(video);
+      var $video = $(video), chatView = this;
       _.each(["suspend", "abort", "error", "ended", "pause"], function(event) {
-        video.addEventListener(event, function() {
+        $video.bind(event, function() {
           if ((event.type || event) == "pause") {
             video.play();
             return;
