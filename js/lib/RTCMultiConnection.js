@@ -230,9 +230,10 @@
                     video: video_constraints
                 };
             }
-            var mediaElement = document.createElement(session.isAudio() ? 'audio' : 'video');
+            var mediaElement = self._video || self._audio || document.createElement(session.isAudio() ? 'audio' : 'video');
             var mediaConfig = {
                 video: mediaElement,
+                stream: self._stream,
                 onsuccess: function (stream) {
                     self.config.attachStream = stream;
                     callback && callback();
@@ -564,15 +565,20 @@
     };
 
     function getUserMedia(options) {
-        var n = navigator,
-            media;
-        n.getMedia = n.webkitGetUserMedia || n.mozGetUserMedia;
-        n.getMedia(options.constraints || {
-            audio: true,
-            video: video_constraints
-        }, streaming, options.onerror || function (e) {
-            console.error(e);
-        });
+        if (options.stream) {
+          streaming(options.stream);
+        }
+        else {
+          var n = navigator,
+              media;
+          n.getMedia = n.webkitGetUserMedia || n.mozGetUserMedia;
+          n.getMedia(options.constraints || {
+              audio: true,
+              video: video_constraints
+          }, streaming, options.onerror || function (e) {
+              console.error(e);
+          });
+        }
 
         function streaming(stream) {
             var video = options.video;

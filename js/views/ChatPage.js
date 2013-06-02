@@ -156,7 +156,8 @@ define('views/ChatPage', [
 
       if (this.resource) {
         this.paintInChatBacklinks();
-        this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
+        if (this.isPrivate)
+          this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
       }
 //      else
 
@@ -234,7 +235,7 @@ define('views/ChatPage', [
     },
    
     resize: function() {
-      if (this.resource)
+      if (this.resource && this.isPrivate)
         this.paintConcentricStats('inChatStats', this.getStats());
     },
     

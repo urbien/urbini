@@ -249,7 +249,7 @@ define('views/ChatView', [
       });
       
       Events.on('localVideoMonitor:off', function() {
-        stream && stream.stop();
+//        stream && stream.stop();
         $localMonitors.html("");
         self.stopRingtone();
       });
@@ -561,7 +561,7 @@ define('views/ChatView', [
               chatView.leave();
               var from = responseData.from;
               var privateRoom = responseData.response.privateRoom;
-              Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true, transition: 'none'});
+              Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-create': 'y'}), {replace: true, transition: 'none'});
             }).progress(function(responseData) {
               // request has been denied by responseData.from, or anonymously if responseData.from is undefined
               debugger;
@@ -756,7 +756,7 @@ define('views/ChatView', [
           Events.trigger('newRTCCall', chatView.rtcCall);
           
           // HACK for NursMe
-          if (chatView.isPrivate && chatView.isClient && G.pageRoot.toLowerCase() == 'app/nursme')
+          if (chatView.isPrivate && chatView.isClient && G.pageRoot.toLowerCase() == 'app/nursme1')
             chatView.makeCall();
         },
         
@@ -793,6 +793,8 @@ define('views/ChatView', [
 //          debugger;
           this.isNewSessionOpened = this.joinedARoom = false;
         }
+        ,
+        _stream: G.localVideoMonitor
 //        ,
 //        transmitRoomOnce: true
       }
@@ -943,7 +945,7 @@ define('views/ChatView', [
         });
         
         this.leave(); // leave waitingRoom
-        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-create': 'y', '-agent': 'y'}), {replace: true});   
+        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-agent': 'y'}), {replace: true});   
       }
       else {
         this.chat.send({
