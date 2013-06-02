@@ -933,23 +933,7 @@ define('views/ChatView', [
       var height = $vc.height();
       $vc.css('margin-top', -(height / 2) + 'px');
       $vc.css('margin-left', -(width / 2) + 'px');
-      this.restyleGoodies();
 //      this.$localVids.drags();
-    },
-    
-    restyleGoodies: function() {
-      var $goodies =this.pageView.$('#inChatGoodies'),
-          $video = this.$('#remoteVideos video');
-      
-      if (!$video.length)
-        $video = this.$('#localVideo video');
-      
-      if ($video.length) {
-        var offset = $video.offset();
-        $goodies.css({top: offset.top, left: offset.left + $video.width() - $goodies.find('#inChatBacklinks').width()});
-      }
-      else
-        $goodies.css({top: 'auto', left: 'auto'});
     },
     
     restyleVideos: function() {
