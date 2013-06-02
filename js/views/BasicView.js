@@ -118,19 +118,19 @@ define('views/BasicView', [
       }.bind(this));
 ////////// comment end
       
-      if (this.getPageView() == this) {
+//      if (this.getPageView() == this) {
         var self = this;
         _.each(['onorientationchange', 'onresize'], function(listener) {
           if (listener in window) {
             var event = listener.slice(2);
             window.addEventListener(event, function() {
               self.onActive(function() {
-                self.$el.trigger(event);
+                self['_' + event](event);
               });
             }, false);
           }
         });
-      }
+//      }
       
       return this;
     }
@@ -149,6 +149,16 @@ define('views/BasicView', [
 //      this.render(this._renderArguments);
 //    },
     
+    _resize: _.debounce(function(e) {
+      G.log(this.TAG, 'events', e);
+      this.$el.trigger(e);
+    }, 100),
+
+    _orientationchange: _.debounce(function(e) {
+      G.log(this.TAG, 'events', e);
+      this.$el.trigger(e);      
+    }, 100),
+
     refreshOrRender: function() {
       if (this.rendered)
         this.refresh.apply(this, arguments);

@@ -813,9 +813,14 @@ define('views/ChatView', [
       this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
 //      _.extend(this.chat, this.chatSettings);
         
-      var create = this.hashParams['-create'] === 'y';
-      if (create)
-        Events.trigger('navigate', U.replaceParam(U.getHash(), '-create', null), {replace: true, trigger: false}); // don't create room on refresh (assume you're refreshing cause you lost the connection)
+      var create = this.hashParams['-create'] === 'y' || (this.isWaitingRoom && this.isAgent);
+      if (create) {
+        var orgHash = U.getHash(),
+            hash = U.replaceParam(orgHash, {'-create': null});
+        
+        if (hash != orgHash)
+          Events.trigger('navigate', hash, {replace: true, trigger: false}); // don't create room on refresh (assume you're refreshing cause you lost the connection)
+      }
       
       this.chat.openNewSession(create);
       this.enableChat();
@@ -857,6 +862,7 @@ define('views/ChatView', [
     },
 
     onAppendedLocalVideo: function(video, localStream) {
+      this.pageView.trigger('video:on');
       this.localStream = localStream;
       this.checkVideoSize(video);
       var $local = this.$localVids.find('video');
@@ -878,7 +884,6 @@ define('views/ChatView', [
 //      });
         
       Events.trigger('localVideoMonitor:off');
-      this.pageView.trigger('video:on');
       this.monitorVideoHealth(video);
     },
 
@@ -898,6 +903,7 @@ define('views/ChatView', [
     },
     
     onAppendedRemoteVideo: function(video) {
+      this.pageView.trigger('video:on');
       this.checkVideoSize(video);
       video.controls = false;
       video.play();
@@ -905,7 +911,6 @@ define('views/ChatView', [
       this.$remoteVids.show();
       this.restyleVideos();
       this.monitorVideoHealth(video);
-      this.pageView.trigger('video:on');
     },
 
     checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
@@ -928,7 +933,23 @@ define('views/ChatView', [
       var height = $vc.height();
       $vc.css('margin-top', -(height / 2) + 'px');
       $vc.css('margin-left', -(width / 2) + 'px');
+      this.restyleGoodies();
 //      this.$localVids.drags();
+    },
+    
+    restyleGoodies: function() {
+      var $goodies =this.pageView.$('#inChatGoodies'),
+          $video = this.$('#remoteVideos video');
+      
+      if (!$video.length)
+        $video = this.$('#localVideo video');
+      
+      if ($video.length) {
+        var offset = $video.offset();
+        $goodies.css({top: offset.top, left: offset.left + $video.width() - $goodies.find('#inChatBacklinks').width()});
+      }
+      else
+        $goodies.css({top: 'auto', left: 'auto'});
     },
     
     restyleVideos: function() {

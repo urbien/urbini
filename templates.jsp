@@ -635,7 +635,7 @@
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>

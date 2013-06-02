@@ -1,3 +1,4 @@
+(function(window, doc, undefined) {
 var __started = new Date();
 
 // http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
@@ -58,8 +59,7 @@ define('globals', function() {
       return window.eval(text);
   }
   
-  var doc = document,
-      $head = $('head'),
+  var $head = $('head'),
       head = $head[0],
       $body = $('body'),
       body = $body[0];
@@ -1340,3 +1340,4 @@ require(['globals'], function(G) {
     });
   }
 });
+})(window, document, undefined);

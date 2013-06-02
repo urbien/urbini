@@ -108,7 +108,7 @@ define('views/ChatPage', [
       if (this._chatSolid)
         this.trigger('chat:off');
       
-      this.$('#videoChat').fadeTo(600, 1).css('z-index', 10);
+      this.$('#videoChat').fadeTo(600, 1).css('z-index', 1001);
     },
 
     videoFadeOut: function(e) {
@@ -124,7 +124,7 @@ define('views/ChatPage', [
       if (this._videoSolid)
         this.trigger('video:fadeOut');
       
-      this.$('#textChat').fadeTo(600, 1).css('z-index', 10);
+      this.$('#textChat').fadeTo(600, 1).css('z-index', 1001);
     },
 
     chatFadeOut: function(e) {
@@ -154,10 +154,9 @@ define('views/ChatPage', [
 //        'div#inChatBacklinks': this.backlinks 
       });
 
-      if (this.resource) {
+      if (this.resource && this.isPrivate) {
         this.paintInChatBacklinks();
-        if (this.isPrivate)
-          this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
+        this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
       }
 //      else
 
@@ -225,6 +224,8 @@ define('views/ChatPage', [
         }));
         
         self.assign('div#inChatBacklinks', self.backlinks);
+//        $bl.width(Math.min(150, self.innerWidth() / 5 || 150));
+        $bl.find('[data-role="button"]').button();
 //        self.backlinks.render();
 //        readyDfd.resolve();
 //        .find('a').click(function() {
@@ -234,11 +235,29 @@ define('views/ChatPage', [
       });
     },
    
-    resize: function() {
-      if (this.resource && this.isPrivate)
+    resize: function(e) {
+      if (this.resource && this.isPrivate) {
+        this.paintInChatBacklinks();
         this.paintConcentricStats('inChatStats', this.getStats());
+        this.restyleGoodies();
+      }
     },
     
+    restyleGoodies: function() {
+      var $goodies = this.$('div#inChatGoodies'),
+          $video = this.$('div#remoteVideos video');
+      
+      if (!$video.length)
+        $video = this.$('div#localVideo video');
+      
+      if ($video.length) {
+        var offset = $video.offset();
+        $goodies.css({top: offset.top, left: offset.left + $video.width() - $goodies.find('div#inChatBacklinks').width()});
+      }
+      else
+        $goodies.css({top: 'auto', left: 'auto'});
+    },
+
     paintConcentricStats: function(divId, options) {
       var self = this, args = arguments;
       require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {

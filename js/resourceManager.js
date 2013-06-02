@@ -139,7 +139,7 @@ define('resourceManager', [
 //      ,
 //      _alert: {unique: false, multiEntry: false}      
     }
-  };
+  },
 
   MODULE_STORE = {
     name: 'modules'      
