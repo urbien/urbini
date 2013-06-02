@@ -54,6 +54,7 @@ define('views/ChatView', [
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
       
       this.roomName = this.getRoomName();
+      this._myRequests = {};
       this._myRequestPromises = {};
       this._otherRequestPromises = {};
       this.unreadMessages = 0;
@@ -74,7 +75,8 @@ define('views/ChatView', [
         name: this.myName,
         icon: this.myIcon,
         uri: this.myUri,
-        _userid: this.myId
+        _userid: this.myId,
+        isAgent: this.isAgent
       }
 
       var chatView = this;
@@ -269,7 +271,7 @@ define('views/ChatView', [
       var chatView = this;
       navigator.getMedia({
           video: true,
-          audio: false
+          audio: true
         },
         function(stream) {
           chatView.attachLocalVideoMonitor(stream);
@@ -383,7 +385,7 @@ define('views/ChatView', [
     
     sendUserInfo: function(options) {
       this.chat.send({
-        userInfo: _.extend(_.pick(this.myInfo, ['_userid', 'name', 'icon', 'uri']), options || {})
+        userInfo: _.extend(this.myInfo, options || {})
       });
     },
 
@@ -452,7 +454,7 @@ define('views/ChatView', [
           dfd.resolve(data);
         else
           dfd.notifyWith(data);
-      }      
+      }
     },
     
     getRequestId: function(data) {
@@ -471,6 +473,7 @@ define('views/ChatView', [
       if (to)
         msg.to = to;
       
+      this._myRequests[reqId] = msg.request;
       this.chat.send(msg);
       var dfd = $.Deferred();
       
@@ -618,7 +621,7 @@ define('views/ChatView', [
                 chatView.sendUserInfo();
                 break;
               case 'service':
-                if (chatView.isAgent) {
+                if (userInfo && chatView.isAgent) {
                   var $dialog = chatView.showRequestDialog(data);
                   var dfd = chatView._otherRequestPromises[req.id] = $.Deferred();
                   dfd.done(function() {
@@ -793,8 +796,8 @@ define('views/ChatView', [
 //          debugger;
           this.isNewSessionOpened = this.joinedARoom = false;
         }
-        ,
-        _stream: G.localVideoMonitor
+//        ,
+//        _stream: G.localVideoMonitor
 //        ,
 //        transmitRoomOnce: true
       }
