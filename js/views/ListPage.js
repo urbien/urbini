@@ -1,13 +1,14 @@
 //'use strict';
-define([
+define('views/ListPage', [
   'globals',
   'events', 
   'utils',
   'error',
+  'vocManager',
   'views/BasicView',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, BasicView, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicView, ResourceListView, Header) {
   var MapView;
   return BasicView.extend({
     template: 'resource-list',
@@ -37,11 +38,14 @@ define([
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
-      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || vocModel.type.endsWith('/Theme') || vocModel.type.endsWith('/App') || 
-                                                        vocModel.type.endsWith('/Goal')             ||  
-                                                        vocModel.type.endsWith('/Movie')            ||
-                                                        U.isA(this.vocModel, "VideoResource")       || 
-                                                        vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || 
+                                                                         vocModel.type.endsWith('/Theme')      || 
+                                                                         vocModel.type.endsWith('/App')        || 
+                                                                         vocModel.type.endsWith('/Goal')       ||  
+                                                                         vocModel.type.endsWith('/Movie')      ||
+                                                                         vocModel.type.endsWith('/Coupon')     ||
+                                                                         U.isA(this.vocModel, "VideoResource") || 
+                                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
       /*
@@ -65,9 +69,21 @@ define([
         }, this);
       }      
 
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || U.isAnAppClass(type) || (vocModel.skipAccessControl  &&  (isOwner  ||  (rl.models.length  &&  U.isUserInRole(U.getUserRole(), 'siteOwner', rl.models[0]))));
-      if (showAddButton  &&  U.isA(this.vocModel, "Reference"))
-        showAddButton = false;
+      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || 
+                           U.isAnAppClass(type)                   || 
+                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner')));
+      if (showAddButton) { 
+        if (U.isA(this.vocModel, "Reference"))
+          showAddButton = false;
+      }
+      else if (isOwner) {
+        Voc.getModels("model/social/App").done(function() {
+          var m = U.getModel("App");
+          var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+          if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+            showAddButton = true;
+        });
+      }
       var idx;
       if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
@@ -161,6 +177,7 @@ define([
       var isMasonry = this.isMasonry = !isChooser  &&  (this.vocModel.type.endsWith('/Tournament')                  || 
                                                         this.vocModel.type.endsWith('/Theme')                       || 
                                                         this.vocModel.type.endsWith('/Goal')                        ||
+                                                        this.vocModel.type.endsWith('/Coupon')                      ||
                                                         U.isA(this.vocModel, "VideoResource")                       ||
                                                         this.vocModel.type.endsWith('/Movie')                       ||
                                                         this.vocModel.type.endsWith('/App')                         || 
@@ -298,10 +315,12 @@ define([
         this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
       }
-      
+      this.$('#sidebarDiv').css('clear', 'both');
       if (G.theme.backgroundImage) { 
         this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
       }
+      if (!this.isMasonry)
+        this.$('#sidebarDiv').css('overflow-x', 'visible');
       return this;
     }
   }, {

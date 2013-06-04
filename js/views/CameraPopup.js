@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/CameraPopup', [
   'globals',
   'underscore', 
   'utils',
@@ -25,8 +25,8 @@ define([
     tagName: 'li',
     id: '#addBtn',
     events: {
-      'click #camVideo'         : 'stop',
-      'click canvas'            : 'start',
+//      'click #camVideo'         : 'stop',
+//      'click canvas'            : 'start',
       'click #cameraSubmitBtn'  : 'submit',
       'click #cameraShootBtn'   : 'startOrStop',
       'click #cameraCancelBtn'  : 'destroy',
@@ -34,7 +34,7 @@ define([
       'orientationchange'       : 'onorientationchange'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_');
+      _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.prop = options.prop;
@@ -68,12 +68,11 @@ define([
     },
     submit: function(e) {
       Events.stopEvent(e);
-//      var data = ('mozGetAsFile' in canvas) ?
-//                 canvas.mozGetAsFile('webcam.png') :
-//                 canvas.toDataURL('image/png'); //.replace(/^data:image\/(png|jpg);base64,/, '');
       var data;
       if (this.isVideo) {
         data = {
+//          video: this.videoUrl,
+//          audio: this.audioUrl
           video: this.webmBlob,
           audio: this.audioBlob
         }
@@ -110,6 +109,7 @@ define([
 //    },
     record: function(e) {
       Events.stopEvent(e);
+//      this.setDimensions();
       this.startTime = +new Date();
       this.setstate('recording');
       this.ctx = canvas.getContext('2d');
@@ -148,23 +148,11 @@ define([
       }.bind(this));
     },
     renderHelper: function(options) {    
-//      var popupHtml = this.template({
-//        style: "width:{0};height:{1}".format(width, height)
-//      });
-      
       this.$el.html(this.template({
         video: this.isVideo
       }));
+      
       var doc = document;
-//      var page = this.getPageView();
-//      var width = page.innerWidth();
-//      var height = page.innerHeight();
-//      var ratio = width/height;
-//      if (ratio > 4/3)
-//        width = height * 4/3;
-//      else
-//        height = width * 3/4;
-     
       $('#cameraPopup').remove();
       $(doc.body).append(this.el);
       this.$popup = $('#cameraPopup');
@@ -172,7 +160,6 @@ define([
 
       this.$popup.trigger('create');
       this.$popup.popup().popup("open");
-//      this.$popup.on('popupafterclose', this.destroy, this);
       
       // video
       var streaming     = false;
@@ -229,39 +216,24 @@ define([
         }.bind(this)
       );
 
-//      var media_events = {};
-//      media_events["loadstart"] = 0;
-//      media_events["progress"] = 0;
-//      media_events["suspend"] = 0;
-//      media_events["abort"] = 0;
-//      media_events["error"] = 0;
-//      media_events["emptied"] = 0;
-//      media_events["stalled"] = 0;
-//      media_events["loadedmetadata"] = 0;
-//      media_events["loadeddata"] = 0;
-//      media_events["canplay"] = 0;
-//      media_events["canplaythrough"] = 0;
-//      media_events["playing"] = 0;
-//      media_events["waiting"] = 0;
-//      media_events["seeking"] = 0;
-//      media_events["seeked"] = 0;
-//      media_events["ended"] = 0;
-//      media_events["durationchange"] = 0;
-//      media_events["timeupdate"] = 0;
-//      media_events["play"] = 0;
-//      media_events["pause"] = 0;
-//      media_events["ratechange"] = 0;
-//      media_events["volumechange"] = 0;
+      var video = this.video, 
+          $video = $(video);
       
-      /* Event Handlers */
-      this.video.addEventListener('canplay', function(ev) {
-        if (!streaming) {
-          this.setDimensions();
-          this.$shootBtn.removeClass('ui-disabled');
-          streaming = true;
-        }
-      }.bind(this), false);
-      
+//      var checkSize = function(e) {
+////        console.debug('video event', e.type, video.videoWidth, ' ', e.target.videoWidth);
+//        if (video.videoWidth) {
+//          this.$shootBtn.removeClass('ui-disabled');
+//          this.setDimensions();
+//          _.each(G.media_events, function(e) {
+//            $video.off(e, checkSize);
+//          });
+//        }
+//      }.bind(this);
+//          
+//      _.each(G.media_events, function(e) {
+//        $video.one(e, checkSize);
+//      });
+                  
       this.finish();
       return this;
     },
@@ -273,13 +245,25 @@ define([
         var vendorURL = window.URL || window.webkitURL;
         this.video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
       }
+      
+      this.checkVideoSize();
+    },
+    
+    checkVideoSize: function() { // in Firefox, videoWidth is not available on any events...annoying
+      if (!this.video.videoWidth) {
+        setTimeout(this.checkVideoSize, 100);
+        return;
+      }
+      
+      this.$shootBtn.removeClass('ui-disabled');
+      this.setDimensions();
     },
     
     startAudio: function(stream) {
       if (!this.hasAudio)
         return;
       
-      this.inputPoint = this.audioContext.createGainNode();
+      this.inputPoint = this.audioContext.createGain();
 
       // Create an AudioNode from the stream.
       this.realAudioInput = this.audioContext.createMediaStreamSource(stream);
@@ -289,51 +273,22 @@ define([
     },
 
     setDimensions: function() {
-      var vWidth, vHeight; 
-      if (!this.video.videoWidth) {
-        vWidth = this.pageView.innerWidth() - this.padding();
-        vHeight = Math.round(vWidth * 3 / 4);
-      }
-      else {
-        vWidth = this.video.videoWidth;
-        vHeight = this.video.videoHeight;
-      }
+      if (!this.video.videoWidth)
+        return;
+        
+      var $window = $(window),
+          wWidth = $window.width(),
+          wHeight = $window.height(),
+          vWidth = this.video.videoWidth,
+          vHeight = this.video.videoHeight;
       
-      this.height = Math.round(vHeight / (vWidth / this.width));
-      this.$video.attr('width', this.width);
-      this.$video.attr('height', this.height);
-      this.$canvas.attr('width', this.width);
-      this.$canvas.attr('height', this.height);
+      this.$canvas.attr('width', vWidth);
+      this.$canvas.attr('height', vHeight);
+      var $popup = this.$el.parent();
+      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
+      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
     },
     
-//    setDimensions: function() {
-//      var vWidth = this.width, vHeight;
-//      if (!this.video.videoWidth) {
-////        vWidth = this.page.innerWidth() - this.padding();
-//        vHeight = Math.round(this.width * 3 / 4);
-//      }
-//      else {
-//        vWidth = this.video.videoWidth;
-//        vHeight = this.video.videoHeight;
-//      }
-//      
-////      if (vWidth / vHeight > 4/3)
-////        vWidth = Math.round(vHeight * 4/3);
-////      else
-////        vHeight = Math.round(vWidth * 3/4);
-////      
-////      this.finalheight = Math.round(vHeight / (vWidth / this.width));
-////      this.$video.attr('width', this.width);
-////      this.$video.attr('height', this.finalheight);
-////      this.$canvas.attr('width', this.width);
-////      this.$canvas.attr('height', this.finalheight);
-////      this.width = vWidth;
-//      this.height = vHeight;
-//      this.$video.attr('width', vWidth);
-//      this.$video.attr('height', vHeight);
-//      this.$canvas.attr('width', vWidth);
-//      this.$canvas.attr('height', vHeight);
-//    },
     onresize: function(e) {
       this.setDimensions();
     },
@@ -476,6 +431,7 @@ define([
         url = URL.createObjectURL(this.audioBlob);
       }
       
+      this.audioUrl = url;
       audio.src = url;
       var vid = this.videoPrev;
       vid.addEventListener('play', function() {
@@ -496,48 +452,39 @@ define([
 
       if (!video) {
         video = document.createElement('video');
-//        video.autoplay = true;
         video.controls = true;
-//        video.loop = true;
-        //video.style.position = 'absolute';
-        //video.style.top = '70px';
-        //video.style.left = '10px';
         video.style.width = this.canvas.width + 'px';
         video.style.height = this.canvas.height + 'px';
         this.videoPrevDiv.appendChild(video);
         this.$videoPrev = this.$('#camVideoPreview video');
         this.videoPrev = this.$videoPrev[0];
-        
-//        downloadLink = document.createElement('a');
-//        downloadLink.download = 'capture.webm';
-//        downloadLink.textContent = '[ download video ]';
-//        downloadLink.title = 'Download your .webm video';
-//        var p = document.createElement('p');
-//        p.appendChild(downloadLink);
-//
-//        $('#video-preview').appendChild(p);
-
       } else {
         window.URL.revokeObjectURL(video.src);
       }
 
-      // https://github.com/antimatter15/whammy
-      // var encoder = new Whammy.Video(1000/60);
-      // frames.forEach(function(dataURL, i) {
-      //   encoder.add(dataURL);
-      // });
-      // var webmBlob = encoder.compile();
-
+//       https://github.com/antimatter15/whammy
       if (!url) {
         this.frames = _.filter(this.frames, function(f) {
           return f !== "data:,";
         });
         
         var framesPerSecond = Math.round(this.frames.length / ((this.stopTime - this.startTime) / 1000));
-        this.webmBlob = Whammy.fromImageArray(this.frames, framesPerSecond);
+//        if (G.navigator.isFirefox) {
+//          var encoder = new Whammy.Video(framesPerSecond);
+//          this.frames.forEach(function(dataURL, i) {
+//            encoder.add(dataURL);
+//          });
+//          
+//          this.webmBlob = encoder.compile();
+//        }
+//        else {
+          this.webmBlob = Whammy.fromImageArray(this.frames, framesPerSecond);
+//        }
+        
         url = URL.createObjectURL(this.webmBlob);
       }
 
+      this.videoUrl = url;
       video.src = url;
 //      downloadLink.href = url;
       this.$videoPrev.show();

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/MenuPanel', [
   'globals',
   'utils',
   'events',
@@ -48,7 +48,11 @@ define([
     home: function(e) {
       Events.stopEvent(e);
       var here = window.location.href;
-      if (e.target.id == 'home123')
+      var t = e.target;
+      while (t.tagName.toLowerCase() != 'li') 
+        t = t.parentNode;
+      
+      if (t.id == 'home123')
         window.location.href = here.slice(0, here.indexOf('#'));
       else
         window.location.href = G.serverName + '/app/UrbienApp';
@@ -65,6 +69,7 @@ define([
       
       if (typeof t === 'undefined' || !t)
         return;
+      
       text = U.removeHTML(text).trim();
       var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
       var idx = href.lastIndexOf('#');
@@ -77,7 +82,9 @@ define([
           return;
         }
       }
-      
+      if (href.indexOf("Alert?") != -1) 
+        G.currentUser.newAlertsCount = 0;
+
       this.router.navigate(href, {trigger: true});
 //      var link = $(t).attr('link');
 //      if (link) {

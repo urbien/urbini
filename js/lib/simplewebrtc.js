@@ -1,4 +1,4 @@
-;define(['lib/socket.io'], function () {
+;define('lib/simplewebrtc', ['lib/socket.io'], function () {
 
 var logger = {
     log: function (){},
@@ -329,7 +329,7 @@ WebRTC.prototype.getLocalVideoContainer = function () {
         }
         
         el.appendChild(video);
-        this.emit('appendedLocalVideo');
+        this.emit('appendedLocalVideo', video);
         return video;
     }
 };

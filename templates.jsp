@@ -7,7 +7,7 @@
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
@@ -44,12 +44,13 @@
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
-      <div class="ui-block-a" id="resourceImage" style="width:auto;"></div>
+      <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
+      <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
@@ -79,17 +80,16 @@
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="chatDiv" role="main">
+  <div id="inChatGoodies" style="position:absolute; z-index: 100">
+    <div id="inChatBacklinks" style="position:absolute;"></div>
+    <div id="inChatStats" style="position:relative;"></div>
   </div>
-  
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-  </div-->
+  <div id="chatDiv" role="main" data-role="content"></div>
 </script>  
 
-<script type="text/template" id="chatMessageTemplate">
+<script type="text/template" id="chatMessageTemplate1">
   <table width="100%">
     <tr>
       {{ if (!obj.info && !obj.self && obj.senderIcon) { }}
@@ -107,7 +107,7 @@
           {{ }                 }}
           
           <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">
-            {{ if (obj.isPrivate) { }}
+            {{ if (obj['private']) { }}
               <span class="private-message"><i> (Private message) </i></span> 
             {{ }                 }}
             {{= obj.sender ? message : '{0} ({1})'.format(message, time) }}
@@ -122,43 +122,121 @@
   </table>
 </script>
 
+<script type="text/template" id="chatMessageTemplate">
+  <table width="100%" class="height_tracker">
+    <tr>
+      <td width="100%">
+        <div class="{{= 'chat_msg ' + (obj.sender ? (obj.self ? 'msg_sent' : 'msg_recvd') : 'msg_recvd') }}">
+         <!--  {{ if (obj.sender) { }}
+            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div>
+          {{ }                 }}
+          {{ if (obj.info && obj.senderIcon) { }}
+         -->
+          {{ if (obj.senderIcon) { }}
+            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div> 
+          {{ }                 }}
+          
+          <div class="chat_copy">
+            {{ if (obj.isPrivate) { }}
+              <p class="private-message"><i> (Private message) </i></p> 
+            {{ }                 }}
+            <!-- p>{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</p -->
+            <p>{{= message }}</p>
+          </div>
+          <div class="posted_on">
+          {{ if (obj.sender) { }}
+            <strong>{{= sender }}</strong>&#160;&#160;{{= time }}
+          {{ }                 }}
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</script>
+
+<script type="text/template" id="genericOptionsDialogTemplate">
+  <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
+    <ul data-role="listview" data-inset="true" data-theme="d">
+      <li data-role="divider" data-theme="e">{{= title }}</li>
+      {{ _.each(options, function(option) { }}
+        <li><a href="{{= option.href || '#' }}" id="{{= option.id }}" >{{= option.text }}</a></li>
+      {{ })                                 }}
+    </ul>
+  </div>
+</script>
+
+<script type="text/template" id="genericDialogTemplate">
+<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
+  {{ if (obj.header) { }}
+  <div data-role="header" data-theme="a" class="ui-corner-top">
+    <h1>{{= header }}</h1>
+  </div>
+  {{ }                 }}
+  
+  {{ if (obj.ok === false && obj.cancel === false) { }}
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+  {{ }                 }}
+
+  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
+    {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
+    {{= obj.img ? '<img style="display:block" src="{0}" />'.format(img)                 : '' }}
+    {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
+    
+    <div style="display:block">
+    {{ if (obj.cancel) { }}
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= typeof cancel === 'string' ? cancel : 'Cancel' }}</a>
+    {{ }                 }}
+    
+    {{ if (obj.ok) { }}
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= typeof ok === 'string' ? ok : 'Ok' }}</a>
+    {{ }                 }}
+    </div>
+  </div>
+</div>
+</script>
+
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">
   {{ if (obj.video) { }}
-    <div id="videoChat">
+    <div id="videoChat" class="videoChat">
       <div id="localVideo"></div>
       <div id="remoteVideos"></div>
-    
-      <!--div data-role="fieldcontain">
-        <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-          <label data-icon="video" for="toggleVideoBtn"></label>
-          <input type="checkbox" name="toggleAudioBtn" id="toggleAudioBtn" {{= this.autoVideo ? 'checked=""' : '' }} />
-          <label data-icon="video" for="toggleAudioBtn"></label>
-        </fieldset>
-      </div-->
-      
-      <!--button type="submit" data-icon="video" id ="toggleVideoBtn" class="submit" data-theme="{{= G.theme.activeButton }}">{{= this.autoVideo ? 'Stop Video' : 'Start Video' }}</button-->
-      <div data-role="fieldcontain" data-mini="true">
-        <fieldset data-role="controlgroup" data-type="horizontal" data-type="horizontal">
-          <input type="checkbox" name="toggleVideoBtn" id ="toggleVideoBtn" {{= this.autoVideo ? ' checked=""' : '' }} />
-          <label data-icon="video" for="toggleVideoBtn">{{= this.autoVideo ? 'Stop video' : 'Start video' }}</label>
-        </fieldset>
-      </div>
-
-      <br /><hr /><br />
-    </div>
+    </div>    
   {{ }                }}
+  
+    <div id="localVideoMonitor">
+      {{ if (this.isWaitingRoom && this.isClient) {  }}
+        <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
+      {{ }                                           }}
+    </div>
+    
+    <div id="ringtoneHolder" style="visibility: hidden; display: none;">
+    </div>
+  
+  {{ if (!this.isWaitingRoom || this.isAgent) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
       </div>
-      <div id="chatInputs">
-        <input type="text" id="chatMessageInput" value="" />
-        <button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button>
+    </div>
+    <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
+      <div id="chatInputs" style="padding:0 0 0 10px;">
+        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureButton" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
+        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
+        <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
+  {{ }                                          }}
   </div>
+</script>
+
+<script type="text/template" id="audioPlayerTemplate">
+  <audio controls>
+    _.each(sources, function(source) {      
+      <source src="{{= source }}" type="{{= 'audio/' + source.slice(source.lastIndexOf('.') + 1) }}">
+      Your browser does not support this audio player
+    });
+  </audio>
 </script>
 
 <script type="text/template" id="videoPlayerTemplate">
@@ -169,7 +247,7 @@
   {{= " poster='{0}'".format(poster) }}
   {{ }                               }}
   >
-    <source src="{{= src }}" type="video/mp4" />
+    <source src="{{= src }}" type="{{= 'video/' + src.slice(src.lastIndexOf('.') + 1) }}" />
   </video>
 </script>
 
@@ -181,7 +259,7 @@
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.propertiesMenu }}" id="rightMenuItems" class="menuItems">
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
   </ul>
 </script>  
 
@@ -284,7 +362,7 @@
 
 <script type="text/template" id="editListItemTemplate">
   <!-- one row of a list in edit mode -->
-  <input data-formel="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
+  <input data-formEl="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
   {{= viewCols }}
 </script>
 
@@ -323,6 +401,7 @@
      {{ } }}
    </div>
   {{ } }}
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   -->  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
@@ -336,7 +415,50 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; cursor:pointer;"">
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
+  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
+  {{ if (!obj.v_submitToTournament) { }}  
+    <div class="ui-btn-text"
+    {{ if (isJst) { }}
+      style="padding: .7em 10px 10px 0px;"
+    {{ } }}
+    {{ if (!isJst) { }}
+      style="min-height:39px;"
+    {{ } }}
+  {{ } }}
+  {{ if (obj.v_submitToTournament) { }}
+    style="padding:.7em 10px 10px 0px;min-height:39px;"
+  {{ } }}
+  >
+   <!-- data-uri="{{= liUri }}" -->
+  {{= viewCols }}
+  </div>
+  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
+   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
+     {{= price.currency + price.value }}
+     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
+   </div>
+  {{ } }}  
+  {{ var distanceProp = U.getCloneOf(this.vocModel.properties, 'Distance.distance')[0]; }}
+  {{ if (typeof distanceProp != 'undefined') { }}
+    <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
+  {{ } }}
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  <!--
+  {{ if (typeof v_submitToTournament != 'undefined') { }}
+    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
+  {{ } }}
+  -->  
+  
+  {{ if (obj.comment) { }}
+    <p>{{= comment }}</p>
+  {{ } }}
+  </div>
+</script>
+
+<script type="text/template" id="listItemTemplateNoImage1">
+  <!-- one row on a list page (no image) -->
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
   {{ var action = action ? action : 'view'; }}
   {{ var detached = this.resource.detached; }}
   {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
@@ -388,11 +510,20 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="cursor: pointer;"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
-      
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' : 'margin-left:15px;' }}" id="{{= typeof id === 'undefined' ? G.nextId() : id}}" 
+    
+    {{ if (!obj.homePage) { }}   
+    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" 
+    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+      style="
+        width:{{= width }}px; height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+    {{ } }}
+    /> 
+    {{ } }}
+    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon && !obj.homePage ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' :  'margin-left:15px;' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -400,10 +531,13 @@
       {{ }                                            }}
     >
     
+    {{ if (obj.icon  &&  obj.homePage) { }}
+      <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
+    {{ }               }}
       {{= title }}
     </div>
     
-    {{ if (obj.icon) { }}
+    {{ if (obj.icon  &&  !obj.homePage) { }}
       <i class="ui-icon-{{= icon }}" style="float:right; font-size: 16px;"></i>
     {{ }               }}
   </li>
@@ -420,9 +554,9 @@
 
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
-  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
+  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
     <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id == 'undefined' ? 'home123' : id }}" target="#">
+    <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
   </li>
@@ -465,6 +599,31 @@
    </li>
 </script>
 
+<script type="text/template" id="priceTemplate">
+   <div data-role="button" data-shortName="{{= shortName }}" style="cursor: pointer;text-align:left; background:none; background-color: {{= color }}" href="#">
+     {{= name }}<br/> 
+     <span style="font-size: 20px;cursor:pointer;">{{= shortName == 'discount' ? '' : '$' }}{{= value }}{{= shortName == 'discount' ? '%' : '' }}</span>
+   </div>
+</script>
+
+<script type="text/template" id="buyTemplate">
+<!-- button for an important buyable resource on the resource's view page -->
+<div>
+   <a data-role="button" id="buy" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">
+      <span style="float:right;padding-left:3px;">Buy for<br/><span style="font-size: 20px;"> ${{= value }}</span></span><i class="ui-icon-shopping-cart" style="color:red; margin-left: -10px; font-size:35px;top:35%;"></i>
+   </a>
+</div>   
+</script>
+
+<script type="text/template" id="sellTemplate">
+<!-- button for an important backlink on a resource on the resource's view page -->
+<div>
+   <a data-role="button" id="sell" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none;  padding: 6px 0;background-color: {{= background }}; color: {{= color }};" href="#">
+      <span style="font-size: 24px; border: none;">Sell</span>
+   </a>
+</div>   
+</script>
+
 <script type="text/template" id="cpMainGroupTemplate">
 <!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
@@ -476,7 +635,7 @@
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>
@@ -548,9 +707,14 @@
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
-  <a href="{{= url }}" data-icon="comments-alt">Chat
-    {{= obj.unreadMessages ? '<span class="menuBadge">' + unreadMessages + '</span>' : '' }}
+  <a href="{{= url || '#' }}" data-icon="comments-alt">Chat
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
   </a>
+</script>
+
+<script type="text/template" id="videoButtonTemplate">
+  <!-- Button that toggles video chat -->
+  <a target="#" data-icon="facetime-video">Video</a>
 </script>
 
 <script type="text/template" id="addButtonTemplate">
@@ -561,13 +725,13 @@
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
   <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-    {{= typeof newAlerts == 'undefined'  ||  !newAlerts ? '' : '<span class="menuBadge">' + newAlerts + '</span>' }}
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count ? count : '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
 </script>
 
@@ -670,16 +834,23 @@
   <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">Test this plug</a>
 </script>
 
+<script type="text/template" id="callInProgressHeaderTemplate">
+  <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
+</script>
+
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
+    <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
     <div data-role="navbar">
-      <ul id="headerUl">
+      <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
-    <div id="name" class="resTitle" align="center">
+    {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
+<!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
+    <div id="name" class="resTitle" {{= this.categories ? '' : 'style="min-height: 20px"' }} align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
-      <div align="center" {{= obj.className ? 'class="className"' : '' }} style="margin-top: -7px;" id="headerButtons">
+      <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block; padding-top:4px;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
@@ -960,23 +1131,29 @@
 <div id="headerDiv"></div>
 <div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>
-  <form data-ajax="false" id="editForm" action="#">
+  <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <div name="errors" style="float:left"></div>
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    <div data-role="fieldcontain" id="ip">
+      <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">Uncheck All</a></div>
+      </fieldset>
+      <fieldset data-role="controlgroup" id="interfaceProps">
+      </fieldset>
+    </div>
+    {{                                                             }}
+    
     <div class="ui-body ui-body-b">
-    {{ if (obj.noCancel) {  }} 
-        <button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button>
-    {{ }                    }}
-    {{ if (!obj.noCancel) { }}
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
         <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
       </fieldset>
-    {{ }                    }}
-
     </div>
+
   </form>
   <br/>
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
@@ -997,6 +1174,21 @@
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
   <label for="{{= id }}">{{= davDisplayName }}</label>
 </script>
+
+<script type="text/template" id="interfacePropTemplate">
+  <!-- a interface props chooser input for edit forms -->
+  <div class="ui-controlgroup-controls">
+    {{ var id = G.nextId() }}
+    <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
+    <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <label for="{{= id }}">
+      {{= davDisplayName }} 
+      {{= obj.required ? '(Required)' : '' }}
+      {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
+    </label>
+  </div>
+</script>
+
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>
@@ -1053,7 +1245,7 @@
 
 <script type="text/template" id="moneyPET">
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
-  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value.value }}" {{= rules }} data-mini="true"></input>
+  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} data-mini="true"></input>
 </script>
 
 <script type="text/template" id="telPET">
@@ -1075,7 +1267,7 @@
     <img name="{{= shortName }}" src="{{= img }}"/>
   {{ }              }}
   
-  <a target="#"  name="{{= shortName }}" class="resourceProp" {{= rules }} >
+  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} >
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
     {{ if (!obj.value) { }}
@@ -1118,8 +1310,8 @@
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
   <select name="{{= shortName }}" id="{{= id }}" {{= rules }} data-role="slider" class="formElement boolean" data-mini="true">
-    <option>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</option>
-    <option>{{= typeof value === 'undefined' || !value ? 'Yes' : 'No' }}</option>
+    <option {{= !obj.value ? 'selected="selected"' : '' }}>No</option>
+    <option {{= obj.value ? 'selected="selected"' : '' }}>Yes</option>
   </select>
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </script>

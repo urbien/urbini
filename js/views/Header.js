@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/Header', [
   'globals',
   'events', 
   'utils',
@@ -24,6 +24,7 @@ define([
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
+      this.locationHref = window.location.hash;
       if (this.resource) {
         this.resource.on('change', function(res, options) {
 //          G.log(this.TAG, 'events', 'change event received for', U.getDisplayName(this.resource));
@@ -39,6 +40,8 @@ define([
       
 //      this.calcTitle();
       this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
+      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
+
       _.each(['info', 'error'], function(event) {
         var handler = this._updateInfoErrorBar;
         Events.off(event, handler);
@@ -46,8 +49,20 @@ define([
       }.bind(this));
 
       this.autoFinish = false;
-      this.isEdit = this.hash.startsWith('edit/');
-      this.isChat = this.hash.startsWith('chat/');
+      this.isEdit = /^(edit|make)\//.test(this.hash);
+      this.isChat = U.isChatPage();
+
+      var self = this;
+      if (!this.isChat) {
+        Events.on('newRTCCall', function(call) {
+          self.refresh();
+        });
+  
+        Events.on('endRTCCall', function() {
+          self.refresh();
+        });
+      }
+
       return this;
     },
     
@@ -181,7 +196,8 @@ define([
       return this;
     },
     events: {
-      'change #fileUpload': 'fileUpload'
+      'change #fileUpload': 'fileUpload',
+      'click #categories': 'showCategories'
     },
     fileUpload: function(e) {
       Events.stopEvent(e);      
@@ -210,8 +226,21 @@ define([
       */    
 
     },
+    showCategories: function(e) {
+      Events.stopEvent(e);
+      var self = this;
+      Voc.getModels("aspects/tags/Tag").done(function() {
+//        var options = U.getParamMap(self.locationHref);
+//        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, _.extend({application: self.vocModel.type, $title: "Categories"}, options));
+        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, {application: self.vocModel.type, $title: "Categories"}); //, $orderBy: "tagUsesCount", $asc: "-1"});
+        self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true});
+      }).fail(function() {
+        self.router.navigate(U.makeMobileUrl('list', self.vocModel.type));
+      });
+    },
     
     refresh: function() {
+      this.refreshCallInProgressHeader();
       this.refreshTitle();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
@@ -224,7 +253,7 @@ define([
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
-        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe')) && this.isGeo();
+        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
         this.getButtonViews();
       }
         
@@ -234,7 +263,28 @@ define([
         this.finish();
       }.bind(this)); 
     },
-    
+
+    refreshCallInProgressHeader: function() {
+      var cip = G.callInProgress;
+      if (cip && window.location.href !== cip.url) {
+        var $cipDiv = this.$('#callInProgress');
+        $cipDiv.html(this.callInProgressHeaderTemplate(cip));
+        (function pulse(){
+          if (!G.callInProgress)
+            return;
+          
+          $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
+        })();
+        
+        $cipDiv.css('cursor', 'pointer').click(function() {
+          window.location.href = $('a', this).attr('href');
+        });
+      }
+      else {
+        this.$('#callInProgress').html("");
+      }
+    },
+
     refreshTitle: function() {
       this.calcTitle();
       this.$('#pageTitle').html(this.title);
@@ -401,8 +451,10 @@ define([
       if (this.rendered)
         this.$el.html("");
       
+      if (U.isAssignableFrom(this.vocModel, G.commonTypes.App) && !res)
+        this.categories = true;
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
-        this.$el.html(this.template({className: 'ui-grid-a'}));
+        this.$el.html(this.template({className: 'ui-grid-b'}));
       else
         this.$el.html(this.template());
 
@@ -415,7 +467,7 @@ define([
       var btns = this.buttonViews;
       var numBtns = _.size(btns);
       var isMapItToggleable = !!this.collection;
-      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'chat', 'login'];
+      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'video', 'chat', 'login'];
       if (numBtns < 6)
         btnNames.push('rightMenu');
       else
@@ -446,8 +498,10 @@ define([
       this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
         this.$el.find('#headerButtons').attr('class', 'hidden');
-//        this.$el.find('#name').removeClass('resTitle');
+//        
       }
+      if (!this.noButton  &&  !this.categories)
+        this.$el.find('#name').removeClass('resTitle');
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');
@@ -456,6 +510,8 @@ define([
         header.addClass(barClass);
       
       // END HACK
+      
+      this.refreshCallInProgressHeader();
       this.finish();
       return this;
     }

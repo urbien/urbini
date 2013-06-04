@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/RightMenuPanel', [
   'globals',
   'utils',
   'events',
@@ -167,7 +167,16 @@ define([
         })
       }
       
-      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true});
+      var isWaitingRoom = this.hashParams['-waitingRoom'] == 'y';
+      var redirectOptions = {
+        trigger: true, 
+        replace: isWaitingRoom
+      };
+      
+      if (isWaitingRoom)
+        redirectOptions.transition = 'none';
+      
+      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
     },
     
     renderChatParticipants: function() {
@@ -212,8 +221,25 @@ define([
         
         if (!img) 
           U.addToFrag(frag, this.menuItemTemplate(common));
-        else
-          U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+        else {
+          var oW = info.oW;
+          var oH = info.oH;
+          if (oW  &&  oH) {
+            
+            this.$el.addClass("menu_image_fitted");
+            
+            var dim = U.fitToFrame(44, 44, oW / oH)
+            width = dim.w;
+            height = dim.h;
+            top = dim.y;
+            right = dim.w - dim.x;
+            bottom = dim.h - dim.y;
+            left = dim.x;
+            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img, width: width, height: height, top: top, bottom: bottom, right: right, left: left}, common)));
+          }
+          else
+            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+        }
         
       }.bind(this));
       
@@ -240,49 +266,78 @@ define([
       var self = this;
       var res = this.model;
       var model = this.vocModel;
-      var json = this.resource && res.toJSON();
-//      var isSuperUser = isCreatorOrAdmin(res);
-      this.$el.html(this.template(json));      
-      
+      var frag;
+      if (!model) {
+        this.$el.html(this.template({}));      
+        frag = document.createDocumentFragment();
+        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Like', G.currentApp.davDisplayName)});
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Like', pageUrl: uri, icon: 'heart', homePage: 'y'}));
 
-      var ul = this.$('#rightMenuItems');
-      var frag = document.createDocumentFragment();
-      
-      var title = this.resource ? 'Object Properties' : 'List Properties';
-      U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
-      
-      var isItemListing = res.isA("ItemListing");
-      var isBuyable = res.isA("Buyable");
-      if (isItemListing || isBuyable) {
-        var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
-        var license = res.get(licenceProp);
-        if (license) {
-          var ccEnum = U.getEnumModel('CCLicense');
-          var licenseMeta = _.filter(ccEnum.values, function(val) {
-            return val.displayName === license;
-          })[0];
-          
-          if (licenceMeta) {
-            U.addToFrag(frag, this.menuItemTemplate({title: 'License', image: licenseMeta.icon}));
+        uri = U.makePageUrl('make', 'model/portal/Comment', {forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Comment', G.currentApp.davDisplayName)});
+        U.addToFrag(frag, this.menuItemTemplate({title: 'Comment', pageUrl: uri, icon: 'comments', homePage: 'y'}));
+        var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
+        if (isAllowedToEdit) {
+          uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: G.currentApp.dashboard, $edit: 'y', $title: U.makeHeaderTitle('Menu', G.currentApp.davDisplayName)});
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Edit menu', pageUrl: uri, icon: 'cog', homePage: 'y'}));
+        }
+        if (isAllowedToEdit  ||  (G.currentApp.webClasses && G.currentApp.webClasses.count)) {
+          uri = U.makePageUrl('view', G.currentApp._uri);
+          var title = isAllowedToEdit ? 'Edit App' : 'Fork me';
+          var icon =  isAllowedToEdit ? 'wrench' : 'copy';
+          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'}));
+        }
+        var uri = 'view/profile';
+        if (G.currentUser.guest)
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Login', icon: 'user', mobileUrl: uri, homePage: 'y'}));
+        else
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted'}));
+        if (G.pageRoot != 'app/UrbienApp') {
+//        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
+          U.addToFrag(frag, this.menuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'}));
+        }
+      }
+      else {
+        var json = this.resource && res.toJSON();
+  //      var isSuperUser = isCreatorOrAdmin(res);
+        this.$el.html(this.template(json));      
+        
+        frag = document.createDocumentFragment();
+
+        var title = this.resource ? 'Object Properties' : 'List Properties';
+        U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
+        var isItemListing = res.isA("ItemListing");
+        var isBuyable = res.isA("Buyable");
+        if (isItemListing || isBuyable) {
+          var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
+          var license = res.get(licenseProp);
+          if (license) {
+            var ccEnum = U.getEnumModel('CCLicense');
+            var licenseMeta = _.filter(ccEnum.values, function(val) {
+              return val.displayName === license;
+            })[0];
+            
+            if (licenceMeta) {
+              U.addToFrag(frag, this.menuItemTemplate({title: 'License', image: licenseMeta.icon}));
+            }
+          }
+        }
+        
+        this.buildGrabbed(frag);
+        this.buildGrab(frag);
+        this.buildActionsMenu(frag);
+        
+        if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
+          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+          if (!ch  ||  !ch.length)
+            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+          if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
+            var cnt = res.get(ch[0]) && res.get(ch[0]).count;
+            if (cnt  &&  cnt > 0) 
+              U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})}));
           }
         }
       }
-
-      this.buildGrabbed(frag);
-      this.buildGrab(frag);
-      this.buildActionsMenu(frag);
-      
-      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
-        var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-        if (!ch  ||  !ch.length)
-          ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-        if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
-          var cnt = res.get(ch[0]) && res.get(ch[0]).count;
-          if (cnt  &&  cnt > 0) 
-            U.addToFrag(frag, this.menuItemTemplate({title: "Activity", pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})}));
-        }
-      }
-
+      var ul = this.$('#rightMenuItems');
       ul.append(frag);
       var p = $('#' + this.viewId);
       p.append(this.$el);
@@ -393,7 +448,7 @@ define([
         return;
       
       var grabbed = G.currentUser.grabbed; // maybe it should just be a regular collection, req'd after stuff loads
-      if (grabbed.length) {
+      if (grabbed  &&  grabbed.length) {
         U.addToFrag(frag, this.groupHeaderTemplate({value: 'Grabbed'}));
         grabbed.each(function(item) {
           U.addToFrag(frag, this.menuItemTemplate({

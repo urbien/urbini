@@ -1,12 +1,11 @@
 //'use strict';
-define([
+define('views/BasicView', [
   'globals',
-  'jquery',
   'backbone',
   'utils',
   'templates',
   'events'
-], function(G, $, Backbone, U, Templates, Events) {
+], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
@@ -82,7 +81,9 @@ define([
           return this;
         }
       }.bind(this);
-      
+
+      this._activeDfd = $.Deferred();
+      this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
         _.each(this.children, function(child) {
@@ -104,18 +105,32 @@ define([
           
           method.apply(this, args);
           this.finish();
-        }        
+        }
+        
+        if (active) {
+          this._activeDfd.resolve();
+          this._inactiveDfd = $.Deferred();
+        }
+        else {
+          this._inactiveDfd.resolve();
+          this._activeDfd = $.Deferred();
+        }
       }.bind(this));
 ////////// comment end
       
-      _.each(['onorientationchange', 'onresize'], function(listener) {
-        if (listener in window) {
-          var event = listener.slice(2);
-          window.addEventListener(event, function() {
-            this.$el.trigger(event);
-          }.bind(this), false);
-        }
-      }.bind(this));
+//      if (this.getPageView() == this) {
+        var self = this;
+        _.each(['onorientationchange', 'onresize'], function(listener) {
+          if (listener in window) {
+            var event = listener.slice(2);
+            window.addEventListener(event, function() {
+              self.onActive(function() {
+                self['_' + event](event);
+              });
+            }, false);
+          }
+        });
+//      }
       
       return this;
     }
@@ -134,6 +149,16 @@ define([
 //      this.render(this._renderArguments);
 //    },
     
+    _resize: _.debounce(function(e) {
+      G.log(this.TAG, 'events', e);
+      this.$el.trigger(e);
+    }, 100),
+
+    _orientationchange: _.debounce(function(e) {
+      G.log(this.TAG, 'events', e);
+      this.$el.trigger(e);      
+    }, 100),
+
     refreshOrRender: function() {
       if (this.rendered)
         this.refresh.apply(this, arguments);
@@ -152,7 +177,9 @@ define([
     },
     
     whenDoneLoading: function(callback) {
-      $.when.apply($, this._getLoadingDeferreds()).then(callback);
+      var promise = $.when.apply($, this._getLoadingDeferreds());
+      callback && promise.then(callback);
+      return promise;
     },
     
     finish: function() {
@@ -211,6 +238,14 @@ define([
         scrollTop: this.pageView.$el.height()
       }, 200);
     },
+
+    onInactive: function(callback) {
+      this._inactiveDfd.done(callback);
+    },
+
+    onActive: function(callback) {
+      this._activeDfd.done(callback);
+    },
     
     addChild: function(name, view) {
       this.children = this.children || {};
@@ -234,6 +269,7 @@ define([
     },
     
     isPageView: function(view) {
+      view = view || this;
       return view && view.cid === this.getPageView().cid;
     },
     
@@ -348,6 +384,10 @@ define([
       this.$el.find('button[data-role="button"]').button();
       this.$el.find('input,textarea').textinput();
 //      this.$el.page();
+    },
+    
+    isActivePage: function() {
+      return $.mobile.activePage === this.pageView.$el;
     },
     
     showLoadingIndicator: function(timeout) {

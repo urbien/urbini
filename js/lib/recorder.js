@@ -1,4 +1,4 @@
-define(['globals', 'lib/recorderWorker'], function(G) {
+define('lib/recorder', ['globals', 'lib/recorderWorker'], function(G) {
 
   var WORKER_PATH = G.serverName + '/js/lib/recorderWorker.js';
 

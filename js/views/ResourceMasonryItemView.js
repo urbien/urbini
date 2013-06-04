@@ -1,14 +1,13 @@
 //'use strict';
-define([
+define('views/ResourceMasonryItemView', [
   'globals',
-  'jquery',
   'underscore',
   'utils',
   'events',
   'views/BasicView',
   'jqueryMasonry',
   'jqueryImagesloaded'
-], function(G, $, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -364,10 +363,11 @@ define([
     },
     renderIntersectionTile: function(delegateTo, cloneOf) {
       var m = this.resource;
-      var meta = this.vocModel.properties;
+      var vocModel = this.vocModel;
+      var meta = vocModel.properties;
       if (!meta)
         return this;
-      
+
       var img;
       var json = m.toJSON();
       if (cloneOf == 'Intersection.a') {

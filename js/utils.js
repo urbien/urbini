@@ -1,15 +1,19 @@
 //'use strict';
-define([
+define('utils', [
   'globals',
   'underscore',
   'backbone',
   'templates',
-  'jquery',
   'cache',
   'events'
-], function(G, _, Backbone, Templates, $, C, Events) {
+], function(G, _, Backbone, Templates, C, Events) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
+  
+  function isFileUpload(prop, val) {
+    return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
+  }
+  
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -75,57 +79,116 @@ define([
   var U = {
     TAG: 'Utils',
     require: function(modules, callback, context) {
-      modules = $.isArray(modules) ? modules : [modules];
-      var mods = [], newModNames = [], newModFullNames = [];
-      for (var i = 0; i < modules.length; i++) {
-        var fullName = modules[i], name = fullName;
-//        if (!fullName)
-//          G.log(U.TAG, 'error', 'match undefined 1');
-        var moduleViaPlugin = fullName.match(/\!(.*)$/);
-        if (moduleViaPlugin) {
-          name = moduleViaPlugin[1]; 
-        }
-        
-        var mod = C.modCache[name];
-        if (!mod) {
-          mod = C.modCache[name] = $.Deferred();
-          newModFullNames.push(fullName);
-          newModNames.push(name);
-        }
-        
-        mods.push(mod);
-      }
-      
-      if (newModNames.length) {
-        G.loadBundle(newModNames, function() {
-          require(newModFullNames, function() {
-            for (var i = 0; i < newModNames.length; i++) {
-//              var name = newModNames[i];
-//              var module = arguments[i];
-//              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
-//              C.modCache[name].resolve(module);
-              C.modCache[newModNames[i]].resolve(arguments[i]);
-            }
-          });
-        });
-      }
-      
-      return $.when.apply($, mods).then(function() {
-        callback && callback.apply(context, arguments);
-      }).promise();
+      return require(modules, context ? callback.bind(context) : callback);
     },
+    
+//    require: function(modules, callback, context) {
+//      modules = $.isArray(modules) ? modules : [modules];
+//      var mods = [], newModNames = [], newModFullNames = [];
+//      for (var i = 0; i < modules.length; i++) {
+//        var fullName = modules[i], name = fullName;
+////        if (!fullName)
+////          G.log(U.TAG, 'error', 'match undefined 1');
+//        var moduleViaPlugin = fullName.match(/\!(.*)$/);
+//        if (moduleViaPlugin) {
+//          name = moduleViaPlugin[1]; 
+//        }
+//        
+//        var mod = C.modCache[name];
+//        if (!mod) {
+//          mod = C.modCache[name] = $.Deferred();
+//          newModFullNames.push(fullName);
+//          newModNames.push(name);
+//        }
+//        
+//        mods.push(mod);
+//      }
+//      
+//      if (newModNames.length) {
+//        G.loadBundle(newModNames, function() {
+//          require(newModFullNames, function() {
+//            for (var i = 0; i < newModNames.length; i++) {
+////              var name = newModNames[i];
+////              var module = arguments[i];
+////              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
+////              C.modCache[name].resolve(module);
+//              C.modCache[newModNames[i]].resolve(arguments[i]);
+//            }
+//          });
+//        });
+//      }
+//      
+//      return $.when.apply($, mods).then(function() {
+//        callback && callback.apply(context, arguments);
+//      }).promise();
+//    },
     
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers;
       var opts = _.clone(options);
       opts.type = opts.method || opts.type;
-      // TODO: remove
-      if (opts.url.indexOf('backboneModel') >= 0 && opts.type !== 'POST')
-        debugger;
-        
       opts.dataType = opts.dataType || 'JSON';
       var useWorker = hasWebWorkers && !opts.sync;
       return new $.Deferred(function(defer) {
+        var data = opts.data;
+        var blobProps = U.getBlobValueProps(data);
+        if (data && Blob && _.size(blobProps)) {
+//          opts.url = G.serverName + '/mkresource.html';
+//          useWorker = false; // HACK: till we figure out how to do file upload in web worker
+//          var fd = new FormData();
+//          if (opts.resource) {
+//            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
+//            fd.append('type', opts.resource.vocModel.type);
+//          }
+//          
+//          if (data._uri) {
+//            fd.append('_uri', data._uri);
+//            fd.append('uri', data._uri);
+//          }
+//          
+//          fd.append('enctype', "multipart/form-data");
+//          fd.append('-$action', 'upload');
+//          var blobbed = false;
+//          for (var prop in data) {
+//            var val = data[prop];
+//            if (val instanceof Blob) {
+//              if (!blobbed) {
+//                blobbed = true;
+//                _.extend(opts, {
+//                  processData: false,
+//                  contentType: false
+//                });
+//                
+//                delete opts.dataType;
+//                delete opts.emulateJSON;
+//                delete opts.emulateHTTP;
+//              }
+//              
+//              fd.append(prop, val, prop);
+//            }
+//            else
+//              fd.append(prop, val);
+//          }
+//          
+          if (useWorker) {
+            var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
+            if (!attachmentsUrlProp) {
+              debugger;
+              Events.trigger('error', {
+                resource: resource,
+                error: "{0} don't support an attachments".format(getPlural(resource.vocModel.displayName))
+              });
+              
+              return;
+            }
+            
+            fd.append('location', G.serverName + '/wf/' + resource.get(attachmentsUrlProp));
+            fd.append('type', resource.vocModel.type);
+          }
+          else
+            opts.data = U.toFormData(data, opts);
+        }
+
         if (opts.success) defer.done(opts.success);
         if (opts.error) defer.fail(opts.error);
         if (useWorker) {
@@ -157,7 +220,7 @@ define([
             };
             
             xhrWorker.onerror = function(err) {
-  //            debugger;
+//              debugger;
               defer.reject({}, "error", err);
             };
             
@@ -170,40 +233,7 @@ define([
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-          var data = opts.data;
-          if (data && Blob && U.filterObj(data, function(key, val) { return val instanceof Blob }).length) {
-//            var my_form=document.createElement('FORM');
-//            my_form.name='form' + G.nextId();
-//            my_form.method='POST';
-//            my_form.action=opts.url;
-//            my_form.enctype = "multipart/form-data";            
-//            var fd = new FormData(my_form);
-//            for (var prop in data) {
-//              var val = data[prop];
-//              if (_.isObject(val)) {
-////                for (var subProp in val) {
-//////                  fd.append(prop + '.' + subProp, val[subProp]);
-////                  data[prop+ '.' + subProp] = val[subProp];                  
-////                }
-//                
-//                _.extend(opts, {
-//                  processData: false,
-//                  contentType: false
-//                });
-//                
-//                delete opts.dataType;
-//                delete opts.emulateJSON;
-//                delete opts.emulateHTTP;
-////                delete data[prop];
-//              }
-////                fd.append(prop, val);
-//            }
-            
-//            opts.data = fd;
-          }
-          
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-//            debugger;
             if (status != 'success') {
               defer.reject(jqXHR, status, opts);
               return;
@@ -215,6 +245,7 @@ define([
             }
             
             if (data && data.error) {
+//              debugger;
               defer.reject(jqXHR, data.error, opts);
               return;
             }
@@ -252,7 +283,7 @@ define([
     },
 
     isAnAppClass: function(type) {
-      return type.indexOf("/voc/dev/") != -1;
+      return type.indexOf("/voc/dev/" + G.currentApp.appPath) != -1;
     },
     
     getTypes: function(vocModel) {
@@ -272,10 +303,13 @@ define([
       var vocModel = res && res.constructor;
       var me = G.currentUser._uri;
       var resUri;
-      if (U.isCollection(res))
-        resUri = null; //res.models[0].getUri();
-      else  
-        resUri = res.getUri();
+      if (res) {
+        if (U.isCollection(res))
+          resUri = null; //res.models[0].getUri();
+        else  
+          resUri = res.getUri();
+      }
+      
       var iAmRes = me === resUri;
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
@@ -289,7 +323,7 @@ define([
           if (r === 'self') { 
             if (iAmRes) return true;
           }
-          else if (r.endsWith('self')){
+          else if (res && r.endsWith('self')){
             r = r.split('==');
             var pName = r[0].trim();
             var selfUser = res.get(pName);
@@ -327,8 +361,10 @@ define([
 //        hash = U.decode(hash.slice(10));
         return G.commonTypes.Jst;
       }
+      else if (hash.startsWith('home'))
+        return null;
       
-      route = hash.match('^view|menu|edit|make|chooser|chat');
+      route = hash.match(/^view|menu|edit|make|chooser|chat([a-zA-Z]+)?/);
 //      debugger;
 //      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
@@ -432,15 +468,25 @@ define([
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
         return false;
+      if (prop.avoidDisplayingInEdit  || prop.avoidDisplayingOnCreate) {
+        var hash = window.location.hash;
+        if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
+          return false;
+      }
+
+      var isMkResource = res.isNew();
+      var isAdmin = U.isUserInRole("admin");
+      var cantEdit = false;
+      _.each(['allowRoles', 'allowRolesToEdit'], function(p) {        
+        var roles = prop[p];
+        if (roles  &&  roles.indexOf('self') == -1  &&  !isAdmin)
+          return false;
+      });
       
-      var roles = prop.allowRoles;
-      if (roles  &&  roles.indexOf('self') == -1  &&  !U.isUserInRole("admin"))
+      if (cantEdit)
         return false;
-      roles = prop.allowRolesToEdit;
-      if (roles  &&  (roles.indexOf('self') == -1))
-        return false;
-      
-      var resExists = !!res.getUri();
+
+      var resExists = res  &&  !!res.getUri();
       if (resExists) { 
         if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
           return false;
@@ -521,6 +567,7 @@ define([
         if (vals.length)
           results[iProp] = vals;
       }
+      
       var size = _.size(results);
       return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
     },
@@ -968,10 +1015,31 @@ define([
       if (!url)
         return name + '=' + U.encode(value);
       
+      if (_.isObject(name)) {
+        var newUrl = url,
+            params = name,
+            sort = value;
+        
+        for (var p in params) {
+          if (_.has(params, p)) {
+            newUrl = U.replaceParam(newUrl, p, params[p], value);
+          }
+        }
+        
+        return newUrl;
+      }
+        
       url = url.split('?');
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
-      q[name] = value;
+      if (value)
+        q[name] = value;
+      else
+        delete q[name];
+      
+      if (!_.size(q))
+        return url[0];
+      
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
@@ -987,7 +1055,7 @@ define([
       model = collection = params = url = args.length && args[0];
       if (!url || typeof url === 'string') {
         params = U.getParamMap(url || window.location.href);
-        return args.length > 1 ? U.getQueryParams(params, slice.call(args, 1)) : params;
+        return args.length > 1 ? U.getQueryParams.apply(U, [params].concat(slice.call(args, 1))) : params;
       }
 
       if (U.isCollection(model)) { // if it's a collection
@@ -1268,7 +1336,7 @@ define([
         return "none";
       
       var now = G.currentServerTime();
-      var date = U.getFormattedDate(now + time).toLowerCase();
+      var date = U.getFormattedDate(now + time * 1000).toLowerCase();
       if (date === 'just now')
         return 'none';
       else if (date.startsWith("in "))
@@ -1310,7 +1378,7 @@ define([
 //      }
     },
 
-    getFormattedDate: function(time, firstLevel) {
+    getFormattedDate: function(time, pieceOfDate) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
       var now = G.currentServerTime();
@@ -1354,22 +1422,26 @@ define([
         }
         else {
           var years = Math.round( absDayDiff / 365 );
-          var rest = (absDayDiff % 365);
+          var rest = (day_diff % 365);
           var date = '';
           if (years == 1)
             date += 'a year';
           else
             date += years + " years";
-          str = (rest == 0  ||  firstLevel) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000));
+          
+          str = (rest == 0  ||  pieceOfDate) ? date : date + ' and ' + U.getFormattedDate(now - (rest * 86400 * 1000), true);
         }
         
-        var ret = '';
-        if (str.indexOf('In') == -1)
-          ret += pre;
-        ret += str;
-        if (str.indexOf(' ago') == -1)
-          ret += post;
-        return ret;
+//        var ret = '';
+//        if (str.indexOf('In') == -1)
+//          ret += pre;
+//        ret += str;
+//        if (str.indexOf(' ago') == -1)
+//          ret += post;
+        
+        pre = future && !str.startsWith(pre) && !pieceOfDate ? pre : '';
+        post = future || str.endsWith(post) || pieceOfDate ? '' : post;
+        return  pre + str + post;
       }
       
 //      var years;
@@ -1386,7 +1458,7 @@ define([
     },
     
     toHTMLElement: function(html) {
-      return $(html)[0];
+      return $(html.trim())[0];
     },
     
     getShortName: function(uri) {
@@ -1501,17 +1573,21 @@ define([
         }
       });
     },
-    /**
-     * given obj and path x.y.z, will return obj.x.y.z; 
-     */
-    leaf: function(obj, path, separator) {
-      if (typeof obj == 'undefined' || !obj)
-        return null; 
-     
-      separator = separator || '.';
-      var dIdx = path.indexOf(separator);
-      return dIdx == -1 ? obj[path] : U.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-    },
+    
+//    _index: function(obj,i) {
+//      return obj[i]
+//    },
+//
+//    /**
+//     * given obj and path x.y.z, will return obj.x.y.z; 
+//     */
+//    leaf: function(obj, path, separator) {
+//      if (typeof obj == 'undefined' || !obj)
+//        return null;
+//      
+//      var index = U._index;
+//      return path.split(separator || '.').reduce(index, obj);
+//    },
     
     getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
@@ -1526,20 +1602,13 @@ define([
       return slice.call(arguments).join('||');
     },
     
-//    isAllowed: function(action, type) {
-//      if (!U.isAnAppClass(type))
-//        return true; // for now
-//      
-//      if (action === 'edit')
-//        return true; // for now;
-//      
-//      var app = type.slice(type.indexOf(''));
-//    },
-    
     /**
      * @param className: class name or uri
      */
     isAssignableFrom: function(model, className) {
+      if (!model)
+        return false;
+      
       if (/\//.test(className))
         className = U.getTypeUri(className);
       
@@ -1594,11 +1663,19 @@ define([
           }
         }
         else if (prop.range == 'string') {
+          var href = window.location.hash;
+          var isView = href.startsWith("#view/");
+
           if (isDisplayName)
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-          else
+          else if (!isView  &&  prop.maxSize > 1000)
             val = "<span style='opacity:0.5;'>" + val + "</span>";
+          else
+            val = "<span>" + val + "</span>";
         }
+        else if (prop.range == 'enum') {
+          val = "<span>" + val + "</span>";
+        }  
       }
       
       val = val || res.get(propName) || '';        
@@ -1666,10 +1743,6 @@ define([
       switch (action) {
         case 'list':
           break;
-        case 'make':
-        case 'view':
-        case 'edit':
-        case 'chooser':
         default: 
           url += action + '/';
           break;
@@ -1755,10 +1828,16 @@ define([
       if (prop.code)
         rules['data-code'] = prop.code;
       
-      if (U.isDateProp(prop))
+      if (U.isDateProp(prop)) {
         rules['data-date'] = true;
-      else if (U.isTimeProp(prop))
+//        if (val.value)
+//          val.val /= 1000; // seconds
+      }
+      else if (U.isTimeProp(prop)) {
         rules['data-duration'] = true;
+//        if (val.value)
+//          val.value /= 1000; // seconds
+      }
       else if (U.isEnumProp(prop))
         rules['data-enum'] = true;
             
@@ -2084,40 +2163,29 @@ define([
       return decode ? decodeURIComponent(hash) : hash;
     },
     
-    prepForSync: function(item, vocModel, preserve) {
-      preserve = preserve || [];
-      var props = vocModel.properties;
-      var filtered = U.filterObj(item, function(key, val) {
-        if (/\./.test(key))
-          return false;
-        var prop = props[key];
-        return prop && !U.isSystemProp(key) && 
-            (_.contains('backLink', preserve) || !prop.backLink) && 
-            (U.isResourceProp(prop) || (_.contains('readOnly', preserve) || !prop.readOnly)) && // sometimes if it's readOnly, we still need it - like if it's a backlink
-            /^[a-zA-Z]+[^\.]*$/.test(key);  // is writeable, starts with a letter and doesn't contain a '.'
-      }); 
-      
-      return U.flattenModelJson(filtered, vocModel, preserve);
-    },
-    
-    flattenModelJson: function(m, vocModel, preserve) {
-      var vocProps = vocModel.properties;
-      var flat = {};
-      for (var name in m) {
-        if (name.indexOf(".") != -1) {
-          flat[name] = m[name];
-          continue;
-        }
-          
-        var prop = vocProps[name];
-        if (!prop || (prop.parameter && !_.contains(preserve, 'parameter')) || (prop.virtual && !_.contains(preserve, 'virtual')))
-          continue;
-        
-        flat[name] = U.getFlatValue(prop, m[name]);
-      }
-      
-      return flat;
-    },
+//    flattenModelJson: function(m, vocModel, preserve) {
+//      var vocProps = vocModel.properties;
+//      var flat = {};
+//      for (var name in m) {
+//        if (name.indexOf(".") != -1) {
+//          flat[name] = m[name];
+//          continue;
+//        }
+//          
+//        var val = m[name];
+//        var prop = vocProps[name];
+//        if (!prop || 
+//            (prop.parameter && !_.contains(preserve, 'parameter')) || 
+//            (prop.virtual && !_.contains(preserve, 'virtual'))) { // || 
+////            (isFileUpload(prop, val) && !_.contains(preserve, '_fileUpload')))
+//          continue;
+//        }
+//        
+//        flat[name] = U.getFlatValue(prop, val);
+//      }
+//      
+//      return flat;
+//    },
     
     getFlatValue: function(prop, val) {
       if (U.isNully(val))
@@ -2890,6 +2958,95 @@ define([
           setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
       }, options.delay || 0);
     },
+    /**
+     * @param options: specify id, header, title, img, ok, cancel, details 
+     * @example 
+     *    U.dialog({
+     *      id: 'chatRequestDialog',
+     *      header: 'Chat Invitation',
+     *      title: 'Chat with me?',
+     *      details: 'you will not regret it...',
+     *      ok: 'Accept',         // pass true to get default string 'Ok', or false to not have a button
+     *      cancel: 'Decline',    // pass true to get default string 'Cancel', or false to not have a button
+     *      img: 'http://urbien.com/path/to/img'
+     *    });
+     *  
+     */
+    dialog: function(options) {
+      var id = options.id = options.id || 'dialog' + G.nextId();
+      $('#' + id).remove();
+      var dialogHtml = U.template('genericDialogTemplate')(_.defaults(options, {
+        ok: true,
+        cancel: true
+      }));
+      
+      ($.mobile.activePage || $(document.body)).append(dialogHtml);
+      var $dialog = $('#' + id);
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
+    },
+    
+    deposit: function(params) {
+      return $.Deferred(function(defer) {
+        var trType = G.commonTypes.Transaction;
+        require('vocManager').done(function(Voc) {          
+          Voc.getModels(trType).done(function() {
+            var transactionModel = U.getModel(trType);
+            var transaction = new transactionModel(params);
+            transaction.save(null, {
+              sync: !U.canAsync(trType),
+              success: function() {
+                defer.resolve(transaction);
+              },
+              error: function(trans, err, options) {
+                var err = err.responseText || err;
+                if (typeof err === 'string') {
+                  try {
+                    err = JSON.parse(err);
+                  } catch (e) {}
+                }
+                
+                defer.reject(err);
+              }
+            });
+          });
+        });
+      }).promise();;
+    },
+    
+    /**
+     * @param title - title in the header of the popup 
+     * @param options - choices, each in the form of 
+     * {
+     *   href: 'http://.....some/url', 
+     *   text: 'Link text'
+     * } 
+     */
+    optionsDialog: function(title, options) {
+      var id = 'optionsDialog' + G.nextId();
+      $('#' + id).remove();
+      _.each(options, function(option) {
+        option.id = option.id || 'option' + G.nextId();
+      });
+      
+      var dialogHtml = U.template('genericOptionsDialogTemplate')({
+        id: id,
+        title: title,
+        options: options
+      });
+
+      
+      var $dialog = ($.mobile.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      _.each(options, function(option) {
+        if (option.action) {
+          $dialog.find('#' + option.id).click(option.action);
+        }
+      });
+      
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
+    },
+    
     removeClasses: function(element, pattern) {
       element = element instanceof $ ? element : $(element); 
       var classes = element.attr('class').split(/\s+/);
@@ -2900,6 +3057,88 @@ define([
           element.removeClass(className);
         }
       }
+    },
+    getPath: function(uri) {
+      var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
+      var params = U.getParamMap(uri);
+      for (var param in params) {
+        path += '/' + encodeURIComponent(params[param]);
+      }
+      
+      return path;
+    },
+    
+    toFormData: function(data, opts) {
+      var fd = new FormData();      
+      var resource = opts.resource;
+      var vocModel = resource.vocModel;
+      var blobbed = false;
+      for (var prop in data) {
+        var val = data[prop];
+        if (!(val instanceof Blob)) {
+          fd.append(prop, val);
+          continue;
+        }
+        
+        if (!blobbed) {
+          blobbed = true;
+          var attachmentsUrlProp = U.getCloneOf(vocModel, "FileSystem.attachmentsUrl")[0];
+          if (!attachmentsUrlProp)
+            continue;
+          
+//          if (data._uri) {
+//            fd.append('_uri', data._uri);
+//            fd.append('uri', data._uri);
+//          }
+          
+//          fd.append('type', vocModel.type);
+          fd.append('enctype', "multipart/form-data");
+          fd.append('-$action', 'upload');
+          fd.append('location', G.serverName + '/wf/' + resource.get(attachmentsUrlProp));
+          _.extend(opts, {
+            processData: false,
+            contentType: false
+          });
+          
+          _.each(['dataType', 'emulateJSON', 'emulateHTTP'], function(option) {
+            delete opts[option];
+          });
+        }
+          
+        fd.append(prop, val, prop);
+      }
+      
+      return fd;
+    },
+    getBlobValueProps: function(data) {
+      return U.filterObj(data, function(key, val) { return val instanceof Blob });
+    },
+    getExternalFileUrl: function(uri) {
+      return G.serverName + '/' + U.getParamMap(uri).url;
+    },
+    _chatRoutes: {
+      'private': 'chatPrivate',
+      'public': 'chat',
+      'lobby': 'chatLobby'
+    },
+    isChatPage: function() {
+      return /^chat/.test(U.getHash());
+    },
+    isAgentChat: function() {
+      return /chat\//.test(U.getHash());
+    },
+    isPrivateChat: function() {
+      return U.getHash().startsWith('chatPrivate');
+    },
+    isWaitingRoom: function() {
+      return U.getHash().startsWith('chatLobby');
+    },
+    getRoute: function() {
+      var hash = U.getHash();
+      if (/[a-zA-Z]+\//.test(hash))
+        return hash.match(/([a-zA-Z]+)\//)[1];
+      else
+        return '';
     }
   };
 

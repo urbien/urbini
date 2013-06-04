@@ -1,12 +1,11 @@
 //'use strict';
-define([
+define('views/LoginButton', [
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'views/BasicView',
   'events'
-], function(G, $, _, U, BasicView, Events) {
+], function(G, _, U, BasicView, Events) {
   return BasicView.extend({
     loginTemplate: 'loginButtonTemplate',
 //    logoutTemplate: 'logoutButtonTemplate',

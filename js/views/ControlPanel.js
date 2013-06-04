@@ -1,7 +1,6 @@
 //'use strict';
-define([
+define('views/ControlPanel', [
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
@@ -9,7 +8,7 @@ define([
   'vocManager',
   'collections/ResourceList',
   'cache'
-], function(G, $, _, Events, U, BasicView, Voc, ResourceList, C) {
+], function(G, _, Events, U, BasicView, Voc, ResourceList, C) {
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
@@ -24,6 +23,7 @@ define([
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.resource.on('change', this.refresh, this);
       this.isMainGroup = options.isMainGroup;
+      this.dontStyle = this.isMainGroup && options.dontStyle
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
@@ -42,18 +42,73 @@ define([
       if (!t)
         return;
       
-      Events.stopEvent(e);
+//      Events.stopEvent(e);
+      e.preventDefault();
+      if ($(t).parents('.__dragged__').length)
+        return;
+      
       var shortName = t.dataset.shortname;
-      var prop = this.vocModel.properties[shortName];
-      var params = {
-        '$backLink': prop.backLink,
-        '-makeId': G.nextId(),
-        '$title': t.dataset.title
-      };
+      this.prop = this.vocModel.properties[shortName];
 
-      params[prop.backLink] = this.resource.getUri();
-      this.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
-      G.log(this.TAG, 'add', 'user wants to add to backlink');
+      var self = this;       
+      Voc.getModels(this.prop.range).done(function() {
+        var prop = self.prop;
+        var pModel = U.getModel(prop.range);
+        function noIntersection(prop) {
+          var params = {
+            '$backLink': prop.backLink,
+            '-makeId': G.nextId(),
+            '$title': t.dataset.title
+          };
+    
+          params[prop.backLink] = self.resource.getUri();
+          
+          self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+          G.log(self.TAG, 'add', 'user wants to add to backlink');
+        };
+        if (!U.isAssignableFrom(pModel, 'Intersection')) { 
+          noIntersection(prop);
+          return;
+        }
+        var a = U.getCloneOf(pModel, 'Intersection.a')[0];
+        var b = U.getCloneOf(pModel, 'Intersection.b')[0];
+        if (!a  &&  !b) {
+          noIntersection(prop);
+          return;
+        }
+        var meta = pModel.properties;
+        var title = U.getParamMap(window.location.hash).$title;
+        if (!title)
+          title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
+        var aUri = a == prop.backLink ? self.resource.get('_uri') :null;
+        var bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
+        if (!aUri  &&  !bUri) {
+          noIntersection(prop);
+          return;
+        }
+        var uri = aUri == null ? bUri : aUri;
+        var rtype = aUri == null ? meta[a].range : meta[b].range;
+        var params = {
+            $forResource: uri,
+            $propA: a,
+            $propB: b,
+            $type:  pModel.type, 
+            $title: title
+          };
+
+        self.router.navigate('chooser/' + encodeURIComponent(rtype) + '?' + $.param(params), {trigger: true});
+        G.log(self.TAG, 'add', 'user wants to add to backlink');
+//        var params = {
+//          '$backLink': prop.backLink,
+//          '-makeId': G.nextId(),
+//          '$title': t.dataset.title
+//        };
+//  
+//        params[prop.backLink] = self.resource.getUri();
+//        
+//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+//        G.log(self.TAG, 'add', 'user wants to add to backlink');
+      });
     },
     
     refresh: function(res, options) {
@@ -89,10 +144,11 @@ define([
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
-      if (this.isMainGroup  &&  !mainGroup)
+      if (this.isMainGroup  &&  !mainGroup.length)
         return;
+      
       var isHorizontal;      
-      if (this.isMainGroup) {
+      if (this.isMainGroup && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
           this.$el.css("float", "left");
           this.$el.css("width", "100%");

@@ -2,7 +2,8 @@
 define('app', [
   'globals',
   'backbone',
-  'fileCache!jqueryMobile',
+//  'fileCache!jqueryMobile',
+  'jqueryMobile',
   'templates', 
   'utils', 
   'events',
@@ -15,32 +16,6 @@ define('app', [
 ], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
-//  _.extend(Backbone.History.prototype, {
-//
-//    // react to a back/forward button, or an href click.  a "soft" route
-//   checkUrl: function(e) {
-//      var current = this.getFragment();
-//      if (current == this.fragment && this.iframe)
-//          current = this.getFragment(this.getHash(this.iframe));
-//      if (current == this.fragment) return false;
-//      if (this.iframe) this.navigate(current);
-//      // CHANGE: tell loadUrl this is a soft route
-//      this.loadUrl(undefined, true) || this.loadUrl(this.getHash(), true);
-//    },
-//
-//    // this is called in the whether a soft route or a hard Router.navigate call
-//    loadUrl: function(fragmentOverride, soft) {
-//      var fragment = this.fragment = this.getFragment(fragmentOverride);
-//      var matched = _.any(this.handlers, function(handler) {
-//        if (handler.route.test(fragment)) {
-//          // CHANGE: tell Router if this was a soft route
-//          handler.callback(fragment, soft);
-//          return true;
-//        }
-//      });
-//      return matched;
-//    }
-//  });
   
   Backbone.View.prototype.close = function() {
     this.$el.detach();
@@ -50,35 +25,6 @@ define('app', [
     }
   };  
   
-//  /* Backbone.validateAll.js - v0.1.0 - 2012-08-29
-//  * http://www.gregfranko.com/Backbone.validateAll.js/
-//  * Copyright (c) 2012 Greg Franko; Licensed MIT */
-//  Backbone.Model.prototype._validate = function(attrs, options) {
-//    options = options || {};
-//    if (options.silent || options.skipValidation || !this.validate) {
-//      return true;
-//    }
-//    
-//    if (options.validateAll !== false) {
-//      attrs = _.extend({}, this.attributes, attrs);
-//    }
-//    
-//    var error = this.validate(attrs, options);
-//    if (!error) {
-//      if (options.validated)
-//        options.validated(this, options);
-//      
-//      return true;
-//    }
-//    if (options && options.error) {
-//      options.error(this, error, options);
-//    } else {
-//      this.trigger('error', this, error, options);
-//    }
-//    
-//    return false;
-//  };
-
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;
@@ -121,29 +67,25 @@ define('app', [
           self.doPostStartTasks();
         });
       });
-//      Voc.loadStoredModels();
-//      if (!Voc.changedModels.length) {// && !Voc.newModels.length) {
-//        RM.restartDB().always(App.startApp);
-//        return;
-//      }
-//
-//      this.prepModels();
     },
 
     doPreStartTasks: function() {
       return $.Deferred(function(defer) {        
-        var modelsDfd = $.Deferred();
-        var dbDfd = $.Deferred();
+        var modelsDfd = $.Deferred(),
+            dbDfd = $.Deferred(),
+            grabDfd = $.Deferred();
+
         var startDB = function() {
           if (RM.db)
             dbDfd.resolve();
           else
             RM.restartDB().always(dbDfd.resolve);
-        }
+        };
         
         var loadModels = function() {
           Voc.getModels().done(function() {
             startDB();
+            App.initGrabs().done(grabDfd.resolve).fail(grabDfd.reject);
             modelsDfd.resolve();
           }).fail(function()  {
             if (G.online) {
@@ -239,40 +181,6 @@ define('app', [
       }).promise();
     },
     
-//    prepModels: function() {
-//      var self = this;
-//      var error = function(xhr, err, options) {
-////        debugger;
-//        if (!G.online) {
-//          Errors.offline();
-//        }
-//        else if (xhr) {
-//          if (xhr.status === 0) {
-//            if (G.online)
-//              self.prepModels(); // keep trying
-//            else {
-//  //            window.location.hash = '';
-//  //            window.location.reload();
-//              Errors.offline();
-//            }
-//          }
-//        }
-//        else if (err) {
-//          throw new Error('failed to load app: ' + JSON.stringify(err));            
-//        }
-//        else {
-//          throw new Error('failed to load app');
-//        }
-//      };
-//      
-//      Voc.getModels(null, {sync: true}).done(function() {
-//        if (RM.db)
-//          self.startApp();
-//        else
-//          RM.restartDB().always(App.startApp);
-//      }).fail(error);
-//    },
-    
     startApp: function() {
       return $.Deferred(function(dfd) {        
         if (App.started)
@@ -280,6 +188,7 @@ define('app', [
         
         App.setupModuleCache();
         App.setupLoginLogout();
+        App.setupRTCCallMonitor();
         
         G.app = App;
         App.started = true;
@@ -302,35 +211,48 @@ define('app', [
 //      }
       
       setTimeout(function() { 
-        this.getGrabs();
         RM.sync();
       }.bind(this), 100);
     },
     
-    getGrabs: function() {
-      if (G.currentUser.guest)
-        return;
-      
-      var grabType = G.commonTypes.Grab;
-      Voc.getModels(grabType).done(function() {          
-        var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
-          model: U.getModel(grabType),
-          params: {
-            submittedBy: G.currentUser._uri,
-            canceled: false
-          }
-        });
+    initGrabs: function() {
+      return $.Deferred(function(defer) {
+        if (G.currentUser.guest)
+          return defer.resolve();
         
-        grabsRL.fetch({
-          success: function() {
-//            debugger;
-          },
-          error: function() {
-//            debugger;
+        G.currentUser.grabbed = new ResourceList(G.currentUser.grabbed, {
+          model: U.getModel(G.commonTypes.Grab),
+          params: {
+            submittedBy: G.currentUser._uri
           }
         });
-      });
+      }).promise();
     },
+    
+//    getGrabs: function() {
+//      if (G.currentUser.guest)
+//        return;
+//      
+//      var grabType = G.commonTypes.Grab;
+//      Voc.getModels(grabType).done(function() {          
+//        var grabsRL = G.currentUser.grabbed = new ResourceList(null, {
+//          model: U.getModel(grabType),
+//          params: {
+//            submittedBy: G.currentUser._uri,
+//            canceled: false
+//          }
+//        });
+//        
+//        grabsRL.fetch({
+//          success: function() {
+////            debugger;
+//          },
+//          error: function() {
+////            debugger;
+//          }
+//        });
+//      });
+//    },
     
     setupLoginLogout: function() {
       Events.on('req-login', function(options) {
@@ -370,7 +292,7 @@ define('app', [
           net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
         });
         
-        var onDismiss = options.onDismiss || G.Router._backOrHome;
+        var onDismiss = options.onDismiss || function() { Events.trigger('back') }; //G.Router._backOrHome;
         $('#login_popup').remove();
         var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online, dismissible: false});
         $(document.body).append(popupHtml);
@@ -388,6 +310,7 @@ define('app', [
       
       var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
       Events.on('logout', function(options) {
+        debugger;
         options = _.extend({}, defaults, options);
         var url = G.serverName + '/j_security_check?j_signout=true';
         $.get(url, function() {
@@ -441,6 +364,29 @@ define('app', [
     setupModuleCache: function() {
 //      var originalRequire = window.require;
 //      window.require = function(modules, callback, context) {
+    },
+    
+    setupRTCCallMonitor: function() {
+      G.callInProgress = null;
+      Events.on('newRTCCall', function(rtcCall) {
+        if (G.callInProgress)
+          Events.trigger('endRTCCall', G.callInProgress);
+        
+        G.callInProgress = rtcCall;
+      });
+      
+      Events.on('endRTCCall', function(rtcCall) {
+        if (G.callInProgress == rtcCall)
+          G.callInProgress = null;
+      });
+      
+      Events.on('localVideoMonitor:on', function(stream) {
+        G.localVideoMonitor = stream;
+      });
+      
+      Events.on('localVideoMonitor:off', function() {
+        G.localVideoMonitor = null;
+      });
     },
     
     setupWorkers: function() {

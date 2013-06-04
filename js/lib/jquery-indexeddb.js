@@ -1,28 +1,11 @@
 //'use strict';
-define(['globals', 'indexedDBShim'], function(G) {
-	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
+  var usingShim = G.isUsingDBShim;
+	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
-//  window.shimIndexedDB.__useShim();
-//
-	var usingShim, indexedDB;
-	if (typeof window.webkitIndexedDB !== 'undefined') {
-	  indexedDB =  window.shimIndexedDB;
-	  usingShim = true;
-	} 
-	else {
-	  indexedDB = window.indexedDB;
-	}
-	
-//  if (usingShim)
-//    window.shimIndexedDB.__debug(true);  
-//	/**
-//	 * Best to use the constant IDBTransaction since older version support numeric types while the latest spec
-//	 * supports strings
-//	 */
-//	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 	
 	function getDefaultTransaction(mode){
 		switch (mode) {
@@ -579,7 +562,7 @@ define(['globals', 'indexedDBShim'], function(G) {
 						}, function(err, e){
 							dfd.rejectWith(this, [e, err]);
 						}, function(res, e){
-							console.log("Database event on open: ", e.type, res);
+//							console.log("Database event on open: ", e.type, res);
 							//dfd.notifyWith(this, ["", e]);
 						});
 						

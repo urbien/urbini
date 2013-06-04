@@ -1,10 +1,9 @@
 //'use strict';
-define([
+define('events', [
   'globals', 
   'underscore',
-  'backbone',
-  'jquery'
-], function(G, _, Backbone, $) {
+  'backbone'
+], function(G, _, Backbone) {
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',

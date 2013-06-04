@@ -1,7 +1,6 @@
 //'use strict';
-define([
+define('views/EditPage', [
   'globals',
-  'jquery',
   'underscore',
   'utils',
   'events',
@@ -14,7 +13,7 @@ define([
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, $, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+], function(G, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicView.extend({
     initialize: function(options) {
@@ -32,7 +31,7 @@ define([
       var settings = {viewId: this.cid}
       if (U.isAssignableFrom(res, "AppInstall")) {
         settings.submit = 'Allow';
-        settings.noCancel = true;
+//        settings.noCancel = true;
       }
       
       this.$el.html(this.template(settings));
@@ -56,11 +55,12 @@ define([
       
       var reqParams = U.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
-      if (!editCols) {
-        this.addChild('imageView', new ResourceImageView({model: res}));
+      this.isVideo = res.isA('VideoResource');
+      if (!editCols && !this.isVideo) {
+        this.addChild('imageView', new ResourceImageView({model: res, parentView: this}));
       }
       
-      this.addChild('editView', new EditView(_.extend({model: res /*, backlinkResource: this.backlinkResource*/}, this.editOptions)));
+      this.addChild('editView', new EditView(_.extend({model: res, parentView: this}, this.editOptions)));
       if (this.editParams)
         this.editView.set(this.editParams);
     },

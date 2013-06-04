@@ -1,530 +1,68 @@
-/*
-    json2.js
-    2012-10-08
+(function(window, doc, undefined) {
+var __started = new Date();
 
-    Public Domain.
-
-    NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
-
-    See http://www.JSON.org/js.html
-
-
-    This code should be minified before deployment.
-    See http://javascript.crockford.com/jsmin.html
-
-    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
-    NOT CONTROL.
-
-
-    This file creates a global JSON object containing two methods: stringify
-    and parse.
-
-        JSON.stringify(value, replacer, space)
-            value       any JavaScript value, usually an object or array.
-
-            replacer    an optional parameter that determines how object
-                        values are stringified for objects. It can be a
-                        function or an array of strings.
-
-            space       an optional parameter that specifies the indentation
-                        of nested structures. If it is omitted, the text will
-                        be packed without extra whitespace. If it is a number,
-                        it will specify the number of spaces to indent at each
-                        level. If it is a string (such as '\t' or '&nbsp;'),
-                        it contains the characters used to indent at each level.
-
-            This method produces a JSON text from a JavaScript value.
-
-            When an object value is found, if the object contains a toJSON
-            method, its toJSON method will be called and the result will be
-            stringified. A toJSON method does not serialize: it returns the
-            value represented by the name/value pair that should be serialized,
-            or undefined if nothing should be serialized. The toJSON method
-            will be passed the key associated with the value, and this will be
-            bound to the value
-
-            For example, this would serialize Dates as ISO strings.
-
-                Date.prototype.toJSON = function (key) {
-                    function f(n) {
-                        // Format integers to have at least two digits.
-                        return n < 10 ? '0' + n : n;
-                    }
-
-                    return this.getUTCFullYear()   + '-' +
-                         f(this.getUTCMonth() + 1) + '-' +
-                         f(this.getUTCDate())      + 'T' +
-                         f(this.getUTCHours())     + ':' +
-                         f(this.getUTCMinutes())   + ':' +
-                         f(this.getUTCSeconds())   + 'Z';
-                };
-
-            You can provide an optional replacer method. It will be passed the
-            key and value of each member, with this bound to the containing
-            object. The value that is returned from your method will be
-            serialized. If your method returns undefined, then the member will
-            be excluded from the serialization.
-
-            If the replacer parameter is an array of strings, then it will be
-            used to select the members to be serialized. It filters the results
-            such that only members with keys listed in the replacer array are
-            stringified.
-
-            Values that do not have JSON representations, such as undefined or
-            functions, will not be serialized. Such values in objects will be
-            dropped; in arrays they will be replaced with null. You can use
-            a replacer function to replace those with JSON values.
-            JSON.stringify(undefined) returns undefined.
-
-            The optional space parameter produces a stringification of the
-            value that is filled with line breaks and indentation to make it
-            easier to read.
-
-            If the space parameter is a non-empty string, then that string will
-            be used for indentation. If the space parameter is a number, then
-            the indentation will be that many spaces.
-
-            Example:
-
-            text = JSON.stringify(['e', {pluribus: 'unum'}]);
-            // text is '["e",{"pluribus":"unum"}]'
-
-
-            text = JSON.stringify(['e', {pluribus: 'unum'}], null, '\t');
-            // text is '[\n\t"e",\n\t{\n\t\t"pluribus": "unum"\n\t}\n]'
-
-            text = JSON.stringify([new Date()], function (key, value) {
-                return this[key] instanceof Date ?
-                    'Date(' + this[key] + ')' : value;
-            });
-            // text is '["Date(---current time---)"]'
-
-
-        JSON.parse(text, reviver)
-            This method parses a JSON text to produce an object or array.
-            It can throw a SyntaxError exception.
-
-            The optional reviver parameter is a function that can filter and
-            transform the results. It receives each of the keys and values,
-            and its return value is used instead of the original value.
-            If it returns what it received, then the structure is not modified.
-            If it returns undefined then the member is deleted.
-
-            Example:
-
-            // Parse the text. Values that look like ISO date strings will
-            // be converted to Date objects.
-
-            myData = JSON.parse(text, function (key, value) {
-                var a;
-                if (typeof value === 'string') {
-                    a =
-/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
-                    if (a) {
-                        return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
-                            +a[5], +a[6]));
-                    }
-                }
-                return value;
-            });
-
-            myData = JSON.parse('["Date(09/09/2001)"]', function (key, value) {
-                var d;
-                if (typeof value === 'string' &&
-                        value.slice(0, 5) === 'Date(' &&
-                        value.slice(-1) === ')') {
-                    d = new Date(value.slice(5, -1));
-                    if (d) {
-                        return d;
-                    }
-                }
-                return value;
-            });
-
-
-    This is a reference implementation. You are free to copy, modify, or
-    redistribute.
-*/
-
-/*jslint evil: true, regexp: true */
-
-/*members "", "\b", "\t", "\n", "\f", "\r", "\"", JSON, "\\", apply,
-    call, charCodeAt, getUTCDate, getUTCFullYear, getUTCHours,
-    getUTCMinutes, getUTCMonth, getUTCSeconds, hasOwnProperty, join,
-    lastIndex, length, parse, prototype, push, replace, slice, stringify,
-    test, toJSON, toString, valueOf
-*/
-
-
-// Create a JSON object only if one does not already exist. We create the
-// methods in a closure to avoid creating global variables.
-
-//if (typeof JSON !== 'object') {
-//    JSON = {};
-//}
-//
-//(function () {
-//    'use strict';
-//
-//    function f(n) {
-//        // Format integers to have at least two digits.
-//        return n < 10 ? '0' + n : n;
-//    }
-//
-//    if (typeof Date.prototype.toJSON !== 'function') {
-//
-//        Date.prototype.toJSON = function (key) {
-//
-//            return isFinite(this.valueOf())
-//                ? this.getUTCFullYear()     + '-' +
-//                    f(this.getUTCMonth() + 1) + '-' +
-//                    f(this.getUTCDate())      + 'T' +
-//                    f(this.getUTCHours())     + ':' +
-//                    f(this.getUTCMinutes())   + ':' +
-//                    f(this.getUTCSeconds())   + 'Z'
-//                : null;
-//        };
-//
-//        String.prototype.toJSON      =
-//            Number.prototype.toJSON  =
-//            Boolean.prototype.toJSON = function (key) {
-//                return this.valueOf();
-//            };
-//    }
-//
-//    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-//        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-//        gap,
-//        indent,
-//        meta = {    // table of character substitutions
-//            '\b': '\\b',
-//            '\t': '\\t',
-//            '\n': '\\n',
-//            '\f': '\\f',
-//            '\r': '\\r',
-//            '"' : '\\"',
-//            '\\': '\\\\'
-//        },
-//        rep;
-//
-//
-//    function quote(string) {
-//
-//// If the string contains no control characters, no quote characters, and no
-//// backslash characters, then we can safely slap some quotes around it.
-//// Otherwise we must also replace the offending characters with safe escape
-//// sequences.
-//
-//        escapable.lastIndex = 0;
-//        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
-//            var c = meta[a];
-//            return typeof c === 'string'
-//                ? c
-//                : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-//        }) + '"' : '"' + string + '"';
-//    }
-//
-//
-//    function str(key, holder) {
-//
-//// Produce a string from holder[key].
-//
-//        var i,          // The loop counter.
-//            k,          // The member key.
-//            v,          // The member value.
-//            length,
-//            mind = gap,
-//            partial,
-//            value = holder[key];
-//
-//// If the value has a toJSON method, call it to obtain a replacement value.
-//
-//        if (value && typeof value === 'object' &&
-//                typeof value.toJSON === 'function') {
-//            value = value.toJSON(key);
-//        }
-//
-//// If we were called with a replacer function, then call the replacer to
-//// obtain a replacement value.
-//
-//        if (typeof rep === 'function') {
-//            value = rep.call(holder, key, value);
-//        }
-//
-//// What happens next depends on the value's type.
-//
-//        switch (typeof value) {
-//        case 'string':
-//            return quote(value);
-//
-//        case 'number':
-//
-//// JSON numbers must be finite. Encode non-finite numbers as null.
-//
-//            return isFinite(value) ? String(value) : 'null';
-//
-//        case 'boolean':
-//        case 'null':
-//
-//// If the value is a boolean or null, convert it to a string. Note:
-//// typeof null does not produce 'null'. The case is included here in
-//// the remote chance that this gets fixed someday.
-//
-//            return String(value);
-//
-//// If the type is 'object', we might be dealing with an object or an array or
-//// null.
-//
-//        case 'object':
-//
-//// Due to a specification blunder in ECMAScript, typeof null is 'object',
-//// so watch out for that case.
-//
-//            if (!value) {
-//                return 'null';
-//            }
-//
-//// Make an array to hold the partial results of stringifying this object value.
-//
-//            gap += indent;
-//            partial = [];
-//
-//// Is the value an array?
-//
-//            if (Object.prototype.toString.apply(value) === '[object Array]') {
-//
-//// The value is an array. Stringify every element. Use null as a placeholder
-//// for non-JSON values.
-//
-//                length = value.length;
-//                for (i = 0; i < length; i += 1) {
-//                    partial[i] = str(i, value) || 'null';
-//                }
-//
-//// Join all of the elements together, separated with commas, and wrap them in
-//// brackets.
-//
-//                v = partial.length === 0
-//                    ? '[]'
-//                    : gap
-//                    ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
-//                    : '[' + partial.join(',') + ']';
-//                gap = mind;
-//                return v;
-//            }
-//
-//// If the replacer is an array, use it to select the members to be stringified.
-//
-//            if (rep && typeof rep === 'object') {
-//                length = rep.length;
-//                for (i = 0; i < length; i += 1) {
-//                    if (typeof rep[i] === 'string') {
-//                        k = rep[i];
-//                        v = str(k, value);
-//                        if (v) {
-//                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-//                        }
-//                    }
-//                }
-//            } else {
-//
-//// Otherwise, iterate through all of the keys in the object.
-//
-//                for (k in value) {
-//                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-//                        v = str(k, value);
-//                        if (v) {
-//                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-//                        }
-//                    }
-//                }
-//            }
-//
-//// Join all of the member texts together, separated with commas,
-//// and wrap them in braces.
-//
-//            v = partial.length === 0
-//                ? '{}'
-//                : gap
-//                ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
-//                : '{' + partial.join(',') + '}';
-//            gap = mind;
-//            return v;
-//        }
-//    }
-//
-//// If the JSON object does not yet have a stringify method, give it one.
-//
-//    if (typeof JSON.stringify !== 'function') {
-//        JSON.stringify = function (value, replacer, space) {
-//
-//// The stringify method takes a value and an optional replacer, and an optional
-//// space parameter, and returns a JSON text. The replacer can be a function
-//// that can replace values, or an array of strings that will select the keys.
-//// A default replacer method can be provided. Use of the space parameter can
-//// produce text that is more easily readable.
-//
-//            var i;
-//            gap = '';
-//            indent = '';
-//
-//// If the space parameter is a number, make an indent string containing that
-//// many spaces.
-//
-//            if (typeof space === 'number') {
-//                for (i = 0; i < space; i += 1) {
-//                    indent += ' ';
-//                }
-//
-//// If the space parameter is a string, it will be used as the indent string.
-//
-//            } else if (typeof space === 'string') {
-//                indent = space;
-//            }
-//
-//// If there is a replacer, it must be a function or an array.
-//// Otherwise, throw an error.
-//
-//            rep = replacer;
-//            if (replacer && typeof replacer !== 'function' &&
-//                    (typeof replacer !== 'object' ||
-//                    typeof replacer.length !== 'number')) {
-//                throw new Error('JSON.stringify');
-//            }
-//
-//// Make a fake root object containing our value under the key of ''.
-//// Return the result of stringifying the value.
-//
-//            return str('', {'': value});
-//        };
-//    }
-//
-//
-//// If the JSON object does not yet have a parse method, give it one.
-//
-//    if (typeof JSON.parse !== 'function') {
-//        JSON.parse = function (text, reviver) {
-//
-//// The parse method takes a text and an optional reviver function, and returns
-//// a JavaScript value if the text is a valid JSON text.
-//
-//            var j;
-//
-//            function walk(holder, key) {
-//
-//// The walk method is used to recursively walk the resulting structure so
-//// that modifications can be made.
-//
-//                var k, v, value = holder[key];
-//                if (value && typeof value === 'object') {
-//                    for (k in value) {
-//                        if (Object.prototype.hasOwnProperty.call(value, k)) {
-//                            v = walk(value, k);
-//                            if (v !== undefined) {
-//                                value[k] = v;
-//                            } else {
-//                                delete value[k];
-//                            }
-//                        }
-//                    }
-//                }
-//                return reviver.call(holder, key, value);
-//            }
-//
-//
-//// Parsing happens in four stages. In the first stage, we replace certain
-//// Unicode characters with escape sequences. JavaScript handles many characters
-//// incorrectly, either silently deleting them, or treating them as line endings.
-//
-//            text = String(text);
-//            cx.lastIndex = 0;
-//            if (cx.test(text)) {
-//                text = text.replace(cx, function (a) {
-//                    return '\\u' +
-//                        ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-//                });
-//            }
-//
-//// In the second stage, we run the text against regular expressions that look
-//// for non-JSON patterns. We are especially concerned with '()' and 'new'
-//// because they can cause invocation, and '=' because it can cause mutation.
-//// But just to be safe, we want to reject all unexpected forms.
-//
-//// We split the second stage into 4 regexp operations in order to work around
-//// crippling inefficiencies in IE's and Safari's regexp engines. First we
-//// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
-//// replace all simple value tokens with ']' characters. Third, we delete all
-//// open brackets that follow a colon or comma or that begin the text. Finally,
-//// we look to see that the remaining characters are only whitespace or ']' or
-//// ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
-//
-//            if (/^[\],:{}\s]*$/
-//                    .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-//                        .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-//                        .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-//
-//// In the third stage we use the eval function to compile the text into a
-//// JavaScript structure. The '{' operator is subject to a syntactic ambiguity
-//// in JavaScript: it can begin a block or an object literal. We wrap the text
-//// in parens to eliminate the ambiguity.
-//
-//                j = eval('(' + text + ')');
-//
-//// In the optional fourth stage, we recursively walk the new structure, passing
-//// each name/value pair to a reviver function for possible transformation.
-//
-//                return typeof reviver === 'function'
-//                    ? walk({'': j}, '')
-//                    : j;
-//            }
-//
-//// If the text is not JSON parseable, then a SyntaxError is thrown.
-//
-//            throw new SyntaxError('JSON.parse');
-//        };
-//    }
-//}());
-
+// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
+// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
+$.extend({
+  whenAll: function() {
+    var dfd = $.Deferred(),
+        len = arguments.length,
+        counter = 0,
+        state = "resolved",
+        resolveOrReject = function() {
+            if(this.state() === "rejected"){
+                state = "rejected";
+            }
+            counter++;
   
-                    
-requirejs.exec = function(text) {
-//  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
-  // Script Injection
-  if (Lablz.minify) {
-    var nav = Lablz.navigator;
-    if (nav.isChrome) // || nav.isSafari)
-      Lablz.inject(text);
-    else if (nav.isFirefox)
-      return window.eval(text);
-//      return window.eval.call({}, text);  
-    else // Safari
-      return window.eval(text);
-  } 
-  else
-    return window.eval(text);
+            if(counter === len) {
+                dfd[state === "rejected"? "reject": "resolve"]();   
+            }
   
-//  return Lablz.inject(text);
+        };
   
-  // Indirect Eval
-//  try {
-//    return window.eval.call({}, text);
-//  } catch (err) {
-//    // Safari will throw err: "The "this" value passed to eval must be the global object from which eval originated" 
-//    return window.eval(text);
-//  }
-  // Direct Eval
-//  return eval(text);
-}
-                    
+  
+     $.each(arguments, function(idx, item) {
+         item.always(resolveOrReject); 
+     });
+  
+    return dfd.promise();    
+  }
+});
+
 //'use strict';
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
   
-  var doc = document,
-      head = document.getElementsByTagName('head')[0],
-      body = document.getElementsByTagName('body')[0];
+  function addModule(text) {
+  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
+    // Script Injection
+    
+    var idx = text.indexOf('//@ sourceURL');
+    idx = idx == -1 ? 0 : idx;
+    var length = idx ? 100 : text.length - idx;
+//    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
+    
+    if (Lablz.minify) {
+      var nav = Lablz.navigator;
+      if (nav.isChrome) // || nav.isSafari)
+        Lablz.inject(text);
+      else if (nav.isFirefox)
+        return window.eval(text);
+  //      return window.eval.call({}, text);  
+      else // Safari
+        return window.eval(text);
+    } 
+    else
+      return window.eval(text);
+  }
+  
+  var $head = $('head'),
+      head = $head[0],
+      $body = $('body'),
+      body = $body[0];
   
   Function.prototype.async = function(constantTimeout) {
     var self = this;
@@ -551,110 +89,112 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-  var loadModule = function(text, url, contextOrOnLoad, name) {
-    var context,
-        onLoad,
-        ext = url.match(/\.[a-zA-Z]+$/g)[0];
-    
-    var appcache = G.files.appcache;
-    if (ext === '.jsp')
-      onLoad = contextOrOnLoad;
-    else
-      context = contextOrOnLoad;
-      
-    switch (ext) {
-      case '.css':
-        text += '\r\n/*//@ sourceURL=' + url + '*/';
-        if (appcache[name])
-          G.linkCSS(G.serverName + '/' + url);
-        else
-          G.appendCSS(text);
+  // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
+  var loadModule = function(name, url, text) {
+    return $.Deferred(function(defer) {        
+      var ext = url.match(/\.[a-zA-Z]+$/g)[0];
+      var appcache = G.files.appcache;
         
-        G.log(G.TAG, 'cache', 'cache.get: ' + url);
-        context.completeLoad(name); // pseudonym for onLoad
-        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
-        break;
-      case '.html':
-      case '.jsp':
-        G.log(G.TAG, 'cache', 'cache.get: ' + url);
-        onLoad(text);
-        G.log(G.TAG, 'cache', 'end cache.get: ' + url);
-        break;
-      default:
-        if (G.navigator.isIE) 
-          text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-        text += '\n//@ sourceMappingURL=' + url + '.map';
-        text += '\n//@ sourceURL=' + url;
-        if (G.navigator.isIE) 
-          text += '*/\n';
-        requirejs.exec(text);
-        context.completeLoad(name); // JQM hack
-        break;
-    }        
+      switch (ext) {
+        case '.css':
+          text += '\r\n/*//@ sourceURL=' + url + '*/';
+          if (appcache[name])
+            G.linkCSS(G.serverName + '/' + url);
+          else
+            G.appendCSS(text);
+          
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+          defer.resolve(name);
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
+        case '.html':
+        case '.jsp':
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+//          onLoad(text);
+          defer.resolve(text);
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
+        default:
+          if (G.navigator.isIE) 
+            text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
+          text += '\n//@ sourceMappingURL=' + url + '.map';
+          text += '\n//@ sourceURL=' + url;
+          if (G.navigator.isIE) 
+            text += '*/\n';
+
+          addModule(text);
+          defer.resolve();
+          break;
+      }      
+    }).promise();
   };
 
-  var orgRJSLoad = requirejs.load;
-  requirejs.load = function (context, name, url, config) {
-//    console.log(G.TAG, 'cache', 'loading', url);
-    var completeLoad = context.completeLoad,
-        url = G.getCanonicalPath(url),
-        config = config || (context && context.config) || {},
-        cached;
-
-    if (/\.(jsp|css|html)\.js$/.test(url))
-      url = url.replace(/\.js$/, '');
-        
-    var inAppcache = G.isInAppcacheBundle(url);
-    if (inAppcache) {
-      var path = G.requireConfig.paths[name];
-      path = path || name;
-      var realPath = G.files.appcache[path].fullName;
-//      var realPath = G.files[path].name;
-      arguments[2] = url.replace(path, realPath);
-      if (!/\.(jsp|css|html)$/.test(url)) {
-        orgRJSLoad.apply(this, arguments);
-        return;
-      }
-    }
-
+  var orgLoad = require.load;
+  require.load = function (name) {
+    var url = G.getCanonicalPath(require.toUrl(name));
+    var args = arguments,
+        self = this;
+    
+    return $.Deferred(function(defer) {
+      if (name === 'globals')
+        return defer.resolve(G);
       
-    var ext;
-    var isText = ext = name.match(/\.[a-zA-Z]+$/g);
-    if (ext)
-      ext = ext[0].slice(1).toLowerCase();
-      
-    var mCache = G.modules;
-    var inMemory = inAppcache || (mCache && mCache[url]);
-    var loadedCached = false;
-    if (inMemory) {// || hasLocalStorage) {
-      var loadSource = inMemory ? 'memory' : 'LS',
-          cached = inAppcache || mCache[url];
-
-      var loadedCached = cached;
-      if (loadedCached) {            
-        try {
-          G.log(G.TAG, 'cache', 'Loading from', loadSource, url);
-          loadModule(cached, url, context, name);
-          G.log(G.TAG, 'cache', 'End loading from', loadSource, url);
-        } catch (err) {
-          debugger;
-          G.log(G.TAG, ['error', 'cache'], 'failed to load ' + url + ' from', loadSource, err);
-          G.localStorage.del(url);
-          loadedCached = false;
+      var cached;  
+      if (/\.(jsp|css|html)\.js$/.test(url))
+        url = url.replace(/\.js$/, '');
+  
+      var inAppcache = G.isInAppcacheBundle(url);
+      if (inAppcache) {
+        var path = G.requireConfig.paths[name];
+        path = path || name;
+        var realPath = G.files.appcache[path].fullName;
+  //      var realPath = G.files[path].name;
+        arguments[2] = url.replace(path, realPath);
+        if (!/\.(jsp|css|html)$/.test(url)) {
+          orgLoad.apply(self, args);
+          return;
         }
-      } 
-    }
-    
-    if (loadedCached)
-      return;
-    
-    /// use 'sendXhr' instead of 'req' so we can store to localStorage
-    G.loadBundle(name, function() {
-      if (G.modules[url])
-        loadModule(G.modules[url], url, context, name);
-      else
-        G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
-    });        
+      }
+  
+        
+      var ext;
+      var isText = ext = name.match(/\.[a-zA-Z]+$/g);
+      if (ext)
+        ext = ext[0].slice(1).toLowerCase();
+        
+      var mCache = G.modules;
+      var cached = inAppcache || (mCache && mCache[url]);
+      var loadedCached = false;
+      if (cached) {// || hasLocalStorage) {
+        var loadedCached = cached;
+        if (loadedCached) {            
+          try {
+            G.log(G.TAG, 'cache', 'Loading from LS', url);
+            loadModule(name, url, cached).done(defer.resolve);
+            G.log(G.TAG, 'cache', 'End loading from LS', url);
+          } catch (err) {
+            debugger;
+            defer.reject();
+            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
+            G.localStorage.del(url);
+            loadedCached = false;
+          }
+        } 
+      }
+      
+      if (loadedCached)
+        return;
+      
+      /// use 'sendXhr' instead of 'req' so we can store to localStorage
+      G.loadBundle(name).done(function() {
+        if (G.modules[url])
+          loadModule(name, url, G.modules[url]).done(defer.resolve);
+        else {
+          G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
+          defer.reject();
+        }
+      });        
+    }).promise();
   };
 
   
@@ -684,37 +224,35 @@ define('globals', function() {
         return supported;
       })();
 
-define('fileCache', function() {
-    var cache = {
-      TAG: 'fileCache',
-      load: function (name, req, onLoad, config) {
-        // hack for jsp, otherwise define callback function will not get jsp text
-        var url = G.getCanonicalPath(req.toUrl(name));
-        if (G.isInAppcacheBundle(url)) {
-          req([name], function() {
-            onLoad(name);
-          });
-        }
-        else
-          requirejs.load(onLoad, name, req.toUrl(name), config);
-      }
-    };
-
-    return cache;
-  });
+//  define('fileCache', function() {
+//    var cache = {
+//      TAG: 'fileCache',
+//      load: function (name, url) {
+//        return $.Deferred(function(defer) {          
+//          // hack for jsp, otherwise define callback function will not get jsp text
+//          var url = G.getCanonicalPath(req.toUrl(name));
+//          if (G.isInAppcacheBundle(url)) {
+//            require([name], function() {
+////              onLoad(name);
+//              defer.resolve();
+//            });
+//          }
+//          else
+//            require.load(name, req.toUrl(name));
+//        }).promise();
+//      }
+//    };
+//
+//    return cache;
+//  });
 
   G.serverName = (function() {     
-    var s = doc.getElementsByTagName('base')[0].href;
+    var s = $('base')[0].href;
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
   })();
   
   G.domain = (function() {
-    var s = G.serverName;
-    var comIdx = s.indexOf('.com');
-    var dotIdx = s.lastIndexOf('.', comIdx - 1);
-    if (dotIdx === -1)
-      dotIdx = s.lastIndexOf('/', comIdx - 1)
-    return s.slice(dotIdx + 1, comIdx + 4);
+    return G.serverName.match(/([^\.\/]+\.com)/)[0];
   })();
   
   G.localStorage = {
@@ -736,13 +274,19 @@ define('fileCache', function() {
         localStorage.setItem(key, value);
       } catch(e) {
         debugger;
-        if(['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+        if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // clean to make space
           ls.clean(function(key) {
-            return key.indexOf('model:') == 0;
-          }, force && function() {
-            ls.put(key, value)
+            return /^model\:/.test(key);
           });
+          
+          if (!ls.cleaning) { // TODO: unhack this garbage
+            ls.cleaning = true;
+            G.Voc && G.Voc.saveModelsToStorage();
+          }
+          
+          force && ls.put(key, value);
+          ls.cleaning = false;
         } else {
           debugger;
           G.hasLocalStorage = false;
@@ -751,21 +295,14 @@ define('fileCache', function() {
       }
     },
     
-    clean: function(test, after) {
+    clean: function(test) {
       var cleaning = this.cleaning;
       this.cleaning = true;
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
         if (!test || test(key))
           G.localStorage.del(key);
-      }
-      
-      
-      if (after) 
-        after();
-      
-      if (!cleaning) // TODO: unhack this garbage
-        G.Voc && G.Voc.saveModelsToStorage();
+      }      
     },
     
     nukeScripts: function() {
@@ -800,7 +337,7 @@ define('fileCache', function() {
   };
   
   function testCSS(prop) {
-    return prop in document.documentElement.style;
+    return prop in doc.documentElement.style;
   }
   
   
@@ -816,7 +353,74 @@ define('fileCache', function() {
   
   n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
     
+  function getSpinnerId(name) {
+    return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
+  }
+
+  function getMetadataURL(url) {
+    return 'metadata:' + url;
+  }
+
   var moreG = {
+    _appStartDfd: $.Deferred(),
+    onAppStart: function() {
+      return G._appStartDfd.promise();
+    },
+    putCached: function(url, data, source) {
+      return $.Deferred(function(defer) {        
+        if (source === 'localStorage') {
+          G.localStorage.put(url, data);
+          defer.resolve();
+        }
+        else if (source === 'indexedDB') {
+          G.onAppStart().done(function() {            
+            G.ResourceManager.$db.objectStore('modules').put({
+              url: url, 
+              data: data
+            }).done(defer.resolve).fail(defer.reject);
+          });
+        }
+      }).promise();
+    },
+    getCached: function(url, source) {
+      return $.Deferred(function(defer) {        
+        if (source === 'localStorage') {
+          var result = G.localStorage.get(url);
+          if (result)
+            defer.resolve(result);
+          else
+            defer.reject();
+        }
+        else if (source === 'indexedDB') {
+          var RM = G.ResourceManager;
+          if (!RM.storeExists('modules'))
+            return defer.reject();
+          
+          var $db = RM && RM.$db;
+          if (!$db)
+            return defer.reject();
+          
+          RM.runTask(function() {
+            defer.always(this.resolve);
+            $db.objectStore('modules').get(url).done(function(result) {
+              if (result)
+                defer.resolve(result.data)
+              else
+                defer.reject();
+            }).fail(defer.reject);
+          });
+        }
+      }).promise();
+    },
+    isUsingDBShim: (function() {
+      var using = G.navigator.isChrome || !window.indexedDB;
+      if (using)
+        console.debug('using indexeddb shim');
+      return using;
+    })(),
+    media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
+                    "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
+                    "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
     nukeAll: function(reload) {
       var ls = localStorage;
       ls && ls.clear && ls.clear();
@@ -828,20 +432,21 @@ define('fileCache', function() {
       }
     },
     canWebcam: (function() {
-      navigator.getMedia = (navigator.getUserMedia ||
+      var m = (navigator.getMedia = (navigator.getUserMedia ||
           navigator.webkitGetUserMedia ||
           navigator.mozGetUserMedia ||
-          navigator.msGetUserMedia);
+          navigator.msGetUserMedia));
       
-      return !!navigator.getMedia;
+      m && m.bind(navigator);
+      return !!m;
     })(),
     showSpinner: function(options) {
       options = options || {};
-      var spinner = document.createElement('div');
-      spinner.id = 'loading-spinner-holder' + (options.name || '');
-      if (!options.nonBlockingOverlay)
-        spinner.setAttribute('class', 'spinner_bg');
+      if (typeof options === 'string')
+        options = {name: options};
       
+      var id = getSpinnerId(options.name);
+      var cl = options.nonBlockingOverlay ? '' : 'spinner_bg';
       var color;
       if (G.tabs) {
         var t0 = G.tabs[0];
@@ -849,8 +454,10 @@ define('fileCache', function() {
           color = t0.color;
       }
       
-      spinner.innerHTML = '<div id="spinner_container"><div id="spinner"' + (color ? ' style="' + color + '"' : '') + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
-      body.appendChild(spinner);
+      var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
+      var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var $spinner = $('<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>');
+      $body.append($spinner);
       if (options.timeout) {
         setTimeout(function() {
           G.hideSpinner(options.name);
@@ -858,8 +465,7 @@ define('fileCache', function() {
       }
     },
     hideSpinner: function(name) {
-      var spinner = document.getElementById('loading-spinner-holder' + (name || ''));
-      spinner && spinner.parentNode.removeChild(spinner);
+      $('#' + getSpinnerId(name)).remove();
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -869,10 +475,14 @@ define('fileCache', function() {
       try {
         v = JSON.parse(v);
       } catch (err) {
-        v = {All: 0, Models: 0, JS: 0, CSS: 0};
       }
       
-      return v;
+      return v || {
+        All: 0, 
+        Models: 0, 
+        JS: 0, 
+        CSS: 0
+      };
     },
     
     setVersion: function(version) {
@@ -894,12 +504,31 @@ define('fileCache', function() {
     setOnline: function(online) {
       G.online = online;
     }, // will fill out in app.js
-    postBundleListeners: [],
-    onPostBundleLoaded: function(fn) {
-      if (G.postBundleLoaded)
-        fn();
-      else
-        G.postBundleListeners.push(fn);
+    onModulesLoaded: function(modules) {
+      var bundlePromises = [];
+      var allBundles = G.bundles;
+      _.each(modules, function(module) {
+        for (var bName in G.bundles) {
+          var bundle = G.bundles[bName];
+          var found = false;
+          for (var type in bundle) {
+            if (_.any(bundle[type], function(info) {
+              return info.name == module;
+            })) {
+              found = true;
+              bundle._deferred = bundle._deferred || $.Deferred();
+              bundlePromises.push(bundle._deferred.promise());
+              break;
+            }
+          }
+          
+          if (found)
+            break;
+        }
+      });
+      
+      
+      return $.when.apply($, bundlePromises);
     },
     isMinifiable: function(url) {
       return /\.(js|css)$/.test(url);
@@ -916,7 +545,7 @@ define('fileCache', function() {
 
     storedModelTypes: [],
     minifyByDefault: true,
-    webWorkers: {},
+//    webWorkers: {},
     customPlugs: {},
     defaults: {
       radius: 2000 // km
@@ -925,6 +554,7 @@ define('fileCache', function() {
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
+    appUrl: G.serverName + '/' + G.pageRoot,
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
@@ -942,13 +572,28 @@ define('fileCache', function() {
       JS: 'system/designer/JS',
       Css: 'system/designer/Css',
       Grab: 'model/social/Grab',
-      AppInstall: 'model/social/AppInstall'
+      AppInstall: 'model/social/AppInstall',
+      Transaction: 'aspects/commerce/Transaction'
     },
+//    commonTypes: {
+//      model: {
+//        social: ['App', 'FriendApp', 'Theme', 'Grab', 'AppInstall'],
+//        company: ['Friend'],
+//      },
+//      system: {
+//        designer: ['WebProperty', 'CloneOfProperty', 'Handler', 'Jst', 'JS', 'Css', 'WebClass']
+//      },
+//      commerce: {
+//        urbien: ['Urbien']
+//      }
+//    },
     timeOffset: G.localTime - G.serverTime,
     currentServerTime: function() {
       return new Date().getTime() - G.timeOffset;
     },
     hasLocalStorage: hasLocalStorage,
+    hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
+    hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
@@ -1144,17 +789,6 @@ define('fileCache', function() {
       }
     },
     
-    keys: function(obj) {
-      var keys = [];
-      for (var key in obj) { 
-        if (obj.hasOwnProperty(key)) { 
-          keys[keys.length] = key;
-        }
-      }
-      
-      return keys;
-    },
-
     linkCSS: function(url) {
       var link = doc.createElement('link');
       link.rel = 'stylesheet';
@@ -1163,69 +797,61 @@ define('fileCache', function() {
 //      link.setAttribute("rel", "stylesheet")
 //      link.setAttribute("type", "text/css")
 //      link.setAttribute("href", url);
-      head.appendChild(link);
+      $head.append(link);
     },
 
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
       style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
-      head.appendChild(style);
+      $head.append(style);
     },
     
-    appendHTML: function(html, element) {
-      var div = doc.createElement('div');
-      div.id = G.nextId();
-      div.innerHTML = html;
-      (element || body).appendChild(div);
-    },    
-
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
       var stack = [];
-      for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
+      $.each(parts, function(idx, part) {
         if (part == '..')
           stack.pop();
         else
           stack.push(part);
-      }
+      });
       
       return stack.join(separator);
     },
 
-    leaf: function(obj, path, separator) {
-      path = G.getCanonicalPath(path);
-      if (typeof obj == 'undefined' || !obj)
-        return null;
-      
-      separator = separator || '.';
-      var dIdx = path.indexOf(separator);
-      return dIdx == -1 ? obj[path] : G.leaf(obj[path.slice(0, dIdx)], path.slice(dIdx + separator.length), separator);
-    },
-
-    xhrWorker: null,
-    queueForWorker: [],
+    workers: {},
+    workerQueues: {},
     isWorkerAvailable: function(worker) {
-      return !worker.onerror && !worker.onmessage;
+      return !worker.__lablzTaken;
+    },
+    
+    captureWorker: function(worker) {
+      worker.__lablzTaken = true;
+      return worker;
     },
     
     /**
      * get a promise of a web worker
      */
-    getXhrWorkerPromise: function() {
+    getXhrWorkerPromise: function(taskType) {
+      taskType = taskType || 'main';
       return $.Deferred(function(dfd) {
-        if (!G.xhrWorker) {
+        if (!G.workers[taskType]) {
           var xw = G.files.xhrWorker;
-          G.xhrWorker = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
+          G.workers[taskType] = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
         }
         
-        var w = G.xhrWorker;
-        if (G.isWorkerAvailable(w))
-          dfd.resolve(w);
-        else
-          G.queueForWorker.push(dfd);
+        var w = G.workers[taskType];
+        w._taskType = taskType;
+        if (G.isWorkerAvailable(w)) {
+          dfd.resolve(G.captureWorker(w));
+        }
+        else {
+          G.workerQueues[taskType] = G.workerQueues[taskType] || [];
+          G.workerQueues[taskType].push(dfd);
+        }
       });
     },
     
@@ -1235,12 +861,17 @@ define('fileCache', function() {
     recycleXhrWorker: function(worker) {
       worker.onerror = null;
       worker.onmessage = null;
-      var q = G.queueForWorker;
-      if (q.length)
+      worker.__lablzTaken = false;
+      var q = G.workerQueues[worker._taskType];
+      if (q && q.length)
         q.shift().resolve(worker);
     },
     
-    pruneBundle: function(bundle) {
+    pruneBundle: function(bundle, options) {
+      options = options || {};
+      var source = options.source || 'localStorage';
+      var pruneDfd = $.Deferred();
+      var prunePromise = pruneDfd.promise();
       var modules = [];
       var appcache = G.files.appcache;
       var bType = Object.prototype.toString.call(bundle);
@@ -1259,7 +890,7 @@ define('fileCache', function() {
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
         bundle = {def: bundle};
       }
-      
+
       for (var type in bundle) {
         var bt = bundle[type];
         for (var i = 0; i < bt.length; i++) {
@@ -1282,12 +913,13 @@ define('fileCache', function() {
             continue;
           
 //          var inAppcache = !!appcache[name];
-          var ext = name.match(/\.[a-zA-Z]+$/g);
-          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
-            name += '.js';
 
           info = {};
           var path = G.getCanonicalPath(require.toUrl(name));
+//          var ext = name.match(/\.[a-zA-Z]+$/g);
+//          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
+//            path += '.js';
+          
           if (G.modules[path])
             continue;
           
@@ -1298,48 +930,53 @@ define('fileCache', function() {
         }
       }
       
-      if (!hasLocalStorage || !modules.length)
-        return modules;
+      if (!hasLocalStorage)
+        source = 'indexedDB';
+      
+      if (!modules.length)
+        pruneDfd.resolve(modules);
       
       var minify = G.minify,
           def = G.minifyByDefault;
 
-      var pruned = [];
-      for (var i = 0; i < modules.length; i++) {
-        var dmInfo = modules[i];
+      var pruned = [],
+          cachedPromises = [];
+      
+      $.each(modules, function(i, dmInfo) {
         var url;
         for (var n in dmInfo) {
           url = n;
           break;
         }
         
-        var saved = G.localStorage.get(url);
-        if (saved) {
-          try {
-            saved = JSON.parse(saved);
-          } catch (err) {
-            debugger;
-            pruned.push(url);
-            G.localStorage.del(url);
-            continue;
-          }
-          
-          var dateSaved = saved.modified;
+        var cachedDfd = $.Deferred();
+        cachedPromises.push(cachedDfd.promise());
+        var metadataPromise = G.getCached(getMetadataURL(url), source);
+        metadataPromise.done(function(metadata) {
+          metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+          var dateSaved = metadata.dateModified;
+          var minified = metadata.minified;
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
-            var text = saved.text;
-            var skip = false;
+            var fetch = false;
             if (G.isMinifiable(url)) {
-              if (((minify===true || (typeof minify ==='undefined' && def)) && !G.isMinified(url, text)) || 
-                  ((minify===false || (typeof minify ==='undefined' && !def)) && G.isMinified(url, text))) {
+              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
+                  (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
                 // wrong minification mode on this file
-                skip = true;
+                fetch = true;
               }
             }
-            
-            if (!skip) {
-              G.modules[url] = text;
-              continue;
+
+            if (!fetch) {
+              G.getCached(url, source).done(function(text) {                
+                G.modules[url] = text;
+                cachedDfd.resolve();
+              }).fail(function() {
+                pruned.push(url);
+                cachedDfd.resolve();
+              }); //G.localStorage.get(url);
+              
+              return;
             }
           }
           else {
@@ -1348,109 +985,131 @@ define('fileCache', function() {
               
 //            G.localStorage.del(url);
           }
-        }
-//        else
-//          debugger;
-        
-        pruned.push(url);
-      }
+          
+          pruned.push(url);
+          cachedDfd.resolve();
+        }).fail(function() {          
+          pruned.push(url);
+          cachedDfd.resolve();
+        });        
+      });
     
-      return pruned;
+      $.when.apply($, cachedPromises).done(function() {
+        pruneDfd.resolve(pruned);
+      });
+      
+      return prunePromise;
     },
     
-    loadBundle: function(bundle, callback, async) {
-      var pruned = G.pruneBundle(bundle);
-      if (!pruned.length) {
-        G.log('init', 'cache', 'bundle was cached', bundle);
-        if (callback) 
-          callback();
+    loadBundle: function(bundle, options) {
+      var bundleDfd = $.Deferred(),
+          bundlePromise = bundleDfd.promise(),
+          options = options || {
+            async: false
+          },
+          source = options.source = options.source || 'localStorage',
+          async = options.async;
+      
+      G.pruneBundle(bundle, options).done(function(pruned) {
+        if (!pruned.length) {
+          G.log('init', 'cache', 'bundle was cached', bundle);
+          bundleDfd.resolve();
+          return bundlePromise;
+        }
         
-        return;
+        var data = {modules: pruned.join(',')};
+  //      if (typeof G.minify !== 'undefined')
+  //        data.minify = G.minify;
         
-      }
-      
-      var data = {modules: pruned.join(',')};
-//      if (typeof G.minify !== 'undefined')
-//        data.minify = G.minify;
-      
-      var useWorker = G.hasWebWorkers && async;
-      var getBundleReq = {
-        url: G.serverName + "/backboneFiles", 
-        type: 'POST',
-        data: data,
-        dataType: 'JSON'
-      };
-      
-      var complete = function(resp) {
+        var useWorker = G.hasWebWorkers && async;
+        var getBundleReq = {
+          url: G.serverName + "/backboneFiles", 
+          type: 'POST',
+          data: data,
+          dataType: 'JSON'
+        };
+        
+        var complete = function(resp) {
+          if (useWorker) {
+            if (resp.status == 304)
+              bundleDfd.resolve();
+            else
+              resp = resp.data;
+          }
+          else {
+            try {
+              resp = JSON.parse(resp);
+            } catch (err) {
+            }
+          }
+          
+          var newModules = {};
+          if (resp && !resp.error && resp.modules) {
+            for (var i = 0; i < resp.modules.length; i++) {
+              var m = resp.modules[i];
+              for (var name in m) {
+                var minIdx = name.indexOf('.min.js');
+                var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+                G.modules[mName] = newModules[mName] = m[name];
+                break;
+              }
+            }
+          }
+        
+//          if (hasLocalStorage) {
+            setTimeout(function() {
+              for (var url in newModules) {
+                var text = newModules[url];
+//                G.localStorage.put(url, text);
+//                G.localStorage.put(getMetadataURL(url), {
+//                  dateModified: G.serverTime,
+//                  minified: G.isMinified(url, text)
+//                });
+                G.putCached(url, text, source);
+                G.putCached(getMetadataURL(url), {
+                  dateModified: G.serverTime,
+                  minified: G.isMinified(url, text)
+                }, source);
+              }
+            }, 100);
+//          }
+          
+          bundleDfd.resolve();
+        }
+  
         if (useWorker) {
-          if (resp.status == 304)
-            callback && callback();
-          else
-            resp = resp.data;
+          var workerPromise = G.getXhrWorkerPromise();
+          workerPromise.done(function(xhrWorker) {          
+            xhrWorker.onmessage = function(event) {
+              try {
+                G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+                complete(event.data);
+              } finally {
+                G.recycleXhrWorker(this);
+              }
+            };
+            
+            xhrWorker.onerror = function(err) {
+    //          debugger;
+              try {
+                G.log(G.TAG, 'error', JSON.stringify(err));
+              } finally {
+                G.recycleXhrWorker(this);
+              }
+              
+              bundleDfd.reject(err);
+            };
+            
+            xhrWorker.postMessage(getBundleReq);  
+          });
         }
-        else {
-          try {
-            resp = JSON.parse(resp);
-          } catch (err) {
-          }
+        else {      
+          getBundleReq.success = complete; 
+          G.sendXhr(getBundleReq);
         }
-        
-        var newModules = {};
-        if (resp && !resp.error && resp.modules) {
-          for (var i = 0; i < resp.modules.length; i++) {
-            var m = resp.modules[i];
-            for (var name in m) {
-              var minIdx = name.indexOf('.min.js');
-              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
-              G.modules[mName] = newModules[mName] = m[name];
-              break;
-            }
-          }
-        }
+      });
       
-        if (hasLocalStorage) {
-          setTimeout(function() {
-            for (var url in newModules) {
-              G.localStorage.put(url, G.prepForStorage(newModules[url], G.serverTime));
-            }
-          }, 100);
-        }
-        
-        if (callback) callback();
-      }
-
-      if (useWorker) {
-        var workerPromise = G.getXhrWorkerPromise();
-        workerPromise.done(function(xhrWorker) {          
-          xhrWorker.onmessage = function(event) {
-            try {
-              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-              complete(event.data);
-            } finally {
-              G.recycleXhrWorker(this);
-            }
-          };
-          
-          xhrWorker.onerror = function(err) {
-  //          debugger;
-            try {
-              G.log(G.TAG, 'error', JSON.stringify(err));
-            } finally {
-              G.recycleXhrWorker(this);
-            }
-          };
-          
-          xhrWorker.postMessage(getBundleReq);  
-        });
-      }
-      else {      
-        getBundleReq.success = complete; 
-        G.sendXhr(getBundleReq);
-      }        
-    },
-    
-    prepForStorage: function(text, date) {
-      return JSON.stringify({modified: date, text: text});
+      return bundlePromise;
     },
     
     setCookie: function(name, value, exdays) {
@@ -1492,9 +1151,9 @@ define('fileCache', function() {
     },
     
     requireConfig: {
+//      baseUrl: 'js',
       paths: {
         mobiscroll: 'lib/mobiscroll-datetime-min',
-        jquery: 'lib/jquery',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',
@@ -1508,12 +1167,11 @@ define('fileCache', function() {
         codemirrorXMLMode: 'lib/codemirrorXMLMode',
         codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
         codemirrorCSSMode: 'lib/codemirrorCSSMode',
-//        codemirrorFormatting: 'lib/codemirrorFormatting',
-//        codemirrorHighlighting: 'lib/codemirrorHighlighting',
         leaflet: 'lib/leaflet',
         leafletMarkerCluster: 'lib/leaflet.markercluster',
         jqueryImagesloaded: 'lib/jquery.imagesloaded',
-        jqueryMasonry: 'lib/jquery.masonry'
+        jqueryMasonry: 'lib/jquery.masonry',
+        jqueryAnyStretch: 'lib/jquery.anystretch'
       },
       shim: {
         backbone: {
@@ -1521,15 +1179,9 @@ define('fileCache', function() {
           exports: 'Backbone'
         },
         leafletMarkerCluster: ['leaflet'],
-        jqueryMasonry: ['jquery'],
-        jqueryImagesloaded: ['jquery'],
-        mobiscroll: ['jquery', '../styles/mobiscroll.datetime.min.css'],
-        jqueryIndexedDB: ['jquery', 'indexedDBShim'],
-        indexedDBShim: ['taskQueue'],
+        mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
         codemirrorJSMode: ['codemirror', 'codemirrorCss'],
         codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
-//        codemirrorFormatting: ['codemirror', 'codemirrorCss'],
-//        codemirrorHighlighting: ['codemirror', 'codemirrorCss'],
         codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
       }
     }
@@ -1539,7 +1191,22 @@ define('fileCache', function() {
     G[prop] = moreG[prop];
   }
   
-  
+  var bundles = G.bundles;
+  G.files = {appcache: {}};
+  for (var when in bundles) {
+    var bundle = bundles[when];
+    for (var type in bundle) {
+      var bt = bundle[type];
+      for (var i = 0; i < bt.length; i++) {
+        var info = bt[i];
+        G.files[info.name] = info;
+        if (when === 'appcache') {
+          G.files.appcache[info.name] = info;
+        }
+      }
+    }
+  }  
+
   G.apiUrl = G.serverName + '/api/v1/';
   var c = G.commonTypes, d = G.defaultVocPath;
   for (var type in c) {
@@ -1564,7 +1231,6 @@ define('fileCache', function() {
         G.setCookie(mCookie, p[1], 100000);
         if (p[1] != minified) {
           minified = p[1];
-//          G.localStorage.nukeScripts();
         }
         
         break;
@@ -1584,24 +1250,10 @@ define('fileCache', function() {
 require(['globals'], function(G) {
   G.startedTask("loading pre-bundle");
   var spinner = 'app init';
-  G.showSpinner({name: spinner, timeout: 5000});
+  G.showSpinner({name: spinner, timeout: 10000});
   
-  G.files = {appcache: {}};
-  for (var when in G.bundles) {
-    var bundle = G.bundles[when];
-    for (var type in bundle) {
-      var bt = bundle[type];
-      for (var i = 0; i < bt.length; i++) {
-        var info = bt[i];
-        G.files[info.name] = info;
-        if (when === 'appcache') {
-          G.files.appcache[info.name] = info;
-        }
-      }
-    }
-  }
-  
-  var pre = G.bundles.pre;
+  var bundles = G.bundles;
+  var pre = bundles.pre;
   var priorities = [];
   var appcache = G.files.appcache;
   for (var type in pre) {
@@ -1639,42 +1291,53 @@ require(['globals'], function(G) {
     loadRegular();
 
   function loadRegular() {
-    G.loadBundle(pre, function() {
+    G.loadBundle(pre).done(function() {
       G.finishedTask("loading pre-bundle");
       
       G.startedTask("loading modules");
-      var css = G.bundles.pre.css.slice();
+      var css = bundles.pre.css.slice();
       for (var i = 0; i < css.length; i++) {
         var cssObj = css[i];
         css[i] = cssObj.name;
       }
       
-      require(['jquery', 'jqmConfig', 'events', 'app'].concat(css), function($, jqmConfig, Events, App) {
+      require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
+        Events.on('appStart', G._appStartDfd.resolve);
+        console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
         G.finishedTask("loading modules");
         G.browser = $.browser;
         App.initialize();
         G.startedTask('loading post-bundle');
-        G.loadBundle(G.bundles.post, function() {
-          G.finishedTask('loading post-bundle');
-          G.postBundleLoaded = true;
-          for (var i = 0; i < G.postBundleListeners.length; i++) {
-            G.postBundleListeners[i]();
-          }
+        var postBundle = bundles.post, 
+            extrasBundle = bundles.extras;
+        G.loadBundle(G.bundles.post, {async: true}).done(function() {
+          var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
+          dfd.resolve();
           
-          G.postBundleListeners.length = 0;
-        }, true);
+          G.finishedTask('loading post-bundle');
+          G.startedTask('loading extras-bundle');
+          G.onAppStart().done(function() {            
+            G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
+              var dfd = extrasBundle._deferred = extrasBundle._deferred || $.Deferred();
+              dfd.resolve();
+            });
+          });
+        });
         
         if (window.location.hash.length < 2) {
           Events.once('appStart', function() {
             G.hideSpinner(spinner);
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
         else {
           Events.once('pageChange', function() {
             G.hideSpinner(spinner);
+            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
           });
         }
       });
     });
   }
-})
+});
+})(window, document, undefined);

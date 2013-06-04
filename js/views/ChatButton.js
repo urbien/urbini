@@ -1,32 +1,64 @@
 //'use strict';
-define([
+define('views/ChatButton', [
   'underscore', 
   'utils',
   'events', 
-  'views/BasicView' 
-], function(_, U, Events, BasicView) {
-  return BasicView.extend({
+  'views/ToggleButton' 
+], function(_, U, Events, ToggleButton) {
+  return ToggleButton.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
     id: 'chat',
     initialize: function(options) {
       _.bindAll(this, 'render'); //, 'chat');
       this.constructor.__super__.initialize.apply(this, arguments);
-      this.makeTemplate(this.templateName, 'template', this.modelType); // fall back to default template if there is none specific to this particular model
+      this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
     },
-    render: function(options) {
+    refresh: function() {
+      if (!this.isChat) { // we're on another page that links to this chat, we want to know how many messages we missed
+        var hash = this.hash;
+        if (/\?/.test(hash))
+          hash = hash.slice(0, hash.indexOf('?'));
+
+        var self = this;
+        // HACK
+        var cachedChatView = _.compact(_.map(['Private', 'Public', 'Lobby'], function(type) {
+          var cache = self.router[type + 'ChatViews'];
+          return cache && cache[hash]; 
+        }))[0];
+        
+        var unread = cachedChatView && cachedChatView.getNumUnread();
+        var $menuBadge = this.$('.menuBadge');
+        $menuBadge.html(unread || '');
+        $menuBadge[unread ? 'show' : 'hide']();
+      }
+    },
+    render: function(options) {      
       var res = this.model;
-      var uri = this.resource ? res.getUri() : res.getUrl();
-      var hash = this.hash;
-      if (/\?/.test(hash))
-        hash = hash.slice(0, hash.indexOf('?'));
+      this.isChat = U.isChatPage();
+      var uri, url;
+      if (!this.isChat) {
+        uri = this.resource ? res.getUri() : res.getUrl();
+        url = U.makePageUrl('chat', uri);
+      }
       
-      var chatView = this.router.ChatViews[hash];
       this.$el.html(this.template({
-        url: U.makePageUrl('chat', uri),
-        unreadMessages: chatView && chatView.getNumUnread()
+        url: url
       }));
+      
+      this.finish();
+      if (this.isChat) {
+        var chatPage = this.pageView;
+        this.$el.on('click', function(e) {
+          Events.stopEvent(e);
+          chatPage.trigger('chat:on');
+        });
+        
+        this.$('.menuBadge').hide();
+      }
+      else
+        this.refresh();
       
       return this;
     }

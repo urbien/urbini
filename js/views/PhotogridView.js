@@ -1,13 +1,12 @@
 //'use strict';
-define([
+define('views/PhotogridView', [
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView',
-  '/../styles/jqm-grid-listview.css'
-], function(G, $, _, U, Events, BasicView) {
+  '../styles/jqm-grid-listview.css'
+], function(G, _, U, Events, BasicView) {
   var SwipeView;
   function adjustSlide(images) {
     if (images.length === 2) {
@@ -118,6 +117,7 @@ define([
             if (!target)
               return;
             
+            target = U.getLongUri1(target);
             var imgProp = imgProps[p];
             var metaP = meta[imgProp];
             var image = json[imgProp];
@@ -147,8 +147,10 @@ define([
               
   //            imageData.caption = U.makeHeaderTitle(U.getValueDisplayName(res, 'cause'), U.getValueDisplayName(res, 'effect')) 
             }
-            else
+            else {
               imageData.caption = self.getCaption(iProps[p]);
+//              imageData.superscript = 'testing...';
+            }
             
             if (p === 'b')
               imageData['float'] = 'right';
@@ -239,6 +241,7 @@ define([
           if (_.contains(uris, target)) // we don't want to display 2 friend resources representing two sides of a friendship
             return;
 
+          target = U.getLongUri1(target);
           uris.push(target);
           image = resource.get(imgProp[side]);
           title = resource.get(intersection[side] + '.displayName');

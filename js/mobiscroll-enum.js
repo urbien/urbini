@@ -1,5 +1,5 @@
 //'use strict';
-define(['jquery', 'mobiscroll'], function ($) {
+define('mobiscroll-enum', ['mobiscroll'], function () {
   var ms = $.mobiscroll;
   return {
     makeEnumScroller: function(type, vals, defaultValue) {

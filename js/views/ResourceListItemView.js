@@ -1,14 +1,13 @@
 //'use strict';
-define([
+define('views/ResourceListItemView', [
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'error', 
   'utils',
   'views/BasicView',
   'vocManager'
-], function(G, $, _, Events, Errors, U, BasicView, Voc) {
+], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
     tagName:"li",
     isCommonTemplate: true,
@@ -121,28 +120,58 @@ define([
 //        Events.defaultClickHandler(e);  
       if (this.mvProp) 
         return;
-      if (!U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
-        var p = this.parentView;
-        if (p && p.mode == G.LISTMODES.CHOOSER) {
-          Events.stopEvent(e);
-          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
-        }
-        else { 
-          var pr;
-          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-            this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
-          else {
-            var r = U.getParamMap(window.location.href);
-            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
-          }
-            
-        }          
+      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
+        Events.stopEvent(e);
+        var atype = this.resource.get('alertType');
+        var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
+        this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;
       }
-      Events.stopEvent(e);
-      var atype = this.resource.get('alertType');
-      var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-      this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+      var params = U.getParamMap(window.location.href);
+      if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
+        Events.stopEvent(e);
+        var type = params['$type'];
+        var p1 = params['$propA'];
+        var p2 = params['$propB'];
+        var rParams = {};
+        rParams[p1] = params['$forResource'];
+        rParams[p2] = this.resource.get('_uri');
+        rParams.$title = this.resource.get('davDisplayName');
+        if (U.isAssignableFrom(this.vocModel, "WebClass"))
+          rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
+        this.router.navigate('make/' + encodeURIComponent(type) + '?' + $.param(rParams), {trigger: true, forceFetch: true});        
+//        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+        return;        
+      }
+      var p = this.parentView;
+      if (p && p.mode == G.LISTMODES.CHOOSER) {
+        Events.stopEvent(e);
+        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+        return;
+      }
+      if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
+        var params = U.getParamMap(window.location.href);
+        var app = params.application; 
+        if (app) {
+          delete params.application;
+          params.$title = this.resource.get('tag');
+          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+//              params['tagUses.tag.application'] = app; 
+          this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+          return;
+        }
+      }
+      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
+        this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+      else {
+        var pr;
+//          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
+        this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+//          else {
+//            var r = U.getParamMap(window.location.href);
+//            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
+//          }
+      }
     },
     
     render: function(options) {
@@ -213,7 +242,7 @@ define([
         return this;
       }
       var params = U.getQueryParams(window.location.hash);
-      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty); //  ||  U.isAssignableFrom(this.vocModel, G.commonTypes.CloneOfProperty);
+      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
       if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
         var text = json.templateText;
@@ -224,8 +253,9 @@ define([
         }
         if (params['modelName'])
           json.$title = U.makeHeaderTitle(params['modelName'], json.templateName);
+        var detached = this.resource.detached;
+        json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : json._uri, detached && {templateName: json.templateName, modelDavClassUri: json.modelDavClassUri, forResource: G.currentApp._uri, $title: json.$title})
       }
-
       
       json['action'] = action;
       if (this.isEdit) {
@@ -274,6 +304,12 @@ define([
         json['image'] = json[this.imageProperty];
       _.extend(json);
       
+      if (!json.liUri) {
+        if (json['v_submitToTournament'])
+          json.liUri = U.makePageUrl(action, json._uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name});
+        else
+          json.liUri = U.makePageUrl(action, json._uri);
+      }  
       this.$el.html(this.template(json));
       return this;
     },
@@ -383,6 +419,11 @@ define([
             if (!U.isPropVisible(res, prop1))
               continue;
   
+            if (prop1.backLink) { 
+              if (json[p].count) 
+                json['showCount'] = p;
+              continue;
+            }
             if (first) {
               first = false;
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + U.getPropDisplayName(prop) + '</u></i></div>';                
@@ -400,6 +441,11 @@ define([
             viewCols += '&#160;';
           }
           firstProp = false;
+          continue;
+        }
+        if (prop.backLink) { 
+          if (json[pName].count) 
+            json['showCount'] = pName;
           continue;
         }
 
@@ -524,6 +570,8 @@ define([
       }
       
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
+//      var action = U.isAssignableFrom(this.vocModel, "InterfaceImplementor") ? 'edit' : 'view';
+      
 //      tmpl_data['_uri'] = rUri;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('router', [
   'globals',
   'utils', 
   'events', 
@@ -20,6 +20,7 @@ define([
     TAG: 'Router',
     routes:{
       ""                                                       : "home",
+      "home/*path"                                             : "home",
       ":type"                                                  : "list", 
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
@@ -28,12 +29,16 @@ define([
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
       "chat/*path"                                             : "chat", 
+      "chatPrivate/*path"                                      : "chat", 
+      "chatLobby/*path"                                        : "chat", 
       ":type/:backlink"                                        : "list"
     },
 
     CollectionViews: {},
     MkResourceViews: {},
+    PrivateChatViews: {},
     ChatViews: {},
+    LobbyChatViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -48,12 +53,25 @@ define([
     viewsStack: [],
     urlsStack: [],
 //    LoginView: null,
+    _failToGoBack: function() {      
+      U.alert({
+        msg: "Oops! The browsing history ends here."
+      });
+    },
     initialize: function () {
 //      G._routes = _.clone(this.routes);
-      _.bindAll(this, '_backOrHome');
+//      _.bindAll(this, '_backOrHome');
       this.firstPage = true;
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
+      Events.on('home', function() {
+        self.goHome();
+      });
+
+      Events.on('navigate', function(fragment, options) {
+        self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
+      });
+      
       Events.on('back', function() {
         var now = +new Date();
         if (self.lastBackClick && now - self.lastBackClick < 100)
@@ -63,6 +81,49 @@ define([
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
+        
+//        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
+//        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);        
+//        if (haveHistory) {
+//          window.history.back();
+//          return;
+//        }
+//          
+//        // seems we don't have any history to go back to, but as the user has clicked the UI back button, 
+//        // they probably don't want to exit the app, so let's go somewhere sane
+//        var hash = U.getHash();
+//        if (!hash) {
+//          self._failToGoBack();
+//          return;
+//        }
+//        
+//        var hashParts = hash.match(/^(chat|edit|templates|view|chooser|make)\/(.*)/);
+//        if (!hashParts || !hashParts.length) {
+//          // we're probably at a list view
+//          self._failToGoBack();
+//          return;
+//        }
+//          
+//        var method = hashParts[1];
+//        switch (method) {
+//          case 'chat':
+//          case 'edit':
+//          case 'templates':
+//            self.navigate('view/' + hashParts[2], {trigger: true});
+//            return;
+//          case 'make':
+//          case 'view':
+//            self._failToGoBack();
+//            return;
+//          case 'chooser':
+//            Events.trigger('home');
+//            return;
+//        }
+//        
+////        self.lastBackClick = now;
+//        self.previousHash = null;
+//        self.backClicked = true;
+//        window.history.back();
       });
 
       // a hack to prevent browser address bar from dropping down
@@ -89,6 +150,24 @@ define([
 //        debugger;
 //        console.log('pop: ' + e.originalEvent.state);
 //      });
+      
+      
+      $(window).hashchange(function() {
+        self._hashChanged = true;        
+      });
+      
+      Events.on('pageChange', function() {
+        self._hashChanged = false;
+//        console.debug('currentUrl:', self.currentUrl);
+//        console.debug('previousHash:', self.previousHash);
+      });
+      
+//      _.each(['list', 'view', 'make', 'templates', 'home'], function(method) {
+//        var fn = self[method];
+//        self[method] = function() {
+//          self.previousHash = self.currentHash;
+//        }
+//      });
     },
     
     defaultOptions: {
@@ -99,14 +178,14 @@ define([
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
-//      if (this.previousFragment === fragment) {
+//      if (this.previousHash === fragment) {
 ////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
 //        Events.trigger('back');
 //        return;
 //      }
       
       if (fragment.startsWith('http://')) {
-        var appPath = G.serverName + '/' + G.appRoot;
+        var appPath = G.serverName + '/' + G.pageRoot;
         if (fragment.startsWith(appPath))
           fragment = fragment.slice(appPath.length);
         else {
@@ -121,8 +200,11 @@ define([
       this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect'));
       _.extend(this, {
         previousView: this.currentView, 
-        previousFragment: U.getHash() 
+        previousHash: U.getHash() 
       });
+      
+      if (options.transition)
+        this.nextTransition = options.transition;
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       _.extend(this, this.defaultOptions);
@@ -142,6 +224,7 @@ define([
 //    },
     route: function() {
       var currentView = this.currentView;
+      this.previousHash = U.getHash(); 
       try {
         return Backbone.Router.prototype.route.apply(this, arguments);
       } finally {
@@ -159,6 +242,7 @@ define([
     },
 
     home: function() {
+      var prev = this.currentView;
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();
         if (!this.currentView) {
@@ -173,61 +257,28 @@ define([
 //            this.currentView = $.mobile.firstPage;
         }
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
       else {
         this.currentUrl = window.location.href;
         this.homePage.render();
         this.currentView = this.homePage;
       }
+      
+      Events.trigger('pageChange', prev, this.currentView);
+      $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      
+      // HACK, this div is hidden for some reason when going to #home/...
+      var mainDiv = $('.mainDiv'); 
+      if (mainDiv.is(':hidden'))
+        mainDiv.show();
+
+      this.checkErr();
     },
     
     choose: function(path) { //, checked, props) {
       this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
-//    chat: function(path) {
-//      if (!this.ChatPage || !this.ChatView)
-//        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
-//      
-//      var params = U.getHashParams();
-//      var qIdx = path.indexOf("?");
-//      var uri = qIdx == -1 ? path : path.slice(0, qIdx);
-//      if (uri == 'profile') {
-//        var p = _.size(params) ? path.slice(qIdx + 1) : '';
-//        if (!G.currentUser.guest) {
-//          uri = G.currentUser._uri;
-//        }
-//        else {
-//          Events.trigger('req-login', 'Please login');
-//          return;
-//        }        
-//      }
-//      else
-//        uri = U.getLongUri1(decodeURIComponent(uri));
-//      
-//      var typeUri = U.getTypeUri(uri);
-//      if (!this.isModelLoaded(typeUri, 'chat', arguments))
-//        return;
-//      
-//      var res = C.getResource(uri);
-//      if (!res) {
-//        var model = U.getModel(typeUri);
-//        res = new model();
-//        res.fetch();
-//      }
-//      
-//      var cPage = this.ChatViews[uri];
-//      if (!cPage) {
-//        cPage = this.ChatViews[uri] = new this.ChatPage({
-//          model: res
-//        });
-//      }
-////        cPage = this.ChatViews[path] = new this.ChatPage({model: U.getModel(typeUri)});
-//      
-//      this.changePage(cPage);
-//    },
-    
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
@@ -266,7 +317,7 @@ define([
 //      var key = query ? t + '?' + query : t;
       var key = query || typeUri;
       if (query)
-        key = U.getQueryString(U.getQueryParams(key), true);
+        key = U.getQueryString(U.getQueryParams(key, model), true);
       
       var list = C.getResourceList(model, key);
       if (list && !list._lastFetchedOn)
@@ -286,7 +337,7 @@ define([
         return this;
       }      
       
-      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, _rUri: oParams });    
+      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
       var listView = new ListPage({model: list});
       
       this.CollectionViews[typeUri][key] = listView;
@@ -296,7 +347,7 @@ define([
 //        update: true,
         sync: true,
         forceFetch: forceFetch,
-        _rUri: oParams,
+        rUri: oParams,
         success: _.once(function() {
           self.changePage(listView);
 //          self.loadExtras(oParams);
@@ -509,7 +560,7 @@ define([
       var unloaded = _.filter(views, function(v) {return !self[v]});
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        G.onPostBundleLoaded(function() {
+        G.onModulesLoaded(unloadedMods).done(function() {          
           U.require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
@@ -522,13 +573,17 @@ define([
       }
     },
 
-    _backOrHome: function() {
-      if (this.urlsStack.length)
-        Events.trigger('back');
-      else
-        window.location.href = G.pageRoot;
-    },
+//    _backOrHome: function() {
+//      if (this.urlsStack.length)
+//        Events.trigger('back');
+//      else
+//        this.goHome();
+//    },
 
+    goHome: function() {
+      window.location.href = G.pageRoot; 
+    },
+    
     _requestLogin: function(options) {
       Events.trigger('req-login', _.extend(options || {}));
     },
@@ -565,7 +620,7 @@ define([
       }
       else {
         var model = U.getModel(type);
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousFragment});
+        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
       }
       
       this.currentModel = mPage.resource;
@@ -630,17 +685,19 @@ define([
      */
     view: function (path, action) {
       var edit = action === 'edit',
-          chat = action === 'chat';
+          chat = action === 'chat',
+          views, 
+          viewPageCl;
       
       if (!edit && !chat && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
 
-      var views = this[edit ? 'EditViews' : chat ? 'ChatViews' : 'Views'];
-      var viewPageCl = edit ? this.EditPage : chat ? this.ChatPage : this.ViewPage;
-
-      var params = U.getHashParams();
-      var qIdx = path.indexOf("?");
-      var uri, query;
+      var params = U.getHashParams(),
+          qIdx = path.indexOf("?"),
+          route = U.getRoute(),
+          uri, 
+          query;
+      
       if (qIdx == -1) {
         uri = path;
         query = '';
@@ -649,19 +706,28 @@ define([
         uri = path.slice(0, qIdx);
         query = path.slice(qIdx + 1);
       }
+      
+      switch (action) {
+        case 'chat':
+          views = route.slice(4) + 'ChatViews';
+          viewPageCl = this.ChatPage;
+          break;
+        case 'edit':
+          views = 'EditView';
+          viewPageCl = this.EditPage;
+          break;
+        default:
+          views = 'Views';
+          viewPageCl = this.ViewPage;
+      }
 
-      if (chat && /^_/.test(uri)) {
-        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage();
-        this.changePage(chatPage);
-        return;
-      }      
+    views = this[views];
 
       if (uri == 'profile') {
-        var p = _.size(params) ? path.slice(qIdx + 1) : '';
         if (!G.currentUser.guest) {
           var other = U.slice.call(arguments, 1);
           other = other.length ? other : undefined;
-          this.view.apply(this, [U.encode(G.currentUser._uri) + "?" + p].concat(other));
+          this.view.apply(this, [U.encode(G.currentUser._uri) + (query ? "?" + query : '')].concat(other));
         }
         else {
           this._requestLogin();
@@ -671,6 +737,12 @@ define([
         return;
       }
       
+      if (chat && /^_/.test(uri)) {
+        var chatPage = views[uri] = views[uri] || new this.ChatPage();
+        this.changePage(chatPage);
+        return;
+      }      
+
       uri = U.getLongUri1(decodeURIComponent(uri));
       var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
@@ -714,9 +786,9 @@ define([
       var forceFetch = options.forceFetch;
       var collection;
       if (!res) {
-        var collections = C.getResourceList(model);
-        if (collections) {
-          var result = collections[0].get(uri); // C.searchCollections(collections, uri);
+        var colCandidate = C.getResourceList(model);
+        if (colCandidate) {
+          var result = colCandidate.get(uri); // C.searchCollections(collections, uri);
           if (result) {
             collection = result.collection;
             res = result.resource;
@@ -726,7 +798,7 @@ define([
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousFragment});
+        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousHash});
 //        if (action === 'view')
 //          views[uri] = v;
         
@@ -740,7 +812,7 @@ define([
       }
       
       var res = this.currentModel = new model({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res, source: this.previousFragment});
+      var v = views[uri] = new viewPageCl({model: res, source: this.previousHash});
 //      if (action === 'view')
 //        views[uri] = v;
       
@@ -1047,12 +1119,37 @@ define([
     },
     
     checkErr: function() {
-      var q = U.getQueryParams();
-      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
-      if (msg)
-        U.alert({msg: msg, persist: true});
-      
-      this.errMsg = null, this.info = null;
+//      var q = U.getQueryParams();
+//      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
+//      if (msg)
+//        U.alert({msg: msg, persist: true});
+//      
+//      this.errMsg = null, this.info = null;
+      var params = U.getHashParams();
+      var info = params['-info'],
+          error = params['-error'];
+          
+      if (info || error) {
+        if (/home\//.test(U.getHash())) {
+          var errorBar = $.mobile.activePage.find('#headerErrorBar');
+          errorBar.html("");
+          errorBar.html(U.template('headerErrorBar')({error: error, info: info}));
+        }
+        else {
+          U.dialog({
+            header: 'FYI',
+            title: info || error,
+            ok: false,
+            cancel: false
+          });
+        }
+        
+        var hash = U.getHash().slice(1);
+        delete params['-info'];
+        delete params['-error']; 
+        // so the dialog doesn't show again on refresh 
+        Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+      }
     },
     changePage: function(view) {
       try {
@@ -1165,7 +1262,8 @@ define([
         view.trigger('active', true);
       
       // perform transition        
-      $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
+      $.mobile.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;
     }

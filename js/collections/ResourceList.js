@@ -1,11 +1,12 @@
 //'use strict';
-define([
+define('collections/ResourceList', [
   'globals',
   'utils', 
   'error', 
   'events'
 ], function(G, U, Errors, Events) {
   var tsProp = 'davGetLastModified';
+  var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
     initialize: function(models, options) {
       if (!models && !options.model)
@@ -17,14 +18,10 @@ define([
         perPage: 45, // 30,
         offset: 0,
         firstPage: 0,
-        offsetParam: "$offset",
-        limitParam: "$limit",
-        params: options.params || {},
-        model: options.model || (models[0] && models[0].vocModel),
-        rUri: options._rUri,
-        listId: G.nextId(),
-        title: options.title
-      });
+        params: {},
+        model: (models && models[0] && models[0].vocModel),
+        listId: G.nextId()
+      }, options);
       
       var vocModel = this.vocModel = this.model;
       var meta = vocModel.properties;
@@ -39,7 +36,6 @@ define([
 //      this.url = this.baseUrl;
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;
-      this.params[this.limitParam] = this.perPage;
       this.parseQuery(options._query);
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
       if (options.cache !== false)
@@ -135,7 +131,7 @@ define([
     },
     
     clone: function() {
-      return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, 'model', 'rUri', 'title'), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
       options = options || {};
@@ -237,14 +233,17 @@ define([
       var params = this.params = this.params || {};
       for (var i = 0; i < query.length; i++) {
         var p = query[i].split("=");
-        var name = decodeURIComponent(p[0]);
-        var val = decodeURIComponent(p[1]);
+        var name = U.decode(p[0]);
+        var val = U.decode(p[1]);
         var q = query[i];
-        if (q == this.offsetParam) {
+        if (name == '$offset') {
           this.offset = parseInt(val); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
-        else if (q.charAt(0) == '-')
+        else if (name == '$limit') {
+          this.perPage = this.params.$limit = parseInt(val);
+        }
+        else if (name.charAt(0) == '-')
           continue;
         else
           params[name] = val;
@@ -311,8 +310,19 @@ define([
       options = _.extend({update: true, remove: false, parse: true}, options);
       this.params = this.params || {};
       if (this.offset)
-        this.params[this.offsetParam] = this.offset;
-      this.rUri = options._rUri;
+        this.params.$offset = this.offset;
+      this.rUri = options.rUri;
+      var urlParams = this.rUri ? U.getParamMap(this.rUri) : {};
+      var limit;
+      if (urlParams) {
+        limit = urlParams.$limit;
+        limit = limit && parseInt(limit);
+      }
+      if (!limit)
+        limit = this.perPage;
+      
+      if (limit && limit > 50)
+        options.timeout = 5000 + limit * 50;
       options.url = this.getUrl();
       var error = options.error = options.error || Errors.getDefaultErrorHandler();
       options.error = function() {

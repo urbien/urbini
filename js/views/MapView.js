@@ -1,12 +1,11 @@
 //'use strict';
-define([
+define('views/MapView', [
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+], function(G, _, Events, U, BasicView) {
   var MapView = BasicView.extend({
 //    css: [
 //      'leaflet.css', 
@@ -18,7 +17,7 @@ define([
       _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
-      Events.on("changePage", this.resetMap);
+      Events.on("pageChange", this.resetMap);
       
 //      var self = this;
 //      csses = _.map(this.css, function(c) {return '../styles/leaflet/' + c});
@@ -40,7 +39,7 @@ define([
 //    click: Events.defaultClickHandler,  
     render: function (eventName) {
       var self = this, args = arguments;
-      U.require(['maps', 'jquery', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, $, L) {
+      U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, L) {
         self.render1.apply(self, arguments);
       });
     },

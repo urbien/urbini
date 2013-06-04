@@ -1,5 +1,5 @@
 'use strict';
-define([
+define('views/ResourceListView', [
   'globals',
   'utils',
   'events',
@@ -22,7 +22,7 @@ define([
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.onNewItemsAppend);
+      Events.on('pageChange', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
 //      this.collection.on('reset', this.render, this);
 //      this.collection.on('add', this.onadd, this);
@@ -46,23 +46,20 @@ define([
 //      }.bind(this));
 //      // END HACK
       
+      var vocModel = this.vocModel;
+      this.isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
+      this.isMasonry = !this.isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Coupon', '/Goal', '/Movie', '/ThirtyDayTrial', '/SolarBond'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
+      this.isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       return this;
     },
     events: {
       'orientationchange': 'orientationchange'
     },
+    
     orientationchange: function(e) {
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || 
-                                       vocModel.type.endsWith('/Theme')      || 
-                                       vocModel.type.endsWith('/App')        || 
-                                       vocModel.type.endsWith('/Goal')       ||
-                                       vocModel.type.endsWith('/Movie')      ||
-                                       U.isA(this.vocModel, "VideoResource") ||
-                                       vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
 //      alert ('here we are');
       
-      if (!isMasonry)
+      if (!this.isMasonry)
         return;
       
       var prevWidth;
@@ -126,15 +123,15 @@ define([
       var resources = rl.models;
       var vocModel = this.vocModel;
       var type = vocModel.type;
-      var isModification = this.isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
+      var isModification = this.isModification;
       var meta = vocModel.properties;
       var canceled = U.getCloneOf(vocModel, 'Cancellable.cancelled');
       canceled = canceled.length ? canceled[0] : null;
       
       var viewMode = vocModel.viewMode;
       var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Goal', '/Movie', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isChooser = this.isChooser; //window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+      var isMasonry = this.isMasonry; //this.isMasonry = !isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Coupon', '/Goal', '/Movie', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       
 //      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
 //      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
@@ -285,7 +282,7 @@ define([
       if (frag && table)
         frag.appendChild(table);
       
-/*
+
       if (isChooser) {
         var params = U.getParamMap(window.location.href, '&');
         var prop = params['$prop'];
@@ -298,7 +295,7 @@ define([
             frag.appendChild(fileUploadTemplate({name: prop}));          
         }
       }
-*/      
+      
       if (!nextPage) {
         this.$el.html(frag);
       }

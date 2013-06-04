@@ -1,10 +1,9 @@
 //'use strict';
-define([
+define('error', [
   'globals',
   'utils',
-  'jquery',
   'events'
-], function(G, U, $, Events) {
+], function(G, U, Events) {
   var Errors = {
     TAG: "Errors",
     msgs: {
@@ -16,6 +15,9 @@ define([
     },
     getDefaultErrorHandler: function(errorHandler) {
       var defaultErrorHandler = function(originalModel, err, options) {
+        if (!err)
+          debugger;
+        
         var code = err.code || err.status;
         var type = err.type || err.statusText;
         if (options.sync) {
@@ -55,6 +57,7 @@ define([
             switch (type) {
               case 'offline':
               case 'timeout':
+                debugger;
                 Events.trigger('back');
                 Errors.errDialog({msg: err.details || Errors[G.online ? type : 'offline'], delay: 1000});
                 break;

@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/EditView', [
   'globals',
   'events', 
   'error', 
@@ -8,72 +8,122 @@ define([
   'vocManager',
   'views/BasicView'
 ], function(G, Events, Errors, U, C, Voc, BasicView) {
+  var spinner = 'loading edit view';
+  var scrollerClass = 'i-txt',
+      switchClass = 'boolean',
+      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
+      
+  
   function willShow(res, prop, role) {
     var p = prop.shortName;
-    return !prop.formula  &&  !U.isSystemProp(p) && U.isPropEditable(res, prop, role);
+    return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
   };
-
+  
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     initialize: function(options) {
+      var self = this;
+      _.each(scrollerTypes, function(s) {
+        self['scroll' + s.camelize(true)] = function(e) {
+          self.mobiscroll.apply(self, [e, s].concat(U.slice.call(arguments, 1)));
+        }
+      });
+    
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'scrollEnum', 'capturedImage'); // fixes loss of context for 'this' within methods
+                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
+                      'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
-
+      this.makeTemplate('interfacePropTemplate', 'interfacePropTemplate', type);
+      this.reqParams = U.getParamMap(window.location.href);
+      
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
-//      this.backlinkResource = options.backlinkResource;
+      this.isEdit = this.action === 'edit';
       
-      // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length;
-//      this.resource.set(init, {silent: true});
-//      this.edited = {};
-      
-      var readyDfd = $.Deferred(function(defer) {
-        if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          }, this);
+      this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
+      var self = this;
+      /*
+      var modelsDfd = $.Deferred(function(defer) {
+        if (self.isForInterfaceImplementor) {
+          self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
+          if (!self._interfaceUri)
+            defer.resolve();   
+          Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
           defer.resolve();        
-      }.bind(this));
+      });
+      */
+      // maybe move this to router
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
+      this.isCode = codemirrorModes.length;
+
+      var codemirrorDfd = $.Deferred(function(defer) {
+        if (self.isCode) {
+          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+            defer.resolve();
+          });
+        }
+        else
+          defer.resolve();        
+      });
       
-      this.ready = readyDfd.promise();
+      this.ready = $.when(codemirrorDfd.promise());
       Events.on('pageChange', function(from, to) {
         // don't autosave new resources, they have to hit submit on this one...or is that weird
         if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
           return;
         
-        var unsaved = this.resource.getUnsavedChanges();
-        if (_.size(unsaved))
-          this.resource.save();
+        if (!this._submitted)
+          this.$form.submit();
+        if (this.isActive())
+          this.redirect();
+//        var unsaved = this.resource.getUnsavedChanges();
+//        if (_.size(unsaved))
+//          this.resource.save();
       }.bind(this));
 
-      Events.on('active', function(active) {
-        if (active)
-          this.canceled = false;
+      this.on('active', function(active) {
+        if (active) {
+          this._canceled = false;
+          this._submitted = false;
+        }
       }.bind(this));
       
       this.autoFinish = false;
       return this;
     },
     events: {
-      'click .cancel': 'cancel',
-      'submit form': 'submit',
-      'click .resourceProp': 'chooser',
-      'click input[data-duration]': 'scrollDuration',
-      'click input[data-date]': 'scrollDate',
-      'click select[data-enum]': 'scrollEnum',
-      'click .cameraCapture' : 'cameraCapture',
-      'click': 'click'
+      'click .cancel'                     :'cancel',
+      'submit form'                       :'submit',
+      'click .resourceProp'               :'chooser',
+      'click input[data-duration]'        :'scrollDuration',
+      'click input[data-date]'            :'scrollDate',
+//      'click select[data-enum]': 'scrollEnum',
+      'click .cameraCapture'              :'cameraCapture',
+      'click #check-all'                  :'checkAll',
+      'click #uncheck-all'                :'uncheckAll',
+      'click'                             :'click'
+    },
+
+    /** 
+     * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    checkAll: function() {
+      this.$form.find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+    },
+
+    /**
+     * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
+     */
+    uncheckAll: function() {
+      this.$form.find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
     },
 
     capturedImage: function(options) {
@@ -87,9 +137,6 @@ define([
     },
 
     capturedVideo: function(options) {
-//      if (true)
-//        return;
-      
       var attachmentsUrlProp = U.getCloneOf(this.vocModel, 'FileSystem.attachmentsUrl');
       if (!attachmentsUrlProp) {
         debugger;
@@ -101,40 +148,25 @@ define([
 
       var props = {};
       props[prop] = data;
-//      for (var p in data) {
-//        props[prop + '.' + p] = data[p]; 
-//      }
+      for (var p in data) {
+        props[prop + '.' + p] = data[p]; 
+      }
       
+      delete props[prop];
       this.setValues(props, {skipValidation: true, skipRefresh: true});
-      this.resource.save(null, {
-        sync: true
-      });
-      
-//      var fd = new FormData();
-//      fd.append('fileName', 'cameraCapture.webm');
-//      fd.append(prop, data); // audio and video blobs
-////      fd.append('file', data); // webmBlob
-//      fd.append('-$action', 'upload');
-//      fd.append('type', this.vocModel.type);
-//      fd.append('forResource', this.resource.getUri());
-//      fd.append('location', G.serverName + '/wf/' + this.resource.get(attachmentsUrlProp[0]));
-//      U.ajax({
-//        type: 'POST',
-//        url: G.serverName + '/mkresource',
-//        data: fd,
-//        processData: false,
-//        contentType: false
-//      }).done(function(data) {
-//        debugger;
-////        console.log(data);
-//      }).fail(function() {
-//        debugger;
-//      });
     },
 
     cameraCapture: function(e) {
       Events.stopEvent(e);
       var link = $(e.currentTarget);
+//      if (!G.navigator.isChrome) {
+//        U.alert({
+//          msg: "Your browser doesn't support recording video"
+//        });
+//        
+//        return;
+//      }
+      
       U.require('views/CameraPopup').done(function(CameraPopup) {
         if (this.CameraPopup) {
           this.CameraPopup.destroy();
@@ -152,29 +184,48 @@ define([
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-    scrollDate: function(e) {
-      this.mobiscroll(e, 'date');
+    getScroller: function(prop, input) {
+      var settings = {
+        theme: 'jqm',
+        display: 'modal',
+        mode:'scroller',
+        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
+        label: U.getPropDisplayName(prop),
+        shortName: prop.shortName,
+        onSelect: this.onSelected,
+        input: input
+      };
+      
+      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+        return _.has(input.dataset, type);
+      });
+
+      var scroller;
+      switch (scrollerType) {
+        case 'date':
+        case 'duration':
+          var isDate = scrollerType === 'date';
+          scroller = $(input).mobiscroll()[scrollerType](settings);
+          var val = input.value && parseInt(input.value);
+          if (typeof val === 'number')
+            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+          
+          break;
+      }
+      
+      return scroller;
     },
 
-    scrollDuration: function(e) {
-      this.mobiscroll(e, 'duration');
-    },
-
-    scrollEnum: function(e) {
-      this.mobiscroll(e, 'enum');
-    },
-
-    mobiscroll: function(e, scrollerType) {
-      var inits = this.initializedScrollers = this.initializedScrollers || {};
-      if (inits[scrollerType])
+    mobiscroll: function(e, scrollerType, dontClick) {
+      if (this.fetchingScrollers)
         return;
       
-      inits[scrollerType] = true;
+      this.fetchingScrollers = true;
       $(e.target).blur(); // hack to suppress keyboard that would open on this input field
       Events.stopEvent(e);
       
 //      // mobiscrollers don't disappear on their own when you hit the back button
-//      Events.once('changePage', function() {
+//      Events.once('pageChange', function() {
 //        $('.jqm, .dw-modal').remove();
 //      });
       
@@ -187,58 +238,13 @@ define([
         modules.push('mobiscroll-duration');
       
       U.require(modules, function() {
-        _.each(scrollers, function(input) {
-          var name = input.name;
-          var prop = meta[name];
-          // default to enum
-          var settings = {
-            theme: 'jqm',
-            display: 'modal',
-            mode:'scroller',
-            label: U.getPropDisplayName(prop),
-            shortName: name,
-            onSelect: self.onSelected,
-            input: input
-          };
-
-          scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-            return _.has(input.dataset, type);
-          });
-//          var scroller;
-//          if (scrollerType === 'enum') {
-//            var type = U.getLongUri1(prop.facet),
-//                values = _.pluck(G.typeToEnum[type].values, 'displayName');
-//            
-//            scrollerModule.makeEnumScroller(type, values);
-//            scroller = $(this).mobiscroll()[type](settings);
-//          }
-//          else
-          var scroller;
-//          var scroller = $(this).mobiscroll()['duration'](settings);
-          switch (scrollerType) {
-            case 'date':
-            case 'duration':
-              var isDate = scrollerType === 'date';
-              scroller = $(input).mobiscroll()[scrollerType](settings);
-              var val = input.value && parseInt(input.value);
-              if (typeof val === 'number')
-                scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-              
-              break;
-//            default:
-//              var wheel = _.pluck(G.typeToEnum[U.getLongUri1(prop.facet)].values, 'displayName');
-//              settings.wheels = [wheel];
-//              scroller = $(input).mobiscroll().select(settings);
-//              var val = input.value;
-//              if (val)
-//                scroller.mobiscroll('setValue', val, true);
-//              
-//              break;            
-          }
-          
-          if (name === thisName)
-            scroller.click().focus();
-        });
+        self.loadedScrollers = true;
+        self.refreshScrollers();
+        if (!dontClick) {
+          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
+          if (scroller)
+            $(scroller).click().focus();
+        }
       });
     },
 
@@ -332,6 +338,8 @@ define([
           var resName = U.getDisplayName(chosenRes);
           if (resName)
             props[prop + '.displayName'] = resName;
+          if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
+            props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
           this.setValues(props, {skipValidation: true, skipRefresh: false});
           var pr = vocModel.properties[prop];
           var dn = pr.displayName;
@@ -450,7 +458,17 @@ define([
         this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
         return;
       }
-      
+      if (this.isForInterfaceImplementor) { 
+        var rParams = {
+            $prop: pr.shortName,
+            $type:  this.vocModel.type,
+            $title: 'Add-ons',
+            $forResource: this.resource.get('implementor')
+          };
+        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+        return;
+      }
+
       var range = U.getLongUri1(pr.range);
       var prModel = U.getModel(range);
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
@@ -495,11 +513,23 @@ define([
       return this.$form.find('[data-formEl]');
     },
     getScrollers: function() {
-      return this.$form.find('.i-txt');
+      return this.$form.find('.' + scrollerClass);
+    },
+    
+    refreshScrollers: function() {
+      if (this.loadedScrollers) {
+        var meta = this.vocModel.properties;
+        var self = this;
+        this.getScrollers().each(function() {
+          $(this).mobiscroll('destroy');
+          var prop = meta[this.name];
+          self.getScroller(prop, this);
+        });
+      }
     },
     isScroller: function(input) {
       input = input instanceof $ ? input : $(input);
-      return input.hasClass('i-txt');
+      return input.hasClass(scrollerClass);
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -548,6 +578,9 @@ define([
     },
     
     redirect: function(options) {
+      if (!this.isActive()) // already redirected
+        return;
+        
       var params = U.getQueryParams();
       var options = _.extend({replace: true, trigger: true}, options || {});
 
@@ -561,23 +594,19 @@ define([
           self = this;
 
       if (this.action === 'edit') {
-//        if (U.isAssignableFrom(vocModel, webPropType))
-//          this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
-//        else
-          Events.trigger('back');
-        
+        Events.trigger('back');
         return;
       }  
       
-      if (U.isAssignableFrom(vocModel, U.getLongUri1('system/designer/InterfaceImplementor'))) {
+      if (this.isForInterfaceImplementor) {
         var iClName = U.getValueDisplayName(res, 'interfaceClass');
         var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('implementor'), $title: title}), _.extend({forceFetch: true}, options));
+        return this.router.navigate(U.makeMobileUrl('list', webPropType, {
+          domain: res.get('implementor'), 
+          $title: title
+        }), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, webPropType)) {
-//        var wClName = U.getValueDisplayName(res, 'domain');
-//        var title = wClName ? U.makeHeaderTitle(wClName, 'Properties') : 'Properties';
-//        return this.router.navigate(U.makeMobileUrl('list', webPropType, {domain: res.get('domain'), $title: title}), _.extend({forceFetch: true}, options));
         var propType = res.get('propertyType');
         switch (propType) {
           case 'Link':
@@ -586,6 +615,9 @@ define([
           default: 
             return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
         }        
+      }
+      else if (G.commonTypes.Connection  &&  U.isAssignableFrom(vocModel, G.commonTypes.Connection)) {
+        return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
       }
       else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && G.online) {
         var isFork = res.get('forkedFrom');
@@ -606,8 +638,8 @@ define([
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
-        if (!redirect.length)
-          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
+//        if (!redirect.length)
+//          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
         if (redirect.length) {
           redirect = res.get(redirect);
           if (redirect) {
@@ -745,27 +777,36 @@ define([
       var val;
       
       var p = this.vocModel.properties[input.name];
-      if (p  &&  p.multiValue)
+      if (_.contains(input.classList, switchClass))
+        val = input.value === 'Yes' ? true : false;
+      else if (p && p.multiValue)
         val = this.getResourceInputValue(jInput); //input.innerHTML;
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
 
-      if (!_.isUndefined(val))
-        return val;
-        
-      if (_.contains(input.classList, 'boolean'))
-        return val === 'Yes' ? true : false;
-      else {
-        for (var i = 0; i < scrollerTypes.length; i++) {
-          var data = jInput.data('data-' + scrollerTypes[i]);
-          if (data)
-            return data;
-        }
-      }
-      
       return val;
     },
+    
+    submitInputs: function() {
+      var allGood = true;
+      var changed = $(this.inputs).filter(function() {return $(this).data("modified") === true});
+      for (var i = 0; i < changed.length; i++) {
+        var input = changed[i];
+        allGood = this.setValues(input.name, this.getValue(input), {onValidationError: this.fieldError});
+        if (!allGood)
+          return false;
+      }
+      
+      return true;
+    },
+    
     submit: function(e) {
+      Events.stopEvent(e);
+      if (this._submitted) {
+        if (!this.isActive())
+          return;
+      }
+
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
@@ -775,20 +816,24 @@ define([
         return;
       }
       
-      Events.stopEvent(e);
-      var isEdit = (this.action === 'edit');
       var res = this.resource, 
           uri = res.getUri();
       
-      if (!isEdit && uri) {
+      if (!this.isEdit && uri) {
 //        this.incrementBLCount();
-        debugger;
         this.redirect({forceFetch: true});
         return;
       }
       
-      var inputs = this.getInputs();
+      var allGood = this.submitInputs();
+      if (!allGood)
+        return;
+      
+      this._submitted = true;
+      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       inputs.attr('disabled', true);
+      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
@@ -796,6 +841,7 @@ define([
           vocModel = this.vocModel,
           meta = vocModel.properties;
       
+      var unsaved = res.getUnsavedChanges();
       var atts = {};
       // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes (except for those with default values, like select lists)
       for (var i = 0; i < inputs.length; i++) {
@@ -810,7 +856,7 @@ define([
 //          _.extend(atts, U.filterObj(res.attributes, function(att) {return att.startsWith(name + '.')}));
 //        }
 //        else {
-        if (val && name.indexOf('_select') == -1  &&  meta[name].multiValue) {
+        if (val && name.indexOf('_select') == -1  &&  meta[name]  &&  meta[name].multiValue) { //((meta[name]  &&  meta[name].multiValue)  ||  (input.type == 'checkbox'  &&  input.checked))) {
           atts[name] = res.get(name);
           var v = val.split(',');
           atts[name + '_select'] = v;
@@ -824,106 +870,10 @@ define([
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
         }
-        else if (val)
-          atts[name] = val;
+//        else if (!_.has(unsaved, name) && val)
+//          atts[name] = val;
       }
       
-      var succeeded = false;
-      var onSuccess = function() {
-        if (succeeded)
-          return;
-        
-        succeeded = true;
-        var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
-//        var props = atts;
-        if (isEdit && !_.size(props)) {
-          debugger; // user didn't modify anything?
-          self.redirect();
-          return;
-        }
-        
-        var onSaveError = function(resource, xhr, options) {
-          var err;
-          if (resource.status) {
-            err = xhr;
-            xhr = resource;
-            resource = null;
-          }
-          
-          self.getInputs().attr('disabled', false);
-          var code = xhr ? xhr.code || xhr.status : 0;
-          if (!code || xhr.statusText === 'error') {
-            Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
-            return;
-          }
-          
-          var json = {};
-          try {
-            json = JSON.parse(xhr.responseText);
-          } catch (err) {
-          }
-          
-          var msg = json.error.details;
-          // TODO: undo this hack
-          if (msg && msg.startsWith("You don't have enough funds")) {
-            Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
-            var successUrl = window.location.href; 
-            setTimeout(function() {
-              var params = {
-                toAccount: G.currentUser._uri,
-                transactionType: 'Deposit',
-                successUrl: successUrl
-//                successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
-              };
-              
-              window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
-            }, 2000);
-            return;
-          }
-          
-          switch (code) {
-            case 401:
-              Events.trigger('req-login', {
-                msg: 'You are not unauthorized to make these changes'
-              });
-//              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//              Events.on(401, msg || 'You are not unauthorized to make these changes');
-              break;
-            case 404:
-              debugger;
-              Errors.errDialog({msg: msg || 'Item not found', delay: 100});
-              break;
-            case 409:
-              debugger;
-              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
-              break;
-            default:
-              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
-//              debugger;
-              break;
-          }
-        };
-        
-        res.save(props, {
-          sync: !U.canAsync(this.vocModel),
-          success: function(resource, response, options) {
-            self.getInputs().attr('disabled', false);
-            res.lastFetchOrigin = null;
-            self.disable('Changes submitted');
-            self.redirect();
-          }, 
-//          skipRefresh: true,
-          error: onSaveError
-        });
-      }.bind(this);
-      
-      var onError = function(errors) {
-        res.off('change', onSuccess, this);
-        this.fieldError.apply(this, arguments);
-        inputs.attr('disabled', false);
-//        alert('There are errors in the form, please review');
-      }.bind(this);
-//
       switch (action) {
         case 'make':
           url += 'm/' + encodeURIComponent(vocModel.type);
@@ -941,11 +891,11 @@ define([
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
-        onSuccess();
+        this.onsuccess();
         self.getInputs().attr('disabled', false);
       }
       else
-        onError(errors);
+        this.onerror(errors);
     },
     cancel: function(e) {
       Events.stopEvent(e);
@@ -954,9 +904,113 @@ define([
         this.resource.set(this.originalResource);
       }
         
-      this.canceled = true;
+      this._canceled = this._submitted = true;
       Events.trigger('back');
     },
+    
+    onSaveError: function(resource, xhr, options) {
+      this._submitted = false;
+      var err;
+      if (resource.status) {
+        err = xhr;
+        xhr = resource;
+        resource = null;
+      }
+      
+      this.getInputs().attr('disabled', fale);
+      var code = xhr ? xhr.code || xhr.status : 0;
+      if (!code || xhr.statusText === 'error') {
+        Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
+        return;
+      }
+      
+      var json = {};
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch (err) {
+      }
+      
+      var msg = json.error.details;
+      // TODO: undo this hack
+      if (msg && msg.startsWith("You don't have enough funds")) {
+        Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
+        var successUrl = window.location.href; 
+        setTimeout(function() {
+          var params = {
+            toAccount: G.currentUser._uri,
+            transactionType: 'Deposit',
+            successUrl: successUrl
+//            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
+          };
+          
+          window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
+        }, 2000);
+        return;
+      }
+      
+      switch (code) {
+        case 401:
+          Events.trigger('req-login', {
+            msg: 'You are not unauthorized to make these changes'
+          });
+//          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
+//          Events.on(401, msg || 'You are not unauthorized to make these changes');
+          break;
+        case 404:
+          debugger;
+          Errors.errDialog({msg: msg || 'Item not found', delay: 100});
+          break;
+        case 409:
+          debugger;
+          Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
+          break;
+        default:
+          Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+//          debugger;
+          break;
+      }
+    },
+    
+    onsuccess: function() {
+      var self = this, res = this.resource;
+      var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
+//      var props = atts;
+      if (this.isEdit && !_.size(props)) {
+//        debugger; // user didn't modify anything?
+        this.redirect();
+        return;
+      }
+            
+      var sync = !U.canAsync(this.vocModel);
+      if (sync) {
+        G.showSpinner({
+          content: 'Saving...',
+          name: 'saving-resource'
+        });
+      }
+        
+      res.save(props, {
+        sync: sync,
+        success: function(resource, response, options) {
+          self.getInputs().attr('disabled', false);
+          res.lastFetchOrigin = null;
+          self.disable('Changes submitted');
+          self.redirect();
+          if (sync)
+            G.hideSpinner('saving-resource');
+        }, 
+//        skipRefresh: true,
+        error: self.onSaveError
+      });
+    },
+    
+    onerror: function(errors) {
+      res.off('change', onsuccess, this);
+      this.fieldError.apply(this, arguments);
+      inputs.attr('disabled', false);
+//      alert('There are errors in the form, please review');
+    },
+
     refresh: function(data, options) {
       if (options && options.skipRefresh)
         return;
@@ -969,25 +1023,72 @@ define([
           return this;
       }
       
+      this.getScrollers().each(function() {
+        $(this).mobiscroll('destroy');        
+      });
+      
       this.render();
+      this.refreshScrollers();
     },
     click: function(e) {
-      var from = e.target;
-      if (from.tagName === 'select') {
-        Events.stopEvent(e);
-        return;
-      }
-//      var data = from.dataset;
-//      if (data.duration)
-//        Events.stopEvent(e) && this.scrollDuration(e);
-//      else if (data.date)
-//        Events.stopEvent(e) && this.scrollDate(e);
-      
-      return true;
-//      return Events.defaultClickHandler(e);
+//      var from = e.target;
+//      if (from.tagName === 'select') {
+//        Events.stopEvent(e);
+//        return;
+//      }
+//      var div = from;
+//      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
+//        div = div.parentElement; 
+//        continue;
+//      }
+//      var inp = $(div).find('input[type="checkbox"]');
+//      if (!inp  ||  !inp.length) 
+//        return;
+////      Events.stopEvent(e);
+////      var val = this.resource.get('interfaceClass.properties');
+//      var name = inp[0].name;
+//      var val = this.resource.get(name);
+//      var iVal = inp[0].value;
+//      var idx = iVal.lastIndexOf('/');
+//      if (idx != -1)
+//        iVal = iVal.substring(idx + 1);
+//      var props = val.split(',');
+//      var idx = props.indexOf(iVal);
+//      if (!inp[0].checked) {
+////        inp[0].checked = true;
+//        if (idx == -1)
+//          this.setValues(name, val += ',' + iVal);
+////          this.setValues('interfaceClass.properties', val += ',' + iVal);
+//      }
+//      else if (idx != -1) {
+////        inp[0].checked = false;
+//        props.splice(idx, 1);
+//        this.setValues(name, props.join(','));
+////        this.setValues('interfaceClass.properties', props.join(','));
+//      }
+//      return true;
     },
     onSelected: function(e) {
-      var atts = {};
+      var atts = {}, res = this.resource, input = e.target;
+      if (this.isForInterfaceImplementor && input.type === 'checkbox') {
+        var checked = input.checked;
+//        var val = res.get('interfaceClass.properties');
+        var val = res.get(input.name);
+        var props = val.split(',');
+        var idx = props.indexOf(input.value);
+        if (idx == -1 && checked)
+//          this.setValues('interfaceClass.properties', val += ',' + input.value);
+          this.setValues(input.name, val += ',' + input.value);
+
+        else if (idx != -1 && !checked) {
+          props.splice(idx, 1);
+          this.setValues(input.name, props.join(','));
+//          this.setValues('interfaceClass.properties', props.join(','));
+        }
+          
+        return;
+      }
+      
       if (arguments.length > 1) {
         var val = arguments[0];
         var scroller = arguments[1];
@@ -997,17 +1098,17 @@ define([
         
         switch (settings.__type) {
           case 'date': {
-            var millis = atts[name] = new Date(val).getTime();
-            $(input).data('data-date', millis);
+            atts[name] = new Date(val).getTime();
+//            $(input).data('data-date', millis);
             break;
           }
           case 'duration': {
-            var secs = atts[name] = scroller.getSeconds();
-            $(input).data('data-duration', secs);
+            atts[name] = scroller.getSeconds();
+//            $(input).data('data-duration', secs);
             break;
           }
           case 'enum': {
-            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
+//            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
             break;
           }
           default:
@@ -1016,10 +1117,13 @@ define([
       }
       else {
         var t = e.target;
-        atts[t.name] = t.value;
+        atts[t.name] = this.getValue(t);
       }
-//      Events.stopEvent(e);
-      this.setValues(atts, {onValidationError: this.fieldError});
+
+      var $input = $(this);
+      this.setValues(atts, {onValidationError: this.fieldError, onValidated: function() {
+        $input.parent().find('label.error').remove();
+      }});
     },
     
     setValues: function(key, val, options) {
@@ -1031,7 +1135,7 @@ define([
         (atts = {})[key] = val;
       }
       
-      if (this.canceled)
+      if (this._canceled)
         return false;
       
       options = options || {};
@@ -1062,8 +1166,7 @@ define([
 //        delete json[p];
         return;
       }
-      
-      if (info.params[p]  &&  prop.containerMember) {
+      if (info.params[p]  &&  prop.containerMember && (this.action == 'edit' || this.reqParams[p])) {
         if (prop.required) {
           var rules = ' data-formEl="true"';
           var longUri = U.getLongUri1(info.params[p]);
@@ -1121,10 +1224,15 @@ define([
       
       return false;
     },
+    /**
+     * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
+     */
     render: function() {
       var args = arguments;
       this.ready.done(function() {
+        G.showSpinner(spinner);
         this.renderHelper.apply(this, args);
+        G.hideSpinner(spinner);
         this.finish();
       }.bind(this));
     },
@@ -1141,6 +1249,7 @@ define([
         this.originalResource = res.toJSON();
       
       var type = res.type;
+      
       var json = res.toJSON();
       var frag = document.createDocumentFragment();
       var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
@@ -1155,8 +1264,13 @@ define([
       if (!editProps) {
         propsForEdit = vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
-        if (!editProps  &&  this.action == 'make'  &&  vocModel.type.endsWith('WebProperty')) {
-          editProps = ['label', 'propertyType'];
+        if (!editProps  &&  this.action == 'make') {
+          if (vocModel.type.endsWith('WebProperty')) {
+            editProps = ['label', 'propertyType'];
+          }
+          else if (vocModel.type.endsWith('Connection')) {
+            editProps = ['fromApp', 'connectionType', 'effect'];
+          }
         }  
       }
       
@@ -1168,18 +1282,10 @@ define([
       var userRole = U.getUserRole();
       var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
       if (propGroups.length  &&  !editCols) {
-        if (propGroups.length > 1  &&  propGroups[0].shortName != 'general') {
-          var generalGroup = $.grep(propGroups, function(item, i) {
-            return item.shortName == 'general';
-          });
-          
-          if (generalGroup.length) {
-            $.each(propGroups, function(i){
-              if(propGroups[i]  &&  propGroups[i].shortName === 'general') propGroups.splice(i,1);
-            });
-            propGroups.unshift(generalGroup[0]);
-          }
-        }
+        propGroups.sort(function(a, b) {
+          return a.shortName === 'general' ? -1 : 1;
+        });
+        
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
@@ -1217,7 +1323,7 @@ define([
           continue;
         _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
         
-        var h =  '<input data-formel="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+        var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
         U.addToFrag(info.frag, h);
 //        this.addProp(info);
         displayedProps[p] = true;
@@ -1247,10 +1353,64 @@ define([
       else
         this.$ul.trigger('create');
 
+      if (this.isForInterfaceImplementor) {
+//        var start = +new Date();
+        var iCl = res.get('interfaceClass.davClassUri');
+        if (!iCl)
+          iCl = reqParams['interfaceClass.davClassUri'];
+        if (iCl) {
+          var self = this;
+          Voc.getModels(iCl).done(function() {
+            var frag = document.createDocumentFragment();
+            var m = U.getModel(iCl);
+            var imeta = _.toArray(m.properties).sort(function(a, b) {
+              return a.mustImplement ? -1 : 1;
+            });
+            
+            var interfaceProperties = self.resource.get('interfaceProperties');
+            var ip = interfaceProperties ? interfaceProperties.split(',') : [];
+            var props = '';
+            self.$ul1 = $('#interfaceProps');
+            _.each(imeta, function(p) {
+              var prop = p.shortName;
+              if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
+                return;
+              
+              if (p.mustImplement || ip.indexOf(prop) != -1)
+                props += prop + ',';
+              
+              U.addToFrag(frag, self.interfacePropTemplate({
+                davDisplayName: U.getPropDisplayName(p), 
+                _checked: p.mustImplement || _.contains(ip, prop) ? 'y' : undefined,
+                disabled: p.mustImplement,
+                required: p.mustImplement,
+                interfaceProps: prop, 
+                comment: p.comment
+              }));
+            });
+            
+            props = props.slice(0, props.length - 1);
+            self.setValues('interfaceProperties', props);
+            
+            (this.$ul1 = $('#interfaceProps')).html(frag);
+            if (self.$ul1.hasClass('ui-listview')) {
+              self.$ul1.trigger('create');
+              self.$ul1.listview('refresh');
+            }
+            else
+              self.$ul1.trigger('create');
+            
+            var checkboxes = self.$form.find('input[type="checkbox"]');
+            checkboxes.change(self.onSelected);
+//            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
+          });
+        }
+      }
+      
 //        this.$ul.listview('refresh');
       var doc = document;
       var form = this.$form = this.$('form');
-      var inputs = this.getInputs(); //form.find('input');
+      var inputs = this.inputs = this.getInputs(); //form.find('input');
       
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
@@ -1269,9 +1429,11 @@ define([
           }, 500);
           
           $in.on('input', function() {
-            if ($(this).data('codemirror'))
+            var $this = $(this);
+            if ($this.data('codemirror'))
               return;
             
+            $this.data('modified', true);
             setValues.apply(this, arguments);
           });
           
@@ -1285,15 +1447,19 @@ define([
         form.find('label[for="{0}"]'.format(this.id)).addClass('req');
       });
       
-      form.find('select').change(this.onSelected).each(function() {
+      var selected = form.find('select');
+      selected.change(this.onSelected);
+      
+      // set initial values on resource
+      selected.each(function() {
         var name = this.name;
-        if (_.isUndefined(res.get(name)))
+        if (_.isUndefined(res.get(name)) || self.isForInterfaceImplementor)
           return;
         
         if (this.value)
           self.setValues(name, this.value);
       });
-      
+
       form.find("input").bind("keydown", function(event) {
         // track enter key
         var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
@@ -1364,7 +1530,22 @@ define([
         }
       }
         
+      // only trigger the first you find
+      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
+        var scrollers = self.$(scrollerType);
+        if (scrollers.length) {
+          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
+          if (scrollerWithValue) {
+            $(scrollerWithValue).trigger('click', [true]);
+            return true;
+          }
+        }
+      });
       
+      form.find('fieldset input[type="checkbox"]').each(function() {
+        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
+      });
+
       return this;
     },
     

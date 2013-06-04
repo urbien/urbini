@@ -1,15 +1,34 @@
 //'use strict';
-define([
+define('views/ResourceImageView', [
   'globals',
-  'jquery', 
   'underscore', 
   'utils',
   'events',
   'views/BasicView'
-], function(G, $, _, U, Events, BasicView) {
-  var media_events = ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
-                      "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
-                      "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"];
+], function(G, _, U, Events, BasicView) {
+
+//  $(function() {
+//    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),
+//        $fluidEl = $("figure");
+//          
+//    $allVideos.each(function() {
+//      $(this)
+//        // jQuery .data does not work on object/embed elements
+//        .attr('data-aspectRatio', this.height / this.width)
+//        .removeAttr('height')
+//        .removeAttr('width');
+//    });
+//    
+//    $(window).resize(function() {
+//      var newWidth = $fluidEl.width();
+//      $allVideos.each(function() {
+//        var $el = $(this);
+//        $el.width(newWidth)
+//           .height(newWidth * $el.attr('data-aspectRatio'));
+//      });
+//    
+//    }).resize();
+//  });  
 
   return BasicView.extend({
     initialize: function(options) {
@@ -20,22 +39,9 @@ define([
       
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
-      this.resource.on('change', this.refresh);
-  
-//      this._videoProp = U.getCloneOf(this.vocModel, "VideoResource.video")[0];
-//      this.isLocalVideo = !!this._videoProp && res.get(this._videoProp);
-//      if (this.isLocalVideo) {
-//        this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
-//        this.videoDfd = $.Deferred();
-//        this.videoPromise = this.videoDfd.promise();
-//        if (this._videoProp && res.get(this._videoProp)) {
-//          this.isVideo = true;
-//          U.require(['lib/jplayer', 'lib/jplayer/jplayer.blue.monday.css'], function() {
-//            this.videoDfd.resolve();
-//          }.bind(this));
-//        }
-//      }
-      
+      this.isAudio = res.isA('AudioResource');
+      this.isImage = res.isA('ImageResource');
+      this.resource.on('change', this.refresh, this);
       return this;
     },
     events: {
@@ -87,79 +93,60 @@ define([
       return this.isLocalVideo ? this.$('video') : this.$('iframe');
     },
     
-    render: function(options) {
-      var self = this;
-      var res = this.resource;
-      var meta = this.vocModel.properties;
-      if (!meta)
+    renderVideo: function() {
+      if (this.hash.startsWith('edit/'))
         return this;
       
-      if (!res.isA('ImageResource')) 
-        return this;
+      var res = this.resource,
+          self = this;
       
-      var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
-      if (props.length == 0)
-        props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
+      if (!_.has(this, '_videoUrl')) {
+        this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
+        this._videoUrl = res.get(this._videoUrlProp);
+        this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
+        this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
+      }
       
-      var json = res.toJSON();
-      var self = this;
-      if (this.isVideo && !this.video) {
-        if (this.hash.startsWith('edit/'))
-          return this;
+      if (this.isLocalVideo) {
+//        this.videoDfd.done(function() {
+        var info = {
+          src: this._videoUrl,
+          preload: 'auto'
+//          autoplay: 'autoplay'
+        };
         
-        if (!_.has(this, '_videoUrl')) {
-          this._videoUrlProp = U.getCloneOf(this.vocModel, "VideoResource.videoUrl")[0];
-          this._videoUrl = res.get(this._videoUrlProp);
-          this.isLocalVideo = this._videoUrl && this._videoUrl.startsWith(G.serverName);
-          this.template = this.makeTemplate('videoPlayerTemplate', 'template', this.vocModel.type);
-        }
+        info.poster = res.get('ImageResource.bigImage') || res.get('ImageResource.originalImage');
+        this.$el.html(this.template(info));
+      }
+      else {
+        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
+        var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
+        var videoHtml5 = videoHtml5Prop && res.get(videoHtml5Prop);
+        var desc = descProp && res.get(descProp);
         
-        if (this.isLocalVideo) {
-//          this.videoDfd.done(function() {
-          var info = {
-            src: this._videoUrl,
-            preload: 'auto'
-          };
-          
-          if (props.length)
-            info.poster = json[props[0]];
-
-          this.$el.html(this.template(info));
+        var v = videoHtml5 || desc;
+        if (v) {
+          var frag = document.createDocumentFragment();
+          var video = '<div class="video-container" align="center">' + v + '</div>';
+          U.addToFrag(frag, video);
+          this.$el.html(frag);
         }
-        else {
-          var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
-          var descProp = U.getCloneOf(this.vocModel, "VideoResource.description");
-          var videoHtml5 = videoHtml5Prop && json[videoHtml5Prop];
-          var desc = descProp && json[descProp];
-          
-          var v = videoHtml5 || desc;
-          if (v) {
-            var frag = document.createDocumentFragment();
-//            var video = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;">' + v + '</div>';
-            var video = '<div class="video-container" align="center">' + v + '</div>';
-            U.addToFrag(frag, video);
-            if (videoHtml5)
-              delete json[videoHtml5Prop];
-            else
-              delete json[descProp];
-            
-            this.$el.html(frag);
-          }
-        }
-        
-        this.$video = this._getVideoEl();
-        this.video = this.$video[0];
+      }
+      
+      this.$video = this._getVideoEl();
+      this.video = this.$video[0];
+      if (this.video) {
         if (this.video.tagName === 'VIDEO') {
           var checkSize = function(e) {
             if (self.video.videoWidth) {
               self.resizeVideo();
-              _.each(media_events, function(e) {
+              _.each(G.media_events, function(e) {
                 self.$video.off(e, checkSize);
               });
             }
           };
               
-          _.each(media_events, function(e) {
+          _.each(G.media_events, function(e) {
             self.$video.one(e, checkSize);
           });
         }
@@ -167,43 +154,83 @@ define([
           // iframe
           this.video.onload = this.resizeVideo;
         }
-
-        return;
       }
       
+      return this;
+    },
+    
+    render: function(options) {
+      if (!this.isImage && !(this.isVideo || this.isAudio))
+        return this;
+      
+      var self = this;
+      var res = this.resource;
+      var meta = this.vocModel.properties;
+      if (!meta)
+        return this;
+
+      var self = this;
+      if (this.isVideo) {
+        return this.renderVideo();
+      }
+      else if (this.isAudio) {
+        var audio = res.get('AudioResource.audio');
+        if (audio) {
+          this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
+//          return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);
+          this.$el.html(this.template({
+            sources: [U.getExternalFileUrl(audio)]
+          }));
+          
+          return this;
+        }
+        else {
+          // no audio, no player, fall back to imageresource
+        }
+      }
 //      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
-      var oWidth;
-      var oHeight;
+//      var json = res.toJSON();
+      var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
+      if (props.length == 0)
+        props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
+      
+      var oWidth,
+          oHeight,
+          imageProp = props[0], 
+          image = imageProp && res.get(imageProp);
+      
+      if (typeof image == 'undefined') 
+        return this;
+
       if (props.length) {
-        oWidth = json.originalWidth;
-        oHeight = json.originalHeight;
+        oWidth = res.get('ImageResource.originalWidth');
+        oHeight = res.get('ImageResource.originalHeight');
       } 
       else {
         if (U.isA(this.vocModel, 'Intersection')) 
           props = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
+        
         if (!props.length) 
           return this;
-        oWidth = json.aOriginalWidth;
-        oHeight = json.aOriginalHeight;
+        
+        oWidth = res.get('Intersection.aOriginalWidth');
+        oHeight = res.get('Intersection.aOriginalHeight');
       }
-      var p = props[0];
-      var propVal = json[p];
-      if (typeof propVal == 'undefined') 
-        return this;
+      
       var frag = document.createDocumentFragment();
       var isHorizontal = ($(window).height() < $(window).width());
   
-      if (propVal.indexOf('Image/') == 0)
-        propVal = propVal.slice(6);
+      if (image.indexOf('Image/') == 0)
+        image = decodeURIComponent(image.slice(6));
   //          var iTemplate = this.makeTemplate('imagePT');
-  //          li += '<div><a href="#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
+  //          li += '<div><a href="#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
 //      var maxH = $(window).height() - 50;
 
-      var metaW = meta[p]['imageWidth'];
-      var metaH = meta[p]['imageHeight'];
-      var metaDim = meta[p]['maxImageDimension'];
+      var metaW = meta[imageProp]['imageWidth'];
+      var metaH = meta[imageProp]['imageHeight'];
+      var metaDim = meta[imageProp]['maxImageDimension'];
 
       if (maxW > metaDim) {
         if (oWidth > oHeight)
@@ -237,8 +264,8 @@ define([
       */
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
-      var iTemplate = w ? "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "' />"
-                        : "<img src='" + decodeURIComponent(propVal) +"' />";
+      var iTemplate = w ? "<img src='" + image +"' width='" + w + "' />"
+                        : "<img src='" + image +"' />";
       var li;
 /*
       if (G.canWebcam  &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('commerce/urbien/Urbien'))  &&  this.resource.get('_uri') ==  G.currentUser._uri) {
@@ -252,11 +279,12 @@ define([
       
       var mg = U.getPropertiesWith(meta, "mainGroup");
       if (mg == null  ||  mg.length == 0)
-        li = '<div style="margin-top: -15px; margin-left: ' + padding + 'px;"><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate + '</a></div>';
+        li = '<div style="margin-top: -15px; margin-left: {0}px;"><a href="{1}">{2}</a></div>'.format(padding, U.makePageUrl(res), iTemplate);
       else
-        li = '<div><a href="' + G.pageRoot + '#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate + '</a></div>';
+        li = '<div><a href="{0}">{1}</a></div>'.format(U.makePageUrl(res), iTemplate);
+      
       U.addToFrag(frag, li);
-      this.$el.html(frag);
+      this.$el[this.isAudio ? 'append' : 'html'](frag);
       return this;
     }
   },

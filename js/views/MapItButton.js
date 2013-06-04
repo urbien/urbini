@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/MapItButton', [
   'events', 
   'views/ToggleButton', 
   'views/BasicView' 
@@ -19,6 +19,7 @@ define([
       return this;
     },
     mapIt: function(e) {
+      Events.stopEvent(e);
       this.toggle();
       Events.trigger('mapIt', {active: this.isOn()});
       return this;

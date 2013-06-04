@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('models/Resource', [
   'globals',
   'utils',
   'error',
@@ -91,8 +91,21 @@ define([
     },
     
     get: function(propName) {
-      var val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
-      var vocModel = this.vocModel;
+      var val,
+          vocModel = this.vocModel,
+          meta = vocModel && vocModel.properties;
+      
+      if (/^[A-Z]+\./.test(propName)) { // is sth like ImageResource.originalImage
+        var clone = U.getCloneOf(meta, iProp);
+        if (clone && clone.length)
+          val = this.get(clone[0]);
+        else
+          val = null;
+//        val = U.getClonedPropertyValue(this, propName);
+      }
+      else
+        val = this.attributes.hasOwnProperty(propName) ? this.attributes[propName] : undefined;
+        
       if (!vocModel)
         return val;
       
@@ -124,6 +137,13 @@ define([
             defaults[submittedBy] = currentUser._uri;
             U.copySubProps(currentUser, defaults, submittedBy);
           }
+        }
+        
+        if (this.isNew()) {
+          var dateSubmitted = U.getCloneOf(vocModel, "Submission.dateSubmitted")[0];
+          if (dateSubmitted && !this.get(dateSubmitted)) {
+            defaults[dateSubmitted] = +new Date();
+          }          
         }
       }
       
@@ -274,7 +294,7 @@ define([
       if (!this.vocModel)
         this.setModel();
       
-      resp = this.parseHelper.call(this, resp);
+      resp = this.preParse.call(this, resp);
       if (resp) {
         var meta = this.vocModel.properties;
         var unsaved = this.getUnsavedChanges();
@@ -297,10 +317,9 @@ define([
         }
       }
       
-      
       return resp;
     },
-    parseHelper: function (resp) {
+    preParse: function (resp) {
       var lf;
       switch (this.lastFetchOrigin) {
         case 'db':
@@ -394,18 +413,21 @@ define([
           return true;
       }
       
-      if (!options.sync) {
-        var displayNameChanged = false;
-        for (var shortName in props) {
+      var displayNameChanged = false;
+      for (var shortName in props) {
+        var val = props[shortName];
+        if (!val)
+          continue;
+        
+        var prop = meta[shortName];
+        if (!prop)
+          continue;
+        
+        if (!prop.backLink)
+          props[shortName] = U.getFlatValue(prop, val);
+        
+        if (!options.sync) {
           if (/\./.test(shortName))
-            continue;
-          
-          var prop = meta[shortName];
-          if (!prop)
-            continue;
-          
-          var val = props[shortName];
-          if (!val)
             continue;
           
           if (prop.displayNameElm) {
@@ -423,19 +445,24 @@ define([
             }
           }
         }
-        
-        if (this.loaded && displayNameChanged) {
-          var displayNameProps = _.defaults({}, props, this.attributes);
-          delete displayNameProps.davDisplayName;
-          var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
-          if (newDisplayName)
-            props.davDisplayName = newDisplayName;
-        }
+      }
+      
+      if (this.loaded && displayNameChanged) {
+        var displayNameProps = _.defaults({}, props, this.attributes);
+        delete displayNameProps.davDisplayName;
+        var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
+        if (newDisplayName)
+          props.davDisplayName = newDisplayName;
       }
       
       if (options.userEdit)
         this.lastFetchOrigin = 'edit';
-        
+
+//      for (var p in props) {
+//        var prop = meta[p];
+//        props[p] = U.getFlatValue(prop, props[p]);
+//      }
+      
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
         if (options.userEdit) {
@@ -535,6 +562,9 @@ define([
     },
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
+    },
+    isAssignableFrom: function(interfaceName) {
+      return U.isAssignableFrom(this, interfaceName);
     },
     fetch: function(options) {
       var self = this;
@@ -679,6 +709,7 @@ define([
       options = _.extend({patch: true, silent: true}, options || {});
       attrs = attrs || {};
       var isNew = this.isNew();
+      var data;
       if (isNew)
         data = _.extend({}, this.attributes, attrs);
       else
@@ -714,7 +745,7 @@ define([
         this.unsavedChanges = {};
       }
       else {
-        data = U.prepForSync(data, vocModel, ['parameter']);
+        data = this.prepForSync(data);
         if (_.size(data) == 0) {
           if (!isNew) {
             if (options.error)
@@ -732,7 +763,7 @@ define([
           delete data._uri;
   
         var self = this;
-        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: data});
+        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true, resource: this}, options, {data: data});
         var success = options.success, error = options.error;
         options.success = function(resource, response, opts) {
           if (response && response.error)
@@ -798,49 +829,30 @@ define([
 //      else {
 //        res.set(attrs, options);
 //      }
+    },
+    
+    prepForSync: function(item) {
+      var props = this.vocModel.properties;
+      var filtered = U.filterObj(item, function(key, val) {
+        if (key == 'interfaceClass.properties') // HACK
+          return true;
+        
+        if (window.Blob && val instanceof window.Blob)
+          return true;
+        
+        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
+          return false;
+        
+        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
+          return false;        
+        
+        var prop = props[key];
+        return prop && !U.isSystemProp(key); 
+      }); 
+      
+//      return U.flattenModelJson(filtered, vocModel, preserve);
+      return filtered;
     }
-
-//    save: function(attrs, options) {
-//      options = options || {};
-//      var data = U.flattenModelJson(options.data || attrs || this.attributes, this.vocModel);
-//      var isNew = this.isNew();
-//      if (options.$returnMade !== false)
-//        data.$returnMade = 'y';
-//      if (!isNew)
-//        data._uri = this.getUri();
-//
-//      var self = this;
-//      var qs = U.getQueryString(data);
-//      if (options.queryString)
-//        qs += '&' + options.queryString;
-//      options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true}, options, {data: qs});
-//      
-//      var success = options.success;
-//      options.success = function(resource, response, opts) {
-//        success && success.apply(this, arguments);
-//        if (response.error)
-//          return;
-//        
-//        Events.trigger('updatedResources', [self]);
-//        var method = isNew ? 'add.' : 'edit.';
-//        if (!G.currentUser.guest) {
-//          var json = self.toJSON();
-//          json._type = self.vocModel.type;
-//          Events.trigger(method + self.vocModel.type, json);
-//          var sup = self.vocModel;
-//          while (sup = sup.superClass) {
-//            Events.trigger(method + sup.type, self);
-//          }
-//        }
-//      };
-//      
-////      var error = options.error;
-////      options.error = function(resource, xhr, options) {
-////        
-////        error && error.apply(this, arguments);
-////      }
-//      
-//      return Backbone.Model.prototype.save.call(this, attrs, options);
   },
   {
 //    type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",

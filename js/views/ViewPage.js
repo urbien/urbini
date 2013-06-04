@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/ViewPage', [
   'globals',
   'utils',
   'events',
@@ -80,6 +80,10 @@ define([
         this.addChild('cp', new ControlPanel(_.extend({isMainGroup: false}, commonParams)));
       }  
       
+      this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
+      if (this.isPurchasable) 
+        this.addChild('buyGroup', new ResourceView(_.extend({isBuyGroup: true}, commonParams)));
+        
       this.addChild('view', new ResourceView(commonParams));
       this.photogridDfd = $.Deferred();
       this.photogridPromise = this.photogridDfd.promise();
@@ -121,29 +125,31 @@ define([
           friend2 = 'movie';
         }
 
-        U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
-          Voc.getModels(friendType).done(function() {              
-            var friendProps = {};
-            friendProps[friend1] = friendProps[friend2] = uri;
-            self.friends = new ResourceList(null, {
-              params: {
-                $or: U.getQueryString(friendProps, {delimiter: '||'})
-              },
-              model: U.getModel(friendType),
-              title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
-            });
-            
-            self.friends.fetch({
-              success: function() {
-                if (self.friends.size()) {
-                  self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
-                  self.photogridDfd.resolve();
-  //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
-  //                header.insertBefore(self.photogrid.el);
+        this.whenDoneLoading(function() {          
+          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
+            Voc.getModels(friendType).done(function() {              
+              var friendProps = {};
+              friendProps[friend1] = friendProps[friend2] = uri;
+              self.friends = new ResourceList(null, {
+                params: {
+                  $or: U.getQueryString(friendProps, {delimiter: '||'})
+                },
+                model: U.getModel(friendType),
+                title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+              });
+              
+              self.friends.fetch({
+                success: function() {
+                  if (self.friends.size()) {
+                    self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
+                    self.photogridDfd.resolve();
+    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
+    //                header.insertBefore(self.photogrid.el);
+                  }
                 }
-              }
-            });
-          });        
+              });
+            });        
+          });
         });
       }
       
@@ -246,9 +252,14 @@ define([
         views['ul#cpView'] = this.cp;
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
+
+      if (this.isPurchasable) 
+        views['div#buyGroup'] = this.buyGroup;         
       
       var isGeo = this.isGeo();
-      this.headerButtons.aroundMe = isGeo;       
+      this.headerButtons.aroundMe = isGeo;
+      
+      
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
       this.ready.done(function() {
@@ -263,9 +274,11 @@ define([
      
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
+      this.$el.attr("data-theme", G.theme.swatch);
       if (G.theme.backgroundImage) 
         this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
-      
+
+      this.$('#chatbox').css("display", "none");
 //      renderDfd.resolve();
 //      this.restyle();
       

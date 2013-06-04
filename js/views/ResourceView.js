@@ -1,12 +1,11 @@
 //'use strict';
-define([
+define('views/ResourceView', [
   'globals',
-  'jquery', 
   'underscore', 
   'events', 
   'utils',
   'views/BasicView'
-], function(G, $, _, Events, U, BasicView) {
+], function(G, _, Events, U, BasicView) {
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
@@ -19,12 +18,13 @@ define([
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate'], function(t) {
+      _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
         this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
       
-      this.resource.on('change', this.refresh, this);
-      var uri = this.resource.getUri(), self = this;
+      var res = this.resource;
+      res.on('change', this.refresh, this);
+      var uri = res.getUri(), self = this;
 //      if (U.isTempUri(uri)) {
 //        Events.once('synced:' + uri, function(data) {
 //          if (self.isActive()) {
@@ -47,12 +47,53 @@ define([
           defer.resolve();
       }.bind(this));
       
+      if (options.isBuyGroup) {
+        this.isBuyGroup = true;
+        var purchasesBLProp, 
+            vocModel = this.vocModel;
+        
+        if (res.isA("ItemListing"))
+          purchasesBLProp = U.getCloneOf(vocModel, "ItemListing.ordersPlaced")[0];
+        else if (res.isA("Buyable"))
+          purchasesBLProp = U.getCloneOf(vocModel, "Buyable.orderItems")[0];
+        
+        if (!purchasesBLProp)
+          this.isBuyGroup = false;
+        else
+          this.purchasesBacklinkProp = vocModel.properties[purchasesBLProp];
+      }
       this.autoFinish = false;
       this.ready = readyDfd.promise();      
       return this;
     },
     events: {
-//      'click': 'click'
+      'click': 'click'
+    },
+    click: function(e) {
+      if (!this.isBuyGroup)
+        return;
+      var t = e.target;
+      var tagName = t.tagName.toLowerCase();
+      while (tagName  &&  tagName != 'a') {
+        t = t.parentElement;
+        tagName = t.tagName.toLowerCase();
+      }
+      if (tagName != 'a'  ||  !t.id)
+        return;
+      if (t.id != 'buy') {
+        if (t.id == 'sell')
+          Events.stopEvent(e);
+        return;
+      }
+      Events.stopEvent(e);
+
+      var res = this.resource;
+      
+      var bl = this.purchasesBacklinkProp;
+      var cbType = bl.range;
+      var props = {};
+      props[bl.backLink] = res.getUri();
+      return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
     },
     refresh: function(resource, options) {
       options = options || {};
@@ -110,7 +151,6 @@ define([
         this.$el.trigger('create');      
         return this;
       }
-
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
       var json = res.toJSON();
@@ -119,8 +159,34 @@ define([
       var frag = document.createDocumentFragment();
 
       var currentAppProps = U.getCurrentAppProps(meta);
-      
-      var propGroups = U.getPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
+      var propGroups;
+      if (this.isBuyGroup) {
+        this.$el.css("float", "right");
+        this.$el.css("width", "45%");
+        this.$el.css("min-width", "130");
+        var color = ['rgba(156, 156, 255, 0.95)', 'rgba(255, 0, 255, 0.8)', 'rgba(255, 255, 0, 0.95)', 'rgba(32, 173, 176, 0.8)', 'rgba(255, 156, 156, 0.8)', 'purple'];
+        var colorIdx = 0;
+
+        if (this.vocModel.type.endsWith("coupon/Coupon")) {
+          if (json.discount < 90) {
+            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
+            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, json['dealPrice'])})));
+          }
+          else
+            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'Deal value', shortName: 'dealValue', value: U.getFlatValue(meta.dealAmount, json.dealValue)})));
+          U.addToFrag(frag, this.buyTemplate(_.extend({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, json['dealPrice'])})));
+        }
+        else {        
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, json['price'])})));
+          U.addToFrag(frag, this.buyTemplate(_.extend({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, json['price'])})));
+          U.addToFrag(frag, this.sellTemplate(_.extend({color: color[2], background: 'rgba(255, 0, 0, 0.9)'})));
+        }
+        this.$el.html(frag);      
+        this.$el.trigger('create');
+        return this;
+      }
+      propGroups = U.getPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
 //      propGroups = propGroups.length ? propGroups : U.getPropertiesWith(vocModel.properties, "propertyGRoupsList", true);
       propGroups = _.sortBy(propGroups, function(pg) {
         return pg.index;
@@ -153,6 +219,8 @@ define([
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
+
+
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
@@ -201,6 +269,12 @@ define([
       var otherLi;
       groupNameDisplayed = false;
       var numDisplayed = _.size(displayedProps);
+      if (!this.isBuyGroup  &&  this.vocModel.type.endsWith("/Coupon")) {
+        displayedProps['price'] = true;
+        displayedProps['dealAmount'] = true;
+        displayedProps['value'] = true;
+        displayedProps['discount'] = true;
+      }
       for (var p in json) {
         if (!/^[a-zA-Z]/.test(p))
           continue;

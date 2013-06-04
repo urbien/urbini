@@ -1,5 +1,5 @@
 //'use strict';
-define([
+define('views/MenuButton', [
   'globals',
   'underscore', 
   'utils',
@@ -30,13 +30,19 @@ define([
 
       return this;
     },
-    
+
+    refresh: function() {
+      var num = G.currentUser.newAlertsCount;
+      var $menuBadge = this.$('.menuBadge');
+      $menuBadge.html(num || '');
+      $menuBadge[num ? 'show' : 'hide']();
+    },
+
     render: function(options) {
-      if (!this.template)
-        return this;
-      
-      var newAlerts = G.currentUser.newAlertsCount;
-      this.$el.html(this.template({viewId: this.viewId, newAlerts: newAlerts}));
+      this.$el.html(this.template({viewId: this.viewId}));
+      this.finish();
+      this.refresh();
+      // when user profile gets updated, call this.refresh 
       return this;
     }
   },

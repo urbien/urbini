@@ -1,16 +1,15 @@
 //'use strict';
-define([
-  'jquery', 
+define('views/ToggleButton', [
   'underscore', 
   'events',
   'views/BasicView'
-], function($, _, Events, BasicView) {
+], function(_, Events, BasicView) {
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'setStyle', 'toggleStyle', 'setStyle', 'isOn', 'reset', 'resetStyle');
       BasicView.prototype.initialize.apply(this, arguments);
       this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
-      Events.on("changePage", this.reset);
+      Events.on("pageChange", this.reset);
     },
     isOn: function() {
 //      return this.$('a').hasClass('ui-btn-active');
