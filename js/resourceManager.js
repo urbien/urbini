@@ -538,16 +538,22 @@ define('resourceManager', [
       }
 
       options = options || {};
-      var version = options.version, toMake = options.toMake || [], toKill = options.toKill || [];
+      if (options.cleanSlate)
+        RM.db = RM.$db = null;
+      
+      var version = options.version, 
+          toMake = options.toMake = options.toMake || [], 
+          toKill = options.toKill = options.toKill || [];
+      
       if (toMake.indexOf('http://www.hudsonfog.com/voc/model/crm/SupportIssue') != -1)
         debugger;
       
-      if (RM.db) {
-        if (!RM.storeExists(REF_STORE.name))
-          toMake.push(REF_STORE.name);
-        if (!RM.storeExists(MODULE_STORE.name))
-          toMake.push(MODULE_STORE.name);
-      }
+//      if (RM.db) {
+//        if (!RM.storeExists(REF_STORE.name))
+//          toMake.push(REF_STORE.name);
+//        if (!RM.storeExists(MODULE_STORE.name))
+//          toMake.push(MODULE_STORE.name);
+//      }
       
       var needUpgrade = function() {
         return !!(toKill.length || toMake.length) ;
@@ -592,7 +598,12 @@ define('resourceManager', [
           toMake.push(REF_STORE.name);
           version = currentVersion + 1;
         }
-        
+
+        if (!RM.storeExists(MODULE_STORE.name)) {
+          toMake.push(MODULE_STORE.name);
+          version = currentVersion + 1;
+        }
+
         // user refreshed the page
         if (!RM.db && !version) { 
           if (needUpgrade()) {
@@ -622,7 +633,7 @@ define('resourceManager', [
           case 'blocked':
             G.log(RM.TAG, ['db', 'error'], "upgrading db - received blocked event, queueing up restartDB");
             dbDefer.reject();
-            RM.restartDB();
+            RM.restartDB({cleanSlate: true});
             break;
           case 'upgradeneeded':
             break;
@@ -1701,8 +1712,9 @@ define('resourceManager', [
     },
     
     restartDB: function() {
+      var args = arguments;
       return RM.runTask(function() {
-        RM.openDB().done(this.resolve).fail(this.reject);
+        RM.openDB.apply(RM, args).done(this.resolve).fail(this.reject);
       }, {name: "restartDB", sequential: true});
     }
 

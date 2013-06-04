@@ -49,7 +49,10 @@
                     return self.openSignalingChannel(config);
                 },
                 onNewSession: function (session) {
-                    if (self.channel !== session.sessionid) return false;
+                    if (self.channel !== session.sessionid) {
+                      debugger;
+                      return false;
+                    }
 
                     if (!rtcSession) {
                         self._session = session;

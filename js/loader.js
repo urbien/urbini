@@ -393,7 +393,7 @@ define('globals', function() {
         }
         else if (source === 'indexedDB') {
           var RM = G.ResourceManager;
-          if (!RM.storeExists("modules"))
+          if (!RM.storeExists('modules'))
             return defer.reject();
           
           var $db = RM && RM.$db;

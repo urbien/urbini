@@ -813,7 +813,7 @@ define('views/ChatView', [
       this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
 //      _.extend(this.chat, this.chatSettings);
         
-      var create = this.hashParams['-create'] === 'y' || (this.isWaitingRoom && this.isAgent);
+      var create = false;//this.hashParams['-create'] === 'y' || (this.isWaitingRoom && this.isAgent);
       if (create) {
         var orgHash = U.getHash(),
             hash = U.replaceParam(orgHash, {'-create': null});
