@@ -235,47 +235,47 @@ define('views/ChatView', [
 //        $bl.css('z-index', 100).drags();
 //      });
 //    },
-
-    _attachLocalVideoMonitor: function(stream) {
-      debugger;
-      var $localMonitors = this.$('#localVideoMonitor');
-      if ($localMonitors.find('video').length)
-        return;
-      
-      var video = document.createElement('video');
-      video.autoplay = true;
-      video.muted = true;
-      if (navigator.mozGetUserMedia) {
-        video.mozSrcObject = stream;
-      } else {
-        var vendorURL = window.URL || window.webkitURL;
-        video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
-      }
-      
-//      video.play();
-      var self = this;
-      $localMonitors.append(video);
-      Events.on('localVideoMonitor:on', function() {
-        self.playRingtone();
-      });
-      
-      Events.on('localVideoMonitor:off', function() {
-//        stream && stream.stop();
-        $localMonitors.html("");
-        self.stopRingtone();
-      });
-    },
-    
-    attachLocalVideoMonitor: function(stream) {
-      if (this.isActivePage())
-        return this._attachLocalVideoMonitor(stream);
-      
-      var self = this;
-      Events.once('pageChange', function() {
-        self._attachLocalVideoMonitor(stream);
-      });
-    },
-    
+//
+//    _attachLocalVideoMonitor: function(stream) {
+//      debugger;
+//      var $localMonitors = this.$('#localVideoMonitor');
+//      if ($localMonitors.find('video').length)
+//        return;
+//      
+//      var video = document.createElement('video');
+//      video.autoplay = true;
+//      video.muted = true;
+//      if (navigator.mozGetUserMedia) {
+//        video.mozSrcObject = stream;
+//      } else {
+//        var vendorURL = window.URL || window.webkitURL;
+//        video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+//      }
+//      
+////      video.play();
+//      var self = this;
+//      $localMonitors.append(video);
+//      Events.on('localVideoMonitor:on', function() {
+//        self.playRingtone();
+//      });
+//      
+//      Events.on('localVideoMonitor:off', function() {
+////        stream && stream.stop();
+//        $localMonitors.html("");
+//        self.stopRingtone();
+//      });
+//    },
+//    
+//    attachLocalVideoMonitor: function(stream) {
+//      if (this.isActivePage())
+//        return this._attachLocalVideoMonitor(stream);
+//      
+//      var self = this;
+//      Events.once('pageChange', function() {
+//        self._attachLocalVideoMonitor(stream);
+//      });
+//    },
+//    
 //    startLocalVideo: function() {
 //      var chatView = this;
 //      navigator.getMedia({
@@ -327,47 +327,55 @@ define('views/ChatView', [
       return this.disabled;
     },
 
-    removeParticipant: function(userid) {
-      debugger;
-      var whoLeft = this.getUserInfo(userid);
-      if (whoLeft.stream) {
-        this.$('video[src="{0}"]'.format(whoLeft.blobURL)).remove().each(function() {
-          unbindVideoEvents(this);
-          this.pause();
-          $(this).remove();
-        });
-
-//        this.pageView.trigger('video:off');
+    removeParticipant: function(userid, options) {
+      options = options || {
+        data: true,
+        stream: true
+      };
+      
+      var whoLeft = this.getUserInfo(userid) || {};
+      if (whoLeft) {
+        if (options.stream) {          
+          delete whoLeft.stream;
+          delete whoLeft.blobURL;
+        }
+        
+        if (options.data) {
+          for (var prop in this.myInfo) {
+            delete whoLeft[prop];
+          }
+        }
       }
       
-      var conv = this.chat.pcs[userid];
-      if (conv)
-        conv.end();
-      
-      if (this.rtcCall)
-        Events.trigger('endRTCCall', this.rtcCall);
-      
-//      // HACK: need to figure out why sometimes videos don't get removed
-//      this.$('#remoteVideos video').each(function() {
-//        if (this.videoWidth < 10)
+//      if (whoLeft.stream) {
+//        debugger;
+//        this.$('video[src="{0}"]'.format(whoLeft.blobURL)).remove().each(function() {
+//          unbindVideoEvents(this);
+//          this.pause();
 //          $(this).remove();
-//      });
-//      // END HACK
-      
-      delete this.userIdToInfo[userid];
-//      if (!_.size(this.userIdToInfo)) {
-//        this.disableChat();
-//        this.endChat();
+//        });
+//
+//        this.pageView.trigger('video:off');
 //      }
-    
-      this._updateParticipants();
-      var dfd = this._otherRequestPromises[userid];
-      if (dfd) {
-        dfd.resolve()
-        delete this._otherRequestPromises[userid];
+      
+      if (!_.size(whoLeft)) {
+//        var conv = this.chat.pcs[userid];
+//        if (conv)
+//          conv.end();
+        
+        delete this.userIdToInfo[userid];
+        this._updateParticipants();
+        var dfd = this._otherRequestPromises[userid];
+        if (dfd) {
+          dfd.resolve()
+          delete this._otherRequestPromises[userid];
+        }
+        
+        this.pageView.trigger('chat:participantLeft', userid);
       }
       
-      this.pageView.trigger('chat:participantLeft', userid);
+      if (options.stream && this.rtcCall)
+        Events.trigger('endRTCCall', this.rtcCall);      
     },
 
     addParticipant: function(userInfo) {
@@ -379,8 +387,9 @@ define('views/ChatView', [
       
       if (isUpdate)
         _.extend(existing, userInfo);
+      else
+        this.userIdToInfo[userid] = userInfo;
       
-      this.userIdToInfo[userid] = userInfo;
       this._updateParticipants();
       if (userInfo.justEntered) {
         this.addMessage({
@@ -392,18 +401,13 @@ define('views/ChatView', [
         });
       }
       
-      this.pageView.trigger('chat:newParticipant', userInfo);
+      if (!isUpdate)
+        this.pageView.trigger('chat:newParticipant', userInfo);
     },
     
     _updateParticipants: function() {
       this.participants = _.keys(this.userIdToInfo);
     },
-    
-//    _checkChannels: function() {
-//      if (_.filter(this.chat.channels, function(c) {return c.readyState === 'closed'}).length) {
-//        debugger;
-//      }
-//    },
     
     sendUserInfo: function(options) {
       this.chat.send({
@@ -671,6 +675,7 @@ define('views/ChatView', [
     },
 
     onDataChannelClosed: function(event, conversation) {
+      debugger;
       var channel = event.target,
           whoLeftId = conversation.id;
           whoLeft = this.getUserInfo(whoLeftId);
@@ -687,7 +692,9 @@ define('views/ChatView', [
           info: true
         });
         
-        this.removeParticipant(whoLeftId);
+        this.removeParticipant(whoLeftId, {
+          data: true
+        });
       }
     },
     
@@ -807,7 +814,7 @@ define('views/ChatView', [
     },
 
     processRemoteVideo: function(info, conversation) {
-      debugger;
+//      debugger;
       var self = this,
           video = info.video,
           stream = info.stream;
@@ -824,7 +831,9 @@ define('views/ChatView', [
 ////        if (conv)
 ////          conv.stream && conv.stream.stop(); // theoretically safe to stop() no matter what state it's in, doesn't throw exceptions according to https://developer.mozilla.org/en-US/docs/WebRTC/MediaStream_API
 //        
-        this.removeParticipant(id);
+        this.removeParticipant(id, {
+          stream: true
+        });
       }
       
       this.addParticipant({
@@ -848,7 +857,9 @@ define('views/ChatView', [
         debugger;
       }
       else {
-        this.removeParticipant(conversation.id);
+        this.removeParticipant(conversation.id, {
+          stream: true
+        });
       }
     },
     

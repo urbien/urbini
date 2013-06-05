@@ -485,12 +485,18 @@ function Conversation(options) {
         
         // proxy data channel events to parent, so that the user can attach event handlers directly to the WebRTC instance, e.g. WebRTC.on('open', onOpenDataChannel); 
         this.channel[cbName] = this.getDataChannelHandler(event);
-      }
+      }      
     }
 
     // for re-use
-    this.mediaConstraints = this.parent.mediaConstraints;
-
+    this.mediaConstraints = {
+        optional: [],
+        mandatory: {
+            OfferToReceiveAudio: this.parent.receiveAudio,
+            OfferToReceiveVideo: this.parent.receiveVideo
+        }
+    };
+    
     WildEmitter.call(this);
 
     // proxy events to parent
@@ -575,7 +581,13 @@ Conversation.prototype.start = function () {
 };
 
 Conversation.prototype.end = function () {
-    this.pc.close();
+//    debugger;
+    if (this.channel && this.channel.readyState !== 'closed')
+      this.channel.close();
+  
+    if (this.pc.signalingState !== 'closed')
+      this.pc.close();
+    
     this.handleStreamRemoved();
 };
 
@@ -601,11 +613,12 @@ Conversation.prototype.answer = function () {
 ////  this.broadcastMessage({message: 'I am here' + +new Date()});
 ////  this.sendMessage({message: 'I am here for you'});
 //};
-//
-//Conversation.prototype.onclose = function(event) {
-//  debugger;
-//};
-//
+
+Conversation.prototype.onclose = function(event) {
+  debugger;
+  this.cleanup();
+};
+
 //Conversation.prototype.onerror = function(event) {
 //  debugger;
 //};
@@ -659,6 +672,7 @@ Conversation.prototype.handleStreamRemoved = function () {
     var video = document.getElementById(this.id),
         container = this.parent.getRemoteVideoContainer();
     
+    this.stream = null;
     if (video) {
       if (container) container.removeChild(video);
       
@@ -668,12 +682,19 @@ Conversation.prototype.handleStreamRemoved = function () {
       });
     }
     
-    if (this.channel)
-      this.channel.close();
-    
-    delete this.parent.pcs[this.id];    
-    this.closed = true;
+    this.cleanup();
 };
+
+Conversation.prototype.cleanup = function() {
+  if (this.stream)
+    return;
+  
+  if (this.parent.hasData && this.parent.pcs[this.id].channel.readyState == 'open')
+    return;
+  
+  delete this.parent.pcs[this.id];
+  this.closed = true;
+}
 
 // expose WebRTC
 if (typeof define === 'function' && define.amd) {
