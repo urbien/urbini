@@ -140,7 +140,7 @@ define('views/ChatView', [
     },
 
     getUserId: function() {
-      return this.myInfo._userid;
+      return this.chat.id;
     },
     
     getParticipants: function() {
@@ -328,8 +328,9 @@ define('views/ChatView', [
     },
 
     removeParticipant: function(userid) {
+      debugger;
       var whoLeft = this.getUserInfo(userid);
-      if (whoLeft.media) {
+      if (whoLeft.stream) {
         this.$('video[src="{0}"]'.format(whoLeft.blobURL)).remove().each(function() {
           unbindVideoEvents(this);
           this.pause();
@@ -338,6 +339,10 @@ define('views/ChatView', [
 
 //        this.pageView.trigger('video:off');
       }
+      
+      var conv = this.chat.pcs[userid];
+      if (conv)
+        conv.end();
       
       if (this.rtcCall)
         Events.trigger('endRTCCall', this.rtcCall);
@@ -366,11 +371,18 @@ define('views/ChatView', [
     },
 
     addParticipant: function(userInfo) {
-      var userid = userInfo._userid;
-      var isUpdate = !!this.getUserInfo(userid);
+      var userid = userInfo.id;
+      var existing = this.getUserInfo(userid);
+      var isUpdate = !!existing                 || 
+          (userInfo.stream && !existing.stream) || // we already opened the data channel, but haven't gotten the remote stream yet
+          (userInfo.uri && !existing.uri);         // we already got the remote stream, but haven't opened the data channel yet
+      
+      if (isUpdate)
+        _.extend(existing, userInfo);
+      
       this.userIdToInfo[userid] = userInfo;
       this._updateParticipants();
-      if (!isUpdate && userInfo.justEntered) {
+      if (userInfo.justEntered) {
         this.addMessage({
           message: '<i>{0} has entered the room</i>'.format(userInfo.name),
           time: +new Date(), //getTime(),
@@ -536,12 +548,12 @@ define('views/ChatView', [
       });
     },
     
-    openChat: function() {
-      this.chat.open(this.roomName, {
-        _userid: this.myInfo._userid
-      });
-    },
-    
+//    openChat: function() {
+//      this.chat.open(this.roomName, {
+//        _userid: this.myInfo._userid
+//      });
+//    },
+//    
 //    restartChat: function() {
 //      this.chat = new RTCMultiConnection(this.roomName, this.chatSettings);
 //      this.chat.openNewSession(false);
@@ -625,6 +637,7 @@ define('views/ChatView', [
     },
 
     onDataChannelOpened: function(event, conversation) {
+      debugger;
       var info = _.clone(this.myInfo),
           self = this;
       
@@ -693,7 +706,7 @@ define('views/ChatView', [
       var isPrivate = !!data['private'];
       if (data.userInfo) {
         userInfo = data.userInfo;
-        userInfo._userid = from; // HACK for now, until we decide what we're using, SimpleWebRTC or RTCMultiConnection
+        userInfo.id = from;
         this.addParticipant(userInfo);
       }        
       else if (data.response) {
@@ -724,12 +737,10 @@ define('views/ChatView', [
       }
       else if (data.message) {
         if (!userInfo) {
-          this.chat.send({
-            to: userid,
-            request: {
-              type: 'info'
-            }
-          });
+          debugger;
+          this.request({
+            type: 'info'
+          }, from);
           
           debugger;
           return; // TODO: append message after getting info
@@ -759,11 +770,77 @@ define('views/ChatView', [
         if (this.isWaitingRoom)
           Events.trigger('localVideoMonitor:on', info.stream);
         
-        this.processLocalVideo(info.video, info.stream);
+        this.processLocalVideo.apply(this, arguments);
       }
       else {
-        this.processRemoteVideo(info.video, info.stream);
+        this.processRemoteVideo.apply(this, arguments);
       }
+    },
+    
+    processLocalVideo: function(info, conversation) {
+      var video = info.video;
+      this.localStream = info.stream;
+      this.pageView.trigger('video:on');
+      this.checkVideoSize(video);
+      var $local = this.$localVids.find('video');
+      if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
+        for (var i = 0; i < $local.length; i++) {
+          var v = $local[i];
+          if (v !== video)
+            $(v).remove();
+        }
+      }
+
+//      $("#localVideoMonitor video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
+        video.muted = true;
+        video.controls = false;
+        video.play();
+        $(video).addClass('localVideo');
+        this.$localVids.show();
+        this.restyleVideos();
+//      });
+        
+      if (!this.isWaitingRoom)
+        Events.trigger('localVideoMonitor:off');
+      
+      this.monitorVideoHealth(video);
+    },
+
+    processRemoteVideo: function(info, conversation) {
+      debugger;
+      var self = this,
+          video = info.video,
+          stream = info.stream;
+
+      var alreadyStreaming = U.filterObj(this.userIdToInfo, function(id, info) {
+        return !!info.stream;
+      });
+      
+      
+      for (var id in alreadyStreaming) {
+//        var conv = this.chat.conversations[id];
+//        if (conv)
+//          conv.end();
+////        if (conv)
+////          conv.stream && conv.stream.stop(); // theoretically safe to stop() no matter what state it's in, doesn't throw exceptions according to https://developer.mozilla.org/en-US/docs/WebRTC/MediaStream_API
+//        
+        this.removeParticipant(id);
+      }
+      
+      this.addParticipant({
+        id: conversation.id,
+        stream: stream,
+        blobURL: video.src || video.mozSrcObject
+      });
+      
+      this.pageView.trigger('video:on');
+      this.checkVideoSize(video);
+      video.controls = false;
+      video.play();
+      $(video).addClass('remoteVideo');
+      this.$remoteVids.show();
+      this.restyleVideos();
+      this.monitorVideoHealth(video);
     },
 
     onVideoRemoved: function(info, conversation) {
@@ -1095,34 +1172,6 @@ define('views/ChatView', [
       }
     },
 
-    processLocalVideo: function(video, localStream) {
-      this.pageView.trigger('video:on');
-      this.localStream = localStream;
-      this.checkVideoSize(video);
-      var $local = this.$localVids.find('video');
-      if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
-        for (var i = 0; i < $local.length; i++) {
-          var v = $local[i];
-          if (v !== video)
-            $(v).remove();
-        }
-      }
-
-//      $("#localVideoMonitor video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
-        video.muted = true;
-        video.controls = false;
-        video.play();
-        $(video).addClass('localVideo');
-        this.$localVids.show();
-        this.restyleVideos();
-//      });
-        
-      if (!this.isWaitingRoom)
-        Events.trigger('localVideoMonitor:off');
-      
-      this.monitorVideoHealth(video);
-    },
-
     monitorVideoHealth: function(video) {
       var $video = $(video), chatView = this;
       _.each(["suspend", "abort", "error", "ended", "pause"], function(event) {
@@ -1138,17 +1187,6 @@ define('views/ChatView', [
       });
     },
     
-    processRemoteVideo: function(video) {
-      this.pageView.trigger('video:on');
-      this.checkVideoSize(video);
-      video.controls = false;
-      video.play();
-      $(video).addClass('remoteVideo');
-      this.$remoteVids.show();
-      this.restyleVideos();
-      this.monitorVideoHealth(video);
-    },
-
     checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
       var chatView = this;
       if (!video.videoWidth) {

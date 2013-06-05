@@ -222,7 +222,7 @@ function WebRTC(opts) {
             peerConnectionContraints: {
                 optional: isChrome ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
             },
-            media: {
+            mediaConstraints: {
                 audio: this.hasAudio,
                 video: this.hasVideo ? {
                     mandatory: {
@@ -406,7 +406,7 @@ WebRTC.prototype.startLocalVideo = function (element) {
         return;
     }
     
-    getUserMedia(this.config.media, this.addVideoFromStream.bind(this), function () {
+    getUserMedia(this.config.mediaConstraints, this.addVideoFromStream.bind(this), function () {
         throw new Error('Failed to get access to local media.');
     });
 };
@@ -485,13 +485,7 @@ function Conversation(options) {
     }
 
     // for re-use
-    this.mediaConstraints = {
-        optional: [],
-        mandatory: {
-            OfferToReceiveAudio: this.parent.hasAudio,
-            OfferToReceiveVideo: this.parent.hasVideo
-        }
-    };
+    this.mediaConstraints = this.parent.mediaConstraints;
 
     WildEmitter.call(this);
 

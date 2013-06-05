@@ -437,7 +437,7 @@ define('globals', function() {
           navigator.mozGetUserMedia ||
           navigator.msGetUserMedia));
       
-      m && m.bind(navigator);
+//      m && m.bind(navigator);
       return !!m;
     })(),
     showSpinner: function(options) {

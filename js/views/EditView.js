@@ -1214,7 +1214,13 @@ define('views/EditView', [
         if (videoProp && !res.get(videoProp))
           return true;
       }
-      
+
+      if (res.isA("AudioResource")) {
+        var audioProp = U.getCloneOf(vocModel, "AudioResource.audio")[0];
+        if (audioProp && !res.get(audioProp))
+          return true;
+      }
+
       var cameraProps = U.getPropertiesWith(meta, [{name: 'cameraOnly', value: true}], true);
       if (cameraProps.length && _.any(cameraProps, function(p) {
         return !res.get(p.shortName);
