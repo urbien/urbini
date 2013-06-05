@@ -204,12 +204,6 @@
     </div>    
   {{ }                }}
   
-    <div id="localVideoMonitor">
-      {{ if (this.isWaitingRoom && this.isClient) {  }}
-        <div class="parentCenter" style="color:red"><h2>{{= obj.message || 'Someone will be with you shortly' }}</h2></div>
-      {{ }                                           }}
-    </div>
-    
     <div id="ringtoneHolder" style="visibility: hidden; display: none;">
     </div>
   

@@ -1,4 +1,5 @@
-;define('lib/simplewebrtc', ['lib/socket.io'], function () {
+//;define('lib/simplewebrtc', ['lib/socket.io'], 
+(function (window) {
 
 var logger = {
     log: function (){},
@@ -11,13 +12,11 @@ var RTCPeerConnection = null,
     getUserMedia = null,
     attachMediaStream = null,
     reattachMediaStream = null,
-    browser = null,
-    webRTCSupport = true;
+    webRTCSupport = true,
+    isChrome = false;
 
 if (navigator.mozGetUserMedia) {
     logger.log("This appears to be Firefox");
-
-    browser = "firefox";
 
     // The RTCPeerConnection object.
     RTCPeerConnection = mozRTCPeerConnection;
@@ -52,10 +51,12 @@ if (navigator.mozGetUserMedia) {
         return [];
     };
 } else if (navigator.webkitGetUserMedia) {
-    browser = "chrome";
+    isChrome = true;
 
     // The RTCPeerConnection object.
     RTCPeerConnection = webkitRTCPeerConnection;
+    
+    MediaStream = webkitMediaStream;
 
     // Get UserMedia (only difference is the prefix).
     // Code from Adam Barth.
@@ -203,27 +204,33 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
 
 function WebRTC(opts) {
     var options = opts || {};
-    this.hasMedia = options.localVideo || options.remoteVideos;
+    this.hasVideo = !!options.remoteVideos;
+    this.hasAudio = !!(this.hasVideo || options.audio);
+    this.hasData = options.data;
     var self = this,
         config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
             log: false,
             localVideo: {},
             remoteVideos: {},
+            data: false,
             autoRequestMedia: false,
             // makes the entire PC config overridable
             peerConnectionConfig: {
-                iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
+                iceServers: isChrome ? [{"url": "stun:stun.l.google.com:19302"}] : [{"url":"stun:124.124.124.2"}]
             },
             peerConnectionContraints: {
-                optional: browser != 'firefox' && !this.hasMedia ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
+                optional: isChrome ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
             },
             media: {
-                audio:true,
-                video: {
-                    mandatory: {},
+                audio: this.hasAudio,
+                video: this.hasVideo ? {
+                    mandatory: {
+//                      maxWidth: 320,
+//                      maxHeight: 180
+                    },
                     optional: []
-                }
+                } : false
             }
         },
         item,
@@ -247,7 +254,9 @@ function WebRTC(opts) {
     this.pcs = {};
 
     // our socket.io connection
-    connection = this.connection = io.connect(this.config.url);
+    connection = this.connection = io.connect(this.config.url, {
+      'force new connection': true  // otherwise the 2nd instance of WebRTC will fail to connect
+    });
 
     connection.on('connect', function () {
         self.emit('ready', connection.socket.sessionid);
@@ -264,23 +273,25 @@ function WebRTC(opts) {
             self.pcs[message.from] = new Conversation({
               id: message.from,
               parent: self,
-              initiator: false,
-              media: self.hasMedia
+              initiator: false
             });
             
             self.pcs[message.from].handleMessage(message);
         }
     });
 
-    connection.on('joined', function (room) {
-        logger.log('got a joined', room);
-        if (!self.pcs[room.id]) {
-          if (self.localStream)
-            self.startVideoCall(room.id);
-          else
-            self.startTextChat(room.id);            
+    connection.on('joined', function (info) {
+        logger.log('got a joined', info);
+        // first 'joined' event carries my own id (as my own 'joined' event is the first one I can receive), all subsequent ones carry ids of other people who joined
+        if (!self.id) {
+          self.id = info.id;
+          return;
         }
+          
+        if (!self.pcs[info.id])
+          self.startCall(info.id);
     });
+    
     connection.on('left', function (room) {
         var conv = self.pcs[room.id];
         if (conv) conv.handleStreamRemoved();
@@ -329,7 +340,6 @@ WebRTC.prototype.getLocalVideoContainer = function () {
         }
         
         el.appendChild(video);
-        this.emit('appendedLocalVideo', video);
         return video;
     }
 };
@@ -338,23 +348,14 @@ WebRTC.prototype.getRemoteVideoContainer = function () {
     return this.getEl(this.config.remoteVideos._el);
 };
 
-WebRTC.prototype.startVideoCall = function (id) {
+WebRTC.prototype.startCall = function (id) {
     this.pcs[id] = new Conversation({
         id: id,
         parent: this,
         initiator: true
     });
+    
     this.pcs[id].start();
-};
-
-WebRTC.prototype.startTextChat = function (id) {
-  this.pcs[id] = new Conversation({
-      id: id,
-      parent: this,
-      initiator: true
-  });
-  
-  this.pcs[id].start();
 };
 
 WebRTC.prototype.createRoom = function (name, cb) {
@@ -398,15 +399,43 @@ WebRTC.prototype.testReadiness = function () {
 
 WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
-    getUserMedia(this.config.media, function (stream) {
-        attachMediaStream(element || self.getLocalVideoContainer(), stream);
-        self.localStream = stream;
-        self.testReadiness();
-    }, function () {
+    if (element) {
+      if (element instanceof MediaStream)
+        return this.addVideoFromStream(element);
+      else if (element.src || element.mozSrcObject)
+        return;
+    }
+    
+    getUserMedia(this.config.media, this.addVideoFromStream.bind(this), function () {
         throw new Error('Failed to get access to local media.');
     });
 };
 
+WebRTC.prototype.addVideoFromStream = function(stream) {
+  var video = this.getLocalVideoContainer();
+  attachMediaStream(video, stream);        
+  this.localStream = stream;
+  this.testReadiness();
+  this.emit('videoAdded', {
+    type: 'local',
+    video: video,
+    stream: stream
+  });
+}
+
+
+WebRTC.prototype.broadcastData = function (data) {
+  data = typeof data === 'string' ? data : JSON.stringify(data);
+  for (var conv in this.pcs) {
+    var channel = this.pcs[conv].channel;
+    if (channel.readyState == 'open')
+      channel.send(data);
+  }
+};
+
+WebRTC.prototype.sendData = function (to, data) {
+  this.pcs[to].channel.send(typeof data === 'string' ? data : JSON.stringify(data));
+};
 
 WebRTC.prototype.send = function (to, type, payload) {
     this.connection.emit('message', {
@@ -416,54 +445,51 @@ WebRTC.prototype.send = function (to, type, payload) {
     });
 };
 
-
 function Conversation(options) {
+    this.options = options || {};
     var self = this;
-
-    for (var o in options) {
-      this[o] = options[o];
+        dataCallbacks = ['onopen', 'onclose', 'onmessage', 'onerror'];
+        
+    for (var o in this.options) {
+      this[o] = this.options[o];
     }
-
+        
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    if (this.media) {
+    if (this.parent.hasVideo || this.parent.hasAudio) {
       this.pc.addStream(this.parent.localStream);
       this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
       this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     }
     
-    this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
-    this.channel = this.pc.createDataChannel(
-        'RTCDataChannel',
-        browser == 'firefox' ? {} : {
-          reliable: false
-        }
-    );
-    
-    if (browser == 'firefox') 
-      channel.binaryType = 'blob';
-    
-    this.channel.onmessage = function (event) {
-      self.onChannelMessage(event);
-    };
-    
-    this.channel.onopen = function (channel) {
-      self.onChannelOpened(channel);
-    };
-    this.channel.onclose = function (event) {
-      self.onChannelClosed(event);
-    };
-    this.channel.onerror = function (event) {
-      self.onChannelError(event);
-    };
-    
+    if (this.parent.hasData) {
+      this.channel = this.pc.createDataChannel(
+          'RTCDataChannel',
+          isChrome ? {
+            reliable: false
+          } : {}
+      );
+      
+      this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
+      if (!isChrome) 
+        this.channel.binaryType = 'blob';  
+      
+      for (var i = 0; i < dataCallbacks.length; i++) {
+        var cbName = dataCallbacks[i],
+            event = cbName.slice(2);
+        
+        // proxy data channel events to parent, so that the user can attach event handlers directly to the WebRTC instance, e.g. WebRTC.on('open', onOpenDataChannel); 
+        this.channel[cbName] = this.getDataChannelHandler(event);
+      }
+    }
+
     // for re-use
     this.mediaConstraints = {
         optional: [],
         mandatory: {
-            OfferToReceiveAudio: !!this.media,
-            OfferToReceiveVideo: !!this.media
+            OfferToReceiveAudio: this.parent.hasAudio,
+            OfferToReceiveVideo: this.parent.hasVideo
         }
     };
 
@@ -481,25 +507,50 @@ Conversation.prototype = Object.create(WildEmitter.prototype, {
     }
 });
 
+Conversation.prototype.getDataChannelHandler = function(event) {
+  var self = this,
+      defaultHandler = self['on' + event];
+  
+  return function(e) {    
+    var args = [].slice.call(arguments);
+    logger.log.apply(logger, ['event', event].concat(args));
+    if (defaultHandler && defaultHandler.apply(self, arguments) == false)
+      return;
+    
+    self.emit.apply(self, [event].concat(args)); // set Conversation instance as the context
+  }
+}
+
 Conversation.prototype.handleMessage = function (message) {
-    if (message.type === 'offer') {
+    switch (message.type) {    
+      case 'offer':
         logger.log('setting remote description');
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
         this.answer();
-    } else if (message.type === 'answer') {
+        break;
+      case 'answer':
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
-    } else if (message.type === 'candidate') {
-        console.log('message.payload', message.payload);
+        break;
+      case 'candidate':
+        logger.log('message.payload', message.payload);
         var candidate = new RTCIceCandidate({
-            sdpMLineIndex: message.payload.label,
-            candidate: message.payload.candidate
+          sdpMLineIndex: message.payload.label,
+          candidate: message.payload.candidate
         });
         this.pc.addIceCandidate(candidate);
+        break;
+      default:
+        debugger;
+        break;
     }
 };
 
 Conversation.prototype.send = function (type, payload) {
-    this.parent.send(this.id, type, payload);
+  this.parent.send(this.id, type, payload);
+};
+
+Conversation.prototype.sendData = function (data) {
+  this.channel.send(data);
 };
 
 Conversation.prototype.onIceCandidate = function (event) {
@@ -541,68 +592,51 @@ Conversation.prototype.answer = function () {
     }, null, this.mediaConstraints);
 };
 
-Conversation.prototype.onChannelMessage = function(event) {
-  debugger;
-  var message = JSON.parse(event.data);
-  if (this.onmessage)
-    this.onmessage(message);
-};
-
-Conversation.prototype.onChannelOpened = function(event) {
-  debugger;
-  this.channel = event.currentTarget;
-  this.channel.peer = this.pc.peer;
-  this.broadcastMessage({message: 'I am here' + +new Date()});
-//  this.sendMessage({message: 'I am here for you'});
-};
-
-Conversation.prototype.broadcastMessage = function(message) {
-  // through the server
-  this.channel.send(JSON.stringify(message));
-};
-
-Conversation.prototype.sendMessage = function(message) {
+//Conversation.prototype.onmessage = function(event) {
+//  event.data = JSON.parse(event.data);
+//};
+//
+//Conversation.prototype.onopen = function(event) {
+////  debugger;
+////  this.channel = event.currentTarget;
+////  this.channel.peer = this.pc.peer;
+////  this.broadcastMessage({message: 'I am here' + +new Date()});
+////  this.sendMessage({message: 'I am here for you'});
+//};
+//
+//Conversation.prototype.onclose = function(event) {
+//  debugger;
+//};
+//
+//Conversation.prototype.onerror = function(event) {
+//  debugger;
+//};
+//
+//Conversation.prototype.broadcastMessage = function(message) {
+//  // through the server
+//  debugger;
 //  this.channel.send(JSON.stringify(message));
-  this.parent.connection.push(message);
-};
-
-Conversation.prototype.onChannelClosed = function(event) {
-  debugger;
-};
-
-Conversation.prototype.onChannelError = function(event) {
-  debugger;
-};
+//};
+//
+//Conversation.prototype.sendMessage = function(message) {
+////  this.channel.send(JSON.stringify(message));
+//  debugger;
+//  this.parent.connection.push(message);
+//};
 
 Conversation.prototype.handleDataChannelAdded = function (event) {
   debugger;
   var channel = event.channel;
-  channel.binaryType = 'blob';
-  channel.onmessage = function (event) {
-    debugger;
-      if (options.onChannelMessage) options.onChannelMessage(event);
-  };
-  
-  channel.onopen = function () {
-    debugger;
-      if (options.onChannelOpened) options.onChannelOpened(channel);
-  };
-  channel.onclose = function (event) {
-    debugger;
-      if (options.onChannelClosed) options.onChannelClosed(event);
-  };
-  channel.onerror = function (event) {
-    debugger;
-      if (options.onChannelError) options.onChannelError(event);
-  };
-//  this.emit('videoAdded', el);
+//  if (!isChrome)
+//    channel.binaryType = 'blob';  
 };
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
-        el = document.createElement('video'),
+        hasVideo = this.parent.hasVideo,
+        el = document.createElement(hasVideo ? 'video' : 'audio'),
         container = this.parent.getRemoteVideoContainer(),
-        options = this.remoteVideos;
+        options = hasVideo && this.remoteVideos;
     
     el.id = this.id;
     if (options) {
@@ -613,21 +647,45 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
     }
 
     attachMediaStream(el, stream);
-    if (container) container.appendChild(el);
-    this.emit('videoAdded', el);
+    if (container) 
+      container.appendChild(el);
+    
+    this.emit('videoAdded', {
+      type: 'remote',
+      video: el
+    });
 };
 
 Conversation.prototype.handleStreamRemoved = function () {
     var video = document.getElementById(this.id),
         container = this.parent.getRemoteVideoContainer();
-    if (video && container) container.removeChild(video);
-    this.emit('videoRemoved', video);
-    delete this.parent.pcs[this.id];
+    
+    if (video) {
+      if (container) container.removeChild(video);
+      
+      this.emit('videoRemoved', {
+        type: 'remote',
+        video: video
+      });
+    }
+    
+    if (this.channel)
+      this.channel.close();
+    
+    delete this.parent.pcs[this.id];    
     this.closed = true;
 };
 
 // expose WebRTC
-//window.WebRTC = WebRTC;
-return WebRTC;
+if (typeof define === 'function' && define.amd) {
+  define('lib/simplewebrtc', function() {
+    return WebRTC;
+  });
+}
+else
+  window.WebRTC = WebRTC;
 
-});
+})(window)
+//return WebRTC;
+//
+//});

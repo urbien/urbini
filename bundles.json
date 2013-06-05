@@ -13,7 +13,7 @@
   },
   extras: {
     js: ['lib/leaflet', 'lib/leaflet.markercluster', 'maps', 'lib/codemirror', 'lib/codemirrorXMLMode', 'lib/codemirrorHTMLMode', 'lib/codemirrorJSMode', 'lib/codemirrorCSSMode', 'views/CameraPopup', 'lib/whammy',
-         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'lib/RTCMultiConnection', 'fileSystem', 'lib/d3', 'd3widgets'],
+         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'lib/RTCMultiConnection', 'lib/simplewebrtc', 'fileSystem', 'lib/d3', 'd3widgets'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css', '../styles/codemirror.css']
   },
   appcache: {
