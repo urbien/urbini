@@ -675,7 +675,7 @@ define('views/ChatView', [
     },
 
     onDataChannelClosed: function(event, conversation) {
-      debugger;
+//      debugger;
       var channel = event.target,
           whoLeftId = conversation.id;
           whoLeft = this.getUserInfo(whoLeftId);
@@ -1162,14 +1162,8 @@ define('views/ChatView', [
     },
 
     endChat: function(onclose) {
-      if (this.chat) {
-        if (!onclose && this.connected)
-          this.leave();
-        
-        this.chatSession = null;
-//        this.chat = null;
-      }
-      
+      this.leave();
+      this.chat = null;
       if (this.hasVideo) {
         this._videoOn = false;
         this.$('video').each(function() {

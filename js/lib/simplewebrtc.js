@@ -296,7 +296,10 @@ function WebRTC(opts) {
     
     connection.on('left', function (room) {
         var conv = self.pcs[room.id];
-        if (conv) conv.handleStreamRemoved();
+        if (conv) {
+          conv.handleStreamRemoved();
+          conv.handleDataChannelRemoved();
+        }
     });
 
     WildEmitter.call(this);
@@ -589,6 +592,7 @@ Conversation.prototype.end = function () {
       this.pc.close();
     
     this.handleStreamRemoved();
+    this.handleDataChannelRemoved();
 };
 
 Conversation.prototype.answer = function () {
@@ -601,39 +605,6 @@ Conversation.prototype.answer = function () {
         self.send('answer', sessionDescription);
     }, null, this.mediaConstraints);
 };
-
-//Conversation.prototype.onmessage = function(event) {
-//  event.data = JSON.parse(event.data);
-//};
-//
-//Conversation.prototype.onopen = function(event) {
-////  debugger;
-////  this.channel = event.currentTarget;
-////  this.channel.peer = this.pc.peer;
-////  this.broadcastMessage({message: 'I am here' + +new Date()});
-////  this.sendMessage({message: 'I am here for you'});
-//};
-
-Conversation.prototype.onclose = function(event) {
-  debugger;
-  this.cleanup();
-};
-
-//Conversation.prototype.onerror = function(event) {
-//  debugger;
-//};
-//
-//Conversation.prototype.broadcastMessage = function(message) {
-//  // through the server
-//  debugger;
-//  this.channel.send(JSON.stringify(message));
-//};
-//
-//Conversation.prototype.sendMessage = function(message) {
-////  this.channel.send(JSON.stringify(message));
-//  debugger;
-//  this.parent.connection.push(message);
-//};
 
 Conversation.prototype.handleDataChannelAdded = function (event) {
   debugger;
@@ -668,6 +639,10 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
     });
 };
 
+Conversation.prototype.handleDataChannelRemoved = function () {
+  this.cleanup();
+};
+
 Conversation.prototype.handleStreamRemoved = function () {
     var video = document.getElementById(this.id),
         container = this.parent.getRemoteVideoContainer();
@@ -689,7 +664,8 @@ Conversation.prototype.cleanup = function() {
   if (this.stream)
     return;
   
-  if (this.parent.hasData && this.parent.pcs[this.id].channel.readyState == 'open')
+  var me = this.parent.pcs[this.id];
+  if (!me || (this.parent.hasData && me.channel.readyState == 'open'))
     return;
   
   delete this.parent.pcs[this.id];
