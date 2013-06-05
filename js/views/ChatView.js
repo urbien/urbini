@@ -373,9 +373,9 @@ define('views/ChatView', [
     addParticipant: function(userInfo) {
       var userid = userInfo.id;
       var existing = this.getUserInfo(userid);
-      var isUpdate = !!existing                 || 
-          (userInfo.stream && !existing.stream) || // we already opened the data channel, but haven't gotten the remote stream yet
-          (userInfo.uri && !existing.uri);         // we already got the remote stream, but haven't opened the data channel yet
+      var isUpdate = !!existing                  && 
+          ((userInfo.stream && !existing.stream) || // we already opened the data channel, but haven't gotten the remote stream yet
+          (userInfo.uri && !existing.uri));         // we already got the remote stream, but haven't opened the data channel yet
       
       if (isUpdate)
         _.extend(existing, userInfo);
@@ -594,9 +594,10 @@ define('views/ChatView', [
       this.disableChat();
       this.connected = false;
       var cachedStream = G.localVideoMonitor;
+      var observe = this.hashParams['-observe'] === 'y';
       if (this.hasVideo) {
         _.extend(webrtcOptions, {
-          localVideo: {
+          localVideo: observe ? null : {
             _el: self.$localVids[0],
             autoplay: true,
             muted: true
@@ -605,7 +606,7 @@ define('views/ChatView', [
             _el: self.$remoteVids[0],
             autoplay: true
           },
-          autoRequestMedia: !cachedStream
+          autoRequestMedia: !observe && !cachedStream
         });
       }
       
@@ -625,7 +626,7 @@ define('views/ChatView', [
       webrtc.on('message', this.onDataChannelMessage);
       webrtc.on('error', this.onDataChannelError);
       
-      if (cachedStream)
+      if (!observe && cachedStream)
         webrtc.startLocalVideo(cachedStream);
       
       $(window).unload(function() {
@@ -637,7 +638,6 @@ define('views/ChatView', [
     },
 
     onDataChannelOpened: function(event, conversation) {
-      debugger;
       var info = _.clone(this.myInfo),
           self = this;
       

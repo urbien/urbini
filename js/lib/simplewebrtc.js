@@ -204,8 +204,10 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
 
 function WebRTC(opts) {
     var options = opts || {};
-    this.hasVideo = !!options.remoteVideos;
-    this.hasAudio = !!(this.hasVideo || options.audio);
+    this.sendVideo = !!options.localVideo;
+    this.receiveVideo = !!options.remoteVideos;
+    this.sendAudio = !!(this.sendVideo || options.audio);
+    this.receiveAudio = this.receiveVideo;
     this.hasData = options.data;
     var self = this,
         config = this.config = {
@@ -223,8 +225,8 @@ function WebRTC(opts) {
                 optional: isChrome ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
             },
             mediaConstraints: {
-                audio: this.hasAudio,
-                video: this.hasVideo ? {
+                audio: this.sendAudio,
+                video: this.sendVideo ? {
                     mandatory: {
 //                      maxWidth: 320,
 //                      maxHeight: 180
@@ -385,7 +387,7 @@ WebRTC.prototype.testReadiness = function () {
     var sessionid = self.connection.socket.sessionid;
     if (this.sessionReady) {
       this.emit('readyToText', sessionid);
-      if (this.localStream) {
+      if (this.localStream || !this.config.localVideo) {
         // This timeout is a workaround for the strange no-audio bug
         // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
         // remove timeout when this is fixed.
@@ -457,8 +459,10 @@ function Conversation(options) {
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    if (this.parent.hasVideo || this.parent.hasAudio) {
+    if ((this.parent.sendVideo || this.parent.sendAudio)  && this.parent.localStream)
       this.pc.addStream(this.parent.localStream);
+    
+    if (this.parent.receiveVideo || this.parent.receiveAudio) {
       this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
       this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     }
@@ -627,10 +631,10 @@ Conversation.prototype.handleDataChannelAdded = function (event) {
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
-        hasVideo = this.parent.hasVideo,
-        el = document.createElement(hasVideo ? 'video' : 'audio'),
+        receiveVideo = this.parent.receiveVideo,
+        el = document.createElement(receiveVideo ? 'video' : 'audio'),
         container = this.parent.getRemoteVideoContainer(),
-        options = hasVideo && this.remoteVideos;
+        options = receiveVideo && this.remoteVideos;
     
     el.id = this.id;
     if (options) {
@@ -646,7 +650,8 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
     
     this.emit('videoAdded', {
       type: 'remote',
-      video: el
+      video: el,
+      stream: stream
     });
 };
 
