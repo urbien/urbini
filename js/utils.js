@@ -5,8 +5,9 @@ define('utils', [
   'backbone',
   'templates',
   'cache',
-  'events'
-], function(G, _, Backbone, Templates, C, Events) {
+  'events',
+  'jqueryMobile'
+], function(G, _, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
   
@@ -2953,9 +2954,9 @@ define('utils', [
     alert: function(options) {
       setTimeout(function() {
         var msg = options.msg;
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+        $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, msg, !options.spinner);
         if (!options.persist)
-          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+          setTimeout($m.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
       }, options.delay || 0);
     },
     /**
@@ -2980,7 +2981,7 @@ define('utils', [
         cancel: true
       }));
       
-      ($.mobile.activePage || $(document.body)).append(dialogHtml);
+      ($m.activePage || $(document.body)).append(dialogHtml);
       var $dialog = $('#' + id);
       $dialog.trigger('create');
       $dialog.popup().popup("open");
@@ -3036,7 +3037,7 @@ define('utils', [
       });
 
       
-      var $dialog = ($.mobile.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      var $dialog = ($m.activePage || $(document.body)).append(dialogHtml).find('#' + id);
       _.each(options, function(option) {
         if (option.action) {
           $dialog.find('#' + option.id).click(option.action);

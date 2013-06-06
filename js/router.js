@@ -9,12 +9,13 @@ define('router', [
   'cache',
   'vocManager',
   'views/HomePage',
-  'templates'
+  'templates',
+  'jqueryMobile'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates/*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
     TAG: 'Router',
@@ -265,7 +266,7 @@ define('router', [
       }
       
       Events.trigger('pageChange', prev, this.currentView);
-      $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       
       // HACK, this div is hidden for some reason when going to #home/...
       var mainDiv = $('.mainDiv'); 
@@ -1131,7 +1132,7 @@ define('router', [
           
       if (info || error) {
         if (/home\//.test(U.getHash())) {
-          var errorBar = $.mobile.activePage.find('#headerErrorBar');
+          var errorBar = $m.activePage.find('#headerErrorBar');
           errorBar.html("");
           errorBar.html(U.template('headerErrorBar')({error: error, info: info}));
         }
@@ -1232,7 +1233,7 @@ define('router', [
             view.render();
           }
       
-//          transition = "slide"; //$.mobile.defaultPageTransition;
+//          transition = "slide"; //$m.defaultPageTransition;
           if (!replace  &&  this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
             this.viewsStack.push(this.currentView);
             this.urlsStack.push(this.currentUrl);
@@ -1262,7 +1263,7 @@ define('router', [
         view.trigger('active', true);
       
       // perform transition        
-      $.mobile.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
       this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;

@@ -8,8 +8,9 @@ define('views/ResourceListView', [
   'views/ResourceListItemView',
   'views/CommentListItemView',
   'views/PhotogridView',
-  'collections/ResourceList'
-], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
+  'collections/ResourceList',
+  'jqueryMobile'
+], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList, $m) {
   var RLV = BasicView.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -518,7 +519,7 @@ define('views/ResourceListView', [
       // 1) masonry: 2.5 screen height to bottom
       // 2) list view: 1 screen height to bottom
       var factor = this.hasMasonry ? 3.5 : 2;   
-      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
+      if ($m.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
         return;
       
       var self = this;

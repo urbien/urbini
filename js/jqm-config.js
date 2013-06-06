@@ -2,16 +2,17 @@
 //'use strict';
 define('jqmConfig', function() {
   $(document).bind("mobileinit", function () {
+      var $m = $.mobile;
 //      console.log('mobileinit');
-      $.mobile.ajaxEnabled = false;
-      $.mobile.linkBindingEnabled = false;
-      $.mobile.hashListeningEnabled = false;
-      $.mobile.pushStateEnabled = false;
+      $m.ajaxEnabled = false;
+      $m.linkBindingEnabled = false;
+      $m.hashListeningEnabled = false;
+      $m.pushStateEnabled = false;
       $.support.touchOverflow = true;
-      $.mobile.touchOverflowEnabled = true;
-//      $.mobile.loadingMessageTextVisible = true;
-//      $.mobile.hidePageLoadingMsg();
-//      $.mobile.buttonMarkup.hoverDelay = 25;
+      $m.touchOverflowEnabled = true;
+//      $m.loadingMessageTextVisible = true;
+//      $m.hidePageLoadingMsg();
+//      $m.buttonMarkup.hoverDelay = 25;
 //      $.event.special.swipe.scrollSupressionThreshold (default: 10px) – More than this horizontal displacement, and we will suppress scrolling.
 //      $.event.special.swipe.durationThreshold = 1000;// (default: 1000ms) – More time than this, and it isn't a swipe.
 //      $.event.special.swipe.horizontalDistanceThreshold (default: 30px) – Swipe horizontal displacement must be more than this.
