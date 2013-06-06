@@ -138,8 +138,17 @@ define('views/ChatView', [
 //        if (!self.isActive())
 //          Events.trigger('localVideoMonitor:off');
 //      });
-      
-      
+
+      Events.on('localVideoMonitor:on', function() {
+        if (self.isActive()) {
+          self.playRingtone();
+        }
+      });
+
+      Events.on('localVideoMonitor:off', function() {
+        self.stopRingtone();
+      });
+
       this.autoFinish = false;
     },
     
