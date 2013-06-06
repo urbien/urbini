@@ -710,15 +710,15 @@
   };
   
   Conversation.prototype.handleDataChannelAdded = function (event) {
-    debugger;
-    var channel = event.channel;
+//    debugger;
+//    var channel = event.channel;
   //  if (!isChrome)
   //    channel.binaryType = 'blob';  
   };
   
   Conversation.prototype.handleRemoteStreamAdded = function (event) {
       var stream = this.stream = event.stream,
-          tag = stream.getVideoTracks().length ? 'video' : 'audio'
+          tag = isFirefox ? 'video' : stream.getVideoTracks().length ? 'video' : 'audio';
           el = document.createElement(tag),
           container = this.parent.getRemoteMediaContainer(),
           options = this.remote;

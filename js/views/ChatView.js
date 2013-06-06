@@ -852,7 +852,6 @@ define('views/ChatView', [
         video.play();
         $(video).addClass('localVideo');
         this.$localMedia.show();
-        this.restyleVideos();
 //      });
         
       if (!this.isWaitingRoom)
@@ -860,6 +859,7 @@ define('views/ChatView', [
       
       this.monitorVideoHealth(video);
       this.enableTakeSnapshot();
+      this.restyleVideos();
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -1282,15 +1282,15 @@ define('views/ChatView', [
     
     monitorVideoHealth: function(video) {
       var $video = $(video), chatView = this;
-      _.each(["suspend", "abort", "error", "ended", "pause"], function(event) {
+      _.each(["abort", "error", "ended", "pause"], function(event) {
         $video.bind(event, function() {
           if ((event.type || event) == "pause") {
             video.play();
             return;
           }
           
-          var isLocal = $video.parents('#localVideo');
-          $video.remove();
+//          var isLocal = $video.parents('#localVideo');
+//          $video.remove();
         });
       });
     },
@@ -1319,14 +1319,12 @@ define('views/ChatView', [
     },
     
     restyleVideos: function() {
-      var chatView = this,
-          $locals = chatView.$localMedia;
-      
-      var numRemotes = chatView.$remoteMedia.find('video').length;
-      if (numRemotes == 1 && !chatView.$localMedia.hasClass('myVideo-overlay'))
+      var $locals = this.$localMedia;
+      var numRemotes = this.$remoteMedia.find('video').length;
+      if (numRemotes == 1 && !$locals.hasClass('myVideo-overlay'))
         $locals.addClass('myVideo-overlay');
-//      else
-//        $locals.removeClass('myVideo-overlay');
+      else
+        $locals.removeClass('myVideo-overlay');
       
       this.restyleVideoDiv();
     },
