@@ -1301,43 +1301,45 @@ require(['globals'], function(G) {
         css[i] = cssObj.name;
       }
       
-      require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
-        Events.on('appStart', G._appStartDfd.resolve);
-        console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
-        G.finishedTask("loading modules");
-        G.browser = $.browser;
-        App.initialize();
-        G.startedTask('loading post-bundle');
-        var postBundle = bundles.post, 
-            extrasBundle = bundles.extras;
-        G.loadBundle(G.bundles.post, {async: true}).done(function() {
-          var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
-          dfd.resolve();
-          
-          G.finishedTask('loading post-bundle');
-          G.startedTask('loading extras-bundle');
-          G.onAppStart().done(function() {            
-            G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
-              var dfd = extrasBundle._deferred = extrasBundle._deferred || $.Deferred();
-              dfd.resolve();
+      require('__domReady__').done(function() {
+        require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
+          Events.on('appStart', G._appStartDfd.resolve);
+          console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
+          G.finishedTask("loading modules");
+          G.browser = $.browser;
+          App.initialize();
+          G.startedTask('loading post-bundle');
+          var postBundle = bundles.post, 
+              extrasBundle = bundles.extras;
+          G.loadBundle(G.bundles.post, {async: true}).done(function() {
+            var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
+            dfd.resolve();
+            
+            G.finishedTask('loading post-bundle');
+            G.startedTask('loading extras-bundle');
+            G.onAppStart().done(function() {            
+              G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
+                var dfd = extrasBundle._deferred = extrasBundle._deferred || $.Deferred();
+                dfd.resolve();
+              });
             });
           });
+          
+          if (window.location.hash.length < 2) {
+            Events.once('appStart', function() {
+              G.hideSpinner(spinner);
+              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            });
+          }
+          else {
+            Events.once('pageChange', function() {
+              G.hideSpinner(spinner);
+              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            });
+          }
         });
-        
-        if (window.location.hash.length < 2) {
-          Events.once('appStart', function() {
-            G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-          });
-        }
-        else {
-          Events.once('pageChange', function() {
-            G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-          });
-        }
       });
-    });
+    })
   }
 });
 })(window, document, undefined);

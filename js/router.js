@@ -266,6 +266,7 @@ define('router', [
       }
       
       Events.trigger('pageChange', prev, this.currentView);
+//      if (!this.firstPage)
       $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       
       // HACK, this div is hidden for some reason when going to #home/...

@@ -72,11 +72,6 @@ define('utils', [
     return this.slice(this.length - str.length) === str;
   };
   
-  // extends jQuery to check if selected collection is empty or not
-  $.fn.exist = function(){
-    return this.length > 0 ? this : false;
-  };
-
   var U = {
     TAG: 'Utils',
     require: function(modules, callback, context) {
@@ -3140,6 +3135,25 @@ define('utils', [
         return hash.match(/([a-zA-Z]+)\//)[1];
       else
         return '';
+    },
+    
+    deepExtend: function(obj, source) {
+      for (var p in source) {
+        if (_.has(source, p) && !_.has(obj, p)) {
+          obj[p] = source[p];
+          continue;
+        }
+          
+        var val = source[p], 
+            org = obj[p];
+        
+        if (_.isObject(val) && _.isObject(org))
+          U.deepExtend(org, val);
+        else
+          obj[p] = val;          
+      }
+      
+      return obj;
     }
   };
 

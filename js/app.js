@@ -2,7 +2,6 @@
 define('app', [
   'globals',
   'backbone',
-  'jqueryMobile',
   'templates', 
   'utils', 
   'events',
@@ -12,7 +11,7 @@ define('app', [
   'resourceManager',
   'router',
   'collections/ResourceList'
-], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
+], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   
