@@ -215,9 +215,9 @@
     </div>
     <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
       <div id="chatInputs" style="padding:0 0 0 10px;">
-        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureButton" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
+        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
         <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendButton" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
+        <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
       </div>
     </div>
   {{ }                                          }}

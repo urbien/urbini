@@ -9,7 +9,7 @@ define('views/ChatView', [
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
   var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
   var nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call"; // HACK for nursem
-  var Voc, WebRTC;
+  var Voc, WebRTC, doc = document;
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   }
@@ -143,10 +143,11 @@ define('views/ChatView', [
     },
     
     events : {
-      'orientationchange': 'restyleVideoDiv',
-      'resize': 'restyleVideoDiv',
-      'click #chatSendButton': '_sendMessage',
-      'click #endChat': 'endChat'
+      'orientationchange'                 : 'restyleVideoDiv',
+      'resize'                            : 'restyleVideoDiv',
+      'click #chatSendBtn'                : '_sendMessage',
+      'click #endChat'                    : 'endChat',
+      'click #chatCaptureBtn'             : 'takeSnapshot'
     },
 
     getNumParticipants: function() {
@@ -206,7 +207,7 @@ define('views/ChatView', [
       if (!this.rendered)
         this.pageView.trigger('chat:on');
         
-      this.$('#chatCaptureButton').button().button('disable');
+      this.disableTakeSnapshot();
       this.ready.done(function() {
         this.startChat();
         this.finish();
@@ -428,7 +429,7 @@ define('views/ChatView', [
 
     addMessage: function(info) {
       info.time = getTimeString(info.time || +new Date());
-      var height = $(document).height();
+      var height = $(doc).height();
       var atBottom = this.atBottom();
       this.$messages.append(this.messageTemplate(info));
       if (atBottom)
@@ -446,52 +447,67 @@ define('views/ChatView', [
       this.chat.broadcastData(data);
     },
 
-    sendMessage: function(message) {
-      var text = message.message;
-//      var channel = message.channel;
-//      if (channel) {
-//        var chatChannel = this.chat.channels[channel];
-//        if (chatChannel) {
-//          chatChannel.send({
-//            'private': true,
-//            message: text,
-//            time: +new Date()//getTime()
-//          });
-//        }
-//        else {
-//          // bad
-//        }
-//      }
-//      else {
-        this.chat.send({
-          message: text,
-          time: +new Date() // getTime()
-        });
-//      }
-      
-      this.addMessage({
-        sender: 'Me', //this.myName,
-        senderIcon: this.myIcon,
-        message: text,
-        self: true,
-        time: +new Date()
-//      , //getTime(),
-//        'private': !!channel
-      });
+    sendPrivateFile: function(to, data) {
+      this.chat.sendData({
+        type: 'file',
+        file: data
+      });            
     },
     
-    _sendMessage1: function(e) {
-      e && Events.stopEvent(e);
-      var msg = this.chatInput.value;
-      if (!msg || !msg.length)
-        return;
-
-      this.sendMessage({
-        message: msg
-      });
-      
-      this.chatInput.value = '';
+    sendPublicFile: function(data) {
+      this.chat.broadcastData({
+        type: 'file',
+        file: data.data,
+        fileType: 'image'
+      });      
     },
+    
+//    sendMessage: function(message) {
+//      var text = message.message;
+////      var channel = message.channel;
+////      if (channel) {
+////        var chatChannel = this.chat.channels[channel];
+////        if (chatChannel) {
+////          chatChannel.send({
+////            'private': true,
+////            message: text,
+////            time: +new Date()//getTime()
+////          });
+////        }
+////        else {
+////          // bad
+////        }
+////      }
+////      else {
+//        this.chat.send({
+//          message: text,
+//          time: +new Date() // getTime()
+//        });
+////      }
+//      
+//      this.addMessage({
+//        sender: 'Me', //this.myName,
+//        senderIcon: this.myIcon,
+//        message: text,
+//        self: true,
+//        time: +new Date()
+////      , //getTime(),
+////        'private': !!channel
+//      });
+//    },
+//    
+//    _sendMessage1: function(e) {
+//      e && Events.stopEvent(e);
+//      var msg = this.chatInput.value;
+//      if (!msg || !msg.length)
+//        return;
+//
+//      this.sendMessage({
+//        message: msg
+//      });
+//      
+//      this.chatInput.value = '';
+//    },
 
     _sendMessage: function(e) {
       e && Events.stopEvent(e);
@@ -583,7 +599,7 @@ define('views/ChatView', [
       this._videoOn = this.hasVideo;
       if (!this.rendered) {
         this.$messages = this.$('#messages');
-        this.$sendMessageBtn = this.$('#chatSendButton');
+        this.$sendMessageBtn = this.$('#chatSendBtn');
         this.$chatInput = this.$("#chatMessageInput");
         this.chatInput = this.$chatInput[0];
         this.$chatInput.bind("keydown", function(event) {
@@ -707,9 +723,8 @@ define('views/ChatView', [
       }
     },
     
-    onDataChannelMessage: function(event, conversation) {
+    onDataChannelMessage: function(data, conversation) {
       var channel = event.target,
-          data = JSON.parse(event.data),
           from = conversation.id,
           userInfo;
       
@@ -750,6 +765,17 @@ define('views/ChatView', [
         }
         
         return;
+      }
+      else if (data.file && data.type === 'file') {
+        
+        this.addMessage({
+          senderIcon: userInfo.icon,
+          sender: userInfo.name,
+          message: data.message,
+          'private': isPrivate,
+          self: false,
+          time: +new Date() //getTime()
+        });        
       }
       else if (data.message) {
         if (!userInfo) {
@@ -823,6 +849,7 @@ define('views/ChatView', [
         Events.trigger('localVideoMonitor:off');
       
       this.monitorVideoHealth(video);
+      this.enableTakeSnapshot();
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -862,6 +889,23 @@ define('views/ChatView', [
       }
       
       media.play();
+      this.enableTakeSnapshot();
+    },
+
+    enableTakeSnapshot: function() {
+      this.$('#chatCaptureBtn').button().button('enable');
+      this.$('canvas').remove();
+      this.$('video').unbind('play', this._addCanvasForVideo).bind('play', this._addCanvasForVideo);
+    },
+    
+    _addCanvasForVideo: function(e) {
+      var video = e.target;
+      $('<canvas for="{0}" width="100%" height="0" style="position:absolute;top:0px;left;0px" />'.format(video.id)).insertAfter(this);
+    },
+
+    disableTakeSnapshot: function() {
+      this.$('#chatCaptureBtn').button().button('disable');
+      this.$('canvas').remove();
     },
 
     onMediaRemoved: function(info, conversation) {
@@ -872,6 +916,8 @@ define('views/ChatView', [
         this.removeParticipant(conversation.id, {
           stream: true
         });
+        
+        this.$('canvas#' + info.media.id).remove();
       }
     },
     
@@ -1189,6 +1235,41 @@ define('views/ChatView', [
       }
     },
 
+    takeSnapshot: function() {
+      var self = this;
+          snapshots = [];
+      this.$('canvas').each(function() {
+        var $this = $(this);
+        var $video = self.$('video#' + $this.attr('for'));
+        if (!$video.length)
+          return;
+        
+        var w = $video.width(),
+            h = $video.height();
+        
+        $this.prop('width', w).prop('height', h);
+        this.getContext('2d').drawImage($video[0], 0, 0, w, h);
+        var url = this.toDataURL('image/webp', 1);
+        $this.prop('width', '100%').prop('height', 0);
+        snapshots.push(url);
+//        var img = new Image();
+//        img.src = url;
+//        console.log(img);
+      });
+      
+      _.each(snapshots, function(shot) {
+        self.sendPublicFile(shot);
+        
+        self.addMessage({
+          message: '<image src="{0}" />'.format(shot),
+          time: +new Date(), //getTime(),
+          senderIcon: this.myIcon,
+          self: true,
+          sender: 'Me'          
+        });
+      });
+    },
+    
     monitorVideoHealth: function(video) {
       var $video = $(video), chatView = this;
       _.each(["suspend", "abort", "error", "ended", "pause"], function(event) {
