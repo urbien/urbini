@@ -43,6 +43,7 @@ define('views/ChatView', [
       this.isAgent = this.hashParams['-agent'] === 'y';
       this.isClient = !this.isAgent;
       this.hasVideo = this.isPrivate || this.isClient; // HACK, waiting room might not have video
+      this.hasAudio = this.hasVideo || this.isPrivate;
       this.config = {
         data: true,
         video: {
