@@ -4,8 +4,9 @@ define('views/BasicView', [
   'backbone',
   'utils',
   'templates',
-  'events'
-], function(G, _Backbone, U, Templates, Events) {
+  'events',
+  'jqueryMobile'
+], function(G, _Backbone, U, Templates, Events, $m) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
@@ -187,7 +188,7 @@ define('views/BasicView', [
     },
     
     scrollToTop: function() {
-      $.mobile.silentScroll(0);
+      $m.silentScroll(0);
     },
     
     getTemplate: function(templateName, type) {
@@ -387,11 +388,11 @@ define('views/BasicView', [
     },
     
     isActivePage: function() {
-      return $.mobile.activePage === this.pageView.$el;
+      return $m.activePage === this.pageView.$el;
     },
     
     showLoadingIndicator: function(timeout) {
-      $.mobile.loading('show');
+      $m.loading('show');
       // in case if fetch failed to invoke a callback
       // then hide loading indicator after 3 sec.
       if (timeout) {
@@ -405,7 +406,7 @@ define('views/BasicView', [
       if (typeof timeoutId !== 'undefined')
         clearTimeout(timeoutId);
       
-      $.mobile.loading('hide');
+      $m.loading('hide');
     }
   },
   {

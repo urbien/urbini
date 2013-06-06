@@ -6,8 +6,9 @@ define('views/EditView', [
   'utils',
   'cache',
   'vocManager',
-  'views/BasicView'
-], function(G, Events, Errors, U, C, Voc, BasicView) {
+  'views/BasicView',
+  'jqueryMobile'
+], function(G, Events, Errors, U, C, Voc, BasicView, $m) {
   var spinner = 'loading edit view';
   var scrollerClass = 'i-txt',
       switchClass = 'boolean',
@@ -623,15 +624,15 @@ define('views/EditView', [
         var isFork = res.get('forkedFrom');
         var preMsg = isFork ? 'Forking in progress, hold on to your hair.' : 'Setting up your app, hold on to your knickers.';
         var postMsg = isFork ? 'Forking complete, gently release your hair' : 'App setup complete';
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, preMsg, false);
+        $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, preMsg, false);
         res.on('syncError', function(error) {
-          $.mobile.hidePageLoadingMsg();          
+          $m.hidePageLoadingMsg();          
         });
         
         res.once('syncedWithServer', function() { // when app is created, the returned resource JSON is not up to date with models count, etc., so need to fetch again
-          $.mobile.hidePageLoadingMsg();
-          $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, postMsg, false);
-          setTimeout($.mobile.hidePageLoadingMsg, 3000);
+          $m.hidePageLoadingMsg();
+          $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, postMsg, false);
+          setTimeout($m.hidePageLoadingMsg, 3000);
           res.fetch({forceFetch: true});
         });
       }
@@ -1521,7 +1522,7 @@ define('views/EditView', [
         if (this.action === 'make' && this.isCameraRequired()) {
           Events.on('pageChange', function() {
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
-              $.mobile.silentScroll(0);
+              $m.silentScroll(0);
               setTimeout(function() {
                 $(this.$('a.cameraCapture')[0]).trigger('click');
               }.bind(this), 100);
