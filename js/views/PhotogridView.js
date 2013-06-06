@@ -34,7 +34,7 @@ define('views/PhotogridView', [
       var readyDfd = $.Deferred();
       if (this.swipeable) {
         var self = this;
-        U.require('lib/swipeview').done(function(SV) {
+        require('lib/swipeview').done(function(SV) {
           SwipeView = SV;
           readyDfd.resolve();
         }).fail(function() {

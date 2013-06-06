@@ -41,7 +41,7 @@ define('resourceManager', [
     
     items = !items ? null : _.isArray(items) ? items : [items];
     if (!items || (!FileSystem && storeFilesInFileSystem && _.any(items, function(item) {return _.any(item, function(val) { return val && (val instanceof Blob || val._filePath) })}))) { // HACK, need to check model prop
-      fsPromise = U.require('fileSystem').done(function(fs) { 
+      fsPromise = require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       });
     }
@@ -969,7 +969,7 @@ define('resourceManager', [
               }
             }
             
-            ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem with your edit' : 'There was a problem creating this resource')};
+            ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem creating this resource' : 'There was a problem with your edit')};
             var isMkResource = !ref._tempUri;
             var toSave;
             var errInfo = _.pick(ref, '_uri', '_error');
@@ -1856,7 +1856,7 @@ define('resourceManager', [
 //      }
 //    });
 //    
-//    U.require('collections/ResourceList').done(function(ResourceList) {
+//    require('collections/ResourceList').done(function(ResourceList) {
 //      Voc.getModels(_.keys(typeToUris)).done(function() {
 //        _.each(typeToUris, function(uris, type) {
 //          var model = U.getModel(type);

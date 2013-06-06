@@ -57,7 +57,7 @@ define('views/ViewPage', [
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       if (viewType) {
-        U.require(viewType, function(viewMod) {
+        require(viewType, function(viewMod) {
           self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
           self.readyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
@@ -68,7 +68,7 @@ define('views/ViewPage', [
 //      if (this.hasChat && !this.chat) {
 //        this.chatDfd = $.Deferred();
 //        this.chatPromise = this.chatDfd.promise();
-//        U.require('views/ChatView', function(chat) {
+//        require('views/ChatView', function(chat) {
 //          self.addChild('chat', new chat(_.extend({el: this.$('#chatbox'), video: true}, commonParams)));
 //          self.chatDfd.resolve();
 //        });
@@ -126,7 +126,7 @@ define('views/ViewPage', [
         }
 
         this.whenDoneLoading(function() {          
-          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
+          require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
             Voc.getModels(friendType).done(function() {              
               var friendProps = {};
               friendProps[friend1] = friendProps[friend2] = uri;
@@ -169,7 +169,7 @@ define('views/ViewPage', [
 //        });
 //        
 //        if (this.inlineXBacklinks.length) {
-//          U.require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
+//          require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
 //            _.each(self.inlineXBacklinks, function() {                
 //              self.friends = new ResourceList(null, {
 //                params: {

@@ -62,11 +62,11 @@ define('views/ListPage', [
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
         this.mapReady = this.mapReadyDfd.promise();
-        U.require(['views/MapView'], function(MV) {
+        require('views/MapView', function(MV) {
           MapView = MV;
           this.addChild('mapView', new MapView(commonParams));
           this.mapReadyDfd.resolve();
-        }, this);
+        }.bind(this));
       }      
 
       var showAddButton = (!isChooser  &&  type.endsWith('/App')) || 

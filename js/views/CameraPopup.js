@@ -54,7 +54,7 @@ define('views/CameraPopup', [
       }
       
       if (this.isVideo || this.hasAudio) {
-        U.require(req).done(function(W, R) {
+        require(req).done(function(W, R) {
           if (this.isVideo) {
             Whammy = W;
             Recorder = R;
@@ -141,7 +141,7 @@ define('views/CameraPopup', [
       this.startTime = +new Date();
       this.setstate('recording');
       if (this.isVideo) {
-        this.ctx = canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d');
         this.frames = [];
         this.rafId = requestAnimationFrame(this.drawVideoFrame_);
       }

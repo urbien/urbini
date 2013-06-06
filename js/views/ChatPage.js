@@ -17,7 +17,6 @@ define('views/ChatPage', [
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
-      this.autoVideo = options.autoVideo || this.hashParams['-autoVideo'] === 'y';
       this.isWaitingRoom = U.isWaitingRoom();
       this.isPrivate = U.isPrivateChat();
       this.headerButtons = {
@@ -47,8 +46,17 @@ define('views/ChatPage', [
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'autoVideo', 'model'))));
+      this.config = {
+        video: {
+          send: this.hashParams['-sendVideo'] !== 'n',
+          preview: this.hashParams['-preview'] !== 'n'
+        },
+        audio: {
+          send: this.hashParams['-sendAudio'] !== 'n'
+        }
+      };
       
+      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'model', 'config'))));
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
 //      var self = this;

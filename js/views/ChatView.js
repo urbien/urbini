@@ -33,25 +33,39 @@ define('views/ChatView', [
     return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(date.getMinutes()) + ampm);
   }
   
-//  function getTime() {
-//    var now = new Date();
-//    var hours = now.getHours();
-//    var ampm = hours < 12 ? 'AM' : 'PM';
-//    hours = hours % 12;
-//    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(now.getMinutes()) + ampm);
-//  }
-  
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'restyleVideoDiv', 'onVideoAdded', 'onVideoRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'restyleVideoDiv', 'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
-      _.extend(this, _.pick(options, 'autoVideo'));
       this.isWaitingRoom = U.isWaitingRoom();
       this.isPrivate = U.isPrivateChat();
       this.isAgent = this.hashParams['-agent'] === 'y';
       this.isClient = !this.isAgent;
-      this.hasVideo = this.autoVideo = this.autoVideo || this.isPrivate || this.isClient; // HACK, waiting room might not have video
+      this.hasVideo = this.isPrivate || this.isClient; // HACK, waiting room might not have video
+      this.config = {
+        data: true,
+        video: this.hasVideo ? {
+          send: true,
+          receive: true,
+          preview: true
+        } : false,
+        audio: this.hasAudio ? {
+          send: true,
+          receive: true
+        } : false,
+        log: true,
+        url: SIGNALING_SERVER
+      };
+
+      if (options.config)
+        U.deepExtend(this.config, options.config);
+
+      var vConfig = this.config.video,
+          aConfig = this.config.audio;
+      
+      this.hasVideo = vConfig.send || vConfig.receive || vConfig.preview;
+      this.hasAudio = aConfig.send || aConfig.receive;
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
 //      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
@@ -110,8 +124,8 @@ define('views/ChatView', [
       var self = this;
       this.on('active', function(active) {
         var method = active ? 'show' : 'hide';
-        self.$localVids && self.$localVids[method]();
-        self.$remoteVids && self.$remoteVids[method]();
+        self.$localMedia && self.$localMedia[method]();
+        self.$remoteMedia && self.$remoteMedia[method]();
       });
       
 //      Events.on('endRTCCall', function(rtcCall) {
@@ -179,12 +193,14 @@ define('views/ChatView', [
     },
     
     render: function() {
+      var vConfig = this.config.video;
       this.$el.html(this.template({
-        video: this.hasVideo
+        video: this.hasVideo,
+        audio: this.hasAudio
       }));
 
       this.$el.trigger('create');
-      this.$('div#localVideo').hide();
+      this.$('div#localMedia').hide();
 //      this.$('#toggleVideoBtn').checkboxradio().checkboxradio('disable');
 
       if (!this.rendered)
@@ -192,16 +208,7 @@ define('views/ChatView', [
         
       this.$('#chatCaptureButton').button().button('disable');
       this.ready.done(function() {
-//        if (this.isWaitingRoom && this.isClient) {
-//          this.startLocalVideo();
-          this.startChat();
-//        }
-//        else if (G.localVideoMonitor)
-//          this.attachLocalVideoMonitor(G.localVideoMonitor);
-//        
-//        if (this.resource)
-//          this.loadResourceUI();
-        
+        this.startChat();
         this.finish();
       }.bind(this));
     },
@@ -319,7 +326,7 @@ define('views/ChatView', [
         $input[0].value = 'Chat room is empty...';
       }
       
-      this.$remoteVids && this.$remoteVids.empty();
+      this.$remoteMedia && this.$remoteMedia.empty();
       this.disabled = true;
     },
     
@@ -569,11 +576,9 @@ define('views/ChatView', [
       
       var self = this,
           roomName = this.getRoomName(),
-          webrtcOptions = {
-            data: true,
-            log: true,
-            url: SIGNALING_SERVER
-          };
+          config = this.config,
+          aConfig = config.audio,
+          vConfig = config.video;
       
       this._videoOn = this.hasVideo;
       if (!this.rendered) {
@@ -589,49 +594,49 @@ define('views/ChatView', [
           }
         });
         
-        this.$localVids = this.$('div#localVideo');
-        this.$remoteVids = this.$('div#remoteVideos');
+        this.$localMedia = this.$('div#localMedia');
+        this.$remoteMedia = this.$('div#remoteMedia');
       }
-      
       
       var i = 0;
       this.disableChat();
       this.connected = false;
       var cachedStream = G.localVideoMonitor;
-      var observe = this.hashParams['-observe'] === 'y';
-      if (this.hasVideo) {
-        _.extend(webrtcOptions, {
-          localVideo: observe ? null : {
-            _el: self.$localVids[0],
+      if (this.hasVideo || this.hasAudio) {
+        _.extend(this.config, {
+          local: !vConfig.preview && !vConfig.send ? null : { // no such thing as local audio
+            _el: self.$localMedia[0],
             autoplay: true,
             muted: true
           },
-          remoteVideos: {
-            _el: self.$remoteVids[0],
+          remote: !vConfig.receive && !aConfig.receive ? null : {
+            _el: self.$remoteMedia[0],
             autoplay: true
           },
-          autoRequestMedia: !observe && !cachedStream
+          autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
         });
       }
       
-      var webrtc = this.chat = new WebRTC(webrtcOptions),
+      var webrtc = this.chat = new WebRTC(this.config),
           conversations = webrtc.pcs;
       
-      webrtc.on(this.hasVideo ? 'readyToCall' : 'readyToText', function() {
+      webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
         webrtc.joinRoom(roomName);
-      });
+      }));
 
-      webrtc.on('videoAdded', this.onVideoAdded);
-      webrtc.on('videoRemoved', this.onVideoRemoved);
+      webrtc.on('mediaAdded', this.onMediaAdded);
+      webrtc.on('mediaRemoved', this.onMediaRemoved);
 
       // Data channel events
-      webrtc.on('open', this.onDataChannelOpened);
-      webrtc.on('close', this.onDataChannelClosed);
-      webrtc.on('message', this.onDataChannelMessage);
-      webrtc.on('error', this.onDataChannelError);
+      if (this.config.data !== false) {
+        webrtc.on('open', this.onDataChannelOpened);
+        webrtc.on('close', this.onDataChannelClosed);
+        webrtc.on('message', this.onDataChannelMessage);
+        webrtc.on('error', this.onDataChannelError);
+      }
       
-      if (!observe && cachedStream)
-        webrtc.startLocalVideo(cachedStream);
+      if (this.hasVideo && cachedStream)
+        webrtc.startLocalMedia(cachedStream);
       
       $(window).unload(function() {
         self.endChat();
@@ -684,13 +689,17 @@ define('views/ChatView', [
         if (this.isPrivate && this.isClient)
           this.endCall();
       
-        this.addMessage({
-          message: '<i>{0} has left the room</i>'.format(whoLeft.name),
-          time: +new Date(), //getTime(),
-          senderIcon: whoLeft.icon,
-          sender: whoLeft.name,
-          info: true
-        });
+        if (!whoLeft.name)
+          debugger;
+        else {
+          this.addMessage({
+            message: '<i>{0} has left the room</i>'.format(whoLeft.name),
+            time: +new Date(), //getTime(),
+            senderIcon: whoLeft.icon,
+            sender: whoLeft.name,
+            info: true
+          });
+        }
         
         this.removeParticipant(whoLeftId, {
           data: true
@@ -772,24 +781,27 @@ define('views/ChatView', [
       var channel = event.target;
     },
     
-    onVideoAdded: function(info, conversation) {
+    onMediaAdded: function(info, conversation) {
       if (info.type == 'local') {
-        if (this.isWaitingRoom)
+        if (this.isWaitingRoom) // local media can only be video
           Events.trigger('localVideoMonitor:on', info.stream);
         
-        this.processLocalVideo.apply(this, arguments);
+        this.processLocalMedia.apply(this, arguments);
       }
       else {
-        this.processRemoteVideo.apply(this, arguments);
+        this.processRemoteMedia.apply(this, arguments);
       }
     },
     
-    processLocalVideo: function(info, conversation) {
-      var video = info.video;
+    /** 
+     * local media can only be video
+     */
+    processLocalMedia: function(info, conversation) {
+      var video = info.media;
       this.localStream = info.stream;
       this.pageView.trigger('video:on');
       this.checkVideoSize(video);
-      var $local = this.$localVids.find('video');
+      var $local = this.$localMedia.find('video');
       if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
         for (var i = 0; i < $local.length; i++) {
           var v = $local[i];
@@ -803,7 +815,7 @@ define('views/ChatView', [
         video.controls = false;
         video.play();
         $(video).addClass('localVideo');
-        this.$localVids.show();
+        this.$localMedia.show();
         this.restyleVideos();
 //      });
         
@@ -813,24 +825,16 @@ define('views/ChatView', [
       this.monitorVideoHealth(video);
     },
 
-    processRemoteVideo: function(info, conversation) {
-//      debugger;
+    processRemoteMedia: function(info, conversation) {
       var self = this,
-          video = info.video,
+          media = info.media,
           stream = info.stream;
 
       var alreadyStreaming = U.filterObj(this.userIdToInfo, function(id, info) {
         return !!info.stream;
       });
       
-      
       for (var id in alreadyStreaming) {
-//        var conv = this.chat.conversations[id];
-//        if (conv)
-//          conv.end();
-////        if (conv)
-////          conv.stream && conv.stream.stop(); // theoretically safe to stop() no matter what state it's in, doesn't throw exceptions according to https://developer.mozilla.org/en-US/docs/WebRTC/MediaStream_API
-//        
         this.removeParticipant(id, {
           stream: true
         });
@@ -839,20 +843,28 @@ define('views/ChatView', [
       this.addParticipant({
         id: conversation.id,
         stream: stream,
-        blobURL: video.src || video.mozSrcObject
+        blobURL: media.src || media.mozSrcObject
       });
       
-      this.pageView.trigger('video:on');
-      this.checkVideoSize(video);
-      video.controls = false;
-      video.play();
-      $(video).addClass('remoteVideo');
-      this.$remoteVids.show();
-      this.restyleVideos();
-      this.monitorVideoHealth(video);
+      media.controls = false;
+      this.$remoteMedia.show();
+      if (media.tagName === 'VIDEO') {
+        this.pageView.trigger('video:on');
+        this.checkVideoSize(media);
+        $(media).addClass('remoteVideo');
+        this.restyleVideos();
+        this.monitorVideoHealth(media);
+      }
+      else {
+        // audio only
+        media.width = 0;
+        media.height = 0;
+      }
+      
+      media.play();
     },
 
-    onVideoRemoved: function(info, conversation) {
+    onMediaRemoved: function(info, conversation) {
       if (info.type == 'local') {
         debugger;
       }
@@ -1047,12 +1059,12 @@ define('views/ChatView', [
 //          },
 //          
 //          onLocalStream: function(data){
-//            var $videos = chatView.$localVids.find('video');
+//            var $videos = chatView.$localMedia.find('video');
 //            var video = data.mediaElement;
 //            if ($videos.length)
 //              $videos.replaceWith(video);
 //            else
-//              chatView.$localVids.append(video);
+//              chatView.$localMedia.append(video);
 //            
 //            chatView.onAppendedLocalVideo(video, data.stream);
 //          },
@@ -1063,7 +1075,7 @@ define('views/ChatView', [
 //                userInfo = userid && chatView.getUserInfo(userid),
 //                media = data.mediaElement,
 //                stream = data.stream,
-//                existing = chatView.$remoteVids.find('video[src="{0}"]'.format(data.blobURL));
+//                existing = chatView.$remoteMedia.find('video[src="{0}"]'.format(data.blobURL));
 //            
 //            if (userInfo) {
 //              userInfo.media = media;
@@ -1074,7 +1086,7 @@ define('views/ChatView', [
 //            if (existing.length)
 //              existing.replaceWith(media);
 //            else
-//              chatView.$remoteVids.append(media);
+//              chatView.$remoteMedia.append(media);
 //            
 //            chatView.onAppendedRemoteVideo(media);
 //            var title = chatView.getPageTitle();
@@ -1171,8 +1183,8 @@ define('views/ChatView', [
           this.pause();
         }).remove();
         
-        this.$localVids && this.$localVids.empty();
-        this.$remoteVids && this.$remoteVids.empty();
+        this.$localMedia && this.$localMedia.empty();
+        this.$remoteMedia && this.$remoteMedia.empty();
         this.localStream && this.localStream.stop();
       }
     },
@@ -1212,15 +1224,15 @@ define('views/ChatView', [
       var height = $vc.height();
       $vc.css('margin-top', -(height / 2) + 'px');
       $vc.css('margin-left', -(width / 2) + 'px');
-//      this.$localVids.drags();
+//      this.$localMedia.drags();
     },
     
     restyleVideos: function() {
       var chatView = this,
-          $locals = chatView.$localVids;
+          $locals = chatView.$localMedia;
       
-      var numRemotes = chatView.$remoteVids.find('video').length;
-      if (numRemotes == 1 && !chatView.$localVids.hasClass('myVideo-overlay'))
+      var numRemotes = chatView.$remoteMedia.find('video').length;
+      if (numRemotes == 1 && !chatView.$localMedia.hasClass('myVideo-overlay'))
         $locals.addClass('myVideo-overlay');
 //      else
 //        $locals.removeClass('myVideo-overlay');

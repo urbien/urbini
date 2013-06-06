@@ -2,10 +2,9 @@
 define('views/RightMenuButton', [
   'globals',
   'underscore', 
-  'utils',
   'events',
   'views/BasicView'
-], function(G, _, U, Events, BasicView) {
+], function(G, _, Events, BasicView) {
   return BasicView.extend({
     tagName: 'li',
     id: '#rightMenuBtn',
@@ -18,16 +17,16 @@ define('views/RightMenuButton', [
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
-      this.isChat = U.isChatPage();
+      this.isChat = /^chat/.test(this.hash);
       return this;
     },
     
     menu: function(e) {
       Events.stopEvent(e);
-      U.require('views/RightMenuPanel', function(RightMenuPanel) {
+      require('views/RightMenuPanel', function(RightMenuPanel) {
         var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
         menuPanel.render();        
-      }, this);
+      }.bind(this));
 
       return this;
     },

@@ -168,7 +168,7 @@ define('views/EditView', [
 //        return;
 //      }
       
-      U.require('views/CameraPopup').done(function(CameraPopup) {
+      require('views/CameraPopup').done(function(CameraPopup) {
         if (this.CameraPopup) {
           this.CameraPopup.destroy();
           this.stopListening(this.CameraPopup);
@@ -238,7 +238,7 @@ define('views/EditView', [
       if (_.any(scrollers, function(s) { return s.dataset.duration }))
         modules.push('mobiscroll-duration');
       
-      U.require(modules, function() {
+      require(modules, function() {
         self.loadedScrollers = true;
         self.refreshScrollers();
         if (!dontClick) {

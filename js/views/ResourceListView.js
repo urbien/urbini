@@ -578,7 +578,7 @@ define('views/ResourceListView', [
         
         // if current node does not have "masonry-brick" class but the next note has
         // then need to reload/reset bricks
-        if ($next.exist() &&
+        if ($next.length &&
             !hasClass && 
             $next.hasClass("masonry-brick"))
           needToReload = true;
@@ -590,7 +590,7 @@ define('views/ResourceListView', [
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
       var img = $('img', $allBricks[0]);
 //      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
-      var hasImgSize = (img.exist() && img.width() && img.height()) ? true : false;
+      var hasImgSize = (img.length && img.width() && img.height()) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {

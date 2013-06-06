@@ -2,10 +2,9 @@
 define('views/HomePage', [
   'globals',
   'events',
-  'utils',
   'backbone',
   'jqueryAnyStretch'
-], function(G, Events, U, Backbone, Jas) {
+], function(G, Events, Backbone, Jas) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
@@ -39,7 +38,7 @@ define('views/HomePage', [
       if (!id  ||  !id.startsWith('hpRightPanel'))
         return;
       Events.stopEvent(e);
-      U.require(["views/RightMenuPanel"]).done(function(MP) {
+      require("views/RightMenuPanel").done(function(MP) {
         self.menuPanel = new MP({viewId: 'viewHome'}).render();
       });
     },

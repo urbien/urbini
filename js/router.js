@@ -563,7 +563,7 @@ define('router', [
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
         G.onModulesLoaded(unloadedMods).done(function() {          
-          U.require(unloadedMods, function() {
+          require(unloadedMods, function() {
             var a = U.slice.call(arguments);
             for (var i = 0; i < a.length; i++) {              
               self[unloaded[i]] = a[i];

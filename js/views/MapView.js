@@ -38,8 +38,10 @@ define('views/MapView', [
     },
 //    click: Events.defaultClickHandler,  
     render: function (eventName) {
-      var self = this, args = arguments;
-      U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, L) {
+      var self = this, 
+          args = arguments;
+      
+      require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, L) {
         self.render1.apply(self, arguments);
       });
     },

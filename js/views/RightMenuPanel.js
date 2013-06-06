@@ -252,7 +252,7 @@ define('views/RightMenuPanel', [
     },
     
     render: function (eventName) {
-      if (this.hash.startsWith('chat/')) {
+      if (U.isChatPage()) {
         this.renderChatParticipants();
         return;
       }

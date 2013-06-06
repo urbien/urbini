@@ -204,18 +204,22 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
 
 function WebRTC(opts) {
     var options = opts || {};
-    this.sendVideo = !!options.localVideo;
-    this.receiveVideo = !!options.remoteVideos;
-    this.sendAudio = !!(this.sendVideo || options.audio);
-    this.receiveAudio = this.receiveVideo;
-    this.hasData = options.data;
     var self = this,
         config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
             log: false,
-            localVideo: {},
-            remoteVideos: {},
-            data: false,
+            data: true,
+            audio: {
+              send: true,
+              receive: true
+            },
+            video: {
+              send: true,
+              receive: true,
+              preview: true
+            },
+            local: null,
+            remote: null,
             autoRequestMedia: false,
             // makes the entire PC config overridable
             peerConnectionConfig: {
@@ -223,22 +227,11 @@ function WebRTC(opts) {
             },
             peerConnectionContraints: {
                 optional: isChrome ? [{RtpDataChannels: true}] : [{DtlsSrtpKeyAgreement: true}]
-            },
-            mediaConstraints: {
-                audio: this.sendAudio,
-                video: this.sendVideo ? {
-                    mandatory: {
-//                      maxWidth: 320,
-//                      maxHeight: 180
-                    },
-                    optional: []
-                } : false
             }
         },
         item,
         connection;
 
-        
     // check for support
     if (!webRTCSupport) {
         console.error('Your browser doesn\'t seem to support WebRTC');
@@ -246,7 +239,18 @@ function WebRTC(opts) {
 
     // set options
     for (item in options) {
-        this.config[item] = options[item];
+        this.config[item] = options[item] || this.config[item];
+    }
+
+    config.mediaConstraints = config.mediaConstraints || {
+        audio: this.config.audio.send,
+        video: this.config.video.send || this.config.video.preview ? {
+            mandatory: {
+  //            maxWidth: 320,
+  //            maxHeight: 180
+            },
+            optional: []
+        } : false
     }
 
     // log if configured to
@@ -285,7 +289,7 @@ function WebRTC(opts) {
     connection.on('joined', function (info) {
         logger.log('got a joined', info);
         // first 'joined' event carries my own id (as my own 'joined' event is the first one I can receive), all subsequent ones carry ids of other people who joined
-        if (!self.id) {
+        if (!self.id || info.id == self.id) {
           self.id = info.id;
           return;
         }
@@ -296,10 +300,8 @@ function WebRTC(opts) {
     
     connection.on('left', function (room) {
         var conv = self.pcs[room.id];
-        if (conv) {
-          conv.handleStreamRemoved();
-          conv.handleDataChannelRemoved();
-        }
+        if (conv)
+          conv.end();
     });
 
     WildEmitter.call(this);
@@ -310,7 +312,7 @@ function WebRTC(opts) {
     });
 
     // auto request if configured
-    if (this.config.autoRequestMedia) this.startLocalVideo();
+    if (this.config.autoRequestMedia) this.startLocalMedia();
 }
 
 WebRTC.prototype = Object.create(WildEmitter.prototype, {
@@ -328,29 +330,33 @@ WebRTC.prototype.getEl = function (idOrEl) {
 };
 
 // this accepts either element ID or element
-// and either the video tag itself or a container
-// that will be used to put the video tag into.
+// and either the video or audio tag itself or a container
+// that will be used to put the video or audio tag into.
 WebRTC.prototype.getLocalVideoContainer = function () {
-    var el = this.getEl(this.config.localVideo._el);
+    var local = this.config.local;
+    if (!local)
+      throw new Error('no local media container or element specified');
+    
+    var el = this.getEl(this.config.local._el);
     if (el && el.tagName === 'VIDEO') {
         return el;
     } else {
-        var video = document.createElement('video');
-        var options = this.config.localVideo;
+        var media = document.createElement('video');
+        var options = this.config.local;
         if (options) {
           for (var opt in options) {
             if (!/_/.test(opt))
-              video[opt] = options[opt];
+              media[opt] = options[opt];
           }
         }
         
-        el.appendChild(video);
-        return video;
+        el.appendChild(media);
+        return media;
     }
 };
 
-WebRTC.prototype.getRemoteVideoContainer = function () {
-    return this.getEl(this.config.remoteVideos._el);
+WebRTC.prototype.getRemoteMediaContainer = function () {
+    return this.getEl(this.config.remote._el);
 };
 
 WebRTC.prototype.startCall = function (id) {
@@ -390,7 +396,7 @@ WebRTC.prototype.testReadiness = function () {
     var sessionid = self.connection.socket.sessionid;
     if (this.sessionReady) {
       this.emit('readyToText', sessionid);
-      if (this.localStream || !this.config.localVideo) {
+      if (this.localStreamSent || !this.config.local) {
         // This timeout is a workaround for the strange no-audio bug
         // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
         // remove timeout when this is fixed.
@@ -402,30 +408,54 @@ WebRTC.prototype.testReadiness = function () {
     }
 };
 
-WebRTC.prototype.startLocalVideo = function (element) {
-    var self = this;
+WebRTC.prototype.startLocalMedia = function (element) {
+    var self = this,
+        config = this.config,
+        vConfig = config.video,
+        aConfig = config.audio;
+    
+    if (!vConfig.preview && !vConfig.send && !aConfig.send)
+      throw new Error('You have disabled video preview, and video/audio broadcasting');
+      
     if (element) {
       if (element instanceof MediaStream)
-        return this.addVideoFromStream(element);
+        return this.addMediaFromStream(element);
       else if (element.src || element.mozSrcObject)
         return;
     }
     
-    getUserMedia(this.config.mediaConstraints, this.addVideoFromStream.bind(this), function () {
+    getUserMedia(this.config.mediaConstraints, this.addMediaFromStream.bind(this), function () {
         throw new Error('Failed to get access to local media.');
     });
 };
 
-WebRTC.prototype.addVideoFromStream = function(stream) {
-  var video = this.getLocalVideoContainer();
-  attachMediaStream(video, stream);        
-  this.localStream = stream;
+WebRTC.prototype.addMediaFromStream = function(stream) {
+  var config = this.config,
+      vConfig = config.video,
+      aConfig = config.audio,
+      media;
+      
+  if (vConfig.preview) {
+    media = this.getLocalVideoContainer();
+    attachMediaStream(media, stream);
+  }
+  
+  this.localStream = this.localStreamSent = stream;
+  if (!vConfig.send) { // video mute
+    this.localStreamSent = new MediaStream(stream.getAudioTracks());
+  }
+  else if (!aConfig.send) { // audio mute
+    this.localStreamSent = new MediaStream(stream.getVideoTracks());
+  }
+  
   this.testReadiness();
-  this.emit('videoAdded', {
-    type: 'local',
-    video: video,
-    stream: stream
-  });
+  if (media) {
+    this.emit('mediaAdded', {
+      type: 'local',
+      media: media,
+      stream: stream
+    });
+  }
 }
 
 
@@ -452,25 +482,29 @@ WebRTC.prototype.send = function (to, type, payload) {
 
 function Conversation(options) {
     this.options = options || {};
-    var self = this;
-        dataCallbacks = ['onopen', 'onclose', 'onmessage', 'onerror'];
-        
     for (var o in this.options) {
       this[o] = this.options[o];
     }
+    
+    var self = this;
+        dataCallbacks = ['onopen', 'onclose', 'onmessage', 'onerror'],
+        config = this.parent.config,
+        vConfig = config.video,
+        aConfig = config.audio;
+        
         
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    if ((this.parent.sendVideo || this.parent.sendAudio)  && this.parent.localStream)
-      this.pc.addStream(this.parent.localStream);
+    if ((vConfig.send || aConfig.send)  && this.parent.localStreamSent)
+      this.pc.addStream(this.parent.localStreamSent);
     
-    if (this.parent.receiveVideo || this.parent.receiveAudio) {
+    if (vConfig.receive || aConfig.receive) {
       this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
       this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     }
     
-    if (this.parent.hasData) {
+    if (config.data) {
       this.channel = this.pc.createDataChannel(
           'RTCDataChannel',
           isChrome ? {
@@ -478,7 +512,6 @@ function Conversation(options) {
           } : {}
       );
       
-      this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
       if (!isChrome) 
         this.channel.binaryType = 'blob';  
       
@@ -488,15 +521,17 @@ function Conversation(options) {
         
         // proxy data channel events to parent, so that the user can attach event handlers directly to the WebRTC instance, e.g. WebRTC.on('open', onOpenDataChannel); 
         this.channel[cbName] = this.getDataChannelHandler(event);
-      }      
+      }
+      
+      this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
     }
 
     // for re-use
     this.mediaConstraints = {
         optional: [],
         mandatory: {
-            OfferToReceiveAudio: this.parent.receiveAudio,
-            OfferToReceiveVideo: this.parent.receiveVideo
+            OfferToReceiveAudio: !!config.audio.receive,
+            OfferToReceiveVideo: !!config.video.receive
         }
     };
     
@@ -615,10 +650,10 @@ Conversation.prototype.handleDataChannelAdded = function (event) {
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
-        receiveVideo = this.parent.receiveVideo,
-        el = document.createElement(receiveVideo ? 'video' : 'audio'),
-        container = this.parent.getRemoteVideoContainer(),
-        options = receiveVideo && this.remoteVideos;
+        tag = stream.getVideoTracks().length ? 'video' : 'audio'
+        el = document.createElement(tag),
+        container = this.parent.getRemoteMediaContainer(),
+        options = this.remote;
     
     el.id = this.id;
     if (options) {
@@ -632,9 +667,9 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
     if (container) 
       container.appendChild(el);
     
-    this.emit('videoAdded', {
+    this.emit('mediaAdded', {
       type: 'remote',
-      video: el,
+      media: el,
       stream: stream
     });
 };
@@ -644,28 +679,29 @@ Conversation.prototype.handleDataChannelRemoved = function () {
 };
 
 Conversation.prototype.handleStreamRemoved = function () {
-    var video = document.getElementById(this.id),
-        container = this.parent.getRemoteVideoContainer();
+    var media = document.getElementById(this.id),
+        container = this.parent.getRemoteMediaContainer();
     
     this.stream = null;
-    if (video) {
-      if (container) container.removeChild(video);
+    if (media) {
+      if (container) container.removeChild(media);
       
       this.emit('videoRemoved', {
         type: 'remote',
-        video: video
+        media: media
       });
     }
     
     this.cleanup();
 };
 
+// if media stream and data channel have both been closed, remove the peerConnection
 Conversation.prototype.cleanup = function() {
   if (this.stream)
     return;
   
   var me = this.parent.pcs[this.id];
-  if (!me || (this.parent.hasData && me.channel.readyState == 'open'))
+  if (!me || (me.channel && me.channel.readyState == 'open'))
     return;
   
   delete this.parent.pcs[this.id];

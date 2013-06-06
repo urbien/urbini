@@ -197,10 +197,10 @@
 
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">
-  {{ if (obj.video) { }}
+  {{ if (obj.video || obj.audio) { }}
     <div id="videoChat" class="videoChat">
-      <div id="localVideo"></div>
-      <div id="remoteVideos"></div>
+      <div id="localMedia"></div>
+      <div id="remoteMedia"></div>
     </div>    
   {{ }                }}
   

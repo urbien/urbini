@@ -38,10 +38,9 @@ define('views/ResourceView', [
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-//          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
+          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
             defer.resolve();
-          }, this);
+          });
         }
         else
           defer.resolve();

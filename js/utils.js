@@ -74,10 +74,10 @@ define('utils', [
   
   var U = {
     TAG: 'Utils',
-    require: function(modules, callback, context) {
-      return require(modules, context ? callback.bind(context) : callback);
-    },
-    
+//    require: function(modules, callback, context) {
+//      return require(modules, context ? callback.bind(context) : callback);
+//    },
+//    
 //    require: function(modules, callback, context) {
 //      modules = $.isArray(modules) ? modules : [modules];
 //      var mods = [], newModNames = [], newModFullNames = [];
