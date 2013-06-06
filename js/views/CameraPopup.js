@@ -312,17 +312,37 @@ define('views/CameraPopup', [
     },
 
     setDimensions: function() {
-      if (!this.video.videoWidth)
-        return;
-        
+//      if (!this.video.videoWidth)
+//        return;
+//        
       var $window = $(window),
           wWidth = $window.width(),
-          wHeight = $window.height(),
-          vWidth = this.video.videoWidth,
-          vHeight = this.video.videoHeight;
+          wHeight = $window.height();
+//          vWidth = this.video.videoWidth,
+//          vHeight = this.video.videoHeight;
+//      
+//      this.$canvas.attr('width', vWidth);
+//      this.$canvas.attr('height', vHeight);
+//      var $popup = this.$el.parent();
+//      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
+//      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
+      var vWidth, vHeight; 
+      if (!this.video.videoWidth) {
+        vWidth = this.getPageView().innerWidth() - this.padding();
+        vHeight = Math.round(vWidth * 3 / 4);
+      }
+      else {
+        vWidth = this.video.videoWidth;
+        vHeight = this.video.videoHeight;
+      }
       
-      this.$canvas.attr('width', vWidth);
-      this.$canvas.attr('height', vHeight);
+      this.videoWidth = vWidth;
+      this.videoHeight = vHeight;
+      this.height = Math.round(vHeight / (vWidth / this.width));
+      this.$canvas.attr('width', this.width);
+      this.$canvas.attr('height', this.height);
+//      this.$canvas.attr('width', vWidth);
+//      this.$canvas.attr('height', vHeight);
       var $popup = this.$el.parent();
       $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
       $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
@@ -428,8 +448,8 @@ define('views/CameraPopup', [
         }
         else {
           if (this.isVideo) {
+            this.$previewDiv.hide();
             this.video.play();
-            this.$videoPrev && this.$videoPrev.hide();
           }
         }
       }
@@ -483,7 +503,8 @@ define('views/CameraPopup', [
         url = URL.createObjectURL(this.audioBlob);
       }
       
-      this.audioUrl = audio.src = url;
+      this.audioUrl = url;
+      audio.src = url;
       if (this.isVideo) {
         var vid = this.videoPrev;
         vid.addEventListener('play', function() {
@@ -506,8 +527,8 @@ define('views/CameraPopup', [
       if (!video) {
         video = document.createElement('video');
         video.controls = true;
-        video.style.width = this.canvas.width + 'px';
-        video.style.height = this.canvas.height + 'px';
+        video.style.width = this.videoWidth + 'px';
+        video.style.height = this.videoHeight + 'px';
         this.previewDiv.appendChild(video);
         this.$videoPrev = this.$('#camPreview video');
         this.videoPrev = this.$videoPrev[0];
@@ -537,9 +558,10 @@ define('views/CameraPopup', [
         url = URL.createObjectURL(this.webmBlob);
       }
 
-      this.videoUrl = video.src = url;
+      this.videoUrl = url;
+      video.src = url;
 //      downloadLink.href = url;
-      this.$videoPrev.show();
+      this.$previewDiv.width(this.videoWidth).height(this.videoHeight).show();
     },
 
     drawVideoFrame_: function(time) {
