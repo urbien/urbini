@@ -46,15 +46,15 @@ define('views/ChatPage', [
       
       var type = this.vocModel ? this.vocModel.type : null;
       this.makeTemplate('chatPageTemplate', 'template', type);
-      this.config = {
-        video: {
-          send: this.hashParams['-sendVideo'] !== 'n',
-          preview: this.hashParams['-preview'] !== 'n'
-        },
-        audio: {
-          send: this.hashParams['-sendAudio'] !== 'n'
-        }
-      };
+//      this.config = {
+//        video: {
+//          send: this.hashParams['-sendVideo'] !== 'n',
+//          preview: this.hashParams['-preview'] !== 'n'
+//        },
+//        audio: {
+//          send: this.hashParams['-sendAudio'] !== 'n'
+//        }
+//      };
       
       this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'model', 'config'))));
       var readyDfd = $.Deferred();

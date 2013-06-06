@@ -45,15 +45,15 @@ define('views/ChatView', [
       this.hasVideo = this.isPrivate || this.isClient; // HACK, waiting room might not have video
       this.config = {
         data: true,
-        video: this.hasVideo ? {
-          send: true,
+        video: {
+          send: this.hasVideo,
           receive: true,
-          preview: true
-        } : false,
-        audio: this.hasAudio ? {
-          send: true,
+          preview: this.hasVideo
+        },
+        audio: {
+          send: this.hasAudio,
           receive: true
-        } : false,
+        },
         log: true,
         url: SIGNALING_SERVER
       };
