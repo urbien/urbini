@@ -15,7 +15,7 @@ define('views/ChatPage', [
   var BTN_ACTIVE_CLASS = 'ui-btn-active';
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
@@ -193,7 +193,9 @@ define('views/ChatPage', [
         chatPage[method] = function() {
           return chatView[method].apply(chatView, arguments);
         }
-      });      
+      });
+      
+      this.autoFinish = false;
     },
     
     events: {
@@ -205,8 +207,11 @@ define('views/ChatPage', [
     },
 
     toggleChat: function(e) {
+      if (!this.rendered)
+        return;
+      
       if (_.isUndefined(this._videoSolid))
-        this._videoSolid = $('#videoChat').css('opacity') == 1;
+        this._videoSolid = this.$videoChat.css('opacity') == 1;
       
       if (this._videoSolid)
         this.chatFadeIn();
@@ -215,6 +220,8 @@ define('views/ChatPage', [
     },
     
     videoFadeIn: function(e) {
+      if (!this.rendered)
+        return;
 //      if (!this.chatView._videoOn)
 //        this.trigger('video:on');
         
@@ -222,32 +229,41 @@ define('views/ChatPage', [
       if (this._chatSolid)
         this.trigger('chat:off');
       
-      this.$('#videoChat').fadeTo(600, 1).css('z-index', 100); // jquery mobile footer is z-index 1000
+      this.$videoChat.fadeTo(600, 1, this.restyleGoodies).css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
 
     videoFadeOut: function(e) {
+      if (!this.rendered)
+        return;
+      
       this._videoSolid = false;
       if (!this._chatSolid)
         this.trigger('chat:on');
       
-      this.$('#videoChat').fadeTo(600, 0.2).css('z-index', 100); // jquery mobile footer is z-index 1000
+      this.$videoChat.fadeTo(600, 0.1, this.restyleGoodies).css('z-index', 1); // jquery mobile footer is z-index 1000
     },
 
     chatFadeIn: function(e) {
+      if (!this.rendered)
+        return;
+
       this._chatSolid = true;
       if (this._videoSolid)
         this.trigger('video:fadeOut');
       
-      this.$('#textChat').fadeTo(600, 1).css('z-index', 1001);
-      this.$('#videoChat').css('z-index', 0);
+      this.$textChat.fadeTo(600, 1).css('z-index', 1001);
+      this.$videoChat.css('z-index', 1);
     },
 
     chatFadeOut: function(e) {
+      if (!this.rendered)
+        return;
+
       this._chatSolid = false;
       if (!this._videoSolid && this.chatView._videoOn)
         this.trigger('video:fadeIn');
       
-      this.$('#textChat').fadeTo(600, 0.2).css('z-index', 0);
+      this.$textChat.fadeTo(600, 0.1).css('z-index', 1);
     },
     
     render: function() {
@@ -280,28 +296,37 @@ define('views/ChatPage', [
 
       if (!this.$el.parentNode) 
         $('body').append(this.$el);
-      $('#header').css('z-index', '2000');
-      $('#header').css('opacity', '0.7');
+      
+      $('#header').css({
+        'z-index': 1000,
+        'opacity': 0.7
+      });
+      
+      this.$videoChat = this.$('#videoChat');
+      this.$textChat = this.$('#textChat');
+      this.finish();
     },
     
     getStats: function() {
-      var max = 300;
-      var w = document.width || max;
-      var h = document.height || max;
+      var max = Math.min(document.width / 3, document.height / 3, 300),
+          w = document.width || max,
+          h = document.height || max,
+          dim = Math.min(w, h, max);
+      
       return {
-        width: Math.min(w, max),
-        height: Math.min(w, max),
+        width: dim,
+        height: dim,
         circles: [{
           percent: 150,
           text: 'Activity',
           fill: '#f00',
-          opacity: 0.2
+          opacity: 0.5
         },
         {
           percent: 85,
           text: 'Sleep',
           fill: '#0f0',
-          opacity: 0.2
+          opacity: 0.5
         }
 //        ,
 //        {
@@ -374,17 +399,43 @@ define('views/ChatPage', [
     
     restyleGoodies: function() {
       var $goodies = this.$('div#inChatGoodies'),
-          $video = this.$('div#remoteMedia video');
+          $video = this.$('div#remoteMedia video'),
+          $bl = $goodies.find('#inChatBacklinks'),
+          $stats = $goodies.find('#inChatStats'),
+          $svg = $stats.find('svg');
       
+//      $bl.css({
+//        top: '0px',
+//        right: '0px'
+//      });
+//      
+//      $stats.css({
+//        top: $bl.height() + 'px',
+//        right: '0px'
+//      });
+//      
+//      $svg.css({
+//        top: '0px',
+//        right: '0px'
+//      });
+
       if (!$video.length)
         $video = this.$('div#localMedia video');
       
       if ($video.length) {
+        var vChatZ = this.$videoChat.css('z-index');
+        vChatZ = isNaN(vChatZ) ? 1 : parseInt(vChatZ);
+//        var extraOffset = vChatZ < 1000 ? this.pageView.$('[data-role="header"]').height() : 0;
+        var extraOffset = 0;
         var offset = $video.offset();
-        $goodies.css({top: offset.top, left: offset.left + $video.width() - $goodies.find('div#inChatBacklinks').width()});
+        var goodiesWidth = Math.max($goodies.find('div#inChatBacklinks').width(), $goodies.find('svg').width());
+//        $goodies.css({top: offset.top + extraOffset, left: offset.left + $video.width() - goodiesWidth});
+        $goodies.css({top: offset.top + extraOffset});
       }
       else
         $goodies.css({top: 'auto', left: 'auto'});
+      
+      $goodies.css('z-index', 1002);
     },
 
     paintConcentricStats: function(divId, options) {

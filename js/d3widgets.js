@@ -144,9 +144,12 @@ define('d3widgets', ['lib/d3'], function() {
           .attr("textLength",function(d,i) {
             return 90-i*5 ;
            })
-          .style("fill", "#777")
+//          .style("fill", "#fff")
+//          .style("fill", "#777")
+          .style("fill", "#ffff40")
           .style("font", "Arial")
-          .style("text-shadow", "none")
+          .style("text-shadow", "0px 0px 2px #000")
+//          .style("text-shadow", "none")
           .style("font-weight", "bold")
           .attr("xlink:href",function(d,i){
             return "#s"+i;
