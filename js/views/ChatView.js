@@ -1047,8 +1047,14 @@ define('views/ChatView', [
             this.grantRequest();
             break;
           case 'service':
-            if (!userInfo || !this.isAgent)
+            if (!this.isAgent)
               break;
+            
+            if (!userInfo) {
+              debugger; // TODO: request userInfo and continue to handle request
+              break;
+            }
+//              this.request('info')
             
             this.playRingtone();
             // fall through to throw up request dialog
@@ -1162,6 +1168,7 @@ define('views/ChatView', [
       this.enableTakeSnapshot();
       this.restyleVideos();
       this.pageView.trigger('video:on');
+      this.pageView.trigger('videoAdded', video);
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -1193,6 +1200,7 @@ define('views/ChatView', [
         this.restyleVideos();
         this.monitorVideoHealth(media);
         this.pageView.trigger('video:on');
+        this.pageView.trigger('videoAdded', media);
       }
       else {
         // audio only
@@ -1234,6 +1242,7 @@ define('views/ChatView', [
     },
 
     onMediaRemoved: function(info, conversation) {
+      this.pageView.trigger('videoRemoved', info.media);
       if (info.type == 'local') {
         debugger;
       }

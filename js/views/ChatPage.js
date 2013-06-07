@@ -77,7 +77,8 @@ define('views/ChatPage', [
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);
       this.on('video:on', this.videoFadeIn, this);
-      this.on('video:on', this.restyleGoodies, this);
+      this.on('videoAdded', this.restyleGoodies, this);
+      this.on('videoRemoved', this.restyleGoodies, this);
       this.on('newRTCCall', this.videoFadeIn, this);
       this.on('video:fadeIn', this.videoFadeIn, this);
       this.on('video:fadeOut', this.videoFadeOut, this);
