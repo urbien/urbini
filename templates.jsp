@@ -233,13 +233,17 @@
           <td>
             <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
           </td>
+          {{ if (this.isAgent) { }}
           <td>
             <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
           </td>
+          {{ }                     }}
+          {{ if (this.isClient) { }}
           <td>
             <input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
             <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label>
           </td>
+          {{ }                     }}
           <td colspan="50">
             <input type="text" id="chatMessageInput" value="" data-mini="true" />
           </td>
@@ -251,14 +255,18 @@
       <div class="floatleft">
         <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
       </div>
+      {{ if (this.isAgent) { }}
       <div class="floatleft">
         <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
       </div>
+      {{ }                     }}
+      {{ if (this.isClient) { }}
       <div class="floatleft" style="padding-top:0px">
         <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
         <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
         <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
       </div>  
+      {{ }                     }}
       <div class="floatleft" style="width:40%">
         <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
       </div>  

@@ -747,9 +747,10 @@ define('views/ChatView', [
     
     _addLocationMessage: function(userInfo, location, msg) {
       var message =  "{0}'s location at {1}: <br />".format(userInfo.name, getTimeString(location.time)) + toLocationString(location),
-          type = 'commerce/trees/Tree'; //'health/base/MedicalCenter';
+          type = 'health/base/MedicalCenter';
+      
       if (isNursMe) { // HACK
-        message += '<hr /><a href="{0}"><strong>Medical centers near {1}</strong></a>'.format(U.makePageUrl('list', type, _.extend({
+        message = '<a href="{0}"><strong>Medical centers near {1}</strong></a>'.format(U.makePageUrl('list', type, _.extend({
           '-item': userInfo.name, 
           $orderBy: 'distance', 
           $asc: 'y'
