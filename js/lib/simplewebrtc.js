@@ -960,7 +960,7 @@
           content.push(data.message);
           if (data.last) {
               if (onmessage) 
-                onmessage(content.join(''));
+                onmessage(JSON.parse(content.join('')));
               
               content = [];
           }

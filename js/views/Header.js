@@ -19,7 +19,7 @@ define('views/Header', [
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -196,8 +196,9 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload': 'fileUpload',
-      'click #categories': 'showCategories'
+      'change #fileUpload'        : 'fileUpload',
+      'click #categories'         : 'showCategories',
+      'click #sendToCall'         : 'sendToCall'
     },
     fileUpload: function(e) {
       Events.stopEvent(e);      
@@ -266,22 +267,34 @@ define('views/Header', [
 
     refreshCallInProgressHeader: function() {
       var cip = G.callInProgress;
-      if (cip && window.location.href !== cip.url) {
-        var $cipDiv = this.$('#callInProgress');
-        $cipDiv.html(this.callInProgressHeaderTemplate(cip));
-        (function pulse(){
-          if (!G.callInProgress)
-            return;
-          
-          $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
-        })();
-        
-        $cipDiv.css('cursor', 'pointer').click(function() {
-          window.location.href = $('a', this).attr('href');
-        });
+      var $cipDiv = this.$('div#callInProgress');
+      if (!cip || window.location.href == cip.url) {
+        $cipDiv.html("");
+        return;
       }
+      
+      $cipDiv.html(this.callInProgressHeaderTemplate(cip));
+      (function pulse(){
+        if (!G.callInProgress)
+          return;
+        
+        $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
+      })();
+      
+      $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {
+        window.location.href = $('a', this).attr('href');
+      });
+    },
+    
+    sendToCall: function(e) {
+      Events.stopEvent(e);
+      if (this.resource)
+        Events.trigger('messageForCall:resource', this.model.getMiniVersion());
       else {
-        this.$('#callInProgress').html("");
+        Events.trigger('messageForCall:list', {
+          title: this.getPageTitle(),
+          hash: this.hash
+        }); 
       }
     },
 

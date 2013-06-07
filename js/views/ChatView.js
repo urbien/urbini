@@ -4,13 +4,15 @@ define('views/ChatView', [
   'underscore', 
   'utils',
   'events',
-  'views/BasicView'
-], function(G, _, U, Events, BasicView) {
+  'views/BasicView',
+  'vocManager',
+  'collections/ResourceList'
+], function(G, _, U, Events, BasicView, Voc, ResourceList) {
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
   var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
   var nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call"; // HACK for nursem
   var isNursMe = true; //G.pageRoot.toLowerCase() == 'app/nursme1';
-  var Voc, WebRTC, doc = document;
+  var WebRTC, doc = document;
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   };
@@ -52,7 +54,8 @@ define('views/ChatView', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'restyleVideoDiv', 'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 
-                      'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 'setUserId'); // fixes loss of context for 'this' within methods
+                      'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
+                      'setUserId', 'requestLocation'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.isWaitingRoom = U.isWaitingRoom();
@@ -95,6 +98,8 @@ define('views/ChatView', [
       
       this.makeTemplate('chatViewTemplate', 'template', this.modelType);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
+      this.makeTemplate('chatResourceMessageTemplate', 'resourceMessageTemplate', this.modelType);
+      this.makeTemplate('chatListMessageTemplate', 'listMessageTemplate', this.modelType);
       
       this.roomName = this.getRoomName();
       this._myRequests = {};
@@ -165,6 +170,30 @@ define('views/ChatView', [
       Events.on('localVideoMonitor:off', function() {
         self.stopRingtone();
       });
+
+      if (self.config.data !== false) {
+        Events.on('messageForCall:resource', function(resInfo) {
+          var msg = {
+            message: {
+              resource: resInfo
+            }
+          };
+          
+          self.sendMessage(msg);
+          self.addMessage(msg);
+        });
+
+        Events.on('messageForCall:list', function(listInfo) {
+          var msg = {
+            message: {
+              list: listInfo
+            }
+          };
+          
+          self.sendMessage(msg);
+          self.addMessage(msg);
+        });
+      }
 
       this.autoFinish = false;
     },
@@ -463,6 +492,20 @@ define('views/ChatView', [
     },
 
     addMessage: function(info) {
+      var message = info.message,
+          resource = message && message.resource,
+          list = message && message.list;
+      
+      if (resource) {
+        resource = _.extend(_.pick(resource, 'displayName', '_uri', 'image'), {
+          props: _.omit(resource, 'displayName', '_uri', 'image')
+        });
+        
+        info.message = this.resourceMessageTemplate(resource);
+      }
+      else if (list)
+        info.message = this.listMessageTemplate(_.clone(list));
+      
       info.time = getTimeString(info.time || +new Date());
       var height = $(doc).height();
       var atBottom = this.atBottom();
@@ -477,12 +520,18 @@ define('views/ChatView', [
     },
     
     sendPrivateMessage: function(data, to) {
+      if (!this.chat)
+        return;
+      
       data['private'] = true;
       data.time = data.time || +new Date();
       this.chat.sendData(to, data);
     },
 
     sendPublicMessage: function(data) {
+      if (!this.chat)
+        return;
+      
       data.time = data.time || +new Date();
       this.chat.broadcastData(data);
     },
@@ -578,7 +627,7 @@ define('views/ChatView', [
     },
     
     getRequestId: function(data) {
-      return data.response ? data.response.request : data.request.id;
+      return data.response ? data.response.requestId : data.request.id;
     },
 
     request: function(type, to) {
@@ -589,14 +638,16 @@ define('views/ChatView', [
               id: reqId,
               type: type
             }
-          };
+          },
+          request = msg.request;
       
       switch(type) {
       case 'service':
-        msg.request.title = 'Hi, can someone help me please?';
+        request.title = 'Hi, can someone help me please?';
         break;
       case 'info':
-      case 'loc':
+      case 'location':
+        request.title = 'May I ask your location?';
         break;
       }
       
@@ -620,14 +671,28 @@ define('views/ChatView', [
       return promise;
     },
     
+    _grantRequest: function(request, response, from) {
+      if (arguments.length == 2)
+        from = response;
+      
+      this.sendMessage({
+        response: _.extend(response || {}, {
+          granted: true,
+          requestId: request.id
+        }, from)
+      });
+    },
+    
     grantRequest: function(request, from) {
-      var self = this,
-      response = {
-        granted: true,
-        request: request.id
-      };
-
+      var self = this;
+      
       switch(request.type) {
+        case 'info':
+          this._grantRequest(request, {
+            userInfo: this.myInfo
+          }, from);
+          
+          break;
         case 'service':
           this.stopRingtone();
           this.engageClient({
@@ -636,12 +701,14 @@ define('views/ChatView', [
           });
           
           break;
-        case 'loc':
+        case 'location':
           var dfd = $.Deferred();
-          dfd.done(function(position) {
-            self.sendMessage(_.extend(response, {
-              location: position
-            }), from)            
+          dfd.promise().done(function(location) {
+            self._grantRequest(request, {
+              location: location
+            }, from);
+            
+            self._addLocationMessage(self.myInfo, location);
           });
           
           U.getCurrentLocation().done(dfd.resolve).fail(function(error) {
@@ -661,9 +728,10 @@ define('views/ChatView', [
     },
 
     denyRequest: function(request, from, why) {
+      debugger;
       var response = {
         granted: false,
-        request: request.id
+        requestId: request.id
       }
       
       if (why)
@@ -673,12 +741,7 @@ define('views/ChatView', [
         case 'service':
           this.stopRingtone();
         default:
-          this.sendMessage({
-            response: {
-              granted: false,
-              request: request.id
-            }
-          }, from);
+          this.sendMessage(response, from);
       }
     },
     
@@ -694,8 +757,8 @@ define('views/ChatView', [
       }
       
       this.addMessage(_.defaults({
-        message: message,
-      }, msg, {
+        message: message
+      }, msg || {}, {
         time: +new Date(),
         'private': false,
         location: location,
@@ -703,6 +766,10 @@ define('views/ChatView', [
         sender: userInfo.name,
         self: userInfo.id == this.myInfo.id
       }));
+    },
+    
+    requestLocation: function(e) {
+      this.request('location');
     },
     
     shareLocation: function(e) {
@@ -726,6 +793,17 @@ define('views/ChatView', [
       });
     },
     
+    promiseToHandleRequest: function(req) {
+      var self = this,
+          dfd = this._otherRequestPromises[req.id] = $.Deferred(),
+          promise = dfd.promise();
+      
+      promise.done(function() {
+        delete self._otherRequestPromises[req.id];
+      });
+      
+      return promise;
+    },
     
 //    request: function(options, to) {
 //      var reqId = G.nextId(),
@@ -917,10 +995,11 @@ define('views/ChatView', [
         this.enableChat();
       
       data.from = from;      
-      var userInfo = this.getUserInfo(from);      
-      if (data.response) {
+      var userInfo = this.getUserInfo(from);
+      var response = data.response;
+      if (response) {
         this.handleResponse(data);
-        data = data.response;
+        data = response;
       }
       
       var location = data.location;
@@ -956,18 +1035,21 @@ define('views/ChatView', [
         var req = data.request;
         switch (req.type) {
           case 'info':
-            this.sendUserInfo();
+            this.grantRequest();
             break;
           case 'service':
-            if (userInfo && this.isAgent) {
-              var $dialog = this.showRequestDialog(data);
-              var dfd = this._otherRequestPromises[req.id] = $.Deferred();
-              dfd.done(function() {
-                delete self._otherRequestPromises[req.id];
-                if ($dialog.parent())
-                  $dialog.popup('close'); // check if it's not closed already
-              });
-            }
+            if (!userInfo || !this.isAgent)
+              break;
+            
+            this.playRingtone();
+            // fall through to throw up request dialog
+          default:
+            var $dialog = this.showRequestDialog(data);
+            var promise = this.promiseToHandleRequest(req);
+            promise.done(function() {
+              if ($dialog.parent())
+                $dialog.popup('close'); // check if it's not closed already
+            });
             
             break;
         }
@@ -978,12 +1060,37 @@ define('views/ChatView', [
       else if (data.message) {
         if (!userInfo) {
           debugger;
-          this.request('info', from);
+          var args = arguments;
+          this.request('info', from).accepted(function() {
+            self.onDataChannelMessage.apply(self, args);
+          });
           
-          debugger;
           return; // TODO: append message after getting info
         }
+
+        var msg = data.message,
+            resource = msg.resource,
+            list = msg.list;
         
+        if (resource) {
+          var type = U.getTypeUri(resource._uri);
+          Voc.getModels(type).done(function() {
+            var model = U.getModel(type);
+            new model({
+              _uri: resource._uri
+            }).fetch();
+          });
+        }
+        else if (list) {
+          var type = U.getTypeUri(U.decode(list.hash));
+          Voc.getModels(type).done(function() {
+            new ResourceList(null, {
+              model: U.getModel(type),
+              _query: list.hash.split('?')[1]
+            }).fetch();
+          });          
+        }
+          
         this.addMessage(commonMsgPart);
         if (!this.isActive())
           this.unreadMessages++;
@@ -1520,7 +1627,7 @@ define('views/ChatView', [
     restyleVideos: function() {
       var $locals = this.$localMedia;
       var numRemotes = this.$remoteMedia.find('video').length;
-      if (numRemotes == 1 && !$locals.hasClass('myVideo-overlay'))
+      if (numRemotes == 1)
         $locals.addClass('myVideo-overlay');
       else
         $locals.removeClass('myVideo-overlay');
@@ -1532,35 +1639,29 @@ define('views/ChatView', [
       var request = data.request,
           from = data.from,
           userInfo = this.getUserInfo(from),
-          userUri = userInfo.uri,
-          response = {
-            granted: true,
-            request: request.id
-          };
+          userUri = userInfo.uri;
         
       var isServiceReq = this.isWaitingRoom && request.type == 'service';
       if (isServiceReq) {
-        response.privateRoom = userUri;
-        this.sendMessage({
-          response: response
-        });
+        var privateRoom = userUri;
+        this._grantRequest(request, {
+          privateRoom: privateRoom
+        }, from);
         
         // give the client time to setup the room 
 //        setTimeout(function() {          
           this.leave(); // leave waitingRoom
-          Events.trigger('navigate', U.makeMobileUrl('chatPrivate', response.privateRoom, {'-agent': 'y'}), {replace: true});   
+          Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-agent': 'y'}), {replace: true});   
 //        }.bind(this), 1000);
       }
       else {
-        this.chat.sendMessage({
-          response: response
-        });
+        debugger;
+//        this._grantRequest(request, {});
       }
 //        chatView.pageView.trigger('video:on');
     },
     
     showRequestDialog: function(data) {
-      this.playRingtone();
       var request = data.request;
       var userInfo = this.getUserInfo(data.from);
       var chatView = this;
@@ -1569,7 +1670,7 @@ define('views/ChatView', [
       var popupHtml = this.requestDialog({
         id: id,
 //        title: userInfo.name + ' is cold and alone and needs your help',
-        header: 'Service Request',
+        header: request.type.capitalizeFirst() + ' Request',
         img: userInfo.icon,
         title: request.title,
         ok: 'Accept',
@@ -1581,13 +1682,15 @@ define('views/ChatView', [
 //      $.mobile.activePage.append(popupHtml).trigger("create");
       var $popup = $('#' + id);
       $popup.find('[data-cancel]').click(function(e) {
-        Events.stopEvent(e);
         chatView.denyRequest(request, data.from);
+        $popup.parent() && $popup.popup('close');
+        return false;
       });
       
       $popup.find('[data-ok]').click(function(e) {
-        Events.stopEvent(e);
         chatView.grantRequest(request, data.from);
+        $popup.parent() && $popup.popup('close');
+        return false;
       });
   
       $popup.trigger('create');
@@ -1602,17 +1705,14 @@ define('views/ChatView', [
       if (!nurseInfo)
         return;
       
-      require('vocManager').done(function(V) {
-        Voc = V;
-        Voc.getModels(nurseMeCallType).done(function() {
-          var callModel = U.getModel(nurseMeCallType);
-          self.call = new callModel({
-            complaint: 'stomach hurts',
-            nurse: nurseInfo.uri
-          });
-          
-          self.call.save();
+      Voc.getModels(nurseMeCallType).done(function() {
+        var callModel = U.getModel(nurseMeCallType);
+        self.call = new callModel({
+          complaint: 'stomach hurts',
+          nurse: nurseInfo.uri
         });
+        
+        self.call.save();
       });
     },
     

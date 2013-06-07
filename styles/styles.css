@@ -803,6 +803,10 @@ video.remoteVideo:after {
 .chat_msg.msg_recvd .chat_copy p:after {
   border-color: transparent rgb(242, 242, 242) transparent transparent;
 }
+
+.chat_msg a {
+  color: #1122CC;
+}
  
 .med.user_pic {
   width: 50px;

@@ -95,8 +95,8 @@ define('models/Resource', [
           vocModel = this.vocModel,
           meta = vocModel && vocModel.properties;
       
-      if (/^[A-Z]+\./.test(propName)) { // is sth like ImageResource.originalImage
-        var clone = U.getCloneOf(meta, iProp);
+      if (/^[A-Z]{1}[a-zA-Z]*\./.test(propName)) { // is sth like ImageResource.originalImage
+        var clone = U.getCloneOf(vocModel, propName);
         if (clone && clone.length)
           val = this.get(clone[0]);
         else
@@ -852,6 +852,33 @@ define('models/Resource', [
       
 //      return U.flattenModelJson(filtered, vocModel, preserve);
       return filtered;
+    },
+    
+    getMiniVersion: function() {
+      var res = this,
+          miniMe = {
+            displayName: U.getDisplayName(this),
+            _uri: this.getUri()
+          },
+          vocModel = this.vocModel,
+          meta = vocModel.properties,
+          viewCols = vocModel.viewCols || '';
+          
+      
+      if (this.isA("ImageResource")) {
+        miniMe.image = this.get('ImageResource.mediumImage') || this.get('ImageResource.bigImage')  || this.get('ImageResource.bigImage');
+      }
+      
+      _.each(viewCols.split(','), function(p) {
+        p = p.trim();
+        var prop = meta[p], 
+            val = res.get(p);
+        
+        if (prop && typeof val !== 'undefined')
+          miniMe[U.getPropDisplayName(prop)] = val;
+      });
+      
+      return miniMe;
     }
   },
   {

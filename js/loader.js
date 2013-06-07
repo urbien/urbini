@@ -175,7 +175,7 @@ define('globals', function() {
           } catch (err) {
             debugger;
             defer.reject();
-            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
+            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from local storage', err);
             G.localStorage.del(url);
             loadedCached = false;
           }
