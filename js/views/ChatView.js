@@ -47,13 +47,13 @@ define('views/ChatView', [
       this.config = {
         data: true,
         video: {
-          send: this.hasVideo,
-          receive: true,
+          send: !this.isWaitingRoom && this.hasVideo,
+          receive: !this.isWaitingRoom || this.isAgent,
           preview: this.hasVideo
         },
         audio: {
-          send: this.hasAudio,
-          receive: true
+          send: !this.isWaitingRoom && this.hasAudio,
+          receive: !this.isWaitingRoom || this.isAgent
         },
         log: true,
         url: SIGNALING_SERVER
@@ -880,7 +880,7 @@ define('views/ChatView', [
       this.addParticipant({
         id: conversation.id,
         stream: stream,
-        blobURL: media.src || media.mozSrcObject
+        blobURL: media.src || ''
       });
       
       media.controls = false;
@@ -910,7 +910,10 @@ define('views/ChatView', [
     
     _addCanvasForVideo: function(e) {
       var video = e.target;
-      $('<canvas for="{0}" width="100%" height="0" style="position:absolute;top:0px;left;0px" />'.format(video.id)).insertAfter(this);
+      if (!video.id)
+        video.id = G.nextId();
+      
+      $('<canvas data-for="{0}" width="100%" height="0" style="position:absolute;top:0px;left;0px" />'.format(video.id)).insertAfter(this);
     },
 
     disableTakeSnapshot: function() {
@@ -1250,7 +1253,7 @@ define('views/ChatView', [
           snapshots = [];
       this.$('canvas').each(function() {
         var $this = $(this);
-        var $video = self.$('video#' + $this.attr('for'));
+        var $video = self.$('video#' + $this.data('for'));
         if (!$video.length)
           return;
         
@@ -1393,8 +1396,8 @@ define('views/ChatView', [
       });
       
       $popup.find('[data-ok]').click(function(e) {
-        chatView.stopRingtone();
         Events.stopEvent(e);
+        chatView.stopRingtone();
         chatView.engageClient(data);
       });
   

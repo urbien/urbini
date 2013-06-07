@@ -694,7 +694,9 @@
       if (this.pc.signalingState !== 'closed')
         this.pc.close();
       
-      this.handleStreamRemoved();
+      if (this.parent.config.video.receive)
+        this.handleStreamRemoved();
+      
       this.handleDataChannelRemoved();
   };
   
