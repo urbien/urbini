@@ -44,10 +44,14 @@ define('views/ViewPage', [
       if (!isAbout) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
-          viewType = 'views/PhotogridView';
-          this.imgDiv = 'div#resourceImageGrid';
+          var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
+          var bFeatured = U.getCloneOf(this.vocModel, 'Intersection.bFeatured')[0];
+          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
+            viewType = 'views/PhotogridView';
+            this.imgDiv = 'div#resourceImageGrid';
+          }
         }
-        else {
+        if (!this.imgDiv) {
           viewType = 'views/ResourceImageView';
           this.imgDiv = 'div#resourceImage';
         }        

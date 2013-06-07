@@ -8,6 +8,7 @@
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="headerMessageBar"></div>
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
@@ -45,6 +46,7 @@
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="headerMessageBar"></div>
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
@@ -79,11 +81,21 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="inChatGoodies" style="position:absolute; z-index: 100">
-    <div id="inChatBacklinks" style="position:absolute;"></div>
+  <div id="videoChat" class="videoChat" style="z-index:100;width:100%;height:100%;left:0;top:0;">
+    <div id="localMedia"></div>
+    <div id="remoteMedia"></div>
+  </div>    
+  <div id="headerMessageBar" style="opacity:0.7"></div>
+  <!--div id="localVideoMonitor" style="z-index:100;width:100%;height:100%;left:0;top:0;position:fixed;">
+  </div-->
+  <div id="ringtoneHolder" style="visibility: hidden; display: none;">
+  </div>
+  
+  <div id="inChatGoodies" style="width:100%;position:absolute; z-index: 100">
+    <div id="inChatBacklinks" style="position:absolute;padding:5px;top:130px;zindex:2000"></div>
     <div id="inChatStats" style="position:relative;"></div>
   </div>
   <div id="chatDiv" role="main" data-role="content"></div>
@@ -182,7 +194,7 @@
 <script type="text/template" id="genericDialogTemplate">
 <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
   {{ if (obj.header) { }}
-  <div data-role="header" data-theme="a" class="ui-corner-top">
+  <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
     <h1>{{= header }}</h1>
   </div>
   {{ }                 }}
@@ -211,23 +223,24 @@
 
 <script type="text/template" id="chatViewTemplate">
   <div id="chatHolder" class="chat-holder">
-  {{ if (obj.video || obj.audio) { }}
+   <!--
+   {{ if (obj.video || obj.audio) { }}
     <div id="videoChat" class="videoChat">
       <div id="localMedia"></div>
       <div id="remoteMedia"></div>
     </div>    
   {{ }                }}
-  
+
     <div id="ringtoneHolder" style="visibility: hidden; display: none;">
     </div>
-  
+  -->
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
     <div id="textChat" style="margin: 0px 10px 0px 10px">
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
       </div>
     </div>
-    <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline">
+        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline">
       <!--table>
         <tr>
           <td>
@@ -274,6 +287,14 @@
         <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
       </div>
     </div>
+    
+    <!--div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
+      <div id="chatInputs" style="padding:0 0 0 5px;">
+        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
+        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
+        <div style="width:20%; padding-right:5px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
+      </div>
+    </div-->
   {{ }                                          }}
   </div>
 </script>
@@ -676,14 +697,14 @@
 <!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value) { }}  
+ {{ if (!value  &&  !chat) { }}  
    <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; background-color: {{= color }}" href="#">
      <i class="{{= icon }}" style="right: -20px; font-size: 20px;"></i>&#160;{{= name }}
    </a>
  {{ } }}
- {{ if (typeof value != 'undefined') { }}  
+ {{ if (obj.value != 'undefined' || chat) { }}  
    <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>
@@ -894,7 +915,7 @@
 
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}">
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} >
     <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
@@ -943,8 +964,10 @@
 </script>
 
 <script type="text/template" id="headerErrorBar">
-  {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-warning-sign"></i> ' + info + '</h3>' : '' }}
+  <div style="{{= obj.style || '' }}">
+  {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-' + (obj.icon || 'warning-sign') + '"></i> ' + info + '</h3>' : '' }}
   {{= obj.error ? '<h3 id="headerError">' + (obj.withIcon ? '<i class="ui-icon-ban-circle"></i>' : '') + error + '</h3>' : ''}}
+  </div>
 </script>
 
 <script type="text/template" id="comment-item">
@@ -1182,6 +1205,7 @@
 <!-- the edit page for any particular resource -->
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+<div id="headerMessageBar"></div>
 <div id="headerDiv"></div>
 <div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>

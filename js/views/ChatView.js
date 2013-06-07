@@ -266,6 +266,12 @@ define('views/ChatView', [
         video: this.hasVideo,
         audio: this.hasAudio
       }));
+      
+      if (this.isWaitingRoom && this.isClient) {
+        Events.trigger('headerMessage', {
+          info: 'Calling...'
+        });
+      }
 
       this.$el.trigger('create');
       this.$('div#localMedia').hide();
@@ -282,12 +288,11 @@ define('views/ChatView', [
     },
     
     playRingtone: function() {
-      this.$('#ringtoneHolder').append("<audio id='ringtone' src='ringtone.mp3' loop='true' />");
-      this.$('#ringtoneHolder').find('audio')[0].play();
+      this.pageView.$('div#ringtoneHolder').append("<audio id='ringtone' src='ringtone.mp3' loop='true' />").find('audio')[0].play();
     },
 
     stopRingtone: function() {
-      this.$('#ringtoneHolder').find('audio').each(function() {
+      this.pageView.$('div#ringtoneHolder').find('audio').each(function() {
         this.pause();
         this.src = null;
       }).remove();
@@ -467,8 +472,18 @@ define('views/ChatView', [
       
       this._updateParticipants();
       if (userInfo.justEntered) {
+        var message, isNursMe = G.currentApp.appPath == 'NursMe1';
+        if (this.isPrivate) {
+          if (userInfo.isAgent)
+            message = '<i>{0}{1} is ready to assist you</i>'.format(isNursMe ? 'Nurse ' : '', userInfo.name);
+          else
+            message = '<i>{0}{1} is ready to be assisted</i>'.format(isNursMe ? 'Patient ' : '', userInfo.name);
+        }
+        else if (!(this.isWaitingRoom && this.isClient))
+          message = '<i>{0} has entered the room</i>'.format(userInfo.name);
+        
         this.addMessage({
-          message: '<i>{0} has entered the room</i>'.format(userInfo.name),
+          message: message,
           time: +new Date(), //getTime(),
           senderIcon: userInfo.icon,
           info: true,
@@ -883,8 +898,8 @@ define('views/ChatView', [
           }
         });
         
-        this.$localMedia = this.$('div#localMedia');
-        this.$remoteMedia = this.$('div#remoteMedia');
+        this.$localMedia = this.pageView.$('div#localMedia');
+        this.$remoteMedia = this.pageView.$('div#remoteMedia');
       }
       
       var i = 0;
@@ -1633,6 +1648,7 @@ define('views/ChatView', [
     },
     
     restyleVideoDiv: function() {
+      /*
       var $vc = this.$('.videoChat');
       var width = Math.min($vc.width(), this.innerWidth());
 
@@ -1640,6 +1656,7 @@ define('views/ChatView', [
       $vc.css('margin-top', -(height / 2) + 'px');
       $vc.css('margin-left', -(width / 2) + 'px');
 //      this.$localMedia.drags();
+      */
     },
     
     restyleVideos: function() {
@@ -1666,11 +1683,8 @@ define('views/ChatView', [
           privateRoom: privateRoom
         }, from);
         
-        // give the client time to setup the room 
-//        setTimeout(function() {          
-          this.leave(); // leave waitingRoom
-          Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-agent': 'y'}), {replace: true});   
-//        }.bind(this), 1000);
+        this.leave(); // leave waitingRoom
+        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-agent': 'y'}), {replace: true});   
       }
       else {
         debugger;
@@ -1738,9 +1752,18 @@ define('views/ChatView', [
       var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
       if (!nurseInfo || !this.call)
         return;
-      
-      self.call.save({
+
+      this.call.save({
         end: +new Date()
+      },
+      {
+        sync: true,
+        success: function() {
+          debugger;
+        },
+        error: function() {
+          debugger;
+        }
       });
     }
   },

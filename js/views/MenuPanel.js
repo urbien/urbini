@@ -102,7 +102,11 @@ define('views/MenuPanel', [
       var self = this;
       var res = this.model;
       var json = this.resource && res.toJSON();
-      this.$el.html(this.template(json));      
+      
+      if (!res)
+        this.$el.html(this.template({}));      
+      else
+        this.$el.html(this.template(json));      
 
       var ul = this.$('#menuItems');
       var frag = document.createDocumentFragment();

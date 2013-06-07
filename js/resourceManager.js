@@ -1102,9 +1102,7 @@ define('resourceManager', [
           }          
         });
         
-        $.when.apply($, dfds).always(function() {
-          defer.resolve();
-        });
+        $.when.apply($, dfds).always(defer.resolve);
       }).promise();
     },
     

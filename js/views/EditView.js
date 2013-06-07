@@ -1377,7 +1377,6 @@ define('views/EditView', [
             var interfaceProperties = self.resource.get('interfaceProperties');
             var ip = interfaceProperties ? interfaceProperties.split(',') : [];
             var props = '';
-            self.$ul1 = $('#interfaceProps');
             _.each(imeta, function(p) {
               var prop = p.shortName;
               if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
@@ -1399,7 +1398,7 @@ define('views/EditView', [
             props = props.slice(0, props.length - 1);
             self.setValues('interfaceProperties', props);
             
-            (this.$ul1 = $('#interfaceProps')).html(frag);
+            (self.$ul1 = self.$el.find('#interfaceProps')).html(frag);
             if (self.$ul1.hasClass('ui-listview')) {
               self.$ul1.trigger('create');
               self.$ul1.listview('refresh');
@@ -1549,9 +1548,9 @@ define('views/EditView', [
         }
       });
       
-      form.find('fieldset input[type="checkbox"]').each(function() {
-        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
-      });
+//      form.find('fieldset input[type="checkbox"]').each(function() {
+//        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
+//      });
 
       return this;
     },
