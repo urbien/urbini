@@ -1128,7 +1128,6 @@ define('views/ChatView', [
     processLocalMedia: function(info, conversation) {
       var video = info.media;
       this.localStream = info.stream;
-      this.pageView.trigger('video:on');
       this.checkVideoSize(video);
       var $local = this.$localMedia.find('video');
       if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
@@ -1153,6 +1152,7 @@ define('views/ChatView', [
       this.monitorVideoHealth(video);
       this.enableTakeSnapshot();
       this.restyleVideos();
+      this.pageView.trigger('video:on');
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -1179,11 +1179,11 @@ define('views/ChatView', [
       media.controls = false;
       this.$remoteMedia.show();
       if (media.tagName === 'VIDEO') {
-        this.pageView.trigger('video:on');
         this.checkVideoSize(media);
         $(media).addClass('remoteVideo');
         this.restyleVideos();
         this.monitorVideoHealth(media);
+        this.pageView.trigger('video:on');
       }
       else {
         // audio only
