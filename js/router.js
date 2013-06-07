@@ -3,7 +3,7 @@ define('router', [
   'globals',
   'utils', 
   'events', 
-  'error', 
+  'error',
   'models/Resource', 
   'collections/ResourceList',
   'cache',
@@ -153,15 +153,15 @@ define('router', [
 //      });
       
       
-      $(window).hashchange(function() {
-        self._hashChanged = true;        
-      });
-      
-      Events.on('pageChange', function() {
-        self._hashChanged = false;
-//        console.debug('currentUrl:', self.currentUrl);
-//        console.debug('previousHash:', self.previousHash);
-      });
+//      $(window).hashchange(function() {
+//        self._hashChanged = true;        
+//      });
+//      
+//      Events.on('pageChange', function() {
+//        self._hashChanged = false;
+////        console.debug('currentUrl:', self.currentUrl);
+////        console.debug('previousHash:', self.previousHash);
+//      });
       
 //      _.each(['list', 'view', 'make', 'templates', 'home'], function(method) {
 //        var fn = self[method];
@@ -264,11 +264,12 @@ define('router', [
         this.homePage.render();
         this.currentView = this.homePage;
       }
-      
+/*
       Events.trigger('pageChange', prev, this.currentView);
 //      if (!this.firstPage)
       $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       
+*/      
       // HACK, this div is hidden for some reason when going to #home/...
       var mainDiv = $('.mainDiv'); 
       if (mainDiv.is(':hidden'))
@@ -754,6 +755,14 @@ define('router', [
       if (!model)
         return this;
 
+      if (U.isAssignableFrom(model, 'Contact')) {
+        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
+        var altModel = U.getModel(altType);
+        if (altModel) {
+          typeUri = altType;
+          model = altModel;
+        }
+      }
       var res = C.getResource(uri);
       if (res && !res.loaded)
         res = null;
@@ -1128,29 +1137,40 @@ define('router', [
 //      
 //      this.errMsg = null, this.info = null;
       var params = U.getHashParams();
-      var info = params['-info'],
-          error = params['-error'];
+      var info = params['-info'] || params['-gluedInfo'],
+          error = params['-error'] || params['-gluedError'];
           
       if (info || error) {
-        if (/home\//.test(U.getHash())) {
-          var errorBar = $m.activePage.find('#headerErrorBar');
+        if (/^home\//.test(U.getHash())) {
+          var errorBar = $.mobile.activePage.find('#headerMessageBar');
           errorBar.html("");
-          errorBar.html(U.template('headerErrorBar')({error: error, info: info}));
+          errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
+
+          if (!params['-gluedInfo']) {
+            var hash = U.getHash().slice(1);
+            delete params['-info'];
+            delete params['-error']; 
+            // so the dialog doesn't show again on refresh
+            Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+          }
+
         }
-        else {
-          U.dialog({
-            header: 'FYI',
-            title: info || error,
-            ok: false,
-            cancel: false
-          });
+      
+        var data = {};
+        if (info) {
+          data.info = {
+            msg: info,
+            glued: !!params['-gluedInfo']
+          };
+        }
+        if (error) {
+          data.error = {
+            msg: error,
+            glued: !!params['-gluedError']
+          };
         }
         
-        var hash = U.getHash().slice(1);
-        delete params['-info'];
-        delete params['-error']; 
-        // so the dialog doesn't show again on refresh 
-        Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+        Events.trigger('headerMessage', data);
       }
     },
     changePage: function(view) {

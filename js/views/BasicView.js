@@ -119,20 +119,76 @@ define('views/BasicView', [
       }.bind(this));
 ////////// comment end
       
-//      if (this.getPageView() == this) {
-        var self = this;
-        _.each(['onorientationchange', 'onresize'], function(listener) {
-          if (listener in window) {
-            var event = listener.slice(2);
-            window.addEventListener(event, function() {
-              self.onActive(function() {
-                self['_' + event](event);
-              });
-            }, false);
-          }
+      var self = this;
+      if (this.isPageView()) {
+        Events.on('headerMessage', function(data) {
+          var error = data.error,
+              errMsg = error ? error.msg || error : null,
+              info = data.info,
+              infoMsg = info ? info.msg || info : null,
+              errorBar = self.$('div#headerMessageBar');
+          
+          if (!errorBar.length)
+            return;
+          
+          errorBar.html("");
+          errorBar.html(U.template('headerErrorBar')({error: errMsg, info: infoMsg, style: "background-color:#FFFC40;"}));
+//        }
+//        else {
+//          U.dialog({
+//            header: 'FYI',
+//            title: info || error,
+//            ok: false,
+//            cancel: false
+//          });
+//        }
+          var hash = U.getHash(), orgHash = hash;
+          if (error && !error.glued)
+            hash = U.replaceParam(hash, {'-error': null});
+          if (info && !info.glued)
+            hash = U.replaceParam(hash, {'-info': null});
+          
+          if (hash != orgHash)
+            Events.trigger('navigate', hash, {trigger: false, replace: true});
         });
-//      }
-      
+        
+        this.whenDoneLoading(function() {
+          var gluedError = self.hashParams['-gluedError'],
+              error = gluedError || self.hashParams['-error'],
+              gluedInfo = self.hashParams['-gluedInfo'],
+              info = gluedInfo || self.hashParams['-info'];
+          
+          var data = {};
+          if (info) {
+            data.info = {
+              msg: info,
+              glued: !!gluedInfo
+            };
+          }
+          if (error) {
+            data.error = {
+              msg: error,
+              glued: !!gluedError
+            };
+          }
+          
+          if (_.size(data))
+            Events.trigger('headerMessage', data);
+        });        
+      }
+
+      var self = this;
+      _.each(['onorientationchange', 'onresize'], function(listener) {
+        if (listener in window) {
+          var event = listener.slice(2);
+          window.addEventListener(event, function() {
+            self.onActive(function() {
+              self['_' + event](event);
+            });
+          }, false);
+        }
+      });
+
       return this;
     }
   }, {

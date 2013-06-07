@@ -35,7 +35,6 @@ label.req::before {
   color:#FF0000;  
   font-weight:bold;  
 }  
-
 .ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
   display: block;
 }
@@ -562,15 +561,11 @@ border: #7F7F7F solid 4px;
 video {
   width: 100%    !important;
   height: auto   !important;
-  #max-width: 100%;
-  #height: auto;
 }
 
-/*
 video.localVideo {
   border: 5px solid #AAA;  
 }
-*/
 
 .parentCenter {
   max-width: 100%;
@@ -582,7 +577,6 @@ video.localVideo {
   right: 0;
   margin: 0px auto;
 }
-
 .videoChat {
   position: relative;
   display: inline-block;
@@ -591,11 +585,11 @@ video.localVideo {
   left: 50%;
   position:fixed;
 }
-
+/*
 .videoChat video {
-  border: 5px solid #AAA;
+  border: 5px solid #AAA; 
 }
-
+*/
 .myVideo-overlay video {
   max-width: 30%;
   position: absolute;
@@ -814,15 +808,6 @@ video.remoteVideo:after {
   border: 1px solid #DFDFDF;
   display: block;
 }
-
-.closespacing { /* controls spacing between elements */
-  margin:0px 5px 0px 0px;
-}
-
-.forceinline{  /* Prevent fieldcontain from doing a BLOCK thing */
-  display:inline !important;
-}
-
 .floatleft {
   float:left;
 }
@@ -831,12 +816,6 @@ video.remoteVideo:after {
   float:right;
 }
 
-.biginputheight {   /* matches text input height to big buttons */
-  padding-top:10px !important;
-  padding-bottom:12px !important;
-}
-
-.miniinputheight { /* matches text input height to minibuttons */
-  padding-top:5px !important;
-  padding-bottom:5px !important;
+#inChatBacklinks .ui-btn-inner {
+  padding: .6em 30px .6em 10px
 }

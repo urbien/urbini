@@ -160,7 +160,7 @@ define('views/ControlPanel', [
           this.$el.css("min-width", "130");
         }
       }
-      
+      var isChat = window.location.hash.indexOf('#chat') == 0; 
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
@@ -328,10 +328,10 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
+              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++], chat: isChat};
               if (this.isMainGroup) {
-                if (!icon)
-                  icon = 'ui-icon-star-empty';
+//                if (!icon)
+//                  icon = 'ui-icon-star-empty';
                 
                 if (isHorizontal)
                   U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));

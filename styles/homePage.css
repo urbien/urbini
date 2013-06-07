@@ -12,7 +12,9 @@
   background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
 }
 */
-#homePage.ui-body-c {background: none;background-image: none;text-shadow: 0 1px 0 #000; }
+#homePage {height: 99.9%;}
+
+#homePage {background: none;background-image: none;text-shadow: 0 1px 0 #000; }
 #homePage span {color: #ddd; }
 .p div {color: #ddd; }
 table.c1 td.b1, table.c1 td.b2 { padding: 0px; width: 64px;}
@@ -40,7 +42,7 @@ h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
   color: #eee; padding-top:5px; padding-bottom: 10px;
 }
 body { 
-  margin: 0; font-size:12px; /*background-color: #fff;*/ font-family: Helvetica, Arial, sans-serif; color: #757575; 
+  margin: 0; height:99.9%; font-size:12px; /*background-color: #fff;*/ font-family: Helvetica, Arial, sans-serif; color: #757575; 
 }
     
 .demo-1 body:after {

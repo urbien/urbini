@@ -468,11 +468,11 @@ define('utils', [
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
         return false;
-      if (prop.avoidDisplayingInEdit  || prop.avoidDisplayingOnCreate) {
-        var hash = window.location.hash;
-        if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
-          return false;
-      }
+      var hash = window.location.hash;
+      if (prop.avoidDisplayingInEdit  &&  hash.indexOf("#edit") != -1)
+        return false;
+      if (prop.avoidDisplayingOnCreate  &&  hash.indexOf("#make") != -1)
+        return false;
 
       var isMkResource = res.isNew();
       var isAdmin = U.isUserInRole("admin");
