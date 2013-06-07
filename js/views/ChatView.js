@@ -9,21 +9,37 @@ define('views/ChatView', [
   // fluid width video http://css-tricks.com/NetMag/FluidWidthVideo/demo.php
   var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
   var nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call"; // HACK for nursem
+  var isNursMe = true; //G.pageRoot.toLowerCase() == 'app/nursme1';
   var Voc, WebRTC, doc = document;
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
-  }
+  };
+
+  function toLocationString(location) {
+    var str = '';
+    for (var key in location) {
+      var val = location[key];
+      if (key == 'time')
+        continue;
+      if (key === 'accuracy')
+        val += '%';
+      
+      str += '{0}: {1} <br />'.format(key.capitalizeFirst(), val);
+    }
+    
+    return str;
+  };
   
   function toDoubleDigit(digit) {
     return digit = digit < 10 ? '0' + digit : digit;
-  }
+  };
 
   function unbindVideoEvents(video) {
     var $video = $(video);
     _.each(G.media_events, function(e) {            
       $video.unbind(e);
     })
-  }
+  };
   
   function getTimeString(date) {
     date = new Date(date);
@@ -31,11 +47,12 @@ define('views/ChatView', [
     var ampm = hours < 12 ? 'AM' : 'PM';
     hours = hours % 12;
     return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(date.getMinutes()) + ampm);
-  }
+  };
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'restyleVideoDiv', 'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'restyleVideoDiv', 'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 
+                      'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 'setUserId'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       this.isWaitingRoom = U.isWaitingRoom();
@@ -152,11 +169,13 @@ define('views/ChatView', [
       this.autoFinish = false;
     },
     
-    events : {
+    events: {
       'orientationchange'                 : 'restyleVideoDiv',
       'resize'                            : 'restyleVideoDiv',
       'click #chatSendBtn'                : '_sendMessage',
       'click #endChat'                    : 'endChat',
+      'click #chatReqLocBtn'              : 'requestLocation',
+      'click #chatShareLocBtn'            : 'shareLocation',
       'click #chatCaptureBtn'             : 'takeSnapshot'
     },
 
@@ -165,9 +184,13 @@ define('views/ChatView', [
     },
 
     getUserId: function() {
-      return this.chat.id;
+      return this.myInfo.id;
     },
-    
+
+    setUserId: function(id) {
+      this.myInfo.id = id;
+    },
+
     getParticipants: function() {
       return _.clone(this.userIdToInfo);
     },
@@ -385,7 +408,7 @@ define('views/ChatView', [
         this._updateParticipants();
         var dfd = this._otherRequestPromises[userid];
         if (dfd) {
-          dfd.resolve()
+          dfd.resolve();
           delete this._otherRequestPromises[userid];
         }
         
@@ -427,10 +450,12 @@ define('views/ChatView', [
       this.participants = _.keys(this.userIdToInfo);
     },
     
-    sendUserInfo: function(options) {
-      this.chat.send({
+    sendUserInfo: function(options, to) {
+      var msg = {
         userInfo: _.extend(this.myInfo, options || {})
-      });
+      };
+      
+      this.chat.sendMessage(msg, to);
     },
 
     getUserInfo: function(userid) {
@@ -446,7 +471,12 @@ define('views/ChatView', [
         this.scrollToBottom();
     },
     
-    sendPrivateMessage: function(to, data) {
+    sendMessage: function() {
+      var method = arguments[1] ? 'sendPrivateMessage' : 'sendPublicMessage';
+      this[method].apply(this, arguments);
+    },
+    
+    sendPrivateMessage: function(data, to) {
       data['private'] = true;
       data.time = data.time || +new Date();
       this.chat.sendData(to, data);
@@ -525,7 +555,7 @@ define('views/ChatView', [
       if (!msg || !msg.length)
         return;
 
-      this.sendPublicMessage({message: msg});
+      this.sendMessage({message: msg});
       this.addMessage({
         sender: 'Me', //this.myName,
         senderIcon: this.myIcon,
@@ -550,33 +580,179 @@ define('views/ChatView', [
     getRequestId: function(data) {
       return data.response ? data.response.request : data.request.id;
     },
-    
-    request: function(options, to) {
-      var reqId = G.nextId(),
+
+    request: function(type, to) {
+      var reqId = this.myInfo.id + '_' + G.nextId(),
           self = this,
           msg = {
-            request: _.extend({
-              id: reqId
-            }, options)
+            request: {
+              id: reqId,
+              type: type
+            }
           };
+      
+      switch(type) {
+      case 'service':
+        msg.request.title = 'Hi, can someone help me please?';
+        break;
+      case 'info':
+      case 'loc':
+        break;
+      }
       
       if (to)
         msg.to = to;
       
       this._myRequests[reqId] = msg.request;
-      if (to)
-        this.sendPrivateMessage(to, msg);
-      else
-        this.sendPublicMessage(msg);
-      
+      this.sendMessage(msg, to);      
       var dfd = $.Deferred();
       dfd.done(function() {
         delete self._myRequestPromises[reqId];
       });
       
       this._myRequestPromises[reqId] = dfd;
-      return dfd.promise();
+      var promise = dfd.promise();
+      _.extend(promise, {
+        accepted: promise.done,
+        rejected: to ? promise.fail : promise.progress // if it's a public message, you get the opportunity to be rejected many times
+      })
+      
+      return promise;
     },
+    
+    grantRequest: function(request, from) {
+      var self = this,
+      response = {
+        granted: true,
+        request: request.id
+      };
+
+      switch(request.type) {
+        case 'service':
+          this.stopRingtone();
+          this.engageClient({
+            request: request,
+            from: from
+          });
+          
+          break;
+        case 'loc':
+          var dfd = $.Deferred();
+          dfd.done(function(position) {
+            self.sendMessage(_.extend(response, {
+              location: position
+            }), from)            
+          });
+          
+          U.getCurrentLocation().done(dfd.resolve).fail(function(error) {
+            var lastKnown = G.currentUser.location;
+            if (lastKnown)
+              dfd.resolve(lastKnown);
+            else {
+              alert('Unable to share your location');
+              self.denyRequest(request, from, {
+                message: 'User was unable to send location'
+              });
+            }
+          });
+          
+          break;
+      }
+    },
+
+    denyRequest: function(request, from, why) {
+      var response = {
+        granted: false,
+        request: request.id
+      }
+      
+      if (why)
+        response.reason = why;
+      
+      switch(request.type) {
+        case 'service':
+          this.stopRingtone();
+        default:
+          this.sendMessage({
+            response: {
+              granted: false,
+              request: request.id
+            }
+          }, from);
+      }
+    },
+    
+    _addLocationMessage: function(userInfo, location, msg) {
+      var message =  "{0}'s location at {1}: <br />".format(userInfo.name, getTimeString(location.time)) + toLocationString(location),
+          type = 'commerce/trees/Tree'; //'health/base/MedicalCenter';
+      if (isNursMe) { // HACK
+        message += '<hr /><a href="{0}"><strong>Medical centers near {1}</strong></a>'.format(U.makePageUrl('list', type, _.extend({
+          '-item': userInfo.name, 
+          $orderBy: 'distance', 
+          $asc: 'y'
+        }, _.pick(location, 'latitude', 'longitude'))), userInfo.name);
+      }
+      
+      this.addMessage(_.defaults({
+        message: message,
+      }, msg, {
+        time: +new Date(),
+        'private': false,
+        location: location,
+        senderIcon: userInfo.icon,
+        sender: userInfo.name,
+        self: userInfo.id == this.myInfo.id
+      }));
+    },
+    
+    shareLocation: function(e) {
+      var self = this,
+          dfd = $.Deferred();
+      
+      dfd.done(function(position) {
+        self.sendMessage({
+          location: position
+        });        
+        
+        self._addLocationMessage(self.myInfo, position);
+      });
+      
+      U.getCurrentLocation().done(dfd.resolve).fail(function(error) {
+        var lastKnown = G.currentUser.location;
+        if (lastKnown)
+          dfd.resolve(lastKnown);
+        else
+          dfd.reject(error);
+      });
+    },
+    
+    
+//    request: function(options, to) {
+//      var reqId = G.nextId(),
+//          self = this,
+//          msg = {
+//            request: _.extend({
+//              id: reqId
+//            }, options)
+//          };
+//      
+//      if (to)
+//        msg.to = to;
+//      
+//      this._myRequests[reqId] = msg.request;
+//      if (to)
+//        this.sendPrivateMessage(to, msg);
+//      else
+//        this.sendPublicMessage(msg);
+//      
+//      var dfd = $.Deferred();
+//      dfd.done(function() {
+//        delete self._myRequestPromises[reqId];
+//      });
+//      
+//      this._myRequestPromises[reqId] = dfd;
+//      return dfd.promise();
+//    },
     
     startChat: function() {
       var args = arguments, self = this;
@@ -650,6 +826,7 @@ define('views/ChatView', [
         webrtc.joinRoom(roomName);
       }));
 
+      webrtc.on('userid', this.setUserId);
       webrtc.on('mediaAdded', this.onMediaAdded);
       webrtc.on('mediaRemoved', this.onMediaRemoved);
 
@@ -681,21 +858,18 @@ define('views/ChatView', [
         info.justEntered = true;
       }
       
-      this.sendPrivateMessage(conversation.id, {
+      this.sendMessage({
         userInfo: info
-      });
+      }, conversation.id);
       
       if (this.isWaitingRoom && this.isClient) {
-        this.request({
-          title: 'Hi, can someone help me please?',
-          type: 'service'
-        }).done(function(responseData) {
+        this.request('service').accepted(function(responseData) {
           // request has been granted
           self.leave();
           var from = responseData.from;
           var privateRoom = responseData.response.privateRoom;
           Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true, transition: 'none'});
-        }).progress(function(responseData) {
+        }).rejected(function(responseData) {
           // request has been denied by responseData.from, or anonymously if responseData.from is undefined
 //          debugger;
         });
@@ -734,25 +908,49 @@ define('views/ChatView', [
     },
     
     onDataChannelMessage: function(data, conversation) {
-      var channel = event.target,
+      var self = this,
+          channel = event.target,
           from = conversation.id,
           userInfo;
       
       if (this.isDisabled())
         this.enableChat();
       
-      data.from = from;
-      var userInfo = this.getUserInfo(from);
-//      G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(extra._userid, JSON.stringify(data)));
+      data.from = from;      
+      var userInfo = this.getUserInfo(from);      
+      if (data.response) {
+        this.handleResponse(data);
+        data = data.response;
+      }
+      
+      var location = data.location;
       var isPrivate = !!data['private'];
+      var commonMsgPart = {
+        time: data.time || +new Date(),
+        'private': isPrivate,
+        location: location,
+        message: data.message,
+        self: false
+      };
+      
+      if (userInfo) {
+        _.extend(commonMsgPart, {
+          sender: userInfo.name,
+          senderIcon: userInfo.icon
+        })
+      }
+      
+//      G.log(chatView.TAG, 'chat', 'message from {0}: {1}'.format(extra._userid, JSON.stringify(data)));
       if (data.userInfo) {
         userInfo = data.userInfo;
         userInfo.id = from;
+        if (this.rtcCall && this.rtcCall.id === this.myInfo.id) {
+          Events.trigger('updateRTCCall', this.myInfo.id, {
+            title: 'Call in progress: ' + userInfo.name
+          });
+        }
+
         this.addParticipant(userInfo);
-      }        
-      else if (data.response) {
-        this.handleResponse(data);
-        return;
       }
       else if (data.request) {
         var req = data.request;
@@ -765,7 +963,7 @@ define('views/ChatView', [
               var $dialog = this.showRequestDialog(data);
               var dfd = this._otherRequestPromises[req.id] = $.Deferred();
               dfd.done(function() {
-                delete this._otherRequestPromises[req.id];
+                delete self._otherRequestPromises[req.id];
                 if ($dialog.parent())
                   $dialog.popup('close'); // check if it's not closed already
               });
@@ -773,42 +971,30 @@ define('views/ChatView', [
             
             break;
         }
-        
-        return;
       }
       else if (data.file && data.type === 'file') {
-        
-        this.addMessage({
-          senderIcon: userInfo.icon,
-          sender: userInfo.name,
-          message: data.message,
-          'private': isPrivate,
-          self: false,
-          time: +new Date() //getTime()
-        });        
+        this.addMessage(commonMsgPart);        
       }
       else if (data.message) {
         if (!userInfo) {
           debugger;
-          this.request({
-            type: 'info'
-          }, from);
+          this.request('info', from);
           
           debugger;
           return; // TODO: append message after getting info
         }
         
-        this.addMessage({
-          senderIcon: userInfo.icon,
-          sender: userInfo.name,
-          message: data.message,
-          'private': isPrivate,
-          self: false,
-          time: +new Date() //getTime()
-        });
-        
+        this.addMessage(commonMsgPart);
         if (!this.isActive())
           this.unreadMessages++;
+      }
+      else if (location) {
+        // no message, just location
+        this._addLocationMessage(userInfo, location, commonMsgPart);
+      }
+      
+      if (location && userInfo) {
+        _.extend(userInfo, location);
       }
     },
     
@@ -899,7 +1085,17 @@ define('views/ChatView', [
       }
       
       media.play();
+//      debugger;
+      var userInfo = this.getUserInfo(conversation.id);
+      var title = userInfo && userInfo.name || this.getPageTitle();
       this.enableTakeSnapshot();
+      this.rtcCall = {
+        id: this.myInfo.id,
+        url: window.location.href,
+        title: 'Call in progress' + (title ? ': ' : '') + title
+      };
+      
+      Events.trigger('newRTCCall', this.rtcCall);
     },
 
     enableTakeSnapshot: function() {
@@ -1345,7 +1541,7 @@ define('views/ChatView', [
       var isServiceReq = this.isWaitingRoom && request.type == 'service';
       if (isServiceReq) {
         response.privateRoom = userUri;
-        this.sendPrivateMessage(from, {
+        this.sendMessage({
           response: response
         });
         
@@ -1356,7 +1552,7 @@ define('views/ChatView', [
 //        }.bind(this), 1000);
       }
       else {
-        this.chat.send({
+        this.chat.sendMessage({
           response: response
         });
       }
@@ -1386,19 +1582,12 @@ define('views/ChatView', [
       var $popup = $('#' + id);
       $popup.find('[data-cancel]').click(function(e) {
         Events.stopEvent(e);
-        chatView.stopRingtone();
-        chatView.sendPrivateMessage(data.from, {
-          response: {
-            granted: false,
-            request: request.id
-          }
-        });
+        chatView.denyRequest(request, data.from);
       });
       
       $popup.find('[data-ok]').click(function(e) {
         Events.stopEvent(e);
-        chatView.stopRingtone();
-        chatView.engageClient(data);
+        chatView.grantRequest(request, data.from);
       });
   
       $popup.trigger('create');

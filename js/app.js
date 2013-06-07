@@ -364,6 +364,16 @@ define('app', [
 //      window.require = function(modules, callback, context) {
     },
     
+    setupMisc: function() {
+      Events.on('location', function(position) {
+        var prev = G.currentUser.location;
+        if (prev)
+          G.currentUser.previousLocation = prev;
+        
+        G.currentUser.location = position;        
+      });
+    },
+    
     setupRTCCallMonitor: function() {
       G.callInProgress = null;
       Events.on('newRTCCall', function(rtcCall) {
@@ -372,7 +382,13 @@ define('app', [
         
         G.callInProgress = rtcCall;
       });
-      
+
+      Events.on('updateRTCCall', function(id, update) {
+        var call = G.callInProgress;
+        if (call && call.id == id)
+          _.extend(call, update);
+      });
+
       Events.on('endRTCCall', function(rtcCall) {
         if (G.callInProgress == rtcCall)
           G.callInProgress = null;

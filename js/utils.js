@@ -61,6 +61,10 @@ define('utils', [
     return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
   };
 
+  String.prototype.capitalizeFirst = function() {
+    return this.slice(0, 1).toUpperCase() + this.slice(1);
+  };
+  
   String.prototype.splitCamelCase = function(capitalFirst) {
       // insert a space before all caps
     var split = this.replace(/([A-Z])/g, ' $1');
@@ -3154,6 +3158,24 @@ define('utils', [
       }
       
       return obj;
+    },
+    
+    getCurrentLocation: function() {
+      return $.Deferred(function(defer) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var coords = position.coords;
+          position = _.extend({
+            time: position.timestamp
+          }, coords);
+          
+          position = U.filterObj(position, function(key, val) {
+            return val != null;
+          });
+          
+          Events.trigger('location', position);
+          defer.resolve(position);
+        }, defer.reject);
+      });
     }
   };
 

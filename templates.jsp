@@ -213,11 +213,43 @@
       <div id="messages" width="100%">
       </div>
     </div>
-    <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
-      <div id="chatInputs" style="padding:0 0 0 10px;">
-        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
-        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-right:10px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
+    <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline">
+      <!--table>
+        <tr>
+          <td>
+            <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+          </td>
+          <td>
+            <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+          </td>
+          <td>
+            <input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
+            <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label>
+          </td>
+          <td colspan="50">
+            <input type="text" id="chatMessageInput" value="" data-mini="true" />
+          </td>
+          <td>
+            <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
+          </td>
+        </tr>
+      </table-->
+      <div class="floatleft">
+        <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+      </div>
+      <div class="floatleft">
+        <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+      </div>
+      <div class="floatleft" style="padding-top:0px">
+        <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
+        <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
+        <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+      </div>  
+      <div class="floatleft" style="width:40%">
+        <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
+      </div>  
+      <div class="floatleft">
+        <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
       </div>
     </div>
   {{ }                                          }}

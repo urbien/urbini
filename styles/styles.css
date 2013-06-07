@@ -810,3 +810,29 @@ video.remoteVideo:after {
   border: 1px solid #DFDFDF;
   display: block;
 }
+
+.closespacing { /* controls spacing between elements */
+  margin:0px 5px 0px 0px;
+}
+
+.forceinline{  /* Prevent fieldcontain from doing a BLOCK thing */
+  display:inline !important;
+}
+
+.floatleft {
+  float:left;
+}
+
+.floatright {
+  float:right;
+}
+
+.biginputheight {   /* matches text input height to big buttons */
+  padding-top:10px !important;
+  padding-bottom:12px !important;
+}
+
+.miniinputheight { /* matches text input height to minibuttons */
+  padding-top:5px !important;
+  padding-bottom:5px !important;
+}

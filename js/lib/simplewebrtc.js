@@ -291,6 +291,7 @@
           // first 'joined' event carries my own id (as my own 'joined' event is the first one I can receive), all subsequent ones carry ids of other people who joined
           if (!self.id || info.id == self.id) {
             self.id = info.id;
+            self.emit('userid', info.id);
             return;
           }
             
