@@ -434,7 +434,7 @@ define('collections/ResourceList', [
       // not everyone who cares about resources being updated has access to the collection
       Events.trigger('updatedResources', _.union(updated, added)); 
       return this;
-    }
+    }    
   }, {
     displayName: 'ResourceList'
   });

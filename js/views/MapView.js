@@ -14,18 +14,29 @@ define('views/MapView', [
 //    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'render1', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
+      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
       Events.on("pageChange", this.resetMap);
       
-//      var self = this;
-//      csses = _.map(this.css, function(c) {return '../styles/leaflet/' + c});
-//      require(csses, function() {
-//        self.loadedCSS = true;
-//        if (self.cssListeners.length)
-//          _.each(self.cssListeners, function(f) {f()});
-//      });
+      var self = this;
+          dfds = [],
+          readyDfd = $.Deferred(),
+          modulesDfd = require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css']);
+      
+//      if (this.collection && !this.vocModel.derived && this.collection.params['-layer']) {
+//        var aggDfd = $.Deferred();
+//        dfds.push(aggDfd.promise());
+//        U.ajax({url: this.collection.getUrl() + '&$map=y', type: 'GET'}).done(function(data, status, xhr) {
+//          self.aggregationData = data.data[0];
+//        }).fail(function(xhr, status, msg) {
+//          debugger;
+//        }).always(aggDfd.resolve);      
+//      }
+      
+      this.ready = readyDfd.promise();
+      dfds.push(modulesDfd.promise());
+      $.when.apply($, dfds).always(readyDfd.resolve);
     },
     events: {
 //      'click': 'click',
@@ -41,11 +52,17 @@ define('views/MapView', [
       var self = this, 
           args = arguments;
       
-      require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(Mapper, L) {
-        self.render1.apply(self, arguments);
+//      if (this.collection && this.vocModel.derived) {
+//        var aggDfd = $.Deferred();
+//        dfds.push(aggDfd.promise());
+//        
+//      }
+      
+      this.ready.done(function() {
+        self.renderHelper.apply(self, args);
       });
     },
-    render1: function() {
+    renderHelper: function() {
       L.Icon.Default.imagePath = 'images/leaflet';
 //      if (!this.loadedCSS) {
 //        this.cssListeners.push(self.render);

@@ -3114,7 +3114,11 @@ define('utils', [
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
     },
     getExternalFileUrl: function(uri) {
-      return G.serverName + '/' + U.getParamMap(uri).url;
+      var params = U.getParamMap(uri);
+      if (params.url)
+        return G.serverName + '/' + params.url;
+      else
+        return uri;
     },
     _chatRoutes: {
       'private': 'chatPrivate',
@@ -3176,7 +3180,7 @@ define('utils', [
           defer.resolve(position);
         }, defer.reject);
       });
-    }
+    }    
   };
 
   for (var p in U.systemProps) {

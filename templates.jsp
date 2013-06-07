@@ -122,6 +122,20 @@
   </table>
 </script>
 
+<script type="text/template" id="chatResourceMessageTemplate">
+  <h3><a href="{{= U.makePageUrl('view', _uri) }}">{{= displayName }}</a></h3>
+  {{ if (obj.image) {                      }}
+     <a href="{{= U.makePageUrl('view', _uri) }}"><img src="{{= U.getExternalFileUrl(image) }}" /></a>
+  {{ }                                     }}
+  {{ for (var p in props) {                }}
+     <p>{{= p }}: {{= props[p] }}</p>
+  {{ }                                     }}
+</script>
+
+<script type="text/template" id="chatListMessageTemplate">
+  <h3><a href="{{= U.makePageUrl(hash) }}">{{= title }}</a></h3>
+</script>
+
 <script type="text/template" id="chatMessageTemplate">
   <table width="100%" class="height_tracker">
     <tr>
@@ -861,7 +875,13 @@
 </script>
 
 <script type="text/template" id="callInProgressHeaderTemplate">
-  <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
+  <div id="backToCall" style="display:inline" width="99%">
+    <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
+  </div>
+  <div id="sendToCall" style="display:inline; float:right; margin: 0px; padding: 0px" width="1%">
+    <!--a href="#" data-role="button" data-icon="upload" data-iconpos="notext">Send link to call</a-->
+    <a href="#" data-role="none"><i class="ui-icon-upload" style="font-size:20px"></i></a>
+  </div>
 </script>
 
 <script type="text/template" id="headerTemplate">
