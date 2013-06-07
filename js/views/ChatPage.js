@@ -398,6 +398,9 @@ define('views/ChatPage', [
     },
     
     restyleGoodies: function() {
+      if (!this.rendered)
+        return;
+      
       var $goodies = this.$('div#inChatGoodies'),
           $video = this.$('div#remoteMedia video'),
           $bl = $goodies.find('#inChatBacklinks'),
