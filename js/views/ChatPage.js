@@ -77,6 +77,7 @@ define('views/ChatPage', [
       this.on('chat:on', this.chatFadeIn, this);
       this.on('chat:off', this.chatFadeOut, this);
       this.on('video:on', this.videoFadeIn, this);
+      this.on('video:on', this.restyleGoodies, this);
       this.on('newRTCCall', this.videoFadeIn, this);
       this.on('video:fadeIn', this.videoFadeIn, this);
       this.on('video:fadeOut', this.videoFadeOut, this);
@@ -253,10 +254,10 @@ define('views/ChatPage', [
     
     restyleGoodies: function() {
       var $goodies = this.$('div#inChatGoodies'),
-          $video = this.$('div#remoteVideos video');
+          $video = this.$('div#remoteMedia video');
       
       if (!$video.length)
-        $video = this.$('div#localVideo video');
+        $video = this.$('div#localMedia video');
       
       if ($video.length) {
         var offset = $video.offset();
