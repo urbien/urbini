@@ -288,8 +288,12 @@ define('views/Header', [
     
     sendToCall: function(e) {
       Events.stopEvent(e);
-      if (this.resource)
-        Events.trigger('messageForCall:resource', this.model.getMiniVersion());
+      if (this.resource) {
+        Events.trigger('messageForCall:resource', {
+          _uri: this.resource.getUri(),
+          displayName: U.getDisplayName(this.resource)
+        }); //this.model.getMiniVersion());
+      }
       else {
         Events.trigger('messageForCall:list', {
           title: this.getPageTitle(),

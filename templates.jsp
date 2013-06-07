@@ -122,7 +122,7 @@
   </table>
 </script>
 
-<script type="text/template" id="chatResourceMessageTemplate">
+<!--script type="text/template" id="chatResourceMessageTemplate">
   <h3><a href="{{= U.makePageUrl('view', _uri) }}">{{= displayName }}</a></h3>
   {{ if (obj.image) {                      }}
      <a href="{{= U.makePageUrl('view', _uri) }}"><img src="{{= U.getExternalFileUrl(image) }}" /></a>
@@ -130,10 +130,10 @@
   {{ for (var p in props) {                }}
      <p>{{= p }}: {{= props[p] }}</p>
   {{ }                                     }}
-</script>
+</script-->
 
-<script type="text/template" id="chatListMessageTemplate">
-  <strong><a href="{{= U.makePageUrl(hash) }}">{{= title }}</a></strong>
+<script type="text/template" id="chatResourceLinkMessageTemplate">
+  <strong><a href="{{= href }}">{{= text }}</a></strong>
 </script>
 
 <script type="text/template" id="chatMessageTemplate">

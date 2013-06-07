@@ -98,8 +98,7 @@ define('views/ChatView', [
       
       this.makeTemplate('chatViewTemplate', 'template', this.modelType);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
-      this.makeTemplate('chatResourceMessageTemplate', 'resourceMessageTemplate', this.modelType);
-      this.makeTemplate('chatListMessageTemplate', 'listMessageTemplate', this.modelType);
+      this.makeTemplate('chatResourceLinkMessageTemplate', 'resourceLinkMessageTemplate', this.modelType);
       
       this.roomName = this.getRoomName();
       this._myRequests = {};
@@ -174,6 +173,9 @@ define('views/ChatView', [
       if (self.config.data !== false) {
         Events.on('messageForCall:resource', function(resInfo) {
           var msg = {
+            sender: 'Me', 
+            senderIcon: self.myIcon,
+            self: true,
             message: {
               resource: resInfo
             }
@@ -185,6 +187,9 @@ define('views/ChatView', [
 
         Events.on('messageForCall:list', function(listInfo) {
           var msg = {
+            sender: 'Me', 
+            senderIcon: self.myIcon,
+            self: true,
             message: {
               list: listInfo
             }
@@ -497,14 +502,17 @@ define('views/ChatView', [
           list = message && message.list;
       
       if (resource) {
-        resource = _.extend(_.pick(resource, 'displayName', '_uri', 'image'), {
-          props: _.omit(resource, 'displayName', '_uri', 'image')
+        info.message = this.resourceLinkMessageTemplate({
+          href: U.makePageUrl('view', resource._uri),
+          text: resource.displayName
         });
-        
-        info.message = this.resourceMessageTemplate(resource);
       }
-      else if (list)
-        info.message = this.listMessageTemplate(_.clone(list));
+      else if (list) {
+        info.message = this.resourceLinkMessageTemplate({
+          href: U.makePageUrl(decodeURIComponent(list.hash)),
+          text: list.title
+        });
+      }
       
       info.time = getTimeString(info.time || +new Date());
       var height = $(doc).height();

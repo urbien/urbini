@@ -1727,6 +1727,11 @@ define('utils', [
     },
 
     makeMobileUrl: function(action, typeOrUri, params) {
+      if (arguments.length == 1) {
+        typeOrUri = action;
+        action = 'list';
+      }
+      
       action = action || 'list';
       if (U.isModel(action))
         return U.makeMobileUrl('view', action.getUri());
