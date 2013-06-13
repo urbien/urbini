@@ -8,11 +8,13 @@ body { -webkit-text-size-adjust: none; }
 .ui-mobile .ui-page-active {
    visibility: visible;
 }
-
 .ui-page-pre-in {
   opacity: 0;
 }
 */
+.ui-btn-up-g:first-child, .ui-btn-up-f:first-child {
+  border-top-width:1px;
+}
 /* end overriding jqm rules */
 
 html { height: 100%; }
@@ -406,11 +408,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   border-top: 1px solid #777;
 }
 
-#headerDiv #callInProgress {
+#callInProgress {
   text-align: center;
-  color: #FFF;
-  background: #0F2;
+/*  color: #FFF; */
+  background: lightblue;/*#0F2;*/
   margin: 0px auto;
+  line-height: 40px;
+  text-shadow: none;
 }
 
 .ui-bar-c #headerButtons  {
