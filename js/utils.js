@@ -3177,9 +3177,11 @@ define('utils', [
             time: position.timestamp
           }, coords);
           
-          position = U.filterObj(position, function(key, val) {
-            return val != null;
-          });
+          position = {latitude: position.latitude, longitude: position.longitude};
+// position has several params like (accuracy, time) that are causing the error like "property 'accuracy' was not found in Urbien1"            
+//          position = U.filterObj(position, function(key, val) {
+//            return val != null  &&  (key == 'latitude' || key == 'longitude');
+//          });
           
           Events.trigger('location', position);
           defer.resolve(position);
