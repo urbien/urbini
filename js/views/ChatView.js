@@ -538,6 +538,9 @@ define('views/ChatView', [
     },
     
     sendMessage: function() {
+      if (!this.chat || !_.size(this.chat.pcs))
+        return;
+      
       var data = arguments[0];
       data.time = data.time || +new Date();
       this.chat.send.apply(this.chat, arguments);
@@ -913,6 +916,7 @@ define('views/ChatView', [
       conversations = webrtc.pcs;
       webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
         webrtc.joinRoom(roomName);
+        self.enableChat();
       }));
 
       webrtc.on('userid', this.setUserId);
