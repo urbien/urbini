@@ -67,7 +67,7 @@ define('views/ChatView', [
       this.config = {
         data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
         video: {
-          send: (this.isPrivate || this.isClient) && this.hasVideo,
+          send: this.isPrivate,
           receive: !this.isWaitingRoom || this.isAgent,
           preview: !(this.isWaitingRoom && this.isAgent) && this.hasVideo
         },
@@ -540,7 +540,7 @@ define('views/ChatView', [
     sendMessage: function() {
       var data = arguments[0];
       data.time = data.time || +new Date();
-      this[method].apply(this, arguments);
+      this.chat.send.apply(this.chat, arguments);
     },
     
     sendFile: function(data, to) {
