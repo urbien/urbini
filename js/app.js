@@ -255,7 +255,7 @@ define('app', [
     
     setupLoginLogout: function() {
       Events.on('req-login', function(options) {
-        options = _.extend({online: 'Login through a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+        options = _.extend({online: 'Login via a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
         if (!G.online) {
           Errors.offline();
           return;
