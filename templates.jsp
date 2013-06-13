@@ -8,7 +8,7 @@
   <!-- Resource list page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-  <div id="headerMessageBar"></div>
+  <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
@@ -46,7 +46,7 @@
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-  <div id="headerMessageBar"></div>
+  <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px">
@@ -59,7 +59,7 @@
     <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">Woo me</a></div>
+          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">Woo me</a></div>
     {{ } }}
     <ul data-role="listview" data-inset="true" data-shadow="false" style="padding: 10px;" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
@@ -95,10 +95,35 @@
   </div>
   
   <div id="inChatGoodies" style="width:100%;position:absolute; z-index: 100">
-    <div id="inChatBacklinks" style="position:absolute;padding:5px;top:130px;zindex:2000"></div>
+    <div id="inChatBacklinks" style="position:absolute;padding:5px;top:130px;z-index:2000"></div>
     <div id="inChatStats" style="position:relative;"></div>
   </div>
   <div id="chatDiv" role="main" data-role="content"></div>
+  {{ if (!this.isWaitingRoom || this.isAgent) { }}
+  <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
+    <div class="floatleft">
+      <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+    </div>
+    {{ if (this.isAgent) { }}
+    <div class="floatleft">
+      <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+    </div>
+    {{ }                     }}
+    {{ if (this.isClient) { }}
+    <div class="floatleft" style="padding-top:0px">
+      <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
+      <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
+      <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+    </div>  
+    {{ }                     }}
+    <div class="floatleft" style="width:40%">
+      <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
+    </div>  
+    <div class="floatleft">
+      <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
+    </div>
+  </div>
+  {{ } }}
 </script>  
 
 <script type="text/template" id="chatMessageTemplate1">
@@ -220,8 +245,19 @@
   </div>
 </div>
 </script>
-
 <script type="text/template" id="chatViewTemplate">
+  <div id="chatHolder" class="chat-holder">
+  {{ if (!this.isWaitingRoom || this.isAgent) { }}
+    <div id="textChat"> <!--style="margin: 0px 10px 0px 10px" -->
+      <!--h3>Text Chat</h3-->
+      <div id="messages" width="100%">
+      </div>
+    </div>
+  {{ }                                          }}
+  </div>
+</script>
+
+<script type="text/template" id="chatViewTemplate1">
   <div id="chatHolder" class="chat-holder">
    <!--
    {{ if (obj.video || obj.audio) { }}
@@ -235,12 +271,12 @@
     </div>
   -->
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
-    <div id="textChat" style="margin: 0px 10px 0px 10px">
+    <div id="textChat"> <!--style="margin: 0px 10px 0px 10px" -->
       <!--h3>Text Chat</h3-->
       <div id="messages" width="100%">
       </div>
     </div>
-        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline">
+        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
       <!--table>
         <tr>
           <td>
@@ -907,16 +943,16 @@
   <div id="backToCall" style="display:inline" width="99%">
     <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
   </div>
-  <div id="sendToCall" style="display:inline; float:right; margin: 0px; padding: 0px" width="1%">
+  <div id="sendToCall" style="display:inline;" width="1%">
     <!--a href="#" data-role="button" data-icon="upload" data-iconpos="notext">Send link to call</a-->
-    <a href="#" data-role="none"><i class="ui-icon-upload" style="font-size:20px"></i></a>
+    <a href="#" data-role="none"><i class="ui-icon-upload" style="font-size:24px;padding-left:10px;"></i></a>
   </div>
 </script>
 
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
+  <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
   <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} >
-    <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -984,7 +1020,9 @@
   {{= (typeof description == 'undefined') ? title : description }}
   <br/>
   <a href="#" style="font-size: 12px" class="like"><i class="ui-icon-heart-empty"></i></a>
-  <span>{{= typeof votes.count == 'undefined' ? '' : votes.count }}</span>
+  {{ if (obj.votes) { }} 
+    <span>{{= votes.count ? votes.count : '' }}</span>
+  {{ } }}
 </td>
 </script>
 
@@ -1020,7 +1058,7 @@
     <td colspan="2">
       <div class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
           </a>
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
@@ -1078,7 +1116,7 @@
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
       <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
             <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
@@ -1341,11 +1379,13 @@
 </script>
 
 <script type="text/template" id="resourcePET">
-  {{ if (obj.img) { }}    
-    <img name="{{= shortName }}" src="{{= img }}"/>
-  {{ }              }}
-  
-  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} >
+  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
+    {{ if (obj.img) { }}    
+      style="padding-left: 50px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px;"/>
+    {{ }              }}
+    {{ if (!obj.img) { }}    
+       >
+    {{ } }}   
     <label style="font-weight: bold;" for="{{= id }}">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
     {{ if (!obj.value) { }}
