@@ -35,7 +35,12 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
+
+  var G = Lablz,
+      browser = G.browser = $.browser;
   
+  browser.chrome = $.browser.webkit && !!window.chrome;
+  browser.safari = $.browser.webkit && !window.chrome;
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection
@@ -45,11 +50,10 @@ define('globals', function() {
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
     
-    if (Lablz.minify) {
-      var nav = Lablz.navigator;
-      if (nav.isChrome) // || nav.isSafari)
-        Lablz.inject(text);
-      else if (nav.isFirefox)
+    if (G.minify) {
+      if (browser.chrome) // || nav.isSafari)
+        G.inject(text);
+      else if (browser.mozilla)
         return window.eval(text);
   //      return window.eval.call({}, text);  
       else // Safari
@@ -75,7 +79,6 @@ define('globals', function() {
     }
   };
 
-  var G = Lablz;
   G.localTime = new Date().getTime();
   G.online = !!navigator.onLine;
   
@@ -115,11 +118,11 @@ define('globals', function() {
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
         default:
-          if (G.navigator.isIE) 
+          if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
           text += '\n//@ sourceMappingURL=' + url + '.map';
           text += '\n//@ sourceURL=' + url;
-          if (G.navigator.isIE) 
+          if (browser.msie) 
             text += '*/\n';
 
           addModule(text);
@@ -343,16 +346,8 @@ define('globals', function() {
   
   G.localStorage.putAsync = G.localStorage.put.async(100);
   G.localStorage.cleanAsync = G.localStorage.clean.async(100);
-  var n = G.navigator = {
-    isOpera: !!(window.opera && window.opera.version),  // Opera 8.0+
-    isFirefox: testCSS('MozBoxSizing'),                 // FF 0.8+
-    isSafari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
-    // At least Safari 3+: "[object HTMLElementConstructor]"
-    isIE: /*@cc_on!@*/false || testCSS('msTransform')  // At least IE6
-  };
+  // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
   
-  n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
-    
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
   }
@@ -413,7 +408,7 @@ define('globals', function() {
       }).promise();
     },
     isUsingDBShim: (function() {
-      var using = G.navigator.isChrome || !window.indexedDB;
+      var using = browser.chrome || !window.indexedDB;
       if (using)
         console.debug('using indexeddb shim');
       return using;
@@ -505,15 +500,23 @@ define('globals', function() {
       G.online = online;
     }, // will fill out in app.js
     onModulesLoaded: function(modules) {
-      var bundlePromises = [];
-      var allBundles = G.bundles;
+      var bundlePromises = [],
+          missing = [],
+          allBundles = G.bundles,
+          baseUrlLength = require.getConfig().baseUrl.length;
+      
       _.each(modules, function(module) {
+        var found = false,
+            fullName = require.toUrl(module).slice(baseUrlLength);
+        
+        if (/\.js$/.test(fullName))
+          fullName = fullName.slice(0, fullName.length - 3);
+        
         for (var bName in G.bundles) {
           var bundle = G.bundles[bName];
-          var found = false;
           for (var type in bundle) {
             if (_.any(bundle[type], function(info) {
-              return info.name == module;
+              return info.name == fullName;
             })) {
               found = true;
               bundle._deferred = bundle._deferred || $.Deferred();
@@ -525,8 +528,15 @@ define('globals', function() {
           if (found)
             break;
         }
+        
+        if (!found)
+          missing.push(fullName);
       });
       
+      if (missing.length) {
+        debugger; // shouldn't happen
+        bundlePromises.push(G.loadBundle(missing));
+      }
       
       return $.when.apply($, bundlePromises);
     },
@@ -1151,9 +1161,9 @@ define('globals', function() {
     },
     
     requireConfig: {
-//      baseUrl: 'js',
       paths: {
         mobiscroll: 'lib/mobiscroll-datetime-min',
+        simplewebrtc: 'lib/simplewebrtc',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',
@@ -1244,7 +1254,7 @@ define('globals', function() {
     G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
   
   require.config(G.requireConfig);   
-  return Lablz;
+  return G;
 });
 
 require(['globals'], function(G) {

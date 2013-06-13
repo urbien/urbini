@@ -12,7 +12,7 @@ define('views/ChatView', [
   var SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889';
   var nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call"; // HACK for nursem
   var isNursMe = true; //G.pageRoot.toLowerCase() == 'app/nursme1';
-  var WebRTC, doc = document;
+  var WebRTC, doc = document, browser = G.browser;
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   };
@@ -65,11 +65,11 @@ define('views/ChatView', [
       this.hasVideo = this.isPrivate || this.isClient; // HACK, waiting room might not have video
       this.hasAudio = this.hasVideo || this.isPrivate;
       this.config = {
-        data: true,
+        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
         video: {
-          send: !this.isWaitingRoom && this.hasVideo,
+          send: (this.isPrivate || this.isClient) && this.hasVideo,
           receive: !this.isWaitingRoom || this.isAgent,
-          preview: this.hasVideo
+          preview: !(this.isWaitingRoom && this.isAgent) && this.hasVideo
         },
         audio: {
           send: !this.isWaitingRoom && this.hasAudio,
@@ -90,9 +90,9 @@ define('views/ChatView', [
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
 //      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
-      var req = ['lib/socket.io', 'lib/simplewebrtc'];      
-      require(req).done(function(socketIO, rtcModule) {
-        WebRTC = rtcModule;
+      var req = ['lib/socket.io', 'simplewebrtc'];      
+      U.require(req).done(function(socketIO, simpleWebRTC) {
+        WebRTC = simpleWebRTC;
         readyDfd.resolve();
       });
       
@@ -538,40 +538,21 @@ define('views/ChatView', [
     },
     
     sendMessage: function() {
-      var method = arguments[1] ? 'sendPrivateMessage' : 'sendPublicMessage';
+      var data = arguments[0];
+      data.time = data.time || +new Date();
       this[method].apply(this, arguments);
     },
     
-    sendPrivateMessage: function(data, to) {
-      if (!this.chat)
-        return;
-      
-      data['private'] = true;
-      data.time = data.time || +new Date();
-      this.chat.sendData(to, data);
-    },
-
-    sendPublicMessage: function(data) {
-      if (!this.chat)
-        return;
-      
-      data.time = data.time || +new Date();
-      this.chat.broadcastData(data);
-    },
-
-    sendPrivateFile: function(to, data) {
-      this.chat.sendData({
+    sendFile: function(data, to) {
+      this.chat.send({
         type: 'file',
         file: data
+      }, to, {
+        done: function() {        
+        },
+        progress: function() {
+        }
       });            
-    },
-    
-    sendPublicFile: function(data) {
-      this.chat.broadcastData({
-        type: 'file',
-        file: data.data,
-        fileType: 'image'
-      });      
     },
     
 //    sendMessage: function(message) {
@@ -882,7 +863,9 @@ define('views/ChatView', [
           roomName = this.getRoomName(),
           config = this.config,
           aConfig = config.audio,
-          vConfig = config.video;
+          vConfig = config.video,
+          webrtc,
+          conversations;
       
       this._videoOn = this.hasVideo;
       if (!this.rendered) {
@@ -902,7 +885,6 @@ define('views/ChatView', [
         this.$remoteMedia = this.pageView.$('div#remoteMedia');
       }
       
-      var i = 0;
       this.disableChat();
       this.connected = false;
       var cachedStream = G.localVideoMonitor;
@@ -921,9 +903,14 @@ define('views/ChatView', [
         });
       }
       
-      var webrtc = this.chat = new WebRTC(this.config),
-          conversations = webrtc.pcs;
+      try {
+        webrtc = this.chat = new WebRTC(this.config);
+      } catch (err) {
+        U.alert(err.message);
+        return;
+      }
       
+      conversations = webrtc.pcs;
       webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
         webrtc.joinRoom(roomName);
       }));
@@ -934,10 +921,10 @@ define('views/ChatView', [
 
       // Data channel events
       if (this.config.data !== false) {
-        webrtc.on('open', this.onDataChannelOpened);
-        webrtc.on('close', this.onDataChannelClosed);
-        webrtc.on('message', this.onDataChannelMessage);
-        webrtc.on('error', this.onDataChannelError);
+        webrtc.on('dataOpen', this.onDataChannelOpened);
+        webrtc.on('dataClose', this.onDataChannelClosed);
+        webrtc.on('dataMessage', this.onDataChannelMessage);
+        webrtc.on('dataError', this.onDataChannelError);
       }
       
       if (this.hasVideo && cachedStream)
@@ -1011,7 +998,6 @@ define('views/ChatView', [
     
     onDataChannelMessage: function(data, conversation) {
       var self = this,
-          channel = event.target,
           from = conversation.id,
           userInfo;
       
@@ -1607,7 +1593,7 @@ define('views/ChatView', [
       });
       
       _.each(snapshots, function(shot) {
-        self.sendPublicFile(shot);
+        self.sendFile(shot);
         
         self.addMessage({
           message: '<image src="{0}" />'.format(shot),
@@ -1673,9 +1659,17 @@ define('views/ChatView', [
     engageClient: function(data) {
       var request = data.request,
           from = data.from,
-          userInfo = this.getUserInfo(from),
-          userUri = userInfo.uri;
+          userInfo = this.getUserInfo(from);
+      
+      if (!userInfo) { // user may have refreshed the page, or left or died and fell on the page with his head
+        U.alert({
+          msg: 'This client is no longer available'
+        });
         
+        return;
+      }
+      
+      var userUri = userInfo.uri;
       var isServiceReq = this.isWaitingRoom && request.type == 'service';
       if (isServiceReq) {
         var privateRoom = userUri;

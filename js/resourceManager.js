@@ -9,7 +9,7 @@ define('resourceManager', [
   'queryIndexedDB',
   '__domReady__'
 ], function(G, U, Events, TaskQueue, C, Voc, idbq) {
-  var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.navigator.isChrome;
+  var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
   var Blob = window.Blob;
   var FileSystem;
   var useWebSQL = G.isUsingDBShim;//window.webkitIndexedDB && window.shimIndexedDB;
@@ -41,7 +41,7 @@ define('resourceManager', [
     
     items = !items ? null : _.isArray(items) ? items : [items];
     if (!items || (!FileSystem && storeFilesInFileSystem && _.any(items, function(item) {return _.any(item, function(val) { return val && (val instanceof Blob || val._filePath) })}))) { // HACK, need to check model prop
-      fsPromise = require('fileSystem').done(function(fs) { 
+      fsPromise = U.require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       });
     }

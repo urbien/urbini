@@ -39,13 +39,13 @@ define('views/HomePage', [
         return;
       if (id.startsWith('hpRightPanel')) {
         Events.stopEvent(e);
-        require(["views/RightMenuPanel"]).done(function(MP) {
+        U.require(["views/RightMenuPanel"]).done(function(MP) {
           self.menuPanel = new MP({viewId: 'viewHome'}).render();
         });
       }
       if (id.startsWith('hpLeftPanel')) {
         Events.stopEvent(e);
-        require(["views/MenuPanel"]).done(function(MP) {
+        U.require(["views/MenuPanel"]).done(function(MP) {
           self.menuPanel = new MP({viewId: 'viewHome'}).render();
         });
       }

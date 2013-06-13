@@ -133,15 +133,7 @@ define('views/BasicView', [
           
           errorBar.html("");
           errorBar.html(U.template('headerErrorBar')({error: errMsg, info: infoMsg, style: "background-color:#FFFC40;"}));
-//        }
-//        else {
-//          U.dialog({
-//            header: 'FYI',
-//            title: info || error,
-//            ok: false,
-//            cancel: false
-//          });
-//        }
+
           var hash = U.getHash(), orgHash = hash;
           if (error && !error.glued)
             hash = U.replaceParam(hash, {'-error': null});

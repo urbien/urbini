@@ -209,6 +209,10 @@ define('views/ChatPage', [
     toggleChat: function(e) {
       if (!this.rendered)
         return;
+
+//      var el = e.target;
+//      if ($(el).css('z-index') < 1000)
+//        return;
       
       if (_.isUndefined(this._videoSolid))
         this._videoSolid = this.$videoChat.css('opacity') == 1;
@@ -366,7 +370,7 @@ define('views/ChatPage', [
         }
       }
       
-      require(['views/ControlPanel']).done(function(ControlPanel) {
+      U.require(['views/ControlPanel']).done(function(ControlPanel) {
         var $bl = self.$("div#inChatBacklinks");
         $bl.drags();
         self.addChild('backlinks', new ControlPanel({
@@ -432,8 +436,8 @@ define('views/ChatPage', [
         var extraOffset = 0;
         var offset = $video.offset();
         var goodiesWidth = Math.max($goodies.find('div#inChatBacklinks').width(), $goodies.find('svg').width());
-//        $goodies.css({top: offset.top + extraOffset, left: offset.left + $video.width() - goodiesWidth});
-        $goodies.css({top: offset.top + extraOffset});
+        $goodies.css({top: offset.top + extraOffset, left: offset.left + $video.width() - goodiesWidth});
+//        $goodies.css({top: offset.top + extraOffset});
       }
       else
         $goodies.css({top: 'auto', left: 'auto'});
@@ -443,7 +447,7 @@ define('views/ChatPage', [
 
     paintConcentricStats: function(divId, options) {
       var self = this, args = arguments;
-      require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {
+      U.require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {
         D3Widgets = widgets;
         self._paintConcentricStats(divId, options);
       });      

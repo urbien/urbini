@@ -563,15 +563,13 @@ define('router', [
       var unloaded = _.filter(views, function(v) {return !self[v]});
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        G.onModulesLoaded(unloadedMods).done(function() {          
-          require(unloadedMods, function() {
-            var a = U.slice.call(arguments);
-            for (var i = 0; i < a.length; i++) {              
-              self[unloaded[i]] = a[i];
-            }
-            
-            caller.apply(self, args);
-          });
+        U.require(unloadedMods, function() {
+          var a = U.slice.call(arguments);
+          for (var i = 0; i < a.length; i++) {              
+            self[unloaded[i]] = a[i];
+          }
+          
+          caller.apply(self, args);
         });
       }
     },
@@ -860,7 +858,7 @@ define('router', [
       if (!LoginView) {
         var args = arguments;
         var self = this;
-        require(['views/LoginButton'], function(LV) {
+        U.require(['views/LoginButton'], function(LV) {
           LoginView = LV;
           self.login.apply(self, args);
         })

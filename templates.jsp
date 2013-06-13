@@ -240,7 +240,7 @@
       <div id="messages" width="100%">
       </div>
     </div>
-        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline">
+        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="position:fixed; z-index:100000">
       <!--table>
         <tr>
           <td>

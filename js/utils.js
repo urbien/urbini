@@ -78,50 +78,20 @@ define('utils', [
   
   var U = {
     TAG: 'Utils',
-//    require: function(modules, callback, context) {
-//      return require(modules, context ? callback.bind(context) : callback);
-//    },
-//    
-//    require: function(modules, callback, context) {
-//      modules = $.isArray(modules) ? modules : [modules];
-//      var mods = [], newModNames = [], newModFullNames = [];
-//      for (var i = 0; i < modules.length; i++) {
-//        var fullName = modules[i], name = fullName;
-////        if (!fullName)
-////          G.log(U.TAG, 'error', 'match undefined 1');
-//        var moduleViaPlugin = fullName.match(/\!(.*)$/);
-//        if (moduleViaPlugin) {
-//          name = moduleViaPlugin[1]; 
-//        }
-//        
-//        var mod = C.modCache[name];
-//        if (!mod) {
-//          mod = C.modCache[name] = $.Deferred();
-//          newModFullNames.push(fullName);
-//          newModNames.push(name);
-//        }
-//        
-//        mods.push(mod);
-//      }
-//      
-//      if (newModNames.length) {
-//        G.loadBundle(newModNames, function() {
-//          require(newModFullNames, function() {
-//            for (var i = 0; i < newModNames.length; i++) {
-////              var name = newModNames[i];
-////              var module = arguments[i];
-////              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
-////              C.modCache[name].resolve(module);
-//              C.modCache[newModNames[i]].resolve(arguments[i]);
-//            }
-//          });
-//        });
-//      }
-//      
-//      return $.when.apply($, mods).then(function() {
-//        callback && callback.apply(context, arguments);
-//      }).promise();
-//    },
+    /**
+     * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
+     */
+    require: function(modules, callback) {
+      var dfd = $.Deferred(),
+          promise = dfd.promise(),
+          args = arguments;
+      
+      G.onModulesLoaded(modules).done(function() {
+        U.pipePromise(require.apply(require, args), dfd);
+      });
+      
+      return promise;
+    },    
     
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers;
@@ -2786,9 +2756,9 @@ define('utils', [
       return !_.contains(U.synchronousTypes, type);
     },
     
-    pipe: function(defer1, defer2) {
-      defer1.done(defer2.resolve).fail(defer2.reject);
-      return defer2.promise();
+    pipePromise: function(promiseOrDeferred, deferred) {
+      promiseOrDeferred.done(deferred.resolve).fail(deferred.reject);
+      return deferred.promise();
     },
     
     trim: function(text, length) {
@@ -2957,7 +2927,7 @@ define('utils', [
     DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */',
     alert: function(options) {
       setTimeout(function() {
-        var msg = options.msg;
+        var msg = typeof options === 'string' ? options : options.msg;
         $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, msg, !options.spinner);
         if (!options.persist)
           setTimeout($m.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
@@ -2994,7 +2964,7 @@ define('utils', [
     deposit: function(params) {
       return $.Deferred(function(defer) {
         var trType = G.commonTypes.Transaction;
-        require('vocManager').done(function(Voc) {          
+        U.require('vocManager').done(function(Voc) {          
           Voc.getModels(trType).done(function() {
             var transactionModel = U.getModel(trType);
             var transaction = new transactionModel(params);
@@ -3132,9 +3102,6 @@ define('utils', [
     },
     isChatPage: function() {
       return /^chat/.test(U.getHash());
-    },
-    isAgentChat: function() {
-      return /chat\//.test(U.getHash());
     },
     isPrivateChat: function() {
       return U.getHash().startsWith('chatPrivate');
