@@ -240,13 +240,6 @@ define('views/ChatPage', [
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
       this.makeTemplate('chatResourceLinkMessageTemplate', 'resourceLinkMessageTemplate', this.modelType);
       
-      this.roomName = this.getRoomName();
-      this._myRequests = {};
-      this._myRequestPromises = {};
-      this._otherRequestPromises = {};
-      this.unreadMessages = 0;
-      this.participants = [];
-      this.userIdToInfo = {};      
       var me = G.currentUser;
       if (me) {
         this.myName = me.davDisplayName || getGuestName();
@@ -324,9 +317,8 @@ define('views/ChatPage', [
 
       this.on('video:on', this.videoFadeIn, this);
       this.on('video:on', this.enableTakeSnapshot, this);
-      this.on('videoAdded', this.restyleGoodies, this);
-      this.on('videoRemoved', this.restyleGoodies, this);
       this.on('newRTCCall', this.videoFadeIn, this);
+      Events.on('hangUp', this.endChat, this);
 
       this.autoFinish = false;
     },
@@ -367,13 +359,10 @@ define('views/ChatPage', [
     videoFadeIn: function(e) {
       if (!this.rendered)
         return;
-//      if (!this._videoOn)
-//        this.trigger('video:on');
         
       this._videoSolid = true;
       if (this._chatSolid)
         this.chatFadeOut();
-//        this.trigger('chat:off');
       
       this.$videoChat.fadeTo(600, 1, this.restyleGoodies).css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
@@ -1007,6 +996,7 @@ define('views/ChatPage', [
     },
     
     startChat: function() {
+      this.initChat();
       var args = arguments, self = this;
       this.ready.done(function() {
         self._startChat.apply(self, args);
@@ -1325,7 +1315,7 @@ define('views/ChatPage', [
 //      this.enableTakeSnapshot();
       this.restyleVideos();
       this.trigger('video:on');
-      this.trigger('videoAdded', video);
+      this.restyleGoodies();
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -1366,7 +1356,7 @@ define('views/ChatPage', [
         this.restyleVideos();
         this.monitorVideoHealth(media);
         this.trigger('video:on');
-        this.trigger('videoAdded', media);
+        this.restyleGoodies();
       }
       else {
         // audio only
@@ -1389,7 +1379,7 @@ define('views/ChatPage', [
     },
 
     onMediaRemoved: function(info, conversation) {
-      this.trigger('videoRemoved', info.media);
+      this.restyleGoodies();
       if (info.type == 'local') {
         debugger;
       }
@@ -1403,12 +1393,26 @@ define('views/ChatPage', [
 
     leave: function() {
   //    this.chat && this.chat.leave();
-      this.chat && this.chat.leaveRoom();
+      if (this.chat) {
+        this.chat.leaveRoom();
+      }
+    },
+    
+    initChat: function() {
+      this.roomName = this.getRoomName();
+      this._myRequests = {};
+      this._myRequestPromises = {};
+      this._otherRequestPromises = {};
+      this.unreadMessages = 0;
+      this.participants = [];
+      this.userIdToInfo = {};            
     },
   
     endChat: function(onclose) {
       this.leave();
       this.chat = null;
+      this.$localMedia && this.$localMedia.empty();
+      this.$remoteMedia && this.$remoteMedia.empty();
       if (this.hasVideo) {
         this._videoOn = false;
         this.$('video').each(function() {
@@ -1416,10 +1420,11 @@ define('views/ChatPage', [
           this.pause();
         }).remove();
         
-        this.$localMedia && this.$localMedia.empty();
-        this.$remoteMedia && this.$remoteMedia.empty();
         this.localStream && this.localStream.stop();
       }
+      
+      if (!this.isActive())
+        this.onActive(this.startChat.bind(this));
     },
   
     takeSnapshot: function() {
@@ -1481,20 +1486,6 @@ define('views/ChatPage', [
         
         return;
       }
-      
-      this.restyleVideoDiv();
-    },
-    
-    restyleVideoDiv: function() {
-      /*
-      var $vc = this.$('.videoChat');
-      var width = Math.min($vc.width(), this.innerWidth());
-  
-      var height = $vc.height();
-      $vc.css('margin-top', -(height / 2) + 'px');
-      $vc.css('margin-left', -(width / 2) + 'px');
-  //    this.$localMedia.drags();
-      */
     },
     
     restyleVideos: function() {
@@ -1504,8 +1495,6 @@ define('views/ChatPage', [
         $locals.addClass('myVideo-overlay');
       else
         $locals.removeClass('myVideo-overlay');
-      
-      this.restyleVideoDiv();
     },
     
     engageClient: function(data) {
@@ -1536,7 +1525,6 @@ define('views/ChatPage', [
         debugger;
   //      this._grantRequest(request, {});
       }
-  //      this.trigger('video:on');
     },
     
     showRequestDialog: function(data) {

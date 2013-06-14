@@ -3,8 +3,9 @@ define('views/RightMenuButton', [
   'globals',
   'underscore', 
   'events',
+  'utils',
   'views/BasicView'
-], function(G, _, Events, BasicView) {
+], function(G, _, Events, U, BasicView) {
   return BasicView.extend({
     tagName: 'li',
     id: '#rightMenuBtn',

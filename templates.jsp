@@ -936,7 +936,7 @@
   <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">Test this plug</a>
 </script>
 
-<script type="text/template" id="callInProgressHeaderTemplate">
+<script type="text/template" id="callInProgressHeaderTemplate1">
   <div id="backToCall" style="display:inline" width="99%">
     <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
   </div>
@@ -944,6 +944,27 @@
     <!--a href="#" data-role="button" data-icon="upload" data-iconpos="notext">Send link to call</a-->
     <a href="#" data-role="none"><i class="ui-icon-upload" style="font-size:24px;padding-left:10px;"></i></a>
   </div>
+</script>
+
+<script type="text/template" id="callInProgressHeaderTemplate">
+  <div class="ui-grid-d mygrid">
+    <div class="ui-block-a" id="backToCall"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#0f2">Back to call</button></div>
+    <div class="ui-block-b"></div>
+    <div class="ui-block-c" id="sendToCall"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
+    <div class="ui-block-d"></div>
+    <div class="ui-block-e" id="hangUp"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
+  </div>
+</script>
+
+<script type="text/template" id="callInProgressHeaderTemplate2">
+  <ul data-role="listview" data-inset="true">
+    <li id="backToCall" width="99%">
+      <a href="{{= url }}" data-role="button" data-iconpos="notext" data-icon="phone">{{= title }}</a>
+    </li>
+    <li id="callFunctions">
+      <a href="#" id="sendToCall" data-role="none" data-iconpos="notext" data-icon="upload" data-role="button">Send to call</a>
+    </li>
+  </ul>
 </script>
 
 <script type="text/template" id="headerTemplate">

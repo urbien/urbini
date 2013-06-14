@@ -198,7 +198,11 @@
 
         // remove all handlers
         if (arguments.length === 1) {
-            delete this.callbacks[event];
+            if (event === '*')
+              this.callbacks = {};
+            else
+              delete this.callbacks[event];
+            
             return this;
         }
 
@@ -341,12 +345,20 @@
         });
 
         connection.on('connect', function() {
+            // HACK: when killing a previous instance of WebRTC, I can't figure out how to destroy the connection, or remove all listeners (connection.socket.removeAllListeners() doesn't help)
+            if (self.dead)
+              return;
+            
             self.emit('ready', connection.socket.sessionid);
             self.sessionReady = true;
             self.testReadiness();
         });
 
         connection.on('message', function(message) {
+            // HACK: when killing a previous instance of WebRTC, I can't figure out how to destroy the connection, or remove all listeners (connection.socket.removeAllListeners() doesn't help)
+            if (self.dead)
+                return;
+            
             var existing = self.pcs[message.from];
             if (existing) {
                 existing.handleMessage(message);
@@ -363,6 +375,10 @@
         });
 
         connection.on('joined', function(info) {
+            // HACK: when killing a previous instance of WebRTC, I can't figure out how to destroy the connection, or remove all listeners (connection.socket.removeAllListeners() doesn't help)
+            if (self.dead)
+                return;
+
             logger.log('got a joined', info);
             // First 'joined' event carries my own id (as my own 'joined' event is the first one I can receive) 
             // All subsequent ones carry ids of other people who joined
@@ -377,6 +393,10 @@
         });
 
         connection.on('left', function(room) {
+            // HACK: when killing a previous instance of WebRTC, I can't figure out how to destroy the connection, or remove all listeners (connection.socket.removeAllListeners() doesn't help)
+            if (self.dead)
+                return;
+            
             var conv = self.pcs[room.id];
             if (conv)
                 conv.end();
@@ -473,6 +493,14 @@
                 this.pcs[pc].end();
             }
         }
+        
+        for (var id in io.sockets) {
+          delete io.sockets[id];
+        }
+        
+        this.connection.socket.removeAllListeners(); // doesn't help
+        this.off('*');
+        this.dead = true;
     };
 
     WebRTC.prototype.testReadiness = function() {

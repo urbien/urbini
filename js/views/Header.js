@@ -198,6 +198,8 @@ define('views/Header', [
     events: {
       'change #fileUpload'        : 'fileUpload',
       'click #categories'         : 'showCategories',
+      'click #backToCall'         : 'backToCall',
+      'click #hangUp'             : 'hangUp',
       'click #sendToCall'         : 'sendToCall'
     },
     fileUpload: function(e) {
@@ -274,11 +276,12 @@ define('views/Header', [
       }
       
       $cipDiv.html(this.callInProgressHeaderTemplate(cip));
-//      (function pulse(){
-//        if (!G.callInProgress)
-//          return;
-//        $cipDiv.delay(250).fadeTo('slow', 0.9).delay(250).fadeTo('slow', 1,  pulse);
-//      })();
+      (function pulse(){
+        if (!G.callInProgress)
+          return;
+        
+        $cipDiv.delay(250).fadeTo('slow', 0.9).delay(250).fadeTo('slow', 1,  pulse);
+      })();
       (function anime(){
         if (!G.callInProgress) 
           return;
@@ -286,18 +289,36 @@ define('views/Header', [
         $cipDiv.animate({marginTop: '+=42px'}, 2000); //.delay(5000).animate({marginTop: '-42px'}, 1, anime);
       })();
       
-      $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {
-        window.location.href = $('a', this).attr('href');
-      });
+//      $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {
+//        window.location.href = $('a', this).attr('href');
+//      });
     },
-    
+
+    backToCall: function(e) {
+      Events.stopEvent(e);
+      var cip = G.callInProgress,
+          url = cip.url,
+          hashIdx = url.indexOf('#'),
+          path = url.slice(0, hashIdx),
+          hash = url.slice(hashIdx + 1);
+          
+      if (window.location.href.startsWith(path))
+        Events.trigger('navigate', hash);
+      else
+        window.location.href = url;
+    },
+
+    hangUp: function(e) {
+      Events.trigger('hangUp');
+    },
+
     sendToCall: function(e) {
       Events.stopEvent(e);
       if (this.resource) {
         Events.trigger('messageForCall:resource', {
           _uri: this.resource.getUri(),
           displayName: U.getDisplayName(this.resource)
-        }); //this.model.getMiniVersion());
+        });
       }
       else {
         Events.trigger('messageForCall:list', {

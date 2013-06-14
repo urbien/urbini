@@ -3,8 +3,9 @@ define('views/HomePage', [
   'globals',
   'events',
   'backbone',
-  'jqueryAnyStretch'
-], function(G, Events, Backbone, Jas) {
+  'jqueryAnyStretch',
+  'utils'
+], function(G, Events, Backbone, Jas, U) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
