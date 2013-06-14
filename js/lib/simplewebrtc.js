@@ -868,6 +868,7 @@
             return;
 
         delete this.parent.pcs[this.id];
+        this.emit('closed');
         this.closed = true;
     }
 

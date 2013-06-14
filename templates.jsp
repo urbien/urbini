@@ -98,7 +98,15 @@
     <div id="inChatBacklinks" style="position:absolute;padding:5px;top:130px;z-index:2000"></div>
     <div id="inChatStats" style="position:relative;"></div>
   </div>
-  <div id="chatDiv" role="main" data-role="content"></div>
+  <div id="chatDiv" role="main" data-role="content" class="chat-holder">
+  {{ if (!this.isWaitingRoom || this.isAgent) { }}
+    <div id="textChat"> <!--style="margin: 0px 10px 0px 10px" -->
+      <!--h3>Text Chat</h3-->
+      <div id="messages" width="100%">
+      </div>
+    </div>
+  {{ }                                          }}
+  </div>
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
   <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
     <div class="floatleft">
@@ -117,7 +125,7 @@
     </div>  
     {{ }                     }}
     <div class="floatleft" style="width:40%">
-      <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
+      <input type="text" id="chatMessageInput" class="miniinputheight" placeholder="Chat room is empty..." value="" data-mini="true" />
     </div>  
     <div class="floatleft">
       <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
@@ -244,17 +252,6 @@
     </div>
   </div>
 </div>
-</script>
-<script type="text/template" id="chatViewTemplate">
-  <div id="chatHolder" class="chat-holder">
-  {{ if (!this.isWaitingRoom || this.isAgent) { }}
-    <div id="textChat"> <!--style="margin: 0px 10px 0px 10px" -->
-      <!--h3>Text Chat</h3-->
-      <div id="messages" width="100%">
-      </div>
-    </div>
-  {{ }                                          }}
-  </div>
 </script>
 
 <script type="text/template" id="chatViewTemplate1">

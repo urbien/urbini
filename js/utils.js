@@ -1685,8 +1685,7 @@ define('utils', [
      * @return the value of the app's App._appPath property, sth like AppName
      */
     getAppPath: function(type) {
-      var sIdx = type.lastIndexOf('/');
-      return type.slice(type.lastIndexOf('/', sIdx - 1) + 1, sIdx);
+      return type.match(/\/([^\/]+)$/)[1];
     },
 
     /**

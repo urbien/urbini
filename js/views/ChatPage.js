@@ -7,15 +7,61 @@ define('views/ChatPage', [
   'cache',
   'vocManager',
   'views/BasicView',
-  'views/ChatView',
   'views/Header'
-], function(G, _, U, Events, C, Voc, BasicView, ChatView, Header) {
+], function(G, _, U, Events, C, Voc, BasicView, Header) {
   // To avoid shortest-path interpolation.
-  var D3Widgets;
-  var BTN_ACTIVE_CLASS = 'ui-btn-active';
+  var BTN_ACTIVE_CLASS = 'ui-btn-active',
+      SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889',
+      nurseMeCallType = "http://urbien.com/voc/dev/NursMe1/Call", // HACK for nursMe
+      isNursMe = true, //G.pageRoot.toLowerCase() == 'app/nursme1';
+      doc = document, 
+      browser = G.browser,
+      D3Widgets,
+      WebRTC;
+  
+  function getGuestName() {
+    return 'Guest' + Math.round(Math.random() * 1000);
+  };
+
+  function toLocationString(location) {
+    var str = '';
+    for (var key in location) {
+      var val = location[key];
+      if (key == 'time')
+        continue;
+      if (key === 'accuracy')
+        val += '%';
+      
+      str += '{0}: {1} <br />'.format(key.capitalizeFirst(), val);
+    }
+    
+    return str;
+  };
+  
+  function toDoubleDigit(digit) {
+    return digit = digit < 10 ? '0' + digit : digit;
+  };
+
+  function unbindVideoEvents(video) {
+    var $video = $(video);
+    _.each(G.media_events, function(e) {            
+      $video.unbind(e);
+    })
+  };
+  
+  function getTimeString(date) {
+    date = new Date(date);
+    var hours = date.getHours();
+    var ampm = hours < 12 ? 'AM' : 'PM';
+    hours = hours % 12;
+    return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(date.getMinutes()) + ampm);
+  };
+
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
+                      'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
+                      'setUserId', 'requestLocation', 'onclose'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
@@ -151,62 +197,152 @@ define('views/ChatPage', [
       this.video = this.isPrivate;
       
       var type = this.vocModel ? this.vocModel.type : null;
-      this.makeTemplate('chatPageTemplate', 'template', type);
-//      this.config = {
-//        video: {
-//          send: this.hashParams['-sendVideo'] !== 'n',
-//          preview: this.hashParams['-preview'] !== 'n'
-//        },
-//        audio: {
-//          send: this.hashParams['-sendAudio'] !== 'n'
-//        }
-//      };
+      this.isWaitingRoom = U.isWaitingRoom();
+      this.isPrivate = U.isPrivateChat();
+      this.isAgent = this.hashParams['-agent'] === 'y';
+      this.isClient = !this.isAgent;
+      this.textOnly = /^chat\//.test(this.hash);
+      this.hasVideo = !this.textOnly && (this.isPrivate || this.isClient); // HACK, waiting room might not have video
+      this.hasAudio = !this.textOnly && (this.hasVideo || this.isPrivate);
+      this.config = {
+        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
+        video: {
+          send: this.isPrivate,
+          receive: !this.isWaitingRoom || this.isAgent,
+          preview: (!this.isWaitingRoom || this.isClient) && this.hasVideo
+        },
+        audio: {
+          send: !this.isWaitingRoom && this.hasAudio,
+          receive: !this.isWaitingRoom || this.isAgent
+        },
+        log: true,
+        url: SIGNALING_SERVER
+      };
+
+      if (options.config)
+        U.deepExtend(this.config, options.config);
+
+      var vConfig = this.config.video,
+          aConfig = this.config.audio;
       
-      this.addChild('chatView', new ChatView(_.extend({parentView: this}, _.pick(this, 'model', 'config'))));
+      this.hasVideo = vConfig.send || vConfig.receive || vConfig.preview;
+      this.hasAudio = aConfig.send || aConfig.receive;
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
-//      var self = this;
-//      if (this.resource) {
-//        require(['views/ControlPanel']).done(function(ControlPanel) {
-//          self.addChild('backlinks', new ControlPanel({
-//            isMainGroup: true,
-//            dontStyle: true,
-//            model: self.resource
-//          }));
-//          
-//          readyDfd.resolve();
-//        });
-//      }
-//      else
+//      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
+      var req = ['lib/socket.io', 'simplewebrtc'];      
+      U.require(req).done(function(socketIO, simpleWebRTC) {
+        WebRTC = simpleWebRTC;
         readyDfd.resolve();
+      });
+      
+      this.makeTemplate('chatPageTemplate', 'template', type);
+      this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
+      this.makeTemplate('chatResourceLinkMessageTemplate', 'resourceLinkMessageTemplate', this.modelType);
+      
+      this.roomName = this.getRoomName();
+      this._myRequests = {};
+      this._myRequestPromises = {};
+      this._otherRequestPromises = {};
+      this.unreadMessages = 0;
+      this.participants = [];
+      this.userIdToInfo = {};      
+      var me = G.currentUser;
+      if (me) {
+        this.myName = me.davDisplayName || getGuestName();
+        this.myIcon = me.thumb || 'icons/male_thumb.jpg';
+        this.myUri = me._uri;
+      }
+      else {
+        this.myName = getGuestName();
+      }
 
-      this.on('chat:on', this.chatFadeIn, this);
-      this.on('chat:off', this.chatFadeOut, this);
+      this.myInfo = {
+        name: this.myName,
+        icon: this.myIcon,
+        uri: this.myUri,
+        isAgent: this.isAgent
+      }
+
+      this.on('video:off', this.endChat, this);
+      this.on('video:on', this.startChat, this);
+
+      this.makeTemplate('genericDialogTemplate', 'requestDialog', this.modelType);
+//      this.on('active', function(active) {
+//        if (active) {
+//          this.unreadMessages = 0;
+//          if (this.rendered) {
+////            this.chat.openNewSession = function() {};
+//            window.location.reload();
+////            this.restartChat();
+//          }
+//        }
+//        else
+//          this.endChat();
+//      }.bind(this));
+
+      var self = this;
+      this.on('active', function(active) {
+        var method = active ? 'show' : 'hide';
+        self.$localMedia && self.$localMedia[method]();
+        self.$remoteMedia && self.$remoteMedia[method]();
+      });
+      
+      Events.on('localVideoMonitor:on', function() {
+        if (self.isActive()) {
+          self.playRingtone();
+        }
+      });
+
+      Events.on('localVideoMonitor:off', function() {
+        self.stopRingtone();
+      });
+
+      if (self.config.data !== false) {
+        Events.on('messageForCall:resource', function(resInfo) {
+          var msg = {
+            message: {
+              resource: resInfo
+            }
+          };
+          
+          self.sendMessage(msg);
+          self.addMessage(msg);
+        });
+
+        Events.on('messageForCall:list', function(listInfo) {
+          var msg = {
+            message: {
+              list: listInfo
+            }
+          };
+          
+          self.sendMessage(msg);
+          self.addMessage(msg);
+        });
+      }
+
       this.on('video:on', this.videoFadeIn, this);
+      this.on('video:on', this.enableTakeSnapshot, this);
       this.on('videoAdded', this.restyleGoodies, this);
       this.on('videoRemoved', this.restyleGoodies, this);
       this.on('newRTCCall', this.videoFadeIn, this);
-      this.on('video:fadeIn', this.videoFadeIn, this);
-      this.on('video:fadeOut', this.videoFadeOut, this);
 
-      var chatPage = this, chatView = this.chatView;
-      // forward these methods to ChatView
-      _.each(['getParticipants', 'getNumParticipants', 'getNumUnread', 'getRoomName', 'sendMessage', 'getUserId'], function(method) {
-        chatPage[method] = function() {
-          return chatView[method].apply(chatView, arguments);
-        }
-      });
-      
       this.autoFinish = false;
     },
     
     events: {
-      'click #videoChat': 'toggleChat',
-      'click #textChat': 'toggleChat',
-      'click input': 'chatFadeIn',
-      'resize': 'resize',
-      'orientationchange' : 'resize',
-      'pagehide'          : 'pagehide' 
+      'click #videoChat'                  : 'toggleChat',
+      'click #textChat'                   : 'toggleChat',
+      'click input'                       : 'chatFadeIn',
+      'click #chatSendBtn'                : '_sendMessage',
+//      'click #endChat'                    : 'endChat',
+      'click #chatReqLocBtn'              : 'requestLocation',
+      'click #chatShareLocBtn'            : 'shareLocation',
+      'click #chatCaptureBtn'             : 'takeSnapshot',
+      'resize'                            : 'resize',
+      'orientationchange'                 : 'resize',
+      'pagehide'                          : 'pagehide' 
     },
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);
@@ -224,19 +360,20 @@ define('views/ChatPage', [
       
       if (this._videoSolid)
         this.chatFadeIn();
-      else if (this.chatView._videoOn)
+      else if (this._videoOn)
         this.videoFadeIn();        
     },
     
     videoFadeIn: function(e) {
       if (!this.rendered)
         return;
-//      if (!this.chatView._videoOn)
+//      if (!this._videoOn)
 //        this.trigger('video:on');
         
       this._videoSolid = true;
       if (this._chatSolid)
-        this.trigger('chat:off');
+        this.chatFadeOut();
+//        this.trigger('chat:off');
       
       this.$videoChat.fadeTo(600, 1, this.restyleGoodies).css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
@@ -247,7 +384,7 @@ define('views/ChatPage', [
       
       this._videoSolid = false;
       if (!this._chatSolid)
-        this.trigger('chat:on');
+        this.chatFadeIn();
       
       this.$videoChat.fadeTo(600, 0.1, this.restyleGoodies).css('z-index', 1); // jquery mobile footer is z-index 1000
     },
@@ -258,7 +395,7 @@ define('views/ChatPage', [
 
       this._chatSolid = true;
       if (this._videoSolid)
-        this.trigger('video:fadeOut');
+        this.videoFadeOut();
       
       this.$textChat.fadeTo(600, 1).css('z-index', 1001);
       this.$videoChat.css('z-index', 0);
@@ -269,53 +406,116 @@ define('views/ChatPage', [
         return;
 
       this._chatSolid = false;
-      if (!this._videoSolid && this.chatView._videoOn)
-        this.trigger('video:fadeIn');
+      if (!this._videoSolid && this._videoOn)
+        this.videoFadeIn();
       
       this.$textChat.fadeTo(600, 0.1).css('z-index', 1);
     },
     
     render: function() {
-      var args = arguments, self = this;
-      this.ready.done(function() {
-        self.renderHelper.apply(self, args);
-      });
-    },
-    
-    renderHelper: function() {
+      var self = this;
       this.$el.html(this.template({
-        viewId: this.cid
+        viewId: this.cid,
+        video: this.hasVideo,
+        audio: this.hasAudio
       }));
       
       this.assign({
-        'div#headerDiv' : this.header,
-        'div#chatDiv'   : this.chatView
-//        ,
-//        'div#inChatBacklinks': this.backlinks 
+        'div#headerDiv' : this.header
       });
 
+      this.$ringtone          = this.$('div#ringtoneHolder');
+      this.$chatInput         = this.$('#chatMessageInput');
+      this.$messages          = this.$('#messages');
+      this.$sendMessageBtn    = this.$('#chatSendBtn');
+      this.$snapshotBtn       = this.$('#chatCaptureBtn');
+      this.$localMedia        = this.$('div#localMedia');
+      this.$remoteMedia       = this.$('div#remoteMedia');
+      this.$videoChat         = this.$('#videoChat');
+      this.$textChat          = this.$('#textChat');
+      
+      this.$localMedia.hide();
       if (this.resource && this.isPrivate) {
         this.paintInChatBacklinks();
         this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
       }
-//      else
 
-//      if (this.resource)
-//        this.loadResourceUI();      
+      if (this.isWaitingRoom && this.isClient) {
+        Events.trigger('headerMessage', {
+          info: 'Calling...'
+        });
+      }
 
-      if (!this.$el.parentNode) 
-        $('body').append(this.$el);
+      if (!this.rendered) { // only once
+        this.disableTakeSnapshot();
+        this.$chatInput.bind("keydown", function(event) {
+          // track enter key
+          var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+          if (keycode == 13) { // keycode for enter key
+            self.$sendMessageBtn.trigger('click');
+          }
+        });
+        
+        this.startChat(0);
+      }
       
-      $('#header').css({
+      if (!this.$el.parentNode) 
+        $(doc.body).append(this.$el);
+
+      this.$('#header').css({
         'z-index': 1000,
         'opacity': 0.7
       });
       
-      this.$videoChat = this.$('#videoChat');
-      this.$textChat = this.$('#textChat');
       this.finish();
     },
-    
+
+    enableChat: function() {
+      this.$sendMessageBtn.button().button('enable');
+      if (this.$chatInput.length) {
+        this.$chatInput.removeClass('ui-disabled');
+//        this.$chatInput[0].value = '';
+      }
+      
+      this.disabled = false;
+    },
+
+    disableChat: function() {
+      this.$sendMessageBtn.button().button('disable');
+      if (this.$chatInput.length) {
+        this.$chatInput.addClass('ui-disabled');
+//        this.$chatInput[0].value = 'Chat room is empty...';
+      }
+      
+      this.$remoteMedia && this.$remoteMedia.empty();
+      this.disabled = true;
+    },
+
+    enableTakeSnapshot: function() {
+      if (!this.$snapshotBtn)
+        return;
+      
+      this.$snapshotBtn.button().button('enable');
+      this.$('canvas').remove();
+      this.$('video').unbind('play', this._addCanvasForVideo).bind('play', this._addCanvasForVideo);
+    },    
+
+    disableTakeSnapshot: function() {
+      if (!this.$snapshotBtn)
+        return;
+      
+      this.$snapshotBtn.button().button('disable');
+      this.$('canvas').remove();
+    },
+
+    _addCanvasForVideo: function(e) {
+      var video = e.target;
+      if (!video.id)
+        video.id = G.nextId();
+      
+      $('<canvas data-for="{0}" width="100%" height="0" style="position:absolute;top:0px;left;0px" />'.format(video.id)).insertAfter(this);
+    },
+
     getStats: function() {
       var max = Math.min(document.width / 3, document.height / 3, 300),
           w = document.width || max,
@@ -473,6 +673,993 @@ define('views/ChatPage', [
       D3Widgets.concentricCircles(this.$('#' + divId), options).done(function() {
         self.$('#inChatStats svg').drags();
       });
+    },
+    
+    playRingtone: function() {
+      this.$ringtone.append("<audio id='ringtone' src='ringtone.mp3' loop='true' />").find('audio')[0].play();
+    },
+
+    stopRingtone: function() {
+      this.$ringtone.find('audio').each(function() {
+        this.pause();
+        this.src = null;
+      }).remove();
+    },
+    
+    isDisabled: function() {
+      return this.disabled;
+    },
+
+    addParticipant: function(userInfo) {
+      var userid = userInfo.id;
+      var existing = this.getUserInfo(userid);
+      var isUpdate = !!existing                  && 
+          ((userInfo.stream && !existing.stream) || // we already opened the data channel, but haven't gotten the remote stream yet
+          (userInfo.uri && !existing.uri));         // we already got the remote stream, but haven't opened the data channel yet
+      
+      if (isUpdate)
+        _.extend(existing, userInfo);
+      else
+        this.userIdToInfo[userid] = userInfo;
+      
+      this._updateParticipants();
+      if (userInfo.justEntered) {
+        var message, isNursMe = G.currentApp.appPath == 'NursMe1';
+        if (this.isPrivate) {
+          if (userInfo.isAgent)
+            message = '<i>{0}{1} is ready to assist you</i>'.format(isNursMe ? 'Nurse ' : '', userInfo.name);
+          else
+            message = '<i>{0}{1} is ready to be assisted</i>'.format(isNursMe ? 'Patient ' : '', userInfo.name);
+        }
+        else if (!(this.isWaitingRoom && this.isClient))
+          message = '<i>{0} has entered the room</i>'.format(userInfo.name);
+        
+        this.addMessage({
+          message: message,
+          time: +new Date(), //getTime(),
+          senderIcon: userInfo.icon,
+          info: true,
+          sender: userInfo.name
+        });
+      }
+      
+      if (!isUpdate)
+        this.trigger('chat:newParticipant', userInfo);
+    },
+    
+    _updateParticipants: function() {
+      this.participants = _.keys(this.userIdToInfo);
+    },
+    
+    sendUserInfo: function(options, to) {
+      var msg = {
+        userInfo: _.extend(this.myInfo, options || {})
+      };
+      
+      this.chat.sendMessage(msg, to);
+    },
+
+    getUserInfo: function(userid) {
+      return this.userIdToInfo[userid];
+    },
+
+    addMessage: function(info) {
+      var message = info.message,
+          resource = message && message.resource,
+          list = message && message.list;
+
+      _.defaults(info, {
+        'private': false
+      }, info.self !== false ? {
+        sender: 'Me',
+        senderIcon: this.myIcon,
+        self: true
+      } : {});
+
+      info.time = getTimeString(info.time || +new Date());
+      if (resource) {
+        info.message = this.resourceLinkMessageTemplate({
+          href: U.makePageUrl('view', resource._uri),
+          text: resource.displayName
+        });
+      }
+      else if (list) {
+        info.message = this.resourceLinkMessageTemplate({
+          href: U.makePageUrl(decodeURIComponent(list.hash)),
+          text: list.title
+        });
+      }
+      
+//      info.time = getTimeString(info.time || +new Date());
+      var height = $(doc).height();
+      var atBottom = this.atBottom();
+      this.$messages.append(this.messageTemplate(info));
+      if (atBottom)
+        this.scrollToBottom();
+    },
+
+    sendMessage: function() {
+      var data = arguments[0];
+      data.time = data.time || +new Date();
+      this.chat.send.apply(this.chat, arguments);
+    },
+    
+    _sendMessage: function(e) {
+      e && Events.stopEvent(e);
+      var msg = this.$chatInput.val();
+      if (!msg || !msg.length)
+        return;
+      
+      this.addMessage({
+        message: msg
+      });
+
+      this.$chatInput.val('');
+      if (!this.chat || !_.size(this.chat.pcs))
+        return;      
+      
+      this.sendMessage({
+        message: msg
+      });            
+    },
+    
+    sendFile: function(data, to) {
+      this.chat.send({
+        type: 'file',
+        file: data
+      }, to, {
+        done: function() {        
+        },
+        progress: function() {
+        }
+      });            
+    },
+    
+    handleResponse: function(data) {
+      var reqId = this.getRequestId(data);
+      var dfd = this._myRequestPromises[reqId] || this._otherRequestPromises[reqId];
+      if (dfd) {
+        if (data.response.granted)
+          dfd.resolve(data);
+        else
+          dfd.notifyWith(data);
+      }
+    },
+    
+    getRequestId: function(data) {
+      return data.response ? data.response.requestId : data.request.id;
+    },
+
+    request: function(type, to) {
+      var reqId = this.myInfo.id + '_' + G.nextId(),
+          self = this,
+          msg = {
+            request: {
+              id: reqId,
+              type: type
+            }
+          },
+          request = msg.request;
+      
+      switch(type) {
+      case 'service':
+        request.title = 'Hi, can someone help me please?';
+        break;
+      case 'info':
+      case 'location':
+        request.title = 'May I ask your location?';
+        break;
+      }
+      
+      if (to)
+        msg.to = to;
+      
+      this._myRequests[reqId] = msg.request;
+      this.sendMessage(msg, to);      
+      var dfd = $.Deferred();
+      dfd.done(function() {
+        delete self._myRequestPromises[reqId];
+      });
+      
+      this._myRequestPromises[reqId] = dfd;
+      var promise = dfd.promise();
+      _.extend(promise, {
+        accepted: promise.done,
+        rejected: to ? promise.fail : promise.progress // if it's a public message, you get the opportunity to be rejected many times
+      })
+      
+      return promise;
+    },
+    
+    _grantRequest: function(request, response, from) {
+      if (arguments.length == 2)
+        from = response;
+      
+      this.sendMessage({
+        response: _.extend(response || {}, {
+          granted: true,
+          requestId: request.id
+        }, from)
+      });
+    },
+    
+    grantRequest: function(request, from) {
+      var self = this;
+      
+      switch(request.type) {
+        case 'info':
+          this._grantRequest(request, {
+            userInfo: this.myInfo
+          }, from);
+          
+          break;
+        case 'service':
+          this.stopRingtone();
+          this.engageClient({
+            request: request,
+            from: from
+          });
+          
+          break;
+        case 'location':
+          var dfd = $.Deferred();
+          dfd.promise().done(function(location) {
+            self._grantRequest(request, {
+              location: location
+            }, from);
+            
+            self._addLocationMessage(self.myInfo, location);
+          });
+          
+          U.getCurrentLocation().done(dfd.resolve).fail(function(error) {
+            var lastKnown = G.currentUser.location;
+            if (lastKnown)
+              dfd.resolve(lastKnown);
+            else {
+              alert('Unable to share your location');
+              self.denyRequest(request, from, {
+                message: 'User was unable to send location'
+              });
+            }
+          });
+          
+          break;
+      }
+    },
+
+    denyRequest: function(request, from, why) {
+      debugger;
+      var response = {
+        granted: false,
+        requestId: request.id
+      }
+      
+      if (why)
+        response.reason = why;
+      
+      switch(request.type) {
+        case 'service':
+          this.stopRingtone();
+        default:
+          this.sendMessage(response, from);
+      }
+    },
+    
+    _addLocationMessage: function(userInfo, location, msg) {
+      var message =  "{0}'s location at {1}: <br />".format(userInfo.name, getTimeString(location.time)) + toLocationString(location),
+          type = 'health/base/MedicalCenter';
+      
+      if (isNursMe) { // HACK
+        message = '<a href="{0}"><strong>Medical centers near {1}</strong></a>'.format(U.makePageUrl('list', type, _.extend({
+          '-item': userInfo.name, 
+          $orderBy: 'distance', 
+          $asc: 'y'
+        }, _.pick(location, 'latitude', 'longitude'))), userInfo.name);
+      }
+      
+      this.addMessage(_.defaults({
+        message: message
+      }, msg || {}, {
+        time: +new Date(),
+        'private': false,
+        location: location,
+        senderIcon: userInfo.icon,
+        sender: userInfo.name,
+        self: userInfo.id == this.myInfo.id
+      }));
+    },
+    
+    requestLocation: function(e) {
+      this.request('location');
+    },
+    
+    shareLocation: function(e) {
+      var self = this,
+          dfd = $.Deferred();
+      
+      dfd.done(function(position) {
+        self.sendMessage({
+          location: position
+        });        
+        
+        self._addLocationMessage(self.myInfo, position);
+      });
+      
+      U.getCurrentLocation().done(dfd.resolve).fail(function(error) {
+        var lastKnown = G.currentUser.location;
+        if (lastKnown)
+          dfd.resolve(lastKnown);
+        else
+          dfd.reject(error);
+      });
+    },
+    
+    promiseToHandleRequest: function(req) {
+      var self = this,
+          dfd = this._otherRequestPromises[req.id] = $.Deferred(),
+          promise = dfd.promise();
+      
+      promise.done(function() {
+        delete self._otherRequestPromises[req.id];
+      });
+      
+      return promise;
+    },
+    
+    startChat: function() {
+      var args = arguments, self = this;
+      this.ready.done(function() {
+        self._startChat.apply(self, args);
+      });
+    },
+
+    _startChat: function(options) {
+      if (this.chat)
+        return;
+      
+      var self = this,
+          roomName = this.getRoomName(),
+          config = this.config,
+          aConfig = config.audio,
+          vConfig = config.video,
+          webrtc,
+          conversations;
+      
+      this._videoOn = this.hasVideo;
+      this.disableChat();
+      this.connected = false;
+      var cachedStream = G.localVideoMonitor;
+      if (this.hasVideo || this.hasAudio) {
+        _.extend(this.config, {
+          local: !vConfig.preview && !vConfig.send ? null : { // no such thing as local audio
+            _el: self.$localMedia[0],
+            autoplay: true,
+            muted: true
+          },
+          remote: !vConfig.receive && !aConfig.receive ? null : {
+            _el: self.$remoteMedia[0],
+            autoplay: true
+          },
+          autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
+        });
+      }
+      
+      try {
+        webrtc = this.chat = new WebRTC(this.config);
+      } catch (err) {
+        U.alert(err.message);
+        return;
+      }
+      
+      conversations = webrtc.pcs;
+      webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
+        webrtc.joinRoom(roomName);
+        self.enableChat();
+      }));
+
+      webrtc.on('userid', this.setUserId);
+      webrtc.on('mediaAdded', this.onMediaAdded);
+      webrtc.on('mediaRemoved', this.onMediaRemoved);
+
+      // Data channel events
+      if (this.config.data !== false) {
+        webrtc.on('dataOpen', this.onDataChannelOpened);
+        webrtc.on('dataClose', this.onDataChannelClosed);
+        webrtc.on('dataMessage', this.onDataChannelMessage);
+        webrtc.on('dataError', this.onDataChannelError);
+      }
+      
+      webrtc.on('close', this.onclose);
+      if (this.hasVideo && cachedStream)
+        webrtc.startLocalMedia(cachedStream);
+      
+      $(window).unload(function() {
+        self.endChat();
+      });
+      
+      if (this.hasVideo)
+        this.trigger('video:on');
+    },
+
+    /**
+     * conversation with peer ended
+     */
+    onclose: function(event, conversation) {
+      var userid = conversation.id;
+      
+      delete this.userIdToInfo[userid];
+      this._updateParticipants();
+      var dfd = this._otherRequestPromises[userid];
+      if (dfd) {
+        dfd.resolve();
+        delete this._otherRequestPromises[userid];
+      }
+      
+      this.trigger('chat:participantLeft', userid);
+    },
+    
+    onDataChannelOpened: function(event, conversation) {
+      var info = _.clone(this.myInfo),
+          self = this;
+      
+      if (!this.connected) {
+        this.connected = true;
+        info.justEntered = true;
+      }
+      
+      this.sendMessage({
+        userInfo: info
+      }, conversation.id);
+      
+      if (this.isWaitingRoom && this.isClient) {
+        this.request('service').accepted(function(responseData) {
+          // request has been granted
+          self.leave();
+          var from = responseData.from;
+          var privateRoom = responseData.response.privateRoom;
+          Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom), {replace: true, transition: 'none'});
+        }).rejected(function(responseData) {
+          // request has been denied by responseData.from, or anonymously if responseData.from is undefined
+//          debugger;
+        });
+      }
+      
+      this.connected = true;
+      this.enableChat();
+    },
+
+    onDataChannelClosed: function(event, conversation) {
+//      debugger;
+      var channel = event.target,
+          whoLeftId = conversation.id;
+          whoLeft = this.getUserInfo(whoLeftId);
+          
+      if (whoLeft) {
+        if (this.isPrivate && this.isClient)
+          this.endCall();
+      
+        if (!whoLeft.name)
+          debugger;
+        else {
+          this.addMessage({
+            message: '<i>{0} has left the room</i>'.format(whoLeft.name),
+            time: +new Date(), //getTime(),
+            senderIcon: whoLeft.icon,
+            sender: whoLeft.name,
+            info: true
+          });
+        }
+      }
+    },
+    
+    onDataChannelMessage: function(data, conversation) {
+      var self = this,
+          from = conversation.id,
+          userInfo;
+      
+      if (this.isDisabled())
+        this.enableChat();
+      
+      data.from = from;      
+      var userInfo = this.getUserInfo(from);
+      var response = data.response;
+      if (response) {
+        this.handleResponse(data);
+        data = response;
+      }
+      
+      var location = data.location;
+      var isPrivate = !!data['private'];
+      var commonMsgPart = {
+        time: data.time || +new Date(),
+        'private': isPrivate,
+        location: location,
+        message: data.message,
+        self: false
+      };
+      
+      if (userInfo) {
+        _.extend(commonMsgPart, {
+          sender: userInfo.name,
+          senderIcon: userInfo.icon
+        })
+      }
+      
+//      G.log(this.TAG, 'chat', 'message from {0}: {1}'.format(extra._userid, JSON.stringify(data)));
+      if (data.userInfo) {
+        userInfo = data.userInfo;
+        userInfo.id = from;
+        if (this.rtcCall && this.rtcCall.id === this.myInfo.id) {
+          Events.trigger('updateRTCCall', this.myInfo.id, {
+            title: 'Call in progress'
+          });
+        }
+
+        this.addParticipant(userInfo);
+      }
+      else if (data.request) {
+        var req = data.request;
+        switch (req.type) {
+          case 'info':
+            this.grantRequest();
+            break;
+          case 'service':
+            if (!this.isAgent)
+              break;
+            
+            if (!userInfo) {
+              debugger; // TODO: request userInfo and continue to handle request
+              break;
+            }
+//              this.request('info')
+            
+            this.playRingtone();
+            // fall through to throw up request dialog
+          default:
+            var $dialog = this.showRequestDialog(data);
+            var promise = this.promiseToHandleRequest(req);
+            promise.done(function() {
+              if ($dialog.parent())
+                $dialog.popup('close'); // check if it's not closed already
+            });
+            
+            break;
+        }
+      }
+      else if (data.file && data.type === 'file') {
+        this.addMessage(commonMsgPart);        
+      }
+      else if (data.message) {
+        if (!userInfo) {
+          debugger;
+          var args = arguments;
+          this.request('info', from).accepted(function() {
+            self.onDataChannelMessage.apply(self, args);
+          });
+          
+          return; // TODO: append message after getting info
+        }
+
+        var msg = data.message,
+            resource = msg.resource,
+            list = msg.list;
+        
+        if (resource) {
+          var type = U.getTypeUri(resource._uri);
+          Voc.getModels(type).done(function() {
+            var model = U.getModel(type);
+            new model({
+              _uri: resource._uri
+            }).fetch();
+          });
+        }
+        else if (list) {
+          var type = U.getTypeUri(U.decode(list.hash));
+          Voc.getModels(type).done(function() {
+            new ResourceList(null, {
+              model: U.getModel(type),
+              _query: list.hash.split('?')[1]
+            }).fetch();
+          });          
+        }
+          
+        this.addMessage(commonMsgPart);
+        if (!this.isActive())
+          this.unreadMessages++;
+      }
+      else if (location) {
+        // no message, just location
+        this._addLocationMessage(userInfo, location, commonMsgPart);
+      }
+      
+      if (location && userInfo) {
+        _.extend(userInfo, location);
+      }
+    },
+    
+    onDataChannelError: function(event) {
+      debugger;
+      var channel = event.target;
+    },
+    
+    onMediaAdded: function(info, conversation) {
+      if (info.type == 'local') {
+        if (this.isWaitingRoom) // local media can only be video
+          Events.trigger('localVideoMonitor:on', info.stream);
+        
+        this.processLocalMedia.apply(this, arguments);
+      }
+      else {
+        this.processRemoteMedia.apply(this, arguments);
+      }
+    },
+    
+    /** 
+     * local media can only be video
+     */
+    processLocalMedia: function(info, conversation) {
+      var video = info.media;
+      this.localStream = info.stream;
+      this.checkVideoSize(video);
+      var $local = this.$localMedia.find('video');
+      if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
+        for (var i = 0; i < $local.length; i++) {
+          var v = $local[i];
+          if (v !== video)
+            $(v).remove();
+        }
+      }
+
+//      $("#localVideoMonitor video").animate({left:video.left, top:video.top, width:video.width, height:video.height}, 1000, function() {        
+        video.muted = true;
+        video.controls = false;
+        video.play();
+        $(video).addClass('localVideo');
+        this.$localMedia.show();
+//      });
+        
+      if (!this.isWaitingRoom)
+        Events.trigger('localVideoMonitor:off');
+      
+      this.monitorVideoHealth(video);
+//      this.enableTakeSnapshot();
+      this.restyleVideos();
+      this.trigger('video:on');
+      this.trigger('videoAdded', video);
+    },
+
+    processRemoteMedia: function(info, conversation) {
+      var self = this,
+          media = info.media,
+          stream = info.stream;
+
+      var alreadyStreaming = U.filterObj(this.userIdToInfo, function(id, info) {
+        return !!info.stream;
+      });
+      
+      var videoIds = _.map(_.keys(alreadyStreaming), function(id) { 
+        return 'video#' + id; 
+      });
+      
+      if (videoIds.length) {
+        this.$(videoIds.join(',')).each(function() {
+          if (browser.mozilla)
+            this.mozSrcObject = null;
+          else
+            this.src = null;
+          
+          $(this).remove();
+        });
+      }
+      
+      this.addParticipant({
+        id: conversation.id,
+        stream: stream,
+        blobURL: media.src || ''
+      });
+      
+      media.controls = false;
+      this.$remoteMedia.show();
+      if (media.tagName === 'VIDEO') {
+        this.checkVideoSize(media);
+        $(media).addClass('remoteVideo');
+        this.restyleVideos();
+        this.monitorVideoHealth(media);
+        this.trigger('video:on');
+        this.trigger('videoAdded', media);
+      }
+      else {
+        // audio only
+        media.width = 0;
+        media.height = 0;
+      }
+      
+      media.play();
+//      debugger;
+      var userInfo = this.getUserInfo(conversation.id);
+      var title = userInfo && userInfo.name || this.getPageTitle();
+//      this.enableTakeSnapshot();
+      this.rtcCall = {
+        id: this.myInfo.id,
+        url: window.location.href,
+        title: 'Call in progress'
+      };
+      
+      Events.trigger('newRTCCall', this.rtcCall);
+    },
+
+    onMediaRemoved: function(info, conversation) {
+      this.trigger('videoRemoved', info.media);
+      if (info.type == 'local') {
+        debugger;
+      }
+      else {
+        if (info.stream && this.rtcCall)
+          Events.trigger('endRTCCall', this.rtcCall);
+        
+        this.$('canvas#' + info.media.id).remove();
+      }
+    },
+
+    leave: function() {
+  //    this.chat && this.chat.leave();
+      this.chat && this.chat.leaveRoom();
+    },
+  
+    endChat: function(onclose) {
+      this.leave();
+      this.chat = null;
+      if (this.hasVideo) {
+        this._videoOn = false;
+        this.$('video').each(function() {
+          unbindVideoEvents(this);
+          this.pause();
+        }).remove();
+        
+        this.$localMedia && this.$localMedia.empty();
+        this.$remoteMedia && this.$remoteMedia.empty();
+        this.localStream && this.localStream.stop();
+      }
+    },
+  
+    takeSnapshot: function() {
+      var self = this;
+          snapshots = [];
+      this.$('canvas').each(function() {
+        var $this = $(this);
+        var $video = self.$('video#' + $this.data('for'));
+        if (!$video.length)
+          return;
+        
+        var w = $video.width(),
+            h = $video.height();
+        
+        $this.prop('width', w).prop('height', h);
+        this.getContext('2d').drawImage($video[0], 0, 0, w, h);
+        var url = this.toDataURL('image/webp', 1);
+        $this.prop('width', '100%').prop('height', 0);
+        snapshots.push(url);
+  //      var img = new Image();
+  //      img.src = url;
+  //      console.log(img);
+      });
+      
+      _.each(snapshots, function(shot) {
+        self.sendFile(shot);
+        
+        self.addMessage({
+          message: '<image src="{0}" />'.format(shot),
+          time: +new Date(), //getTime(),
+          senderIcon: this.myIcon,
+          self: true,
+          sender: 'Me'          
+        });
+      });
+    },
+    
+    monitorVideoHealth: function(video) {
+      var $video = $(video);
+      _.each(["abort", "error", "ended", "pause"], function(event) {
+        $video.bind(event, function() {
+          if ((event.type || event) == "pause") {
+            video.play();
+            return;
+          }
+          
+  //        var isLocal = $video.parents('#localVideo');
+  //        $video.remove();
+        });
+      });
+    },
+    
+    checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
+      var self = this;
+      if (!video.videoWidth) {
+        setTimeout(function() {
+          self.checkVideoSize(video);
+        }, 100);
+        
+        return;
+      }
+      
+      this.restyleVideoDiv();
+    },
+    
+    restyleVideoDiv: function() {
+      /*
+      var $vc = this.$('.videoChat');
+      var width = Math.min($vc.width(), this.innerWidth());
+  
+      var height = $vc.height();
+      $vc.css('margin-top', -(height / 2) + 'px');
+      $vc.css('margin-left', -(width / 2) + 'px');
+  //    this.$localMedia.drags();
+      */
+    },
+    
+    restyleVideos: function() {
+      var $locals = this.$localMedia;
+      var numRemotes = this.$remoteMedia.find('video').length;
+      if (numRemotes == 1)
+        $locals.addClass('myVideo-overlay');
+      else
+        $locals.removeClass('myVideo-overlay');
+      
+      this.restyleVideoDiv();
+    },
+    
+    engageClient: function(data) {
+      var request = data.request,
+          from = data.from,
+          userInfo = this.getUserInfo(from);
+      
+      if (!userInfo) { // user may have refreshed the page, or left or died and fell on the page with his head
+        U.alert({
+          msg: 'This client is no longer available'
+        });
+        
+        return;
+      }
+      
+      var userUri = userInfo.uri;
+      var isServiceReq = this.isWaitingRoom && request.type == 'service';
+      if (isServiceReq) {
+        var privateRoom = userUri;
+        this._grantRequest(request, {
+          privateRoom: privateRoom
+        }, from);
+        
+        this.leave(); // leave waitingRoom
+        Events.trigger('navigate', U.makeMobileUrl('chatPrivate', privateRoom, {'-agent': 'y'}), {replace: true});   
+      }
+      else {
+        debugger;
+  //      this._grantRequest(request, {});
+      }
+  //      this.trigger('video:on');
+    },
+    
+    showRequestDialog: function(data) {
+      var self = this,
+          request = data.request,
+          userInfo = this.getUserInfo(data.from),
+          id = 'chatRequestDialog',
+          popupHtml = this.requestDialog({
+            id: id,
+            //      title: userInfo.name + ' is cold and alone and needs your help',
+            header: request.type.capitalizeFirst() + ' Request',
+            img: userInfo.icon,
+            title: request.title,
+            ok: 'Accept',
+            cancel: 'Decline'
+          }),
+          $popup;
+      
+      $('#' + id).remove();
+      
+  //    $('.ui-page-active[data-role="page"]').find('div[data-role="content"]').append(popupHtml);
+      this.$el.append(popupHtml);
+  //    $.mobile.activePage.append(popupHtml).trigger("create");
+      $popup = $('#' + id);
+      $popup.find('[data-cancel]').click(function(e) {
+        self.denyRequest(request, data.from);
+        $popup.parent() && $popup.popup('close');
+        return false;
+      });
+      
+      $popup.find('[data-ok]').click(function(e) {
+        self.grantRequest(request, data.from);
+        $popup.parent() && $popup.popup('close');
+        return false;
+      });
+  
+      $popup.trigger('create');
+      $popup.popup().popup("open");
+      return $popup;
+    },
+    
+    makeCall: function() {
+      var self = this,
+          nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      
+      if (!nurseInfo)
+        return;
+      
+      Voc.getModels(nurseMeCallType).done(function() {
+        var callModel = U.getModel(nurseMeCallType);
+        self.call = new callModel({
+          complaint: 'stomach hurts',
+          nurse: nurseInfo.uri
+        });
+        
+        self.call.save();
+      });
+    },
+    
+    endCall: function() {
+      var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      if (!nurseInfo || !this.call)
+        return;
+  
+      this.call.save({
+        end: +new Date()
+      },
+      {
+        sync: true,
+        success: function() {
+          debugger;
+        },
+        error: function() {
+          debugger;
+        }
+      });
+    },
+    
+    getNumParticipants: function() {
+      return this.participants.length;
+    },
+
+    getUserId: function() {
+      return this.myInfo.id;
+    },
+
+    setUserId: function(id) {
+      this.myInfo.id = id;
+    },
+
+    getParticipants: function() {
+      return _.clone(this.userIdToInfo);
+    },
+    
+    getNumUnread: function() {
+      return this.unreadMessages;
+    },
+    
+    getNewPrivateRoomName: function() {
+      return '_' + (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '-');
+    },
+    
+    getRoomName: function() {
+      var name;
+      if (this.resource) {
+        var shortUri = U.getShortUri(this.resource.getUri(), this.vocModel);
+        if (shortUri.startsWith(G.sqlUrl))
+          shortUri = shortUri.slice(G.sqlUrl.length);
+        
+        name = shortUri;
+      }
+      else {
+        name = this.hash.slice(5);
+        name = decodeURIComponent(/\?/.test(name) ? name.slice(0, name.indexOf('?')) : name);
+      }
+      
+      name = name.replace(/[^a-zA-Z0-9]/ig, '');
+      if (this.isPrivate)
+        name = 'p_' + name;
+      else if (this.isWaitingRoom)
+        name = 'l_' + name;
+      
+      return name;
     }
   }, {
     displayName: 'ChatPage'

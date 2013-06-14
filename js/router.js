@@ -657,8 +657,8 @@ define('router', [
     },
 
     chat: function(path) {
-      if (!this.ChatPage || !this.ChatView)
-        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
+      if (!this.ChatPage)
+        return this.loadViews(['ChatPage'], this.chat, arguments);
       else if (G.currentUser.guest) {
         this._requestLogin();
         return;
