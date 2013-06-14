@@ -455,7 +455,7 @@ define('views/ResourceListItemView', [
             var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val.value : val.value;
             var isDate = prop1.range == 'date';
             if (!prop1.skipLabelInGrid) 
-              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
             else
               viewCols += '<span style="font-weight:normal">' + s + '</span>';
             viewCols += '&#160;';
@@ -480,7 +480,7 @@ define('views/ResourceListItemView', [
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-          viewCols += '<div style="display:inline"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+          viewCols += '<div style="display:inline"><span class="label">' + row + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
         }
         else {
           if (firstProp)

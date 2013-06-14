@@ -15,11 +15,13 @@ define('views/ChatPage', [
   var BTN_ACTIVE_CLASS = 'ui-btn-active';
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
       this.isWaitingRoom = U.isWaitingRoom();
+      this.isAgent = this.hashParams['-agent'] === 'y';
+      this.isClient = !this.isAgent;
       this.isPrivate = U.isPrivateChat();
       this.headerButtons = {
         back: true,
@@ -203,9 +205,12 @@ define('views/ChatPage', [
       'click #textChat': 'toggleChat',
       'click input': 'chatFadeIn',
       'resize': 'resize',
-      'orientationchange' : 'resize'
+      'orientationchange' : 'resize',
+      'pagehide'          : 'pagehide' 
     },
-
+    pagehide: function(e, data) {
+      G.log('Changing to page:' + window.location.href);
+    },
     toggleChat: function(e) {
       if (!this.rendered)
         return;
@@ -256,7 +261,7 @@ define('views/ChatPage', [
         this.trigger('video:fadeOut');
       
       this.$textChat.fadeTo(600, 1).css('z-index', 1001);
-      this.$videoChat.css('z-index', 1);
+      this.$videoChat.css('z-index', 0);
     },
 
     chatFadeOut: function(e) {
@@ -406,11 +411,12 @@ define('views/ChatPage', [
         return;
       
       var $goodies = this.$('div#inChatGoodies'),
-          $video = this.$('div#remoteMedia video'),
-          $bl = $goodies.find('#inChatBacklinks'),
-          $stats = $goodies.find('#inChatStats'),
-          $svg = $stats.find('svg');
-      
+          $video = this.$('div#remoteMedia video');
+//      ,
+//          $bl = $goodies.find('#inChatBacklinks'),
+//          $stats = $goodies.find('#inChatStats'),
+//          $svg = $stats.find('svg');
+//      
 //      $bl.css({
 //        top: '0px',
 //        right: '0px'

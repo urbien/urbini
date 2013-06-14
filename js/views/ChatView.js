@@ -1039,7 +1039,7 @@ define('views/ChatView', [
         userInfo.id = from;
         if (this.rtcCall && this.rtcCall.id === this.myInfo.id) {
           Events.trigger('updateRTCCall', this.myInfo.id, {
-            title: 'Call in progress: ' + userInfo.name
+            title: 'Call in progress'
           });
         }
 
@@ -1221,7 +1221,7 @@ define('views/ChatView', [
       this.rtcCall = {
         id: this.myInfo.id,
         url: window.location.href,
-        title: 'Call in progress' + (title ? ': ' : '') + title
+        title: 'Call in progress'
       };
       
       Events.trigger('newRTCCall', this.rtcCall);

@@ -771,7 +771,7 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (!G.trace.ON || !console || !console.log)
+      if (!G.trace.ON || !console || !console.log || !type)
         return;
       
       

@@ -650,7 +650,7 @@ define('views/EditView', [
         }
       }
       
-      var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE',
+      var redirectAction = vocModel.onCreateRedirectToAction, 
           redirectParams = {},
           action = '',
           redirectPath = '',
@@ -1334,6 +1334,11 @@ define('views/EditView', [
         U.addToFrag(info.frag, h);
 //        this.addProp(info);
         displayedProps[p] = true;
+      }
+      var returnUri = reqParams['$returnUri']; 
+      if (returnUri) {
+        var h =  '<input data-formEl="true" type="hidden" name="$returnUri" value="' + returnUri + '"/>';
+        U.addToFrag(info.frag, h);
       }
       if (!propGroups.length || editProps) {
         for (var p in meta) {

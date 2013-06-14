@@ -264,12 +264,12 @@ define('router', [
         this.homePage.render();
         this.currentView = this.homePage;
       }
-/*
-      Events.trigger('pageChange', prev, this.currentView);
-//      if (!this.firstPage)
-      $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+
+      if (this.backClicked) {
+//        Events.trigger('pageChange', prev, this.currentView);
+        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      }
       
-*/      
       // HACK, this div is hidden for some reason when going to #home/...
       var mainDiv = $('.mainDiv'); 
       if (mainDiv.is(':hidden'))

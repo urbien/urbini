@@ -547,12 +547,13 @@ border: #7F7F7F solid 4px;
 }
 
 .chat-holder {
-  margin: 10px 10px 0px 10px;
+  margin: 10px 0px 0px 10px;
   #text-align: center;
 }
 
-@media (max-width: 328px) {  
+@media (max-width: 480px) {  
   .chat-holder {margin: 10px 0px 0px 0px;}
+  #chatDiv {padding: 0}
 }
 
 .chat-info {

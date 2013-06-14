@@ -13,6 +13,22 @@ DOMReady.add( function () {
     localStorage.setItem('homePage', l.homePage);
     
   div.innerHTML = l.homePage;
+  
+  var scripts = div.getElementsByTagName('script');
+
+  try {
+    for (var i=0; scripts  &&  i<scripts.length; i++) {
+      var s = d.createElement('script'); 
+      s.type = 'text/javascript';
+      s.innerText = scripts[i].innerText;
+      console.log('script: ' + s.innerText);
+      head.appendChild(s);
+/*      eval(scripts[i].innerText); */ 
+    }
+  } catch (e) {
+    console.log('eval failed: ' + e);
+  }
+  
   if (window.location.hash) { 
     div.style.display = 'none';
   }
@@ -42,3 +58,24 @@ DOMReady.add( function () {
       head.appendChild(l);
     }
 });
+/*
+function ajaxCallback() {
+  div.innerHTML= request.responseText;
+  runScripts(div); //run all scripts now contained in the target div element
+}
+ 
+function runScripts(e) {
+  if (e.nodeType != 1) return; //if it's not an element node, return
+ 
+  if (e.tagName.toLowerCase() == 'script') {
+    eval(e.text); //run the script
+  }
+  else {
+    var n = e.firstChild;
+    while ( n ) {
+      if ( n.nodeType == 1 ) runScripts( n ); //if it's an element node, recurse
+      n = n.nextSibling;
+    }
+  }
+}
+*/

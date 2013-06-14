@@ -185,7 +185,7 @@ define('views/Header', [
 //              title = this.pageTitle;
             }
             else {
-              title = U.makeHeaderTitle(this.vocModel['displayName'], title);
+              title = U.isAssignableFrom(this.vocModel, "Contact") ? title : U.makeHeaderTitle(this.vocModel['displayName'], title);
 //              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
             }
           }
@@ -267,18 +267,23 @@ define('views/Header', [
 
     refreshCallInProgressHeader: function() {
       var cip = G.callInProgress;
-      var $cipDiv = this.$('div#callInProgress');
+      var $cipDiv = this.parentView.$('div#callInProgress');
       if (!cip || window.location.href == cip.url) {
         $cipDiv.html("");
         return;
       }
       
       $cipDiv.html(this.callInProgressHeaderTemplate(cip));
-      (function pulse(){
-        if (!G.callInProgress)
+//      (function pulse(){
+//        if (!G.callInProgress)
+//          return;
+//        $cipDiv.delay(250).fadeTo('slow', 0.9).delay(250).fadeTo('slow', 1,  pulse);
+//      })();
+      (function anime(){
+        if (!G.callInProgress) 
           return;
-        
-        $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
+        $cipDiv.css({marginTop: '-42px'});
+        $cipDiv.animate({marginTop: '+=42px'}, 2000); //.delay(5000).animate({marginTop: '-42px'}, 1, anime);
       })();
       
       $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {

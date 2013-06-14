@@ -53,7 +53,7 @@ define('views/MapView', [
       if (window.innerWidth > window.innerHeight) // landscape
         this.$('#map').height(window.innerHeight * 0.8);
       else
-        this.$('#map').height(window.innerHeight * 0.5);
+        this.$('#map').height(window.innerHeight * 0.6);
       
       this.resetMap();
     },
