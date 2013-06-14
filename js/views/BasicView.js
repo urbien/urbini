@@ -178,6 +178,11 @@ define('views/BasicView', [
               self['_' + event](event);
             });
           }, false);
+          
+          self['_' + event] = _.debounce(function(e) {
+            G.log(self.TAG, 'events', e);
+            self.$el.trigger(e);
+          }, 100);          
         }
       });
 
@@ -198,16 +203,6 @@ define('views/BasicView', [
 //      this.render(this._renderArguments);
 //    },
     
-    _resize: _.debounce(function(e) {
-      G.log(this.TAG, 'events', e);
-      this.$el.trigger(e);
-    }, 100),
-
-    _orientationchange: _.debounce(function(e) {
-      G.log(this.TAG, 'events', e);
-      this.$el.trigger(e);      
-    }, 100),
-
     refreshOrRender: function() {
       if (this.rendered)
         this.refresh.apply(this, arguments);

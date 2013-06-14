@@ -503,7 +503,8 @@ define('globals', function() {
       var bundlePromises = [],
           missing = [],
           allBundles = G.bundles,
-          baseUrlLength = require.getConfig().baseUrl.length;
+          baseUrlLength = require.getConfig().baseUrl.length,
+          modules = typeof modules === 'string' ? [modules] : modules;
       
       _.each(modules, function(module) {
         var found = false,

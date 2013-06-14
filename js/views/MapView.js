@@ -14,10 +14,10 @@ define('views/MapView', [
 //    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe');
+      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'resize');
       this.constructor.__super__.initialize.apply(this, arguments);
       Events.on("mapIt", this.toggleMap);
-      Events.on("pageChange", this.resetMap);
+//      Events.on("pageChange", this.resetMap);
       
       var self = this;
           dfds = [],
@@ -40,9 +40,22 @@ define('views/MapView', [
     },
     events: {
 //      'click': 'click',
-      'swipe': 'onSwipe',
-      'swiperight': 'onSwipe',
-      'swipeleft': 'onSwipe'
+      'swipe'             : 'onSwipe',
+      'swiperight'        : 'onSwipe',
+      'swipeleft'         : 'onSwipe',
+      'orientationchange' : 'resize',
+      'resize'            : 'resize'
+    },
+    resize: function() {
+      if (!this.mapper)
+        return;
+      
+      if (window.innerWidth > window.innerHeight) // landscape
+        this.$('#map').height(window.innerHeight * 0.8);
+      else
+        this.$('#map').height(window.innerHeight * 0.5);
+      
+      this.resetMap();
     },
     onSwipe: function(e) {
       Events.stopEvent(e);
@@ -132,6 +145,7 @@ define('views/MapView', [
       Events.trigger('mapReady', res);
       this.$el.append(frag);
       this.hide();
+      this.resize();
       return this;
     },
     resetMap: function() {

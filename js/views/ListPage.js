@@ -118,7 +118,7 @@ define('views/ListPage', [
       this.headerButtons = {
         back: true,
         add: showAddButton,
-        aroundMe: isGeo,
+//        aroundMe: isGeo,
         mapIt: isGeo,
         menu: true,
         rightMenu: !G.currentUser.guest,
