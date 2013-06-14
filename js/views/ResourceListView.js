@@ -305,6 +305,7 @@ define('views/ResourceListView', [
 
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
+      var self = this;
 
       if (this.initializedListView) {
         if (isModification  ||  isMasonry  ||  isMultiValueChooser) {
@@ -325,7 +326,7 @@ define('views/ResourceListView', [
             return;
 //        this.pageView.$el.on('pageshow', function() {
           if (isMasonry || isModification) {
-            this.alignBricks();
+            self.alignBricks();
           }
         }.bind(this));
         // END HACK
@@ -539,6 +540,11 @@ define('views/ResourceListView', [
 
     // masonry bricks alignment
     onNewItemsAppend: function() {
+      var hash = window.location.hash;
+      if (hash.indexOf('make') == 1  ||  hash.indexOf('edit') == 1) {
+        this.resumeScrollEventProcessing();
+        return;
+      }
       // no masonry or masonry is hidden
       if (!this.hasMasonry() || this.$el.width() == 0) {
         this.resumeScrollEventProcessing();
@@ -565,6 +571,7 @@ define('views/ResourceListView', [
             G.log(self.TAG, 'event', 'masonry on $el load');
             self.alignBricks(true);
           });
+          return;
         }
       }
       
