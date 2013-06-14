@@ -260,8 +260,8 @@ define('views/ViewPage', [
       if (this.isPurchasable) 
         views['div#buyGroup'] = this.buyGroup;         
       
-      var isGeo = this.isGeo();
-      this.headerButtons.aroundMe = isGeo;
+//      var isGeo = this.isGeo();
+//      this.headerButtons.aroundMe = isGeo;
       
       
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});

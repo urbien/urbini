@@ -797,7 +797,7 @@
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
-  <a id="mapIt" target="#" data-icon="globe">Map It</a>
+  <a id="mapIt" target="#" data-icon="map-marker">Map It</a>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -904,10 +904,10 @@
   </li>
 </script>
 
-<script type="text/template" id="aroundMeButtonTemplate">
+<!--script type="text/template" id="aroundMeButtonTemplate">
   <!-- button for toggling ordering of results by geo-promixity to the user -->
   <a target="#" data-icon="map-marker">Around Me</a>
-</script>
+</script-->
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
