@@ -1381,13 +1381,14 @@ define('views/ChatPage', [
     onMediaRemoved: function(info, conversation) {
       this.restyleGoodies();
       if (info.type == 'local') {
-        debugger;
+        //
       }
       else {
         if (info.stream && this.rtcCall)
           Events.trigger('endRTCCall', this.rtcCall);
         
         this.$('canvas#' + info.media.id).remove();
+        this.restyleVideos();
       }
     },
 

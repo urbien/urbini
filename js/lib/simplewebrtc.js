@@ -550,11 +550,11 @@
 
         this.localStream = this.localStreamSent = stream;
         if (isChrome) {
-          if (!vConfig.send) { // allow previewing video, while not sending it
-              this.localStreamSent = new MediaStream(stream.getAudioTracks());
-          } else if (!aConfig.send && !this.config.local.muted) { // only send video
-              this.localStreamSent = new MediaStream(stream.getVideoTracks());
-          }
+            if (!vConfig.send) { // allow previewing video, while not sending it
+                this.localStreamSent = new MediaStream(stream.getAudioTracks());
+            } else if (!aConfig.send && !this.config.local.muted) { // only send video
+                this.localStreamSent = new MediaStream(stream.getVideoTracks());
+            }
         }
 
         this.testReadiness();
