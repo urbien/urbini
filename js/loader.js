@@ -93,7 +93,7 @@ define('globals', function() {
   }, false);
 
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
-  var loadModule = function(name, url, text) {
+  function loadModule (name, url, text) {
     return $.Deferred(function(defer) {        
       var ext = url.match(/\.[a-zA-Z]+$/g)[0];
       var appcache = G.files.appcache;
@@ -279,9 +279,17 @@ define('globals', function() {
         debugger;
         if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // clean to make space
-          ls.clean(function(key) {
-            return /^model\:/.test(key);
-          });
+          var appModelRegexp = G.appModelRegExp,
+              thisAppModelRegexp = G.currentAppModelRegExp,
+              numRemoved = ls.clean(function(key) {
+                return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
+              });
+          
+          if (!numRemoved) {
+            ls.clean(function(key) {
+              return /^model\:/.test(key);
+            });
+          }
           
           if (!ls.cleaning) { // TODO: unhack this garbage
             ls.cleaning = true;
@@ -299,13 +307,19 @@ define('globals', function() {
     },
     
     clean: function(test) {
-      var cleaning = this.cleaning;
+      var cleaning = this.cleaning,
+          numRemoved = 0;
+      
       this.cleaning = true;
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
-        if (!test || test(key))
+        if (!test || test(key)) {
           G.localStorage.del(key);
-      }      
+          numRemoved++;
+        }
+      }  
+      
+      return numRemoved;
     },
     
     nukeScripts: function() {
@@ -1219,6 +1233,17 @@ define('globals', function() {
   }  
 
   G.apiUrl = G.serverName + '/api/v1/';
+  (function() {
+    var path = window.location.pathname,
+        appPath = path.slice(path.lastIndexOf('/') + 1);
+        devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
+        regex = devVoc + appPath + '\/[^\/]*$';
+    
+    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
+    G.currentAppRegExp      = new RegExp(regex);
+    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);
+  })();
+
   var c = G.commonTypes, d = G.defaultVocPath;
   for (var type in c) {
     c[type] = G.defaultVocPath + c[type];
