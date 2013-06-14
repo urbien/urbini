@@ -480,6 +480,13 @@ define('resourceManager', [
       return names._items ? _.contains(names._items, name) : names.contains(name);
     },
     
+    getObjectStoreNames: function() {
+      var db = RM.db,
+          names = db && db.objectStoreNames;
+      
+      return names && names._items ? names._items : names;
+    },
+    
     defaultOptions: {keyPath: prepPropNameForDB('_uri'), autoIncrement: false},
     DB_NAME: G.serverName,
     runTask: function() {
@@ -516,20 +523,51 @@ define('resourceManager', [
         RM.db = null;
       });
     },
-    
+
+    cleanDatabase: function() {
+      debugger;
+      G.log(RM.TAG, 'info', 'cleaning db');
+      var names = this.getObjectStoreNames(),
+          dfd = $.Deferred(),
+          promise = dfd.promise(),
+          moduleStoreName = MODULE_STORE.name,
+          transaction;
+      
+      promise.done(function() {
+        G.log(RM.TAG, 'db', 'cleaned db, nuked all but modules store');
+        RM.databaseCompromised = false;
+      }).fail(function() {
+        G.log(RM.TAG, ['error', 'db'], 'failed to clean db');
+        debugger;
+      });
+      
+      var prereqs = [];
+      if (names) {
+        var toKill = _.filter(names, function(name) {
+          return name !== moduleStoreName;
+        });
+        
+        RM.runTask(function() {
+          RM.openDB({toKill: toKill}).done(this.resolve).fail(this.reject);
+        }, {name: "Clean DB"}).done(dfd.resolve).fail(dfd.reject);
+      }
+      else
+        dfd.resolve();
+      
+      return promise;
+    },
+
     /**
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
     openDB: function(options) {
       if (G.databaseCompromised) {
-        G.log(RM.TAG, 'db', 'user changed, deleting database');
+        G.log(RM.TAG, 'db', 'user changed, cleaning database');
         var dfd = $.Deferred();
-        var dbPromise = RM.deleteDatabase().done(function(crap, event) {
-          G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
+        var dbPromise = RM.cleanDatabase().done(function(crap, event) {
           RM.openDB(options).done(dfd.resolve).fail(dfd.reject);
         }).fail(function(error, event) {
           RM.openDB(options).done(dfd.resolve).fail(dfd.reject); // try again?
-          G.log(RM.TAG, 'db', 'failed to delete database');
         }).progress(function(db, event) {
           RM.upgradeDB(options).done(dfd.resolve).fail(dfd.reject);;
         });
