@@ -22,7 +22,7 @@ define('views/MapView', [
       var self = this;
           dfds = [],
           readyDfd = $.Deferred(),
-          modulesDfd = require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css']);
+          modulesDfd = U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css']);
       
 //      if (this.collection && !this.vocModel.derived && this.collection.params['-layer']) {
 //        var aggDfd = $.Deferred();

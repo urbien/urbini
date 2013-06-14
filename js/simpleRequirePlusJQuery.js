@@ -9576,6 +9576,10 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     $.extend(config, cfg);
   };
   
+  require.getConfig = function() {
+    return config;
+  };
+  
   define.amd = {
     jQuery: true
   };  

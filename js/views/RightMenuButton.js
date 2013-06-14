@@ -23,7 +23,7 @@ define('views/RightMenuButton', [
     
     menu: function(e) {
       Events.stopEvent(e);
-      require('views/RightMenuPanel', function(RightMenuPanel) {
+      U.require('views/RightMenuPanel', function(RightMenuPanel) {
         var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
         menuPanel.render();        
       }.bind(this));

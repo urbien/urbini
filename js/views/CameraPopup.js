@@ -54,7 +54,7 @@ define('views/CameraPopup', [
       }
       
       if (this.isVideo || this.hasAudio) {
-        require(req).done(function(W, R) {
+        U.require(req).done(function(W, R) {
           if (this.isVideo) {
             Whammy = W;
             Recorder = R;

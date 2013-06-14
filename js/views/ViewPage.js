@@ -61,7 +61,7 @@ define('views/ViewPage', [
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       if (viewType) {
-        require(viewType, function(viewMod) {
+        U.require(viewType, function(viewMod) {
           self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
           self.readyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
@@ -130,7 +130,7 @@ define('views/ViewPage', [
         }
 
         this.whenDoneLoading(function() {          
-          require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
+          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
             Voc.getModels(friendType).done(function() {              
               var friendProps = {};
               friendProps[friend1] = friendProps[friend2] = uri;

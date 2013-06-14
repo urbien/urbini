@@ -101,7 +101,7 @@ define('views/Header', [
       this.buttonViews = {};
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
-      require(reqdButtons, function() {
+      U.require(reqdButtons, function() {
         var btns = arguments;
         var i = 0;
         for (var btn in buttons) {

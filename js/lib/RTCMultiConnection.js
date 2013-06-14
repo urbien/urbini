@@ -1182,6 +1182,7 @@
                     FileSaver.SaveToDisk(content.join(''), data.name);
                     if (config.onFileReceived)
                         config.onFileReceived(data.name);
+                    
                     content = [];
                 }
             }

@@ -67,7 +67,7 @@ define('views/EditView', [
 
       var codemirrorDfd = $.Deferred(function(defer) {
         if (self.isCode) {
-          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
             defer.resolve();
           });
         }
@@ -168,7 +168,7 @@ define('views/EditView', [
 //        return;
 //      }
       
-      require('views/CameraPopup').done(function(CameraPopup) {
+      U.require('views/CameraPopup').done(function(CameraPopup) {
         if (this.CameraPopup) {
           this.CameraPopup.destroy();
           this.stopListening(this.CameraPopup);
@@ -238,7 +238,7 @@ define('views/EditView', [
       if (_.any(scrollers, function(s) { return s.dataset.duration }))
         modules.push('mobiscroll-duration');
       
-      require(modules, function() {
+      U.require(modules, function() {
         self.loadedScrollers = true;
         self.refreshScrollers();
         if (!dontClick) {
