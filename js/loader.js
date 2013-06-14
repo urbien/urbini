@@ -534,8 +534,11 @@ define('globals', function() {
               return info.name == fullName;
             })) {
               found = true;
-              bundle._deferred = bundle._deferred || $.Deferred();
-              bundlePromises.push(bundle._deferred.promise());
+              if (bName !== 'pre') {                
+                bundle._deferred = bundle._deferred || $.Deferred();
+                bundlePromises.push(bundle._deferred.promise());
+              }
+              
               break;
             }
           }
@@ -1290,8 +1293,11 @@ require(['globals'], function(G) {
   
   var bundles = G.bundles,
       preBundle = bundles.pre,
+//      preBundleDfd = preBundle._deferred = $.Deferred(),
       postBundle = bundles.post, 
+      postBundleDfd = postBundle._deferred = $.Deferred(),
       extrasBundle = bundles.extras,
+      extrasBundleDfd = extrasBundle._deferred = $.Deferred(),
       priorities = [],
       appcache = G.files.appcache;
   
@@ -1331,8 +1337,7 @@ require(['globals'], function(G) {
 
   function loadRegular() {
     G.loadBundle(preBundle).done(function() {
-      var dfd = preBundle._deferred = preBundle._deferred || $.Deferred();
-      dfd.resolve();
+//      preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle");
       
       G.startedTask("loading modules");
@@ -1351,15 +1356,13 @@ require(['globals'], function(G) {
           App.initialize();
           G.startedTask('loading post-bundle');
           G.loadBundle(postBundle, {async: true}).done(function() {
-            var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
-            dfd.resolve();
+            postBundle._deferred.resolve();
             
             G.finishedTask('loading post-bundle');
             G.startedTask('loading extras-bundle');
             G.onAppStart().done(function() {            
               G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
-                var dfd = extrasBundle._deferred = extrasBundle._deferred || $.Deferred();
-                dfd.resolve();
+                extrasBundle._deferred.resolve();
               });
             });
           });
