@@ -1288,12 +1288,15 @@ require(['globals'], function(G) {
   var spinner = 'app init';
   G.showSpinner({name: spinner, timeout: 10000});
   
-  var bundles = G.bundles;
-  var pre = bundles.pre;
-  var priorities = [];
-  var appcache = G.files.appcache;
-  for (var type in pre) {
-    var subBundle = pre[type];
+  var bundles = G.bundles,
+      preBundle = bundles.pre,
+      postBundle = bundles.post, 
+      extrasBundle = bundles.extras,
+      priorities = [],
+      appcache = G.files.appcache;
+  
+  for (var type in preBundle) {
+    var subBundle = preBundle[type];
     for (var i = 0; i < subBundle.length; i++) {
       var module = subBundle[i];
       if (module.hasOwnProperty('priority')) {
@@ -1327,11 +1330,13 @@ require(['globals'], function(G) {
     loadRegular();
 
   function loadRegular() {
-    G.loadBundle(pre).done(function() {
+    G.loadBundle(preBundle).done(function() {
+      var dfd = preBundle._deferred = preBundle._deferred || $.Deferred();
+      dfd.resolve();
       G.finishedTask("loading pre-bundle");
       
       G.startedTask("loading modules");
-      var css = bundles.pre.css.slice();
+      var css = preBundle.css.slice();
       for (var i = 0; i < css.length; i++) {
         var cssObj = css[i];
         css[i] = cssObj.name;
@@ -1345,9 +1350,7 @@ require(['globals'], function(G) {
           G.browser = $.browser;
           App.initialize();
           G.startedTask('loading post-bundle');
-          var postBundle = bundles.post, 
-              extrasBundle = bundles.extras;
-          G.loadBundle(G.bundles.post, {async: true}).done(function() {
+          G.loadBundle(postBundle, {async: true}).done(function() {
             var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
             dfd.resolve();
             
