@@ -481,7 +481,12 @@
         }
     };
 
+    /**
+     * @param name - room name
+     * @param ... whatever else you want to send in your join event
+     */
     WebRTC.prototype.joinRoom = function(name) {
+        name = typeof name === 'string' ? {name: name} : name;
         this.connection.emit('join', name);
         this.roomName = name;
     };

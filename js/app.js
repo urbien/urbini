@@ -24,23 +24,6 @@ define('app', [
   };  
   
   // provide a promise-based interface to the SimplePush API
-  var SimplePush = {}, endpointType = 'model/social/SimplePushNotificationEndpoint';
-  _.each(['register', 'unregister', 'registrations'], function(method) {
-    SimplePush[method] = function() {
-      var args = arguments;
-      return $.Deferred(function(defer) {
-        var req = navigator.push[method];
-        req.onsuccess = function(e) {
-          defer.resolve(e.target.result);
-        };
-        
-        req.onerror = function() {
-          defer.reject.apply(defer, arguments);
-        };
-      }).promise();
-    }
-  });
-  
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;
@@ -242,7 +225,7 @@ define('app', [
       }.bind(this), 100);
     },
 
-    _registerSimplePushChannel: function(channels) {
+    _registerSimplePushChannels: function(channels) {
       channels = _.isArray(channels) ? channels : [channels];
       return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
     },
@@ -251,7 +234,7 @@ define('app', [
       return SimplePush.unregister();
     },
 
-    _registerSimplePushChannels: function(channel) {
+    _registerSimplePushChannel: function(channel) {
       return $.Deferred(function(defer) {        
         var getSPModel = Voc.getModels(spType);
         $.when(SimplePush.register(), getSPModel).done(function(endpoint) {
@@ -288,7 +271,7 @@ define('app', [
     
     _subscribeToNotifications: function(endpoints) {
       endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
-      navigator.mozSetMessageHandler('push', function(message) {
+      SimplePush.onMessage(function(message) {
         var pushEndpoint = message.pushEndpoint;
         var storedEndpoint = _.filter(endpoints, function(e) {
           return e.endpoint === pushEndpoint;
@@ -334,6 +317,12 @@ define('app', [
     },
     
     setUpSimplePush: function() {
+      U.require('simplePush').done(function() {
+        App._setUpSimplePush();
+      });
+    },
+    
+    _setUpSimplePush: function() {
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp;
           
@@ -347,7 +336,8 @@ define('app', [
       $.when(
         SimplePush.registrations(), 
         Voc.getModels()
-      ).done(function(registrations) {
+      ).done(function(channels) {
+        channels = channels || [];
         var endpointList = new ResourceList(G.currentUser.notificationEndpoints, {
           model: U.getModel(endpointType),
           query: $.param({
@@ -356,7 +346,7 @@ define('app', [
         });
         
         var toRegister = _.filter(channels, function(channel) {
-          return endpointList.where({
+          return !endpointList.where({
             channel: channel
           }).length;
         });
