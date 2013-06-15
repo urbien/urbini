@@ -236,8 +236,7 @@ define('app', [
 
     _registerSimplePushChannel: function(channel) {
       return $.Deferred(function(defer) {        
-        var getSPModel = Voc.getModels(spType);
-        $.when(SimplePush.register(), getSPModel).done(function(endpoint) {
+        $.when(SimplePush.register(), Voc.getModels(spType)).done(function(endpoint) {
           var spModel = U.getModel(spType);
           var simplePushAppEndpoint = new spModel({
             endpoint: endpoint,
