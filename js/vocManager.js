@@ -244,7 +244,7 @@ define('vocManager', [
           url: G.modelsUrl, 
           data: {models: modelsCsv}, 
           type: 'POST', 
-          timeout: 5000
+          timeout: 10000
         }, _.pick(options, 'sync'));
         
         U.ajax(ajaxSettings).done(function(data, status, xhr) {

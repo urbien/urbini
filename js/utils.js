@@ -5,8 +5,9 @@ define('utils', [
   'backbone',
   'templates',
   'cache',
-  'events'
-], function(G, _, Backbone, Templates, C, Events) {
+  'events',
+  'jqueryMobile'
+], function(G, _, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype, slice = ArrayProto.slice;
   var Blob = window.Blob;
   
@@ -60,6 +61,10 @@ define('utils', [
     return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
   };
 
+  String.prototype.capitalizeFirst = function() {
+    return this.slice(0, 1).toUpperCase() + this.slice(1);
+  };
+  
   String.prototype.splitCamelCase = function(capitalFirst) {
       // insert a space before all caps
     var split = this.replace(/([A-Z])/g, ' $1');
@@ -71,57 +76,22 @@ define('utils', [
     return this.slice(this.length - str.length) === str;
   };
   
-  // extends jQuery to check if selected collection is empty or not
-  $.fn.exist = function(){
-    return this.length > 0 ? this : false;
-  };
-
   var U = {
     TAG: 'Utils',
-    require: function(modules, callback, context) {
-      return require(modules, context ? callback.bind(context) : callback);
-    },
-    
-//    require: function(modules, callback, context) {
-//      modules = $.isArray(modules) ? modules : [modules];
-//      var mods = [], newModNames = [], newModFullNames = [];
-//      for (var i = 0; i < modules.length; i++) {
-//        var fullName = modules[i], name = fullName;
-////        if (!fullName)
-////          G.log(U.TAG, 'error', 'match undefined 1');
-//        var moduleViaPlugin = fullName.match(/\!(.*)$/);
-//        if (moduleViaPlugin) {
-//          name = moduleViaPlugin[1]; 
-//        }
-//        
-//        var mod = C.modCache[name];
-//        if (!mod) {
-//          mod = C.modCache[name] = $.Deferred();
-//          newModFullNames.push(fullName);
-//          newModNames.push(name);
-//        }
-//        
-//        mods.push(mod);
-//      }
-//      
-//      if (newModNames.length) {
-//        G.loadBundle(newModNames, function() {
-//          require(newModFullNames, function() {
-//            for (var i = 0; i < newModNames.length; i++) {
-////              var name = newModNames[i];
-////              var module = arguments[i];
-////              module.displayName = /\//.test(name) ? name.slice(name.lastIndexOf('/') + 1) : name;
-////              C.modCache[name].resolve(module);
-//              C.modCache[newModNames[i]].resolve(arguments[i]);
-//            }
-//          });
-//        });
-//      }
-//      
-//      return $.when.apply($, mods).then(function() {
-//        callback && callback.apply(context, arguments);
-//      }).promise();
-//    },
+    /**
+     * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
+     */
+    require: function(modules, callback) {
+      var dfd = $.Deferred(),
+          promise = dfd.promise(),
+          args = arguments;
+      
+      G.onModulesLoaded(modules).done(function() {
+        U.pipePromise(require.apply(require, args), dfd);
+      });
+      
+      return promise;
+    },    
     
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers;
@@ -361,8 +331,10 @@ define('utils', [
 //        hash = U.decode(hash.slice(10));
         return G.commonTypes.Jst;
       }
+      else if (hash.startsWith('home'))
+        return null;
       
-      route = hash.match('^view|menu|edit|make|chooser|chat');
+      route = hash.match(/^view|menu|edit|make|chooser|chat([a-zA-Z]+)?/);
 //      debugger;
 //      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
       if (route) {
@@ -466,11 +438,11 @@ define('utils', [
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
         return false;
-      if (prop.avoidDisplayingInEdit  || prop.avoidDisplayingOnCreate) {
-        var hash = window.location.hash;
-        if (hash.indexOf("#make") != -1  ||  hash.indexOf("#edit") != -1)
-          return false;
-      }
+      var hash = window.location.hash;
+      if (prop.avoidDisplayingInEdit  &&  hash.indexOf("#edit") != -1)
+        return false;
+      if (prop.avoidDisplayingOnCreate  &&  hash.indexOf("#make") != -1)
+        return false;
 
       var isMkResource = res.isNew();
       var isAdmin = U.isUserInRole("admin");
@@ -1013,10 +985,31 @@ define('utils', [
       if (!url)
         return name + '=' + U.encode(value);
       
+      if (_.isObject(name)) {
+        var newUrl = url,
+            params = name,
+            sort = value;
+        
+        for (var p in params) {
+          if (_.has(params, p)) {
+            newUrl = U.replaceParam(newUrl, p, params[p], value);
+          }
+        }
+        
+        return newUrl;
+      }
+        
       url = url.split('?');
       var qs = url.length > 1 ? url[1] : url[0];
       var q = U.getQueryParams(qs);
-      q[name] = value;
+      if (value)
+        q[name] = value;
+      else
+        delete q[name];
+      
+      if (!_.size(q))
+        return url[0];
+      
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
@@ -1692,8 +1685,7 @@ define('utils', [
      * @return the value of the app's App._appPath property, sth like AppName
      */
     getAppPath: function(type) {
-      var sIdx = type.lastIndexOf('/');
-      return type.slice(type.lastIndexOf('/', sIdx - 1) + 1, sIdx);
+      return type.match(/\/([^\/]+)$/)[1];
     },
 
     /**
@@ -1704,6 +1696,11 @@ define('utils', [
     },
 
     makeMobileUrl: function(action, typeOrUri, params) {
+      if (arguments.length == 1) {
+        typeOrUri = action;
+        action = 'list';
+      }
+      
       action = action || 'list';
       if (U.isModel(action))
         return U.makeMobileUrl('view', action.getUri());
@@ -1720,10 +1717,6 @@ define('utils', [
       switch (action) {
         case 'list':
           break;
-        case 'make':
-        case 'view':
-        case 'edit':
-        case 'chooser':
         default: 
           url += action + '/';
           break;
@@ -2762,9 +2755,9 @@ define('utils', [
       return !_.contains(U.synchronousTypes, type);
     },
     
-    pipe: function(defer1, defer2) {
-      defer1.done(defer2.resolve).fail(defer2.reject);
-      return defer2.promise();
+    pipePromise: function(promiseOrDeferred, deferred) {
+      promiseOrDeferred.done(deferred.resolve).fail(deferred.reject);
+      return deferred.promise();
     },
     
     trim: function(text, length) {
@@ -2933,12 +2926,101 @@ define('utils', [
     DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */',
     alert: function(options) {
       setTimeout(function() {
-        var msg = options.msg;
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, msg, !options.spinner);
+        var msg = typeof options === 'string' ? options : options.msg;
+        $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, msg, !options.spinner);
         if (!options.persist)
-          setTimeout($.mobile.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+          setTimeout($m.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
       }, options.delay || 0);
     },
+    /**
+     * @param options: specify id, header, title, img, ok, cancel, details 
+     * @example 
+     *    U.dialog({
+     *      id: 'chatRequestDialog',
+     *      header: 'Chat Invitation',
+     *      title: 'Chat with me?',
+     *      details: 'you will not regret it...',
+     *      ok: 'Accept',         // pass true to get default string 'Ok', or false to not have a button
+     *      cancel: 'Decline',    // pass true to get default string 'Cancel', or false to not have a button
+     *      img: 'http://urbien.com/path/to/img'
+     *    });
+     *  
+     */
+    dialog: function(options) {
+      var id = options.id = options.id || 'dialog' + G.nextId();
+      $('#' + id).remove();
+      var dialogHtml = U.template('genericDialogTemplate')(_.defaults(options, {
+        ok: true,
+        cancel: true
+      }));
+      
+      ($m.activePage || $(document.body)).append(dialogHtml);
+      var $dialog = $('#' + id);
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
+    },
+    
+    deposit: function(params) {
+      return $.Deferred(function(defer) {
+        var trType = G.commonTypes.Transaction;
+        U.require('vocManager').done(function(Voc) {          
+          Voc.getModels(trType).done(function() {
+            var transactionModel = U.getModel(trType);
+            var transaction = new transactionModel(params);
+            transaction.save(null, {
+              sync: !U.canAsync(trType),
+              success: function() {
+                defer.resolve(transaction);
+              },
+              error: function(trans, err, options) {
+                var err = err.responseText || err;
+                if (typeof err === 'string') {
+                  try {
+                    err = JSON.parse(err);
+                  } catch (e) {}
+                }
+                
+                defer.reject(err);
+              }
+            });
+          });
+        });
+      }).promise();;
+    },
+    
+    /**
+     * @param title - title in the header of the popup 
+     * @param options - choices, each in the form of 
+     * {
+     *   href: 'http://.....some/url', 
+     *   text: 'Link text'
+     * } 
+     */
+    optionsDialog: function(title, options) {
+      var id = 'optionsDialog' + G.nextId();
+      $('#' + id).remove();
+      _.each(options, function(option) {
+        option.id = option.id || 'option' + G.nextId();
+      });
+      
+      var dialogHtml = U.template('genericOptionsDialogTemplate')({
+        id: id,
+        title: title,
+        options: options
+      });
+
+      
+      var $dialog = ($m.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      _.each(options, function(option) {
+        if (option.action) {
+          $dialog.find('#' + option.id).click(option.action);
+        }
+      });
+      
+      $dialog.trigger('create');
+      $dialog.popup().popup("open");
+    },
+    
     removeClasses: function(element, pattern) {
       element = element instanceof $ ? element : $(element); 
       var classes = element.attr('class').split(/\s+/);
@@ -3006,8 +3088,72 @@ define('utils', [
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
     },
     getExternalFileUrl: function(uri) {
-      return G.serverName + '/' + U.getParamMap(uri).url;
-    }
+      var params = U.getParamMap(uri);
+      if (params.url)
+        return G.serverName + '/' + params.url;
+      else
+        return uri;
+    },
+    _chatRoutes: {
+      'private': 'chatPrivate',
+      'public': 'chat',
+      'lobby': 'chatLobby'
+    },
+    isChatPage: function() {
+      return /^chat/.test(U.getHash());
+    },
+    isPrivateChat: function() {
+      return U.getHash().startsWith('chatPrivate');
+    },
+    isWaitingRoom: function() {
+      return U.getHash().startsWith('chatLobby');
+    },
+    getRoute: function() {
+      var hash = U.getHash();
+      if (/[a-zA-Z]+\//.test(hash))
+        return hash.match(/([a-zA-Z]+)\//)[1];
+      else
+        return '';
+    },
+    
+    deepExtend: function(obj, source) {
+      for (var p in source) {
+        if (_.has(source, p) && !_.has(obj, p)) {
+          obj[p] = source[p];
+          continue;
+        }
+          
+        var val = source[p], 
+            org = obj[p];
+        
+        if (_.isObject(val) && _.isObject(org))
+          U.deepExtend(org, val);
+        else
+          obj[p] = val;          
+      }
+      
+      return obj;
+    },
+    
+    getCurrentLocation: function() {
+      return $.Deferred(function(defer) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var coords = position.coords;
+          position = _.extend({
+            time: position.timestamp
+          }, coords);
+          
+          position = {latitude: position.latitude, longitude: position.longitude};
+// position has several params like (accuracy, time) that are causing the error like "property 'accuracy' was not found in Urbien1"            
+//          position = U.filterObj(position, function(key, val) {
+//            return val != null  &&  (key == 'latitude' || key == 'longitude');
+//          });
+          
+          Events.trigger('location', position);
+          defer.resolve(position);
+        }, defer.reject);
+      });
+    }    
   };
 
   for (var p in U.systemProps) {

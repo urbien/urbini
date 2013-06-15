@@ -44,10 +44,14 @@ define('views/ViewPage', [
       if (!isAbout) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
-          viewType = 'views/PhotogridView';
-          this.imgDiv = 'div#resourceImageGrid';
+          var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
+          var bFeatured = U.getCloneOf(this.vocModel, 'Intersection.bFeatured')[0];
+          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
+            viewType = 'views/PhotogridView';
+            this.imgDiv = 'div#resourceImageGrid';
+          }
         }
-        else {
+        if (!this.imgDiv) {
           viewType = 'views/ResourceImageView';
           this.imgDiv = 'div#resourceImage';
         }        
@@ -68,7 +72,7 @@ define('views/ViewPage', [
 //      if (this.hasChat && !this.chat) {
 //        this.chatDfd = $.Deferred();
 //        this.chatPromise = this.chatDfd.promise();
-//        U.require('views/ChatView', function(chat) {
+//        require('views/ChatView', function(chat) {
 //          self.addChild('chat', new chat(_.extend({el: this.$('#chatbox'), video: true}, commonParams)));
 //          self.chatDfd.resolve();
 //        });
@@ -169,7 +173,7 @@ define('views/ViewPage', [
 //        });
 //        
 //        if (this.inlineXBacklinks.length) {
-//          U.require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
+//          require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
 //            _.each(self.inlineXBacklinks, function() {                
 //              self.friends = new ResourceList(null, {
 //                params: {
@@ -256,8 +260,8 @@ define('views/ViewPage', [
       if (this.isPurchasable) 
         views['div#buyGroup'] = this.buyGroup;         
       
-      var isGeo = this.isGeo();
-      this.headerButtons.aroundMe = isGeo;
+//      var isGeo = this.isGeo();
+//      this.headerButtons.aroundMe = isGeo;
       
       
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});

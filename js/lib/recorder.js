@@ -1,35 +1,25 @@
 define('lib/recorder', ['globals', 'lib/recorderWorker'], function(G) {
-
   var WORKER_PATH = G.serverName + '/js/lib/recorderWorker.js';
 
-  var Recorder = function(source, cfg) {
+  var Recorder = function(source, cfg){
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
     this.context = source.context;
     this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
     var worker = new Worker(config.workerPath || WORKER_PATH);
-    var recording = false,
-        currCommand = 'init',
-        currCallback;
-    
     worker.postMessage({
-      command: currCommand,
+      command: 'init',
       config: {
         sampleRate: this.context.sampleRate
       }
     });
-
-    worker.onmessage = function(e){
-      var blob = e.data;
-      currCallback(blob);
-      console.log(currCommand);
-    }
+    var recording = false,
+      currCallback;
 
     this.node.onaudioprocess = function(e){
       if (!recording) return;
-      currCommand = 'record';
       worker.postMessage({
-        command: currCommand,
+        command: 'record',
         buffer: [
           e.inputBuffer.getChannelData(0),
           e.inputBuffer.getChannelData(1)
@@ -54,25 +44,27 @@ define('lib/recorder', ['globals', 'lib/recorderWorker'], function(G) {
     }
 
     this.clear = function(){
-      currCommand = 'clear';
-      worker.postMessage({ command: currCommand });
+      worker.postMessage({ command: 'clear' });
     }
 
     this.getBuffers = function(cb) {
       currCallback = cb || config.callback;
-      currCommand = 'getBuffers';
-      worker.postMessage({ command: currCommand })
+      worker.postMessage({ command: 'getBuffers' })
     }
 
     this.exportWAV = function(cb, type){
       currCallback = cb || config.callback;
       type = type || config.type || 'audio/wav';
       if (!currCallback) throw new Error('Callback not set');
-      currCommand = 'exportWAV';
       worker.postMessage({
-        command: currCommand,
+        command: 'exportWAV',
         type: type
       });
+    }
+
+    worker.onmessage = function(e){
+      var blob = e.data;
+      currCallback(blob);
     }
 
     source.connect(this.node);
@@ -89,6 +81,5 @@ define('lib/recorder', ['globals', 'lib/recorderWorker'], function(G) {
     link.dispatchEvent(click);
   }
 
-//  window.Recorder = Recorder;
   return Recorder;
 });

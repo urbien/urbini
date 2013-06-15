@@ -2,8 +2,6 @@
 define('app', [
   'globals',
   'backbone',
-//  'fileCache!jqueryMobile',
-  'jqueryMobile',
   'templates', 
   'utils', 
   'events',
@@ -13,7 +11,7 @@ define('app', [
   'resourceManager',
   'router',
   'collections/ResourceList'
-], function(G, Backbone, jqm, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
+], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   
@@ -219,6 +217,7 @@ define('app', [
         
         G.app = App;
         App.started = true;
+        G.log(App.TAG, "error", navigator.push + ' ' + navigator.mozPush + ' ' + navigator.pushNotification + ' ' + navigator.mozPushNotification );
         if (window.location.hash == '#_=_') {
   //        debugger;
           G.log(App.TAG, "info", "hash stripped");
@@ -416,7 +415,7 @@ define('app', [
     
     setupLoginLogout: function() {
       Events.on('req-login', function(options) {
-        options = _.extend({online: 'Login through a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+        options = _.extend({online: 'Login via a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
         if (!G.online) {
           Errors.offline();
           return;
@@ -470,6 +469,7 @@ define('app', [
       
       var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
       Events.on('logout', function(options) {
+        debugger;
         options = _.extend({}, defaults, options);
         var url = G.serverName + '/j_security_check?j_signout=true';
         $.get(url, function() {
@@ -525,6 +525,16 @@ define('app', [
 //      window.require = function(modules, callback, context) {
     },
     
+    setupMisc: function() {
+      Events.on('location', function(position) {
+        var prev = G.currentUser.location;
+        if (prev)
+          G.currentUser.previousLocation = prev;
+        
+        G.currentUser.location = position;        
+      });
+    },
+    
     setupRTCCallMonitor: function() {
       G.callInProgress = null;
       Events.on('newRTCCall', function(rtcCall) {
@@ -533,10 +543,24 @@ define('app', [
         
         G.callInProgress = rtcCall;
       });
-      
+
+      Events.on('updateRTCCall', function(id, update) {
+        var call = G.callInProgress;
+        if (call && call.id == id)
+          _.extend(call, update);
+      });
+
       Events.on('endRTCCall', function(rtcCall) {
         if (G.callInProgress == rtcCall)
           G.callInProgress = null;
+      });
+      
+      Events.on('localVideoMonitor:on', function(stream) {
+        G.localVideoMonitor = stream;
+      });
+      
+      Events.on('localVideoMonitor:off', function() {
+        G.localVideoMonitor = null;
       });
     },
     

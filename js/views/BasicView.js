@@ -4,8 +4,9 @@ define('views/BasicView', [
   'backbone',
   'utils',
   'templates',
-  'events'
-], function(G, _Backbone, U, Templates, Events) {
+  'events',
+  'jqueryMobile'
+], function(G, _Backbone, U, Templates, Events, $m) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
@@ -81,7 +82,9 @@ define('views/BasicView', [
           return this;
         }
       }.bind(this);
-      
+
+      this._activeDfd = $.Deferred();
+      this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
         _.each(this.children, function(child) {
@@ -103,19 +106,86 @@ define('views/BasicView', [
           
           method.apply(this, args);
           this.finish();
-        }        
+        }
+        
+        if (active) {
+          this._activeDfd.resolve();
+          this._inactiveDfd = $.Deferred();
+        }
+        else {
+          this._inactiveDfd.resolve();
+          this._activeDfd = $.Deferred();
+        }
       }.bind(this));
 ////////// comment end
       
+      var self = this;
+      if (this.isPageView()) {
+        Events.on('headerMessage', function(data) {
+          var error = data.error,
+              errMsg = error ? error.msg || error : null,
+              info = data.info,
+              infoMsg = info ? info.msg || info : null,
+              errorBar = self.$('div#headerMessageBar');
+          
+          if (!errorBar.length)
+            return;
+          
+          errorBar.html("");
+          errorBar.html(U.template('headerErrorBar')({error: errMsg, info: infoMsg, style: "background-color:#FFFC40;"}));
+
+          var hash = U.getHash(), orgHash = hash;
+          if (error && !error.glued)
+            hash = U.replaceParam(hash, {'-error': null});
+          if (info && !info.glued)
+            hash = U.replaceParam(hash, {'-info': null});
+          
+          if (hash != orgHash)
+            Events.trigger('navigate', hash, {trigger: false, replace: true});
+        });
+        
+        this.whenDoneLoading(function() {
+          var gluedError = self.hashParams['-gluedError'],
+              error = gluedError || self.hashParams['-error'],
+              gluedInfo = self.hashParams['-gluedInfo'],
+              info = gluedInfo || self.hashParams['-info'];
+          
+          var data = {};
+          if (info) {
+            data.info = {
+              msg: info,
+              glued: !!gluedInfo
+            };
+          }
+          if (error) {
+            data.error = {
+              msg: error,
+              glued: !!gluedError
+            };
+          }
+          
+          if (_.size(data))
+            Events.trigger('headerMessage', data);
+        });        
+      }
+
+      var self = this;
       _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
           var event = listener.slice(2);
           window.addEventListener(event, function() {
-            this.$el.trigger(event);
-          }.bind(this), false);
+            self.onActive(function() {
+              self['_' + event](event);
+            });
+          }, false);
+          
+          self['_' + event] = _.debounce(function(e) {
+            G.log(self.TAG, 'events', e);
+            self.$el.trigger(e);
+          }, 100);          
         }
-      }.bind(this));
-      
+      });
+
       return this;
     }
   }, {
@@ -161,7 +231,7 @@ define('views/BasicView', [
     },
     
     scrollToTop: function() {
-      $.mobile.silentScroll(0);
+      $m.silentScroll(0);
     },
     
     getTemplate: function(templateName, type) {
@@ -212,6 +282,14 @@ define('views/BasicView', [
         scrollTop: this.pageView.$el.height()
       }, 200);
     },
+
+    onInactive: function(callback) {
+      this._inactiveDfd.done(callback);
+    },
+
+    onActive: function(callback) {
+      this._activeDfd.done(callback);
+    },
     
     addChild: function(name, view) {
       this.children = this.children || {};
@@ -235,6 +313,7 @@ define('views/BasicView', [
     },
     
     isPageView: function(view) {
+      view = view || this;
       return view && view.cid === this.getPageView().cid;
     },
     
@@ -351,8 +430,12 @@ define('views/BasicView', [
 //      this.$el.page();
     },
     
+    isActivePage: function() {
+      return $m.activePage === this.pageView.$el;
+    },
+    
     showLoadingIndicator: function(timeout) {
-      $.mobile.loading('show');
+      $m.loading('show');
       // in case if fetch failed to invoke a callback
       // then hide loading indicator after 3 sec.
       if (timeout) {
@@ -366,7 +449,7 @@ define('views/BasicView', [
       if (typeof timeoutId !== 'undefined')
         clearTimeout(timeoutId);
       
-      $.mobile.loading('hide');
+      $m.loading('hide');
     }
   },
   {

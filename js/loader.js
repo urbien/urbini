@@ -1,10 +1,46 @@
-var __started = new Date();                    
+(function(window, doc, undefined) {
+var __started = new Date();
+
+// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
+// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
+$.extend({
+  whenAll: function() {
+    var dfd = $.Deferred(),
+        len = arguments.length,
+        counter = 0,
+        state = "resolved",
+        resolveOrReject = function() {
+            if(this.state() === "rejected"){
+                state = "rejected";
+            }
+            counter++;
+  
+            if(counter === len) {
+                dfd[state === "rejected"? "reject": "resolve"]();   
+            }
+  
+        };
+  
+  
+     $.each(arguments, function(idx, item) {
+         item.always(resolveOrReject); 
+     });
+  
+    return dfd.promise();    
+  }
+});
+
 //'use strict';
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
+
+  var G = Lablz,
+      browser = G.browser = $.browser;
   
+  browser.chrome = $.browser.webkit && !!window.chrome;
+  browser.safari = $.browser.webkit && !window.chrome;
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection
@@ -14,11 +50,10 @@ define('globals', function() {
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
     
-    if (Lablz.minify) {
-      var nav = Lablz.navigator;
-      if (nav.isChrome) // || nav.isSafari)
-        Lablz.inject(text);
-      else if (nav.isFirefox)
+    if (G.minify) {
+      if (browser.chrome) // || nav.isSafari)
+        G.inject(text);
+      else if (browser.mozilla)
         return window.eval(text);
   //      return window.eval.call({}, text);  
       else // Safari
@@ -28,8 +63,7 @@ define('globals', function() {
       return window.eval(text);
   }
   
-  var doc = document,
-      $head = $('head'),
+  var $head = $('head'),
       head = $head[0],
       $body = $('body'),
       body = $body[0];
@@ -45,7 +79,6 @@ define('globals', function() {
     }
   };
 
-  var G = Lablz;
   G.localTime = new Date().getTime();
   G.online = !!navigator.onLine;
   
@@ -60,7 +93,7 @@ define('globals', function() {
   }, false);
 
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
-  var loadModule = function(name, url, text) {
+  function loadModule (name, url, text) {
     return $.Deferred(function(defer) {        
       var ext = url.match(/\.[a-zA-Z]+$/g)[0];
       var appcache = G.files.appcache;
@@ -85,11 +118,11 @@ define('globals', function() {
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
         default:
-          if (G.navigator.isIE) 
+          if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
           text += '\n//@ sourceMappingURL=' + url + '.map';
           text += '\n//@ sourceURL=' + url;
-          if (G.navigator.isIE) 
+          if (browser.msie) 
             text += '*/\n';
 
           addModule(text);
@@ -145,7 +178,7 @@ define('globals', function() {
           } catch (err) {
             debugger;
             defer.reject();
-            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from LS', err);
+            G.log(G.TAG, ['error', 'cache'], 'failed to load', url, 'from local storage', err);
             G.localStorage.del(url);
             loadedCached = false;
           }
@@ -156,7 +189,7 @@ define('globals', function() {
         return;
       
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
-      G.loadBundle(name, function() {
+      G.loadBundle(name).done(function() {
         if (G.modules[url])
           loadModule(name, url, G.modules[url]).done(defer.resolve);
         else {
@@ -246,9 +279,17 @@ define('globals', function() {
         debugger;
         if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
           // clean to make space
-          ls.clean(function(key) {
-            return /^model\:/.test(key);
-          });
+          var appModelRegexp = G.appModelRegExp,
+              thisAppModelRegexp = G.currentAppModelRegExp,
+              numRemoved = ls.clean(function(key) {
+                return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
+              });
+          
+          if (!numRemoved) {
+            ls.clean(function(key) {
+              return /^model\:/.test(key);
+            });
+          }
           
           if (!ls.cleaning) { // TODO: unhack this garbage
             ls.cleaning = true;
@@ -266,13 +307,19 @@ define('globals', function() {
     },
     
     clean: function(test) {
-      var cleaning = this.cleaning;
+      var cleaning = this.cleaning,
+          numRemoved = 0;
+      
       this.cleaning = true;
       for (var i = localStorage.length - 1; i > -1; i--) {
         var key = localStorage.key(i);
-        if (!test || test(key))
+        if (!test || test(key)) {
           G.localStorage.del(key);
-      }      
+          numRemoved++;
+        }
+      }  
+      
+      return numRemoved;
     },
     
     nukeScripts: function() {
@@ -313,16 +360,8 @@ define('globals', function() {
   
   G.localStorage.putAsync = G.localStorage.put.async(100);
   G.localStorage.cleanAsync = G.localStorage.clean.async(100);
-  var n = G.navigator = {
-    isOpera: !!(window.opera && window.opera.version),  // Opera 8.0+
-    isFirefox: testCSS('MozBoxSizing'),                 // FF 0.8+
-    isSafari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
-    // At least Safari 3+: "[object HTMLElementConstructor]"
-    isIE: /*@cc_on!@*/false || testCSS('msTransform')  // At least IE6
-  };
+  // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
   
-  n.isChrome = !n.isSafari && testCSS('WebkitTransform');  // Chrome 1+
-    
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
   }
@@ -332,8 +371,58 @@ define('globals', function() {
   }
 
   var moreG = {
+    _appStartDfd: $.Deferred(),
+    onAppStart: function() {
+      return G._appStartDfd.promise();
+    },
+    putCached: function(url, data, source) {
+      return $.Deferred(function(defer) {        
+        if (source === 'localStorage') {
+          G.localStorage.put(url, data);
+          defer.resolve();
+        }
+        else if (source === 'indexedDB') {
+          G.onAppStart().done(function() {            
+            G.ResourceManager.$db.objectStore('modules').put({
+              url: url, 
+              data: data
+            }).done(defer.resolve).fail(defer.reject);
+          });
+        }
+      }).promise();
+    },
+    getCached: function(url, source) {
+      return $.Deferred(function(defer) {        
+        if (source === 'localStorage') {
+          var result = G.localStorage.get(url);
+          if (result)
+            defer.resolve(result);
+          else
+            defer.reject();
+        }
+        else if (source === 'indexedDB') {
+          var RM = G.ResourceManager;
+          if (!RM.storeExists('modules'))
+            return defer.reject();
+          
+          var $db = RM && RM.$db;
+          if (!$db)
+            return defer.reject();
+          
+          RM.runTask(function() {
+            defer.always(this.resolve);
+            $db.objectStore('modules').get(url).done(function(result) {
+              if (result)
+                defer.resolve(result.data)
+              else
+                defer.reject();
+            }).fail(defer.reject);
+          });
+        }
+      }).promise();
+    },
     isUsingDBShim: (function() {
-      var using = G.navigator.isChrome || !window.indexedDB;
+      var using = browser.chrome || !window.indexedDB;
       if (using)
         console.debug('using indexeddb shim');
       return using;
@@ -357,7 +446,7 @@ define('globals', function() {
           navigator.mozGetUserMedia ||
           navigator.msGetUserMedia));
       
-      m && m.bind(navigator);
+//      m && m.bind(navigator);
       return !!m;
     })(),
     showSpinner: function(options) {
@@ -425,19 +514,31 @@ define('globals', function() {
       G.online = online;
     }, // will fill out in app.js
     onModulesLoaded: function(modules) {
-      var bundlePromises = [];
-      var allBundles = G.bundles;
+      var bundlePromises = [],
+          missing = [],
+          allBundles = G.bundles,
+          baseUrlLength = require.getConfig().baseUrl.length,
+          modules = typeof modules === 'string' ? [modules] : modules;
+      
       _.each(modules, function(module) {
+        var found = false,
+            fullName = require.toUrl(module).slice(baseUrlLength);
+        
+        if (/\.js$/.test(fullName))
+          fullName = fullName.slice(0, fullName.length - 3);
+        
         for (var bName in G.bundles) {
           var bundle = G.bundles[bName];
-          var found = false;
           for (var type in bundle) {
             if (_.any(bundle[type], function(info) {
-              return info.name == module;
+              return info.name == fullName;
             })) {
               found = true;
-              bundle._deferred = bundle._deferred || $.Deferred();
-              bundlePromises.push(bundle._deferred.promise());
+              if (bName !== 'pre') {                
+                bundle._deferred = bundle._deferred || $.Deferred();
+                bundlePromises.push(bundle._deferred.promise());
+              }
+              
               break;
             }
           }
@@ -445,8 +546,15 @@ define('globals', function() {
           if (found)
             break;
         }
+        
+        if (!found)
+          missing.push(fullName);
       });
       
+      if (missing.length) {
+        debugger; // shouldn't happen
+        bundlePromises.push(G.loadBundle(missing));
+      }
       
       return $.when.apply($, bundlePromises);
     },
@@ -474,6 +582,7 @@ define('globals', function() {
     oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
     classMap: G.classMap || {},
+    appUrl: G.serverName + '/' + G.pageRoot,
     sqlUrl: G.serverName + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
@@ -491,7 +600,8 @@ define('globals', function() {
       JS: 'system/designer/JS',
       Css: 'system/designer/Css',
       Grab: 'model/social/Grab',
-      AppInstall: 'model/social/AppInstall'
+      AppInstall: 'model/social/AppInstall',
+      Transaction: 'aspects/commerce/Transaction'
     },
 //    commonTypes: {
 //      model: {
@@ -679,7 +789,7 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (!G.trace.ON || !console || !console.log)
+      if (!G.trace.ON || !console || !console.log || !type)
         return;
       
       
@@ -786,7 +896,11 @@ define('globals', function() {
         q.shift().resolve(worker);
     },
     
-    pruneBundle: function(bundle) {
+    pruneBundle: function(bundle, options) {
+      options = options || {};
+      var source = options.source || 'localStorage';
+      var pruneDfd = $.Deferred();
+      var prunePromise = pruneDfd.promise();
       var modules = [];
       var appcache = G.files.appcache;
       var bType = Object.prototype.toString.call(bundle);
@@ -845,41 +959,53 @@ define('globals', function() {
         }
       }
       
-      if (!hasLocalStorage || !modules.length)
-        return modules;
+      if (!hasLocalStorage)
+        source = 'indexedDB';
+      
+      if (!modules.length)
+        pruneDfd.resolve(modules);
       
       var minify = G.minify,
           def = G.minifyByDefault;
 
-      var pruned = [];
-      for (var i = 0; i < modules.length; i++) {
-        var dmInfo = modules[i];
+      var pruned = [],
+          cachedPromises = [];
+      
+      $.each(modules, function(i, dmInfo) {
         var url;
         for (var n in dmInfo) {
           url = n;
           break;
         }
         
-        var metadata = G.localStorage.get(getMetadataURL(url));
-        if (metadata) {
-          metadata = JSON.parse(metadata);
+        var cachedDfd = $.Deferred();
+        cachedPromises.push(cachedDfd.promise());
+        var metadataPromise = G.getCached(getMetadataURL(url), source);
+        metadataPromise.done(function(metadata) {
+          metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
           var dateSaved = metadata.dateModified;
           var minified = metadata.minified;
           var dateModified = dmInfo[url];
           if (dateModified <= dateSaved) {
-            var skip = false;
+            var fetch = false;
             if (G.isMinifiable(url)) {
               if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
                   (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
                 // wrong minification mode on this file
-                skip = true;
+                fetch = true;
               }
             }
-            
-            if (!skip) {
-              var text = G.localStorage.get(url);
-              G.modules[url] = text;
-              continue;
+
+            if (!fetch) {
+              G.getCached(url, source).done(function(text) {                
+                G.modules[url] = text;
+                cachedDfd.resolve();
+              }).fail(function() {
+                pruned.push(url);
+                cachedDfd.resolve();
+              }); //G.localStorage.get(url);
+              
+              return;
             }
           }
           else {
@@ -888,108 +1014,131 @@ define('globals', function() {
               
 //            G.localStorage.del(url);
           }
-        }
-        
-        pruned.push(url);
-      }
+          
+          pruned.push(url);
+          cachedDfd.resolve();
+        }).fail(function() {          
+          pruned.push(url);
+          cachedDfd.resolve();
+        });        
+      });
     
-      return pruned;
+      $.when.apply($, cachedPromises).done(function() {
+        pruneDfd.resolve(pruned);
+      });
+      
+      return prunePromise;
     },
     
-    loadBundle: function(bundle, callback, async) {
-      var pruned = G.pruneBundle(bundle);
-      if (!pruned.length) {
-        G.log('init', 'cache', 'bundle was cached', bundle);
-        if (callback) 
-          callback();
+    loadBundle: function(bundle, options) {
+      var bundleDfd = $.Deferred(),
+          bundlePromise = bundleDfd.promise(),
+          options = options || {
+            async: false
+          },
+          source = options.source = options.source || 'localStorage',
+          async = options.async;
+      
+      G.pruneBundle(bundle, options).done(function(pruned) {
+        if (!pruned.length) {
+          G.log('init', 'cache', 'bundle was cached', bundle);
+          bundleDfd.resolve();
+          return bundlePromise;
+        }
         
-        return;
+        var data = {modules: pruned.join(',')};
+  //      if (typeof G.minify !== 'undefined')
+  //        data.minify = G.minify;
         
-      }
-      
-      var data = {modules: pruned.join(',')};
-//      if (typeof G.minify !== 'undefined')
-//        data.minify = G.minify;
-      
-      var useWorker = G.hasWebWorkers && async;
-      var getBundleReq = {
-        url: G.serverName + "/backboneFiles", 
-        type: 'POST',
-        data: data,
-        dataType: 'JSON'
-      };
-      
-      var complete = function(resp) {
+        var useWorker = G.hasWebWorkers && async;
+        var getBundleReq = {
+          url: G.serverName + "/backboneFiles", 
+          type: 'POST',
+          data: data,
+          dataType: 'JSON'
+        };
+        
+        var complete = function(resp) {
+          if (useWorker) {
+            if (resp.status == 304)
+              bundleDfd.resolve();
+            else
+              resp = resp.data;
+          }
+          else {
+            try {
+              resp = JSON.parse(resp);
+            } catch (err) {
+            }
+          }
+          
+          var newModules = {};
+          if (resp && !resp.error && resp.modules) {
+            for (var i = 0; i < resp.modules.length; i++) {
+              var m = resp.modules[i];
+              for (var name in m) {
+                var minIdx = name.indexOf('.min.js');
+                var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+                G.modules[mName] = newModules[mName] = m[name];
+                break;
+              }
+            }
+          }
+        
+//          if (hasLocalStorage) {
+            setTimeout(function() {
+              for (var url in newModules) {
+                var text = newModules[url];
+//                G.localStorage.put(url, text);
+//                G.localStorage.put(getMetadataURL(url), {
+//                  dateModified: G.serverTime,
+//                  minified: G.isMinified(url, text)
+//                });
+                G.putCached(url, text, source);
+                G.putCached(getMetadataURL(url), {
+                  dateModified: G.serverTime,
+                  minified: G.isMinified(url, text)
+                }, source);
+              }
+            }, 100);
+//          }
+          
+          bundleDfd.resolve();
+        }
+  
         if (useWorker) {
-          if (resp.status == 304)
-            callback && callback();
-          else
-            resp = resp.data;
+          var workerPromise = G.getXhrWorkerPromise();
+          workerPromise.done(function(xhrWorker) {          
+            xhrWorker.onmessage = function(event) {
+              try {
+                G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+                complete(event.data);
+              } finally {
+                G.recycleXhrWorker(this);
+              }
+            };
+            
+            xhrWorker.onerror = function(err) {
+    //          debugger;
+              try {
+                G.log(G.TAG, 'error', JSON.stringify(err));
+              } finally {
+                G.recycleXhrWorker(this);
+              }
+              
+              bundleDfd.reject(err);
+            };
+            
+            xhrWorker.postMessage(getBundleReq);  
+          });
         }
-        else {
-          try {
-            resp = JSON.parse(resp);
-          } catch (err) {
-          }
+        else {      
+          getBundleReq.success = complete; 
+          G.sendXhr(getBundleReq);
         }
-        
-        var newModules = {};
-        if (resp && !resp.error && resp.modules) {
-          for (var i = 0; i < resp.modules.length; i++) {
-            var m = resp.modules[i];
-            for (var name in m) {
-              var minIdx = name.indexOf('.min.js');
-              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
-              G.modules[mName] = newModules[mName] = m[name];
-              break;
-            }
-          }
-        }
+      });
       
-        if (hasLocalStorage) {
-          setTimeout(function() {
-            for (var url in newModules) {
-              var text = newModules[url];
-              G.localStorage.put(url, text);
-              G.localStorage.put(getMetadataURL(url), {
-                dateModified: G.serverTime,
-                minified: G.isMinified(url, text)
-              });
-            }
-          }, 100);
-        }
-        
-        if (callback) callback();
-      }
-
-      if (useWorker) {
-        var workerPromise = G.getXhrWorkerPromise();
-        workerPromise.done(function(xhrWorker) {          
-          xhrWorker.onmessage = function(event) {
-            try {
-              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-              complete(event.data);
-            } finally {
-              G.recycleXhrWorker(this);
-            }
-          };
-          
-          xhrWorker.onerror = function(err) {
-  //          debugger;
-            try {
-              G.log(G.TAG, 'error', JSON.stringify(err));
-            } finally {
-              G.recycleXhrWorker(this);
-            }
-          };
-          
-          xhrWorker.postMessage(getBundleReq);  
-        });
-      }
-      else {      
-        getBundleReq.success = complete; 
-        G.sendXhr(getBundleReq);
-      }        
+      return bundlePromise;
     },
     
     setCookie: function(name, value, exdays) {
@@ -1031,9 +1180,9 @@ define('globals', function() {
     },
     
     requireConfig: {
-//      baseUrl: 'js',
       paths: {
         mobiscroll: 'lib/mobiscroll-datetime-min',
+        simplewebrtc: 'lib/simplewebrtc',
         jqmConfig: 'jqm-config',
         jqueryMobile: 'lib/jquery.mobile-1.3.1',
         underscore: 'lib/underscore',
@@ -1088,6 +1237,17 @@ define('globals', function() {
   }  
 
   G.apiUrl = G.serverName + '/api/v1/';
+  (function() {
+    var path = window.location.pathname,
+        appPath = path.slice(path.lastIndexOf('/') + 1);
+        devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
+        regex = devVoc + appPath + '\/[^\/]*$';
+    
+    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
+    G.currentAppRegExp      = new RegExp(regex);
+    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);
+  })();
+
   var c = G.commonTypes, d = G.defaultVocPath;
   for (var type in c) {
     c[type] = G.defaultVocPath + c[type];
@@ -1124,7 +1284,7 @@ define('globals', function() {
     G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
   
   require.config(G.requireConfig);   
-  return Lablz;
+  return G;
 });
 
 require(['globals'], function(G) {
@@ -1132,12 +1292,18 @@ require(['globals'], function(G) {
   var spinner = 'app init';
   G.showSpinner({name: spinner, timeout: 10000});
   
-  var bundles = G.bundles;
-  var pre = bundles.pre;
-  var priorities = [];
-  var appcache = G.files.appcache;
-  for (var type in pre) {
-    var subBundle = pre[type];
+  var bundles = G.bundles,
+      preBundle = bundles.pre,
+//      preBundleDfd = preBundle._deferred = $.Deferred(),
+      postBundle = bundles.post, 
+      postBundleDfd = postBundle._deferred = $.Deferred(),
+      extrasBundle = bundles.extras,
+      extrasBundleDfd = extrasBundle._deferred = $.Deferred(),
+      priorities = [],
+      appcache = G.files.appcache;
+  
+  for (var type in preBundle) {
+    var subBundle = preBundle[type];
     for (var i = 0; i < subBundle.length; i++) {
       var module = subBundle[i];
       if (module.hasOwnProperty('priority')) {
@@ -1171,49 +1337,52 @@ require(['globals'], function(G) {
     loadRegular();
 
   function loadRegular() {
-    G.loadBundle(pre, function() {
+    G.loadBundle(preBundle).done(function() {
+//      preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle");
       
       G.startedTask("loading modules");
-      var css = bundles.pre.css.slice();
+      var css = preBundle.css.slice();
       for (var i = 0; i < css.length; i++) {
         var cssObj = css[i];
         css[i] = cssObj.name;
       }
       
-      require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {        
-        console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
-        G.finishedTask("loading modules");
-        G.browser = $.browser;
-        App.initialize();
-        G.startedTask('loading post-bundle');
-        var postBundle = bundles.post, 
-            extrasBundle = bundles.extras;
-        G.loadBundle(G.bundles.post, function() {
-          var dfd = postBundle._deferred = postBundle._deferred || $.Deferred();
-          dfd.resolve();
+      require('__domReady__').done(function() {
+        require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
+          Events.on('appStart', G._appStartDfd.resolve);
+          console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
+          G.finishedTask("loading modules");
+          G.browser = $.browser;
+          App.initialize();
+          G.startedTask('loading post-bundle');
+          G.loadBundle(postBundle, {async: true}).done(function() {
+            postBundle._deferred.resolve();
+            
+            G.finishedTask('loading post-bundle');
+            G.startedTask('loading extras-bundle');
+            G.onAppStart().done(function() {            
+              G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
+                extrasBundle._deferred.resolve();
+              });
+            });
+          });
           
-          G.finishedTask('loading post-bundle');
-          G.startedTask('loading extras-bundle');
-          G.loadBundle(extrasBundle, function() {
-            var dfd = extrasBundle._deferred = extrasBundle._deferred || $.Deferred();
-            dfd.resolve();
-          });
-        }, true);
-        
-        if (window.location.hash.length < 2) {
-          Events.once('appStart', function() {
-            G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-          });
-        }
-        else {
-          Events.once('pageChange', function() {
-            G.hideSpinner(spinner);
-            console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-          });
-        }
+          if (window.location.hash.length < 2) {
+            Events.once('appStart', function() {
+              G.hideSpinner(spinner);
+              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            });
+          }
+          else {
+            Events.once('pageChange', function() {
+              G.hideSpinner(spinner);
+              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+            });
+          }
+        });
       });
-    });
+    })
   }
 });
+})(window, document, undefined);

@@ -135,10 +135,26 @@ define('views/ResourceListItemView', [
         var p2 = params['$propB'];
         var rParams = {};
         rParams[p1] = params['$forResource'];
+        this.forResource = params['$forResource'];
         rParams[p2] = this.resource.get('_uri');
         rParams.$title = this.resource.get('davDisplayName');
-        if (U.isAssignableFrom(this.vocModel, "WebClass"))
+        var self = this;
+        if (U.isAssignableFrom(this.vocModel, "WebClass")) {
+          if (type.endsWith('system/designer/InterfaceImplementor')) {
+            Voc.getModels(type).done(function() {
+              var m = new (U.getModel('InterfaceImplementor'))();
+              var uri = self.resource.get('_uri');
+              var props = {interfaceClass: uri, implementor: self.forResource};
+              m.save(props, {
+                success: function() {
+                  self.router.navigate('view/' + encodeURIComponent(self.forResource), {trigger: true, forceFetch: true});        
+                }
+              });
+            });
+            return;
+          }
           rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
+        }
         this.router.navigate('make/' + encodeURIComponent(type) + '?' + $.param(rParams), {trigger: true, forceFetch: true});        
 //        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;        
@@ -316,46 +332,50 @@ define('views/ResourceListItemView', [
     
     addCommonBlock: function(viewCols, json) {
       var vocModel = this.vocModel;
-      if (!viewCols.length) {
-        viewCols = '';
-        var isSubmission = this.resource.isA('Submission');
+      var isSubmission = this.resource.isA('Submission');
+      if (!viewCols.length  ||  isSubmission) {
+        var vCols = '';
         if (isSubmission) {
           var d = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
           var dateSubmitted = d  &&  d.length ? json[d[0]] : null;
           if (dateSubmitted)
-            viewCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
+            vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
         }
-        
-        var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
-        viewCols += '<div class="commonLI">' + json.davDisplayName;
-        if (isClass) {
-          var comment = json['comment'];
-          if (comment) 
-            viewCols += '<p>' + comment + "</p>";
+        if (viewCols.length)
+          vCols += viewCols;
+        else {
+          var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
+          vCols += '<div class="commonLI">' + json.davDisplayName;
+          if (isClass) {
+            var comment = json['comment'];
+            if (comment) 
+              vCols += '<p>' + comment + "</p>";
+          }
         }
         if (isSubmission) {
           var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
           var submittedBy = d  &&  d.length ? json[d[0]] : null;
           if (submittedBy) {
-//            viewCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
+//            vCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
             var thumb = json[d[0] + '.thumb'];
-            viewCols += '<div style="padding-top:3px;">';
+            vCols += '<div class="submitter">';
             if (thumb) {
               var idx = thumb.indexOf('/Image?url=');
               if (idx == -1)
-                viewCols += '<img src="' + thumb + '" />';
+                vCols += '<img src="' + thumb + '" />';
               else
-                viewCols += '<img src="' + thumb.slice(idx + 11) + '" />';
+                vCols += '<img src="' + thumb.slice(idx + 11) + '" />';
             }
-//            viewCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
+//            vCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
             var submitterName = json[d[0] + '.displayName'];
             if (submitterName) {
-              viewCols += '<div class="submitter">&#160;&#160;' + submitterName + '</div>'
-              viewCols += '</div>';
+              vCols += '<div>&#160;&#160;' + submitterName + '</div>'
+              vCols += '</div>';
             }
           }
         }
-        viewCols += '</div>';
+        vCols += '</div>';
+        viewCols = vCols;
       }
       var meta = vocModel.properties;
       meta = meta || m.properties;
@@ -435,7 +455,7 @@ define('views/ResourceListItemView', [
             var s = range.indexOf('/') != -1 ? json[p + '.displayName'] || val.value : val.value;
             var isDate = prop1.range == 'date';
             if (!prop1.skipLabelInGrid) 
-              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
             else
               viewCols += '<span style="font-weight:normal">' + s + '</span>';
             viewCols += '&#160;';
@@ -460,7 +480,7 @@ define('views/ResourceListItemView', [
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-          viewCols += '<div style="display:inline"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
+          viewCols += '<div style="display:inline"><span class="label">' + row + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
         }
         else {
           if (firstProp)
@@ -586,8 +606,9 @@ define('views/ResourceListItemView', [
       var viewCols = this.getViewCols(json);
       if (!viewCols)
         viewCols = dn;
-      
-      tmpl_data['viewCols'] = viewCols;
+      this.addCommonBlock(viewCols, tmpl_data);
+
+//      tmpl_data['viewCols'] = viewCols;
       
       var type = rUri ? U.getTypeUri(rUri) : null;
       

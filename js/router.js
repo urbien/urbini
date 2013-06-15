@@ -3,23 +3,25 @@ define('router', [
   'globals',
   'utils', 
   'events', 
-  'error', 
+  'error',
   'models/Resource', 
   'collections/ResourceList',
   'cache',
   'vocManager',
   'views/HomePage',
-  'templates'
+  'templates',
+  'jqueryMobile'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates/*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
       ""                                                       : "home",
+      "home/*path"                                             : "home",
       ":type"                                                  : "list", 
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
@@ -28,12 +30,16 @@ define('router', [
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
       "chat/*path"                                             : "chat", 
+      "chatPrivate/*path"                                      : "chat", 
+      "chatLobby/*path"                                        : "chat", 
       ":type/:backlink"                                        : "list"
     },
 
     CollectionViews: {},
     MkResourceViews: {},
+    PrivateChatViews: {},
     ChatViews: {},
+    LobbyChatViews: {},
     MenuViews: {},
     Views: {},
     EditViews: {},
@@ -61,6 +67,10 @@ define('router', [
       var self = this;
       Events.on('home', function() {
         self.goHome();
+      });
+
+      Events.on('navigate', function(fragment, options) {
+        self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
       });
       
       Events.on('back', function() {
@@ -143,15 +153,15 @@ define('router', [
 //      });
       
       
-      $(window).hashchange(function() {
-        self._hashChanged = true;        
-      });
-      
-      Events.on('pageChange', function() {
-        self._hashChanged = false;
-//        console.debug('currentUrl:', self.currentUrl);
-//        console.debug('previousHash:', self.previousHash);
-      });
+//      $(window).hashchange(function() {
+//        self._hashChanged = true;        
+//      });
+//      
+//      Events.on('pageChange', function() {
+//        self._hashChanged = false;
+////        console.debug('currentUrl:', self.currentUrl);
+////        console.debug('previousHash:', self.previousHash);
+//      });
       
 //      _.each(['list', 'view', 'make', 'templates', 'home'], function(method) {
 //        var fn = self[method];
@@ -193,6 +203,9 @@ define('router', [
         previousView: this.currentView, 
         previousHash: U.getHash() 
       });
+      
+      if (options.transition)
+        this.nextTransition = options.transition;
       
       var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
       _.extend(this, this.defaultOptions);
@@ -251,9 +264,18 @@ define('router', [
         this.homePage.render();
         this.currentView = this.homePage;
       }
+
+      if (this.backClicked) {
+//        Events.trigger('pageChange', prev, this.currentView);
+        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      }
       
-      Events.trigger('pageChange', prev, this.currentView);
-      $.mobile.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+      // HACK, this div is hidden for some reason when going to #home/...
+      var mainDiv = $('.mainDiv'); 
+      if (mainDiv.is(':hidden'))
+        mainDiv.show();
+
+      this.checkErr();
     },
     
     choose: function(path) { //, checked, props) {
@@ -541,15 +563,13 @@ define('router', [
       var unloaded = _.filter(views, function(v) {return !self[v]});
       if (unloaded.length) {
         var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        G.onModulesLoaded(unloadedMods).done(function() {          
-          U.require(unloadedMods, function() {
-            var a = U.slice.call(arguments);
-            for (var i = 0; i < a.length; i++) {              
-              self[unloaded[i]] = a[i];
-            }
-            
-            caller.apply(self, args);
-          });
+        U.require(unloadedMods, function() {
+          var a = U.slice.call(arguments);
+          for (var i = 0; i < a.length; i++) {              
+            self[unloaded[i]] = a[i];
+          }
+          
+          caller.apply(self, args);
         });
       }
     },
@@ -637,8 +657,8 @@ define('router', [
     },
 
     chat: function(path) {
-      if (!this.ChatPage || !this.ChatView)
-        return this.loadViews(['ChatPage', 'ChatView'], this.chat, arguments);
+      if (!this.ChatPage)
+        return this.loadViews(['ChatPage'], this.chat, arguments);
       else if (G.currentUser.guest) {
         this._requestLogin();
         return;
@@ -666,17 +686,19 @@ define('router', [
      */
     view: function (path, action) {
       var edit = action === 'edit',
-          chat = action === 'chat';
+          chat = action === 'chat',
+          views, 
+          viewPageCl;
       
       if (!edit && !chat && !this.ViewPage)
         return this.loadViews('ViewPage', this.view, arguments);
 
-      var views = this[edit ? 'EditViews' : chat ? 'ChatViews' : 'Views'];
-      var viewPageCl = edit ? this.EditPage : chat ? this.ChatPage : this.ViewPage;
-
-      var params = U.getHashParams();
-      var qIdx = path.indexOf("?");
-      var uri, query;
+      var params = U.getHashParams(),
+          qIdx = path.indexOf("?"),
+          route = U.getRoute(),
+          uri, 
+          query;
+      
       if (qIdx == -1) {
         uri = path;
         query = '';
@@ -685,6 +707,22 @@ define('router', [
         uri = path.slice(0, qIdx);
         query = path.slice(qIdx + 1);
       }
+      
+      switch (action) {
+        case 'chat':
+          views = route.slice(4) + 'ChatViews';
+          viewPageCl = this.ChatPage;
+          break;
+        case 'edit':
+          views = 'EditView';
+          viewPageCl = this.EditPage;
+          break;
+        default:
+          views = 'Views';
+          viewPageCl = this.ViewPage;
+      }
+
+    views = this[views];
 
       if (uri == 'profile') {
         if (!G.currentUser.guest) {
@@ -701,10 +739,7 @@ define('router', [
       }
       
       if (chat && /^_/.test(uri)) {
-        var chatPage = this.ChatViews[uri] = this.ChatViews[uri] || new this.ChatPage({
-          'private': true
-        });
-        
+        var chatPage = views[uri] = views[uri] || new this.ChatPage();
         this.changePage(chatPage);
         return;
       }      
@@ -718,6 +753,14 @@ define('router', [
       if (!model)
         return this;
 
+      if (U.isAssignableFrom(model, 'Contact')) {
+        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
+        var altModel = U.getModel(altType);
+        if (altModel) {
+          typeUri = altType;
+          model = altModel;
+        }
+      }
       var res = C.getResource(uri);
       if (res && !res.loaded)
         res = null;
@@ -815,7 +858,7 @@ define('router', [
       if (!LoginView) {
         var args = arguments;
         var self = this;
-        require(['views/LoginButton'], function(LV) {
+        U.require(['views/LoginButton'], function(LV) {
           LoginView = LV;
           self.login.apply(self, args);
         })
@@ -1085,12 +1128,48 @@ define('router', [
     },
     
     checkErr: function() {
-      var q = U.getQueryParams();
-      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
-      if (msg)
-        U.alert({msg: msg, persist: true});
+//      var q = U.getQueryParams();
+//      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
+//      if (msg)
+//        U.alert({msg: msg, persist: true});
+//      
+//      this.errMsg = null, this.info = null;
+      var params = U.getHashParams();
+      var info = params['-info'] || params['-gluedInfo'],
+          error = params['-error'] || params['-gluedError'];
+          
+      if (info || error) {
+        if (/^home\//.test(U.getHash())) {
+          var errorBar = $.mobile.activePage.find('#headerMessageBar');
+          errorBar.html("");
+          errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
+
+          if (!params['-gluedInfo']) {
+            var hash = U.getHash().slice(1);
+            delete params['-info'];
+            delete params['-error']; 
+            // so the dialog doesn't show again on refresh
+            Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+          }
+
+        }
       
-      this.errMsg = null, this.info = null;
+        var data = {};
+        if (info) {
+          data.info = {
+            msg: info,
+            glued: !!params['-gluedInfo']
+          };
+        }
+        if (error) {
+          data.error = {
+            msg: error,
+            glued: !!params['-gluedError']
+          };
+        }
+        
+        Events.trigger('headerMessage', data);
+      }
     },
     changePage: function(view) {
       try {
@@ -1173,7 +1252,7 @@ define('router', [
             view.render();
           }
       
-//          transition = "slide"; //$.mobile.defaultPageTransition;
+//          transition = "slide"; //$m.defaultPageTransition;
           if (!replace  &&  this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
             this.viewsStack.push(this.currentView);
             this.urlsStack.push(this.currentUrl);
@@ -1203,7 +1282,8 @@ define('router', [
         view.trigger('active', true);
       
       // perform transition        
-      $.mobile.changePage(view.$el, {changeHash: false, transition: transition, reverse: isReverse});
+      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;
     }

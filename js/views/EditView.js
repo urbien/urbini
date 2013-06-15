@@ -6,8 +6,9 @@ define('views/EditView', [
   'utils',
   'cache',
   'vocManager',
-  'views/BasicView'
-], function(G, Events, Errors, U, C, Voc, BasicView) {
+  'views/BasicView',
+  'jqueryMobile'
+], function(G, Events, Errors, U, C, Voc, BasicView, $m) {
   var spinner = 'loading edit view';
   var scrollerClass = 'i-txt',
       switchClass = 'boolean',
@@ -66,7 +67,7 @@ define('views/EditView', [
 
       var codemirrorDfd = $.Deferred(function(defer) {
         if (self.isCode) {
-          require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
+          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
             defer.resolve();
           });
         }
@@ -623,23 +624,23 @@ define('views/EditView', [
         var isFork = res.get('forkedFrom');
         var preMsg = isFork ? 'Forking in progress, hold on to your hair.' : 'Setting up your app, hold on to your knickers.';
         var postMsg = isFork ? 'Forking complete, gently release your hair' : 'App setup complete';
-        $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, preMsg, false);
+        $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, preMsg, false);
         res.on('syncError', function(error) {
-          $.mobile.hidePageLoadingMsg();          
+          $m.hidePageLoadingMsg();          
         });
         
         res.once('syncedWithServer', function() { // when app is created, the returned resource JSON is not up to date with models count, etc., so need to fetch again
-          $.mobile.hidePageLoadingMsg();
-          $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, postMsg, false);
-          setTimeout($.mobile.hidePageLoadingMsg, 3000);
+          $m.hidePageLoadingMsg();
+          $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, postMsg, false);
+          setTimeout($m.hidePageLoadingMsg, 3000);
           res.fetch({forceFetch: true});
         });
       }
       
       if (res.isA('Redirectable')) {
         var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
-        if (!redirect.length)
-          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
+//        if (!redirect.length)
+//          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
         if (redirect.length) {
           redirect = res.get(redirect);
           if (redirect) {
@@ -649,7 +650,7 @@ define('views/EditView', [
         }
       }
       
-      var redirectAction = vocModel.onCreateRedirectToAction || 'SOURCE',
+      var redirectAction = vocModel.onCreateRedirectToAction, 
           redirectParams = {},
           action = '',
           redirectPath = '',
@@ -981,13 +982,23 @@ define('views/EditView', [
         return;
       }
             
+      var sync = !U.canAsync(this.vocModel);
+      if (sync) {
+        G.showSpinner({
+          content: 'Saving...',
+          name: 'saving-resource'
+        });
+      }
+        
       res.save(props, {
-        sync: !U.canAsync(this.vocModel),
+        sync: sync,
         success: function(resource, response, options) {
           self.getInputs().attr('disabled', false);
           res.lastFetchOrigin = null;
           self.disable('Changes submitted');
           self.redirect();
+          if (sync)
+            G.hideSpinner('saving-resource');
         }, 
 //        skipRefresh: true,
         error: self.onSaveError
@@ -1204,7 +1215,13 @@ define('views/EditView', [
         if (videoProp && !res.get(videoProp))
           return true;
       }
-      
+
+      if (res.isA("AudioResource")) {
+        var audioProp = U.getCloneOf(vocModel, "AudioResource.audio")[0];
+        if (audioProp && !res.get(audioProp))
+          return true;
+      }
+
       var cameraProps = U.getPropertiesWith(meta, [{name: 'cameraOnly', value: true}], true);
       if (cameraProps.length && _.any(cameraProps, function(p) {
         return !res.get(p.shortName);
@@ -1318,6 +1335,11 @@ define('views/EditView', [
 //        this.addProp(info);
         displayedProps[p] = true;
       }
+      var returnUri = reqParams['$returnUri']; 
+      if (returnUri) {
+        var h =  '<input data-formEl="true" type="hidden" name="$returnUri" value="' + returnUri + '"/>';
+        U.addToFrag(info.frag, h);
+      }
       if (!propGroups.length || editProps) {
         for (var p in meta) {
           p = p.trim();
@@ -1360,7 +1382,6 @@ define('views/EditView', [
             var interfaceProperties = self.resource.get('interfaceProperties');
             var ip = interfaceProperties ? interfaceProperties.split(',') : [];
             var props = '';
-            self.$ul1 = $('#interfaceProps');
             _.each(imeta, function(p) {
               var prop = p.shortName;
               if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
@@ -1382,7 +1403,7 @@ define('views/EditView', [
             props = props.slice(0, props.length - 1);
             self.setValues('interfaceProperties', props);
             
-            (this.$ul1 = $('#interfaceProps')).html(frag);
+            (self.$ul1 = self.$el.find('#interfaceProps')).html(frag);
             if (self.$ul1.hasClass('ui-listview')) {
               self.$ul1.trigger('create');
               self.$ul1.listview('refresh');
@@ -1511,7 +1532,7 @@ define('views/EditView', [
         if (this.action === 'make' && this.isCameraRequired()) {
           Events.on('pageChange', function() {
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
-              $.mobile.silentScroll(0);
+              $m.silentScroll(0);
               setTimeout(function() {
                 $(this.$('a.cameraCapture')[0]).trigger('click');
               }.bind(this), 100);
@@ -1532,9 +1553,9 @@ define('views/EditView', [
         }
       });
       
-      form.find('fieldset input[type="checkbox"]').each(function() {
-        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
-      });
+//      form.find('fieldset input[type="checkbox"]').each(function() {
+//        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
+//      });
 
       return this;
     },

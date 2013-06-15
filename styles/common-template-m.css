@@ -8,11 +8,13 @@ body { -webkit-text-size-adjust: none; }
 .ui-mobile .ui-page-active {
    visibility: visible;
 }
-
 .ui-page-pre-in {
   opacity: 0;
 }
 */
+.ui-btn-up-g:first-child, .ui-btn-up-f:first-child {
+  border-top-width:1px;
+}
 /* end overriding jqm rules */
 
 html { height: 100%; }
@@ -288,7 +290,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 /* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
-#headerInfo {background-color:black;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
+#headerInfo {background-color:#fffc40;margin:0;padding:10px 0 10px 0;text-align:center;color:#000;text-shadow:none}
 #headerError {background-color:red;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
 .buyButton { float:right; }
 
@@ -357,8 +359,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .commonLI { margin-left: 5px; font-weight: normal; font-size: 16px; padding-top:3px; overflow: auto; display:inline;}
 
 .dateLI { float: right; margin-top: -7px; /*margin-right: -30px;*/ color: #999; font-weight: normal; font-size: 11px; }
-.submitter { color: #737373; margin-top: 10px; font-size:14px; font-weight: normal; }
-
+.submitter { color: #737373; /*margin-top: 10px;*/ padding-top:3px; font-size:14px; font-weight: normal; }
+.submitter img {max-height: 40px;vertical-align:middle}
+.submitter div {display: inline; }
 #photogrid .ui-li-aside a {
   color: #eee;
 }
@@ -405,10 +408,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   border-top: 1px solid #777;
 }
 
-#headerDiv #callInProgress {
+#callInProgress {
   text-align: center;
-  color: #FFF;
-  background: #0F2;
+/*  color: #FFF; */
+  background: lightblue;/*#0F2;*/
+  margin: 0px auto;
+  line-height: 40px;
+  text-shadow: none;
 }
 
 .ui-bar-c #headerButtons  {

@@ -39,9 +39,8 @@ define('views/ResourceView', [
       var readyDfd = $.Deferred(function(defer) {
         if (this.isCode) {
           U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-//          U.require(['codemirrorHighlighting', 'codemirrorCss'], function() {
             defer.resolve();
-          }, this);
+          });
         }
         else
           defer.resolve();

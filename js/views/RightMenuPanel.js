@@ -36,9 +36,15 @@ define('views/RightMenuPanel', [
       'click #delete': 'delete',
       'click #subscribe': 'subscribe',
       'click .chattee': 'chat',
+      'click #urbien123': 'home',
       'click': 'click'
 //      'click #logout': 'logout',
     },
+    home: function(e) {
+      Events.stopEvent(e);
+      window.location.href = G.serverName + '/app/UrbienApp';
+    },
+
     click: function(e) {
       var t = e.target;
       var text = t.innerHTML;
@@ -167,7 +173,16 @@ define('views/RightMenuPanel', [
         })
       }
       
-      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), {trigger: true});
+      var isWaitingRoom = this.hashParams['-waitingRoom'] == 'y';
+      var redirectOptions = {
+        trigger: true, 
+        replace: isWaitingRoom
+      };
+      
+      if (isWaitingRoom)
+        redirectOptions.transition = 'none';
+      
+      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
     },
     
     renderChatParticipants: function() {
@@ -243,7 +258,7 @@ define('views/RightMenuPanel', [
     },
     
     render: function (eventName) {
-      if (this.hash.startsWith('chat/')) {
+      if (U.isChatPage()) {
         this.renderChatParticipants();
         return;
       }
@@ -264,7 +279,7 @@ define('views/RightMenuPanel', [
         uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Like', G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: 'Like', pageUrl: uri, icon: 'heart', homePage: 'y'}));
 
-        uri = U.makePageUrl('make', 'model/portal/Comment', {forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Comment', G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Comment', G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: 'Comment', pageUrl: uri, icon: 'comments', homePage: 'y'}));
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {

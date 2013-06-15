@@ -8,8 +8,9 @@ define('views/ResourceListView', [
   'views/ResourceListItemView',
   'views/CommentListItemView',
   'views/PhotogridView',
-  'collections/ResourceList'
-], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList) {
+  'collections/ResourceList',
+  'jqueryMobile'
+], function(G, U, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, CommentListItemView, PhotogridView, ResourceList, $m) {
   var RLV = BasicView.extend({
     displayPerPage: 10, // for client-side paging
     page: null,
@@ -22,7 +23,7 @@ define('views/ResourceListView', [
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       $(window).on('scroll', this.onScroll);
-      Events.on('changePage', this.onNewItemsAppend);
+      Events.on('pageChange', this.onNewItemsAppend);
       this.$el.on('create', this.onNewItemsAppend);
 //      this.collection.on('reset', this.render, this);
 //      this.collection.on('add', this.onadd, this);
@@ -518,7 +519,7 @@ define('views/ResourceListView', [
       // 1) masonry: 2.5 screen height to bottom
       // 2) list view: 1 screen height to bottom
       var factor = this.hasMasonry ? 3.5 : 2;   
-      if ($.mobile.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
+      if ($m.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
         return;
       
       var self = this;
@@ -577,7 +578,7 @@ define('views/ResourceListView', [
         
         // if current node does not have "masonry-brick" class but the next note has
         // then need to reload/reset bricks
-        if ($next.exist() &&
+        if ($next.length &&
             !hasClass && 
             $next.hasClass("masonry-brick"))
           needToReload = true;
@@ -589,7 +590,7 @@ define('views/ResourceListView', [
       // before inner images downloading complete. Detect it through image in 1st 'brick' 
       var img = $('img', $allBricks[0]);
 //      var hasImgSize = (img.exist() && img.width.length > 0 && img.height.length > 0) ? true : false;
-      var hasImgSize = (img.exist() && img.width() && img.height()) ? true : false;
+      var hasImgSize = (img.length && img.width() && img.height()) ? true : false;
       
       // 1. need to reload. happens on content refreshing from server
       if (needToReload) {

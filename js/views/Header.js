@@ -19,7 +19,7 @@ define('views/Header', [
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -50,7 +50,7 @@ define('views/Header', [
 
       this.autoFinish = false;
       this.isEdit = /^(edit|make)\//.test(this.hash);
-      this.isChat = /^chat\//.test(this.hash);
+      this.isChat = U.isChatPage();
 
       var self = this;
       if (!this.isChat) {
@@ -110,7 +110,7 @@ define('views/Header', [
         }
         
         this.readyDfd.resolve();
-      }, this);
+      }.bind(this));
     },
     
     checkErrorList: function(e) {
@@ -185,7 +185,7 @@ define('views/Header', [
 //              title = this.pageTitle;
             }
             else {
-              title = U.makeHeaderTitle(this.vocModel['displayName'], title);
+              title = U.isAssignableFrom(this.vocModel, "Contact") ? title : U.makeHeaderTitle(this.vocModel['displayName'], title);
 //              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
             }
           }
@@ -196,8 +196,11 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload': 'fileUpload',
-      'click #categories': 'showCategories'
+      'change #fileUpload'        : 'fileUpload',
+      'click #categories'         : 'showCategories',
+      'click #backToCall'         : 'backToCall',
+      'click #hangUp'             : 'hangUp',
+      'click #sendToCall'         : 'sendToCall'
     },
     fileUpload: function(e) {
       Events.stopEvent(e);      
@@ -253,7 +256,7 @@ define('views/Header', [
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
-        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe')) && this.isGeo();
+        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
         this.getButtonViews();
       }
         
@@ -265,18 +268,63 @@ define('views/Header', [
     },
 
     refreshCallInProgressHeader: function() {
-      if (G.callInProgress) {
-        var $cipDiv = this.$('#callInProgress');
-        $cipDiv.html(this.callInProgressHeaderTemplate(G.callInProgress));
-        (function pulse(){
-          if (!G.callInProgress)
-            return;
+      var cip = G.callInProgress;
+      var $cipDiv = this.parentView.$('div#callInProgress');
+      if (!cip || window.location.href == cip.url) {
+        $cipDiv.html("");
+        return;
+      }
+      
+      $cipDiv.html(this.callInProgressHeaderTemplate(cip));
+      (function pulse(){
+        if (!G.callInProgress)
+          return;
+        
+        $cipDiv.delay(250).fadeTo('slow', 0.9).delay(250).fadeTo('slow', 1,  pulse);
+      })();
+      (function anime(){
+        if (!G.callInProgress) 
+          return;
+        $cipDiv.css({marginTop: '-42px'});
+        $cipDiv.animate({marginTop: '+=42px'}, 2000); //.delay(5000).animate({marginTop: '-42px'}, 1, anime);
+      })();
+      
+//      $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {
+//        window.location.href = $('a', this).attr('href');
+//      });
+    },
+
+    backToCall: function(e) {
+      Events.stopEvent(e);
+      var cip = G.callInProgress,
+          url = cip.url,
+          hashIdx = url.indexOf('#'),
+          path = url.slice(0, hashIdx),
+          hash = url.slice(hashIdx + 1);
           
-          $cipDiv.delay(250).fadeTo('slow', 0.2).delay(250).fadeTo('slow', 0.7, pulse);
-        })();
+      if (window.location.href.startsWith(path))
+        Events.trigger('navigate', hash);
+      else
+        window.location.href = url;
+    },
+
+    hangUp: function(e) {
+      Events.trigger('hangUp');
+    },
+
+    sendToCall: function(e) {
+      Events.stopEvent(e);
+      if (this.resource) {
+        Events.trigger('messageForCall:resource', {
+          _uri: this.resource.getUri(),
+          displayName: U.getDisplayName(this.resource)
+        });
       }
       else {
-        this.$('#callInProgress').html("");
+        Events.trigger('messageForCall:list', {
+          title: this.getPageTitle(),
+          hash: this.hash
+        }); 
       }
     },
 
@@ -495,8 +543,10 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      if (!this.noButton  &&  !this.categories)
+      if (!this.noButton  &&  !this.categories) {
         this.$el.find('#name').removeClass('resTitle');
+        this.$el.find('#pageTitle').css('margin-bottom', '0px');
+      }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');

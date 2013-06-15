@@ -26,7 +26,7 @@ define('views/MenuButton', [
       U.require('views/MenuPanel', function(MenuPanel) {
         var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
         menuPanel.render();        
-      }, this);
+      }.bind(this));
 
       return this;
     },

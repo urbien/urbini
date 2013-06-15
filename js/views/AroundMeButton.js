@@ -54,32 +54,24 @@ define('views/AroundMeButton', [
       
       var self = this, 
           userLoc = G.currentUser.location;
-      
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          return self.fetchAroundPosition(position.coords);
-        },
-        function(error) {
-          var lastLocTime = userLoc ? userLoc.timestamp : 0;
-          if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
-            self.fetchAroundPosition(G.userLocation.location);
-          else
-            self.constructor.locationError(error);
-        }
-      );
+
+      U.getCurrentLocation().done(function(position) {
+        self.fetchAroundPosition(position);
+      }).fail(function(error) {
+        var lastLocTime = userLoc ? userLoc.timestamp : 0;
+        if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
+          self.fetchAroundPosition(userLoc);
+        else
+          self.constructor.locationError(error);        
+      });
       
       return this;
     },
     fetchAroundPosition : function(coords, item) {
-      G.currentUser.location = {
-        location: coords,
-        timestamp: new Date().getTime()
-      };
-      
       var isCollection = U.isCollection(this.model), 
           params = isCollection ? U.getQueryParams(this.model) : {};
 
-      _.extend(params, {latitude: coords.latitude, longitude: coords.longitude, '-item': item || 'me', '$orderBy': 'distance'});
+      _.extend(params, coords, {'-item': item || 'me', '$orderBy': 'distance'});
       
       this.reset();
       this.router.navigate(U.makeMobileUrl(null, this.vocModel.type, params), {trigger: true});

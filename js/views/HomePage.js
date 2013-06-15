@@ -2,10 +2,10 @@
 define('views/HomePage', [
   'globals',
   'events',
-  'utils',
   'backbone',
-  'jqueryAnyStretch'
-], function(G, Events, U, Backbone, Jas) {
+  'jqueryAnyStretch',
+  'utils'
+], function(G, Events, Backbone, Jas, U) {
   return Backbone.View.extend({
     first: true,
     initialize: function(options) {
@@ -36,16 +36,25 @@ define('views/HomePage', [
     
     click: function(e) {
       var id = e.target.id;
-      if (!id  ||  !id.startsWith('hpRightPanel'))
+      if (!id)
         return;
-      Events.stopEvent(e);
-      U.require(["views/RightMenuPanel"]).done(function(MP) {
-        self.menuPanel = new MP({viewId: 'viewHome'}).render();
-      });
+      if (id.startsWith('hpRightPanel')) {
+        Events.stopEvent(e);
+        U.require(["views/RightMenuPanel"]).done(function(MP) {
+          self.menuPanel = new MP({viewId: 'viewHome'}).render();
+        });
+      }
+      if (id.startsWith('hpLeftPanel')) {
+        Events.stopEvent(e);
+        U.require(["views/MenuPanel"]).done(function(MP) {
+          self.menuPanel = new MP({viewId: 'viewHome'}).render();
+        });
+      }
     },
     
     render: function(options) {
       var item = $('#homePage');
+      item.css('display', 'inline');
       if (!item || item.length == 0) { 
         var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
         if (itemS) { 

@@ -23,6 +23,7 @@ define('views/ControlPanel', [
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.resource.on('change', this.refresh, this);
       this.isMainGroup = options.isMainGroup;
+      this.dontStyle = this.isMainGroup && options.dontStyle
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
@@ -41,7 +42,11 @@ define('views/ControlPanel', [
       if (!t)
         return;
       
-      Events.stopEvent(e);
+//      Events.stopEvent(e);
+      e.preventDefault();
+      if ($(t).parents('.__dragged__').length)
+        return;
+      
       var shortName = t.dataset.shortname;
       this.prop = this.vocModel.properties[shortName];
 
@@ -139,10 +144,11 @@ define('views/ControlPanel', [
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
-      if (this.isMainGroup  &&  !mainGroup)
+      if (this.isMainGroup  &&  !mainGroup.length)
         return;
+      
       var isHorizontal;      
-      if (this.isMainGroup) {
+      if (this.isMainGroup && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
           this.$el.css("float", "left");
           this.$el.css("width", "100%");
@@ -154,7 +160,7 @@ define('views/ControlPanel', [
           this.$el.css("min-width", "130");
         }
       }
-      
+      var isChat = window.location.hash.indexOf('#chat') == 0; 
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
@@ -322,10 +328,10 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++]};
+              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++], chat: isChat};
               if (this.isMainGroup) {
-                if (!icon)
-                  icon = 'ui-icon-star-empty';
+//                if (!icon)
+//                  icon = 'ui-icon-star-empty';
                 
                 if (isHorizontal)
                   U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));

@@ -1,6 +1,6 @@
 define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   var C;
-  var C = cache = {
+  var cache = C = {
     TAG: 'Cache',
     // Models
 //    MODEL_PREFIX: 'model:',

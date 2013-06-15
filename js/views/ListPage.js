@@ -62,21 +62,21 @@ define('views/ListPage', [
       if (isGeo) {
         this.mapReadyDfd = $.Deferred();
         this.mapReady = this.mapReadyDfd.promise();
-        U.require(['views/MapView'], function(MV) {
+        U.require('views/MapView', function(MV) {
           MapView = MV;
           this.addChild('mapView', new MapView(commonParams));
           this.mapReadyDfd.resolve();
-        }, this);
+        }.bind(this));
       }      
 
-      var showAddButton = (!isChooser  &&  type.endsWith('/App')) || 
+      var showAddButton = !isChooser  &&  (type.endsWith('/App') || 
                            U.isAnAppClass(type)                   || 
-                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner')));
+                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
       if (showAddButton) { 
         if (U.isA(this.vocModel, "Reference"))
           showAddButton = false;
       }
-      else if (isOwner) {
+      else if (isOwner  &&  !isChooser) {
         Voc.getModels("model/social/App").done(function() {
           var m = U.getModel("App");
           var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
@@ -85,7 +85,7 @@ define('views/ListPage', [
         });
       }
       var idx;
-      if (!showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
+      if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
         var s = hash.substring(idx + 1).split('&');
         if (s && s.length > 0) {
           for (var i=0; i<s.length; i++) {
@@ -118,7 +118,7 @@ define('views/ListPage', [
       this.headerButtons = {
         back: true,
         add: showAddButton,
-        aroundMe: isGeo,
+//        aroundMe: isGeo,
         mapIt: isGeo,
         menu: true,
         rightMenu: !G.currentUser.guest,

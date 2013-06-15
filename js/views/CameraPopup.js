@@ -18,7 +18,7 @@ define('views/CameraPopup', [
       window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame ||
       window.msCancelAnimationFrame || window.oCancelAnimationFrame;
   
-  var AudioContext = window.AudioContext || window.webkitAudioContext;
+  var AudioContext = /*window.AudioContext ||*/ window.webkitAudioContext; // firefox doesn't have audioContext.createMediaStreamSource
   
   return BasicView.extend({
     template: 'cameraPopupTemplate',
@@ -38,16 +38,32 @@ define('views/CameraPopup', [
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.prop = options.prop;
-      var prop = this.vocModel.properties[this.prop];
-      this.isVideo = prop.range.endsWith('model/portal/Video');
+      var prop = this.vocModel.properties[this.prop],
+          self = this;
+      
+      _.each(['Video', 'Audio', 'Image'], function(type) {
+        self['is' + type] = prop.range.endsWith('model/portal/' + type);
+      });
+      
+      this.hasAudio = !!AudioContext && (this.isVideo || this.isAudio);
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
-      if (this.isVideo)
-        U.require(['lib/whammy', 'lib/recorder', 'lib/recorderWorker']).done(function(W, R) {
-          Whammy = W;
-          Recorder = R;
+      var req = this.hasAudio || this.isVideo ? ['lib/recorder', 'lib/recorderWorker'] : [];
+      if (this.isVideo) {
+        req.unshift('lib/whammy');
+      }
+      
+      if (this.isVideo || this.hasAudio) {
+        U.require(req).done(function(W, R) {
+          if (this.isVideo) {
+            Whammy = W;
+            Recorder = R;
+          }
+          else
+            Recorder = W;
           this.readyDfd.resolve();
         }.bind(this));
+      }
       else
         this.readyDfd.resolve();
 
@@ -60,6 +76,7 @@ define('views/CameraPopup', [
       return this;
     },
     destroy: function() {
+      this.destroyed = true;
       this.video && this.video.pause();
       this.audio && this.audio.pause();
       this.stream && this.stream.stop(); // turn off webcam
@@ -77,16 +94,27 @@ define('views/CameraPopup', [
           audio: this.audioBlob
         }
       }
+      else if (this.hasAudio) {
+        data = {
+          audio: this.audioBlob
+        }
+      }
       else 
         data = this.canvas.toDataURL('image/png');
       
-      this.trigger(this.isVideo ? 'video' : 'image', {
-        prop: this.prop, 
-        data: data,
-        width: this.$canvas.width(),
-        height: this.$canvas.height()
-      });
+      var result = {
+        prop: this.prop,
+        data: data
+      };
       
+      if (!this.isAudio) {
+        _.extend(result, {
+          width: this.$canvas.width(),
+          height: this.$canvas.height()
+        });
+      }
+      
+      this.trigger(this.isVideo ? 'video' : this.isAudio ? 'audio' : 'image', result);
       this.destroy();
     },
     reset: function(e) {
@@ -98,7 +126,7 @@ define('views/CameraPopup', [
     startOrStop: function(e) {
       Events.stopEvent(e);
       var previewing = this.state === 'previewing';
-      if (this.isVideo)
+      if (this.isVideo || this.isAudio)
         this[previewing || this.state === 'reviewing' ? 'record' : 'stop'](e); 
       else
         this[previewing ? 'stop' : 'start'](e); 
@@ -112,9 +140,11 @@ define('views/CameraPopup', [
 //      this.setDimensions();
       this.startTime = +new Date();
       this.setstate('recording');
-      this.ctx = canvas.getContext('2d');
-      this.frames = [];
-      this.rafId = requestAnimationFrame(this.drawVideoFrame_);
+      if (this.isVideo) {
+        this.ctx = this.canvas.getContext('2d');
+        this.frames = [];
+        this.rafId = requestAnimationFrame(this.drawVideoFrame_);
+      }
       
       // start audio recording
       if (!this.hasAudio)
@@ -130,7 +160,7 @@ define('views/CameraPopup', [
     stop: function(e) {
       Events.stopEvent(e);
       this.stopTime = +new Date();
-      if (this.state == 'previewing')
+      if (this.isImage && this.state == 'previewing')
         this.takepicture();
       
       if (this.hasAudio) {
@@ -149,7 +179,9 @@ define('views/CameraPopup', [
     },
     renderHelper: function(options) {    
       this.$el.html(this.template({
-        video: this.isVideo
+        video: this.isVideo,
+        audio: this.isAudio,
+        image: this.isImage
       }));
       
       var doc = document;
@@ -161,16 +193,19 @@ define('views/CameraPopup', [
       this.$popup.trigger('create');
       this.$popup.popup().popup("open");
       
-      // video
       var streaming     = false;
-      this.$video       = this.$('#camVideo');
-      this.video        = this.$video[0];
-      this.video.muted  = true;
-
-      this.$videoPrevDiv = this.$('#camVideoPreview');
-      this.videoPrevDiv = this.$videoPrevDiv[0];
-      this.$canvas      = this.$('#canvas');
-      this.canvas       = this.$canvas[0];
+      this.$previewDiv = this.$('#camPreview');
+      this.previewDiv = this.$previewDiv[0];
+      if (this.isVideo || this.isImage) {
+        // video
+        this.$video       = this.$('#camVideo');
+        this.video        = this.$video[0];
+        this.video.muted  = true;
+  
+        this.$canvas      = this.$('#canvas');
+        this.canvas       = this.$canvas[0];
+      }
+      
       this.$shootBtn    = this.$('#cameraShootBtn');
       this.$submitBtn   = this.$('#cameraSubmitBtn');
       this.width        = this.innerWidth(); //width - this.padding();
@@ -180,8 +215,7 @@ define('views/CameraPopup', [
       this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
         
       // audio
-      if (this.isVideo && AudioContext) {
-        this.hasAudio = true;
+      if (this.hasAudio) {
         this.audioContext = new AudioContext();
         this.audioInput = null;
         this.realAudioInput = null;
@@ -193,19 +227,23 @@ define('views/CameraPopup', [
       this.setstate('previewing');
       navigator.getMedia(
         {
-          video: true,
+          video: this.isVideo,
           audio: this.hasAudio
-        },
+        }
+        ,
         function(stream) {
           this.stream = stream; // need to set this.stream to ensure this.destroy() has access to it to stop it
-          if (!this.$('#camVideo').length) {
+//          if (!this.$('#camVideo').length) {
+          if (this.destroyed) {
             // popup was canceled already
             this.destroy();
             return;
           }
           
-          this.startVideo(stream);
-          this.startAudio(stream);
+          if (this.isVideo)
+            this.startVideo(stream);
+          if (this.hasAudio)
+            this.startAudio(stream);
         }.bind(this),
         function(err) {
           U.alert({
@@ -263,27 +301,48 @@ define('views/CameraPopup', [
       if (!this.hasAudio)
         return;
       
-      this.inputPoint = this.audioContext.createGain();
+      this.inputPoint = this.audioContext.createGainNode();
 
       // Create an AudioNode from the stream.
       this.realAudioInput = this.audioContext.createMediaStreamSource(stream);
       this.audioInput = this.realAudioInput;
       this.audioInput.connect(this.inputPoint);
       this.audioRecorder = new Recorder(this.inputPoint);
+      this.$shootBtn.removeClass('ui-disabled');
     },
 
     setDimensions: function() {
-      if (!this.video.videoWidth)
-        return;
-        
+//      if (!this.video.videoWidth)
+//        return;
+//        
       var $window = $(window),
           wWidth = $window.width(),
-          wHeight = $window.height(),
-          vWidth = this.video.videoWidth,
-          vHeight = this.video.videoHeight;
+          wHeight = $window.height();
+//          vWidth = this.video.videoWidth,
+//          vHeight = this.video.videoHeight;
+//      
+//      this.$canvas.attr('width', vWidth);
+//      this.$canvas.attr('height', vHeight);
+//      var $popup = this.$el.parent();
+//      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
+//      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
+      var vWidth, vHeight; 
+      if (!this.video.videoWidth) {
+        vWidth = this.getPageView().innerWidth() - this.padding();
+        vHeight = Math.round(vWidth * 3 / 4);
+      }
+      else {
+        vWidth = this.video.videoWidth;
+        vHeight = this.video.videoHeight;
+      }
       
-      this.$canvas.attr('width', vWidth);
-      this.$canvas.attr('height', vHeight);
+      this.videoWidth = vWidth;
+      this.videoHeight = vHeight;
+      this.height = Math.round(vHeight / (vWidth / this.width));
+      this.$canvas.attr('width', this.width);
+      this.$canvas.attr('height', this.height);
+//      this.$canvas.attr('width', vWidth);
+//      this.$canvas.attr('height', vHeight);
       var $popup = this.$el.parent();
       $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
       $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
@@ -307,7 +366,7 @@ define('views/CameraPopup', [
     },
 
     reshoot: function() {
-      this.setstate(this.isVideo ? 'recording' : 'previewing');
+      this.setstate(this.isVideo || this.isAudio ? 'recording' : 'previewing');
     },
 
     setstate: function(newstate) {
@@ -336,7 +395,7 @@ define('views/CameraPopup', [
           videoOn = true;
           shootAddCl = videoOn ? camCl : repeatCl;
           colorCl = 'red';
-          shootBtnText = this.isVideo ? 'Record' : 'Shoot';
+          shootBtnText = this.isVideo || this.isAudio ? 'Record' : 'Shoot';
           break;
         case 'recording':
 //          this.video.muted = true;
@@ -347,11 +406,13 @@ define('views/CameraPopup', [
       }
       
       colorCl = colorCl || 'black';
-      this.$video[videoOn ? 'show' : 'hide']();
-      this.$canvas[videoOn ? 'hide' : 'show']();
+      if (this.isVideo || this.isImage) {
+        this.$video[videoOn ? 'show' : 'hide']();
+        this.$canvas[videoOn ? 'hide' : 'show']();
+      }
       
       if (this.rendered) {
-        if (this.isVideo) {
+        if (this.isVideo || this.isAudio) {
           this.$shootBtn.find('.ui-btn-text').html(shootBtnText);
         }
         else {
@@ -372,18 +433,24 @@ define('views/CameraPopup', [
 //      if (shootBtnGuts && colorCl)
 //        shootBtnGuts.addClass(colorCl);
       
-      if (this.isVideo) {
+      if (this.isVideo || this.isAudio) {
         if (this.state === 'reviewing') {
-          cancelAnimationFrame(this.rafId);
-          this.video.pause();
-          this.embedVideoPreview();
-          this.exportAudioForDownload();
-          this.$canvas.hide();
-          this.$video.hide();
+          if (this.isVideo) {
+            cancelAnimationFrame(this.rafId);
+            this.video.pause();
+            this.embedVideoPreview();
+          	this.exportAudioForDownload();
+            this.$canvas.hide();
+            this.$video.hide();
+          }
+          else
+	        this.exportAudioForDownload();
         }
         else {
-          this.video.play();
-          this.$videoPrev && this.$videoPrev.hide();
+          if (this.isVideo) {
+            this.$previewDiv.hide();
+            this.video.play();
+          }
         }
       }
       
@@ -400,28 +467,33 @@ define('views/CameraPopup', [
         if (typeof blob === 'string')
           console.log(blob);
         else {
+//          Recorder.forceDownload( blob, "myRecording" + G.nextId() + ".wav" );
           this.audioBlob = blob;
-          this.syncAudioVideo();
+          this.setupAudioPreview();
 //          Recorder.forceDownload(blob, "myRecording" + ((this.recIndex < 10) ? "0" :"") + this.recIndex + ".wav" );
         }
       }.bind(this));
     },
     
-    syncAudioVideo: function(opt_url) {
+    setupAudioPreview: function(opt_url) {
       if (!this.hasAudio)
         return;
       
       var url = opt_url || null;
-      var audio = this.$('#camVideoPreview audio')[0] || null;
-//    var downloadLink = $('#camVideoPreview a[download]') || null;
-
+      var audio = this.$('#camPreview audio')[0];
       if (!audio) {
         audio = document.createElement('audio');
-        audio.controls = false;
-        audio.width = 0;
-        audio.height = 0;
-        this.videoPrevDiv.appendChild(audio);
-        this.$audioPrev = this.$('#camVideoPreview audio');
+        if (this.isAudio) {
+          audio.controls = true;
+        }
+        else {
+          audio.controls = false;
+          audio.width = 0;
+          audio.height = 0;
+        }
+        
+        this.previewDiv.appendChild(audio);
+        this.$audioPrev = this.$('#camPreview audio');
         this.audioPrev = this.$audioPrev[0];
       } else {
         window.URL.revokeObjectURL(audio.src);
@@ -433,30 +505,32 @@ define('views/CameraPopup', [
       
       this.audioUrl = url;
       audio.src = url;
-      var vid = this.videoPrev;
-      vid.addEventListener('play', function() {
-        // play audio
-        audio.play();
-      });
-      
-      vid.addEventListener('pause', function() {
-        // pause audio
-        audio.pause();
-      });
+      if (this.isVideo) {
+        var vid = this.videoPrev;
+        vid.addEventListener('play', function() {
+          // play audio
+          audio.play();
+        });
+        
+        vid.addEventListener('pause', function() {
+          // pause audio
+          audio.pause();
+        });
+      }
     },
     
     embedVideoPreview: function(opt_url) {
       var url = opt_url || null;
-      var video = this.$('#camVideoPreview video')[0] || null;
-//      var downloadLink = $('#camVideoPreview a[download]') || null;
+      var video = this.$('#camPreview video')[0] || null;
+//      var downloadLink = $('#camPreview a[download]') || null;
 
       if (!video) {
         video = document.createElement('video');
         video.controls = true;
-        video.style.width = this.canvas.width + 'px';
-        video.style.height = this.canvas.height + 'px';
-        this.videoPrevDiv.appendChild(video);
-        this.$videoPrev = this.$('#camVideoPreview video');
+        video.style.width = this.videoWidth + 'px';
+        video.style.height = this.videoHeight + 'px';
+        this.previewDiv.appendChild(video);
+        this.$videoPrev = this.$('#camPreview video');
         this.videoPrev = this.$videoPrev[0];
       } else {
         window.URL.revokeObjectURL(video.src);
@@ -487,16 +561,13 @@ define('views/CameraPopup', [
       this.videoUrl = url;
       video.src = url;
 //      downloadLink.href = url;
-      this.$videoPrev.show();
+      this.$previewDiv.width(this.videoWidth).height(this.videoHeight).show();
     },
 
     drawVideoFrame_: function(time) {
       this.rafId = requestAnimationFrame(this.drawVideoFrame_);
 
       this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-
-//      document.title = 'Recording...' + Math.round((Date.now() - startTime) / 1000) + 's';
-
       // Read back canvas as webp.
       var url = this.canvas.toDataURL('image/webp', 1); // image/jpeg is way faster :(
       this.frames.push(url);

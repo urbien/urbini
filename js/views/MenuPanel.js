@@ -102,7 +102,11 @@ define('views/MenuPanel', [
       var self = this;
       var res = this.model;
       var json = this.resource && res.toJSON();
-      this.$el.html(this.template(json));      
+      
+      if (!res)
+        this.$el.html(this.template({}));      
+      else
+        this.$el.html(this.template(json));      
 
       var ul = this.$('#menuItems');
       var frag = document.createDocumentFragment();
@@ -202,7 +206,8 @@ define('views/MenuPanel', [
       }
 
 //      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
-      U.addToFrag(frag, this.menuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
+      if (window.location.hash.length > 0)
+        U.addToFrag(frag, this.menuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
       
       if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
