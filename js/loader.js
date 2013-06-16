@@ -1,3 +1,4 @@
+console.log("typeof chrome =", typeof chrome);
 (function(window, doc, undefined) {
 var __started = new Date();
 
@@ -39,8 +40,10 @@ define('globals', function() {
   var G = Lablz,
       browser = G.browser = $.browser;
   
-  browser.chrome = $.browser.webkit && !!window.chrome;
-  browser.safari = $.browser.webkit && !window.chrome;
+  browser.chrome = browser.webkit && !!window.chrome;
+  browser.safari = browser.webkit && !window.chrome;
+  browser.firefox = browser.mozilla;
+  browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown'; 
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection
@@ -625,7 +628,7 @@ define('globals', function() {
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    hasSimplePush: !G.currentUser.guest && G.navigator.isFirefox && navigator.push,
+    hasPush: !G.currentUser.guest && ((G.browser.firefox && navigator.push) || (G.browser.chrome && window.chrome.pushMessaging)),
     TAG: 'globals',
     checkpoints: [],
     tasks: {},

@@ -245,6 +245,7 @@ define('views/ChatPage', [
         this.myName = me.davDisplayName || getGuestName();
         this.myIcon = me.thumb || 'icons/male_thumb.jpg';
         this.myUri = me._uri;
+        this.myEndpointId = G.endpoints[browser.name].endpoint;
       }
       else {
         this.myName = getGuestName();
@@ -1044,6 +1045,14 @@ define('views/ChatPage', [
       }
       
       conversations = webrtc.pcs;
+      webrtc.on('ready', function(connection) {
+        connection.emit('info', {
+          uri: self.myUri,
+          channelId: self.myChannelId,
+          
+        })
+      });
+      
       webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
         webrtc.joinRoom(roomName);
         self.enableChat();

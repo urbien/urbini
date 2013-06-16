@@ -319,10 +319,12 @@ define('app', [
     },
     
     setUpSimplePush: function() {
-      U.require('simplePush').done(function(SimplePush) {
-        if (SimplePush) 
-          App._setUpSimplePush();
-      });
+      if (G.hasPush) {
+        U.require('simplePush').done(function(SimplePush) {
+          if (SimplePush) 
+            App._setUpSimplePush();
+        });
+      }
     },
     
     _setUpSimplePush: function() {
