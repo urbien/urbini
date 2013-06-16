@@ -125,7 +125,7 @@
     </div>  
     {{ }                     }}
     <div class="floatleft" style="width:40%">
-      <input type="text" id="chatMessageInput" class="miniinputheight" placeholder="Chat room is empty..." value="" data-mini="true" />
+      <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
     </div>  
     <div class="floatleft">
       <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>

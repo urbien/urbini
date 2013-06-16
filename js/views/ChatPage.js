@@ -463,7 +463,6 @@ define('views/ChatPage', [
       this.$sendMessageBtn.button().button('enable');
       if (this.$chatInput.length) {
         this.$chatInput.removeClass('ui-disabled');
-//        this.$chatInput[0].value = '';
       }
       
       this.disabled = false;
@@ -473,7 +472,6 @@ define('views/ChatPage', [
       this.$sendMessageBtn.button().button('disable');
       if (this.$chatInput.length) {
         this.$chatInput.addClass('ui-disabled');
-//        this.$chatInput[0].value = 'Chat room is empty...';
       }
       
       this.$remoteMedia && this.$remoteMedia.empty();
@@ -718,6 +716,10 @@ define('views/ChatPage', [
     
     _updateParticipants: function() {
       this.participants = _.keys(this.userIdToInfo);
+      if (!this.getNumParticipants())
+        this.$chatInput.prop('placeholder', 'Chat room is empty...');
+      else
+        this.$chatInput.prop('placeholder', '');
     },
     
     sendUserInfo: function(options, to) {
@@ -1407,6 +1409,7 @@ define('views/ChatPage', [
       this.unreadMessages = 0;
       this.participants = [];
       this.userIdToInfo = {};            
+      this._updateParticipants();
     },
   
     endChat: function(onclose) {
