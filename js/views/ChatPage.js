@@ -207,8 +207,8 @@ define('views/ChatPage', [
       this.config = {
         data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
         video: {
-          send: this.isPrivate,
-          receive: !this.isWaitingRoom || this.isAgent,
+          send: this.isPrivate || this.isClient,
+          receive: !this.isWaitingRoom,
           preview: (!this.isWaitingRoom || this.isClient) && this.hasVideo
         },
         audio: {
@@ -244,8 +244,9 @@ define('views/ChatPage', [
       if (me) {
         this.myName = me.davDisplayName || getGuestName();
         this.myIcon = me.thumb || 'icons/male_thumb.jpg';
-        this.myUri = me._uri;
-        this.myEndpointId = G.endpoints[browser.name].endpoint;
+        this.myUri = me._uri
+//            ,
+//        this.myEndpointId = G.endpoints[browser.name].endpoint;
       }
       else {
         this.myName = getGuestName();
@@ -1048,8 +1049,7 @@ define('views/ChatPage', [
       webrtc.on('ready', function(connection) {
         connection.emit('info', {
           uri: self.myUri,
-          channelId: self.myChannelId,
-          
+          channelId: self.myChannelId
         })
       });
       

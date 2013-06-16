@@ -349,7 +349,7 @@
             if (self.dead)
               return;
             
-            self.emit('ready', connection.socket.sessionid);
+            self.emit('ready', connection);
             self.sessionReady = true;
             self.testReadiness();
         });
