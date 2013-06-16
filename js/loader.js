@@ -601,7 +601,9 @@ define('globals', function() {
       Css: 'system/designer/Css',
       Grab: 'model/social/Grab',
       AppInstall: 'model/social/AppInstall',
-      Transaction: 'aspects/commerce/Transaction'
+      Transaction: 'aspects/commerce/Transaction',
+      SimplePushNotificationEndpoint: 'model/social/SimplePushNotificationEndpoint',
+      SimplePushAppEndpoint: 'model/social/SimplePushAppEndpoint'
     },
 //    commonTypes: {
 //      model: {

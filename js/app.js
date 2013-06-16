@@ -14,6 +14,7 @@ define('app', [
 ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
+  var simpleEndpointType = G.commonTypes.SimplePushAppEndpoint;
   
   Backbone.View.prototype.close = function() {
     this.$el.detach();
@@ -200,7 +201,6 @@ define('app', [
         
         G.app = App;
         App.started = true;
-        G.log(App.TAG, "error", navigator.push + ' ' + navigator.mozPush + ' ' + navigator.pushNotification + ' ' + navigator.mozPushNotification );
         if (window.location.hash == '#_=_') {
   //        debugger;
           G.log(App.TAG, "info", "hash stripped");
@@ -236,13 +236,16 @@ define('app', [
 
     _registerSimplePushChannel: function(channel) {
       return $.Deferred(function(defer) {        
-        $.when(SimplePush.register(), Voc.getModels(spType)).done(function(endpoint) {
-          var spModel = U.getModel(spType);
-          var simplePushAppEndpoint = new spModel({
-            endpoint: endpoint,
-            channel: channel.channel,
-            appInstall: G.currentAppInstall
-          });
+        $.when(
+          SimplePush.register(), 
+          Voc.getModels(simpleEndpointType)
+        ).done(function(endpoint) {
+          var spModel = U.getModel(simpleEndpointType), 
+              simplePushAppEndpoint = new spModel({
+                endpoint: endpoint,
+                channel: channel.channel,
+                appInstall: G.currentAppInstall
+              });
           
           simplePushAppEndpoint.save(null, {
             success: function() {
@@ -316,21 +319,23 @@ define('app', [
     },
     
     setUpSimplePush: function() {
-      U.require('simplePush').done(function() {
-        App._setUpSimplePush();
+      U.require('simplePush').done(function(SimplePush) {
+        if (SimplePush) 
+          App._setUpSimplePush();
       });
     },
     
     _setUpSimplePush: function() {
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp;
+//          ,
+//          channels = G.notificationChannels || ['defaultAppChannel'];
           
       if (G.currentUser.guest || installedApps.length || !G.currentAppInstall)
         return;
       
-      var channels = G.notificationChannels || [];
-      if (!channels.length)
-        return;
+//      if (!channels.length)
+//        return;
       
       $.when(
         SimplePush.registrations(), 
@@ -346,7 +351,7 @@ define('app', [
         
         var toRegister = _.filter(channels, function(channel) {
           return !endpointList.where({
-            channel: channel
+            channelName: channel
           }).length;
         });
         

@@ -4,9 +4,38 @@ define('simplePush', [
   'utils'
 ], function(G, _, U) {
   var SimplePush = {}, 
+      spType = G.commonTypes.SimplePushAppEndpoint,
+      endpointType = G.commonTypes.SimplePushNotificationEndpoint,
       browser = G.browser;
   
+  // FOR TESTING //
+  if (true) {
+    var channel = U.randomString();
+    _.extend(SimplePush, {
+      register: function() {
+        return $.Deferred(function(defer) {
+          defer.resolve(channel);
+        }).promise();
+      },
+      unregister: function() {
+        return $.Deferred(function(defer) {
+          defer.resolve();
+        }).promise();      
+      },
+      registrations: function() {
+        return $.Deferred(function(defer) {
+          defer.resolve([channel]);
+        }).promise();        
+      }
+    });
+  
+    return SimplePush;
+  }
+  
   if (browser.mozilla) {
+    if (!_.has(navigator, 'push'))
+      return null;
+    
     _.each(['register', 'unregister', 'registrations'], function(method) {
       SimplePush[method] = function() {
         var args = arguments;
@@ -34,6 +63,9 @@ define('simplePush', [
     });
   }
   else {
+    if (!_.has(window, 'chrome') || !_.has(window.chrome, 'pushMessaging'))
+      return null;
+    
     _.extend(SimplePush, {      
       register: function() {
         return $.Deferred(function(defer) {
@@ -62,7 +94,9 @@ define('simplePush', [
        */
       onMessage: function(callback) {
         chrome.pushMessaging.onMessage.addListener(callback);
-      }
+      },
+      
+      unregister: function() {}
 //      ,
 //      
 //      getMessageEndpoint: function(message) {
