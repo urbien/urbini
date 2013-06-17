@@ -1316,8 +1316,8 @@ define('views/ChatPage', [
       this.monitorVideoHealth(video);
 //      this.enableTakeSnapshot();
       this.restyleVideos();
-      this.trigger('video:on');
       this.restyleGoodies();
+      this.trigger('video:on');
     },
 
     processRemoteMedia: function(info, conversation) {
@@ -1357,8 +1357,8 @@ define('views/ChatPage', [
         $(media).addClass('remoteVideo');
         this.restyleVideos();
         this.monitorVideoHealth(media);
-        this.trigger('video:on');
         this.restyleGoodies();
+        this.trigger('video:on');
       }
       else {
         // audio only

@@ -190,7 +190,6 @@ define('app', [
         
         G.app = App;
         App.started = true;
-        G.log(App.TAG, "error", navigator.push + ' ' + navigator.mozPush + ' ' + navigator.pushNotification + ' ' + navigator.mozPushNotification );
         if (window.location.hash == '#_=_') {
   //        debugger;
           G.log(App.TAG, "info", "hash stripped");
