@@ -373,7 +373,26 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  var moreG = {
+  var appWindow, appOrigin;
+  var moreG = {  
+    onMessageFromApp: function(e) {
+      debugger;
+      appWindow = appWindow || e.source;
+      appOrigin = appOrigin || e.origin;
+      var data = e.data;
+      switch (data.type) {
+        case 'channelId':
+          Events.trigger('channelId', data.channelId);
+          break;
+      }
+      console.debug('message from app:', e);
+    },
+    sendMessageToApp: function(msg) {
+      if (appWindow && appOrigin)
+        appWindow.postMessage(msg, appOrigin);
+      else
+        console.debug("can't send message to app, don't know app's window & origin");
+    },
     _appStartDfd: $.Deferred(),
     onAppStart: function() {
       return G._appStartDfd.promise();
@@ -1224,6 +1243,8 @@ define('globals', function() {
   for (var prop in moreG) {
     G[prop] = moreG[prop];
   }
+
+  window.addEventListener('message', G.onMessageFromApp);
   
   var bundles = G.bundles;
   G.files = {appcache: {}};
