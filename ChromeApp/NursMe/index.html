@@ -1,0 +1,36 @@
+<html>
+  <head>
+	<title>
+		NursMe
+	</title>
+	<link rel="stylesheet" href="index.css">
+	<link rel="stylesheet" href="css/pkgStyles.css">
+	<script src="js/lib/jquery.js"></script>
+	<script src="js/lib/socket.io.js"></script>
+	<script src="js/lib/simplewebrtc.js"></script>
+	<script src="js/index.js"></script>
+  </head>
+  <body>
+     <div id="controls">
+       <button id="back" title="Go Back">&#9664;</button>
+       <button id="forward" title="Go Forward">&#9654;</button>
+       <button id="home" title="Go Home">&#8962;</button>
+       <button id="reload" title="Reload">&#10227;</button>
+       <button id="terminate" title="Simulate Crash">&#9760;</button>
+
+       <form id="location-form">
+         <div id="center-column">
+           <input id="location" type="text" value="http://mark.obval.com/urbien/app/NursMe">
+         </div>
+         <input type="submit" value="Go">
+       </form>
+
+     </div>
+	 <!--webview id="webview" src="http://mark.obval.com/urbien/app/NursMe#chatPrivate/_1" style="width:640px; height:480px;"></webview--> 
+	 <webview id="webview" src="http://mark.obval.com/urbien/app/NursMe#chatLobby/http%3A%2F%2Fmark.obval.com%2Furbien%2Fsql%2Fwww.hudsonfog.com%2Fvoc%2Fsystem%2Fdesigner%2FWebClass%3Fid%3D34663" style="width:640px; height:480px;"></webview> 
+	 <div id="media">
+		<div id="localMedia"></div>
+		<div id="remoteMedia"></div>
+	 </div>
+  </body>
+</html>

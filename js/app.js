@@ -14,8 +14,7 @@ define('app', [
 ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
-  var simpleEndpointType = G.commonTypes.SimplePushAppEndpoint;
-  
+  var simpleEndpointType = G.commonTypes.SimplePushNotificationEndpoint;
   Backbone.View.prototype.close = function() {
     this.$el.detach();
     this.unbind();
@@ -54,6 +53,11 @@ define('app', [
   var App = {
     TAG: 'App',
     initialize: function() {
+      G.inWebview = !!G.pushChannelId;
+//      App.sendMessageToApp({
+//        type: 'ready'
+//      });
+//
 //      var error = function(e) {
 //        G.log('init', 'error', "failed to init app, not starting");
 //        throw new Error('failed to load app');
@@ -221,152 +225,167 @@ define('app', [
       
       setTimeout(function() { 
         RM.sync();
-        App.setUpSimplePush();
+        App.setupPushNotifications();
+        if (G.pushChannelId) {
+//          App.replaceGetUserMedia();
+          Events.on('messageToApp', function(msg) {
+            App.sendMessageToApp(msg);
+          });
+        }
       }.bind(this), 100);
     },
-
-    _registerSimplePushChannels: function(channels) {
-      channels = _.isArray(channels) ? channels : [channels];
-      return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
-    },
     
-    _unregisterSimplePushEndpoint: function(endpoint) {
-      return SimplePush.unregister();
-    },
+//    replaceGetUserMedia: function() {
+//      navigator.getUserMedia = function(options, success, error) {
+//        Events.once('messageFromApp:getUserMedia:success', function(e) {
+//          success(e.blobURL);
+//        });
+//        
+//        Events.once('messageFromApp:getUserMedia:error', function(e) {
+//          error(e.error);
+//        });
+//
+//        Events.trigger('messageToApp', {
+//          type: 'getUserMedia',
+//          id: G.nextId(),
+//          mediaConstraints: options  
+//        });
+//      };
+//    },
+//
+//    _registerSimplePushChannels: function(channels) {
+//      channels = _.isArray(channels) ? channels : [channels];
+//      return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
+//    },
+//    
+//    _unregisterSimplePushEndpoint: function(endpoint) {
+//      return SimplePush.unregister();
+//    },
 
-    _registerSimplePushChannel: function(channel) {
+    _registerSimplePushEndpoint: function(endpoint) {
       return $.Deferred(function(defer) {        
-        $.when(
-          SimplePush.register(), 
-          Voc.getModels(simpleEndpointType)
-        ).done(function(endpoint) {
+        Voc.getModels(simpleEndpointType).done(function() {
           var spModel = U.getModel(simpleEndpointType), 
-              simplePushAppEndpoint = new spModel({
+              simplePushNotificationEndpoint = new spModel({
                 endpoint: endpoint,
-                channel: channel.channel,
-                appInstall: G.currentAppInstall
+                appInstall: G.currentAppInstall,
+                browser: G.browser.name.capitalizeFirst()
               });
           
-          simplePushAppEndpoint.save(null, {
+          simplePushNotificationEndpoint.save(null, {
             success: function() {
-              defer.resolve(simplePushAppEndpoint);
+              defer.resolve(simplePushNotificationEndpoint);
             },
             error: function(originalModel, err, opts) {
               debugger;
-              var code = err.code || err.status;
-              if (code === 409) {
-//                  defer.resolve(endpoint);
-                simplePushAppEndpoint.fetch({
-                  success: function() {
-                    defer.resolve(simplePushAppEndpoint);
-                  },
-                  error: defer.resolve // resolve so we can use $.when
-                })
-              }
-              else
-                defer.resolve(); // resolve so we can use $.when
             }
           });
         });
       }).promise();
     },
     
-    _subscribeToNotifications: function(endpoints) {
-      endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
-      SimplePush.onMessage(function(message) {
-        var pushEndpoint = message.pushEndpoint;
-        var storedEndpoint = _.filter(endpoints, function(e) {
-          return e.endpoint === pushEndpoint;
-        })[0];
-        
-        if (!storedEndpoint) {
-          debugger; // this shouldn't happen, but i guess we can fetch the endpoint at this junction
-          return;
-        }
-        
-        var action = endpoint.get('action');
-        if (!action)
-          return;
-        
-        var actionRes = C.getResource(action);
-        var gotModel = Voc.getModels(actionType), 
-            gotAction = $.Deferred();
-        
-        gotModel.done(function() {
-          if (!actionRes) {
-            /// get resource
-            var actionModel = U.getModel(actionType);
-            actionRes = new actionModel({
-              _uri: action
-            });
-            
-            actionRes.fetch({
-              success: function() {
-                gotAction.resolve(actionRes);
-              },
-              error: defer.reject
-            });
-          }
-          else
-            gotAction.resolve(actionRes);
-        });
-        
-        gotAction.done(function(actionRes) {
-          debugger;
-          // run action
-        });
-      });
+//    _subscribeToNotifications: function(endpoints) {
+//      endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
+//      SimplePush.onMessage(function(message) {
+//        var pushEndpoint = message.pushEndpoint;
+//        var storedEndpoint = _.filter(endpoints, function(e) {
+//          return e.endpoint === pushEndpoint;
+//        })[0];
+//        
+//        if (!storedEndpoint) {
+//          debugger; // this shouldn't happen, but i guess we can fetch the endpoint at this junction
+//          return;
+//        }
+//        
+//        var action = endpoint.get('action');
+//        if (!action)
+//          return;
+//        
+//        var actionRes = C.getResource(action);
+//        var gotModel = Voc.getModels(actionType), 
+//            gotAction = $.Deferred();
+//        
+//        gotModel.done(function() {
+//          if (!actionRes) {
+//            /// get resource
+//            var actionModel = U.getModel(actionType);
+//            actionRes = new actionModel({
+//              _uri: action
+//            });
+//            
+//            actionRes.fetch({
+//              success: function() {
+//                gotAction.resolve(actionRes);
+//              },
+//              error: defer.reject
+//            });
+//          }
+//          else
+//            gotAction.resolve(actionRes);
+//        });
+//        
+//        gotAction.done(function(actionRes) {
+//          debugger;
+//          // run action
+//        });
+//      });
+//    },
+    
+    onMessageFromApp: function(e) {
+      console.debug('message from app:', e);
+      G.appWindow = G.appWindow || e.source;
+      G.appOrigin = G.appOrigin || e.origin;
+      var data = e.data,
+          type = data.type,
+          args = data.args || [];
+      
+      delete data.type;
+      args.unshift('messageFromApp:' + type);
+      Events.trigger.apply(Events, args);
+    },
+    sendMessageToApp: function(msg) {
+      var appWin = G.appWindow;
+      if (appWin && G.appOrigin)
+        appWin.postMessage(msg, G.appOrigin);
+      else
+        console.debug("can't send message to app, don't know app's window & origin");
+    },
+    setupPushNotifications: function() {
+      if (G.pushChannelId)
+        App._setupPushNotifications();
     },
     
-    setUpSimplePush: function() {
-      if (G.hasPush) {
-        U.require('simplePush').done(function(SimplePush) {
-          if (SimplePush) 
-            App._setUpSimplePush();
-        });
-      }
-    },
-    
-    _setUpSimplePush: function() {
-      var installedApps = G.currentUser.installedApps,
-          currentApp = G.currentApp;
-//          ,
-//          channels = G.notificationChannels || ['defaultAppChannel'];
-          
-      if (G.currentUser.guest || installedApps.length || !G.currentAppInstall)
+    _setupPushNotifications: function() {
+      if (G.currentUser.guest)
         return;
+      else if (!G.currentAppInstall) {
+        Events.on('appInstall', function(appInstall) {
+          if (appInstall.get('allow'))
+            App._setupPushNotifications();
+        });
+        
+        return;
+      }
       
-//      if (!channels.length)
-//        return;
+      var installedApps = G.currentUser.installedApps,
+          currentApp = G.currentApp,
+          channelId = G.pushChannelId,
+          appInstall = G.currentAppInstall;
       
-      $.when(
-        SimplePush.registrations(), 
-        Voc.getModels()
-      ).done(function(channels) {
-        channels = channels || [];
-        var endpointList = new ResourceList(G.currentUser.notificationEndpoints, {
-          model: U.getModel(endpointType),
+      Voc.getModels(simpleEndpointType).done(function() {
+        var endpointList = new ResourceList(G.currentUser.pushEndpoints, {
+          model: U.getModel(simpleEndpointType),
           query: $.param({
             appInstall: appInstall
           })
         });
         
-        var toRegister = _.filter(channels, function(channel) {
-          return !endpointList.where({
-            channelName: channel
-          }).length;
-        });
-        
-        if (toRegister.length) {
-          App._registerSimplePushChannels(channels).done(function(endpoints) {
-            endpoints = _.compact(endpoints);  // nuke all that failed to load
-//            var endpointsList = new ResourceList(endpoints);
-            App._subscribeToNotifications(endpointsList);
-          });
+        if (endpointList.where({endpoint: channelId}).length) {
+          console.log('PUSH ENDPOINT ALREADY EXISTS');
+          return;
         }
         
-        if (navigator.mozSetMessageHandler)
-          navigator.mozSetMessageHandler('push-register', App.setUpSimplePush);
+        App._registerSimplePushEndpoint(channelId);
       });
     },
     
@@ -574,5 +593,6 @@ define('app', [
     }
   };
   
+  window.addEventListener('message', App.onMessageFromApp);
   return App;
 });

@@ -1,4 +1,3 @@
-console.log("typeof chrome =", typeof chrome);
 (function(window, doc, undefined) {
 var __started = new Date();
 
@@ -373,26 +372,7 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  var appWindow, appOrigin;
   var moreG = {  
-    onMessageFromApp: function(e) {
-      debugger;
-      appWindow = appWindow || e.source;
-      appOrigin = appOrigin || e.origin;
-      var data = e.data;
-      switch (data.type) {
-        case 'channelId':
-          Events.trigger('channelId', data.channelId);
-          break;
-      }
-      console.debug('message from app:', e);
-    },
-    sendMessageToApp: function(msg) {
-      if (appWindow && appOrigin)
-        appWindow.postMessage(msg, appOrigin);
-      else
-        console.debug("can't send message to app, don't know app's window & origin");
-    },
     _appStartDfd: $.Deferred(),
     onAppStart: function() {
       return G._appStartDfd.promise();
@@ -444,7 +424,8 @@ define('globals', function() {
       }).promise();
     },
     isUsingDBShim: (function() {
-      var using = browser.chrome || !window.indexedDB;
+//      var using = browser.chrome || !window.indexedDB;
+      var using = !window.indexedDB;
       if (using)
         console.debug('using indexeddb shim');
       return using;
@@ -624,8 +605,7 @@ define('globals', function() {
       Grab: 'model/social/Grab',
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
-      SimplePushNotificationEndpoint: 'model/social/SimplePushNotificationEndpoint',
-      SimplePushAppEndpoint: 'model/social/SimplePushAppEndpoint'
+      SimplePushNotificationEndpoint: 'model/social/SimplePushNotificationEndpoint'
     },
 //    commonTypes: {
 //      model: {
@@ -647,7 +627,6 @@ define('globals', function() {
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
-    hasPush: !G.currentUser.guest && ((G.browser.firefox && navigator.push) || (G.browser.chrome && window.chrome.pushMessaging)),
     TAG: 'globals',
     checkpoints: [],
     tasks: {},

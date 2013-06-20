@@ -500,15 +500,14 @@
             for (var pc in this.pcs) {
                 this.pcs[pc].end();
             }
-            
-            for (var id in io.sockets) {
-              delete io.sockets[id];
-            }
-            
-            this.connection.socket.removeAllListeners(); // doesn't help
-            this.off('*');
         }
         
+        for (var id in io.sockets) {
+          delete io.sockets[id];
+        }
+        
+        this.connection.socket.removeAllListeners(); // doesn't help
+        this.off('*');
         this.dead = true;
     };
 

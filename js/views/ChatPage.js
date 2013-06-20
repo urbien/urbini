@@ -17,7 +17,20 @@ define('views/ChatPage', [
       doc = document, 
       browser = G.browser,
       D3Widgets,
-      WebRTC;
+      WebRTC,
+      webrtcMethods = ['joinRoom', 'leaveRoom', 'emit', '_emit', 'send', '_send', 'startLocalMedia'];
+
+  function rpc(method) {
+    var args = [].slice.call(arguments, 1),
+        msg = {
+            type: 'rpc:' + method
+        };
+    
+    if (args && args.length)
+      msg.args = args;
+    
+    Events.trigger('messageToApp', msg);
+  };
   
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
@@ -61,7 +74,7 @@ define('views/ChatPage', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
-                      'setUserId', 'requestLocation', 'onclose'); // fixes loss of context for 'this' within methods
+                      'setUserId', 'requestLocation', 'onclose', '_switchToApp'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       
@@ -229,12 +242,35 @@ define('views/ChatPage', [
       this.hasAudio = aConfig.send || aConfig.receive;
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
-//      var req = ['lib/socket.io', 'lib/RTCMultiConnection'];      
-      var req = ['lib/socket.io', 'simplewebrtc'];      
-      U.require(req).done(function(socketIO, simpleWebRTC) {
-        WebRTC = simpleWebRTC;
+      var self = this;
+      this.inWebview = G.inWebview;
+      if (this.inWebview) {
+        WebRTC = function(config) {
+          rpc('startWebRTC', config);
+        };
+        
+        _.each(webrtcMethods, function(method) {
+          WebRTC.prototype[method] = function() {
+            [].unshift.call(arguments, 'webrtc.' + method);
+            rpc.apply(null, arguments);
+          };
+        });
+        
+        WebRTC.prototype.on = function(eventName, callback) {
+          Events.on('messageFromApp:webrtc:' + eventName, function() {
+            callback.apply(self, arguments);
+          });
+        };
+        
         readyDfd.resolve();
-      });
+      }
+      else {
+        var req = ['lib/socket.io', 'simplewebrtc'];
+        U.require(req).done(function(socketIO, simpleWebRTC) {
+          WebRTC = simpleWebRTC;
+          readyDfd.resolve();
+        });
+      }
       
       this.makeTemplate('chatPageTemplate', 'template', type);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
@@ -245,8 +281,6 @@ define('views/ChatPage', [
         this.myName = me.davDisplayName || getGuestName();
         this.myIcon = me.thumb || 'icons/male_thumb.jpg';
         this.myUri = me._uri
-//            ,
-//        this.myEndpointId = G.endpoints[browser.name].endpoint;
       }
       else {
         this.myName = getGuestName();
@@ -326,6 +360,7 @@ define('views/ChatPage', [
     },
     
     events: {
+      'click'                             : '_switchToApp',
       'click #videoChat'                  : 'toggleChat',
       'click #textChat'                   : 'toggleChat',
       'click input'                       : 'chatFadeIn',
@@ -341,8 +376,18 @@ define('views/ChatPage', [
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);
     },
+    _switchToApp: _.debounce(function(e) {
+      var role = e.target.dataset.role;
+      if (this.inWebview && (role != 'header' && role != 'footer') && !$(e.target).parents('[data-role="footer"],[data-role="header"]').length) {
+        rpc('showMedia');
+        return false;
+      }
+    }, 100),
+    switchToApp: function(e) {
+      return !this._switchToApp(e);
+    },
     toggleChat: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.inWebview)
         return;
 
 //      var el = e.target;
@@ -359,7 +404,7 @@ define('views/ChatPage', [
     },
     
     videoFadeIn: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.inWebview)
         return;
         
       this._videoSolid = true;
@@ -370,7 +415,7 @@ define('views/ChatPage', [
     },
 
     videoFadeOut: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.inWebview)
         return;
       
       this._videoSolid = false;
@@ -381,7 +426,7 @@ define('views/ChatPage', [
     },
 
     chatFadeIn: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.inWebview)
         return;
 
       this._chatSolid = true;
@@ -393,7 +438,7 @@ define('views/ChatPage', [
     },
 
     chatFadeOut: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.inWebview)
         return;
 
       this._chatSolid = false;
@@ -403,7 +448,7 @@ define('views/ChatPage', [
       this.$textChat.fadeTo(600, 0.1).css('z-index', 1);
     },
     
-    render: function() {
+    render: function() {      
       var self = this;
       this.$el.html(this.template({
         viewId: this.cid,
@@ -447,7 +492,7 @@ define('views/ChatPage', [
           }
         });
         
-        this.startChat(0);
+        this.startChat();
       }
       
       if (!this.$el.parentNode) 
@@ -1016,8 +1061,7 @@ define('views/ChatPage', [
           config = this.config,
           aConfig = config.audio,
           vConfig = config.video,
-          webrtc,
-          conversations;
+          webrtc;
       
       this._videoOn = this.hasVideo;
       this.disableChat();
@@ -1026,18 +1070,18 @@ define('views/ChatPage', [
       if (this.hasVideo || this.hasAudio) {
         _.extend(this.config, {
           local: !vConfig.preview && !vConfig.send ? null : { // no such thing as local audio
-            _el: self.$localMedia[0],
+            _el: this.inWebview ? 'localMedia' : self.$localMedia[0],
             autoplay: true,
             muted: true
           },
           remote: !vConfig.receive && !aConfig.receive ? null : {
-            _el: self.$remoteMedia[0],
+            _el: this.inWebview ? 'remoteMedia' : self.$remoteMedia[0],
             autoplay: true
           },
           autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
         });
       }
-      
+
       try {
         webrtc = this.chat = new WebRTC(this.config);
       } catch (err) {
@@ -1045,15 +1089,15 @@ define('views/ChatPage', [
         return;
       }
       
-      conversations = webrtc.pcs;
-      webrtc.on('ready', function(connection) {
-        connection.emit('info', {
+      webrtc.on('ready', function() {
+        webrtc._emit('info', {
           uri: self.myUri,
-          channelId: self.myChannelId
+          endpoint: G.pushChannelId,
+          browser: browser.name
         })
       });
       
-      webrtc.on(this.hasVideo || this.hasAudio ? 'readyToCall' : 'readyToText', _.once(function() {
+      webrtc.on('readyToCall', _.once(function() {
         webrtc.joinRoom(roomName);
         self.enableChat();
       }));
@@ -1283,7 +1327,7 @@ define('views/ChatPage', [
       var channel = event.target;
     },
     
-    onMediaAdded: function(info, conversation) {
+    onMediaAdded: function(info) {
       if (info.type == 'local') {
         if (this.isWaitingRoom) // local media can only be video
           Events.trigger('localVideoMonitor:on', info.stream);
@@ -1299,6 +1343,9 @@ define('views/ChatPage', [
      * local media can only be video
      */
     processLocalMedia: function(info, conversation) {
+      if (this.inWebview)
+        return;
+      
       var video = info.media;
       this.localStream = info.stream;
       this.checkVideoSize(video);
@@ -1330,6 +1377,9 @@ define('views/ChatPage', [
     },
 
     processRemoteMedia: function(info, conversation) {
+      if (this.inWebview)
+        return;
+      
       var self = this,
           media = info.media,
           stream = info.stream;
@@ -1541,6 +1591,9 @@ define('views/ChatPage', [
     },
     
     showRequestDialog: function(data) {
+      if (this.inWebview)
+        rpc('hideMedia');
+      
       var self = this,
           request = data.request,
           userInfo = this.getUserInfo(data.from),
