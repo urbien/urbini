@@ -82,6 +82,9 @@ define('views/Header', [
         buttons.publish = true;
       }
       
+      if (this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass)) {
+        buttons.publish = true;
+      }
       var btnOptions = {
         model: this.model, 
         parentView: this,
@@ -198,6 +201,7 @@ define('views/Header', [
     events: {
       'change #fileUpload'        : 'fileUpload',
       'click #categories'         : 'showCategories',
+      'click #moreRanges'         : 'showMoreRanges',
       'click #backToCall'         : 'backToCall',
       'click #hangUp'             : 'hangUp',
       'click #sendToCall'         : 'sendToCall'
@@ -228,6 +232,18 @@ define('views/Header', [
       });
       */    
 
+    },
+    showMoreRanges: function(e) {
+      Events.stopEvent(e);
+      if (this.hashParams['$more']) {
+        delete this.hashParams['$more']; 
+        this.hashParams['$less'] = 'y'; 
+      }
+      else {
+        delete this.hashParams['$less']; 
+        this.hashParams['$more'] = 'y'; 
+      }
+      this.router.navigate(U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
     },
     showCategories: function(e) {
       Events.stopEvent(e);
@@ -496,6 +512,18 @@ define('views/Header', [
       
       if (U.isAssignableFrom(this.vocModel, G.commonTypes.App) && !res)
         this.categories = true;
+      else if (!res) {
+        var hash = window.location.hash;
+        var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
+        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  this.hashParams['$prop'] == 'range') { 
+          this.moreRanges = true;
+          if (this.hashParams['$more'])
+            this.moreRangesTitle = 'Less ranges';
+          else
+            this.moreRangesTitle = 'More ranges';
+        }
+      }
+
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
         this.$el.html(this.template({className: 'ui-grid-b'}));
       else
@@ -543,7 +571,7 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      if (!this.noButton  &&  !this.categories) {
+      if (!this.noButton  &&  !this.categories  &&  !this.moreRanges) {
         this.$el.find('#name').removeClass('resTitle');
         this.$el.find('#pageTitle').css('margin-bottom', '0px');
       }

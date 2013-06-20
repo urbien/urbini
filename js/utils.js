@@ -1348,6 +1348,19 @@ define('utils', [
 //      }
     },
 
+    getFormattedDate1: function(time) {
+      var d = new Date(time);
+
+      var date = d.getDate();
+      date = date < 10 ? "0"+date : date;
+
+      var mon = d.getMonth()+1;
+      mon = mon < 10 ? "0"+mon : mon;
+
+      var year = d.getFullYear()
+
+      return (mon + "/" + date + "/" + year);
+    },
     getFormattedDate: function(time, pieceOfDate) {
 //      var date = new Date(parseFloat(time));
       //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
@@ -1660,7 +1673,7 @@ define('utils', [
         val = (prop.multiValue) ? {value: displayName} : {value: val, displayName: displayName};
       }
       else
-        val = {value: val};
+        val = {value: val, prop: prop, model: this.vocModel};
       
       var propTemplate = Templates.getPropTemplate(prop);
 //      if (propTemplate == 'stringPT'  &&  prop.maxSize  &&  prop.maxSize > 1000)

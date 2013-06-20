@@ -215,6 +215,17 @@
 
 <script type="text/template" id="genericOptionsDialogTemplate">
   <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
+    <ul data-role="listview" data-inset="false" data-theme="d"> 
+      <li data-role="divider" data-theme="e" style="font-size: 20px;">{{= title }}</li>
+      {{ _.each(options, function(option) { }}
+        <li data-icon="false" style="padding:5px 20px;"><a href="{{= option.href || '#' }}" style="font-size: 20px;" id="{{= option.id }}" >{{= option.text }}</a></li>
+      {{ })                                 }}
+    </ul>
+  </div>
+</script>
+
+<script type="text/template" id="genericOptionsDialogTemplate1">
+  <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
     <ul data-role="listview" data-inset="true" data-theme="d">
       <li data-role="divider" data-theme="e">{{= title }}</li>
       {{ _.each(options, function(option) { }}
@@ -433,7 +444,7 @@
 </script-->
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : G.U.getFormattedDate(value) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value)) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
@@ -541,9 +552,8 @@
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ var distanceProp = U.getCloneOf(this.vocModel.properties, 'Distance.distance')[0]; }}
-  {{ if (typeof distanceProp != 'undefined') { }}
-    <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
+  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
+    <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   <!--
@@ -584,9 +594,8 @@
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ var distanceProp = U.getCloneOf(this.vocModel.properties, 'Distance.distance')[0]; }}
-  {{ if (typeof distanceProp != 'undefined') { }}
-    <span class="ui-li-count">{{= this.resource.get(distanceProp) + ' mi' }}</span>
+  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
+    <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
   <!--
   {{ if (typeof v_submitToTournament != 'undefined') { }}
@@ -612,11 +621,11 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="cursor: pointer;"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
-      {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }}>
+  <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px; margin-bottom:-10px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+      {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
-    {{ if (!obj.homePage) { }}   
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" 
+    <!-- {{ if (!obj.homePage) { }} -->   
+    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
     {{ if (typeof width != 'undefined'  &&  width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -624,8 +633,8 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
     /> 
-    {{ } }}
-    <div class="ui-btn-text" style="min-height:24px;font-size:16px; {{= obj.icon && !obj.homePage ? 'float:left;' : '' }} {{= obj.image ? 'margin-left:53px' :  'margin-left:15px;' }}" 
+    <!-- {{ } }} -->
+    <div class="ui-btn-text" style="min-height:38px;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -647,8 +656,8 @@
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li style="min-height:24px;cursor:pointer;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
-    <div style="font-size:16px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
+  <li style="min-height:30px;cursor:pointer;" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
+    <div style="font-size:18px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
       {{= title }}   <span class="ui-li-count">{{= newAlerts }}</span> 
     </div>
   </li>
@@ -666,7 +675,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->
-  <li data-icon="{{= icon }}" data-theme="{{= G.theme.menu}}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:16px;">
+  <li data-icon="{{= icon }}" data-theme="{{= G.theme.menu}}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:18px;font-weight: normal;">
     {{= title }}
   </li>
 </script>
@@ -970,12 +979,13 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} >
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
     {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
+    {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
 <!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
     <div id="name" class="resTitle" {{= this.categories ? '' : 'style="min-height: 20px"' }} align="center">
       <h3 id="pageTitle">{{= this.title }}</h3>
