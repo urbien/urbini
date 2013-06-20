@@ -210,6 +210,7 @@ define('views/ResourceListItemView', [
       var distanceProp = U.getCloneOf(this.vocModel, 'Distance.distance')[0];
       if (distanceProp) {
         var distance = m.get(distanceProp);
+        json.distance = Math.round(distance * 100) / 100;
         json.distanceUnits = 'mi';
       }
       

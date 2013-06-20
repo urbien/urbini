@@ -287,6 +287,11 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 /* default images 'fitting' in RL in case when image dimensions are uknown. Use "max-height: none" only with processed images */
 .image_fitted .ui-li-thumb { max-width: none; max-height: none; min-width: 80px; min-height: 80px; clip: rect(0px, 80px, 80px, 0px); }
 .menu_image_fitted .ui-li-thumb { max-width: 42px; max-height: none; min-width: 42px; min-height: 42px; clip: rect(0px, 42px, 42px, 0px); }
+.menu_image_fitted .thumb { margin-right:4px; max-width: 42px; max-height: none; float:right; min-width: 42px; min-height: 42px; clip: rect(0px, 42px, 42px, 0px); position: relative;}
+#rightMenuItems li div, #menuItems li div {padding-top: 0px; padding-right: 0px; padding-left: 0px; font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
+#menuItems li {padding-bottom: 0px; }
+#rightMenuItems li[role="heading"], #menuItems li[role="heading"] {padding-bottom:10px;font-size:18px;font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
+
 
 /* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
@@ -434,4 +439,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 }
 .chattee img {
   max-height: 44px;
+}
+#doTry .ui-btn-text {
+  float: left;
 }

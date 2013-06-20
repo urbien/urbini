@@ -206,7 +206,7 @@ define('views/ChatPage', [
       this.hasVideo = !this.textOnly && (this.isPrivate || this.isClient); // HACK, waiting room might not have video
       this.hasAudio = !this.textOnly && (this.hasVideo || this.isPrivate);
       this.config = {
-        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
+        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 23),
         video: {
           send: this.isPrivate || this.isClient,
           receive: !this.isWaitingRoom,
