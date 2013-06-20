@@ -1,9 +1,10 @@
 // from: https://github.com/GoogleChrome/chrome-app-samples/tree/master/push-sample-app
 // This function gets called in the packaged app model on launch.
-var myWin,
-	appName = 'NurseMe',
-	serverOrigin = 'http://urbien.com',
-	webviewOrigin = serverOrigin + "/*";
+var mark = true,
+	myWin,
+	serverOrigin = mark ? 'http://mark.obval.com' : 'http://urbien.com',
+    appHome = serverOrigin + (mark ? '/urbien' : '') + "/app/NursMe",
+	appName = 'NurseMe';
 
 function runApp() {
 	// Do the normal setup steps every time the app starts, listen for events.

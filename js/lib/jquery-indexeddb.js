@@ -1,5 +1,9 @@
 //'use strict';
-define('jqueryIndexedDB', ['globals'], function(G) {
+var req = ['globals'];
+if (Lablz.isUsingDBShim)
+  req.push('indexedDBShim');
+
+define('jqueryIndexedDB', req, function(G) {
   var usingShim = G.isUsingDBShim;
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;

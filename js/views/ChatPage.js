@@ -20,18 +20,6 @@ define('views/ChatPage', [
       WebRTC,
       webrtcMethods = ['joinRoom', 'leaveRoom', 'emit', '_emit', 'send', '_send', 'startLocalMedia'];
 
-  function rpc(method) {
-    var args = [].slice.call(arguments, 1),
-        msg = {
-            type: 'rpc:' + method
-        };
-    
-    if (args && args.length)
-      msg.args = args;
-    
-    Events.trigger('messageToApp', msg);
-  };
-  
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
   };
@@ -247,13 +235,13 @@ define('views/ChatPage', [
       if (this.inWebview) {
         WebRTC = function(config) {
           this.callbacks = {};
-          rpc('startWebRTC', config);
+          U.rpc('startWebRTC', config);
         };
         
         _.each(webrtcMethods, function(method) {
           WebRTC.prototype[method] = function() {
             [].unshift.call(arguments, 'webrtc.' + method);
-            rpc.apply(null, arguments);
+            U.rpc.apply(null, arguments);
           };
         });
         
@@ -396,7 +384,7 @@ define('views/ChatPage', [
       
       var role = e.target.dataset.role;
       if (this.inWebview && (role != 'header' && role != 'footer') && !$(e.target).parents('[data-role="footer"],[data-role="header"]').length) {
-        rpc('showMedia');
+        U.rpc('showMedia');
         return false;
       }
     }, 100),
@@ -1614,7 +1602,7 @@ define('views/ChatPage', [
     
     showRequestDialog: function(data) {
       if (this.inWebview)
-        rpc('hideMedia');
+        U.rpc('hideMedia');
       
       var self = this,
           request = data.request,
