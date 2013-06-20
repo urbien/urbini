@@ -820,7 +820,7 @@ define('views/ChatPage', [
       var height = $(doc).height();
       var atBottom = this.atBottom();
       this.$messages.append(this.messageTemplate(info));
-      if (atBottom)
+      if (atBottom || true)
         this.scrollToBottom();
     },
 
