@@ -1,5 +1,6 @@
 (function(window, doc) {
 var bgPage,
+  runtimeId,
 	serverOrigin,
 	appHome,
 	webviewOrigin,
@@ -61,12 +62,34 @@ var bgPage,
     };
 
   chrome.runtime.getBackgroundPage(function(page) {
-	bgPage = page;
+    bgPage = page;
+    channelId = bgPage.channelId;
+    if (!channelId) {
+      bgPage.addEventListener('gotChannelId', function(id) {
+        channelId = id;
+      });
+    }
+    
     serverOrigin = bgPage.serverOrigin;
     appHome = bgPage.appHome;
+    runtimeId = bgPage.runtimeId;
     webviewOrigin = serverOrigin + "/*";
   });
     
+  chrome.runtime.onMessage.addListener(
+    function(msg, sender, sendResponse) {
+      debugger;
+      if (sender.id == runtimeId) {
+        if (msg.type === 'push')
+          postMessage(msg);
+        
+        sendResponse({"result": "OK"});
+      } else {
+        sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
+      }
+    }
+  );
+  
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   window.onresize = doLayout;
   setPaths(RPC);
@@ -364,28 +387,12 @@ var bgPage,
     if (channelId)
       _sendChannelId(channelId);
     else {
-      window.addEventListener('gotChannelId', function(e) {
+      bgPage.addEventListener('gotChannelId', function(e) {
         _sendChannelId(e.channelId);
       });
     }
   };
 
-  chrome.pushMessaging.getChannelId(true, function(message) {
-    channelId = message.channelId;
-    var evt = document.createEvent("Event");
-    evt.initEvent("gotChannelId", true, true); 
-    evt.channelId = channelId;
-    window.dispatchEvent(evt);
-  });
-
-  function onPushMessage(msg) {
-    console.debug('got push msg', msg);
-	postMessage({
-		type: 'push',
-		args: [msg]
-	});
-  };
-  
   function handlePermissionRequest(e) {
     debugger;
     var allowed = false;
@@ -403,9 +410,7 @@ var bgPage,
     postMessage({
       type: 'channelId',
       channelId: channelId
-    });
-    
-    chrome.pushMessaging.onMessage.addListener(onPushMessage);
+    });    
   }
   
   function postMessage(msg) {

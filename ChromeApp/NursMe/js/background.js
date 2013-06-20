@@ -3,8 +3,9 @@
 var mark = true,
 	myWin,
 	serverOrigin = mark ? 'http://mark.obval.com' : 'http://urbien.com',
-    appHome = serverOrigin + (mark ? '/urbien' : '') + "/app/NursMe",
-	appName = 'NurseMe';
+  appHome = serverOrigin + (mark ? '/urbien' : '') + "/app/NursMe",
+	appName = 'NurseMe',
+	runtimeId = chrome.runtime.id;
 
 function runApp() {
 	// Do the normal setup steps every time the app starts, listen for events.
@@ -32,6 +33,15 @@ function runApp() {
 			
 		});
 	});
+	
+	chrome.pushMessaging.getChannelId(true, function(message) {
+	  channelId = message.channelId;
+	  var evt = document.createEvent("Event");
+	  evt.initEvent("gotChannelId", true, true); 
+	  evt.channelId = channelId;
+	  window.dispatchEvent(evt);
+    chrome.pushMessaging.onMessage.addListener(onPushMessage);
+	});
 }
 
 chrome.app.runtime.onLaunched.addListener(function() {
@@ -42,24 +52,15 @@ chrome.app.runtime.onRestarted.addListener(function() {
 	runApp();
 });
 
-// chrome.runtime.onConnect.addListener(function(p) {
-// port = p;
-// console.log(port);
-// port.onMessage.addListener(function(msg) {
-// debugger;
-// console.log("msg", msg);
-// });
-// });
+function onPushMessage(msg) {
+  debugger;
+  console.debug('got push msg', msg);
+  chrome.runtime.sendMessage(runtimeId, {
+    type: 'push',
+    args: [msg]
+  });
+};
 
-// function postMessage(msg) {
-// debugger;
-// port && port.postMessage(msg);
-// }
-
-// window.addEventListener('message', function(e) {
-// debugger;
-// console.log("received message", e);
-// });
 
 // This function gets called in the packaged app model on install.
 // Typically on install you will get the channelId, and send it to your
@@ -68,59 +69,6 @@ chrome.app.runtime.onRestarted.addListener(function() {
 	// firstTimePushSetup();
 	 // console.log("Push Messaging Sample Client installed!");
 // });
-
-// This function gets called in the packaged app model on shutdown.
-// You can override it if you wish to do clean up at shutdown time.
-chrome.runtime.onSuspend.addListener(function() {
-	console.log("Shutting down", appName);
-});
-
-// This should only be called once on the instance of chrome where the app
-// is first installed for this user.  It need not be called every time the
-// Push Messaging Client App starts.
-// function firstTimePushSetup() {
-	// Start fetching the channel ID (it will arrive in the callback).
-	// chrome.pushMessaging.getChannelId(true, channelIdCallback);
-// }
-
-// Register for push messages.
-// This should be called every time the Push Messaging App starts up.
-// function setupPush() {
-
-	// Begin listening for Push Messages.
-	// chrome.pushMessaging.onMessage.addListener(messageCallback);
-	// console.log('called addListener');
-
-	// We can ensure that adding the listener took effect as intended.
-	// var listeners = chrome.pushMessaging.onMessage.hasListeners();
-	// console.log('hasListeners returned ' + listeners + ' after calling addListener');
-// }
-
-// Unregister for Push Messages (only call if you have previously
-// called setupPush).
-// function takedownPush() {
-	// chrome.pushMessaging.onMessage.removeListener(messageCallback);
-	// console.log('called removeListener');
-// }
-
-// This callback recieves the Push Message from the push server.
-// function messageCallback(message) {
-	// console.log("push messaging callback seen");
-	// console.log("payload is "                 + message.payload);
-	// console.log("subChannel is "              + message.subchannelId);
-	// showPushMessage(message.payload, message.subchannelId.toString());
-// }
-
-// When the channel ID callback is available, this callback recieves it.
-// The push client app should communicate this to the push server app as
-// the 'address' of this user and this app (on all instances of Chrome).
-// function channelIdCallback(message) {
-	// debugger;
-	// myWin.postMessage({
-		// type: 'channelId',
-		// channelId: message.channelId
-	// }, webviewOrigin);
-// }
 
 // When a Push Message arrives, show it as a text notification (toast)
 function showPushMessage(payload, subChannel) {
