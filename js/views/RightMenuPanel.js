@@ -296,7 +296,7 @@ define('views/RightMenuPanel', [
         if (G.currentUser.guest)
           U.addToFrag(frag, this.menuItemTemplate({title: 'Login', icon: 'user', mobileUrl: uri, homePage: 'y'}));
         else
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted'}));
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
         if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
           U.addToFrag(frag, this.menuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'}));
