@@ -15,13 +15,17 @@ DOMReady.add( function () {
   div.innerHTML = l.homePage;
   
   var scripts = div.getElementsByTagName('script');
+/*  console.log('scripts: ' + scripts.length); */ 
 
   try {
     for (var i=0; scripts  &&  i<scripts.length; i++) {
       var s = d.createElement('script'); 
       s.type = 'text/javascript';
-      s.innerText = scripts[i].innerText;
-      console.log('script: ' + s.innerText);
+      if (scripts[i].innerText)
+        s.innerText = scripts[i].innerText;
+      else 
+        s.innerHTML =  scripts[i].innerHTML;
+/*      console.log('script: ' + scripts[i].innerHTML); */ 
       head.appendChild(s);
 /*      eval(scripts[i].innerText); */ 
     }
