@@ -389,7 +389,7 @@ define('jqueryIndexedDB', req, function(G) {
 				dbOpenReq.onsuccess = function(e){
 					copyReq();
 					var db = dbOpenReq.result;
-					if (typeof db.setVersion === "function") {
+					if (usingShim && typeof db.setVersion === "function") {
 						var oldVersion = parseInt(db.version || 0, 10);
 						var newVersion = typeof version === "undefined" ? (oldVersion === 0 ? 1 : oldVersion) : parseInt(version, 10);
 						if (oldVersion < newVersion) {
