@@ -1,8 +1,8 @@
 (function(window, doc) {
   var SHOW_BUTTONS = true,
-    serverOrigin = 'http://mark.obval.com',
-    appHome = "http://mark.obval.com/urbien/app/NursMe",
-    webviewOrigin = "http://mark.obval.com/urbien/*",
+    serverOrigin = 'http://urbien.com',
+    appHome = serverOrigin + "/app/NursMe",
+    webviewOrigin = serverOrigin + "/*",
     isLoading = false,
     webviewWindow,
     visibilityState,
@@ -267,7 +267,13 @@
     $webview.bind('loadstop', sendChannelId);
     $webview.bind('permissionrequest', handlePermissionRequest);
     $window.focus(changeVisibility).blur(changeVisibility);
+	// window.addEventListener('onbeforeunload', function() {
+		// stopWebRTC();
+	// });
 
+  };
+
+    // var changeVisibility = _.debounce(function(e) {
     function changeVisibility(e) {
 	  var newState = e.type === 'blur' ? 'hidden' : 'visible',
 		  prev = visibilityState;
@@ -287,19 +293,13 @@
 			});
 		  }
 	  }
-    };
-  };
+	}
+    // }, 2000, true);
 
   /**
    *  send this on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
   **/
   function sendChannelId(e) {
-    // echo = setInterval(function() {
-      // webviewWindow.postMessage({
-        // type: 'echo'
-      // }, webviewOrigin);       
-    // }, 500);
-    // webview.unbind('loadstop', sendChannelId);
     if (channelId)
       _sendChannelId(channelId);
     else {
@@ -320,6 +320,10 @@
   function onPushMessage(msg) {
     debugger;
     console.debug('got push msg', msg);
+	postMessage({
+		type: 'push',
+		args: [msg]
+	});
   };
   
   function handlePermissionRequest(e) {
@@ -425,16 +429,26 @@
     $mediaHolder.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 0);
       $webview.css('z-index', 1);
-      $controls && $controls.css('z-index', 1);
+	  // $webview.show();
+	  // $mediaHolder.hide();
+      if ($controls) {
+		$controls.css('z-index', 1);
+		$mediaHolder.find('video').css('top', controls.offsetHeight);
+	  }
     });
   }
 
   function showMedia() {
     $mediaHolder.fadeTo(600, 1);
+	if ($controls)
+	  $mediaHolder.find('video').css('top', 0);
     $webview.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 1);
       $webview.css('z-index', 0);
-      $controls && $controls.css('z-index', 0);
+	  // $webview.hide();
+	  // $mediaHolder.show();
+      if ($controls)
+		$controls.css('z-index', 0);
     });
   }
   
@@ -446,4 +460,8 @@
     stopWebRTC();
   });
 
+  // chrome.app.window.onClosed.addListener(function() {
+	// stopWebRTC();
+  // });
+  
 })(window, document);

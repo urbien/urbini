@@ -84,7 +84,7 @@
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
-  <div id="videoChat" class="videoChat" style="z-index:100;width:100%;height:100%;left:0;top:0;">
+  <div id="videoChat" class="videoChat">
     <div id="localMedia"></div>
     <div id="remoteMedia"></div>
   </div>    

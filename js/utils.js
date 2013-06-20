@@ -2958,6 +2958,12 @@ define('utils', [
       var $dialog = $('#' + id);
       $dialog.trigger('create');
       $dialog.popup().popup("open");
+      if (options.onok)
+        $dialog.find('[data-cancel]').click(options.onok);
+      if (options.onok)
+        $dialog.find('[data-ok]').click(options.onok);
+      
+      return $dialog;
     },
     
     deposit: function(params) {

@@ -490,6 +490,7 @@
      * @param ... whatever else you want to send in your join event
      */
     WebRTC.prototype.joinRoom = function(name) {
+        this.dead = false;
         this.connection.emit('join', name);
         this.roomName = name;
     };

@@ -10,7 +10,5 @@ video {
   border: 5px solid #AAA;  
   max-width: 30%;
   position: absolute;
-  top: 10px;
-  left: 10px;
   z-index: 1;
 }

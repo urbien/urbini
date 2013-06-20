@@ -225,7 +225,7 @@ define('views/ChatPage', [
           preview: (!this.isWaitingRoom || this.isClient) && this.hasVideo
         },
         audio: {
-          send: !this.isWaitingRoom && this.hasAudio,
+          send: this.hasAudio,
           receive: !this.isWaitingRoom || this.isAgent
         },
         log: true,
@@ -246,6 +246,7 @@ define('views/ChatPage', [
       this.inWebview = G.inWebview;
       if (this.inWebview) {
         WebRTC = function(config) {
+          this.callbacks = {};
           rpc('startWebRTC', config);
         };
         
@@ -257,11 +258,24 @@ define('views/ChatPage', [
         });
         
         WebRTC.prototype.on = function(eventName, callback) {
-          Events.on('messageFromApp:webrtc:' + eventName, function() {
-            callback.apply(self, arguments);
-          });
+          this.callbacks[eventName] = callback;
+          Events.on('messageFromApp:webrtc:' + eventName, callback, self);
         };
-        
+
+        WebRTC.prototype.off = function(eventName, callback) {
+          if (eventName === '*') {
+            for (var event in this.callbacks) {
+              Events.off('messageFromApp:webrtc:' + event, this.callbacks[event]);
+            }
+            
+            return;
+          }
+          
+          callback = callback || this.callbacks[eventName];
+          if (callback)
+            Events.off('messageFromApp:webrtc:' + eventName, callback);
+        };
+
         readyDfd.resolve();
       }
       else {
@@ -377,6 +391,9 @@ define('views/ChatPage', [
       G.log('Changing to page:' + window.location.href);
     },
     _switchToApp: _.debounce(function(e) {
+      if (!this.isActive())
+        return;
+      
       var role = e.target.dataset.role;
       if (this.inWebview && (role != 'header' && role != 'footer') && !$(e.target).parents('[data-role="footer"],[data-role="header"]').length) {
         rpc('showMedia');
@@ -469,6 +486,9 @@ define('views/ChatPage', [
       this.$remoteMedia       = this.$('div#remoteMedia');
       this.$videoChat         = this.$('#videoChat');
       this.$textChat          = this.$('#textChat');
+      
+      if (this.inWebview)
+        this.$videoChat.remove();
       
       this.$localMedia.hide();
       if (this.resource && this.isPrivate) {
@@ -1377,6 +1397,13 @@ define('views/ChatPage', [
     },
 
     processRemoteMedia: function(info, conversation) {
+      this.rtcCall = {
+        id: this.myInfo.id,
+        url: window.location.href,
+        title: 'Call in progress'
+      };
+      
+      Events.trigger('newRTCCall', this.rtcCall);
       if (this.inWebview)
         return;
       
@@ -1430,13 +1457,6 @@ define('views/ChatPage', [
       var userInfo = this.getUserInfo(conversation.id);
       var title = userInfo && userInfo.name || this.getPageTitle();
 //      this.enableTakeSnapshot();
-      this.rtcCall = {
-        id: this.myInfo.id,
-        url: window.location.href,
-        title: 'Call in progress'
-      };
-      
-      Events.trigger('newRTCCall', this.rtcCall);
     },
 
     onMediaRemoved: function(info, conversation) {
@@ -1445,7 +1465,7 @@ define('views/ChatPage', [
         //
       }
       else {
-        if (info.stream && this.rtcCall)
+        if (this.inWebview || info.stream)
           Events.trigger('endRTCCall', this.rtcCall);
         
         this.$('canvas#' + info.media.id).remove();
@@ -1455,9 +1475,11 @@ define('views/ChatPage', [
 
     leave: function() {
   //    this.chat && this.chat.leave();
-      if (this.chat) {
+      if (this.inWebview)
+        this.chat.off('*');
+      
+      if (this.chat)
         this.chat.leaveRoom();
-      }
     },
     
     initChat: function() {
@@ -1598,38 +1620,48 @@ define('views/ChatPage', [
           request = data.request,
           userInfo = this.getUserInfo(data.from),
           id = 'chatRequestDialog',
-          popupHtml = this.requestDialog({
+          $popup = U.dialog({
             id: id,
             //      title: userInfo.name + ' is cold and alone and needs your help',
             header: request.type.capitalizeFirst() + ' Request',
             img: userInfo.icon,
             title: request.title,
             ok: 'Accept',
-            cancel: 'Decline'
+            cancel: 'Decline',
+            oncancel: function(e) {
+              self.denyRequest(request, data.from);
+              $popup.parent() && $popup.popup('close');
+              return false;
+            },
+            onok: function(e) {
+              self.grantRequest(request, data.from);
+              $popup.parent() && $popup.popup('close');
+              return false;
+            }
           }),
           $popup;
       
-      $('#' + id).remove();
-      
+//      $('#' + id).remove();
+//      
   //    $('.ui-page-active[data-role="page"]').find('div[data-role="content"]').append(popupHtml);
-      this.$el.append(popupHtml);
+//      this.$el.append(popupHtml);
   //    $.mobile.activePage.append(popupHtml).trigger("create");
-      $popup = $('#' + id);
-      $popup.find('[data-cancel]').click(function(e) {
-        self.denyRequest(request, data.from);
-        $popup.parent() && $popup.popup('close');
-        return false;
-      });
-      
-      $popup.find('[data-ok]').click(function(e) {
-        self.grantRequest(request, data.from);
-        $popup.parent() && $popup.popup('close');
-        return false;
-      });
-  
-      $popup.trigger('create');
-      $popup.popup().popup("open");
-      return $popup;
+//      $popup = $('#' + id);
+//      $popup.find('[data-cancel]').click(function(e) {
+//        self.denyRequest(request, data.from);
+//        $popup.parent() && $popup.popup('close');
+//        return false;
+//      });
+//      
+//      $popup.find('[data-ok]').click(function(e) {
+//        self.grantRequest(request, data.from);
+//        $popup.parent() && $popup.popup('close');
+//        return false;
+//      });
+//  
+//      $popup.trigger('create');
+//      $popup.popup().popup("open");
+//      return $popup;
     },
     
     makeCall: function() {

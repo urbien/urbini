@@ -2,8 +2,8 @@
 // This function gets called in the packaged app model on launch.
 var myWin,
 	appName = 'NurseMe',
-	serverDomain = 'http://mark.obval.com',
-	webviewOrigin = serverDomain + "/urbien/*";
+	serverOrigin = 'http://urbien.com',
+	webviewOrigin = serverOrigin + "/*";
 
 function runApp() {
 	// Do the normal setup steps every time the app starts, listen for events.
@@ -20,7 +20,7 @@ function runApp() {
 				data = e.data,
 				type = data && data.type;
 			
-			if (!data || origin !== serverDomain)
+			if (!data || origin !== serverOrigin)
 				return;
 			
 			console.debug("msg", e.data);

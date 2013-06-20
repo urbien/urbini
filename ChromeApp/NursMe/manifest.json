@@ -17,7 +17,6 @@
 	"pushMessaging",
 	"http://*/",
 	"webview",
-	"experimental",
 	"audioCapture", 
     "videoCapture",
 	"notifications"

@@ -343,6 +343,7 @@ define('app', [
       args.unshift('messageFromApp:' + type);
       Events.trigger.apply(Events, args);
     },
+    
     sendMessageToApp: function(msg) {
       var appWin = G.appWindow;
       if (appWin && G.appOrigin)
@@ -350,9 +351,31 @@ define('app', [
       else
         console.debug("can't send message to app, don't know app's window & origin");
     },
+    
+    onpush: function(msg) {
+      debugger;
+      if (msg.subchannelId === 0) {
+        var $dialog = U.dialog({
+          title: "There's a client waiting to be assisted in the lobby",
+          id: 'lobbyRequestDialog',
+          header: 'Client Waiting',
+          ok: 'Accept',
+          cancel: 'Ignore',
+          onok: function() {
+            Events.trigger('navigate', G.tabs[0].hash);
+          },
+          oncancel: function() {
+            G.log('event', 'ignored push notification about dying client in lobby');
+          }
+        });
+      }
+    },
+    
     setupPushNotifications: function() {
-      if (G.pushChannelId)
+      if (G.pushChannelId) {
         App._setupPushNotifications();
+        Events.on('messageFromApp:push', App.onpush, App);
+      }
     },
     
     _setupPushNotifications: function() {
