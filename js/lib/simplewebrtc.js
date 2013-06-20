@@ -73,7 +73,8 @@
         webRTCSupport = true,
         docStyle = document.documentElement.style,
         isChrome = 'WebkitTransform' in docStyle,
-        isFirefox = 'MozBoxSizing' in docStyle;
+        isFirefox = 'MozBoxSizing' in docStyle,
+        isAndroid = navigator.userAgent.match(/Android/i);
     
     if (!(isFirefox || isChrome) || 
         !(RTCPeerConnection && RTCIceCandidate && RTCSessionDescription && MediaStream)) {
@@ -786,7 +787,7 @@
         var self = this
         this.pc.createOffer(function(sessionDescription) {
             logger.log('setting local description');
-            if (isChrome)
+            if (isChrome && !isAndroid)
               sessionDescription.sdp = transformOutgoingSdp(sessionDescription.sdp);
               
             self.pc.setLocalDescription(sessionDescription);
@@ -815,7 +816,7 @@
         logger.log('answer called');        
         this.pc.createAnswer(function(sessionDescription) {
             logger.log('setting local description');
-            if (isChrome)
+            if (isChrome && !isAndroid)
               sessionDescription.sdp = transformOutgoingSdp(sessionDescription.sdp);
             
             self.pc.setLocalDescription(sessionDescription);
