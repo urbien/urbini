@@ -3162,7 +3162,23 @@ define('utils', [
     },
     randomString: function() {
       return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+    },
+    
+    /**
+     * sends a remote procedure call to the packaged app code
+     */
+    rpc: function(method) {
+      var args = [].slice.call(arguments, 1),
+          msg = {
+              type: 'rpc:' + method
+          };
+      
+      if (args && args.length)
+        msg.args = args;
+      
+      Events.trigger('messageToApp', msg);
     }
+
   };
 
   for (var p in U.systemProps) {

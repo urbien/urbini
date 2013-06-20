@@ -1,5 +1,5 @@
 //'use strict';
-define('app', [
+var deps = [
   'globals',
   'backbone',
   'templates', 
@@ -11,7 +11,12 @@ define('app', [
   'resourceManager',
   'router',
   'collections/ResourceList'
-], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
+];
+
+if (Lablz.inWebview)
+  deps.push('chrome');
+
+define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList, Chrome) {
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   var simpleEndpointType = G.commonTypes.SimplePushNotificationEndpoint;
@@ -53,17 +58,33 @@ define('app', [
   var App = {
     TAG: 'App',
     initialize: function() {
-      G.inWebview = !!G.pushChannelId;
-//      App.sendMessageToApp({
-//        type: 'ready'
-//      });
-//
-//      var error = function(e) {
-//        G.log('init', 'error', "failed to init app, not starting");
-//        throw new Error('failed to load app');
-//      };
-      
-      
+//      if (G.inWebview) {
+//        setInterval(function() {
+//          var id = '' + G.nextId();
+//          Chrome.notifications.create(id, {
+//            type: 'basic',
+//            title: 'TestNotification - ' + id,
+//            message: 'Message body',
+//            iconUrl: 'icon_128.png',
+//            buttons: [
+//              {
+//                title: 'Abla'
+//              }, 
+//              {
+//                title: 'Babla'
+//              }
+//            ]
+//          }, function() {
+//            console.log('notification created');
+//          });
+//          
+//          Chrome.notifications.onButtonClicked(function(notificationId, btnIdx) {
+//            debugger;
+//          });
+//          
+//        }, 5000);        
+//      }
+            
       var self = this;
       self.doPreStartTasks().always(function() {
         self.startApp().always(function() {
@@ -354,7 +375,10 @@ define('app', [
     
     onpush: function(msg) {
       debugger;
-      if (msg.subchannelId === 0) {
+      var subchannelId = msg.subchannelId,
+          payload = msg.paylod;
+      
+      if (subchannelId === 0 && payload) {
         var $dialog = U.dialog({
           title: "There's a client waiting to be assisted in the lobby",
           id: 'lobbyRequestDialog',

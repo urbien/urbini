@@ -1,5 +1,9 @@
 //'use strict';
-define('jqueryIndexedDB', ['globals'], function(G) {
+var req = ['globals'];
+if (Lablz.isUsingDBShim)
+  req.push('indexedDBShim');
+
+define('jqueryIndexedDB', req, function(G) {
   var usingShim = G.isUsingDBShim;
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
@@ -19,7 +23,11 @@ define('jqueryIndexedDB', ['globals'], function(G) {
 			default:
 				return IDBTransaction.READ_WRITE || "readwrite";
 		}
-	}
+	};
+	
+	function abort(idbTransaction) {
+	  idbTransaction && idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
+	};
 	
 	$.extend({
 		/**
@@ -87,7 +95,7 @@ define('jqueryIndexedDB', ['globals'], function(G) {
 							try {
 								return wrap.objectStore(idbTransaction.objectStore(storeName));
 							} catch (e) {
-								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
+								abort(idbTransaction);
 								return wrap.objectStore(null);
 							}
 						},
@@ -95,14 +103,14 @@ define('jqueryIndexedDB', ['globals'], function(G) {
 							try {
 								return wrap.objectStore(idbTransaction.db.createObjectStore(storeName, storeParams));
 							} catch (e) {
-								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
+                abort(idbTransaction);
 							}
 						},
 						"deleteObjectStore": function(storeName){
 							try {
 								idbTransaction.db.deleteObjectStore(storeName);
 							} catch (e) {
-								idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
+                abort(idbTransaction);
 							}
 						},
 						"abort": function(){

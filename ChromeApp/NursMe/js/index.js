@@ -1,15 +1,16 @@
 (function(window, doc) {
-  var SHOW_BUTTONS = true,
-    serverOrigin = 'http://urbien.com',
-    appHome = serverOrigin + "/app/NursMe",
-    webviewOrigin = serverOrigin + "/*",
-    isLoading = false,
-    webviewWindow,
+var bgPage,
+	serverOrigin,
+	appHome,
+	webviewOrigin,
+	isLoading = false,
+	SHOW_BUTTONS = true,
     visibilityState,
     
     /* START HTML elements / JQuery objects */
     webview,
     $webview, 
+    webviewWindow,
     $window = $(window), 
     controls,
     $controls,
@@ -39,18 +40,56 @@
         $(sel).setAttribute(attribute, value);
       },
       showMedia: showMedia,
-      hideMedia: hideMedia
+      hideMedia: hideMedia,
+	  notifications: {
+		/**
+		 * @param callback - a message type to send back when the notification has been created
+		*/
+		create: function(id, options, callback) {
+			if (callback) {
+				var eventName = callback;
+				callback = getCallback(eventName);
+			}
+			
+			leaf(chrome, this._path)(id, options, callback);
+		},
+		onButtonClicked: function(callbackEvent) {
+			var callback = getCallback(callbackEvent);
+			leaf(chrome, this._path).addListener(callback);
+		}
+	  }
     };
 
-
+  chrome.runtime.getBackgroundPage(function(page) {
+	bgPage = page;
+    serverOrigin = bgPage.serverOrigin;
+    appHome = bgPage.appHome;
+    webviewOrigin = serverOrigin + "/*";
+  });
     
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   window.onresize = doLayout;
+  setPaths(RPC);
 
   function has(obj, key) {
     return hasOwnProperty.call(obj, key);
   };
   
+  function setPaths(obj) {
+    for (var pkgName in obj) {
+      var pkg = obj[pkgName];
+      pkg._path = (obj._path ? obj._path + '.' : '') + pkgName;
+      switch (typeof pkg) {
+        case 'function':
+          obj[pkgName] = pkg.bind(pkg);
+          break;
+        case 'object':
+          setPaths(pkg);
+          break;
+      }
+    }
+  };
+
   function shallowCopy(obj) {
     if (obj == null || typeof obj !== 'object')
       return obj;
@@ -89,6 +128,31 @@
     
     return copy;
   }
+
+  function index(obj, i) {
+     return obj[i];
+  };
+  
+  function leaf(obj, path, separator) {
+     if (typeof obj == 'undefined' || !obj)
+       return null;
+     
+     return path.split(separator || '.').reduce(index, obj);
+   };
+  
+  function getCallback(eventName) {
+	return function() {
+		var args = [].slice.call(arguments);
+		for (var i = 0; i < args.length; i++) {
+			args[i] = shallowCopy(args[i]);
+		}
+		
+		postMessage({
+			type: eventName,
+			args: args
+		});
+	}
+  };
   
   function navigateTo(url) {
     resetExitedState();
@@ -251,9 +315,10 @@
         rpc = /^rpc:/.test(type) ? type.slice(4) : null;
         
       if (rpc) {
-        rpc = rpc.split('.');
-        var obj = rpc.length === 1 ? RPC : RPC[rpc[0]];
-        obj[rpc[rpc.length - 1]].apply(obj, data.args || []);
+		var dotIdx = rpc.lastIndexOf('.');
+		var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
+		var fn = parent[rpc.slice(dotIdx + 1)];
+        fn.apply(parent, data.args || []);
         return;
       };
     });
@@ -267,10 +332,6 @@
     $webview.bind('loadstop', sendChannelId);
     $webview.bind('permissionrequest', handlePermissionRequest);
     $window.focus(changeVisibility).blur(changeVisibility);
-	// window.addEventListener('onbeforeunload', function() {
-		// stopWebRTC();
-	// });
-
   };
 
     // var changeVisibility = _.debounce(function(e) {
@@ -318,7 +379,6 @@
   });
 
   function onPushMessage(msg) {
-    debugger;
     console.debug('got push msg', msg);
 	postMessage({
 		type: 'push',
@@ -429,8 +489,6 @@
     $mediaHolder.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 0);
       $webview.css('z-index', 1);
-	  // $webview.show();
-	  // $mediaHolder.hide();
       if ($controls) {
 		$controls.css('z-index', 1);
 		$mediaHolder.find('video').css('top', controls.offsetHeight);
@@ -445,23 +503,12 @@
     $webview.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 1);
       $webview.css('z-index', 0);
-	  // $webview.hide();
-	  // $mediaHolder.show();
       if ($controls)
 		$controls.css('z-index', 0);
     });
   }
   
-//  function isMediaHidden() {
-//    return !$mediaHolder.css('z-index');
-//  }
-
   chrome.runtime.onSuspend.addListener(function() {
     stopWebRTC();
   });
-
-  // chrome.app.window.onClosed.addListener(function() {
-	// stopWebRTC();
-  // });
-  
 })(window, document);

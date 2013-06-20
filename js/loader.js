@@ -372,7 +372,8 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  var moreG = {  
+  G.inWebview = browser.chrome && window.chrome;
+  var moreG = {
     _appStartDfd: $.Deferred(),
     onAppStart: function() {
       return G._appStartDfd.promise();
@@ -424,8 +425,7 @@ define('globals', function() {
       }).promise();
     },
     isUsingDBShim: (function() {
-//      var using = browser.chrome || !window.indexedDB;
-      var using = !window.indexedDB;
+      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       if (using)
         console.debug('using indexeddb shim');
       return using;
@@ -1113,12 +1113,9 @@ define('globals', function() {
           var workerPromise = G.getXhrWorkerPromise();
           workerPromise.done(function(xhrWorker) {          
             xhrWorker.onmessage = function(event) {
-              try {
-                G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-                complete(event.data);
-              } finally {
-                G.recycleXhrWorker(this);
-              }
+              G.recycleXhrWorker(this);
+              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+              complete(event.data);
             };
             
             xhrWorker.onerror = function(err) {
@@ -1306,6 +1303,9 @@ require(['globals'], function(G) {
       extrasBundleDfd = extrasBundle._deferred = $.Deferred(),
       priorities = [],
       appcache = G.files.appcache;
+  
+  if (G.inWebview)
+    preBundle.js.push('chrome');
   
   for (var type in preBundle) {
     var subBundle = preBundle[type];
