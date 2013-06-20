@@ -425,7 +425,8 @@ define('globals', function() {
       }).promise();
     },
     isUsingDBShim: (function() {
-      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
+//      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
+      var using = !window.indexedDB;
       if (using)
         console.debug('using indexeddb shim');
       return using;
