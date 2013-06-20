@@ -372,7 +372,7 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  G.inWebview = browser.chrome && window.chrome;
+  G.inWebview = browser.chrome && window.chrome && window.chrome.runtime;
   var moreG = {
     _appStartDfd: $.Deferred(),
     onAppStart: function() {

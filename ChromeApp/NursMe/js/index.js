@@ -51,6 +51,8 @@ var bgPage,
 				var eventName = callback;
 				callback = getCallback(eventName);
 			}
+			else
+			  callback = doNothing;
 			
 			leaf(chrome, this._path)(id, options, callback);
 		},
@@ -78,7 +80,6 @@ var bgPage,
     
   chrome.runtime.onMessage.addListener(
     function(msg, sender, sendResponse) {
-      debugger;
       if (sender.id == runtimeId) {
         if (msg.type === 'push')
           postMessage(msg);
@@ -94,6 +95,8 @@ var bgPage,
   window.onresize = doLayout;
   setPaths(RPC);
 
+  function doNothing() {};
+  
   function has(obj, key) {
     return hasOwnProperty.call(obj, key);
   };

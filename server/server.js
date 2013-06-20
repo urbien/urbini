@@ -126,7 +126,7 @@ function getUserRooms(uri, type) {
   if (!awake.length)
     return [];
 
-  roomNames = _.filter(_.unique(_.flatten(_.pluck(awake, 'rooms'))));
+  roomNames = _.unique(_.flatten(_.pluck(awake, 'rooms')));
 
   switch (type) {
   case undefined:

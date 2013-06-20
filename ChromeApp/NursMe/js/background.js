@@ -41,6 +41,12 @@ function runApp() {
 	  evt.channelId = channelId;
 	  window.dispatchEvent(evt);
     chrome.pushMessaging.onMessage.addListener(onPushMessage);
+//    setInterval(function() {
+//      onPushMessage({
+//        subchannelId: '0',
+//        payload: '1'
+//      });
+//    }, 5000);
 	});
 }
 

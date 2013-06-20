@@ -374,25 +374,40 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
     },
     
     onpush: function(msg) {
-      debugger;
       var subchannelId = msg.subchannelId,
-          payload = msg.paylod;
+          payload = msg.payload;
       
-      if (subchannelId === 0 && payload) {
-        var $dialog = U.dialog({
-          title: "There's a client waiting to be assisted in the lobby",
-          id: 'lobbyRequestDialog',
-          header: 'Client Waiting',
-          ok: 'Accept',
-          cancel: 'Ignore',
-          onok: function() {
-            Events.trigger('navigate', G.tabs[0].hash);
-          },
-          oncancel: function() {
-            G.log('event', 'ignored push notification about dying client in lobby');
+      console.log('got push message', JSON.stringify(msg));
+      Chrome.notifications.create(G.nextId() + '', {
+        type: 'basic',
+        title: 'Push message received',
+        message: JSON.stringify(msg),
+        iconUrl: 'icon_128.png',
+        buttons: [
+          {
+            title: 'Abla'
+          }, 
+          {
+            title: 'Babla'
           }
-        });
-      }
+        ]
+      });
+
+//      if (subchannelId == 0 && payload) {
+//        var $dialog = U.dialog({
+//          title: "There's a client waiting to be assisted in the lobby",
+//          id: 'lobbyRequestDialog',
+//          header: 'Client Waiting',
+//          ok: 'Accept',
+//          cancel: 'Ignore',
+//          onok: function() {
+//            Events.trigger('navigate', G.tabs[0].hash);
+//          },
+//          oncancel: function() {
+//            G.log('event', 'ignored push notification about dying client in lobby');
+//          }
+//        });
+//      }
     },
     
     setupPushNotifications: function() {
