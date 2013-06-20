@@ -3166,7 +3166,10 @@ define('utils', [
           defer.resolve(position);
         }, defer.reject);
       });
-    }    
+    },
+    randomString: function() {
+      return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+    }
   };
 
   for (var p in U.systemProps) {

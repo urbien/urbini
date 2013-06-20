@@ -534,8 +534,11 @@ define('globals', function() {
               return info.name == fullName;
             })) {
               found = true;
-              bundle._deferred = bundle._deferred || $.Deferred();
-              bundlePromises.push(bundle._deferred.promise());
+              if (bName !== 'pre') {                
+                bundle._deferred = bundle._deferred || $.Deferred();
+                bundlePromises.push(bundle._deferred.promise());
+              }
+              
               break;
             }
           }
@@ -1290,7 +1293,7 @@ require(['globals'], function(G) {
   
   var bundles = G.bundles,
       preBundle = bundles.pre,
-      preBundleDfd = preBundle._deferred = $.Deferred(),
+//      preBundleDfd = preBundle._deferred = $.Deferred(),
       postBundle = bundles.post, 
       postBundleDfd = postBundle._deferred = $.Deferred(),
       extrasBundle = bundles.extras,
@@ -1334,7 +1337,7 @@ require(['globals'], function(G) {
 
   function loadRegular() {
     G.loadBundle(preBundle).done(function() {
-      preBundle._deferred.resolve();
+//      preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle");
       
       G.startedTask("loading modules");
