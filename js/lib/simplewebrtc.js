@@ -63,10 +63,10 @@
     };
     
     // normalize environment
-    var RTCPeerConnection       = window.RTCPeerConnection     || window.mozRTCPeerConnection     			  || window.webkitRTCPeerConnection,
-        RTCIceCandidate         = window.RTCIceCandidate       || window.mozRTCIceCandidate,
-        RTCSessionDescription   = window.RTCSessionDescription || window.mozRTCSessionDescription,
-        MediaStream             = window.MediaStream           || window.webkitMediaStream,
+    var RTCPeerConnection       = window.mozRTCPeerConnection     || window.webkitRTCPeerConnection   || window.RTCPeerConnection,
+        RTCIceCandidate         = window.mozRTCIceCandidate       || window.RTCIceCandidate,
+        RTCSessionDescription   = window.mozRTCSessionDescription || window.RTCSessionDescription,
+        MediaStream             = window.webkitMediaStream        || window.MediaStream,
         getUserMedia = null,
         attachMediaStream = null,
         reattachMediaStream = null,
@@ -902,7 +902,7 @@
 
     ////////////////////////////////////////////////////////////////////////// START ////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////// adapted from Muaz Khan's RTCMultiConnection (with minor modifications) ////////////////////////////////////////////////
-    ///////////////////////////////////////// Copyright © 2013 [Muaz Khan](https://github.com/muaz-khan)<[@muazkh](http://twitter.com/muazkh)>. /////////////////////
+    ///////////////////////////////////////// Copyright <A9> 2013 [Muaz Khan](https://github.com/muaz-khan)<[@muazkh](http://twitter.com/muazkh)>. /////////////////////
 
     function chunkify(text, chunkSize) {
         var chunks = [], 
