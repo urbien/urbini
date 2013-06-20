@@ -321,8 +321,9 @@ define('router', [
       var key = query || typeUri;
       if (query)
         key = U.getQueryString(U.getQueryParams(key, model), true);
-      
-      var list = C.getResourceList(model, key);
+
+      var params = U.getHashParams();
+      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, key);
       if (list && !list._lastFetchedOn)
         list = null;
       

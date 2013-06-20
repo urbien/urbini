@@ -205,14 +205,14 @@ define('views/ChatPage', [
       this.hasVideo = !this.textOnly && (this.isPrivate || this.isClient); // HACK, waiting room might not have video
       this.hasAudio = !this.textOnly && (this.hasVideo || this.isPrivate);
       this.config = {
-        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 22),
+        data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 23),
         video: {
-          send: this.isPrivate,
-          receive: !this.isWaitingRoom || this.isAgent,
+          send: this.isPrivate || this.isClient,
+          receive: !this.isWaitingRoom,
           preview: (!this.isWaitingRoom || this.isClient) && this.hasVideo
         },
         audio: {
-          send: !this.isWaitingRoom && this.hasAudio,
+          send: this.hasAudio,
           receive: !this.isWaitingRoom || this.isAgent
         },
         log: true,
@@ -1029,8 +1029,9 @@ define('views/ChatPage', [
             muted: true
           },
           remote: !vConfig.receive && !aConfig.receive ? null : {
-            _el: self.$remoteMedia[0],
-            autoplay: true
+            _el: self.$remoteMedia[0]
+//                ,
+//            autoplay: true
           },
           autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
         });
