@@ -12,6 +12,8 @@ function runApp() {
 			'width': 1024,
 			'height': 768
 		}
+	}, function(window) {
+	  myWin = window;
 	});
 	
 	chrome.pushMessaging.getChannelId(true, function(message) {
@@ -26,7 +28,7 @@ function runApp() {
 //        subchannelId: '0',
 //        payload: '1'
 //      });
-//    }, 5000);
+//    }, 10000);
 	});
 }
 
@@ -39,7 +41,6 @@ chrome.app.runtime.onRestarted.addListener(function() {
 });
 
 function onPushMessage(msg) {
-  debugger;
   console.debug('got push msg', msg);
   chrome.runtime.sendMessage(runtimeId, {
     type: 'push',

@@ -4,6 +4,7 @@ var bgPage,
 	serverOrigin,
 	appHome,
 	webviewOrigin,
+	tabId,
 	isLoading = false,
 	SHOW_BUTTONS = true,
     visibilityState,
@@ -42,6 +43,9 @@ var bgPage,
       },
       showMedia: showMedia,
       hideMedia: hideMedia,
+//      focus: function() {
+//        chrome.tabs.update(tabId, {active: true}); // tabs are not available in packaged apps, only extensions
+//      },
   	  notifications: {
     		/**
     		 * @param callback - a message type to send back when the notification has been created
@@ -59,13 +63,26 @@ var bgPage,
     		onButtonClicked: function(callbackEvent) {
     			var callback = getCallback(callbackEvent);
     			leaf(chrome, this._path).addListener(callback);
-    		}
+    		},
+        onClicked: function(callbackEvent) {
+          var callback = getCallback(callbackEvent);
+          leaf(chrome, this._path).addListener(callback);
+        },
+        onDisplayed: function(callbackEvent) { 
+          var callback = getCallback(callbackEvent);
+          leaf(chrome, this._path).addListener(callback);
+        },
+        onClosed: function(callbackEvent) {
+          var callback = getCallback(callbackEvent);
+          leaf(chrome, this._path).addListener(callback);
+        }
   	  }
     };
 
   chrome.runtime.getBackgroundPage(function(page) {
     bgPage = page;
     channelId = bgPage.channelId;
+    tabId = bgPage.tabId;
     if (!channelId) {
       bgPage.addEventListener('gotChannelId', function(id) {
         channelId = id;

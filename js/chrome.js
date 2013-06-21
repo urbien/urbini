@@ -48,6 +48,15 @@ define('chrome', ['globals', 'underscore', 'events', 'utils'], function(G, _, Ev
       },
       onButtonClicked: function(callback) {
         U.rpc(this._path, createCallbackEvent(callback));        
+      },
+      onClicked: function(callback) {
+        U.rpc(this._path, createCallbackEvent(callback));        
+      },
+      onDisplayed: function(callback) {
+        U.rpc(this._path, createCallbackEvent(callback));        
+      },
+      onClosed: function(callback) {
+        U.rpc(this._path, createCallbackEvent(callback));        
       }
     }
   };

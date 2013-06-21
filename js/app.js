@@ -57,34 +57,7 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
   
   var App = {
     TAG: 'App',
-    initialize: function() {
-//      if (G.inWebview) {
-//        setInterval(function() {
-//          var id = '' + G.nextId();
-//          Chrome.notifications.create(id, {
-//            type: 'basic',
-//            title: 'TestNotification - ' + id,
-//            message: 'Message body',
-//            iconUrl: 'icon_128.png',
-//            buttons: [
-//              {
-//                title: 'Abla'
-//              }, 
-//              {
-//                title: 'Babla'
-//              }
-//            ]
-//          }, function() {
-//            console.log('notification created');
-//          });
-//          
-//          Chrome.notifications.onButtonClicked(function(notificationId, btnIdx) {
-//            debugger;
-//          });
-//          
-//        }, 5000);        
-//      }
-            
+    initialize: function() {            
       var self = this;
       self.doPreStartTasks().always(function() {
         self.startApp().always(function() {
@@ -375,23 +348,25 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
     
     onpush: function(msg) {
       var subchannelId = msg.subchannelId,
-          payload = msg.payload;
+          payload = msg.payload,
+          id = G.nextId() + '';
       
       console.log('got push message', JSON.stringify(msg));
-      Chrome.notifications.create(G.nextId() + '', {
+      Chrome.notifications.create(id, {
         type: 'basic',
-        title: 'Push message received',
-        message: JSON.stringify(msg),
-        iconUrl: 'icon_128.png',
-        buttons: [
-          {
-            title: 'Abla'
-          }, 
-          {
-            title: 'Babla'
-          }
-        ]
+        title: "Client Waiting",
+        message: "There's a client waiting to be assisted in the lobby",
+        iconUrl: 'icon_128.png'
       });
+      
+      Chrome.notifications.onClicked(function(notificationId) {
+        console.log('clicked notification, id:', id);
+        if (notificationId == id) {
+          U.rpc('focus');
+          Events.trigger('navigate', G.tabs[0].hash);
+        }
+      });
+
 
 //      if (subchannelId == 0 && payload) {
 //        var $dialog = U.dialog({
