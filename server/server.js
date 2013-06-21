@@ -28,7 +28,7 @@ function getEndpoint(client) {
   if (!info) {
     dfd = Q.defer();
     dfd.reject();
-    return dfd.promise();
+    return dfd.promise;
   }
 
   endpoint = info.endpoint;
@@ -64,21 +64,26 @@ function isPrivateRoom(name) {
   return /^p_/.test(name);
 };
 
+function isLobbyRoom(name) {
+  return /^l_/.test(name);
+};
+
 function isPublicRoom(name) {
-  return !isPrivateRoom(name);
+  return !isPrivateRoom(name) && !isLobbyRoom(name);
 };
 
 function getStatus(client) {
   var info = clientInfo[client.id],
       rooms = info && info.uri ? getUserRooms(info.uri) : [],
-      privateRooms = _.filter(rooms, isPrivateRoom);
+      privateRooms = _.filter(rooms, isPrivateRoom),
+      lobbies = _.filter(rooms, isLobbyRoom);
 
   if (!rooms || !rooms.length)
     return 'Away';
   else if (privateRooms && privateRooms.length)
     return 'InPrivateRoom';
   else
-    return 'InPublicRoom';
+    return lobbies.length ? 'InLobby' : 'InPublicRoom';
 };
 
 function onErrorFunc(type) {
@@ -87,7 +92,7 @@ function onErrorFunc(type) {
   }
 }
 
-function updateStatus(client) {
+var updateStatus = _.debounce(function(client) {
   var status = getStatus(client);
 
   // this gets cached, so it doesn't request it every time
@@ -114,7 +119,7 @@ function updateStatus(client) {
         dfd.reject();
     }, onErrorFunc("failed to update client status on app server1"));
   }, onErrorFunc("failed to update client status on app server2"));
-};
+}, 3000, true);
 
 function getUserRooms(uri, type) {
   // get the unique set of room names that this client is in, and where he's awake
@@ -160,20 +165,28 @@ io.sockets.on('connection', function (client) {
   });
 
   client.on('sleep', function(details) {
-    clientInfo[client.id].awake = false;
+    var info = clientInfo[client.id];
+  if (info) {
+    info.awake = false;
     updateStatus(client);
+  }
   });
 
   client.on('wake', function() {
-    clientInfo[client.id].awake = true;
+    var info = clientInfo[client.id];
+  if (info) {
+    info.awake = true;
     updateStatus(client);
+  }
   });
 
   client.on('join', function (name) {
     var info = clientInfo[client.id];
+  if (info) {
     info.awake = true;
     info.rooms = (info && info.rooms) || [];
     info.rooms.push(name);
+  }
 
     client.join(name);
     io.sockets.in(name).emit('joined', {
@@ -188,7 +201,8 @@ io.sockets.on('connection', function (client) {
     var rooms = io.sockets.manager.roomClients[client.id];  
     for (var name in rooms) {
       if (name) {
-        io.sockets.in(name.slice(1)).emit('left', {
+    name = name.slice(1);
+        io.sockets.in(name).emit('left', {
           room: name,
           id: client.id
         });
