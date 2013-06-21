@@ -1385,6 +1385,7 @@ define('views/ChatPage', [
     },
 
     processRemoteMedia: function(info, conversation) {
+      this.stopRingtone();
       this.rtcCall = {
         id: this.myInfo.id,
         url: window.location.href,
@@ -1468,6 +1469,8 @@ define('views/ChatPage', [
       
       if (this.chat)
         this.chat.leaveRoom();
+      
+      this.stopRingtone();
     },
     
     initChat: function() {
