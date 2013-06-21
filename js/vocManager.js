@@ -50,14 +50,7 @@ define('vocManager', [
         models = _.clone(G.modelsMetadata);
         var c = Voc.currentModel = U.getCurrentType();
         if (c && !models[c])
-          models[c] = {};
-            
-        // In case we were offline and had to settle for stale models from localStaleage
-        if (!options.overwrite) {
-          models = U.filterObj(models, function(type, info) {
-            return !U.getModel(type);
-          });
-        }
+          models[c] = {};            
       }
       else {
         switch (U.getObjectType(models)) {
@@ -74,6 +67,12 @@ define('vocManager', [
         }
       }
       
+      if (!options.overwrite) {
+        models = U.filterObj(models, function(type, info) {
+          return !U.getModel(type);
+        });
+      }
+
       if (!G.hasLocalStorage)
         return Voc.__fetchModels(models, options);
         

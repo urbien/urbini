@@ -1843,7 +1843,7 @@ define('resourceManager', [
       RM.taskQueue = new TaskQueue("DB");
       RM.runTask(function() {
         var defer = this;
-        var dbPromise = RM.deleteDatabase().done(function(crap, event) {
+        var dbPromise = RM.cleanDatabase().done(function(crap, event) {
           G.databaseCompromised = false;
           G.log(RM.TAG, 'db', 'deleted database, opening up a fresh one');
           if (dbOpen)
