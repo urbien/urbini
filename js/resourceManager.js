@@ -498,7 +498,9 @@ define('resourceManager', [
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
     updateDB: function(types) {
-      return $.Deferred(function(defer) {
+      return RM.runTask(function() {
+        var defer = this;
+//        return $.Deferred(function(defer) {
         var toKill = _.clone(types);
         if (RM.db) {
           toKill = _.filter(toKill, function(m) {
@@ -510,9 +512,11 @@ define('resourceManager', [
           else
             defer.resolve();
         }
-        else
-          RM.openDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
-      }).promise();
+        else {
+            RM.openDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
+        }
+//        }).promise();
+      }, {name: 'update db', sequential: true});
     },
     
     deleteDatabase: function() {
@@ -525,7 +529,6 @@ define('resourceManager', [
     },
 
     cleanDatabase: function() {
-      debugger;
       G.log(RM.TAG, 'info', 'cleaning db');
       var names = this.getObjectStoreNames(),
           dfd = $.Deferred(),
@@ -549,7 +552,7 @@ define('resourceManager', [
         
         RM.runTask(function() {
           RM.openDB({toKill: toKill}).done(this.resolve).fail(this.reject);
-        }, {name: "Clean DB"}).done(dfd.resolve).fail(dfd.reject);
+        }, {name: "Clean DB", sequential: true, preventPileup: true}).done(dfd.resolve).fail(dfd.reject);
       }
       else
         dfd.resolve();
