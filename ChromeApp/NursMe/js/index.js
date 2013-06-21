@@ -509,27 +509,28 @@ var bgPage,
   };
   
   function hideMedia() {
-    $webview.fadeTo(600, 1);
+    $webview.fadeTo(600, 0.7);
     $controls && $controls.fadeTo(600, 1);
-    $mediaHolder.fadeTo(600, 0, function() {
+    $mediaHolder.fadeTo(600, 0.5, function() {
       $mediaHolder.css('z-index', 0);
       $webview.css('z-index', 1);
       if ($controls) {
-		$controls.css('z-index', 1);
-		$mediaHolder.find('video').css('top', controls.offsetHeight);
-	  }
+      	$controls.css('z-index', 1);
+      	$mediaHolder.find('video').css('top', controls.offsetHeight);
+      }
     });
   }
 
   function showMedia() {
     $mediaHolder.fadeTo(600, 1);
-	if ($controls)
-	  $mediaHolder.find('video').css('top', 0);
+  	if ($controls)
+  	  $mediaHolder.find('video').css('top', 0);
+  	
     $webview.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 1);
       $webview.css('z-index', 0);
       if ($controls)
-		$controls.css('z-index', 0);
+        $controls.css('z-index', 0);
     });
   }
   
