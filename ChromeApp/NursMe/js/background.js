@@ -1,8 +1,7 @@
 // from: https://github.com/GoogleChrome/chrome-app-samples/tree/master/push-sample-app
 // This function gets called in the packaged app model on launch.
-var mark = true,
-	myWin,
-	runtimeId = chrome.runtime.id;
+var myWin,
+	  runtimeId = chrome.runtime.id;
 
 function runApp() {
 	// Do the normal setup steps every time the app starts, listen for events.
