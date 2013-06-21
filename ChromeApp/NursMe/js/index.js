@@ -42,25 +42,25 @@ var bgPage,
       },
       showMedia: showMedia,
       hideMedia: hideMedia,
-	  notifications: {
-		/**
-		 * @param callback - a message type to send back when the notification has been created
-		*/
-		create: function(id, options, callback) {
-			if (callback) {
-				var eventName = callback;
-				callback = getCallback(eventName);
-			}
-			else
-			  callback = doNothing;
-			
-			leaf(chrome, this._path)(id, options, callback);
-		},
-		onButtonClicked: function(callbackEvent) {
-			var callback = getCallback(callbackEvent);
-			leaf(chrome, this._path).addListener(callback);
-		}
-	  }
+  	  notifications: {
+    		/**
+    		 * @param callback - a message type to send back when the notification has been created
+    		*/
+    		create: function(id, options, callback) {
+    			if (callback) {
+    				var eventName = callback;
+    				callback = getCallback(eventName);
+    			}
+    			else
+    			  callback = doNothing;
+    			
+    			leaf(chrome, this._path)(id, options, callback);
+    		},
+    		onButtonClicked: function(callbackEvent) {
+    			var callback = getCallback(callbackEvent);
+    			leaf(chrome, this._path).addListener(callback);
+    		}
+  	  }
     };
 
   chrome.runtime.getBackgroundPage(function(page) {
@@ -72,10 +72,7 @@ var bgPage,
       });
     }
     
-    serverOrigin = bgPage.serverOrigin;
-    appHome = bgPage.appHome;
     runtimeId = bgPage.runtimeId;
-    webviewOrigin = serverOrigin + "/*";
   });
     
   chrome.runtime.onMessage.addListener(
@@ -210,6 +207,8 @@ var bgPage,
     } else if (event.type == 'killed') {
       doc.body.classList.add('killed');
     }
+    
+    navigateTo(appHome); 
   }
 
   function resetExitedState() {
@@ -236,9 +235,8 @@ var bgPage,
     isLoading = true;
 
     resetExitedState();
-    if (!event.isTopLevel) {
+    if (!event.isTopLevel)
       return;
-    }
 
     locInput.value = event.url;
   }
@@ -247,11 +245,10 @@ var bgPage,
     // We don't remove the loading class immediately, instead we let the animation
     // finish, so that the spinner doesn't jerkily reset back to the 0 position.
     isLoading = false;
-    if (!webviewWindow)
-      gotWebviewWindow(webview.contentWindow);      
   }
 
   function handleLoadAbort(event) {
+    debugger;
     console.log('  loadAbort');
     console.log('  url: ' + event.url);
     console.log('  isTopLevel: ' + event.isTopLevel);
@@ -323,6 +320,10 @@ var bgPage,
     
     $webview = $('#webview');
     webview = $webview[0];
+    appHome = webview.src;
+    serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
+    webviewOrigin = serverOrigin + "/*";
+    
     $mediaHolder = $('#media');
     
     $mediaHolder.click(function() {
