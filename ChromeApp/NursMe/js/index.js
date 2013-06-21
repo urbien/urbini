@@ -265,7 +265,6 @@ var bgPage,
   }
 
   function handleLoadAbort(event) {
-    debugger;
     console.log('  loadAbort');
     console.log('  url: ' + event.url);
     console.log('  isTopLevel: ' + event.isTopLevel);
