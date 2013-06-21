@@ -372,7 +372,7 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  G.inWebview = browser.chrome && window.chrome && window.chrome.runtime;
+  G.inWebview = browser.chrome && G.pushChannelId;
   var moreG = {
     _appStartDfd: $.Deferred(),
     onAppStart: function() {
@@ -868,7 +868,7 @@ define('globals', function() {
     /**
      * get a promise of a web worker
      */
-    getXhrWorkerPromise: function(taskType) {
+    getXhrWorker: function(taskType) {
       taskType = taskType || 'main';
       return $.Deferred(function(dfd) {
         if (!G.workers[taskType]) {
@@ -885,7 +885,7 @@ define('globals', function() {
           G.workerQueues[taskType] = G.workerQueues[taskType] || [];
           G.workerQueues[taskType].push(dfd);
         }
-      });
+      }).promise();
     },
     
     /**
@@ -897,7 +897,7 @@ define('globals', function() {
       worker.__lablzTaken = false;
       var q = G.workerQueues[worker._taskType];
       if (q && q.length)
-        q.shift().resolve(worker);
+        q.shift().resolve(G.captureWorker(worker));
     },
     
     pruneBundle: function(bundle, options) {
@@ -1041,7 +1041,14 @@ define('globals', function() {
             async: false
           },
           source = options.source = options.source || 'localStorage',
-          async = options.async;
+          async = options.async,
+          worker;
+
+      // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
+      bundlePromise.always(function() {
+        if (worker)
+          G.recycleXhrWorker(worker);
+      });
       
       G.pruneBundle(bundle, options).done(function(pruned) {
         if (!pruned.length) {
@@ -1111,26 +1118,15 @@ define('globals', function() {
         }
   
         if (useWorker) {
-          var workerPromise = G.getXhrWorkerPromise();
-          workerPromise.done(function(xhrWorker) {          
-            xhrWorker.onmessage = function(event) {
-              G.recycleXhrWorker(this);
+          G.getXhrWorker().done(function() {
+            worker = arguments[0];
+            worker.onmessage = function(event) {
               G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
               complete(event.data);
             };
             
-            xhrWorker.onerror = function(err) {
-    //          debugger;
-              try {
-                G.log(G.TAG, 'error', JSON.stringify(err));
-              } finally {
-                G.recycleXhrWorker(this);
-              }
-              
-              bundleDfd.reject(err);
-            };
-            
-            xhrWorker.postMessage(getBundleReq);  
+            worker.onerror = bundleDfd.reject;
+            worker.postMessage(getBundleReq);  
           });
         }
         else {      

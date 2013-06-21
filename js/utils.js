@@ -94,12 +94,20 @@ define('utils', [
     },    
     
     ajax: function(options) {
-      var hasWebWorkers = G.hasWebWorkers;
-      var opts = _.clone(options);
+      var hasWebWorkers = G.hasWebWorkers,
+          opts = _.clone(options),
+          useWorker = hasWebWorkers && !opts.sync,
+          worker;
+          
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
-      var useWorker = hasWebWorkers && !opts.sync;
       return new $.Deferred(function(defer) {
+        // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
+        defer.always(function() {
+          if (worker)
+            G.recycleXhrWorker(worker);
+        });
+
         var data = opts.data;
         var blobProps = U.getBlobValueProps(data);
         if (data && Blob && _.size(blobProps)) {
@@ -163,9 +171,9 @@ define('utils', [
         if (opts.error) defer.fail(opts.error);
         if (useWorker) {
           G.log(U.TAG, 'xhr', 'webworker', opts.url);
-          var workerPromise = G.getXhrWorkerPromise();
-          workerPromise.done(function(xhrWorker) {          
-            xhrWorker.onmessage = function(event) {
+          G.getXhrWorker().done(function() {
+            worker = arguments[0];
+            worker.onmessage = function(event) {
               var xhr = event.data;
               var code = xhr.status;
               if (code === 304) {
@@ -189,16 +197,12 @@ define('utils', [
               }
             };
             
-            xhrWorker.onerror = function(err) {
+            worker.onerror = function(err) {
 //              debugger;
               defer.reject({}, "error", err);
             };
             
-            defer.always(function() {
-              G.recycleXhrWorker(xhrWorker);
-            });
-  
-            xhrWorker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
+            worker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
           });
         }
         else {

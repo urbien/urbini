@@ -2,9 +2,6 @@
 // This function gets called in the packaged app model on launch.
 var mark = true,
 	myWin,
-	serverOrigin = mark ? 'http://mark.obval.com' : 'http://urbien.com',
-  appHome = serverOrigin + (mark ? '/urbien' : '') + "/app/NursMe",
-	appName = 'NurseMe',
 	runtimeId = chrome.runtime.id;
 
 function runApp() {
@@ -15,23 +12,6 @@ function runApp() {
 			'width': 1024,
 			'height': 768
 		}
-	}, function(win) {
-		myWin = win.contentWindow;
-		myWin.addEventListener('message', function(e) {
-			var origin = e.origin,
-				data = e.data,
-				type = data && data.type;
-			
-			if (!data || origin !== serverOrigin)
-				return;
-			
-			console.debug("msg", e.data);
-			switch (type) {
-				default:
-					return;
-			}
-			
-		});
 	});
 	
 	chrome.pushMessaging.getChannelId(true, function(message) {
