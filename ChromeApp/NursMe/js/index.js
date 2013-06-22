@@ -1,6 +1,7 @@
 (function(window, doc) {
   var bgPage,
   runtimeId,
+  webviewPinger,
   serverOrigin,
   appHome,
   webviewOrigin,
@@ -361,13 +362,16 @@
           type = data.type,
           rpc = /^rpc:/.test(type) ? type.slice(4) : null;
 
-          if (rpc) {
-            var dotIdx = rpc.lastIndexOf('.');
-            var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
-            var fn = parent[rpc.slice(dotIdx + 1)];
-            fn.apply(parent, data.args || []);
-            return;
-          };
+      if (data === 'ready')
+        webviewPinger = clearInterval(webviewPinger);
+          
+      if (rpc) {
+        var dotIdx = rpc.lastIndexOf('.');
+        var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
+        var fn = parent[rpc.slice(dotIdx + 1)];
+        fn.apply(parent, data.args || []);
+        return;
+      };
     });
 
     $webview.bind('exit', handleExit);
@@ -431,10 +435,12 @@
   };
 
   function _sendChannelId(channelId) {
-    postMessage({
-      type: 'channelId',
-      channelId: channelId
-    });    
+    webviewPinger = setInterval(function() {      
+      postMessage({
+        type: 'channelId',
+        channelId: channelId
+      });
+    }, 100);
   }
 
   function postMessage(msg) {

@@ -1,48 +1,56 @@
-//(function() {
-//  var appWindow, appOrigin; 
-//  function onMessage(e) { 
-//    Lablz.appWindow = e.source; 
-//    Lablz.appOrigin = e.origin;
-//    Lablz.pushChannelId = e.data.channelId;
-//    Lablz.inWebview = true;
-//    window.removeEventListener('message', onMessage);
-//    console.log(e); 
-//  } 
-//   
-//  window.addEventListener('message', onMessage);
-//})(window);
-
 (function(window, doc, undefined) {
 var __started = new Date();
 
-// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
-// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
-$.extend({
-  whenAll: function() {
-    var dfd = $.Deferred(),
-        len = arguments.length,
-        counter = 0,
-        state = "resolved",
-        resolveOrReject = function() {
-            if(this.state() === "rejected"){
-                state = "rejected";
-            }
-            counter++;
-  
-            if(counter === len) {
-                dfd[state === "rejected"? "reject": "resolve"]();   
-            }
-  
-        };
-  
-  
-     $.each(arguments, function(idx, item) {
-         item.always(resolveOrReject); 
-     });
-  
-    return dfd.promise();    
+//// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
+//// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
+//$.extend({
+//  whenAll: function() {
+//    var dfd = $.Deferred(),
+//        len = arguments.length,
+//        counter = 0,
+//        state = "resolved",
+//        resolveOrReject = function() {
+//            if(this.state() === "rejected"){
+//                state = "rejected";
+//            }
+//            counter++;
+//  
+//            if(counter === len) {
+//                dfd[state === "rejected"? "reject": "resolve"]();   
+//            }
+//  
+//        };
+//  
+//  
+//     $.each(arguments, function(idx, item) {
+//         item.always(resolveOrReject); 
+//     });
+//  
+//    return dfd.promise();    
+//  }
+//});
+
+
+(function() {  
+  var connected = $.Deferred();
+  Lablz.connectedToApp = connected.promise();
+  function onMessage(e) { 
+    var appWin = Lablz.appWindow = e.source; 
+    var appOrigin = Lablz.appOrigin = e.origin;
+    Lablz.pushChannelId = e.data.channelId;
+    Lablz.inWebview = true;
+    if (appWin) {
+      window.removeEventListener('message', onMessage);
+      appWin.postMessage('ready', Lablz.appOrigin);
+      connected.resolve();
+    }
+    
+    console.log(e); 
   }
-});
+
+  window.addEventListener('message', onMessage);
+})(window);
+
 
 //'use strict';
 define('globals', function() {
@@ -56,7 +64,8 @@ define('globals', function() {
   browser.chrome = browser.webkit && !!window.chrome;
   browser.safari = browser.webkit && !window.chrome;
   browser.firefox = browser.mozilla;
-  browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown'; 
+  browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection

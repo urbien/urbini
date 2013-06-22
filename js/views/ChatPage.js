@@ -235,7 +235,9 @@ define('views/ChatPage', [
       if (this.inWebview) {
         WebRTC = function(config) {
           this.callbacks = {};
-          U.rpc('startWebRTC', config);
+          G.connectedToApp.done(function() {
+            U.rpc('startWebRTC', config);
+          });
         };
         
         _.each(webrtcMethods, function(method) {
