@@ -1610,27 +1610,27 @@ define('views/ChatPage', [
       var self = this,
           request = data.request,
           userInfo = this.getUserInfo(data.from),
-          id = 'chatRequestDialog',
-          $popup = U.dialog({
-            id: id,
-            //      title: userInfo.name + ' is cold and alone and needs your help',
-            header: request.type.capitalizeFirst() + ' Request',
-            img: userInfo.icon,
-            title: request.title,
-            ok: 'Accept',
-            cancel: 'Decline',
-            oncancel: function(e) {
-              self.denyRequest(request, data.from);
-              $popup.parent() && $popup.popup('close');
-              return false;
-            },
-            onok: function(e) {
-              self.grantRequest(request, data.from);
-              $popup.parent() && $popup.popup('close');
-              return false;
-            }
-          }),
-          $popup;
+          id = 'chatRequestDialog';
+      
+      return U.dialog({
+        id: id,
+        //      title: userInfo.name + ' is cold and alone and needs your help',
+        header: request.type.capitalizeFirst() + ' Request',
+        img: userInfo.icon,
+        title: request.title,
+        ok: 'Accept',
+        cancel: 'Decline',
+        oncancel: function(e) {
+          self.denyRequest(request, data.from);
+          $popup.parent() && $popup.popup('close');
+          return false;
+        },
+        onok: function(e) {
+          self.grantRequest(request, data.from);
+          $popup.parent() && $popup.popup('close');
+          return false;
+        }
+      });
       
 //      $('#' + id).remove();
 //      
