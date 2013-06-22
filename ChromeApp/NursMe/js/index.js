@@ -1,83 +1,83 @@
 (function(window, doc) {
-var bgPage,
+  var bgPage,
   runtimeId,
-	serverOrigin,
-	appHome,
-	webviewOrigin,
-	tabId,
-	isLoading = false,
-	SHOW_BUTTONS = true,
-    visibilityState,
-    
-    /* START HTML elements / JQuery objects */
-    webview,
-    $webview, 
-    webviewWindow,
-    $window = $(window), 
-    controls,
-    $controls,
-    $locInput,
-    locInput,
-    $back,
-    $forward,
-    $home,
-    $reload,
-    $terminate,
-    $locForm,
-    $mediaHolder,
-    /* END   HTML elements / JQuery objects */
-    
-    echo,
-    channelId,
-    userId,
-    connection,
-    webrtc,
-    localStream,
-    mediaConfig,
-    dataChannelEvents = ['dataOpen', 'dataClose', 'dataError', 'dataMessage'],
-    objectConstructor = {}.constructor,
-    RPC = {
-      startWebRTC: startWebRTC,
-      setAttribute: function(sel, attribute, value) {
-        $(sel).setAttribute(attribute, value);
-      },
-      showMedia: showMedia,
-      hideMedia: hideMedia,
-//      focus: function() {
-//        chrome.tabs.update(tabId, {active: true}); // tabs are not available in packaged apps, only extensions
-//      },
-  	  notifications: {
-    		/**
-    		 * @param callback - a message type to send back when the notification has been created
-    		*/
-    		create: function(id, options, callback) {
-    			if (callback) {
-    				var eventName = callback;
-    				callback = getCallback(eventName);
-    			}
-    			else
-    			  callback = doNothing;
-    			
-    			leaf(chrome, this._path)(id, options, callback);
-    		},
-    		onButtonClicked: function(callbackEvent) {
-    			var callback = getCallback(callbackEvent);
-    			leaf(chrome, this._path).addListener(callback);
-    		},
-        onClicked: function(callbackEvent) {
-          var callback = getCallback(callbackEvent);
-          leaf(chrome, this._path).addListener(callback);
-        },
-        onDisplayed: function(callbackEvent) { 
-          var callback = getCallback(callbackEvent);
-          leaf(chrome, this._path).addListener(callback);
-        },
-        onClosed: function(callbackEvent) {
-          var callback = getCallback(callbackEvent);
-          leaf(chrome, this._path).addListener(callback);
+  serverOrigin,
+  appHome,
+  webviewOrigin,
+  tabId,
+  isLoading = false,
+  SHOW_BUTTONS = true,
+  visibilityState,
+
+  /* START HTML elements / JQuery objects */
+  webview,
+  $webview, 
+  webviewWindow,
+  $window = $(window), 
+  controls,
+  $controls,
+  $locInput,
+  locInput,
+  $back,
+  $forward,
+  $home,
+  $reload,
+  $terminate,
+  $locForm,
+  $mediaHolder,
+  /* END   HTML elements / JQuery objects */
+
+  echo,
+  channelId,
+  userId,
+  connection,
+  webrtc,
+  localStream,
+  mediaConfig,
+  dataChannelEvents = ['dataOpen', 'dataClose', 'dataError', 'dataMessage'],
+  objectConstructor = {}.constructor,
+  RPC = {
+    startWebRTC: startWebRTC,
+    setAttribute: function(sel, attribute, value) {
+      $(sel).setAttribute(attribute, value);
+    },
+    showMedia: showMedia,
+    hideMedia: hideMedia,
+    //      focus: function() {
+    //        chrome.tabs.update(tabId, {active: true}); // tabs are not available in packaged apps, only extensions
+    //      },
+    notifications: {
+      /**
+       * @param callback - a message type to send back when the notification has been created
+       */
+      create: function(id, options, callback) {
+        if (callback) {
+          var eventName = callback;
+          callback = getCallback(eventName);
         }
-  	  }
-    };
+        else
+          callback = doNothing;
+    
+        leaf(chrome, this._path)(id, options, callback);
+      },
+      onButtonClicked: function(callbackEvent) {
+        var callback = getCallback(callbackEvent);
+        leaf(chrome, this._path).addListener(callback);
+      },
+      onClicked: function(callbackEvent) {
+        var callback = getCallback(callbackEvent);
+        leaf(chrome, this._path).addListener(callback);
+      },
+      onDisplayed: function(callbackEvent) { 
+        var callback = getCallback(callbackEvent);
+        leaf(chrome, this._path).addListener(callback);
+      },
+      onClosed: function(callbackEvent) {
+        var callback = getCallback(callbackEvent);
+        leaf(chrome, this._path).addListener(callback);
+      }
+    }
+  };
 
   chrome.runtime.getBackgroundPage(function(page) {
     bgPage = page;
@@ -88,44 +88,44 @@ var bgPage,
         channelId = id;
       });
     }
-    
+
     runtimeId = bgPage.runtimeId;
   });
-    
+
   chrome.runtime.onMessage.addListener(
-    function(msg, sender, sendResponse) {
-      if (sender.id == runtimeId) {
-        if (msg.type === 'push')
-          postMessage(msg);
-        
-        sendResponse({"result": "OK"});
-      } else {
-        sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
+      function(msg, sender, sendResponse) {
+        if (sender.id == runtimeId) {
+          if (msg.type === 'push')
+            postMessage(msg);
+
+          sendResponse({"result": "OK"});
+        } else {
+          sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
+        }
       }
-    }
-  );
-  
+      );
+
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   window.onresize = doLayout;
   setPaths(RPC);
 
   function doNothing() {};
-  
+
   function has(obj, key) {
     return hasOwnProperty.call(obj, key);
   };
-  
+
   function setPaths(obj) {
     for (var pkgName in obj) {
       var pkg = obj[pkgName];
       pkg._path = (obj._path ? obj._path + '.' : '') + pkgName;
       switch (typeof pkg) {
-        case 'function':
-          obj[pkgName] = pkg.bind(pkg);
-          break;
-        case 'object':
-          setPaths(pkg);
-          break;
+      case 'function':
+        obj[pkgName] = pkg.bind(pkg);
+        break;
+      case 'object':
+        setPaths(pkg);
+        break;
       }
     }
   };
@@ -133,7 +133,7 @@ var bgPage,
   function shallowCopy(obj) {
     if (obj == null || typeof obj !== 'object')
       return obj;
-    
+
     var copy = {};
     for (var prop in obj) {
       if (has(obj, prop)) {
@@ -142,10 +142,10 @@ var bgPage,
           continue;
         else if (val instanceof HTMLElement) {
           obj[prop] = {
-            id: val.id,
-            attributes: val.attributes
+              id: val.id,
+              attributes: val.attributes
           };
-          
+
           continue;
         }
         else if (typeof val !== 'object')
@@ -165,35 +165,35 @@ var bgPage,
         }
       }
     }
-    
+
     return copy;
   }
 
   function index(obj, i) {
-     return obj[i];
+    return obj[i];
   };
-  
+
   function leaf(obj, path, separator) {
-     if (typeof obj == 'undefined' || !obj)
-       return null;
-     
-     return path.split(separator || '.').reduce(index, obj);
-   };
-  
-  function getCallback(eventName) {
-	return function() {
-		var args = [].slice.call(arguments);
-		for (var i = 0; i < args.length; i++) {
-			args[i] = shallowCopy(args[i]);
-		}
-		
-		postMessage({
-			type: eventName,
-			args: args
-		});
-	}
+    if (typeof obj == 'undefined' || !obj)
+      return null;
+
+    return path.split(separator || '.').reduce(index, obj);
   };
-  
+
+  function getCallback(eventName) {
+    return function() {
+      var args = [].slice.call(arguments);
+      for (var i = 0; i < args.length; i++) {
+        args[i] = shallowCopy(args[i]);
+      }
+
+      postMessage({
+        type: eventName,
+        args: args
+      });
+    }
+  };
+
   function navigateTo(url) {
     resetExitedState();
     webview.src = url;
@@ -224,7 +224,7 @@ var bgPage,
     } else if (event.type == 'killed') {
       doc.body.classList.add('killed');
     }
-    
+
     navigateTo(appHome); 
   }
 
@@ -237,10 +237,11 @@ var bgPage,
   function handleLoadCommit(event) {
     resetExitedState();
     if (!event.isTopLevel) {
+      locInput.value = webview.src;
       return;
     }
 
-    locInput.value = event.url;
+    locInput.value = event.url || webview.src;
 
     back.disabled = !webview.canGoBack();
     forward.disabled = !webview.canGoForward();
@@ -252,12 +253,14 @@ var bgPage,
     isLoading = true;
 
     resetExitedState();
-    if (!event.isTopLevel)
+    if (!event.isTopLevel) {
+      locInput.value = webview.src;
       return;
+    }
 
     locInput.value = event.url;
   }
-  
+
   function handleLoadStop(event) {
     // We don't remove the loading class immediately, instead we let the animation
     // finish, so that the spinner doesn't jerkily reset back to the 0 position.
@@ -292,7 +295,7 @@ var bgPage,
       $locInput = $('#location');
       locInput = $locInput[0];
       $locForm = $('#location-form');
-      
+
       $back.click(function() {
         webview.back();
       });
@@ -312,14 +315,14 @@ var bgPage,
           webview.reload();
         }
       });
-      
+
       $reload.bind(
-        'webkitAnimationIteration',
-        function() {
-          if (!isLoading) {
-            doc.body.classList.remove('loading');
+          'webkitAnimationIteration',
+          function() {
+            if (!isLoading) {
+              doc.body.classList.remove('loading');
+            }
           }
-        }
       );
 
       $terminate.click(function() {
@@ -333,37 +336,37 @@ var bgPage,
     }
     else
       $('#controls').remove();
-    
+
     $webview = $('#webview');
     webview = $webview[0];
     appHome = webview.src;
     serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
     webviewOrigin = serverOrigin + "/*";
-    
+
     $mediaHolder = $('#media');
-    
+
     $mediaHolder.click(function() {
       hideMedia();
     });
-    
+
     doLayout();
 
     window.addEventListener('message', function(e) {
       var origin = e.origin;
       if (origin !== serverOrigin)
         return;
-        
+
       var data = e.data,
-        type = data.type,
-        rpc = /^rpc:/.test(type) ? type.slice(4) : null;
-        
-      if (rpc) {
-		var dotIdx = rpc.lastIndexOf('.');
-		var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
-		var fn = parent[rpc.slice(dotIdx + 1)];
-        fn.apply(parent, data.args || []);
-        return;
-      };
+          type = data.type,
+          rpc = /^rpc:/.test(type) ? type.slice(4) : null;
+
+          if (rpc) {
+            var dotIdx = rpc.lastIndexOf('.');
+            var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
+            var fn = parent[rpc.slice(dotIdx + 1)];
+            fn.apply(parent, data.args || []);
+            return;
+          };
     });
 
     $webview.bind('exit', handleExit);
@@ -377,32 +380,32 @@ var bgPage,
     $window.focus(changeVisibility).blur(changeVisibility);
   };
 
-    // var changeVisibility = _.debounce(function(e) {
-    function changeVisibility(e) {
-	  var newState = e.type === 'blur' ? 'hidden' : 'visible',
-		  prev = visibilityState;
-		
-      if (newState === visibilityState)
-		return;	  
-		
-	  visibilityState = newState;
-      console.log("page has become", newState);
-	  if (webrtc) {
-		  var webRTCEvent = newState === 'hidden' ? 'sleep' : 'wake';
-		  if (webrtc.sessionReady)
-			webrtc._emit(webRTCEvent);
-	      else {
-		    webrtc.on('ready', function() {
-			  webrtc._emit(webRTCEvent);
-			});
-		  }
-	  }
-	}
-    // }, 2000, true);
+  // var changeVisibility = _.debounce(function(e) {
+  function changeVisibility(e) {
+    var newState = e.type === 'blur' ? 'hidden' : 'visible',
+        prev = visibilityState;
+
+    if (newState === visibilityState)
+      return;	  
+
+    visibilityState = newState;
+    console.log("page has become", newState);
+    if (webrtc) {
+      var webRTCEvent = newState === 'hidden' ? 'sleep' : 'wake';
+      if (webrtc.sessionReady)
+        webrtc._emit(webRTCEvent);
+      else {
+        webrtc.on('ready', function() {
+          webrtc._emit(webRTCEvent);
+        });
+      }
+    }
+  }
+  // }, 2000, true);
 
   /**
    *  send this on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
-  **/
+   **/
   function sendChannelId(e) {
     if (channelId)
       _sendChannelId(channelId);
@@ -422,7 +425,7 @@ var bgPage,
     } else {
       e.request.deny();
     }
-    
+
     console.log("["+e.target.id+"] permissionrequest: permission="+e.permission+" "+ (allowed?"allowed":"DENIED"));
   };
 
@@ -432,31 +435,31 @@ var bgPage,
       channelId: channelId
     });    
   }
-  
+
   function postMessage(msg) {
     webviewWindow.postMessage(msg, webviewOrigin);
   };
-  
+
   function forwardWebRTCEvent(eventName) {
     webrtc.on(eventName, function(event, conversation) {
-    _forwardWebRTCEvent(eventName, event, conversation);
+      _forwardWebRTCEvent(eventName, event, conversation);
     });
   }
-  
+
   function _forwardWebRTCEvent(eventName) {
     var args = [],
-      msg = {
+        msg = {
         type: 'webrtc:' + eventName,
         args: args
-      };
-    
+    };
+
     for (var i = 1; i < arguments.length; i++) {
       args.push(shallowCopy(arguments[i]));
     }
-      
+
     postMessage(msg);
   };
-  
+
   function startWebRTC(config) {
     webrtc = RPC.webrtc = new WebRTC(config);
     mediaConfig = webrtc.config;
@@ -485,47 +488,61 @@ var bgPage,
     });
 
     forwardWebRTCEvent('mediaRemoved');
-    
+
     if (webrtc.config.data !== false) {
       forwardWebRTCEvent('dataOpen');
       forwardWebRTCEvent('dataClose');
       forwardWebRTCEvent('dataError');
       forwardWebRTCEvent('dataMessage');
     }
-    
+
     if (haslocalMedia() && localStream && !localStream.ended) {
       webrtc.startLocalMedia(localStream);
     }
   }
-  
+
   function stopWebRTC() {
-    if (webrtc)
+    if (webrtc) {
       webrtc.leaveRoom();
+      webrtc = null;
+    }
+    
+    $webview.fadeTo(600, 1);
   }
-  
+
   function haslocalMedia() {
     var vConfig = mediaConfig && mediaConfig.video;
     return !vConfig || vConfig.preview || vConfig.send;
   };
+
+  function hasVideo() {
+    return !!$mediaHolder.find('video').length;
+  };
   
   function hideMedia() {
+    if (!hasVideo())
+      return;
+    
     $webview.fadeTo(600, 0.7);
     $controls && $controls.fadeTo(600, 1);
     $mediaHolder.fadeTo(600, 0.5, function() {
       $mediaHolder.css('z-index', 0);
       $webview.css('z-index', 1);
       if ($controls) {
-      	$controls.css('z-index', 1);
-      	$mediaHolder.find('video').css('top', controls.offsetHeight);
+        $controls.css('z-index', 1);
+        $mediaHolder.find('video').css('top', controls.offsetHeight);
       }
     });
   }
 
   function showMedia() {
+    if (!hasVideo())
+      return;
+    
     $mediaHolder.fadeTo(600, 1);
-  	if ($controls)
-  	  $mediaHolder.find('video').css('top', 0);
-  	
+    if ($controls)
+      $mediaHolder.find('video').css('top', 0);
+
     $webview.fadeTo(600, 0, function() {
       $mediaHolder.css('z-index', 1);
       $webview.css('z-index', 0);
@@ -533,7 +550,7 @@ var bgPage,
         $controls.css('z-index', 0);
     });
   }
-  
+
   chrome.runtime.onSuspend.addListener(function() {
     stopWebRTC();
   });
