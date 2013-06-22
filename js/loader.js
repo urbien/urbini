@@ -1,3 +1,17 @@
+//(function() {
+//  var appWindow, appOrigin; 
+//  function onMessage(e) { 
+//    Lablz.appWindow = e.source; 
+//    Lablz.appOrigin = e.origin;
+//    Lablz.pushChannelId = e.data.channelId;
+//    Lablz.inWebview = true;
+//    window.removeEventListener('message', onMessage);
+//    console.log(e); 
+//  } 
+//   
+//  window.addEventListener('message', onMessage);
+//})(window);
+
 (function(window, doc, undefined) {
 var __started = new Date();
 
@@ -372,7 +386,6 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  G.inWebview = browser.chrome && G.pushChannelId;
   var moreG = {
     _appStartDfd: $.Deferred(),
     onAppStart: function() {

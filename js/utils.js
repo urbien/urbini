@@ -1699,10 +1699,12 @@ define('utils', [
     },
     
     /**
-     * @return the value of the app's App._appPath property, sth like AppName
+     * @return given the value of the app's App._appPath property, sth like AppName
      */
     getAppPath: function(type) {
-      return type.match(/\/([^\/]+)$/)[1];
+//      return type.match(/\/([^\/]+)\/([^\/]+)$/)[1];
+      var parts = type.split('/');
+      return parts[parts.length - 2];
     },
 
     /**

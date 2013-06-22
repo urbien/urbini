@@ -925,8 +925,9 @@ define('views/ChatPage', [
         response: _.extend(response || {}, {
           granted: true,
           requestId: request.id
-        }, from)
-      });
+        })
+      }, 
+      from);
     },
     
     grantRequest: function(request, from) {
@@ -1464,11 +1465,14 @@ define('views/ChatPage', [
 
     leave: function() {
   //    this.chat && this.chat.leave();
-      if (this.inWebview)
-        this.chat.off('*');
-      
-      if (this.chat)
-        this.chat.leaveRoom();
+      if (this.inWebview) {
+        this.chat && this.chat.off('*');
+        U.rpc('stopWebRTC');
+      }
+      else {
+        if (this.chat) 
+          this.chat.leaveRoom();
+      }
       
       this.stopRingtone();
     },
@@ -1611,26 +1615,27 @@ define('views/ChatPage', [
           request = data.request,
           userInfo = this.getUserInfo(data.from),
           id = 'chatRequestDialog';
-      
-      return U.dialog({
-        id: id,
-        //      title: userInfo.name + ' is cold and alone and needs your help',
-        header: request.type.capitalizeFirst() + ' Request',
-        img: userInfo.icon,
-        title: request.title,
-        ok: 'Accept',
-        cancel: 'Decline',
-        oncancel: function(e) {
-          self.denyRequest(request, data.from);
-          $popup.parent() && $popup.popup('close');
-          return false;
-        },
-        onok: function(e) {
-          self.grantRequest(request, data.from);
-          $popup.parent() && $popup.popup('close');
-          return false;
-        }
-      });
+          $popup = U.dialog({
+            id: id,
+            //      title: userInfo.name + ' is cold and alone and needs your help',
+            header: request.type.capitalizeFirst() + ' Request',
+            img: userInfo.icon,
+            title: request.title,
+            ok: 'Accept',
+            cancel: 'Decline',
+            oncancel: function(e) {
+              self.denyRequest(request, data.from);
+              $popup.parent() && $popup.popup('close');
+              return false;
+            },
+            onok: function(e) {
+              self.grantRequest(request, data.from);
+              $popup.parent() && $popup.popup('close');
+              return false;
+            }
+          });
+          
+      return $popup;
       
 //      $('#' + id).remove();
 //      
