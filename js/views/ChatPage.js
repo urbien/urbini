@@ -231,13 +231,15 @@ define('views/ChatPage', [
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
       var self = this;
-      this.inWebview = G.inWebview;
+      this.inWebview = false; //G.inWebview;
       if (this.inWebview) {
+        U.rpc('log', 'about to start WebRTC');
         WebRTC = function(config) {
           this.callbacks = {};
-          G.connectedToApp.done(function() {
+//          G.connectedToApp.done(function() {
+            U.rpc('log', 'starting WebRTC');
             U.rpc('startWebRTC', config);
-          });
+//          });
         };
         
         _.each(webrtcMethods, function(method) {

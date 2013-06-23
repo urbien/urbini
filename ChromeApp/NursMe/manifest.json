@@ -2,7 +2,7 @@
   "name": "Nurse Me",
   "description": "Video nurse hotline",
   "minimum_chrome_version": "24.0.1307.0",
-  "version": "0.0.0.13",
+  "version": "0.0.0.19",
   "manifest_version": 2,
   "icons": {
     "16": "icon_16.png",
@@ -14,11 +14,11 @@
     }
   },
   "permissions": [
-	"pushMessaging",
-	"http://*/",
-	"webview",
-	"audioCapture", 
-  "videoCapture",
-	"notifications"
+    "webview",
+    "audioCapture", 
+    "videoCapture",
+  	"pushMessaging",
+  	"notifications",
+    "http://*/*"
   ]
 }

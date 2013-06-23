@@ -13,7 +13,6 @@
   /* START HTML elements / JQuery objects */
   webview,
   $webview, 
-  webviewWindow,
   $window = $(window), 
   controls,
   $controls,
@@ -28,7 +27,7 @@
   $mediaHolder,
   /* END   HTML elements / JQuery objects */
 
-  echo,
+//  echo,
   channelId,
   userId,
   connection,
@@ -38,6 +37,11 @@
   dataChannelEvents = ['dataOpen', 'dataClose', 'dataError', 'dataMessage'],
   objectConstructor = {}.constructor,
   RPC = {
+    log: function() {
+      var args = [].slice.call(arguments);
+      args.unshift('FROM WEBVIEW:');
+      console.log.apply(console, args);
+    },
     startWebRTC: startWebRTC,
     stopWebRTC: stopWebRTC,
     setAttribute: function(sel, attribute, value) {
@@ -95,17 +99,17 @@
   });
 
   chrome.runtime.onMessage.addListener(
-      function(msg, sender, sendResponse) {
-        if (sender.id == runtimeId) {
-          if (msg.type === 'push')
-            postMessage(msg);
+    function(msg, sender, sendResponse) {
+      if (sender.id == runtimeId) {
+        if (msg.type === 'push')
+          postMessage(msg);
 
-          sendResponse({"result": "OK"});
-        } else {
-          sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
-        }
+        sendResponse({"result": "OK"});
+      } else {
+        sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
       }
-      );
+    }
+  );
 
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   window.onresize = doLayout;
@@ -250,7 +254,6 @@
   }
 
   function handleLoadStart(event) {
-    webviewWindow = webviewWindow || webview.contentWindow;
     doc.body.classList.add('loading');
     isLoading = true;
 
@@ -259,9 +262,39 @@
       locInput.value = webview.src;
       return;
     }
-
+    
+//    var url = event.url,
+//        parsed = parseUrl(url);
+//    
+//    if (!parsed.params) {
+//      url += '?-webview=y';
+//      navigateTo(url);
+//      return false;
+//    }
+//    else if (parsed.params && !parsed.params['-webview']) {
+//      url += '&-webiew=y';
+//      navigateTo(url);
+//      return false;
+//    }
+    
     locInput.value = event.url;
   }
+
+//  function parseUrl(url) {
+//    var a = document.createElement('a');
+//    a.href = url;
+//    var q = a.search;
+//    if (q) {
+//      q = q.split('&');      
+//      a.params = {};
+//      q.forEach(function(keyVal) {
+//        keyVal = keyVal.split('=').map(decodeURIComponent);
+//        a.params[keyVal[0]] = keyVal[1];
+//      });
+//    }
+//    
+//    return a;
+//  }
 
   function handleLoadStop(event) {
     // We don't remove the loading class immediately, instead we let the animation
@@ -374,14 +407,14 @@
       };
     });
 
-    $webview.bind('exit', handleExit);
-    $webview.bind('loadstart', handleLoadStart);
-    $webview.bind('loadstop', handleLoadStop);
-    $webview.bind('loadabort', handleLoadAbort);
-    $webview.bind('loadredirect', handleLoadRedirect);
-    $webview.bind('loadcommit', handleLoadCommit);
-    $webview.bind('loadstop', sendChannelId);
-    $webview.bind('permissionrequest', handlePermissionRequest);
+    webview.addEventListener('exit', handleExit);
+    webview.addEventListener('loadstart', handleLoadStart);
+    webview.addEventListener('loadstop', handleLoadStop);
+    webview.addEventListener('loadabort', handleLoadAbort);
+    webview.addEventListener('loadredirect', handleLoadRedirect);
+    webview.addEventListener('loadcommit', handleLoadCommit);
+    webview.addEventListener('loadstop', sendChannelId);
+    webview.addEventListener('permissionrequest', handlePermissionRequest);
     $window.focus(changeVisibility).blur(changeVisibility);
   };
 
@@ -394,7 +427,7 @@
       return;	  
 
     visibilityState = newState;
-    console.log("page has become", newState);
+//    console.log("page has become", newState);
     if (webrtc) {
       var webRTCEvent = newState === 'hidden' ? 'sleep' : 'wake';
       if (webrtc.sessionReady)
@@ -421,6 +454,10 @@
     }
   };
 
+//  function sendEcho() {
+//    postMessage('echo');
+//  };
+  
   function handlePermissionRequest(e) {
     debugger;
     var allowed = false;
@@ -444,7 +481,7 @@
   }
 
   function postMessage(msg) {
-    webviewWindow.postMessage(msg, webviewOrigin);
+    webview.contentWindow.postMessage(msg, webviewOrigin);
   };
 
   function forwardWebRTCEvent(eventName) {

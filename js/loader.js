@@ -1,3 +1,30 @@
+
+//(function() {  
+//  var search = window.location.search;
+//  Lablz.inWebview = search.indexOf('-webview=y') != -1;
+//  console.log("Lablz.inWebview = ", Lablz.inWebview);
+//  var connected = $.Deferred();
+//  Lablz.connectedToApp = connected.promise();
+//  function onMessage(e) { 
+//    Lablz.inWebview = true;
+//    var appWin = Lablz.appWindow = Lablz.appWindow || e.source; 
+//    var appOrigin = Lablz.appOrigin = Lablz.appOrigin || e.origin;
+//    Lablz.pushChannelId = Lablz.pushChannelId || e.data.channelId;
+//    if (appWin) {
+//      window.removeEventListener('message', onMessage);
+//      appWin.postMessage('ready', appOrigin);
+//      connected.resolve();
+//    }
+//    
+//    console.log('init event from app', e); 
+//  }
+//
+//  if (Lablz.appWindow)
+//    connected.resolve();
+//  else
+//    window.addEventListener('message', onMessage);
+//})(window);
+
 (function(window, doc, undefined) {
 var __started = new Date();
 
@@ -29,28 +56,6 @@ var __started = new Date();
 //    return dfd.promise();    
 //  }
 //});
-
-
-(function() {  
-  var connected = $.Deferred();
-  Lablz.connectedToApp = connected.promise();
-  function onMessage(e) { 
-    var appWin = Lablz.appWindow = e.source; 
-    var appOrigin = Lablz.appOrigin = e.origin;
-    Lablz.pushChannelId = e.data.channelId;
-    Lablz.inWebview = true;
-    if (appWin) {
-      window.removeEventListener('message', onMessage);
-      appWin.postMessage('ready', Lablz.appOrigin);
-      connected.resolve();
-    }
-    
-    console.log(e); 
-  }
-
-  window.addEventListener('message', onMessage);
-})(window);
-
 
 //'use strict';
 define('globals', function() {

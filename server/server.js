@@ -75,15 +75,15 @@ function isPublicRoom(name) {
 function getStatus(client) {
   var info = clientInfo[client.id],
       rooms = info && info.uri ? getUserRooms(info.uri) : [],
-      privateRooms = _.filter(rooms, isPrivateRoom),
-      lobbies = _.filter(rooms, isLobbyRoom);
+          privateRooms = _.filter(rooms, isPrivateRoom),
+          lobbies = _.filter(rooms, isLobbyRoom);
 
-  if (!rooms || !rooms.length)
-    return 'Away';
-  else if (privateRooms && privateRooms.length)
-    return 'InPrivateRoom';
-  else
-    return lobbies.length ? 'InLobby' : 'InPublicRoom';
+      if (!rooms || !rooms.length)
+        return 'Away';
+      else if (privateRooms && privateRooms.length)
+        return 'InPrivateRoom';
+      else
+        return lobbies.length ? 'InLobby' : 'InPublicRoom';
 };
 
 function onErrorFunc(type) {
@@ -166,27 +166,27 @@ io.sockets.on('connection', function (client) {
 
   client.on('sleep', function(details) {
     var info = clientInfo[client.id];
-  if (info) {
-    info.awake = false;
-    updateStatus(client);
-  }
+    if (info) {
+      info.awake = false;
+      updateStatus(client);
+    }
   });
 
   client.on('wake', function() {
     var info = clientInfo[client.id];
-  if (info) {
-    info.awake = true;
-    updateStatus(client);
-  }
+    if (info) {
+      info.awake = true;
+      updateStatus(client);
+    }
   });
 
   client.on('join', function (name) {
     var info = clientInfo[client.id];
-  if (info) {
-    info.awake = true;
-    info.rooms = (info && info.rooms) || [];
-    info.rooms.push(name);
-  }
+    if (info) {
+      info.awake = true;
+      info.rooms = (info && info.rooms) || [];
+      info.rooms.push(name);
+    }
 
     client.join(name);
     io.sockets.in(name).emit('joined', {
@@ -201,7 +201,7 @@ io.sockets.on('connection', function (client) {
     var rooms = io.sockets.manager.roomClients[client.id];  
     for (var name in rooms) {
       if (name) {
-    name = name.slice(1);
+        name = name.slice(1);
         io.sockets.in(name).emit('left', {
           room: name,
           id: client.id

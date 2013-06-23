@@ -326,6 +326,10 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
 //    },
     
     onMessageFromApp: function(e) {
+      if (e.origin.indexOf('chrome-extension://') != 0)
+        return;
+      
+      U.rpc('log', 'got message', e.data);
       console.debug('message from app:', e);
       G.appWindow = G.appWindow || e.source;
       G.appOrigin = G.appOrigin || e.origin;
