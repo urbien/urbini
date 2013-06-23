@@ -9,7 +9,7 @@
     "128": "icon_128.png"
   },
   "app": {
-	"background": {
+  	"background": {
       "scripts": ["js/background.js"]
     }
   },

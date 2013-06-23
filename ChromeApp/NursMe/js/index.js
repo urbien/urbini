@@ -24,17 +24,10 @@
   $reload,
   $terminate,
   $locForm,
-  $mediaHolder,
   /* END   HTML elements / JQuery objects */
 
 //  echo,
   channelId,
-  userId,
-  connection,
-  webrtc,
-  localStream,
-  mediaConfig,
-  dataChannelEvents = ['dataOpen', 'dataClose', 'dataError', 'dataMessage'],
   objectConstructor = {}.constructor,
   RPC = {
     log: function() {
@@ -42,13 +35,9 @@
       args.unshift('FROM WEBVIEW:');
       console.log.apply(console, args);
     },
-    startWebRTC: startWebRTC,
-    stopWebRTC: stopWebRTC,
     setAttribute: function(sel, attribute, value) {
       $(sel).setAttribute(attribute, value);
     },
-    showMedia: showMedia,
-    hideMedia: hideMedia,
     //      focus: function() {
     //        chrome.tabs.update(tabId, {active: true}); // tabs are not available in packaged apps, only extensions
     //      },
@@ -377,13 +366,6 @@
     appHome = webview.src;
     serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
     webviewOrigin = serverOrigin + "/*";
-
-    $mediaHolder = $('#media');
-
-    $mediaHolder.click(function() {
-      hideMedia();
-    });
-
     doLayout();
 
     window.addEventListener('message', function(e) {
@@ -413,6 +395,8 @@
     webview.addEventListener('loadabort', handleLoadAbort);
     webview.addEventListener('loadredirect', handleLoadRedirect);
     webview.addEventListener('loadcommit', handleLoadCommit);
+    
+    // send channelId on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
     webview.addEventListener('loadstop', sendChannelId);
     webview.addEventListener('permissionrequest', handlePermissionRequest);
     $window.focus(changeVisibility).blur(changeVisibility);
@@ -427,23 +411,10 @@
       return;	  
 
     visibilityState = newState;
-//    console.log("page has become", newState);
-    if (webrtc) {
-      var webRTCEvent = newState === 'hidden' ? 'sleep' : 'wake';
-      if (webrtc.sessionReady)
-        webrtc._emit(webRTCEvent);
-      else {
-        webrtc.on('ready', function() {
-          webrtc._emit(webRTCEvent);
-        });
-      }
-    }
+    console.log("page has become", newState);
   }
   // }, 2000, true);
 
-  /**
-   *  send this on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
-   **/
   function sendChannelId(e) {
     if (channelId)
       _sendChannelId(channelId);
@@ -484,118 +455,7 @@
     webview.contentWindow.postMessage(msg, webviewOrigin);
   };
 
-  function forwardWebRTCEvent(eventName) {
-    webrtc.on(eventName, function(event, conversation) {
-      _forwardWebRTCEvent(eventName, event, conversation);
-    });
-  }
-
-  function _forwardWebRTCEvent(eventName) {
-    var args = [],
-        msg = {
-        type: 'webrtc:' + eventName,
-        args: args
-    };
-
-    for (var i = 1; i < arguments.length; i++) {
-      args.push(shallowCopy(arguments[i]));
-    }
-
-    postMessage(msg);
-  };
-
-  function startWebRTC(config) {
-    webrtc = RPC.webrtc = new WebRTC(config);
-    mediaConfig = webrtc.config;
-    conversations = webrtc.pcs;
-    forwardWebRTCEvent('ready');      
-    forwardWebRTCEvent('readyToCall');
-    forwardWebRTCEvent('userid');
-    webrtc.on('mediaAdded', function(info, conversation) {
-      if (info.type == 'remote')
-        $('#localMedia video').addClass('overlay');
-      else
-        localStream = info.stream;
-
-      showMedia();
-      _forwardWebRTCEvent('mediaAdded', info, conversation);
-    });
-
-    webrtc.on('mediaRemoved', function(info, conversation) {
-      if (info.type == 'remote') {
-        if (!$('#remoteMedia video').length) {
-          $('#localMedia video').removeClass('overlay');
-        }
-      }
-
-      _forwardWebRTCEvent('mediaAdded', info, conversation);
-    });
-
-    forwardWebRTCEvent('mediaRemoved');
-
-    if (webrtc.config.data !== false) {
-      forwardWebRTCEvent('dataOpen');
-      forwardWebRTCEvent('dataClose');
-      forwardWebRTCEvent('dataError');
-      forwardWebRTCEvent('dataMessage');
-    }
-
-    if (haslocalMedia() && localStream && !localStream.ended) {
-      webrtc.startLocalMedia(localStream);
-    }
-  }
-
-  function stopWebRTC() {
-    if (webrtc) {
-      webrtc.leaveRoom();
-      webrtc = null;
-    }
-    
-    $webview.fadeTo(600, 1);
-  }
-
-  function haslocalMedia() {
-    var vConfig = mediaConfig && mediaConfig.video;
-    return !vConfig || vConfig.preview || vConfig.send;
-  };
-
-  function hasVideo() {
-    return !!$mediaHolder.find('video').length;
-  };
-  
-  function hideMedia() {
-    if (!hasVideo())
-      return;
-    
-    $webview.fadeTo(600, 0.7);
-    $controls && $controls.fadeTo(600, 1);
-    $mediaHolder.fadeTo(600, 0.5, function() {
-      $mediaHolder.css('z-index', 0);
-      $webview.css('z-index', 1);
-      if ($controls) {
-        $controls.css('z-index', 1);
-        $mediaHolder.find('video').css('top', controls.offsetHeight);
-      }
-    });
-  }
-
-  function showMedia() {
-    if (!hasVideo())
-      return;
-    
-    $mediaHolder.fadeTo(600, 1);
-    if ($controls)
-      $mediaHolder.find('video').css('top', 0);
-
-    $webview.fadeTo(600, 0, function() {
-      $mediaHolder.css('z-index', 1);
-      $webview.css('z-index', 0);
-      if ($controls)
-        $controls.css('z-index', 0);
-    });
-  }
-
   chrome.runtime.onSuspend.addListener(function() {
-    stopWebRTC();
+    console.log("Shutting down");
   });
 })(window, document);
