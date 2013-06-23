@@ -64,7 +64,8 @@ define('globals', function() {
    */
 
   var G = Lablz,
-      browser = G.browser = $.browser;
+      browser = G.browser = $.browser,
+      query = window.location.hash.split('?')[1];
   
   browser.chrome = browser.webkit && !!window.chrome;
   browser.safari = browser.webkit && !window.chrome;
@@ -122,6 +123,15 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
+  function needModule(name) {
+    switch (name) {
+    case 'chrome':
+      return G.inWebview;
+    default:
+      return true;
+    }
+  };
+  
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
   function loadModule (name, url, text) {
     return $.Deferred(function(defer) {        
@@ -583,7 +593,7 @@ define('globals', function() {
       });
       
       if (missing.length) {
-        debugger; // shouldn't happen
+        debugger; // should only happen when dynamically deciding which modules to load (like based on browser)
         bundlePromises.push(G.loadBundle(missing));
       }
       
@@ -1244,16 +1254,59 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
 
-  window.addEventListener('message', G.onMessageFromApp);
-  
+  if (browser.chrome) {
+    var channelDfd = $.Deferred();
+    G.getChannelId = channelDfd.promise();
+    function onMessage(e) { 
+      console.log('got first app message');
+      G.appWindow = G.appWindow || e.source; 
+      G.appOrigin = G.appOrigin || e.origin;
+      G.pushChannelId = G.pushChannelId || e.data.channelId;
+      if (e.source) { 
+        console.log('got app window');
+        window.removeEventListener('message', onMessage);
+        G.appWindow.postMessage('ready', G.appOrigin);
+        channelDfd.resolve();
+      }
+      
+      console.log(e); 
+    } 
+       
+    window.addEventListener('message', onMessage);
+
+    if (hasLocalStorage) {
+      if (localStorage.getItem('-webview') === 'y') {
+        G.inWebview = true;
+      }
+    }
+    
+    if (!G.inWebview && query && query.length) {
+      var params = query.split('&');
+      for (var i = 0; i < params.length; i++) {
+        var keyVal = params[i].split('=');
+        if (decodeURIComponent(keyVal[0]) == '-webview' && decodeURIComponent(keyVal[1]) == 'y') {
+          G.inWebview = true;
+          G.localStorage.put('-webview', 'y');
+          break;
+        }
+      }
+    }
+    
+    console.log('inWebview:', G.inWebview);
+  }
+
   var bundles = G.bundles;
   G.files = {appcache: {}};
   for (var when in bundles) {
     var bundle = bundles[when];
+    bundle._deferred = $.Deferred();
     for (var type in bundle) {
       var bt = bundle[type];
-      for (var i = 0; i < bt.length; i++) {
+      for (var i = bt.length - 1; i >= 0; i--) {
         var info = bt[i];
+        if (!needModule(info.name))
+          bt.splice(i, 1);
+          
         G.files[info.name] = info;
         if (when === 'appcache') {
           G.files.appcache[info.name] = info;
@@ -1320,16 +1373,10 @@ require(['globals'], function(G) {
   
   var bundles = G.bundles,
       preBundle = bundles.pre,
-//      preBundleDfd = preBundle._deferred = $.Deferred(),
       postBundle = bundles.post, 
-      postBundleDfd = postBundle._deferred = $.Deferred(),
       extrasBundle = bundles.extras,
-      extrasBundleDfd = extrasBundle._deferred = $.Deferred(),
       priorities = [],
       appcache = G.files.appcache;
-  
-  if (G.inWebview)
-    preBundle.js.push('chrome');
   
   for (var type in preBundle) {
     var subBundle = preBundle[type];
@@ -1337,11 +1384,6 @@ require(['globals'], function(G) {
       var module = subBundle[i];
       if (module.hasOwnProperty('priority')) {
         subBundle.splice(i, 1);
-//        if (appcache[module.name]) {
-//          require([module.name]);
-//          continue;
-//        }
-//        
         priorities.push(module);
       }
     }

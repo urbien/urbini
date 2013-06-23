@@ -1,6 +1,7 @@
 (function(window, doc) {
   var bgPage,
   runtimeId,
+  connected = false,
   webviewPinger,
   serverOrigin,
   appHome,
@@ -373,12 +374,18 @@
       if (origin !== serverOrigin)
         return;
 
+      if (!connected) {
+        connected = true;
+        console.log('connected');
+        webviewPinger = clearInterval(webviewPinger);
+      }
+
       var data = e.data,
           type = data.type,
           rpc = /^rpc:/.test(type) ? type.slice(4) : null;
 
-      if (data === 'ready')
-        webviewPinger = clearInterval(webviewPinger);
+//      if (data === 'ready')
+//        webviewPinger = clearInterval(webviewPinger);
           
       if (rpc) {
         var dotIdx = rpc.lastIndexOf('.');
@@ -430,7 +437,6 @@
 //  };
   
   function handlePermissionRequest(e) {
-    debugger;
     var allowed = false;
     if (e.permission==='pointerLock' || e.permission==='media' || e.permission==='geolocation') {
       allowed = true;
@@ -443,12 +449,13 @@
   };
 
   function _sendChannelId(channelId) {
+    connected = false;
     webviewPinger = setInterval(function() {      
       postMessage({
         type: 'channelId',
         channelId: channelId
       });
-    }, 100);
+    }, 1000);
   }
 
   function postMessage(msg) {

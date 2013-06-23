@@ -1,22 +1,18 @@
 //'use strict';
-var deps = [
-  'globals',
-  'backbone',
-  'templates', 
-  'utils', 
-  'events',
-  'error',
-  'cache',
-  'vocManager',
-  'resourceManager',
-  'router',
-  'collections/ResourceList'
-];
-
-if (Lablz.inWebview)
-  deps.push('chrome');
-
-define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList, Chrome) {
+define('app', [
+ 'globals',
+ 'backbone',
+ 'templates', 
+ 'utils', 
+ 'events',
+ 'error',
+ 'cache',
+ 'vocManager',
+ 'resourceManager',
+ 'router',
+ 'collections/ResourceList'
+ ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
+  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   var simpleEndpointType = G.commonTypes.SimplePushNotificationEndpoint;
@@ -220,7 +216,7 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
       setTimeout(function() { 
         RM.sync();
         App.setupPushNotifications();
-        if (G.pushChannelId) {
+        if (G.inWebview) {
 //          App.replaceGetUserMedia();
           Events.on('messageToApp', function(msg) {
             App.sendMessageToApp(msg);
@@ -390,44 +386,42 @@ define('app', deps, function(G, Backbone, Templates, U, Events, Errors, C, Voc, 
     },
     
     setupPushNotifications: function() {
-      if (G.pushChannelId) {
-        App._setupPushNotifications();
-        Events.on('messageFromApp:push', App.onpush, App);
-      }
-    },
-    
-    _setupPushNotifications: function() {
-      if (G.currentUser.guest)
+      if (!G.inWebview || G.currentUser.guest)
         return;
       else if (!G.currentAppInstall) {
         Events.on('appInstall', function(appInstall) {
           if (appInstall.get('allow'))
-            App._setupPushNotifications();
+            App.setupPushNotifications();
         });
         
         return;
       }
-      
+
+      $.when(U.require('chrome'), G.getChannelId, Voc.getModels(simpleEndpointType)).done(function(c) {
+        Chrome = c;
+        App._setupPushNotifications();
+      });
+    },
+    
+    _setupPushNotifications: function() {      
+      Events.on('messageFromApp:push', App.onpush, App);
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp,
           channelId = G.pushChannelId,
-          appInstall = G.currentAppInstall;
+          appInstall = G.currentAppInstall,      
+          endpointList = new ResourceList(G.currentUser.pushEndpoints, {
+            model: U.getModel(simpleEndpointType),
+            query: $.param({
+              appInstall: appInstall
+            })
+          });
       
-      Voc.getModels(simpleEndpointType).done(function() {
-        var endpointList = new ResourceList(G.currentUser.pushEndpoints, {
-          model: U.getModel(simpleEndpointType),
-          query: $.param({
-            appInstall: appInstall
-          })
-        });
-        
-        if (endpointList.where({endpoint: channelId}).length) {
-          console.log('PUSH ENDPOINT ALREADY EXISTS');
-          return;
-        }
-        
-        App._registerSimplePushEndpoint(channelId);
-      });
+      if (endpointList.where({endpoint: channelId}).length) {
+        console.log('PUSH ENDPOINT ALREADY EXISTS');
+        return;
+      }
+      
+      App._registerSimplePushEndpoint(channelId);
     },
     
     initGrabs: function() {

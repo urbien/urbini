@@ -231,52 +231,11 @@ define('views/ChatPage', [
       var readyDfd = $.Deferred();
       this.ready = readyDfd.promise();
       var self = this;
-      this.inWebview = false; //G.inWebview;
-      if (this.inWebview) {
-        U.rpc('log', 'about to start WebRTC');
-        WebRTC = function(config) {
-          this.callbacks = {};
-//          G.connectedToApp.done(function() {
-            U.rpc('log', 'starting WebRTC');
-            U.rpc('startWebRTC', config);
-//          });
-        };
-        
-        _.each(webrtcMethods, function(method) {
-          WebRTC.prototype[method] = function() {
-            [].unshift.call(arguments, 'webrtc.' + method);
-            U.rpc.apply(null, arguments);
-          };
-        });
-        
-        WebRTC.prototype.on = function(eventName, callback) {
-          this.callbacks[eventName] = callback;
-          Events.on('messageFromApp:webrtc:' + eventName, callback, self);
-        };
-
-        WebRTC.prototype.off = function(eventName, callback) {
-          if (eventName === '*') {
-            for (var event in this.callbacks) {
-              Events.off('messageFromApp:webrtc:' + event, this.callbacks[event]);
-            }
-            
-            return;
-          }
-          
-          callback = callback || this.callbacks[eventName];
-          if (callback)
-            Events.off('messageFromApp:webrtc:' + eventName, callback);
-        };
-
+      var req = ['lib/socket.io', 'simplewebrtc'];
+      U.require(req).done(function(socketIO, simpleWebRTC) {
+        WebRTC = simpleWebRTC;
         readyDfd.resolve();
-      }
-      else {
-        var req = ['lib/socket.io', 'simplewebrtc'];
-        U.require(req).done(function(socketIO, simpleWebRTC) {
-          WebRTC = simpleWebRTC;
-          readyDfd.resolve();
-        });
-      }
+      });
       
       this.makeTemplate('chatPageTemplate', 'template', type);
       this.makeTemplate('chatMessageTemplate', 'messageTemplate', this.modelType);
@@ -387,16 +346,12 @@ define('views/ChatPage', [
         return;
       
       var role = e.target.dataset.role;
-      if (this.inWebview && (role != 'header' && role != 'footer') && !$(e.target).parents('[data-role="footer"],[data-role="header"]').length) {
-        U.rpc('showMedia');
-        return false;
-      }
     }, 100),
     switchToApp: function(e) {
       return !this._switchToApp(e);
     },
     toggleChat: function(e) {
-      if (!this.rendered || this.inWebview)
+      if (!this.rendered)
         return;
 
 //      var el = e.target;
@@ -413,7 +368,7 @@ define('views/ChatPage', [
     },
     
     videoFadeIn: function(e) {
-      if (!this.rendered || this.inWebview)
+      if (!this.rendered)
         return;
         
       this._videoSolid = true;
@@ -424,7 +379,7 @@ define('views/ChatPage', [
     },
 
     videoFadeOut: function(e) {
-      if (!this.rendered || this.inWebview)
+      if (!this.rendered)
         return;
       
       this._videoSolid = false;
@@ -435,7 +390,7 @@ define('views/ChatPage', [
     },
 
     chatFadeIn: function(e) {
-      if (!this.rendered || this.inWebview)
+      if (!this.rendered)
         return;
 
       this._chatSolid = true;
@@ -447,7 +402,7 @@ define('views/ChatPage', [
     },
 
     chatFadeOut: function(e) {
-      if (!this.rendered || this.inWebview)
+      if (!this.rendered)
         return;
 
       this._chatSolid = false;
@@ -478,9 +433,6 @@ define('views/ChatPage', [
       this.$remoteMedia       = this.$('div#remoteMedia');
       this.$videoChat         = this.$('#videoChat');
       this.$textChat          = this.$('#textChat');
-      
-      if (this.inWebview)
-        this.$videoChat.remove();
       
       this.$localMedia.hide();
       if (this.resource && this.isPrivate) {
@@ -1083,12 +1035,12 @@ define('views/ChatPage', [
       if (this.hasVideo || this.hasAudio) {
         _.extend(this.config, {
           local: !vConfig.preview && !vConfig.send ? null : { // no such thing as local audio
-            _el: this.inWebview ? 'localMedia' : self.$localMedia[0],
+            _el: self.$localMedia[0],
             autoplay: true,
             muted: true
           },
           remote: !vConfig.receive && !aConfig.receive ? null : {
-            _el: this.inWebview ? 'remoteMedia' : self.$remoteMedia[0],
+            _el: self.$remoteMedia[0],
             autoplay: true
           },
           autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
@@ -1356,9 +1308,6 @@ define('views/ChatPage', [
      * local media can only be video
      */
     processLocalMedia: function(info, conversation) {
-      if (this.inWebview)
-        return;
-      
       var video = info.media;
       this.localStream = info.stream;
       this.checkVideoSize(video);
@@ -1398,9 +1347,6 @@ define('views/ChatPage', [
       };
       
       Events.trigger('newRTCCall', this.rtcCall);
-      if (this.inWebview)
-        return;
-      
       var self = this,
           media = info.media,
           stream = info.stream;
@@ -1459,7 +1405,7 @@ define('views/ChatPage', [
         //
       }
       else {
-        if (this.inWebview || info.stream)
+        if (info.stream)
           Events.trigger('endRTCCall', this.rtcCall);
         
         this.$('canvas#' + info.media.id).remove();
@@ -1469,14 +1415,8 @@ define('views/ChatPage', [
 
     leave: function() {
   //    this.chat && this.chat.leave();
-      if (this.inWebview) {
-        this.chat && this.chat.off('*');
-        U.rpc('stopWebRTC');
-      }
-      else {
-        if (this.chat) 
-          this.chat.leaveRoom();
-      }
+      if (this.chat) 
+        this.chat.leaveRoom();
       
       this.stopRingtone();
     },
@@ -1612,9 +1552,6 @@ define('views/ChatPage', [
     },
     
     showRequestDialog: function(data) {
-      if (this.inWebview)
-        U.rpc('hideMedia');
-      
       var self = this,
           request = data.request,
           userInfo = this.getUserInfo(data.from),
