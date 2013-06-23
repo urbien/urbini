@@ -1,7 +1,7 @@
 (function(window, doc) {
   var bgPage,
   runtimeId,
-  connected = false,
+//  connected = false,
   webviewPinger,
   serverOrigin,
   appHome,
@@ -79,12 +79,6 @@
     bgPage = page;
     channelId = bgPage.channelId;
     tabId = bgPage.tabId;
-    if (!channelId) {
-      bgPage.addEventListener('gotChannelId', function(id) {
-        channelId = id;
-      });
-    }
-
     runtimeId = bgPage.runtimeId;
   });
 
@@ -374,11 +368,11 @@
       if (origin !== serverOrigin)
         return;
 
-      if (!connected) {
-        connected = true;
-        console.log('connected');
-        webviewPinger = clearInterval(webviewPinger);
-      }
+//      if (!connected) {
+//        connected = true;
+//        console.log('connected');
+//        sendChannelId();
+//      }
 
       var data = e.data,
           type = data.type,
@@ -422,12 +416,13 @@
   }
   // }, 2000, true);
 
-  function sendChannelId(e) {
+  function sendChannelId() {
     if (channelId)
       _sendChannelId(channelId);
     else {
       bgPage.addEventListener('gotChannelId', function(e) {
-        _sendChannelId(e.channelId);
+        channelId = e.channelId;
+        _sendChannelId(channelId);
       });
     }
   };
@@ -437,8 +432,13 @@
 //  };
   
   function handlePermissionRequest(e) {
+    if (e.url.indexOf(serverOrigin) != 0) {
+      e.request.deny();
+      return;
+    }
+    
     var allowed = false;
-    if (e.permission==='pointerLock' || e.permission==='media' || e.permission==='geolocation') {
+    if (e.permission === 'pointerLock' || e.permission ==='media' || e.permission === 'geolocation') {
       allowed = true;
       e.request.allow();
     } else {
@@ -449,13 +449,11 @@
   };
 
   function _sendChannelId(channelId) {
-    connected = false;
-    webviewPinger = setInterval(function() {      
-      postMessage({
-        type: 'channelId',
-        channelId: channelId
-      });
-    }, 1000);
+//    connected = false;
+    postMessage({
+      type: 'channelId',
+      channelId: channelId
+    });
   }
 
   function postMessage(msg) {

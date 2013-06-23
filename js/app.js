@@ -397,7 +397,7 @@ define('app', [
         return;
       }
 
-      $.when(U.require('chrome'), G.getChannelId, Voc.getModels(simpleEndpointType)).done(function(c) {
+      $.when(U.require('chrome'), /*G.getChannelId,*/ Voc.getModels(simpleEndpointType)).done(function(c) {
         Chrome = c;
         App._setupPushNotifications();
       });

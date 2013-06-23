@@ -1,3 +1,21 @@
+//    var channelDfd = $.Deferred();
+//    G.getChannelId = channelDfd.promise();
+//    function onMessage(e) { 
+//      console.log('CONNECTED TO PACKAGED APP');
+//      Lablz.appWindow = Lablz.appWindow || e.source; 
+//      Lablz.appOrigin = Lablz.appOrigin || e.origin;
+//      Lablz.pushChannelId = Lablz.pushChannelId || e.data.channelId;
+//      if (e.source) { 
+//        console.log('got app window');
+//        window.removeEventListener('message', onMessage);
+//        Lablz.appWindow.postMessage('ready', Lablz.appOrigin);
+////        channelDfd.resolve();
+//      }
+//      
+//      console.log(e); 
+//    } 
+//       
+//    window.addEventListener('message', onMessage);
 
 //(function() {  
 //  var search = window.location.search;
@@ -1255,25 +1273,6 @@ define('globals', function() {
   }
 
   if (browser.chrome) {
-    var channelDfd = $.Deferred();
-    G.getChannelId = channelDfd.promise();
-    function onMessage(e) { 
-      console.log('got first app message');
-      G.appWindow = G.appWindow || e.source; 
-      G.appOrigin = G.appOrigin || e.origin;
-      G.pushChannelId = G.pushChannelId || e.data.channelId;
-      if (e.source) { 
-        console.log('got app window');
-        window.removeEventListener('message', onMessage);
-        G.appWindow.postMessage('ready', G.appOrigin);
-        channelDfd.resolve();
-      }
-      
-      console.log(e); 
-    } 
-       
-    window.addEventListener('message', onMessage);
-
     if (hasLocalStorage) {
       if (localStorage.getItem('-webview') === 'y') {
         G.inWebview = true;
