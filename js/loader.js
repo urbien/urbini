@@ -469,13 +469,13 @@ define('globals', function() {
           
           RM.runTask(function() {
             defer.always(this.resolve);
-            $db.objectStore('modules').get(url).done(function(result) {
+            $db.objectStore('modules', 0).get(url).done(function(result) {
               if (result)
                 defer.resolve(result.data)
               else
                 defer.reject();
             }).fail(defer.reject);
-          });
+          }, {name: 'get module: ' + url});
         }
       }).promise();
     },
