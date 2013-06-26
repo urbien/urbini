@@ -498,25 +498,25 @@ define('resourceManager', [
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
     updateDB: function(types) {
-      return RM.runTask(function() {
-        var defer = this;
+//        var defer = this;
 //        return $.Deferred(function(defer) {
-        var toKill = _.clone(types);
-        if (RM.db) {
-          toKill = _.filter(toKill, function(m) {
-            return RM.storeExists(m);
-          });
-          
-          if (toKill.length)
-            RM.upgradeDB({killStores: toKill, msg: "upgrade to kill stores: " + toKill.join(",")}).done(defer.resolve).fail(defer.reject);
-          else
-            defer.resolve();
-        }
-        else {
-            RM.openDB({killStores: toKill}).done(defer.resolve).fail(defer.reject);
-        }
+      var toKill = _.clone(types);
+      if (RM.db) {
+        toKill = _.filter(toKill, function(m) {
+          return RM.storeExists(m);
+        });
+        
+        if (toKill.length)
+          return RM.upgradeDB({killStores: toKill, msg: "upgrade to kill stores: " + toKill.join(",")});
+        else
+          return $.Deferred().resolve().promise();
+      }
+      else {
+        return RM.runTask(function() {
+          RM.openDB({killStores: toKill});
+        }, {name: 'update db', sequential: true});
+      }
 //        }).promise();
-      }, {name: 'update db', sequential: true});
     },
     
     deleteDatabase: function() {
@@ -610,6 +610,12 @@ define('resourceManager', [
       var settings = {
         upgrade: function(transaction) {
           G.log(RM.TAG, "db", 'in upgrade function');
+          if (!RM.storeExists(REF_STORE.name))
+            toMake.push(REF_STORE.name);
+
+          if (!RM.storeExists(MODULE_STORE.name))
+            toMake.push(MODULE_STORE.name);
+
           if (!toMake.length && !toKill.length) {
             G.log(RM.TAG, "db", 'upgrade not necessary');
             return;
@@ -618,6 +624,8 @@ define('resourceManager', [
           G.log(RM.TAG, "db", 'upgrading...');
           G.log(RM.TAG, 'db', 'db upgrade transaction onsuccess');
           newStores = RM.updateStores(transaction, toMake, toKill);
+          toMake = [];
+          toKill = [];
         }
       };
       
@@ -633,18 +641,9 @@ define('resourceManager', [
       var dbDefer = $.Deferred();
       var openPromise = RM.$db = $.indexedDB(RM.DB_NAME, settings);
       openPromise.done(function(db, event) {
+        var first = !RM.db;
         RM.db = db;
         var currentVersion = db ? isNaN(db.version) ? 1 : parseInt(db.version) : 1;
-        if (!RM.storeExists(REF_STORE.name)) {
-          toMake.push(REF_STORE.name);
-          version = currentVersion + 1;
-        }
-
-        if (!RM.storeExists(MODULE_STORE.name)) {
-          toMake.push(MODULE_STORE.name);
-          version = currentVersion + 1;
-        }
-
         // user refreshed the page
         if (!RM.db && !version) { 
           if (needUpgrade()) {
@@ -664,7 +663,7 @@ define('resourceManager', [
 
         // Queue up upgrade
         RM.upgradeDB(_.extend(options, {version: version, msg: "upgrade to kill stores: " + toKill.join(",") + ", make stores: " + toMake.join()}));
-        dbDefer.resolve();
+//        dbDefer.resolve();
       }).fail(function(error, event) {
         debugger;
         G.log(RM.TAG, ['db', 'error'], error, event);
