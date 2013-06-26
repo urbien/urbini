@@ -3197,7 +3197,6 @@ define('utils', [
       
       Events.trigger('messageToApp', msg);
     }
-
   };
 
   for (var p in U.systemProps) {
