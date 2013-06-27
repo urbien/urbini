@@ -1,48 +1,3 @@
-//    var channelDfd = $.Deferred();
-//    G.getChannelId = channelDfd.promise();
-//    function onMessage(e) { 
-//      console.log('CONNECTED TO PACKAGED APP');
-//      Lablz.appWindow = Lablz.appWindow || e.source; 
-//      Lablz.appOrigin = Lablz.appOrigin || e.origin;
-//      Lablz.pushChannelId = Lablz.pushChannelId || e.data.channelId;
-//      if (e.source) { 
-//        console.log('got app window');
-//        window.removeEventListener('message', onMessage);
-//        Lablz.appWindow.postMessage('ready', Lablz.appOrigin);
-////        channelDfd.resolve();
-//      }
-//      
-//      console.log(e); 
-//    } 
-//       
-//    window.addEventListener('message', onMessage);
-
-//(function() {  
-//  var search = window.location.search;
-//  Lablz.inWebview = search.indexOf('-webview=y') != -1;
-//  console.log("Lablz.inWebview = ", Lablz.inWebview);
-//  var connected = $.Deferred();
-//  Lablz.connectedToApp = connected.promise();
-//  function onMessage(e) { 
-//    Lablz.inWebview = true;
-//    var appWin = Lablz.appWindow = Lablz.appWindow || e.source; 
-//    var appOrigin = Lablz.appOrigin = Lablz.appOrigin || e.origin;
-//    Lablz.pushChannelId = Lablz.pushChannelId || e.data.channelId;
-//    if (appWin) {
-//      window.removeEventListener('message', onMessage);
-//      appWin.postMessage('ready', appOrigin);
-//      connected.resolve();
-//    }
-//    
-//    console.log('init event from app', e); 
-//  }
-//
-//  if (Lablz.appWindow)
-//    connected.resolve();
-//  else
-//    window.addEventListener('message', onMessage);
-//})(window);
-
 (function(window, doc, undefined) {
 var __started = new Date();
 
@@ -104,7 +59,7 @@ define('globals', function() {
         G.inject(text);
       else if (browser.mozilla)
         return window.eval(text);
-  //      return window.eval.call({}, text);  
+//        return window.eval.call({}, text);  
       else // Safari
         return window.eval(text);
     } 
@@ -145,6 +100,8 @@ define('globals', function() {
     switch (name) {
     case 'chrome':
       return G.inWebview;
+    case 'firefox':
+      return G.inFirefoxOS;
     default:
       return true;
     }
@@ -259,23 +216,6 @@ define('globals', function() {
   };
 
   
-  /**
-   * AMD-cache, a loader plugin for AMD loaders.
-   *
-   * Available via the MIT or new BSD license.
-   *
-   * Redesigned from cache plugin by Jens Arps by adding preloading, support for css, timestamps and more.
-   *
-   * The xhr code is taken from the RequireJS text plugin:
-   *
-   */
-  /**
-   * Three sources of JS file loading
-   * 1. Listed in loader in baseBundle JS files are first loaded into memory by loader.js.
-   *    When define is called JS files listed in define and prepanded with '' get moved from memory to cache
-   * 2. Loading from cache: listed in define call JS files that prepanded with '' will be first attempted to load from cache
-   * 3. From server 
-   */
   var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
       hasLocalStorage = (function(){
         var supported = false;
@@ -284,29 +224,7 @@ define('globals', function() {
         }catch(e){}
         return supported;
       })();
-
-//  define('fileCache', function() {
-//    var cache = {
-//      TAG: 'fileCache',
-//      load: function (name, url) {
-//        return $.Deferred(function(defer) {          
-//          // hack for jsp, otherwise define callback function will not get jsp text
-//          var url = G.getCanonicalPath(req.toUrl(name));
-//          if (G.isInAppcacheBundle(url)) {
-//            require([name], function() {
-////              onLoad(name);
-//              defer.resolve();
-//            });
-//          }
-//          else
-//            require.load(name, req.toUrl(name));
-//        }).promise();
-//      }
-//    };
-//
-//    return cache;
-//  });
-
+  
   G.serverName = (function() {     
     var s = $('base')[0].href;
     return s.match("/$") ? s.slice(0, s.length - 1) : s;
@@ -481,17 +399,26 @@ define('globals', function() {
     },
     isUsingDBShim: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
-      var using = !window.indexedDB;
+      var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB;
       if (using)
         console.debug('using indexeddb shim');
+      else {
+        var pre = G.bundles.pre.js,
+            shimIdx = pre.indexOf('lib/IndexedDBShim');
+        
+        if (shimIdx >= 0)
+          pre.splice(shimIdx, 1);
+        
+        console.debug("don't need indexeddb shim");
+      }
+      
       return using;
     })(),
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
     nukeAll: function(reload) {
-      var ls = localStorage;
-      ls && ls.clear && ls.clear();
+      hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
         G.ResourceManager.deleteDatabase().done(function() {          
           if (reload !== false)
@@ -1271,27 +1198,38 @@ define('globals', function() {
   for (var prop in moreG) {
     G[prop] = moreG[prop];
   }
+  
+  function setParent() {
+    if (browser.chrome)
+      G.inWebview = true;
+    else if (browser.firefox) {
+      G.inFirefoxOS = true;
+//      window.top.postMessage({message: 'Hello world'}, G.serverName);
+    }
+  }
 
-  if (browser.chrome) {
+  if (browser.chrome || browser.firefox) {
+    var param = browser.chrome ? '-webview' : '-ffiframe';
     if (hasLocalStorage) {
-      if (localStorage.getItem('-webview') === 'y') {
-        G.inWebview = true;
+      if (localStorage.getItem(param) === 'y') {
+        setParent();
       }
     }
     
-    if (!G.inWebview && query && query.length) {
+    if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
       var params = query.split('&');
       for (var i = 0; i < params.length; i++) {
         var keyVal = params[i].split('=');
-        if (decodeURIComponent(keyVal[0]) == '-webview' && decodeURIComponent(keyVal[1]) == 'y') {
-          G.inWebview = true;
-          G.localStorage.put('-webview', 'y');
+        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
+          setParent();          
+          G.localStorage.put(param, 'y');
           break;
         }
       }
     }
     
     console.log('inWebview:', G.inWebview);
+    console.log('inFFIframe:', G.inFirefoxOS);
   }
 
   var bundles = G.bundles;
@@ -1421,7 +1359,7 @@ require(['globals'], function(G) {
       require('__domReady__').done(function() {
         require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
           Events.on('appStart', G._appStartDfd.resolve);
-          console.debug("Passed first require: " + (new Date().getTime() - __started) + ' millis');
+          console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
           G.finishedTask("loading modules");
           G.browser = $.browser;
           App.initialize();

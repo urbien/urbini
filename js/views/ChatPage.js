@@ -420,6 +420,22 @@ define('views/ChatPage', [
         audio: this.hasAudio
       }));
       
+//      Events.on('visible', _.debounce(function(visible) {
+//        debugger;
+//        if (this.chat) {
+//          var webRTCEvent = visible ? 'wake' : 'sleep';
+//          if (this.chat.sessionReady)
+//            this.chat._emit(webRTCEvent);
+//          else {
+//            this.chat.on('ready', function() {
+//              this.chat._emit(webRTCEvent);
+//            });
+//          }
+//        }
+//        
+//        console.log("page has become", newState);
+//      }, 3000, true));
+      
       this.assign({
         'div#headerDiv' : this.header
       });

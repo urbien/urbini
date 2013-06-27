@@ -1,4 +1,4 @@
-define('chrome', ['globals', 'underscore', 'events', 'utils'], function(G, _, Events, U) {
+define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/ResourceList'], function(G, _, Events, U, ResourceList) {
   
   /**
    * @param eventName the event to listen to and upon receiving which to call the "callback" 
@@ -35,6 +35,61 @@ define('chrome', ['globals', 'underscore', 'events', 'utils'], function(G, _, Ev
       }
     }
   };
+
+  function onMessageFromApp(e) {
+    if (e.origin.indexOf('chrome-extension://') != 0)
+      return;
+    
+    U.rpc('log', 'got message', e.data);
+    console.debug('message from app:', e);
+    G.appWindow = G.appWindow || e.source;
+    G.appOrigin = G.appOrigin || e.origin;
+    var data = e.data,
+        type = data.type,
+        args = data.args || [];
+    
+    delete data.type;
+    args.unshift('messageFromApp:' + type);
+    Events.trigger.apply(Events, args);
+    switch (type) {
+      case 'visibility':
+        debugger;
+        Events.trigger('visible', data.visible);
+        break;
+      default:
+        return;
+    }
+  };
+  
+  function sendMessageToApp(msg) {
+    var appWin = G.appWindow;
+    if (appWin && G.appOrigin)
+      appWin.postMessage(msg, G.appOrigin);
+    else
+      console.debug("can't send message to app, don't know app's window & origin");
+  };
+  
+  function onpush(msg) {
+    var subchannelId = msg.subchannelId,
+        payload = msg.payload,
+        id = G.nextId() + '';
+    
+    console.log('got push message', JSON.stringify(msg));
+    chrome.notifications.create(id, {
+      type: 'basic',
+      title: "Client Waiting",
+      message: "There's a client waiting to be assisted in the lobby",
+      iconUrl: 'icon_128.png'
+    });
+    
+    chrome.notifications.onClicked(function(notificationId) {
+      console.log('clicked notification, id:', id);
+      if (notificationId == id) {
+        U.rpc('focus');
+        Events.trigger('navigate', G.tabs[0].hash);
+      }
+    });
+  };
   
   var chrome = {
     notifications: {
@@ -58,6 +113,27 @@ define('chrome', ['globals', 'underscore', 'events', 'utils'], function(G, _, Ev
       onClosed: function(callback) {
         U.rpc(this._path, createCallbackEvent(callback));        
       }
+    },
+    _setup: function() {      
+      Events.on('messageFromApp:push', onpush);
+      var installedApps = G.currentUser.installedApps,
+          currentApp = G.currentApp,
+          channelId = G.pushChannelId,
+          appInstall = G.currentAppInstall,      
+          endpointList = new ResourceList(G.currentUser.pushEndpoints, {
+            model: U.getModel(G.commonTypes.SimplePushNotificationEndpoint),
+            query: $.param({
+              appInstall: appInstall
+            })
+          });
+      
+      if (endpointList.where({endpoint: channelId}).length) {
+        console.log('PUSH ENDPOINT ALREADY EXISTS');
+        return;
+      }
+      
+      Events.trigger('newPushEndpoint', channelId);
+//      App._registerSimplePushEndpoint(channelId);
     }
   };
   

@@ -13,18 +13,14 @@
 
   /* START HTML elements / JQuery objects */
   webview,
-  $webview, 
-  $window = $(window), 
   controls,
-  $controls,
-  $locInput,
   locInput,
-  $back,
-  $forward,
-  $home,
-  $reload,
-  $terminate,
-  $locForm,
+  back,
+  forward,
+  home,
+  reload,
+//  terminate,
+  locForm,
   /* END   HTML elements / JQuery objects */
 
 //  echo,
@@ -33,72 +29,70 @@
   RPC = {
     log: function() {
       var args = [].slice.call(arguments);
-      args.unshift('FROM WEBVIEW:');
+      args.unshift('FROM IFRAME:');
       console.log.apply(console, args);
     },
     setAttribute: function(sel, attribute, value) {
       $(sel).setAttribute(attribute, value);
     },
-    //      focus: function() {
-    //        chrome.tabs.update(tabId, {active: true}); // tabs are not available in packaged apps, only extensions
-    //      },
-    notifications: {
+    mozNotification: {
       /**
-       * @param callback - a message type to send back when the notification has been created
+       * @param callbacks = {
+       *   onclose: a message type to send back when the notification has been closed    (optional)
+       *   onclick: a message type to send back when the notification has been clicked   (optional)
+       * }
        */
-      create: function(id, options, callback) {
-        if (callback) {
-          var eventName = callback;
-          callback = getCallback(eventName);
+      createNotification: function(title, desc, iconURL, callbacks) {
+        var notification = leaf(navigator, this._path)(title, desc, iconURL);
+        if (callbacks) {
+          for (var cbName in callbacks) {            
+            notification[cbName] = getCallback(cbName);
+          }
         }
-        else
-          callback = doNothing;
-    
-        leaf(chrome, this._path)(id, options, callback);
-      },
-      onButtonClicked: function(callbackEvent) {
-        var callback = getCallback(callbackEvent);
-        leaf(chrome, this._path).addListener(callback);
-      },
-      onClicked: function(callbackEvent) {
-        var callback = getCallback(callbackEvent);
-        leaf(chrome, this._path).addListener(callback);
-      },
-      onDisplayed: function(callbackEvent) { 
-        var callback = getCallback(callbackEvent);
-        leaf(chrome, this._path).addListener(callback);
-      },
-      onClosed: function(callbackEvent) {
-        var callback = getCallback(callbackEvent);
-        leaf(chrome, this._path).addListener(callback);
+        
+        notification.show();
       }
     }
+  },
+  $ = function() {
+    return document.querySelector.apply(document, arguments);
   };
 
-  chrome.runtime.getBackgroundPage(function(page) {
-    bgPage = page;
-    channelId = bgPage.channelId;
-    tabId = bgPage.tabId;
-    runtimeId = bgPage.runtimeId;
-  });
-
-  chrome.runtime.onMessage.addListener(
-    function(msg, sender, sendResponse) {
-      if (sender.id == runtimeId) {
-        if (msg.type === 'push')
-          postMessage(msg);
-
-        sendResponse({"result": "OK"});
-      } else {
-        sendResponse({"result": "Sorry, you're not on the whitelist, message ignored"});
-      }
-    }
-  );
-
-  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+  navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia;
   window.onresize = doLayout;
   setPaths(RPC);
-
+  install();
+  
+  function install() {
+    var req = navigator.mozApps.getSelf();
+    req.onsuccess = function() {
+      if (req.result) {
+        // we're installed
+        console.log('already installed');
+        initPush();
+      } else {
+        // not installed
+        navigator.mozApps.install('/manifest.webapp');
+        req.onsuccess = function() {
+          console.log("app installed successfully");
+          initPush();
+        };
+        
+        req.onerror = function(errObj) {
+          console.log("Couldn't install app (" + errObj.code + ") " + errObj.message);
+        };
+      }
+    }
+    
+    req.onerror = function(err) {
+      console('Error checking installation status: ' + err.message);
+    };
+  };
+  
+  function initPush() {
+    
+  };
+  
   function doNothing() {};
 
   function has(obj, key) {
@@ -196,9 +190,8 @@
     var webviewWidth = windowWidth;
     var webviewHeight = windowHeight - controlsHeight;
 
-    $webview.width(webviewWidth + 'px');
-    $webview.height(webviewHeight + 'px');
-//    $webview.css('z-index', 1);
+    webview.style.width = webviewWidth + 'px';
+    webview.style.height = webviewHeight + 'px';
 
     // var sadWebview = $('#sad-webview');
     // sadWebview.style.width = webviewWidth + 'px';
@@ -233,8 +226,8 @@
 
     locInput.value = event.url || webview.src;
 
-    back.disabled = !webview.canGoBack();
-    forward.disabled = !webview.canGoForward();
+//    back.disabled = !webview.canGoBack();
+//    forward.disabled = !webview.canGoForward();
   }
 
   function handleLoadStart(event) {
@@ -303,62 +296,59 @@
   }
 
   window.onload = function() {
+    controls = $('#controls');
+    webview = $('#iframe');
     if (SHOW_BUTTONS) { 
-      $back = $('#back');
-      $forward = $('#forward');
-      $reload = $('#reload');
-      $home = $('#home');
-      $terminate = $('#terminate');
-      $controls = $('#controls');
-      controls = $controls[0];
-      $locInput = $('#location');
-      locInput = $locInput[0];
-      $locForm = $('#location-form');
+      back = $('#back');
+      forward = $('#forward');
+      reload = $('#reload');
+      home = $('#home');
+//      terminate = $('#terminate');
+      locInput = $('#location');
+      locInput.value = webview.src;
+      locForm = $('#location-form');
 
-      $back.click(function() {
-        webview.back();
-      });
+      back.onclick = function() {
+        webview.contentWindow.history.back();
+      };
 
-      $forward.click(function() {
-        webview.forward();
-      });
+      forward.onclick = function() {
+        webview.contentWindow.history.forward();
+      };
 
-      $home.click(function() {
+      home.onclick = function() {
         navigateTo(appHome);
-      });
+      };
 
-      $reload.click(function() {
+      reload.onclick = function() {
         if (isLoading) {
-          webview.stop();
+//          webview.stop();
         } else {
-          webview.reload();
+          navigateTo(webview.src);
         }
-      });
+      };
 
-      $reload.bind(
-          'webkitAnimationIteration',
-          function() {
-            if (!isLoading) {
-              doc.body.classList.remove('loading');
-            }
-          }
-      );
+//      reload.addEventListener(
+//          'webkitAnimationIteration',
+//          function() {
+//            if (!isLoading) {
+//              doc.body.classList.remove('loading');
+//            }
+//          }
+//      );
+//
+//      terminate.onclick = function() {
+//        webview.terminate();
+//      };
 
-      $terminate.click(function() {
-        webview.terminate();
-      });
-
-      $locForm.submit(function(e) {
+      locForm.onsubmit = function(e) {
         e.preventDefault();
         navigateTo(locInput.value);
-      });
+      };
     }
     else
-      $('#controls').remove();
+      controls.parentNode.removeChild(controls);
 
-    $webview = $('#webview');
-    webview = $webview[0];
-    locInput.value = webview.src;
     appHome = webview.src;
     serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
     webviewOrigin = serverOrigin + "/*";
@@ -369,19 +359,11 @@
       if (origin !== serverOrigin)
         return;
 
-//      if (!connected) {
-//        connected = true;
-//        console.log('connected');
-//        sendChannelId();
-//      }
-
       var data = e.data,
           type = data.type,
           rpc = /^rpc:/.test(type) ? type.slice(4) : null;
 
-//      if (data === 'ready')
-//        webviewPinger = clearInterval(webviewPinger);
-          
+      console.log("message from iframe: ", JSON.stringify(data));
       if (rpc) {
         var dotIdx = rpc.lastIndexOf('.');
         var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
@@ -392,16 +374,14 @@
     });
 
     webview.addEventListener('exit', handleExit);
-    webview.addEventListener('loadstart', handleLoadStart);
-    webview.addEventListener('loadstop', handleLoadStop);
-    webview.addEventListener('loadabort', handleLoadAbort);
-    webview.addEventListener('loadredirect', handleLoadRedirect);
-    webview.addEventListener('loadcommit', handleLoadCommit);
+    webview.onload = function() {
+      postMessage({
+        type: 'ready'
+      });
+    };
     
-    // send channelId on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
-    webview.addEventListener('loadstop', sendChannelId);
-    webview.addEventListener('permissionrequest', handlePermissionRequest);
-    $window.focus(changeVisibility).blur(changeVisibility);
+    window.addEventListener('focus', changeVisibility); // maybe use focusin/focusout?
+    window.addEventListener('blur', changeVisibility);
   };
 
   // var changeVisibility = _.debounce(function(e) {
@@ -410,7 +390,7 @@
 //        prev = visibilityState;
 //
 //    if (newState === visibilityState)
-//      return;	  
+//      return;   
 //
 //    visibilityState = newState;
     var visible = e.type != 'blur';
@@ -423,21 +403,6 @@
   }
   // }, 2000, true);
 
-  function sendChannelId() {
-    if (channelId)
-      _sendChannelId(channelId);
-    else {
-      bgPage.addEventListener('gotChannelId', function(e) {
-        channelId = e.channelId;
-        _sendChannelId(channelId);
-      });
-    }
-  };
-
-//  function sendEcho() {
-//    postMessage('echo');
-//  };
-  
   function handlePermissionRequest(e) {
     if (e.url.indexOf(serverOrigin) != 0) {
       e.request.deny();
@@ -455,19 +420,7 @@
     console.log("["+e.target.id+"] permissionrequest: permission="+e.permission+" "+ (allowed?"allowed":"DENIED"));
   };
 
-  function _sendChannelId(channelId) {
-//    connected = false;
-    postMessage({
-      type: 'channelId',
-      channelId: channelId
-    });
-  }
-
   function postMessage(msg) {
     webview.contentWindow.postMessage(msg, webviewOrigin);
   };
-
-  chrome.runtime.onSuspend.addListener(function() {
-    console.log("Shutting down");
-  });
 })(window, document);

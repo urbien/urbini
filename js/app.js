@@ -12,7 +12,7 @@ define('app', [
  'router',
  'collections/ResourceList'
  ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
-  var Chrome;
+//  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   var simpleEndpointType = G.commonTypes.SimplePushNotificationEndpoint;
@@ -96,8 +96,10 @@ define('app', [
           });          
         };
   
-        var templatesDfd = $.Deferred();
-        var getTemplates = function() {
+        var templatesDfd = $.Deferred(),
+            templatesPromise;
+            
+        function getTemplates() {
           var jstType = G.commonTypes.Jst;
           var jstModel = U.getModel(jstType);
           var templatesBl = G.currentApp.templates;
@@ -126,13 +128,16 @@ define('app', [
             templatesDfd.resolve();
         }; 
 
-        var viewsDfd = $.Deferred();
-        var getViews = function() {
-          var jsType = G.commonTypes.JS;
-          var jsModel = U.getModel(jsType);
-          var viewsBl = G.currentApp.views;
+        var viewsDfd = $.Deferred(),
+            viewsPromise = viewsDfd.promise();
+            
+        function getViews() {
+          var jsType = G.commonTypes.JS,
+              jsModel = U.getModel(jsType),
+              viewsBl = G.currentApp.views;
+          
           if (viewsBl && viewsBl.count) {
-            var viewsRL = G.appViews = new ResourceList(null, {
+            var viewsRL = G.views = new ResourceList(null, {
               model: jsModel,
               params: {
                 forResource: G.currentApp._uri
@@ -143,6 +148,12 @@ define('app', [
               success: function() {
                 viewsRL.each(function(view) {
                   debugger;
+//                  switch(view.moduleType) {
+//                    case 'View':
+//                      break;
+//                    case 'Adapter':
+//                      break;
+//                  }
                 });
                 
                 viewsDfd.resolve();
@@ -155,7 +166,7 @@ define('app', [
           else
             viewsDfd.resolve();
         }; 
-
+        
         //// START detect app install for current app /////
         var currentApp = G.currentApp._uri;
         var app = _.filter(G.currentUser.installedApps, function(app) {
@@ -180,7 +191,7 @@ define('app', [
           getViews();
         });
         
-        $.when(viewsDfd, templatesDfd).then(defer.resolve); // the last item on the menu
+        $.when(viewsPromise, templatesPromise).then(defer.resolve); // the last item on the menu
       }).promise();
     },
     
@@ -320,75 +331,12 @@ define('app', [
 //        });
 //      });
 //    },
-    
-    onMessageFromApp: function(e) {
-      if (e.origin.indexOf('chrome-extension://') != 0)
-        return;
-      
-      U.rpc('log', 'got message', e.data);
-      console.debug('message from app:', e);
-      G.appWindow = G.appWindow || e.source;
-      G.appOrigin = G.appOrigin || e.origin;
-      var data = e.data,
-          type = data.type,
-          args = data.args || [];
-      
-      delete data.type;
-      args.unshift('messageFromApp:' + type);
-      Events.trigger.apply(Events, args);
-    },
-    
-    sendMessageToApp: function(msg) {
-      var appWin = G.appWindow;
-      if (appWin && G.appOrigin)
-        appWin.postMessage(msg, G.appOrigin);
-      else
-        console.debug("can't send message to app, don't know app's window & origin");
-    },
-    
-    onpush: function(msg) {
-      var subchannelId = msg.subchannelId,
-          payload = msg.payload,
-          id = G.nextId() + '';
-      
-      console.log('got push message', JSON.stringify(msg));
-      Chrome.notifications.create(id, {
-        type: 'basic',
-        title: "Client Waiting",
-        message: "There's a client waiting to be assisted in the lobby",
-        iconUrl: 'icon_128.png'
-      });
-      
-      Chrome.notifications.onClicked(function(notificationId) {
-        console.log('clicked notification, id:', id);
-        if (notificationId == id) {
-          U.rpc('focus');
-          Events.trigger('navigate', G.tabs[0].hash);
-        }
-      });
 
-
-//      if (subchannelId == 0 && payload) {
-//        var $dialog = U.dialog({
-//          title: "There's a client waiting to be assisted in the lobby",
-//          id: 'lobbyRequestDialog',
-//          header: 'Client Waiting',
-//          ok: 'Accept',
-//          cancel: 'Ignore',
-//          onok: function() {
-//            Events.trigger('navigate', G.tabs[0].hash);
-//          },
-//          oncancel: function() {
-//            G.log('event', 'ignored push notification about dying client in lobby');
-//          }
-//        });
-//      }
-    },
-    
     setupPushNotifications: function() {
-      if (!G.inWebview || G.currentUser.guest)
+      if (G.currentUser.guest)
         return;
-      else if (!G.currentAppInstall) {
+      
+      if (!G.currentAppInstall) {
         Events.on('appInstall', function(appInstall) {
           if (appInstall.get('allow'))
             App.setupPushNotifications();
@@ -396,32 +344,18 @@ define('app', [
         
         return;
       }
-
-      $.when(U.require('chrome'), /*G.getChannelId,*/ Voc.getModels(simpleEndpointType)).done(function(c) {
-        Chrome = c;
-        App._setupPushNotifications();
-      });
-    },
-    
-    _setupPushNotifications: function() {      
-      Events.on('messageFromApp:push', App.onpush, App);
-      var installedApps = G.currentUser.installedApps,
-          currentApp = G.currentApp,
-          channelId = G.pushChannelId,
-          appInstall = G.currentAppInstall,      
-          endpointList = new ResourceList(G.currentUser.pushEndpoints, {
-            model: U.getModel(simpleEndpointType),
-            query: $.param({
-              appInstall: appInstall
-            })
-          });
       
-      if (endpointList.where({endpoint: channelId}).length) {
-        console.log('PUSH ENDPOINT ALREADY EXISTS');
+      Events.on('newPushEndpoint', this._registerSimplePushEndpoint);
+      var req = G.inWebview ? 'chrome' : G.inFirefoxOS ? 'firefox' : null;
+      if (!req)
         return;
-      }
       
-      App._registerSimplePushEndpoint(channelId);
+      $.when(U.require(req), Voc.getModels(simpleEndpointType)).done(function(browserMod) {
+        browserMod._setup();
+//        browserMod.onpush(function() {
+//          
+//        });
+      });
     },
     
     initGrabs: function() {
@@ -628,6 +562,5 @@ define('app', [
     }
   };
   
-  window.addEventListener('message', App.onMessageFromApp);
   return App;
 });

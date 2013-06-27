@@ -1,0 +1,34 @@
+<html>
+  <head>
+	<title>
+		NursMe
+	</title>
+	<link rel="stylesheet" href="index.css">
+	<link rel="stylesheet" href="css/pkgStyles.css">
+	<script src="js/index.js"></script>
+  </head>
+  <body>
+     <div id="controls">
+       <button id="back" title="Go Back">&#9664;</button>
+       <button id="forward" title="Go Forward">&#9654;</button>
+       <button id="home" title="Go Home">&#8962;</button>
+       <button id="reload" title="Reload">&#10227;</button>
+       <button id="terminate" title="Simulate Crash">&#9760;</button>
+
+       <form id="location-form">
+         <div id="center-column">
+           <!--input id="location" type="text" value="http://urbien.com/app/NursMe1#home/?-ffiframe=y"-->
+           <input id="location" type="text">
+         </div>
+         <input type="submit" value="Go">
+       </form>
+
+     </div>
+	 <!--iframe id="iframe" src="http://mark.obval.com/urbien/app/NursMe#chatPrivate/_1" style="width:640px; height:480px;"></iframe--> 
+	 <!--iframe id="iframe" src="http://mark.obval.com/urbien/app/NursMe#chatLobby/http%3A%2F%2Fmark.obval.com%2Furbien%2Fsql%2Fwww.hudsonfog.com%2Fvoc%2Fsystem%2Fdesigner%2FWebClass%3Fid%3D34663?-ffIframe=y" style="width:640px; height:480px;"></iframe--> 
+	 <!--iframe id="iframe" src="http://urbien.com/app/NursMe1" style="width:640px; height:480px;"></iframe--> 
+   <!--iframe id="iframe" src="http://mark.obval.com/urbien/app/NursMe#chatPrivate/_1?-ffiframe=y&-min-n" style="width:640px; height:480px;"></iframe--> 
+   <iframe mozbrowser sandbox="allow-same-origin allow-scripts allow-popups allow-forms" id="iframe" src="http://mark.obval.com/urbien/app/NursMe#home/?-min=n&-ffIframe=y" style="width:640px; height:480px;"></iframe> 
+   <!--iframe id="iframe" src="http://urbien.com/app/NursMe1#home/?-ffIframe=y" style="width:640px; height:480px;"></iframe--> 
+  </body>
+</html>

@@ -3196,6 +3196,18 @@ define('utils', [
         msg.args = args;
       
       Events.trigger('messageToApp', msg);
+    },
+    
+    domReq: function(req) {
+      return $.Deferred(function(defer) {
+        req.onsuccess = function(e) {
+          defer.resolve(e.target.result);
+        };
+        
+        req.onerror = function() {
+          defer.reject.apply(defer, arguments);
+        };
+      }).promise();
     }
   };
 
