@@ -1,5 +1,6 @@
 {
   "name": "Nurse Me",
+  "type": "privileged",
   "developer": {
 		"name": "Urbien",
 		"url": "http://urbien.com"
@@ -15,8 +16,9 @@
 	   { "push-register": "/index.html"}
 	],
 	"permissions": {
-	  "push": {	"description": "To receive notifications when you have a patient/nurse waiting"	},
-	  "storage": { "description": "To cache resources for offline browsing" },
-	  "desktop-notification": {	"description": "To receive notifications when you have a patient/nurse waiting"	}
+	  "push": {},
+	  "storage": {},
+	  "desktop-notification": {},
+	  "browser": {}
 	}
 }
