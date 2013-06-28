@@ -3208,7 +3208,39 @@ define('utils', [
           defer.reject.apply(defer, arguments);
         };
       }).promise();
-    }
+    },
+    
+    createAudio: function(options) {
+      var atts = '', 
+          $audio;
+      
+      options = options || {};
+      options.id = options.id || 'audio' + G.nextId();
+      for (var att in options) {
+        atts += "{0}='{1}' ".format(att, options[att]);
+      }
+      
+      $audio = $("<audio {0} />".format(atts));
+      $m.activePage.append($audio);
+      return {
+        play: function() {
+          $audio[0].play();
+        },
+        pause: function() {
+          $audio[0].pause();
+        },
+        remove: function() {
+          this.pause();
+          $audio[0].src = null;
+          $audio.remove();
+        }
+      };
+    },
+    
+    vibrate: (function() {
+      var vib = navigator.vibrate || navigator.mozVibrate || navigator.webkitVibrate || function() {};
+      return vib;
+    })()
   };
 
   for (var p in U.systemProps) {

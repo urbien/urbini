@@ -15,7 +15,7 @@ define('app', [
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
-  var simpleEndpointType = G.commonTypes.SimplePushNotificationEndpoint;
+  var simpleEndpointType = G.commonTypes.PushEndpoint;
   Backbone.View.prototype.close = function() {
     this.$el.detach();
     this.unbind();
@@ -227,12 +227,12 @@ define('app', [
       setTimeout(function() { 
         RM.sync();
         App.setupPushNotifications();
-        if (G.inWebview) {
+//        if (G.inWebview) {
 //          App.replaceGetUserMedia();
-          Events.on('messageToApp', function(msg) {
-            App.sendMessageToApp(msg);
-          });
-        }
+//          Events.on('messageToApp', function(msg) {
+//            App.sendMessageToApp(msg);
+//          });
+//        }
       }.bind(this), 100);
     },
     
@@ -259,23 +259,23 @@ define('app', [
 //      return $.when.apply($, _.map(channels, App._registerSimplePushChannels));
 //    },
 //    
-//    _unregisterSimplePushEndpoint: function(endpoint) {
+//    _unregisterPushEndpoint: function(endpoint) {
 //      return SimplePush.unregister();
 //    },
 
-    _registerSimplePushEndpoint: function(endpoint) {
+    _registerPushEndpoint: function(endpoint) {
       return $.Deferred(function(defer) {        
         Voc.getModels(simpleEndpointType).done(function() {
           var spModel = U.getModel(simpleEndpointType), 
-              simplePushNotificationEndpoint = new spModel({
+              pushEndpoint = new spModel({
                 endpoint: endpoint,
                 appInstall: G.currentAppInstall,
                 browser: G.browser.name.capitalizeFirst()
               });
           
-          simplePushNotificationEndpoint.save(null, {
+          pushEndpoint.save(null, {
             success: function() {
-              defer.resolve(simplePushNotificationEndpoint);
+              defer.resolve(pushEndpoint);
             },
             error: function(originalModel, err, opts) {
               debugger;
@@ -345,7 +345,7 @@ define('app', [
         return;
       }
       
-      Events.on('newPushEndpoint', this._registerSimplePushEndpoint);
+      Events.on('newPushEndpoint', this._registerPushEndpoint);
       var req = G.inWebview ? 'chrome' : G.inFirefoxOS ? 'firefox' : null;
       if (!req)
         return;

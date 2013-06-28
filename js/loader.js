@@ -46,7 +46,7 @@ define('globals', function() {
   browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
 
   function addModule(text) {
-  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
+  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
     
     var idx = text.indexOf('//# sourceURL');
@@ -588,7 +588,7 @@ define('globals', function() {
       Grab: 'model/social/Grab',
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
-      SimplePushNotificationEndpoint: 'model/social/SimplePushNotificationEndpoint'
+      PushEndpoint: 'model/social/PushEndpoint'
     },
 //    commonTypes: {
 //      model: {

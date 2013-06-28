@@ -5,7 +5,7 @@ define('simplePush', [
 ], function(G, _, U) {
   var SimplePush = {}, 
       spType = G.commonTypes.SimplePushAppEndpoint,
-      endpointType = G.commonTypes.SimplePushNotificationEndpoint,
+      endpointType = G.commonTypes.PushEndpoint,
       browser = G.browser;
   
   // FOR TESTING //

@@ -36,6 +36,7 @@
       args.unshift('FROM WEBVIEW:');
       console.log.apply(console, args);
     },
+    focus: window.focus.bind(window),
     setAttribute: function(sel, attribute, value) {
       $(sel).setAttribute(attribute, value);
     },
@@ -47,14 +48,10 @@
        * @param callback - a message type to send back when the notification has been created
        */
       create: function(id, options, callback) {
-        if (callback) {
-          var eventName = callback;
-          callback = getCallback(eventName);
-        }
-        else
-          callback = doNothing;
-    
-        leaf(chrome, this._path)(id, options, callback);
+        return proxyWithCallback(this._path, arguments, 2);
+      },
+      clear: function(id, callback) {
+        return proxyWithCallback(this._path, arguments, 1);
       },
       onButtonClicked: function(callbackEvent) {
         var callback = getCallback(callbackEvent);
@@ -170,6 +167,21 @@
     return path.split(separator || '.').reduce(index, obj);
   };
 
+  function proxyWithCallback(path, args, callbackIdx) {
+    var callback = args[callbackIdx],
+        last = path.lastIndexOf('.'),
+        context = last == -1 ? chrome : leaf(chrome, path.slice(0, last));
+    
+    if (callback) {
+      var eventName = callback;
+      args[callbackIdx] = getCallback(eventName);
+    }
+    else
+      [].push.call(args, doNothing);
+
+    leaf(chrome, path).apply(context, args);
+  };
+  
   function getCallback(eventName) {
     return function() {
       var args = [].slice.call(arguments);

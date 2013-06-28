@@ -440,7 +440,7 @@ define('views/ChatPage', [
         'div#headerDiv' : this.header
       });
 
-      this.$ringtone          = this.$('div#ringtoneHolder');
+//      this.$ringtone          = this.$('div#ringtoneHolder');
       this.$chatInput         = this.$('#chatMessageInput');
       this.$messages          = this.$('#messages');
       this.$sendMessageBtn    = this.$('#chatSendBtn');
@@ -690,14 +690,22 @@ define('views/ChatPage', [
     },
     
     playRingtone: function() {
-      this.$ringtone.append("<audio id='ringtone' src='ringtone.mp3' loop='true' />").find('audio')[0].play();
+//      this.$ringtone.append("<audio id='ringtone' src='ringtone.mp3' loop='true' />").find('audio')[0].play();
+      this.ringtone = U.createAudio({
+        src: 'ringtone.mp3',
+        loop: true
+      });
+      
+      this.ringtone.play();
     },
 
     stopRingtone: function() {
-      this.$ringtone.find('audio').each(function() {
-        this.pause();
-        this.src = null;
-      }).remove();
+//      this.$ringtone.find('audio').each(function() {
+//        this.pause();
+//        this.src = null;
+//      }).remove();
+      if (this.ringtone)
+        this.ringtone.remove();
     },
     
     isDisabled: function() {
@@ -1074,6 +1082,7 @@ define('views/ChatPage', [
         webrtc._emit('info', {
           uri: self.myUri,
           endpoint: G.pushChannelId,
+          appUri: G.currentApp._uri,
           browser: browser.name
         })
       });

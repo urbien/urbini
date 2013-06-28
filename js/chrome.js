@@ -53,7 +53,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     Events.trigger.apply(Events, args);
     switch (type) {
       case 'visibility':
-        debugger;
         Events.trigger('visible', data.visible);
         break;
       default:
@@ -72,9 +71,16 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
   function onpush(msg) {
     var subchannelId = msg.subchannelId,
         payload = msg.payload,
-        id = G.nextId() + '';
+        id = G.nextId() + '',
+        ringtone;
     
     console.log('got push message', JSON.stringify(msg));
+    U.vibrate([1000, 500, 1000]);
+    ringtone = U.createAudio({
+      src: 'ringtone.mp3'
+    });
+    
+    ringtone.play();
     chrome.notifications.create(id, {
       type: 'basic',
       title: "Client Waiting",
@@ -83,12 +89,20 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     });
     
     chrome.notifications.onClicked(function(notificationId) {
-      console.log('clicked notification, id:', id);
+      console.log('clicked notification, id:', notificationId);
       if (notificationId == id) {
         U.rpc('focus');
         Events.trigger('navigate', G.tabs[0].hash);
+        ringtone.remove();
       }
     });
+    
+    chrome.notifications.onClosed(function(notificationId) {
+      console.log('closed notification, id:', notificationId);
+      if (notificationId == id) {
+        ringtone.remove();
+      }
+    })
   };
   
   var chrome = {
@@ -115,13 +129,14 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       }
     },
     _setup: function() {      
+      Events.on('messageToApp', sendMessageToApp);
       Events.on('messageFromApp:push', onpush);
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp,
           channelId = G.pushChannelId,
           appInstall = G.currentAppInstall,      
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
-            model: U.getModel(G.commonTypes.SimplePushNotificationEndpoint),
+            model: U.getModel(G.commonTypes.PushEndpoint),
             query: $.param({
               appInstall: appInstall
             })
@@ -133,10 +148,10 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       }
       
       Events.trigger('newPushEndpoint', channelId);
-//      App._registerSimplePushEndpoint(channelId);
     }
   };
   
   setPaths(chrome);
+  window.addEventListener('message', onMessageFromApp);
   return chrome;
 });

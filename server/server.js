@@ -11,7 +11,10 @@ var config = require('getconfig'),
       firefox: {},
       chrome: {}
     },
-    apiUrl = 'http://mark.obval.com/urbien/api/v1/';
+    serverUrl = 'http://mark.obval.com/urbien/',
+    apiUrl = serverUrl + 'api/v1/',
+    statusUpdate = serverUrl + 'push';
+
 
 function updateEndpoint(endpoint) {
   // to ensure the next call to getEndpoint gets the updated one via the new promise
@@ -43,7 +46,7 @@ function getEndpoint(client) {
     return dfd.promise;
   }
 
-  utils.get(apiUrl + 'SimplePushNotificationEndpoint?' + utils.getQueryString({endpoint: endpoint})).then(function(data) {
+  utils.get(apiUrl + 'PushEndpoint?' + utils.getQueryString({endpoint: endpoint})).then(function(data) {
     try {
       var json = JSON.parse(data);
     } catch(err) {
@@ -75,15 +78,15 @@ function isPublicRoom(name) {
 function getStatus(client) {
   var info = clientInfo[client.id],
       rooms = info && info.uri ? getUserRooms(info.uri) : [],
-          privateRooms = _.filter(rooms, isPrivateRoom),
-          lobbies = _.filter(rooms, isLobbyRoom);
+      privateRooms = _.filter(rooms, isPrivateRoom),
+      lobbies = _.filter(rooms, isLobbyRoom);
 
-      if (!rooms || !rooms.length)
-        return 'Away';
-      else if (privateRooms && privateRooms.length)
-        return 'InPrivateRoom';
-      else
-        return lobbies.length ? 'InLobby' : 'InPublicRoom';
+  if (!rooms || !rooms.length)
+    return 'Away';
+  else if (privateRooms && privateRooms.length)
+    return 'InPrivateRoom';
+  else
+    return lobbies.length ? 'InLobby' : 'InPublicRoom';
 };
 
 function onErrorFunc(type) {
@@ -106,7 +109,7 @@ var updateStatus = _.debounce(function(client) {
       $returnMade: true
     });
 
-    utils.post(apiUrl + 'e/SimplePushNotificationEndpoint?' + queryString).then(function(data) {
+    utils.post(apiUrl + 'e/PushEndpoint?' + queryString).then(function(data) {
       try {
         var json = JSON.parse(data);
       } catch (err) {
@@ -118,7 +121,18 @@ var updateStatus = _.debounce(function(client) {
       else
         dfd.reject();
     }, onErrorFunc("failed to update client status on app server1"));
-  }, onErrorFunc("failed to update client status on app server2"));
+  }, function() {
+    var info = clientInfo[client.id];
+    if (info && !info.endpoint) {
+      utils.post(statusUpdate + '?' + utils.getQueryString({
+        fromUri: info.uri,
+        appUri: info.appUri,
+        status: status
+      }));
+    }
+    else
+      onErrorFunc("failed to update client status on app server1")();
+  });
 }, 3000, true);
 
 function getUserRooms(uri, type) {

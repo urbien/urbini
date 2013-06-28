@@ -532,7 +532,9 @@
     };
 
     WebRTC.prototype.startLocalMedia = function(element) {
-        var self = this;
+        var self = this,
+            constraints = this.config.mediaConstraints;
+        
         if (this.dontRequestMedia)
             throw new Error('You have disabled video preview, and video/audio broadcasting');
 
@@ -544,7 +546,11 @@
         }
 
         getUserMedia(this.config.mediaConstraints, this.addMediaFromStream.bind(this), function() {
-            throw new Error('Failed to get access to local media.');
+//            throw new Error('Failed to get access to local media.');
+            console.log("Failed to get access to local media");
+            constraints.video.send = contraints.video.preview = constraints.audio.send = false;
+            self.dontRequestMedia = true;
+            self.testReadiness();
         });
     };
 
