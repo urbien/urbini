@@ -52,6 +52,12 @@
         
         notification.show();
       }
+    },
+    register: getPushReqHandler(),
+    unregister: getPushReqHandler(),
+    registrations: getPushReqHandler(),
+    setMessageHandler: function(messageType, callbackEvent) {
+      navigator.mozSetMessageHandler(messageType, getCallback(event));
     }
   },
   $ = function() {
@@ -69,7 +75,6 @@
       if (req.result) {
         // we're installed
         console.log('already installed');
-        initPush();
       } else {
         // not installed
         navigator.mozApps.install('/manifest.webapp');
@@ -86,11 +91,27 @@
     
     req.onerror = function(err) {
       console('Error checking installation status: ' + err.message);
-    };
+    };    
   };
-  
-  function initPush() {
+
+  function getPushReqHandler(obj, method) {
+    return function() {
+      return handleDomReqRPC.apply(null, [obj[method], obj].concat(args));
+    }
+  };
+
+  function handleDomReqRPC(fn, context) {
+    var args = arguments,
+        successEvent = args[args.length - 1],
+        errorEvent = args[args.length - 1];
     
+    args = [].slice.call(args, 2, args.length - 2);
+    var req = fn.apply(context, args);
+    req.onsuccess = function() {
+      getCallback(successEvent)(req.result);
+    };
+    
+    req.onerror = getCallback(errorEvent);
   };
   
   function doNothing() {};

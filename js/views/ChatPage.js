@@ -202,7 +202,7 @@ define('views/ChatPage', [
       this.isPrivate = U.isPrivateChat();
       this.isAgent = this.hashParams['-agent'] === 'y';
       this.isClient = !this.isAgent;
-      this.textOnly = /^chat\//.test(this.hash);
+      this.textOnly = /^chat\//.test(this.hash) || !G.canWebcam;
       this.hasVideo = !this.textOnly && (this.isPrivate || this.isClient); // HACK, waiting room might not have video
       this.hasAudio = !this.textOnly && (this.hasVideo || this.isPrivate);
       this.config = {

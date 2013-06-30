@@ -172,10 +172,8 @@
         last = path.lastIndexOf('.'),
         context = last == -1 ? chrome : leaf(chrome, path.slice(0, last));
     
-    if (callback) {
-      var eventName = callback;
-      args[callbackIdx] = getCallback(eventName);
-    }
+    if (callback)
+      args[callbackIdx] = getCallback(callback);
     else
       [].push.call(args, doNothing);
 

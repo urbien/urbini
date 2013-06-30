@@ -7,61 +7,61 @@ var config = require('getconfig'),
     Q = require('q'),
     //  events = ['message', 'join', 'disconnect', 'leave', 'create'],
     clientInfo = {},
-    endpointDeferreds = {
-      firefox: {},
-      chrome: {}
-    },
+//    endpointDeferreds = {
+//      firefox: {},
+//      chrome: {}
+//    },
     serverUrl = 'http://mark.obval.com/urbien/',
     apiUrl = serverUrl + 'api/v1/',
     statusUpdate = serverUrl + 'push';
 
 
-function updateEndpoint(endpoint) {
-  // to ensure the next call to getEndpoint gets the updated one via the new promise
-  var dfd = endpointDeferreds[endpoint.browser.toLowerCase()][endpoint.endpoint] = Q.defer();
-  dfd.resolve(endpoint);
-}
+//function updateEndpoint(endpoint) {
+//  // to ensure the next call to getEndpoint gets the updated one via the new promise
+//  var dfd = endpointDeferreds[endpoint.browser.toLowerCase()][endpoint.endpoint] = Q.defer();
+//  dfd.resolve(endpoint);
+//}
 
-function getEndpoint(client) {
-  var info = clientInfo[client.id], 
-      browser, 
-      endpoint, 
-      dfd;
-
-  if (!info) {
-    dfd = Q.defer();
-    dfd.reject();
-    return dfd.promise;
-  }
-
-  endpoint = info.endpoint;
-  browser = info.browser.toLowerCase();
-  dfd = endpointDeferreds[browser][endpoint];
-  if (dfd)
-    return dfd.promise;
-
-  dfd = endpointDeferreds[browser][endpoint] = Q.defer();   
-  if (!endpoint) {
-    dfd.reject();
-    return dfd.promise;
-  }
-
-  utils.get(apiUrl + 'PushEndpoint?' + utils.getQueryString({endpoint: endpoint})).then(function(data) {
-    try {
-      var json = JSON.parse(data);
-    } catch(err) {
-      dfd.reject();
-      return;
-    }
-
-    if (json.data)
-      dfd.resolve(json.data[0]);
-    else
-      dfd.reject();
-  });
-
-  return dfd.promise;
-};
+//function getEndpoint(client) {
+//  var info = clientInfo[client.id], 
+//      browser, 
+//      endpoint, 
+//      dfd;
+//
+//  if (!info) {
+//    dfd = Q.defer();
+//    dfd.reject();
+//    return dfd.promise;
+//  }
+//
+//  endpoint = info.endpoint;
+//  browser = info.browser.toLowerCase();
+//  dfd = endpointDeferreds[browser][endpoint];
+//  if (dfd)
+//    return dfd.promise;
+//
+//  dfd = endpointDeferreds[browser][endpoint] = Q.defer();   
+//  if (!endpoint) {
+//    dfd.reject();
+//    return dfd.promise;
+//  }
+//
+//  utils.get(apiUrl + 'PushEndpoint?' + utils.getQueryString({endpoint: endpoint})).then(function(data) {
+//    try {
+//      var json = JSON.parse(data);
+//    } catch(err) {
+//      dfd.reject();
+//      return;
+//    }
+//
+//    if (json.data)
+//      dfd.resolve(json.data[0]);
+//    else
+//      dfd.reject();
+//  });
+//
+//  return dfd.promise;
+//};
 
 function isPrivateRoom(name) {
   return /^p_/.test(name);
@@ -99,40 +99,40 @@ var updateStatus = _.debounce(function(client) {
   var status = getStatus(client);
 
   // this gets cached, so it doesn't request it every time
-  getEndpoint(client).then(function(endpoint) {
-    if (!endpoint || endpoint.status == status)
-      return;
-
-    var queryString = utils.getQueryString({
-      _uri: endpoint._uri,
-      status: status,
-      $returnMade: true
-    });
-
-    utils.post(apiUrl + 'e/PushEndpoint?' + queryString).then(function(data) {
-      try {
-        var json = JSON.parse(data);
-      } catch (err) {
-        return;
-      }
-
-      if (json)
-        updateEndpoint(json);
-      else
-        dfd.reject();
-    }, onErrorFunc("failed to update client status on app server1"));
-  }, function() {
+//  getEndpoint(client).then(function(endpoint) {
+//    if (!endpoint || endpoint.status == status)
+//      return;
+//
+//    var queryString = utils.getQueryString({
+//      _uri: endpoint._uri,
+//      status: status,
+//      $returnMade: true
+//    });
+//
+//    utils.post(apiUrl + 'e/PushEndpoint?' + queryString).then(function(data) {
+//      try {
+//        var json = JSON.parse(data);
+//      } catch (err) {
+//        return;
+//      }
+//
+//      if (json)
+//        updateEndpoint(json);
+//      else
+//        dfd.reject();
+//    }, onErrorFunc("failed to update client status on app server1"));
+//  }, function() {
     var info = clientInfo[client.id];
-    if (info && !info.endpoint) {
+    if (info) {
       utils.post(statusUpdate + '?' + utils.getQueryString({
         fromUri: info.uri,
         appUri: info.appUri,
         status: status
-      }));
+      }), onErrorFunc("failed to update client status on app server2"));
     }
     else
-      onErrorFunc("failed to update client status on app server1")();
-  });
+      onErrorFunc("failed to update client status on app server3")();
+//  });
 }, 3000, true);
 
 function getUserRooms(uri, type) {
@@ -165,7 +165,7 @@ io.sockets.on('connection', function (client) {
   client.on('info', function(info) {
     info.isClient = !info.isAgent;
     clientInfo[client.id] = info;
-    getEndpoint(client);
+//    getEndpoint(client);
   });
 
   client.on('message', function (details) {
