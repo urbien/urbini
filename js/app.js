@@ -15,7 +15,9 @@ define('app', [
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
-  var simpleEndpointType = G.commonTypes.PushEndpoint;
+  var pushEndpointType = G.commonTypes.PushEndpoint,
+      pushChannelType = G.commonTypes.PushChannel;
+  
   Backbone.View.prototype.close = function() {
     this.$el.detach();
     this.unbind();
@@ -263,24 +265,25 @@ define('app', [
 //      return SimplePush.unregister();
 //    },
 
-    _registerPushEndpoint: function(endpoint) {
+    _registerPushEndpoint: function(endpoint, channel) {
+      var props = {
+        endpoint: endpoint,
+        channelName: channel,
+        appInstall: G.currentAppInstall,
+        browser: G.browser.name.capitalizeFirst()
+      };
+      
       return $.Deferred(function(defer) {        
-        Voc.getModels(simpleEndpointType).done(function() {
-          var spModel = U.getModel(simpleEndpointType), 
-              pushEndpoint = new spModel({
-                endpoint: endpoint,
-                appInstall: G.currentAppInstall,
-                browser: G.browser.name.capitalizeFirst()
-              });
-          
-          pushEndpoint.save(null, {
-            success: function() {
-              defer.resolve(pushEndpoint);
-            },
-            error: function(originalModel, err, opts) {
-              debugger;
-            }
-          });
+        var spModel = U.getModel(pushEndpointType), 
+            pushEndpoint = new spModel(props);
+        
+        pushEndpoint.save(null, {
+          success: function() {
+            defer.resolve(pushEndpoint);
+          },
+          error: function(originalModel, err, opts) {
+            debugger;
+          }
         });
       }).promise();
     },
@@ -336,7 +339,7 @@ define('app', [
       if (G.currentUser.guest)
         return;
       
-      if (!G.currentAppInstall) {
+      if (!G.currentAppInstall) { // TODO: should really check if resource has _allow == true
         Events.on('appInstall', function(appInstall) {
           if (appInstall.get('allow'))
             App.setupPushNotifications();
@@ -350,7 +353,8 @@ define('app', [
       if (!req)
         return;
       
-      $.when(U.require(req), Voc.getModels(simpleEndpointType)).done(function(browserMod) {
+      $.when(U.require(req), Voc.getModels(pushEndpointType)).done(function(browserMod) {
+        console.log('SETTING UP PUSH NOTIFICATIONS');
         browserMod._setup();
 //        browserMod.onpush(function() {
 //          

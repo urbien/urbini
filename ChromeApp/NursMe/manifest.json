@@ -4,6 +4,7 @@
   "minimum_chrome_version": "24.0.1307.0",
   "version": "0.0.0.22",
   "manifest_version": 2,
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIz7JLrymjKpyixwY26nCWHUEJ8QaDmeGuD9DfjkARr8s+npqL0+nwnwiUYcaP6y1uVe/D7mM30nMo6UoIQ5F0zGbuJDNdlGZqRdeHCG/+B24yfWRPnoGCQcJYVWQ+brM5QJhr3B1oM8Vfwes5fpqpVsqNbGVX8PnIl7eGO6jztwIDAQAB",
   "icons": {
     "16": "icon_16.png",
     "128": "icon_128.png"

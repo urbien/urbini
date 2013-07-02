@@ -1,8 +1,52 @@
-define('firefox', ['globals', 'jquery', 'Events', 'utils', 'cache'], function(G, $, Events, U, C) {
-  var gManifestName = "/manifest.webapp";
+define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceList'], function(G, Events, U, C, ResourceList) {
+  var gManifestName = "/manifest.webapp",
+      TAG = 'Firefox',
+      connectedDfd = $.Deferred(),
+      connectedPromise = connectedDfd.promise();
+
+  if (G.appWindow)
+    connectedDfd.resolve();
+
+  function log() {
+    var args = [].slice.call(arguments);
+    G.log.apply([TAG, 'app comm'].concat(args));
+    U.rpc.apply(null, ['log'].concat(args));
+  }
+  
+  connectedPromise.done(function() {
+    log("2. CONNECTED TO APP!");
+  });
+  
+  function onMessageFromApp(e) {
+    log('got message from app', e.data);
+    G.appWindow = G.appWindow || e.source;
+    G.appOrigin = G.appOrigin || e.origin;
+    connectedDfd.resolve();
+    
+    if (e.origin !== G.appOrigin) {
+      log("got a message from some other app:", e.origin);
+      return;
+    }
+    
+    var data = e.data,
+        type = data.type,
+        args = data.args || [];
+    
+    delete data.type;
+    args.unshift('messageFromApp:' + type);
+    Events.trigger.apply(Events, args);
+    switch (type) {
+      case 'visibility':
+        Events.trigger('visible', data.visible);
+        break;
+      default:
+        return;
+    }
+  };
+
   function onpush(message) {
     debugger;
-    console.log('got push message');
+    log('got push message');
     var endpoints = C.getResourceList(U.getModel(G.commonTypes.PushEndpoint)),
         endpoint = message.endpoint;
     
@@ -72,47 +116,73 @@ define('firefox', ['globals', 'jquery', 'Events', 'utils', 'cache'], function(G,
     }
   };
   
+  function sendMessageToApp(msg) {
+    connectedPromise.done(function() {
+      var appWin = G.appWindow;
+      if (appWin && G.appOrigin)
+        appWin.postMessage(msg, G.appOrigin);
+      else
+        console.debug("can't send message to app, don't know app's window and/or origin");
+    });
+  };
+
+  function setup() {
+//    console.log("creating notification");
+//    firefox.mozNotification.createNotification("Hello Mark", "This is for your eyes only", "icon_128.png", {
+//      onclose: function() {
+//        console.log("closed notification");
+//      },
+//      onclick: function() {
+//        console.log("clicked notification");
+//      }
+//    });
+
+    Events.on('messageFromApp:push', onpush);
+    var installedApps = G.currentUser.installedApps,
+        currentApp = G.currentApp,
+        channelId = G.pushChannelId,
+        appInstall = G.currentAppInstall,
+        channels = G.currentApp.pushChannels,
+        endpointList = new ResourceList(G.currentUser.pushEndpoints, {
+          model: U.getModel(G.commonTypes.PushEndpoint),
+          query: $.param({
+            appInstall: appInstall,
+            browser: G.browser.name.capitalizeFirst()
+          })
+        });
+    
+    if (!channels || !channels.length) {
+      log('all app channels already registered');
+      return;
+    }
+    
+    for (var i = 0; i < channels.length; i++) {
+      var channel = channels[i].channel;
+      if (endpointList.where({channelName: channel}).length) {
+        log('PUSH ENDPOINT ALREADY EXISTS FOR CHANNEL:', channel);
+        return;
+      }
+      else {
+        firefox.push.register(function(endpoint) {
+          log("REGISTERED NEW PUSH ENDPOINT");
+          Events.trigger('newPushEndpoint', endpoint, channel);
+        }, function() {
+          log("FAILED TO REGISTER PUSH CHANNEL");
+        });
+      }
+    }
+
+    firefox.setMessageHandler('push', onpush);
+    firefox.setMessageHandler('push-register', function(e) {
+      debugger;
+      if (!G.currentUser.guest)
+        firefox._setup();
+    });
+  };
+  
   var firefox = {
     _setup: function() {
-      Events.on('messageFromApp:push', onpush);
-      var installedApps = G.currentUser.installedApps,
-          currentApp = G.currentApp,
-          channelId = G.pushChannelId,
-          appInstall = G.currentAppInstall,
-          channels = G.currentApp.pushChannels,
-          endpointList = new ResourceList(G.currentUser.pushEndpoints, {
-            model: U.getModel(G.commonTypes.PushEndpoint),
-            query: $.param({
-              appInstall: appInstall
-            })
-          });
-      
-      if (!pushChannels || !pushChannels.length) 
-        return;
-      
-      for (var i = 0; i < pushChannels.length; i++) {
-        var channel = pushChannels[i].channel;
-        if (endpointList.where({endpoint: channel}).length) {
-          console.log('PUSH ENDPOINT ALREADY EXISTS FOR CHANNEL:', channel);
-          return;
-        }
-        else {
-          firefox.push.register(function(endpoint) {
-            Events.trigger('newPushEndpoint', endpoint, channel);
-          }, function() {
-            console.log("FAILED TO REGISTER PUSH CHANNEL");
-          });
-        }
-      }
-
-      firefox.setMessageHandler('push', onpush);
-      firefox.setMessageHandler('push-register', function(e) {
-        debugger;
-        if (!G.currentUser.guest)
-          firefox._setup();
-      });
-
-      Events.trigger('newPushEndpoint', channelId);
+      connectedPromise.done(setup);
     },
     mozNotification: {
       /**
@@ -134,38 +204,29 @@ define('firefox', ['globals', 'jquery', 'Events', 'utils', 'cache'], function(G,
         }
           
         [].unshift.call(args, this._path);
-        U.rpc.apply(this._path, args);
+        U.rpc.apply(null, args);
       }
     },
     push: {
       register: function(success, error) {
-        U.rpc.call(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
+        U.rpc(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
       },
       unregister: function(endpoint) {
-        U.rpc.call(this._path, endpoint, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
+        U.rpc(this._path, endpoint, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
       },
       registrations: function() {
-        U.rpc.call(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));        
+        U.rpc(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));        
       }
     },
     setMessageHandler: function(messageType, callback) {
-      U.rpc.call(this._path, messageType, createCallbackEvent(callback));      
+      U.rpc(this._path, messageType, createCallbackEvent(callback));      
     }
   };
   
   
   setPaths(firefox);
+  window.addEventListener('message', onMessageFromApp);
+  Events.on('messageToApp', sendMessageToApp);
   
-  // TESTING //
-//  console.log("creating notification");
-//  firefox.mozNotification.createNotification("Hello Mark", "This is for your eyes only", "icon_128.png", {
-//    onclose: function() {
-//      console.log("closed notification");
-//    },
-//    onclick: function() {
-//      console.log("clicked notification");
-//    }
-//  });
-  // END TESTING //
   return firefox;
 });

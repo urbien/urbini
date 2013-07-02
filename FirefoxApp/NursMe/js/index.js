@@ -2,17 +2,16 @@
   var bgPage,
   runtimeId,
 //  connected = false,
-  webviewPinger,
   serverOrigin,
   appHome,
-  webviewOrigin,
+  iframeOrigin,
   tabId,
   isLoading = false,
   SHOW_BUTTONS = true,
 //  visibilityState,
 
   /* START HTML elements / JQuery objects */
-  webview,
+  iframe,
   controls,
   locInput,
   back,
@@ -30,7 +29,7 @@
     log: function() {
       var args = [].slice.call(arguments);
       args.unshift('FROM IFRAME:');
-      console.log.apply(console, args);
+      logger.log.apply(logger, args);
     },
     setAttribute: function(sel, attribute, value) {
       $(sel).setAttribute(attribute, value);
@@ -43,7 +42,13 @@
        * }
        */
       createNotification: function(title, desc, iconURL, callbacks) {
-        var notification = leaf(navigator, this._path)(title, desc, iconURL);
+        console.log("creating notification", title, desc, iconURL, JSON.stringify(callbacks));
+        var dotIdx = this._path.lastIndexOf('.');
+        var parent = leaf(navigator, this._path.slice(0, dotIdx));
+        var fn = parent[this._path.slice(dotIdx + 1)];
+
+//        var notification = leaf(navigator, this._path)(title, desc, iconURL);
+        var notification = fn.apply(parent, [].slice.call(arguments, 0, 2));
         if (callbacks) {
           for (var cbName in callbacks) {            
             notification[cbName] = getCallback(cbName);
@@ -53,67 +58,115 @@
         notification.show();
       }
     },
-    register: getPushReqHandler(),
-    unregister: getPushReqHandler(),
-    registrations: getPushReqHandler(),
+    push: {
+      register: getHandler(navigator.push, 'register'),
+      unregister: getHandler(navigator.push, 'unregister'),
+      registrations: getHandler(navigator.push, 'registrations')
+    },
     setMessageHandler: function(messageType, callbackEvent) {
-      navigator.mozSetMessageHandler(messageType, getCallback(event));
+      navigator.mozSetMessageHandler(messageType, getCallback(callbackEvent));
     }
   },
   $ = function() {
     return document.querySelector.apply(document, arguments);
-  };
+  },
+  _installed = false,
+  installed = function() {
+    _installed = true;
+    ready();
+  },
+  logger = console;
 
   navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia;
   window.onresize = doLayout;
+  
   setPaths(RPC);
   install();
   
   function install() {
-    var req = navigator.mozApps.getSelf();
-    req.onsuccess = function() {
-      if (req.result) {
+    var getSelf = navigator.mozApps.getSelf();
+    getSelf.onsuccess = function() {
+      if (getSelf.result) {
         // we're installed
-        console.log('already installed');
+        logger.log('already installed');
+        installed();
       } else {
         // not installed
-        navigator.mozApps.install('/manifest.webapp');
-        req.onsuccess = function() {
-          console.log("app installed successfully");
-          initPush();
+        var installReq = navigator.mozApps.install('/manifest.webapp');
+        installReq.onsuccess = function() {
+          logger.log("app installed successfully");
+          installed();
         };
         
-        req.onerror = function(errObj) {
-          console.log("Couldn't install app (" + errObj.code + ") " + errObj.message);
+        installReq.onerror = function(errObj) {
+          logger.log("Couldn't install app (" + errObj.code + ") " + errObj.message);
         };
       }
     }
     
-    req.onerror = function(err) {
+    getSelf.onerror = function(err) {
       console('Error checking installation status: ' + err.message);
     };    
   };
 
-  function getPushReqHandler(obj, method) {
+  /**
+   * iframe onload event
+   */
+  function iframeLoaded() {
+    ready();
+  };
+  
+  function ready() {
+    if (iframe && _installed) {
+      postMessage({
+        type: 'ready'
+      });
+    }
+  }
+
+  function isDefined(obj) {
+    return typeof obj !== 'undefined';
+  }
+
+  
+  function getHandler(obj, method) {
     return function() {
-      return handleDomReqRPC.apply(null, [obj[method], obj].concat(args));
+      return handleDomReqRPC.apply(null, [obj, method].concat([].slice.call(arguments)));
     }
   };
 
-  function handleDomReqRPC(fn, context) {
+  function handleDomReqRPC(obj, method) {
+    debugger;
     var args = arguments,
-        successEvent = args[args.length - 1],
+        fn = obj[method],
+        successEvent = args[args.length - 2],
         errorEvent = args[args.length - 1];
     
     args = [].slice.call(args, 2, args.length - 2);
-    var req = fn.apply(context, args);
-    req.onsuccess = function() {
-      getCallback(successEvent)(req.result);
+    logger.log('calling ' + method + ' with ' + args.length + ' args');
+    var req = fn.apply(obj, args);
+    req.onsuccess = function(e) {
+      logger.log('SUCCESS: ' + method, e.target.result);
+      getCallback(successEvent)(e.target.result);
     };
     
-    req.onerror = getCallback(errorEvent);
+    req.onerror = function(err) {
+      logger.log('ERROR: ' + method, err);
+      getCallback(errorEvent)(err);
+    };
+    
+    setTimeout(function() {      
+      if (req.readyState != 'done') {
+        // fake it
+        req.onsuccess({
+          target: {
+            result: 'fakeEndpoint' + +new Date()
+          }
+        });
+      }
+    }, 5000);
   };
-  
+
   function doNothing() {};
 
   function has(obj, key) {
@@ -201,27 +254,30 @@
 
   function navigateTo(url) {
     resetExitedState();
-    webview.src = url;
+    iframe.src = url;
   }
 
   function doLayout() {
+    if (!iframe)
+      return;
+    
     var controlsHeight = controls ? controls.offsetHeight : 0;
     var windowWidth = doc.documentElement.clientWidth;
     var windowHeight = doc.documentElement.clientHeight;
-    var webviewWidth = windowWidth;
-    var webviewHeight = windowHeight - controlsHeight;
+    var iframeWidth = windowWidth;
+    var iframeHeight = windowHeight - controlsHeight;
 
-    webview.style.width = webviewWidth + 'px';
-    webview.style.height = webviewHeight + 'px';
+    iframe.style.width = iframeWidth + 'px';
+    iframe.style.height = iframeHeight + 'px';
 
-    // var sadWebview = $('#sad-webview');
-    // sadWebview.style.width = webviewWidth + 'px';
-    // sadWebview.style.height = webviewHeight * 2/3 + 'px';
-    // sadWebview.style.paddingTop = webviewHeight/3 + 'px';
+    // var sadiframe = $('#sad-iframe');
+    // sadiframe.style.width = iframeWidth + 'px';
+    // sadiframe.style.height = iframeHeight * 2/3 + 'px';
+    // sadiframe.style.paddingTop = iframeHeight/3 + 'px';
   }
 
   function handleExit(event) {
-    console.log(event.type);
+    logger.log(event.type);
     doc.body.classList.add('exited');
     if (event.type == 'abnormal') {
       doc.body.classList.add('crashed');
@@ -241,14 +297,14 @@
   function handleLoadCommit(event) {
     resetExitedState();
     if (!event.isTopLevel) {
-      locInput.value = webview.src;
+      locInput.value = iframe.src;
       return;
     }
 
-    locInput.value = event.url || webview.src;
+    locInput.value = event.url || iframe.src;
 
-//    back.disabled = !webview.canGoBack();
-//    forward.disabled = !webview.canGoForward();
+//    back.disabled = !iframe.canGoBack();
+//    forward.disabled = !iframe.canGoForward();
   }
 
   function handleLoadStart(event) {
@@ -257,7 +313,7 @@
 
     resetExitedState();
     if (!event.isTopLevel) {
-      locInput.value = webview.src;
+      locInput.value = iframe.src;
       return;
     }
     
@@ -265,11 +321,11 @@
 //        parsed = parseUrl(url);
 //    
 //    if (!parsed.params) {
-//      url += '?-webview=y';
+//      url += '?-iframe=y';
 //      navigateTo(url);
 //      return false;
 //    }
-//    else if (parsed.params && !parsed.params['-webview']) {
+//    else if (parsed.params && !parsed.params['-iframe']) {
 //      url += '&-webiew=y';
 //      navigateTo(url);
 //      return false;
@@ -301,10 +357,10 @@
   }
 
   function handleLoadAbort(event) {
-    console.log('  loadAbort');
-    console.log('  url: ' + event.url);
-    console.log('  isTopLevel: ' + event.isTopLevel);
-    console.log('  type: ' + event.type);
+    logger.log('  loadAbort');
+    logger.log('  url: ' + event.url);
+    logger.log('  isTopLevel: ' + event.isTopLevel);
+    logger.log('  type: ' + event.type);
   }
 
   function handleLoadRedirect(event) {
@@ -317,8 +373,21 @@
   }
 
   window.onload = function() {
+//    debugger;
+//    var getMedia = navigator.getUserMedia || navigator.mozGetUserMedia;
+//    if (getMedia) {
+//      logger.log('HAS GETUSERMEDIA');
+//      (navigator.getUserMedia || navigator.mozGetUserMedia)({audio: true, video: true}, function(stream) {
+//        logger.log('GOT MEDIA', stream);
+//      }, function() {
+//        logger.log('DIDNT GET MEDIA');
+//      });
+//    }
+//    else
+//      logger.log('DOESNT HAVE GETUSERMEDIA');
+    
     controls = $('#controls');
-    webview = $('#iframe');
+    iframe = $('#iframe');
     if (SHOW_BUTTONS) { 
       back = $('#back');
       forward = $('#forward');
@@ -326,15 +395,19 @@
       home = $('#home');
 //      terminate = $('#terminate');
       locInput = $('#location');
-      locInput.value = webview.src;
+      locInput.value = iframe.src;
       locForm = $('#location-form');
 
       back.onclick = function() {
-        webview.contentWindow.history.back();
+        try {
+          iframe.contentWindow.history.back();
+        } catch (err) {}
       };
 
       forward.onclick = function() {
-        webview.contentWindow.history.forward();
+        try {
+          iframe.contentWindow.history.forward();
+        } catch (err) {}
       };
 
       home.onclick = function() {
@@ -343,9 +416,10 @@
 
       reload.onclick = function() {
         if (isLoading) {
-//          webview.stop();
+//          iframe.stop();
         } else {
-          navigateTo(webview.src);
+          iframe.contentWindow.location.reload();
+//          navigateTo(iframe.src);
         }
       };
 
@@ -359,7 +433,7 @@
 //      );
 //
 //      terminate.onclick = function() {
-//        webview.terminate();
+//        iframe.terminate();
 //      };
 
       locForm.onsubmit = function(e) {
@@ -370,9 +444,9 @@
     else
       controls.parentNode.removeChild(controls);
 
-    appHome = webview.src;
+    appHome = iframe.src;
     serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
-    webviewOrigin = serverOrigin + "/*";
+    iframeOrigin = serverOrigin + "/*";
     doLayout();
 
     window.addEventListener('message', function(e) {
@@ -384,7 +458,7 @@
           type = data.type,
           rpc = /^rpc:/.test(type) ? type.slice(4) : null;
 
-      console.log("message from iframe: ", JSON.stringify(data));
+      logger.log("message from iframe: ", JSON.stringify(data));
       if (rpc) {
         var dotIdx = rpc.lastIndexOf('.');
         var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));
@@ -394,15 +468,10 @@
       };
     });
 
-    webview.addEventListener('exit', handleExit);
-    webview.onload = function() {
-      postMessage({
-        type: 'ready'
-      });
-    };
-    
+    iframe.addEventListener('exit', handleExit);
     window.addEventListener('focus', changeVisibility); // maybe use focusin/focusout?
     window.addEventListener('blur', changeVisibility);
+    ready();
   };
 
   // var changeVisibility = _.debounce(function(e) {
@@ -420,28 +489,34 @@
       visible: visible
     });
     
-    console.log("page has become", visible ? 'visible' : 'hidden');
+//    logger.log("page has become", visible ? 'visible' : 'hidden');
   }
   // }, 2000, true);
 
-  function handlePermissionRequest(e) {
-    if (e.url.indexOf(serverOrigin) != 0) {
-      e.request.deny();
-      return;
-    }
-    
-    var allowed = false;
-    if (e.permission === 'pointerLock' || e.permission ==='media' || e.permission === 'geolocation') {
-      allowed = true;
-      e.request.allow();
-    } else {
-      e.request.deny();
-    }
-
-    console.log("["+e.target.id+"] permissionrequest: permission="+e.permission+" "+ (allowed?"allowed":"DENIED"));
-  };
+//  function handlePermissionRequest(e) {
+//    if (e.url.indexOf(serverOrigin) != 0) {
+//      e.request.deny();
+//      return;
+//    }
+//    
+//    var allowed = false;
+//    if (e.permission === 'pointerLock' || e.permission ==='media' || e.permission === 'geolocation') {
+//      allowed = true;
+//      e.request.allow();
+//    } else {
+//      e.request.deny();
+//    }
+//
+//    logger.log("["+e.target.id+"] permissionrequest: permission="+e.permission+" "+ (allowed?"allowed":"DENIED"));
+//  };
 
   function postMessage(msg) {
-    webview.contentWindow.postMessage(msg, webviewOrigin);
+    logger.log("sending msg to iframe", JSON.stringify(msg));
+    iframe.contentWindow.postMessage(msg, iframeOrigin);
   };
+  
+  window.App = {
+    iframeLoaded: iframeLoaded
+  };
+  
 })(window, document);

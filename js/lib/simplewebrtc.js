@@ -83,8 +83,8 @@
       throw new Error("Browser does not appear to be WebRTC-capable");
     }
 
-    if (isFirefox) {      
-        getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia.bind(navigator);
+    if (isFirefox) {
+        getUserMedia = navigator.getUserMedia || (navigator.mozGetUserMedia && navigator.mozGetUserMedia.bind(navigator));
         
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {

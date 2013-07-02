@@ -279,15 +279,16 @@ define('router', [
     },
     
     choose: function(path) { //, checked, props) {
-      this.list.call(this, path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
+      if (this.routePrereqsFulfilled('choose', arguments))
+        this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
 
     /**
      * return true if page change will be asynchronous, false or undefined otherwise
      */
     list: function(oParams, mode) {
-      if (!this.ListPage)
-        return this.loadViews('ListPage', this.list, arguments);
+      if (!this.routePrereqsFulfilled('list', arguments))
+        return;
 
       var ListPage = this.ListPage;
       var self = this;
@@ -375,8 +376,8 @@ define('router', [
     },
     
     templates: function(tName) {
-      if (!this.ListPage)
-        return this.loadViews('ListPage', this.templates, arguments);
+      if (!this.routePrereqsFulfilled('templates', arguments))
+        return;
 
       var cached = this.CollectionViews[tName];
       if (cached) {
@@ -591,13 +592,8 @@ define('router', [
     },
     
     make: function(path) {
-      if (!this.EditPage)
-        return this.loadViews(['EditPage', 'EditView'], this.make, arguments);
-      
-      if (G.currentUser.guest) {
-        this._requestLogin();
+      if (!this.routePrereqsFulfilled('make', arguments))
         return;
-      }
       
       var EditPage = this.EditPage; 
       var parts = path.split('?');
@@ -609,7 +605,7 @@ define('router', [
         return;
 
       var vocModel = U.getModel(type);
-      if (!this.isAppLoadedAndInstalled(type, 'make', arguments))
+      if (!this.isAppLoadedAndInstalled(type))
         return;
 
       var params = U.getHashParams(),
@@ -641,37 +637,78 @@ define('router', [
     },
     
     edit: function(path) {
-      if (!this.EditPage)
-        return this.loadViews(['EditPage', 'EditView'], this.edit, arguments);
-      else if (G.currentUser.guest) {
-        this._requestLogin();        
+      if (!this.routePrereqsFulfilled('edit', arguments))
         return;
-      }
-      else {
-        try {
-          this.view.call(this, path, 'edit');
-        } finally {
-          if (G.currentUser.guest)
-            this._requestLogin();
-        }
+      
+      try {
+        this.view(path, 'edit');
+      } finally {
+        if (G.currentUser.guest)
+          this._requestLogin();
       }
     },
 
     chat: function(path) {
-      if (!this.ChatPage)
-        return this.loadViews(['ChatPage'], this.chat, arguments);
-      else if (G.currentUser.guest) {
-        this._requestLogin();
+      if (!this.routePrereqsFulfilled('chat', arguments))
         return;
+      
+      try {
+        this.view(path, 'chat');
+      } finally {
+        if (G.currentUser.guest)
+          this._requestLogin();
       }
-      else {
-        try {
-          this.view.call(this, path, 'chat');
-        } finally {
-          if (G.currentUser.guest)
-            this._requestLogin();
+    },
+    
+    routePrereqsFulfilled: function(route, args) {
+      var self = this,
+          hashInfo = U.parseHash(),
+          views;
+      
+      if (G.currentUser.guest && ['chat', 'edit', 'make'].indexOf(route) >= 0) {
+        this._requestLogin();
+        return false;
+      }
+
+      switch (route) {
+      case 'chat':        
+        views = ['ChatPage'];
+        break;
+      case 'view':
+        views = ['ViewPage'];
+        break;
+      case 'edit':
+      case 'make':
+        views = ['EditPage', 'EditView'];
+        break;
+      case 'templates':
+      case 'list':
+      case 'choose':
+        views = ['ListPage'];
+        break;
+      }
+      
+      if (views) {
+        var missing = _.filter(views, function(view) {
+          return !self[view];
+        });
+        
+        if (missing.length) {
+          this.loadViews(missing, this[route], args);
+          return false;
         }
       }
+      
+      // the user is attempting to install the app, or at least pretending well
+      if (['make', 'edit'].indexOf(hashInfo.action) >= 0 && hashInfo.type.endsWith(G.commonTypes.AppInstall)) {
+        return true;
+      }
+      
+      if (G.currentApp.forceInstall && !this.isAppLoadedAndInstalled()) {
+        return false;
+      }
+      
+      return true;
     },
 
     _updateCache: function(oldUri, newUri) {
@@ -686,32 +723,36 @@ define('router', [
      * handles view, edit and chat mode (action)
      */
     view: function (path, action) {
-      var edit = action === 'edit',
-          chat = action === 'chat',
-          views, 
+      action = action || 'view';
+      if (!this.routePrereqsFulfilled(action, arguments))
+        return;
+      
+      var hashInfo = U.parseHash(path),
+          uri = hashInfo.uri,
+          query = hashInfo.query,
+          views,
+          edit = hashInfo.action == 'edit',
+          chat = hashInfo.action == 'chat',
           viewPageCl;
       
-      if (!edit && !chat && !this.ViewPage)
-        return this.loadViews('ViewPage', this.view, arguments);
-
-      var params = U.getHashParams(),
-          qIdx = path.indexOf("?"),
-          route = U.getRoute(),
-          uri, 
-          query;
-      
-      if (qIdx == -1) {
-        uri = path;
-        query = '';
-      }
-      else {
-        uri = path.slice(0, qIdx);
-        query = path.slice(qIdx + 1);
-      }
+//      var params = U.getHashParams(),
+//          qIdx = path.indexOf("?"),
+//          route = U.getRoute(),
+//          uri, 
+//          query;
+//      
+//      if (qIdx == -1) {
+//        uri = path;
+//        query = '';
+//      }
+//      else {
+//        uri = path.slice(0, qIdx);
+//        query = path.slice(qIdx + 1);
+//      }
       
       switch (action) {
         case 'chat':
-          views = route.slice(4) + 'ChatViews';
+          views = hashInfo.route.slice(4) + 'ChatViews';
           viewPageCl = this.ChatPage;
           break;
         case 'edit':
@@ -723,8 +764,7 @@ define('router', [
           viewPageCl = this.ViewPage;
       }
 
-    views = this[views];
-
+      views = this[views];
       if (uri == 'profile') {
         if (!G.currentUser.guest) {
           var other = U.slice.call(arguments, 1);
@@ -745,7 +785,6 @@ define('router', [
         return;
       }      
 
-      uri = U.getLongUri1(decodeURIComponent(uri));
       var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;
@@ -935,7 +974,7 @@ define('router', [
     isAppConfigured: function(app) {
       var appPath = U.getValue(app, 'appPath');
       var userAccType = 'http://urbien.com/voc/dev/{0}/UserAccount'.format(appPath);
-      var type = U.getCurrentType();
+      var type = U.getModelType();
       if (type === userAccType)
         return true;
       
@@ -991,10 +1030,20 @@ define('router', [
     },
     
     isAppLoadedAndInstalled: function(type) {
-      if (!U.isAnAppClass(type))
-        return true;
+      var appPath,
+          className,
+          typeBased = !!type;
       
-      var appPath = U.getAppPath(type).toLowerCase();
+      if (type) {
+        if (!U.isAnAppClass(type))
+          return true;
+        
+        appPath = U.getAppPath(type).toLowerCase();
+        className = U.getModel(type).displayName;
+      }
+      else
+        appPath = G.currentApp.appPath.toLowerCase();
+      
       var user = G.currentUser;
       if (user.guest) {
         this._requestLogin({
@@ -1005,7 +1054,6 @@ define('router', [
       }
       
 //      var APP_TERMS = 'Make sure you agree to this app\'s terms and conditions';
-      var className = U.getModel(type).displayName;
       var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
       var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
       if (appInfo) {
@@ -1017,9 +1065,11 @@ define('router', [
             allow: true
           };
           
-          var terms = this._getInstallTerms(className, appInfo.title, null, true);
-          if (terms) {
-            redirectOptions['-info'] = terms;
+          if (typeBased) {
+            var terms = this._getInstallTerms(className, appInfo.title, null, true);
+            if (terms) {
+              redirectOptions['-info'] = terms;
+            }
           }
           
           this.navigate(U.makeMobileUrl('edit', appInfo.install, redirectOptions), {trigger: true, replace: true});
@@ -1111,9 +1161,11 @@ define('router', [
             appPlugs: followsCSV
           };
           
-          var terms = self._getInstallTerms(className, appName, followsNames);
-          if (terms) {
-            redirectOptions['-info'] = terms;
+          if (typeBased) {
+            var terms = self._getInstallTerms(className, appName, followsNames);
+            if (terms) {
+              redirectOptions['-info'] = terms;
+            }
           }
 
           self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default

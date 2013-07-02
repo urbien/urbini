@@ -12,8 +12,8 @@
   },
   "launch_path": "/index.html",
 	"messages": [
-	   { "push": "/index.html"},
-	   { "push-register": "/index.html"}
+	   { "push": "/index.html" },
+	   { "push-register": "/index.html" }
 	],
 	"permissions": {
 	  "push": {},

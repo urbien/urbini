@@ -48,7 +48,7 @@ define('vocManager', [
       if (!models) {
         // if no models specified, get the base app models
         models = _.clone(G.modelsMetadata);
-        var c = Voc.currentModel = U.getCurrentType();
+        var c = Voc.currentModel = U.getModelType();
         if (c && !models[c])
           models[c] = {};            
       }

@@ -315,36 +315,26 @@ define('utils', [
       return false;
     },
     
-    getCurrentType: function() {
-      var hash =  window.location.hash, 
-          route, type;
+    getModelType: function(hash) {
+      hash = hash || U.getHash();
+      if (!hash.length)
+        return null;
       
-      hash = hash && hash.slice(1); 
-      if (!hash)
-        return;
-
-      var qIdx = hash.indexOf('?');
-      if (qIdx != -1)
-        hash = hash.slice(0, qIdx);
-      
-      hash = decodeURIComponent(hash);
+      hash = hash.split('?')[0];
 //      if (!hash)
 //        G.log(U.TAG, 'error', 'match undefined 0');
       
-      if (hash.startsWith('templates')) {
-//        hash = U.decode(hash.slice(10));
+      if (hash.startsWith('templates'))
         return G.commonTypes.Jst;
-      }
       else if (hash.startsWith('home'))
         return null;
       
-      route = hash.match(/^view|menu|edit|make|chooser|chat([a-zA-Z]+)?/);
-//      debugger;
-//      if (_.filter(G._routes, function(r) {return hash.startsWith(r)}).length) {
+      var route = U.getRoute(hash);
+      hash = decodeURIComponent(hash);
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);
         if (sqlIdx == -1)
-          type = hash.slice(route[0].length + 1);
+          type = hash.slice(route.length + 1);
         else
           type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
         
@@ -1080,14 +1070,15 @@ define('utils', [
     },
     
     getHashParams: function(hash) {
-      if (!hash) {
-        var h = window.location.href;
-        var hashIdx = h.indexOf('#');
-        if (hashIdx === -1) 
-          return {};
-          
-        hash = h.slice(hashIdx + 1);
-      }
+      hash = hash || U.getHash();
+//      if (!hash) {
+//        var h = window.location.href;
+//        var hashIdx = h.indexOf('#');
+//        if (hashIdx === -1) 
+//          return {};
+//          
+//        hash = h.slice(hashIdx + 1);
+//      }
       
       var chopIdx = hash.indexOf('?');
       if (chopIdx == -1)
@@ -2151,8 +2142,9 @@ define('utils', [
     },
     
     getHash: function(decode) {
-      var match = (window || this).location.href.match(/#(.*)$/);
-      var hash = match ? match[1] : '';      
+      var match = (window || this).location.href.match(/#(.*)$/),
+          hash = match ? match[1] : '';
+          
       return decode ? decodeURIComponent(hash) : hash;
     },
     
@@ -3133,14 +3125,16 @@ define('utils', [
     isWaitingRoom: function() {
       return U.getHash().startsWith('chatLobby');
     },
-    getRoute: function() {
-      var hash = U.getHash();
-      if (/[a-zA-Z]+\//.test(hash))
-        return hash.match(/([a-zA-Z]+)\//)[1];
-      else
-        return '';
+    getRoute: function(hash) {
+      hash = hash || U.getHash();
+      var match = hash.match(/^([a-zA-Z]+)\//);
+      return match ? match[1] : '';
+//      var match = (hash || U.getHash()).match(/^view|menu|edit|make|chooser|templates|(chat)([a-zA-Z]+)?/);
+//      return match ? match[0] : '';
     },
-    
+    getRouteAction: function(route) {
+      return route ? (route.startsWith('chat') ? 'chat' : route) : 'list';
+    },
     deepExtend: function(obj, source) {
       for (var p in source) {
         if (_.has(source, p) && !_.has(obj, p)) {
@@ -3240,7 +3234,26 @@ define('utils', [
     vibrate: (function() {
       var vib = navigator.vibrate || navigator.mozVibrate || navigator.webkitVibrate || function() {};
       return vib;
-    })()
+    })(),
+    
+    parseHash: function(hash) {
+      hash = hash || U.getHash();
+      var params = U.getHashParams(hash),
+          qIdx = hash.indexOf("?"),
+          route = U.getRoute(hash),
+          hashParts = hash.split('?'),
+          uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]), 
+          query = hashParts[1] || '';
+      
+      return {
+        action: U.getRouteAction(route),
+        route: route,
+        uri: U.getLongUri1(uri),
+        type: U.getModelType(hash),
+        query: query,
+        params: params
+      }
+    }
   };
 
   for (var p in U.systemProps) {

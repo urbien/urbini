@@ -2,7 +2,6 @@
   var bgPage,
   runtimeId,
 //  connected = false,
-  webviewPinger,
   serverOrigin,
   appHome,
   webviewOrigin,
@@ -389,9 +388,6 @@
           type = data.type,
           rpc = /^rpc:/.test(type) ? type.slice(4) : null;
 
-//      if (data === 'ready')
-//        webviewPinger = clearInterval(webviewPinger);
-          
       if (rpc) {
         var dotIdx = rpc.lastIndexOf('.');
         var parent = dotIdx == -1 ? RPC : leaf(RPC, rpc.slice(0, dotIdx));

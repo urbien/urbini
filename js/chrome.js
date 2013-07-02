@@ -98,6 +98,14 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     })
   };
   
+  function sendMessageToApp(msg) {
+    var appWin = G.appWindow;
+    if (appWin && G.appOrigin)
+      appWin.postMessage(msg, G.appOrigin);
+    else
+      console.debug("can't send message to app, don't know app's window and/or origin");
+  };
+
   var chrome = {
     notifications: {
       create: function(id, options, callback) {
@@ -145,5 +153,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
   
   setPaths(chrome);
   window.addEventListener('message', onMessageFromApp);
+  Events.on('messageToApp', sendMessageToApp);
   return chrome;
 });
