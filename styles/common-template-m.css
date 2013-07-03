@@ -55,7 +55,12 @@ html { height: 100%; }
 
 .nab .modP img { padding-right: 5px; }
 .galleryItem, .galleryItem_css3, .galleryItem_Nab { position: relative; }
-.galleryItem_css3, galleryItem_nab { display: inline-block; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
+.galleryItem_css3, galleryItem_nab { 
+  display: inline-block; 
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
+  -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
+  -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
+ }
 
 .likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
 .likes_tbl td { background-color: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
@@ -199,6 +204,8 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   max-width: 32px;
 }
 .btn { text-align: center; padding-bottom: 3px; height: 25px; }
+.nabRL .btn a { color: #757575; text-shadow: none; }
+
 .commentListDate {
   color: #999999;
   font-size: 11px;
@@ -244,11 +251,28 @@ h3#pageTitle {margin: 10px 0 7px 0;}
     font-size: 32px;
     margin-left: -14px;
 }
+
+#categories .ui-icon {
+  font-size: 18px;
+}
+#categories .ui-btn-inner .ui-icon {
+  margin: 0px !important;
+
+}
 /* navbar no text - icons only */ 
 .navbarUl .ui-btn-inner { font-size: 0px; }
 /* #headerUl .ui-btn { padding: 3px 0px; } */
 #sell .ui-btn-inner { border: none; }
-@media (max-width: 328px) {
+/*@media (max-width: 328px)  {*/
+/* @media only screen and (max-divice-width: 480px;)  { */
+/*
+@media screen and (max-device-width: 480px) and (orientation: landscape) {
+  .nab .anab .galleryItem_css3 img {max-width: 272px;}
+  .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+}
+*/
+@media screen and (max-device-width: 480px) and (orientation: portrait) {
 
 /*@media all and (min-width: 298px) { */
   .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
@@ -442,4 +466,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 }
 #doTry .ui-btn-text {
   float: left;
+}
+.headerSpecialBtn {
+  padding: 3px 0;
+}
+.headerSpecialBtn a {
+  margin: 0;
 }

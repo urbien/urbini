@@ -281,7 +281,9 @@ define('views/ResourceMasonryItemView', [
       } catch (err) {
         G.log(this.TAG, 'failed to build template for masonry item ' + dn + ': ' + err);
       }
-      
+      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
+      this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
+        
       return this;
     },
     

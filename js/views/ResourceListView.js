@@ -54,7 +54,8 @@ define('views/ResourceListView', [
       return this;
     },
     events: {
-      'orientationchange': 'orientationchange'
+      'orientationchange': 'orientationchange',
+      'resize': 'orientationchange'
     },
     
     orientationchange: function(e) {
@@ -62,6 +63,9 @@ define('views/ResourceListView', [
       
       if (!this.isMasonry)
         return;
+
+      var o = ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';
+      Events.stopEvent(e);
       
       var prevWidth;
       if ($(window).height() > $(window).width()) {
@@ -74,10 +78,10 @@ define('views/ResourceListView', [
       }
       
       $('.nabBoard').attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important');
-      $('.nab .anab galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH);
-      
-      var img = $('.nab .anab galleryItem_css3 img');
-      for (var i=0; i<n; i++) {
+      $('.nab .anab .galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important');
+      /*
+      var img = $('.nab .anab .galleryItem_css3 img');
+      for (var i=0; i<img.length; i++) {
         var width = img[i].width;
         var height = img[i].height;
         if (width > this.IMG_MAX_WIDTH) {
@@ -85,10 +89,10 @@ define('views/ResourceListView', [
           img[i].attr('style', 'max-width:' + this.IMG_MAX_WIDTH + '; width:' +  this.IMG_MAX_WIDTH + '; height: ' + Math.floor(height * ratio));
         }
       }
-      
-      Events.stopEvent(e);
-//      Events.trigger('refresh');
-      this.refresh(null, {orientation: true});
+      */
+//    Events.trigger('refresh');
+      this.refresh(null, {orientation: o});
+      this.$el.masonry('reload');
     },
     onadd: function(resources, options) {
       if (options && options.refresh) {
@@ -112,7 +116,7 @@ define('views/ResourceListView', [
       var isAdd = options.added;
       var isUpdate = options.updated;
       var isReset = options.reset;
-      var isOrientationChange = options.orientation;
+      var orientationChange = options.orientation;
       
       G.log(this.TAG, 'refreshing ResourceListView');
       modified = modified ? (_.isArray(modified) ? modified : [modified]) : null;
@@ -186,7 +190,7 @@ define('views/ResourceListView', [
       var i = 0;
       var nextPage = false;
       var frag;
-      if (isAdd || !modified && !isOrientationChange) {
+      if (isAdd || !modified && !orientationChange) {
         i = curNum;
         if (curNum == num) {
           return this;
