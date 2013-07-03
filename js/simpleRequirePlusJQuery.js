@@ -9478,9 +9478,9 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   /**
   * feel free to override, but make sure to return a Promise
   **/ 
-  function load(name) {
+  function load(name, url) {
     return $.Deferred(function(defer) {
-      var url = require.toUrl(name);
+      url = url || require.toUrl(name);
       currentlyAddingScript = name;
       var node = document.createElement('script');
       node.type = config.scriptType || 'text/javascript';

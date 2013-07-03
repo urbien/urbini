@@ -1475,7 +1475,7 @@ define('resourceManager', [
             var oProp = orderBy[i].shortName;
             if (oProp === distanceProp) {
               query.sort(function(a, b) {
-                debugger;
+//                debugger;
                 // hackity hack - setting distance in sort function
                 var ad = a[distanceProp] = U.distance([a[latProp], a[lonProp]], [lat, lon]);
                 var bd = b[distanceProp] = U.distance([b[latProp], b[lonProp]], [lat, lon]);

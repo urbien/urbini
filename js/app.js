@@ -225,7 +225,6 @@ define('app', [
 //      for (var type in C.typeToModel) {
 //        Voc.initPlugs(type);
 //      }
-      
       setTimeout(function() { 
         RM.sync();
         App.setupPushNotifications();

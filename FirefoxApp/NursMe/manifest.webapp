@@ -19,6 +19,7 @@
 	  "push": {},
 	  "storage": {},
 	  "desktop-notification": {},
-	  "browser": {}
+	  "browser": {},
+	  "geolocation": {}
 	}
 }

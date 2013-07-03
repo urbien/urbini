@@ -31,6 +31,9 @@
       args.unshift('FROM IFRAME:');
       logger.log.apply(logger, args);
     },
+    navigate: function(url) {
+      locInput.value = url;
+    },
     setAttribute: function(sel, attribute, value) {
       $(sel).setAttribute(attribute, value);
     },

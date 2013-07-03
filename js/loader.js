@@ -38,7 +38,9 @@ define('globals', function() {
 
   var G = Lablz,
       browser = G.browser = $.browser,
-      query = window.location.hash.split('?')[1];
+      ALL_IN_APPCACHE,
+      hash = window.location.href.split('#')[1],
+      query = hash && hash.split('?')[1];
   
   browser.chrome = browser.webkit && !!window.chrome;
   browser.safari = browser.webkit && !window.chrome;
@@ -157,19 +159,15 @@ define('globals', function() {
       if (name === 'globals')
         return defer.resolve(G);
       
-      var cached;  
+      var cached, realPath;  
       if (/\.(jsp|css|html)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
   
-      var inAppcache = G.isInAppcacheBundle(url);
+      var inAppcache = realPath = G.getFromAppcacheBundle(url);
       if (inAppcache) {
-        var path = G.requireConfig.paths[name];
-        path = path || name;
-        var realPath = G.files.appcache[path].fullName;
-  //      var realPath = G.files[path].name;
-        arguments[2] = url.replace(path, realPath);
+        var path = G.requireConfig.paths[name] || name;
         if (!/\.(jsp|css|html)$/.test(url)) {
-          orgLoad.apply(self, args);
+          orgLoad(name, url.replace(path, realPath));
           return;
         }
       }
@@ -246,7 +244,6 @@ define('globals', function() {
       if (!G.hasLocalStorage)
         return false;
 
-      var ls = G.localStorage;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
       value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
       try {
 //        G.localStorage.del(key);
@@ -257,23 +254,23 @@ define('globals', function() {
           // clean to make space
           var appModelRegexp = G.appModelRegExp,
               thisAppModelRegexp = G.currentAppModelRegExp,
-              numRemoved = ls.clean(function(key) {
+              numRemoved = this.clean(function(key) {
                 return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
               });
           
           if (!numRemoved) {
-            ls.clean(function(key) {
+            this.clean(function(key) {
               return /^model\:/.test(key);
             });
           }
           
-          if (!ls.cleaning) { // TODO: unhack this garbage
-            ls.cleaning = true;
+          if (!this.cleaning) { // TODO: unhack this garbage
+            this.cleaning = true;
             G.Voc && G.Voc.saveModelsToStorage();
           }
           
-          force && ls.put(key, value);
-          ls.cleaning = false;
+          force && this.put(key, value);
+          this.cleaning = false;
         } else {
           debugger;
           G.hasLocalStorage = false;
@@ -351,17 +348,25 @@ define('globals', function() {
     onAppStart: function() {
       return G._appStartDfd.promise();
     },
-    putCached: function(url, data, source) {
+    putCached: function(urlToData, source) {
       return $.Deferred(function(defer) {        
         if (source === 'localStorage') {
-          G.localStorage.put(url, data);
+          for (var url in urlToData) {
+            G.localStorage.put(url, urlToData[url]);
+          }
+          
           defer.resolve();
         }
         else if (source === 'indexedDB') {
           G.onAppStart().done(function() {            
-            G.ResourceManager.$db.objectStore('modules').put({
-              url: url, 
-              data: data
+            G.ResourceManager.$db.transaction(['modules'], 1).progress(function(trans) {
+              var modStore = trans.objectStore('modules', 1);
+              for (var url in urlToData) {
+                modStore.put({
+                  url: url, 
+                  data: urlToData[url]
+                });
+              }
             }).done(defer.resolve).fail(defer.reject);
           });
         }
@@ -488,13 +493,14 @@ define('globals', function() {
     },
     
     DEV_PACKAGE_PATH: 'http://urbien.com/voc/dev/',
-    isInAppcacheBundle: function(url) {
+    getFromAppcacheBundle: function(url) {
       var appcacheBundle = G.bundles.appcache;
       url = url.slice(url.indexOf('/') + 1);
       if (/\.js$/.test(url)) 
         url = url.slice(0, url.length - 3);
       
-      return !!G.files.appcache[url];
+      var info = G.files.appcache[url];
+      return info ? info.fullName || info.name : null;
     },
     setOnline: function(online) {
       G.online = online;
@@ -521,7 +527,6 @@ define('globals', function() {
             })) {
               found = true;
               if (bName !== 'pre') {                
-                bundle._deferred = bundle._deferred || $.Deferred();
                 bundlePromises.push(bundle._deferred.promise());
               }
               
@@ -588,7 +593,8 @@ define('globals', function() {
       Grab: 'model/social/Grab',
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
-      PushEndpoint: 'model/social/PushEndpoint'
+      PushEndpoint: 'model/social/PushEndpoint',
+      PushChannel: 'model/social/PushChannel'
     },
 //    commonTypes: {
 //      model: {
@@ -1082,17 +1088,26 @@ define('globals', function() {
             setTimeout(function() {
               for (var url in newModules) {
                 var text = newModules[url];
-//                G.localStorage.put(url, text);
-//                G.localStorage.put(getMetadataURL(url), {
-//                  dateModified: G.serverTime,
-//                  minified: G.isMinified(url, text)
-//                });
-                G.putCached(url, text, source);
-                G.putCached(getMetadataURL(url), {
+                newModules[getMetadataURL(url)] = {
                   dateModified: G.serverTime,
                   minified: G.isMinified(url, text)
-                }, source);
+                };
               }
+              
+              G.putCached(newModules, source);
+//              for (var url in newModules) {
+//                var text = newModules[url];
+////                G.localStorage.put(url, text);
+////                G.localStorage.put(getMetadataURL(url), {
+////                  dateModified: G.serverTime,
+////                  minified: G.isMinified(url, text)
+////                });
+//                G.putCached(url, text, source);
+//                G.putCached(getMetadataURL(url), {
+//                  dateModified: G.serverTime,
+//                  minified: G.isMinified(url, text)
+//                }, source);
+//              }
             }, 100);
 //          }
           
@@ -1230,6 +1245,7 @@ define('globals', function() {
     
     console.log('inWebview:', G.inWebview);
     console.log('inFFIframe:', G.inFirefoxOS);
+    ALL_IN_APPCACHE = G.inFirefoxOS;
   }
 
   var bundles = G.bundles;
@@ -1245,7 +1261,8 @@ define('globals', function() {
           bt.splice(i, 1);
           
         G.files[info.name] = info;
-        if (when === 'appcache') {
+//        if (when === 'appcache') {
+        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
           G.files.appcache[info.name] = info;
         }
       }
@@ -1376,18 +1393,18 @@ require(['globals'], function(G) {
             });
           });
           
-          if (window.location.hash.length < 2) {
+//          if (window.location.hash.length < 2) {
             Events.once('appStart', function() {
               G.hideSpinner(spinner);
               console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
             });
-          }
-          else {
-            Events.once('pageChange', function() {
-              G.hideSpinner(spinner);
-              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-            });
-          }
+//          }
+//          else {
+//            Events.once('pageChange', function() {
+//              G.hideSpinner(spinner);
+//              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+//            });
+//          }
         });
       });
     })
