@@ -225,7 +225,8 @@ define('views/ControlPanel', [
 
       var currentAppProps = U.getCurrentAppProps(meta);
       var title = U.getDisplayName(res);
-      var color = ['rgba(156, 156, 255, 0.8)', 'rgba(255, 0, 255, 0.8)', 'rgba(32, 173, 176, 0.8)', 'rgba(255, 255, 0, 0.8)', 'rgba(255, 156, 156, 0.8)', 'purple'];
+      var color = ['rgba(156, 156, 255, 0.7)', 'rgba(255, 0, 255, 0.7)', 'rgba(32, 173, 176, 0.7)', 'rgba(255, 255, 0, 0.7)', 'rgba(255, 156, 156, 0.7)', 'purple'];
+      var borderColor = ['rgba(156, 156, 255, 1)', 'rgba(255, 0, 255, 1)','rgba(32, 173, 176, 1)', 'rgba(255, 255, 0, 1)', 'rgba(255, 156, 156, 1)', 'purple'];
       var color1 = ['yellow', 'rgba(156, 156, 255, 0.8)', '#9999ff', 'magenta', 'lightseagreen', '#ff9999', 'purple'];
       var colorIdx = 0;
 //      if (title)
@@ -246,7 +247,26 @@ define('views/ControlPanel', [
           var propDisplayName = U.getPropDisplayName(prop);
           U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
           list.each(function(iRes) {
-            U.addToFrag(frag, this.inlineListItemTemplate({name: U.getDisplayName(iRes), _uri: iRes.getUri(), comment: iRes.comment, _problematic: iRes.get('_error') }));
+            var params = {
+                comment: iRes.comment, 
+               _problematic: iRes.get('_error')
+             }
+            params.name = U.getDisplayName(iRes);
+            if (U.isAssignableFrom(iRes.vocModel, 'Intersection')) {  
+              var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
+              var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
+              var pmeta = iRes.vocModel.properties;
+              if (a == meta[name].backLink) {
+                params.name = iRes.get(b + '.displayName');
+                params.img = iRes.get('bThumb');
+              }
+              else {
+                params.name = iRes.get(a + '.displayName');
+                params.img = iRes.get('aThumb');
+              }
+            }
+            params._uri = U.isAssignableFrom(iRes.vocModel, 'Intersection') ? U.makePageUrl('view', iRes.getUri(), {title: params.name}) : U.makePageUrl('edit', iRes.getUri(), {title: params.name});
+            U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
             iRes.off('change', this.refreshOrRender, this);
             iRes.on('change', this.refreshOrRender, this);
@@ -328,7 +348,8 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, color: color[colorIdx++], chat: isChat};
+              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
+              colorIdx++;
               if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
