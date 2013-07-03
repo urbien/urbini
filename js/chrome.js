@@ -60,14 +60,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     }
   };
   
-  function sendMessageToApp(msg) {
-    var appWin = G.appWindow;
-    if (appWin && G.appOrigin)
-      appWin.postMessage(msg, G.appOrigin);
-    else
-      console.debug("can't send message to app, don't know app's window & origin");
-  };
-  
   function onpush(msg) {
     var subchannelId = msg.subchannelId,
         payload = msg.payload,
@@ -91,6 +83,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     chrome.notifications.onClicked(function(notificationId) {
       console.log('clicked notification, id:', notificationId);
       if (notificationId == id) {
+        chrome.notifications.clear(id);
         U.rpc('focus');
         Events.trigger('navigate', G.tabs[0].hash);
         ringtone.remove();
@@ -129,7 +122,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       }
     },
     _setup: function() {      
-      Events.on('messageToApp', sendMessageToApp);
       Events.on('messageFromApp:push', onpush);
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp,

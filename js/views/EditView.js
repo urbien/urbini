@@ -918,7 +918,7 @@ define('views/EditView', [
         resource = null;
       }
       
-      this.getInputs().attr('disabled', fale);
+      this.getInputs().attr('disabled', false);
       var code = xhr ? xhr.code || xhr.status : 0;
       if (!code || xhr.statusText === 'error') {
         Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
