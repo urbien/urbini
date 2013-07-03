@@ -689,7 +689,9 @@
 <!-- one row of an inline backlink in view mode -->
 <li>
   <i class="icon-home"></i>
-  <a href="{{= U.makePageUrl('edit', _uri) }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }}</a>
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= obj.gridCols ? gridCols : name }}
+      <img src="{{= typeof img != 'undefined' ? (img.indexOf('/Image') == 0 ? img.slice(6) : img) : 'icons/blank.png'}}" 
+  </a>
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
@@ -740,12 +742,12 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value  &&  !chat) { }}  
-   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; background-color: {{= color }}" href="#">
+   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
      <i class="{{= icon }}" style="right: -20px; font-size: 20px;"></i>&#160;{{= name }}
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
-   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
@@ -756,12 +758,12 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
-   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; min-width:110px; float:left; background:none; background-color: {{= color }}" href="#">
+   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; border: 1px solid #ccc; min-width:110px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#">
        {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;margin-left:-5px;"></i>' : '' }} {{= name }} 
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
-   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; min-width:100px;float:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:100px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
      {{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
@@ -984,18 +986,20 @@
       <ul id="headerUl" class="navbarUl">
       </ul>
     </div>
-    {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }}
+    {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="tags" id="categories" href="#"></a></div>' : '' }} 
+<!--    {{= this.categories ? '<div style="padding:5px 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags" style="margin-top:4px; font-size:20px;"></i></a></div>' : '' }} -->
+
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
 <!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
-    <div id="name" class="resTitle" {{= this.categories ? '' : 'style="min-height: 20px"' }} align="center">
-      <h3 id="pageTitle">{{= this.title }}</h3>
+    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
+      <h4 id="pageTitle" style="color: #757575; font-weight:normal; margin-top:4px;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
-        <div style="max-width:200px; display: inline-block; padding-top:4px;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
+        <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </div>
-        <div style="max-width:200px; display: inline-block; padding-top:4px;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
+        <div style="max-width:200px; display: inline-block;" id="forkMeBtn"  class="{{= obj.className ? 'ui-block-b' : '' }}">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
