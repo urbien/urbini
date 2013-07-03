@@ -3244,11 +3244,11 @@ define('utils', [
           hashParts = hash.split('?'),
           uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]), 
           query = hashParts[1] || '';
-      
+
       return {
         action: U.getRouteAction(route),
         route: route,
-        uri: U.getLongUri1(uri),
+        uri: uri == 'profile' ? uri : U.getLongUri1(uri),
         type: U.getModelType(hash),
         query: query,
         params: params

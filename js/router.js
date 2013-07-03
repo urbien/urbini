@@ -730,6 +730,7 @@ define('router', [
       var hashInfo = U.parseHash(path),
           uri = hashInfo.uri,
           query = hashInfo.query,
+          typeUri = hashInfo.type,
           views,
           edit = hashInfo.action == 'edit',
           chat = hashInfo.action == 'chat',
@@ -785,7 +786,6 @@ define('router', [
         return;
       }      
 
-      var typeUri = U.getTypeUri(uri);
       if (!this.isModelLoaded(typeUri, 'view', arguments))
         return;
       
