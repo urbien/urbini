@@ -355,6 +355,26 @@ define('app', [
       $.when(U.require(req), Voc.getModels(pushEndpointType)).done(function(browserMod) {
         console.log('SETTING UP PUSH NOTIFICATIONS');
         browserMod._setup();
+        Events.on('messageFromApp:reload', function() {
+          window.location.reload();
+        });
+        
+        Events.on('messageFromApp:back', function() {
+          window.history.back();
+        });
+        
+        Events.on('messageFromApp:forward', function() {
+          window.history.forward();
+        });
+
+        Events.on('messageFromApp:home', function() {
+          window.location.href = window.location.href.split('#')[0];
+        });
+
+        Events.on('messageFromApp:navigate', function(url) {
+          window.location.href = url;
+        });
+
 //        browserMod.onpush(function() {
 //          
 //        });

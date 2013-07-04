@@ -257,7 +257,10 @@
 
   function navigateTo(url) {
     resetExitedState();
-    iframe.src = url;
+    postMessage({
+      type: 'navigate',
+      args: [url]
+    })
   }
 
   function doLayout() {
@@ -402,28 +405,27 @@
       locForm = $('#location-form');
 
       back.onclick = function() {
-        try {
-          iframe.contentWindow.history.back();
-        } catch (err) {}
+        postMessage({
+          type: 'back'
+        });
       };
 
       forward.onclick = function() {
-        try {
-          iframe.contentWindow.history.forward();
-        } catch (err) {}
+        postMessage({
+          type: 'forward'
+        });
       };
 
       home.onclick = function() {
-        navigateTo(appHome);
+        postMessage({
+          type: 'home'
+        });
       };
 
       reload.onclick = function() {
-        if (isLoading) {
-//          iframe.stop();
-        } else {
-          iframe.contentWindow.location.reload();
-//          navigateTo(iframe.src);
-        }
+        postMessage({
+          type: 'reload'
+        });
       };
 
 //      reload.addEventListener(

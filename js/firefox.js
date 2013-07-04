@@ -35,13 +35,6 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     delete data.type;
     args.unshift('messageFromApp:' + type);
     Events.trigger.apply(Events, args);
-    switch (type) {
-      case 'visibility':
-        Events.trigger('visible', data.visible);
-        break;
-      default:
-        return;
-    }
   };
 
   function onpush(message) {
@@ -220,6 +213,19 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     },
     setMessageHandler: function(messageType, callback) {
       U.rpc(this._path, messageType, createCallbackEvent(callback));      
+    },
+    install: function() {
+      var req = navigator.mozApps.install(G.serverName + '/FirefoxApp/NursMe/manifest.webapp', null);
+      req.onerror = function(e) {
+        debugger;
+        console.log("Error installing app : " + req.error.name);
+      };
+      
+      req.onsuccess = function(e) {
+        debugger;
+        var app = req.result;
+        console.log("Success installing app : " + app.manifest.name + " " + app.installState);
+      };
     }
   };
   

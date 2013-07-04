@@ -185,8 +185,8 @@ define('router', [
 //        return;
 //      }
       
-//      if (G.inFirefoxOS)
-//        U.rpc('navigate', window.location.href);
+      if (G.inFirefoxOS)
+        U.rpc('navigate', window.location.href);
       
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + G.pageRoot;

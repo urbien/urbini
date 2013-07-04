@@ -51,13 +51,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     delete data.type;
     args.unshift('messageFromApp:' + type);
     Events.trigger.apply(Events, args);
-    switch (type) {
-      case 'visibility':
-        Events.trigger('visible', data.visible);
-        break;
-      default:
-        return;
-    }
   };
   
   function onpush(msg) {
