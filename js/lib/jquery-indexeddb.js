@@ -1,5 +1,5 @@
 //'use strict';
-define('jqueryIndexedDB', ['globals'].concat(Lablz.isUsingDBShim ? 'indexedDBShim' : []), function(G) {
+define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDBShim' : []), function(G) {
   var usingShim = G.isUsingDBShim;
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;

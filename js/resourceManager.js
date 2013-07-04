@@ -6,13 +6,15 @@ define('resourceManager', [
   'taskQueue',
   'cache',
   'vocManager',
-  'queryIndexedDB',
   '__domReady__'
-], function(G, U, Events, TaskQueue, C, Voc, idbq) {
-  var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
-  var Blob = window.Blob;
-  var FileSystem;
-  var useWebSQL = G.isUsingDBShim;//window.webkitIndexedDB && window.shimIndexedDB;
+].concat(Lablz.dbType == 'none' ? [] : 'queryIndexedDB'), function(G, U, Events, TaskQueue, C, Voc, __domReady__, idbq) {
+  var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+      Blob = window.Blob,
+      FileSystem,
+      useWebSQL = G.dbType == 'shim',//window.webkitIndexedDB && window.shimIndexedDB;
+      NO_DB = G.dbType == 'none';
+  
+  
   useWebSQL && window.shimIndexedDB.__useShim();
 //  window.idbModules.DEBUG = G.minify === false;
   var parse = function(items) {
@@ -157,7 +159,7 @@ define('resourceManager', [
   Backbone.sync = function(method, data, options) {
     options = options || {};
     if (_.contains(['patch', 'create'], method)) {
-      if (options.sync) {
+      if (options.sync || NO_DB) {
         if (!G.online) {
           options.error && options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
           return;
@@ -367,9 +369,9 @@ define('resourceManager', [
       U.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
         options.success(data, status, xhr);
       }).fail(function(xhr, status, msg) {
-        if (xhr.status === 304)
-          return;
-        
+//        if (xhr.status === 304)
+//          return;
+//        
         G.log(RM.TAG, 'error', 'failed to get resources from url', options.url, msg);
         options.error(null, xhr, options);
       });      
@@ -996,8 +998,8 @@ define('resourceManager', [
               RM.sync();
               return;
             }
-            else if (code == 304)
-              return;
+//            else if (code == 304)
+//              return;
             
             var problem = xhr.responseText;
             if (problem) {
@@ -1507,6 +1509,9 @@ define('resourceManager', [
     },
     
     getItems: function(options) {
+      if (NO_DB)
+        return false;
+      
       var type = U.getTypeUri(options.key),
           uri = options.uri,
           isTemp = uri && U.isTempUri(uri),

@@ -247,25 +247,17 @@ define('vocManager', [
         }, _.pick(options, 'sync'));
         
         U.ajax(ajaxSettings).done(function(data, status, xhr) {
-          if (!data) {
-            defer.rejectWith(this, [xhr, status, options]);
-            return;
-          }
+          if (xhr.status === 304)
+            return defer.resolve();
           
-          if (data.error) {
-            defer.rejectWith(this, [xhr, data.error, options]);
-            return;
-          }
+          if (!data)
+            return defer.rejectWith(this, [xhr, status, options]);
+          
+          if (data.error)
+            return defer.rejectWith(this, [xhr, data.error, options]);
           
           defer.resolve(data);
-        }).fail(function(xhr, err, aOpts) {
-          if (xhr.status === 304) {
-            defer.resolve();
-            return;
-          }
-          else
-            defer.reject.apply(this, arguments);
-        });
+        }).fail(defer.reject);
       }).promise();
     },    
     

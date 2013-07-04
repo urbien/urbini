@@ -355,6 +355,7 @@ define('collections/ResourceList', [
           case 200:
             break;
           case 204:
+            self.trigger('endOfList');
             success(resp, status, xhr);
             return;
           case 304:

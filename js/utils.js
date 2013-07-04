@@ -176,11 +176,11 @@ define('utils', [
             worker.onmessage = function(event) {
               var xhr = event.data;
               var code = xhr.status;
-              if (code === 304) {
-  //              debugger;
-                defer.reject(xhr, "unmodified", "unmodified");
-              }
-              else if (code > 399 && code < 600) {
+//              if (code === 304) {
+//  //              debugger;
+//                defer.reject(xhr, "unmodified", "unmodified");
+//              }
+              if (code > 399 && code < 600) {
                 var text = xhr.responseText;
                 if (text && text.length) {
                   try {
@@ -213,18 +213,12 @@ define('utils', [
               return;
             }
             
-            if (jqXHR.status === 200) {
+            if (jqXHR.status < 400) {
               defer.resolve(data, status, jqXHR);
               return;
             }
             
-            if (data && data.error) {
-//              debugger;
-              defer.reject(jqXHR, data.error, opts);
-              return;
-            }
-            
-            defer.reject(jqXHR, {status: jqXHR.status}, opts);                  
+            defer.reject(jqXHR, data && data.error || {status: jqXHR.status}, opts);
           }, 
           function(jqXHR, status, err) {
 //            debugger;

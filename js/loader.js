@@ -402,11 +402,17 @@ define('globals', function() {
         }
       }).promise();
     },
-    isUsingDBShim: (function() {
+    dbType: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB;
-      if (using)
-        console.debug('using indexeddb shim');
+      if (using) {
+        if (window.openDatabase) {
+          console.debug('using indexeddb shim');
+          return 'shim'
+        }
+        else
+          return 'none';
+      }
       else {
         var pre = G.bundles.pre.js,
             shimIdx = pre.indexOf('lib/IndexedDBShim');
@@ -415,9 +421,8 @@ define('globals', function() {
           pre.splice(shimIdx, 1);
         
         console.debug("don't need indexeddb shim");
+        return 'idb';
       }
-      
-      return using;
     })(),
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 

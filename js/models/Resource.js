@@ -748,8 +748,8 @@ define('models/Resource', [
         data = this.prepForSync(data);
         if (_.size(data) == 0) {
           if (!isNew) {
-            if (options.error)
-              options.error(this, {code: 304, details: "unmodified"}, options);
+            if (options.success)
+              options.success(this, {code: 304, details: "unmodified"}, options);
             
             return; 
           }
