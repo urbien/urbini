@@ -407,9 +407,6 @@ define('globals', function() {
     },
     dbType: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
-      if (true)
-        return 'none';
-      
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB;
       if (using) {
         if (window.openDatabase) {
