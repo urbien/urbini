@@ -12,18 +12,14 @@
 
   /* START HTML elements / JQuery objects */
   webview,
-  $webview, 
-  $window = $(window), 
   controls,
-  $controls,
-  $locInput,
   locInput,
-  $back,
-  $forward,
-  $home,
-  $reload,
-  $terminate,
-  $locForm,
+  back,
+  forward,
+  home,
+  reload,
+  terminate,
+  locForm,
   /* END   HTML elements / JQuery objects */
 
 //  echo,
@@ -69,7 +65,11 @@
         leaf(chrome, this._path).addListener(callback);
       }
     }
+  },
+  $ = function() {
+    return document.querySelector.apply(document, arguments);
   };
+
 
   chrome.runtime.getBackgroundPage(function(page) {
     bgPage = page;
@@ -205,8 +205,8 @@
     var webviewWidth = windowWidth;
     var webviewHeight = windowHeight - controlsHeight;
 
-    $webview.width(webviewWidth + 'px');
-    $webview.height(webviewHeight + 'px');
+    webview.style.width = webviewWidth + 'px';
+    webview.style.height = webviewHeight + 'px';
 //    $webview.css('z-index', 1);
 
     // var sadWebview = $('#sad-webview');
@@ -312,39 +312,37 @@
   }
 
   window.onload = function() {
+    controls = $('#controls');
     if (SHOW_BUTTONS) { 
-      $back = $('#back');
-      $forward = $('#forward');
-      $reload = $('#reload');
-      $home = $('#home');
-      $terminate = $('#terminate');
-      $controls = $('#controls');
-      controls = $controls[0];
-      $locInput = $('#location');
-      locInput = $locInput[0];
-      $locForm = $('#location-form');
+      back = $('#back');
+      forward = $('#forward');
+      reload = $('#reload');
+      home = $('#home');
+      terminate = $('#terminate');
+      locInput = $('#location');
+      locForm = $('#location-form');
 
-      $back.click(function() {
+      back.onclick = function() {
         webview.back();
-      });
+      };
 
-      $forward.click(function() {
+      forward.onclick = function() {
         webview.forward();
-      });
+      }
 
-      $home.click(function() {
+      home.onclick = function() {
         navigateTo(appHome);
-      });
+      };
 
-      $reload.click(function() {
+      reload.onclick = function() {
         if (isLoading) {
           webview.stop();
         } else {
           webview.reload();
         }
-      });
+      };
 
-      $reload.bind(
+      reload.addEventListener(
           'webkitAnimationIteration',
           function() {
             if (!isLoading) {
@@ -353,20 +351,19 @@
           }
       );
 
-      $terminate.click(function() {
+      terminate.onclick = function() {
         webview.terminate();
-      });
+      };
 
-      $locForm.submit(function(e) {
+      locForm.onsubmit = function(e) {
         e.preventDefault();
         navigateTo(locInput.value);
-      });
+      };
     }
     else
-      $('#controls').remove();
+      controls.parentNode.removeChild(controls);
 
-    $webview = $('#webview');
-    webview = $webview[0];
+    webview = $('#webview');
     locInput.value = webview.src;
     appHome = webview.src;
     serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
@@ -407,7 +404,8 @@
     // send channelId on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
     webview.addEventListener('loadstop', sendChannelId);
     webview.addEventListener('permissionrequest', handlePermissionRequest);
-    $window.focus(changeVisibility).blur(changeVisibility);
+    window.addEventListener('focus', changeVisibility); // maybe use focusin/focusout?
+    window.addEventListener('blur', changeVisibility);
   };
 
   // var changeVisibility = _.debounce(function(e) {
