@@ -711,6 +711,18 @@ video.remoteVideo:after {
 .msg_sent .posted_on {
   text-align: right;
   clear: right;
+  color: rgb(207, 240, 158);
+  text-shadow: 0 1px 0 #757575;
+  background: rgba(0,0,0,0.5);
+  float: right;
+  padding: 5px;
+}
+.msg_recvd .posted_on {
+  color: #fff;
+  text-shadow: 0 1px 0 #757575;
+  background: rgba(0,0,0,0.5);
+  float: left;
+  padding: 5px;
 }
 .chat_msg.msg_sent .chat_copy {
   background-color: rgb(207, 240, 158);
