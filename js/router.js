@@ -1190,12 +1190,22 @@ define('router', [
 //        U.alert({msg: msg, persist: true});
 //      
 //      this.errMsg = null, this.info = null;
-      var params = U.getHashParams();
-      var info = params['-info'] || params['-gluedInfo'],
+      var params = U.getHashParams(),
+          info = params['-info'] || params['-gluedInfo'],
           error = params['-error'] || params['-gluedError'];
           
       if (info || error) {
         if (/^home\//.test(U.getHash())) {
+//          Events.trigger('headerMessage', {
+//            info: {
+//              msg: info,
+//              glued: info === params['-gluedInfo']
+//            },
+//            error: {
+//              msg: error,
+//              glued: error === params['-gluedError']
+//            }
+//          });
           var errorBar = $.mobile.activePage.find('#headerMessageBar');
           errorBar.html("");
           errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
@@ -1207,7 +1217,6 @@ define('router', [
             // so the dialog doesn't show again on refresh
             Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
           }
-
         }
       
         var data = {};

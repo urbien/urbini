@@ -7,6 +7,7 @@ define('views/HomePage', [
   'utils'
 ], function(G, Events, Backbone, Jas, U) {
   return Backbone.View.extend({
+    TAG: 'HomePage',
     first: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow', 'click');
@@ -24,7 +25,14 @@ define('views/HomePage', [
     events: {
       'pagehide': 'pagehide',
       'pagebeforeshow': 'pagebeforeshow',
-      'click': 'click' 
+      'click': 'click',
+      'click #installApp': 'installApp'
+    },
+    
+    installApp: function() {
+      U.require('firefox').done(function(Firefox) {
+        Firefox.install();
+      });
     },
 
     pagehide: function(e) {
@@ -69,8 +77,27 @@ define('views/HomePage', [
 //        $.mobile.initializePage();
 //      $(".demo").anystretch();
       this.first = false;
+
+      if (navigator.mozApps) {
+        var self = this;
+        var appSelf = navigator.mozApps.getSelf();
+        appSelf.onsuccess = function() {
+          if (appSelf.result) {
+            G.log(self.TAG, "events", "App installed!");
+            self.removeInstallBtn();
+          }
+        };
+      }
+      else {
+        this.removeInstallBtn();
+      }
+
 //      this.finish();
       return this;
+    },
+    
+    removeInstallBtn: function() {
+      this.$('#installApp').remove();
     }
   }, {
     displayName: 'HomePage'

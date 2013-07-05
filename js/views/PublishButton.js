@@ -8,7 +8,7 @@ define('views/PublishButton', [
   'views/BasicView',
   'cache'
 ], function(G, _, U, Events, Voc, BasicView, C) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug']; //, 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'installApp']; //, 'resetTemplate'];
   return BasicView.extend({
     template: 'publishBtnTemplate',
 //    events: {
@@ -37,6 +37,13 @@ define('views/PublishButton', [
 //      this.makeTemplate('resetTemplateButtonTemplate', 'resetTemplateTemplate', this.vocModel.type);
       return this;
     },
+    
+    installApp: function() {
+      U.require('firefox').done(function(Firefox) {
+        Firefox.install();
+      });
+    },
+    
 //    resetTemplate: function(e) {
 //      // toggle from "Reset to default" to "Undo Reset"
 //      var btn = e.currentTarget;

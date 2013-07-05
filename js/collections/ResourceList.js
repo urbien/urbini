@@ -364,6 +364,7 @@ define('collections/ResourceList', [
               m.set({'_lastFetchedOn': now}, {silent: true});
             });
             
+            self.trigger('endOfList');
             return;
           default:
             err();

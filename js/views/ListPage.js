@@ -143,6 +143,13 @@ define('views/ListPage', [
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       this.addChild('listView', new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options)));
       this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
+      this.on('endOfList', function() {
+        this.$('#nextPage').hide();
+      }.bind(this));
+      
+      this.on('newList', function() {
+        this.$('#nextPage').show();
+      }.bind(this));
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])

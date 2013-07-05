@@ -14,7 +14,7 @@ define('views/Header', [
 //  'views/MenuButton',
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
-  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate'];
+  var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
     template: 'headerTemplate',
@@ -204,8 +204,10 @@ define('views/Header', [
       'click #moreRanges'         : 'showMoreRanges',
       'click #backToCall'         : 'backToCall',
       'click #hangUp'             : 'hangUp',
+//      'click #installApp'         : 'installApp',
       'click #sendToCall'         : 'sendToCall'
     },
+    
     fileUpload: function(e) {
       Events.stopEvent(e);      
       debugger;
@@ -350,6 +352,10 @@ define('views/Header', [
     },
 
     calcSpecialButtons: function() {
+      var commonTypes = G.commonTypes,
+          res = this.resource,
+          self = this;
+      
       if (this.isEdit || this.isChat)
         return;
 
@@ -357,8 +363,6 @@ define('views/Header', [
         this[btnName] = false;
       }.bind(this));
       
-      var commonTypes = G.commonTypes;
-      var res = this.resource;
       if (res  &&  !this.isAbout) {
 //        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
 //          var tName = res.get('templateName');
@@ -377,6 +381,19 @@ define('views/Header', [
           if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
             this.doTry = true;
             this.forkMe = true;
+          }
+          
+          if (G.inFirefoxOS && navigator.mozApps) {
+            debugger;
+            var appSelf = navigator.mozApps.getSelf();
+            appSelf.onerror = function() {
+              debugger;
+              self.installApp = true;
+            };
+            
+            appSelf.onsuccess = function() {
+              debugger;
+            };
           }
         }
 

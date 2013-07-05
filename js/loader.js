@@ -358,7 +358,10 @@ define('globals', function() {
           defer.resolve();
         }
         else if (source === 'indexedDB') {
-          G.onAppStart().done(function() {            
+          if (G.dbType === 'none')
+            return $.Deferred().reject().promise();
+                
+          G.onAppStart().done(function() {
             G.ResourceManager.$db.transaction(['modules'], 1).progress(function(trans) {
               var modStore = trans.objectStore('modules', 1);
               for (var url in urlToData) {
@@ -404,14 +407,19 @@ define('globals', function() {
     },
     dbType: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
+      if (true)
+        return 'none';
+      
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB;
       if (using) {
         if (window.openDatabase) {
           console.debug('using indexeddb shim');
           return 'shim'
         }
-        else
+        else {
+          console.debug('local db is not supported');
           return 'none';
+        }
       }
       else {
         var pre = G.bundles.pre.js,
@@ -1392,7 +1400,7 @@ require(['globals'], function(G) {
             G.finishedTask('loading post-bundle');
             G.startedTask('loading extras-bundle');
             G.onAppStart().done(function() {            
-              G.loadBundle(extrasBundle, {source: 'indexedDB', async: true}).done(function() {
+              G.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
                 extrasBundle._deferred.resolve();
               });
             });

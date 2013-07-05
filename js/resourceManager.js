@@ -125,12 +125,12 @@ define('resourceManager', [
         
         $.when.apply($, dfds).always(function() {        
           defer.resolve(returnObj ? items[0] : items);
-        })
+        });
       });
     }).promise();
   },
   
-  Index = idbq.Index,
+  Index = idbq && idbq.Index,
   REF_STORE = {
     name: 'ref',
     indices: {
@@ -335,7 +335,6 @@ define('resourceManager', [
     });
   };
   
-  Lablz.idbq = idbq;
   var RM;
   var ResourceManager = RM = {
     TAG: 'Storage',
@@ -566,6 +565,9 @@ define('resourceManager', [
      * If you want to upgrade, pass in a version number, or a store name, or an array of store names to create
      */
     openDB: function(options) {
+      if (G.dbType === 'none')
+        return $.Deferred().reject().promise();
+      
       if (G.databaseCompromised) {
         G.log(RM.TAG, 'db', 'user changed, cleaning database');
         var dfd = $.Deferred();

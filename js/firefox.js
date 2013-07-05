@@ -216,6 +216,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     },
     install: function() {
       var req = navigator.mozApps.install(G.serverName + '/FirefoxApp/NursMe/manifest.webapp', null);
+//      var req = navigator.mozApps.install(G.currentApp.firefoxManifest, null);
       req.onerror = function(e) {
         debugger;
         console.log("Error installing app : " + req.error.name);

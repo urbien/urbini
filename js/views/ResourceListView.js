@@ -15,7 +15,7 @@ define('views/ResourceListView', [
     displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
-    skipScrollEvent: false,
+//    skipScrollEvent: false,
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
@@ -445,6 +445,14 @@ define('views/ResourceListView', [
       this.numDisplayed = 0;
       var self = this;
       var col = this.filteredCollection = this.collection.clone();
+      this.filteredCollection.on('endOfList', function() {
+        this.pageView.trigger('endOfList');
+      }.bind(this));
+      
+      this.filteredCollection.on('reset', function() {
+        this.pageView.trigger('newList');
+      }.bind(this));
+      
       _.each(['updated', 'added', 'reset'], function(event) {
         self.stopListening(col, event);
         self.listenTo(col, event, function(resources) {
@@ -510,14 +518,18 @@ define('views/ResourceListView', [
         return;
       
       var $wnd = $(window);
-      if (this.skipScrollEvent) // wait for a new data portion
-        return;
+      if ($wnd.scrollTop() > 20)
+        this.skipScrollEvent = true;
+        
+//      if (this.skipScrollEvent) // wait for a new data portion
+//        return;
       
       // scroll up - no need to fetch new portion of data
       if (this.prevScrollPos > $wnd.scrollTop()) {
         this.prevScrollPos = $wnd.scrollTop();
         return;
       }
+      
       this.prevScrollPos = $wnd.scrollTop();
       
       // get next page
@@ -527,31 +539,32 @@ define('views/ResourceListView', [
       if ($m.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
         return;
       
-      var self = this;
+//      var self = this;
       // order is important, because view.getNextPage() may return immediately if we have some cached rows
       // if scrollTop is near to zero then it is "initial" next page retriving not by a user
-      if ($wnd.scrollTop() > 20) {  
-        this.skipScrollEvent = true; 
-//        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
-      }
+//      if ($wnd.scrollTop() > 20) {  
+//        this.skipScrollEvent = true; 
+////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+//      }
+      
       this.getNextPage();
     },
     
-    resumeScrollEventProcessing: function () {
-      this.skipScrollEvent = false;
-      this.hideLoadingIndicator();
-    },
+//    resumeScrollEventProcessing: function () {
+//      this.skipScrollEvent = false;
+//      this.hideLoadingIndicator();
+//    },
 
     // masonry bricks alignment
     onNewItemsAppend: function() {
       var hash = window.location.hash;
       if (hash.indexOf('make') == 1  ||  hash.indexOf('edit') == 1) {
-        this.resumeScrollEventProcessing();
+//        this.resumeScrollEventProcessing();
         return;
       }
       // no masonry or masonry is hidden
       if (!this.hasMasonry() || this.$el.width() == 0) {
-        this.resumeScrollEventProcessing();
+//        this.resumeScrollEventProcessing();
         return;
       }
       
@@ -607,12 +620,12 @@ define('views/ResourceListView', [
       if (needToReload) {
         this.$el.masonry('reload');
         if (hasImgSize) {
-          this.resumeScrollEventProcessing();
+//          this.resumeScrollEventProcessing();
         }
         else  {
           this.$el.imagesLoaded( function(){ 
             self.$el.masonry('reload'); 
-            self.resumeScrollEventProcessing(); 
+//            self.resumeScrollEventProcessing(); 
           });
         }
           
@@ -623,12 +636,12 @@ define('views/ResourceListView', [
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
         if (hasImgSize) {
           this.$el.masonry();
-          this.resumeScrollEventProcessing();
+//          this.resumeScrollEventProcessing();
         }
         else {  
           this.$el.imagesLoaded( function(){ 
             self.$el.masonry(); 
-            self.resumeScrollEventProcessing(); 
+//            self.resumeScrollEventProcessing(); 
           });
         }
         
@@ -645,12 +658,12 @@ define('views/ResourceListView', [
       // filter unaligned "bricks" which do not have calculated, absolute position 
       if (hasImgSize) {
         this.$el.masonry('appended', $newBricks);
-        this.resumeScrollEventProcessing();
+//        this.resumeScrollEventProcessing();
       }
       else  
         this.$el.imagesLoaded( function(){ 
           self.$el.masonry('appended', $newBricks); 
-          self.resumeScrollEventProcessing(); 
+//          self.resumeScrollEventProcessing(); 
         });
       
       this.$el.trigger('create');      

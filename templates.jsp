@@ -35,10 +35,11 @@
   
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <!-- "Next" button removed after endless page introduction -->
+     <!-- "Next" button removed after endless page introduction>
      {{ if (this.collection.length > this.collection.perPage) { }}
        <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
      {{ }                                                       }}
+     -->
   </div>
 </script>  
  
@@ -932,6 +933,11 @@
   <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">Goto app</a>
 </script>
 
+<script type="text/template" id="installAppBtnTemplate">
+  <!-- button that installs a given app when clicked -->
+  <a target="#" data-icon="plus-sign" id="installApp" data-role="button" data-position="notext" style="background:#0F0;color:#FFF">Install</a>
+</script>
+
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
   <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">Fork me</a>
@@ -1012,6 +1018,11 @@
         <div style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
+          {{ } }}
+        </div>
+        <div style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
+          {{ if (obj.installApp) { }}
+            {{= installApp }}
           {{ } }}
         </div>
         <div style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
