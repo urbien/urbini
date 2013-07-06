@@ -2,24 +2,28 @@
   "name": "Nurse Me",
   "type": "privileged",
   "developer": {
-		"name": "Urbien",
-		"url": "http://urbien.com"
+     "name": "Urbien",
+     "url": "http://urbien.com"
   },
   "description": "Video nurse hotline",
   "icons": {
     "16": "/icon_16.png",
     "128": "/icon_128.png"
   },
+  "installs_allowed_from": [
+    "*"
+  ],
   "launch_path": "/index.html",
-	"messages": [
-	   { "push": "/index.html" },
-	   { "push-register": "/index.html" }
-	],
-	"permissions": {
-	  "push": {},
-	  "storage": {},
-	  "desktop-notification": {},
-	  "browser": {},
-	  "geolocation": {}
-	}
+  "appcache_path": "/manifest.appcache",
+     "messages": [
+        { "push": "/index.html" },
+        { "push-register": "/index.html" }
+     ],
+  "permissions": {
+    "push":                 {"description": "to wake up this app from the server"},
+    "storage":              {"description": "for storing scripts and data to be able to work offline"},
+    "desktop-notification": {"description": "to inform the user about incoming video calls, etc."},
+    "browser":              {"description": "to embed the part of the app that changes often on the web site, and thus avoid constant updates of the installed part of the app"},
+    "geolocation":          {"description": "to show things that surround user at his current location"}
+  }
 }
