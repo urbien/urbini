@@ -1474,7 +1474,9 @@ define('resourceManager', [
       
       if (orderBy && orderBy.length) {
         if (query) {  
-          var distanceProp = positionProps.distance;
+          var distanceProp = prepPropNameForDB(positionProps.distance);
+          latProp = prepPropNameForDB(latProp);
+          lonProp = prepPropNameForDB(lonProp);
           for (var i = 0; i < orderBy.length; i++) {
             var oProp = orderBy[i].shortName;
             if (oProp === distanceProp) {
