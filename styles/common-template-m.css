@@ -436,7 +436,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   background: #ddd;
   border-top: 1px solid #777;
 }
-
+#headerDiv .ui-bar-c h4 {
+  color: #757575;
+}
 #callInProgress {
   text-align: center;
 /*  color: #FFF; */

@@ -1082,11 +1082,13 @@ define('utils', [
     },
     
     getParamMap: function(str, delimiter) {
+      var map = {};
+      if (!str)
+        return map;
       var qIdx = str.indexOf('?');
       if (qIdx != -1)
         str = str.slice(qIdx + 1);
         
-      var map = {};
       _.each(str.split(delimiter || "&"), function(nv) {
         nv = nv.split("=");
         if (nv.length == 2)
@@ -1641,7 +1643,7 @@ define('utils', [
           if (isDisplayName)
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000)
-            val = "<span style='opacity:0.5;'>" + val + "</span>";
+            val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
           else
             val = "<span>" + val + "</span>";
         }
@@ -1687,7 +1689,6 @@ define('utils', [
      * @return given the value of the app's App._appPath property, sth like AppName
      */
     getAppPath: function(type) {
-//      return type.match(/\/([^\/]+)\/([^\/]+)$/)[1];
       var parts = type.split('/');
       return parts[parts.length - 2];
     },
@@ -2331,7 +2332,7 @@ define('utils', [
     },
     
     makeHeaderTitle: function(pre, post) {
-      return pre === post ? pre : pre + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + post;
+      return pre === post ? pre : pre + "&#160;<span style='padding: 0 7px;' class='ui-icon-caret-right'></span>&#160;" + post;
     },
 //    removeUnquotedWhitespace: function(text) {
 //      qStack = [];
@@ -3175,6 +3176,7 @@ define('utils', [
      * sends a remote procedure call to the packaged app code
      */
     rpc: function(method) {
+      G.log(U.TAG, 'app', method);
       var args = [].slice.call(arguments, 1),
           msg = {
               type: 'rpc:' + method

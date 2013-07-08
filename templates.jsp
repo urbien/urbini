@@ -998,7 +998,7 @@
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
 <!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
-      <h4 id="pageTitle" style="color: #757575; font-weight:normal; margin-top:4px;">{{= this.title }}</h4>
+      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}
@@ -1424,7 +1424,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 50px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px;"/>
+      style="padding-left: 55px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >

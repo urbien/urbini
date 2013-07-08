@@ -588,10 +588,21 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      if (!this.noButton  &&  !this.categories  &&  !this.moreRanges) {
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
         this.$el.find('#name').removeClass('resTitle');
-        this.$el.find('#pageTitle').css('margin-bottom', '0px');
+        if (this.resource) {
+          var pt = this.$el.find('#pageTitle');
+          if (pt) {
+            pt.css('padding-bottom', '4px');
+            pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
+          }
+        }
+        /* this.$el.find('#pageTitle').css('margin-bottom', '0px'); */
       }
+      if (this.noButtons) 
+        this.$el.find('h4').css('margin-top', '10px');
+      else
+        this.$el.find('h4').css('margin-top', '4px');
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');
