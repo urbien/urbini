@@ -1,6 +1,6 @@
 urbini
 ======
-Urbien is building a new network, network of apps. Mobile apps. Mobile web apps.
+Urbini is a foundation for a new network, network of apps. Mobile apps. Mobile web apps.
 
 Appnet
 =======
