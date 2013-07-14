@@ -8,13 +8,13 @@ Since the birth of the Web there existed a rip in its fabric. A fault, that fuel
 
 It is certainly much easier to create an amazing user experience with all the data under your app's control. What if websites and apps could have their independent existence, yet could meet other apps in one homogeneous, secure and neutral environment. 
 
-Before the Internet, computers were isolated and weak. This is the state of the apps today. There is a million apps and about 10,000 of them offer APIs. It is as if 0.1% of computers could connect and each had its own unique protocol.
+Before the Internet, computers were isolated and weak. This is the state of the apps today. There are a million apps and about 10,000 of them offer APIs. It is as if 0.1% of computers could connect and each had its own unique protocol.
 
-Urbini is a way to universally connect any and all apps. Much like Facebook, Urbini provides an open data graph for all apps to tap into. The difference is that the graph, and the inter-app connectivity based on it, are on your own device, not in the datacenter, controlled by one company, a place that government agencies have a way to tap into.
+Urbini is a way to universally connect any and all apps. Much like Facebook, Urbini provides an open data graph for all apps to tap into. The difference is that the graph, and the inter-app connectivity based on it, are on your own device, not in the datacenter. You control access to your own data instead of a faceless company that government agencies have a way to tap into.
 
 Urbini loads the graph using Web APIs provided by the apps and synchronizes the new data back to the respective web sites. Synchronization works automatically and in real-time. In a tribute to the Internet, we call it Appnet.
 
-Graph is a local datastore on the device, and thus allows developers create responsive and rich user experiences, both in online and an offline mode. And this power grows exponentially as apps join into the Appnet around the graph. This way Urbini offers web apps a major advantage over native apps, yet it is open and inclusive. It allows any app that has Web API to join the Appnet.
+Graph is a local datastore on the device, and thus allows developers to create responsive and rich user experiences, both in online and an offline mode. And this power grows exponentially as apps join into the Appnet around the graph. This way Urbini offers web apps a major advantage over native apps, yet it is open and inclusive. It allows any app that has Web API to join the Appnet.
 
 Appnet is a new app dev paradigm. The best part of it is that it allows the kind of app dev automation that was not possible before, thus opening the doors to the kind of creative people who were scratching their itch with IFTTT, but never quenched their thirst.
 
