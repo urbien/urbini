@@ -5,12 +5,16 @@ Urbini is a foundation for a new network, network of apps. Mobile apps. Mobile w
 Appnet
 =======
 See an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet).
-Developers can think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps Appnet offers a unified method of mapping any web api into a browser-based database, so that app dev that uses data from multiple sites is greatly simplified.
+Think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site.
 
 Here are the steps:
 1. Use mobile/tablet browser create an App on http://Urbien.com. In desktop browser go to http://urbien.com/app/UrbienApp. Then click on App gallery and click on + icon in navbar.
+
 2. Using a browser define backbone model(s) that will be created from a WebAPI.
-3. Each model has a property sync. Paste in it an adapter script that will map json returned by WebAPI into backbone model objects. See Urbien Groupon app as a sample.
+
+3. Each model has a property sync. Paste into it an adapter script that will map json returned by site's WebAPI into backbone model objects. See Urbien Groupon app as a sample.
+
+4. Anyone can create an app, models and adapter for someone else's site. Anyone can create IFTTT-like connectors between apps using simple JavaScript.
 
 App dev for the rest of us
 ======================
