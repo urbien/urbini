@@ -4,19 +4,13 @@ Urbini is a foundation for a new network, network of apps. Mobile apps. Mobile w
 
 Appnet
 =======
-Since the birth of the Web there existed a rip in its fabric. A fault, that fuels the drive to aggregate things in one place, against the very nature of the Web.
+See an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet).
+Developers can think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps Appnet offers a unified method of mapping any web api into a browser-based database, so that app dev that uses data from multiple sites is greatly simplified.
 
-It is certainly much easier to create an amazing user experience with all the data under your app's control. What if websites and apps could have their independent existence, yet could meet other apps in one homogeneous, secure and neutral environment. 
-
-Before the Internet, computers were isolated and weak. This is the state of the apps today. There are a million apps and about 10,000 of them offer APIs. It is as if 1% of computers could connect and each had its own unique protocol.
-
-Urbini is a way to universally connect any and all apps. Much like Facebook, Urbini provides an open data graph for all apps to tap into. The difference is that the graph, and the inter-app connectivity based on it, are on your own device, not in the datacenter. You control access to your own data instead of a faceless company that government agencies have a way to tap into.
-
-Urbini loads the graph using Web APIs provided by the apps and synchronizes the new data back to the respective web sites. Synchronization works automatically and in real-time. In a tribute to the Internet, we call it Appnet.
-
-Graph is a local datastore on the device, and thus allows developers to create responsive and rich user experiences, both in online and an offline mode. And this power grows exponentially as apps join into the Appnet around the graph. This way Urbini offers web apps a major advantage over native apps, yet it is open and inclusive. It allows any app that has Web API to join the Appnet.
-
-Appnet is a new app dev paradigm. The best part of it is that it allows the kind of app dev automation that was not possible before, thus opening the doors to the kind of creative people who were scratching their itch with IFTTT, but never quenched their thirst.
+Here are the steps:
+1. Use mobile/tablet browser create an App on http://Urbien.com. In desktop browser go to http://urbien.com/app/UrbienApp. Then click on App gallery and click on + icon in navbar.
+2. Using a browser define backbone model(s) that will be created from a WebAPI.
+3. Each model has a property sync. Paste in it an adapter script that will map json returned by WebAPI into backbone model objects. See Urbien Groupon app as a sample.
 
 App dev for the rest of us
 ======================
