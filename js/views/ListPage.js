@@ -69,9 +69,20 @@ define('views/ListPage', [
         }.bind(this));
       }      
 
-      var showAddButton = !isChooser  &&  (type.endsWith('/App') || 
-                           U.isAnAppClass(type)                   || 
-                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
+      var showAddButton;
+      if (!isChooser) {
+        showAddButton = type.endsWith('/App')                      || 
+                        U.isAnAppClass(type)                       ||
+                        vocModel.properties['autocreated']         ||
+                        vocModel.skipAccessControl                 ||
+                        U.isUserInRole(U.getUserRole(), 'siteOwner');
+        if (!showAddButton) {
+          var p = U.getContainerProperty(vocModel);
+          if (p && U.getParamMap[p])
+            showAddButton = true;
+        }
+      }
+//                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
       if (showAddButton) { 
         if (U.isA(this.vocModel, "Reference"))
           showAddButton = false;
