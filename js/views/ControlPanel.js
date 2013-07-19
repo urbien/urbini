@@ -252,10 +252,11 @@ define('views/ControlPanel', [
                _problematic: iRes.get('_error')
              }
             params.name = U.getDisplayName(iRes);
+
+            var grid = U.getCols(iRes, 'grid', true);
             if (U.isAssignableFrom(iRes.vocModel, 'Intersection')) {  
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
               var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
-              var pmeta = iRes.vocModel.properties;
               if (a == meta[name].backLink) {
                 params.name = iRes.get(b + '.displayName');
                 params.img = iRes.get('bThumb');
@@ -264,7 +265,26 @@ define('views/ControlPanel', [
                 params.name = iRes.get(a + '.displayName');
                 params.img = iRes.get('aThumb');
               }
+              if (grid) {
+                var gridCols = '';
+                var aLabel = iRes.vocModel.properties[a].displayName;
+                var bLabel = iRes.vocModel.properties[b].displayName;
+                for (var row in grid) {
+                  if (row != aLabel  &&  row != bLabel)
+                    gridCols += grid[row].value;
+                }
+                if (gridCols)
+                  params.gridCols = gridCols;
+              }
             }
+            else if (grid) {
+              var gridCols = '';
+              for (var row in grid) 
+                gridCols += grid[row].value;
+              
+              params.gridCols = gridCols;
+            }
+
             params._uri = U.isAssignableFrom(iRes.vocModel, 'Intersection') ? U.makePageUrl('view', iRes.getUri(), {title: params.name}) : U.makePageUrl('edit', iRes.getUri(), {title: params.name});
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
