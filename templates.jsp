@@ -50,9 +50,9 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div class="ui-grid-a" style="width: 100%;padding-right:10px">
+    <div class="ui-grid-a" style="width: 100%;padding-right:10px;">
       <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
-      <div id="mainGroup" class="ui-block-b" style="min-width: 130px"></div>
+      <div id="mainGroup" class="ui-block-b" style="min-width: 130px;padding-left:7px;"></div>
       <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
@@ -345,11 +345,11 @@
 </script>
 
 <script type="text/template" id="audioPlayerTemplate">
-  <audio controls>
-    _.each(sources, function(source) {      
+  <audio controls style="padding:20px 0 5px 13px;">
+{{    _.each(sources, function(source) { }}      
       <source src="{{= source }}" type="{{= 'audio/' + source.slice(source.lastIndexOf('.') + 1) }}">
       Your browser does not support this audio player
-    });
+{{    }); }}
   </audio>
 </script>
 
@@ -536,7 +536,10 @@
     {{ if (isJst) { }}
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
-    {{ if (!isJst) { }}
+    {{ if (!isJst  &&  obj._hasSubmittedBy) { }}
+      style="min-height:59px;"
+    {{ } }}
+    {{ if (!isJst  &&  !obj._hasSubmittedBy) { }}
       style="min-height:39px;"
     {{ } }}
   {{ } }}
@@ -546,7 +549,7 @@
   >
    <!-- data-uri="{{= liUri }}" -->
   {{= viewCols }}
-  </div>
+  
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
      {{= price.currency + price.value }}
@@ -566,6 +569,7 @@
   {{ if (obj.comment) { }}
     <p>{{= comment }}</p>
   {{ } }}
+  </div>
   </div>
 </script>
 
@@ -690,8 +694,11 @@
 <!-- one row of an inline backlink in view mode -->
 <li>
   <i class="icon-home"></i>
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= obj.gridCols ? gridCols : name }}
-      <img src="{{= typeof img != 'undefined' ? (img.indexOf('/Image') == 0 ? img.slice(6) : img) : 'icons/blank.png'}}" 
+  
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
+    {{ if (obj.img) { }}
+      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" />
+    {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
@@ -1204,7 +1211,7 @@
       <input name="-$action" type="hidden" value="upload" />
       <input name="type" type="hidden" value="{{= type }}" />
       <input name="location" type="hidden" value="{{= G.serverName + '/wf/' + location }}" />
-      <input name="$returnUri" type="hidden" value="{{= window.location.hash }}" />
+      <input name="$returnUri" type="hidden" value="{{= window.location.href }}" />
     </div>
   </form>
 </script>
@@ -1330,8 +1337,9 @@
 <script type="text/template" id="mvListItem">
   <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
+  
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
-  <label for="{{= id }}">{{= davDisplayName }}</label>
+  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img style="float:right;max-height:40px;" src="' + _thumb + '" />' : '' }}--></label>
 </script>
 
 <script type="text/template" id="interfacePropTemplate">
@@ -1395,10 +1403,10 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
-    <{{= isInput ? 'input' : 'textarea rows="10" cols="20" ' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
-    <{{= isInput ? 'input' : 'textarea  style="width: 100%" rows="10"' }} type="{{= typeof type === 'undefined' ? 'text' : type }}" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea  style="width: 100%" rows="10"' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
 </script>
 
