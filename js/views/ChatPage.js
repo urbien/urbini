@@ -661,8 +661,10 @@ define('views/ChatPage', [
       }
       else
         $goodies.css({top: 'auto', left: 'auto'});
-      
-      $goodies.css('z-index', 1002);
+      if (this._videoSolid)
+        $goodies.css('z-index', 1002);
+      else
+        $goodies.css('z-index', -100);
     },
 
     paintConcentricStats: function(divId, options) {
