@@ -39,7 +39,8 @@ define('views/ResourceImageView', [
       
       var res = this.resource;
       this.isVideo = res.isA('VideoResource');
-      this.isAudio = res.isA('AudioResource');
+      this.isAudioResource = res.isA('AudioResource');
+      this.isAudio = res.isAssignableFrom('Audio')  ||  this.isAudioResource;
       this.isImage = res.isA('ImageResource');
       this.resource.on('change', this.refresh, this);
       return this;
@@ -174,7 +175,7 @@ define('views/ResourceImageView', [
         return this.renderVideo();
       }
       else if (this.isAudio) {
-        var audio = res.get('AudioResource.audio');
+        var audio = this.isAudioResource ? res.get('AudioResource.audio') : res.get('_uri');
         if (audio) {
           this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
 //          return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);
