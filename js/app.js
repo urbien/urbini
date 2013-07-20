@@ -100,7 +100,64 @@ define('app', [
   
         var templatesDfd = $.Deferred(),
             templatesPromise;
+
+        var accountsDfd = $.Deferred(),
+            accountsPromise = accountsDfd.promise();
+
+        function getAppAccounts() {
+          var consumers = G.currentApp.dataConsumerAccounts || [],
+              providers = G.currentApp.dataProviders || [],
+              accesses = G.currentApp.dataAccesses || [],
+              providerType = "model/social/AppProviderAccount",
+              consumerType = "model/social/AppConsumerAccount",
+              accessType = "model/social/AppConsumerAccount";
+          
+          var models = [];
+          if (providers.length)
+            models.push(providerType);
+          if (consumers.length)
+            models.push(consumerType);
+          if (accesses.length)
+            models.push(accessType);
+          
+          if (!models.length) {
+            accountsDfd.resolve();
+            return accountsPromise;
+          }
+          
+          Voc.getModels(models).done(function() {
+            if (providers.length) {
+              G.currentApp.dataProviders = new ResourceList(providers, {
+                model: U.getModel(providerType)
+              });
+            };
+
+            if (consumers.length) {
+              G.currentApp.dataConsumerAccounts = new ResourceList(consumers, {
+                model: U.getModel(consumerType),
+                params: {
+                  $in: 'provider,' + _.pluck(providers, '_uri').join(',')
+                }
+              });
+            };
+
+            if (accesses.length) {
+              G.currentApp.dataAccesses = new ResourceList(accesses, {
+                model: U.getModel(accessType), 
+                params: {
+                  $not: $param({
+                    $in: 'appAccount,' + _.pluck(consumers, '_uri').join(',')
+                  })
+                }
+              });
+            }
             
+            accountsDfd.resolve();
+          });
+          
+          return accountsPromise;
+        };
+        
         function getTemplates() {
           var jstType = G.commonTypes.Jst;
           var jstModel = U.getModel(jstType);
@@ -180,7 +237,7 @@ define('app', [
         
         App.setupWorkers();
         App.setupCleaner();
-        loadModels();
+        getAppAccounts().always(loadModels);
         G.checkVersion();
         Templates.loadTemplates();
         extendMetadataKeys();
