@@ -71,6 +71,8 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       title: "Client Waiting",
       message: "There's a client waiting to be assisted in the lobby",
       iconUrl: 'icon_128.png'
+    }, function() {
+      console.log("created notification");
     });
     
     chrome.notifications.onClicked(function(notificationId) {
@@ -124,6 +126,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     },
     _setup: function() {      
       Events.on('messageFromApp:push', onpush);
+      Events.on('messageToApp', sendMessageToApp);
       var installedApps = G.currentUser.installedApps,
           currentApp = G.currentApp,
           channelId = G.pushChannelId,
@@ -144,6 +147,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     }
   };
   
+  window.addEventListener('message', onMessageFromApp);
   setPaths(chrome);
   window.addEventListener('message', onMessageFromApp);
   Events.on('messageToApp', sendMessageToApp);
