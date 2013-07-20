@@ -38,7 +38,7 @@ define('globals', function() {
 
   var G = Lablz,
       browser = G.browser = $.browser,
-      ALL_IN_APPCACHE,
+      ALL_IN_APPCACHE = true,
       hash = window.location.href.split('#')[1],
       query = hash && hash.split('?')[1];
   
@@ -51,7 +51,7 @@ define('globals', function() {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
     
-    var idx = text.indexOf('//# sourceURL');
+    var idx = text.indexOf('//@ sourceURL');
     idx = idx == -1 ? 0 : idx;
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
@@ -117,7 +117,7 @@ define('globals', function() {
         
       switch (ext) {
         case '.css':
-          text += '\r\n/*//# sourceURL=' + url + '*/';
+          text += '\r\n/*//@ sourceURL=' + url + '*/';
           if (appcache[name])
             G.linkCSS(G.serverName + '/' + url);
           else
@@ -137,8 +137,8 @@ define('globals', function() {
         default:
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          text += '\n//# sourceMappingURL=' + url + '.map';
-          text += '\n//# sourceURL=' + url;
+//          text += '\n//@ sourceMappingURL=' + url + '.map';
+          text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
             text += '*/\n';
 
@@ -762,6 +762,11 @@ define('globals', function() {
           color: '#88FFFF',
           bg: '#000'
         },
+        app: {
+          on: true,
+          color: '#88FFFF',
+          bg: '#000'
+        },
         db: {
           on: false,
           color: '#FFFFFF',
@@ -1235,6 +1240,7 @@ define('globals', function() {
 
   if (browser.chrome || browser.firefox) {
     var param = browser.chrome ? '-webview' : '-ffiframe';
+//    setParent();
     if (hasLocalStorage) {
       if (localStorage.getItem(param) === 'y') {
         setParent();
