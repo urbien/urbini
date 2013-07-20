@@ -38,7 +38,7 @@ define('globals', function() {
 
   var G = Lablz,
       browser = G.browser = $.browser,
-      ALL_IN_APPCACHE,
+//      ALL_IN_APPCACHE,
       hash = window.location.href.split('#')[1],
       query = hash && hash.split('?')[1];
   
@@ -48,10 +48,10 @@ define('globals', function() {
   browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
 
   function addModule(text) {
-  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
+  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection
     
-    var idx = text.indexOf('//# sourceURL');
+    var idx = text.indexOf('//@ sourceURL');
     idx = idx == -1 ? 0 : idx;
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
@@ -117,7 +117,7 @@ define('globals', function() {
         
       switch (ext) {
         case '.css':
-          text += '\r\n/*//# sourceURL=' + url + '*/';
+          text += '\r\n/*//@ sourceURL=' + url + '*/';
           if (appcache[name])
             G.linkCSS(G.serverName + '/' + url);
           else
@@ -137,8 +137,8 @@ define('globals', function() {
         default:
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          text += '\n//# sourceMappingURL=' + url + '.map';
-          text += '\n//# sourceURL=' + url;
+          text += '\n//@ sourceMappingURL=' + url + '.map';
+          text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
             text += '*/\n';
 
@@ -164,7 +164,7 @@ define('globals', function() {
         url = url.replace(/\.js$/, '');
   
       var inAppcache = realPath = G.getFromAppcacheBundle(url);
-      if (inAppcache) {
+      if (inAppcache || (G.inFirefoxOS && G.minify)) {
         var path = G.requireConfig.paths[name] || name;
         if (!/\.(jsp|css|html)$/.test(url)) {
           orgLoad(name, url.replace(path, realPath));
@@ -1234,14 +1234,18 @@ define('globals', function() {
   }
 
   if (browser.chrome || browser.firefox) {
-    var param = browser.chrome ? '-webview' : '-ffiframe';
+    var param = browser.chrome ? '-webview' : '-ffiframe';    
     if (hasLocalStorage) {
       if (localStorage.getItem(param) === 'y') {
         setParent();
       }
     }
     
-    if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
+    if (navigator.mozApps) {
+      setParent();          
+      G.localStorage.put(param, 'y');
+    }
+    else if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
       var params = query.split('&');
       for (var i = 0; i < params.length; i++) {
         var keyVal = params[i].split('=');
@@ -1255,7 +1259,7 @@ define('globals', function() {
     
     console.log('inWebview:', G.inWebview);
     console.log('inFFIframe:', G.inFirefoxOS);
-    ALL_IN_APPCACHE = G.inFirefoxOS;
+//    ALL_IN_APPCACHE = G.inFirefoxOS;
   }
 
   var bundles = G.bundles;
@@ -1271,8 +1275,8 @@ define('globals', function() {
           bt.splice(i, 1);
           
         G.files[info.name] = info;
-//        if (when === 'appcache') {
-        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
+        if (when === 'appcache') {
+//        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
           G.files.appcache[info.name] = info;
         }
       }

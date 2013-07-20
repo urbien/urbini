@@ -29,7 +29,8 @@ define('views/HomePage', [
       'click #installApp': 'installApp'
     },
     
-    installApp: function() {
+    installApp: function(e) {
+      Events.stopEvent(e);
       U.require('firefox').done(function(Firefox) {
         Firefox.install();
       });

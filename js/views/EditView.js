@@ -373,12 +373,13 @@ define('views/EditView', [
 
     chooser: function(e) {
       Events.stopEvent(e);
-      var el = e.target;
-      var prop = e.target.name;
+      var el = e.currentTarget;
+      var prop = el.name;
       // could be <span> or <label>
       if (!prop) {
-        prop = e.target.parentElement.name;
+        prop = e.currentTarget.parentElement.name;
       }
+      
       var self = this;
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
       var pr = vocModel.properties[prop];
@@ -424,7 +425,7 @@ define('views/EditView', [
           params.$forResource = uri;
         
         params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-        var mvList = (e.target.text || e.target.textContent).trim(); //e.target.innerText;
+        var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
         mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
         params['$' + prop] = mvList;
         var typeUri = U.getTypeUri(pr.lookupFromType);

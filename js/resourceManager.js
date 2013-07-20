@@ -6,8 +6,9 @@ define('resourceManager', [
   'taskQueue',
   'cache',
   'vocManager',
+  'collections/ResourceList',
   '__domReady__'
-].concat(Lablz.dbType == 'none' ? [] : 'queryIndexedDB'), function(G, U, Events, TaskQueue, C, Voc, __domReady__, idbq) {
+].concat(Lablz.dbType == 'none' ? [] : 'queryIndexedDB'), function(G, U, Events, TaskQueue, C, Voc, ResourceList, __domReady__, idbq) {
   var storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome,
       Blob = window.Blob,
       FileSystem,
@@ -777,6 +778,7 @@ define('resourceManager', [
     },
     
     addItems: function(items, classUri) {
+      items = [].slice.call(items);
       return $.Deferred(function(defer) {
         if (!items || !items.length) {
           defer.reject();
@@ -860,7 +862,10 @@ define('resourceManager', [
         
       RM.runTask(function() {
 //          RM.Index('__dirty').eq(1).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
-        var defer = this; 
+        if (RM.db.version <= 1)
+          return this.resolve();
+        
+        var defer = this;
         RM.Index('_problematic').neq(1).and(RM.Index('_dirty').eq(1)).getAll(RM.$db.objectStore(REF_STORE.name, 0)).done(function(results) {
           parse(results).done(function(results) {
             if (!results.length) {
@@ -1875,6 +1880,41 @@ define('resourceManager', [
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
+  });
+
+  Events.on('anonymousResource', function(baseResource, prop, res) {
+    if (arguments.length == 1)
+      res = baseResource;
+    
+    var type = res._uri ? U.getTypeUri(res._uri) : prop.range;
+    Voc.getModels(type).done(function() {
+      var model = U.getModel(type),
+          newRes = new model(res); // let it get cached
+      
+      if (prop)
+        baseResource.set(prop.shortName, newRes.getUri());
+    });
+  });
+
+  Events.on('newBackLink', function(baseResource, prop, backLinkData) {
+    var inline = prop.displayInline,
+        setting = inline ? '_settingInlineList' : '_settingBackLink';
+        range = U.getTypeUri(prop.range);
+        
+    if (baseResource[setting])
+      return;
+    
+    baseResource[setting] = true;
+    Voc.getModels(range).done(function() {
+      var model = U.getModel(range);
+//      _.map(backLinkData, function(res) { return new model(res); })
+      var rl = new ResourceList(backLinkData, {model: model, params: U.getListParams(baseResource, prop), parse: true}); // get this cached
+      if (inline)
+        baseResource.setInlineList(prop.shortName, rl);
+      
+      RM.addItems(rl.models);
+      baseResource[setting] = false;
+    });
   });
 
 //  /**

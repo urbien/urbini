@@ -32,6 +32,7 @@ define('router', [
       "chat/*path"                                             : "chat", 
       "chatPrivate/*path"                                      : "chat", 
       "chatLobby/*path"                                        : "chat", 
+      "login/*path"                                            : "login", 
       ":type/:backlink"                                        : "list"
     },
 
@@ -186,7 +187,7 @@ define('router', [
 //      }
       
       if (G.inFirefoxOS)
-        U.rpc('navigate', window.location.href);
+        U.rpc('setUrl', window.location.href);
       
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + G.pageRoot;
@@ -334,7 +335,10 @@ define('router', [
       var meta = model.properties;      
       var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       var cView = viewsCache[key];
-      if (list && cView) {
+      if (list) {
+        if (!cView)
+          cView = viewsCache[key] = new ListPage({model: list});
+        
         this.currentModel = list;
         cView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cView, _.extend({page: page}));
@@ -343,12 +347,10 @@ define('router', [
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
-      }      
+      }
       
       list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
-      var listView = new ListPage({model: list});
-      
-      this.CollectionViews[typeUri][key] = listView;
+      var listView = viewsCache[key] = new ListPage({model: list});
       listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
@@ -719,6 +721,16 @@ define('router', [
         var cached = views[oldUri];
         if (cached)
           views[newUri] = cached;
+      });
+    },
+    
+    login: function(path) {
+      var self = this;
+      this._requestLogin({
+        returnUri: U.getHashParams().$returnUri || G.appUrl,
+        onDismiss: function() {
+          self.goHome();
+        }
       });
     },
     
@@ -1353,6 +1365,17 @@ define('router', [
       return view;
     }
   });
-  
+ 
+//  var ViewCache = function(routes) {
+//    this.cache = {};
+//    for (var route in routes) {
+//      
+//    }  
+//  };
+//  
+//
+//  Router.viewCache = new ViewCache(_.clone(Router.routes));
+        
   return Router;
 });
+  

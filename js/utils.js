@@ -75,6 +75,68 @@ define('utils', [
   String.prototype.endsWith = function(str) {
     return this.slice(this.length - str.length) === str;
   };
+
+  var HTML = {
+    tag: function(name, content, attributes) {
+      return {
+        name: name, 
+        attributes: attributes, 
+        content: _.isArray(content) ? content : [content]
+      };
+    },
+    
+    toAttributesString: function(attributes) {
+      var result = [];
+      if (attributes) {
+        for (var name in attributes) { 
+          result.push(" " + name + "=\"" + HTML.escape(attributes[name]) + "\"");
+        }
+      }
+      
+      return result.join("");
+    },
+  
+    /**
+     * @param element: e.g. {
+     *  name: 'p',
+     *  attributes: {
+     *    style: 'color: #000'
+     *  },
+     *  content: ['Hello there'] // an array of elements 
+     * } 
+    **/
+    
+    toHTML: function(element) {
+      var pieces = [];
+      
+      // Text node
+      if (typeof element == "string") {
+        pieces.push(HTML.escape(element));
+      }
+      // Empty tag
+      else if (!element.content || element.content.length == 0) {
+        pieces.push("<" + element.name + HTML.toAttributesString(element.attributes) + "/>");
+      }
+      // Tag with content
+      else {
+        pieces.push("<" + element.name + HTML.toAttributesString(element.attributes) + ">");
+        _.each(element.content, HTML.toHTML);
+        pieces.push("</" + element.name + ">");
+      }
+      
+      return pieces.join("");
+    },
+  
+    escape: function(text) {
+      var replacements = [[/&/g, "&amp;"], [/"/g, "&quot;"],
+                          [/</g, "&lt;"], [/>/g, "&gt;"]];
+      _.each(replacements, function(replace) {
+        text = text.replace(replace[0], replace[1]);
+      });
+      
+      return text;
+    }
+  };
   
   var U = {
     TAG: 'Utils',
@@ -101,6 +163,8 @@ define('utils', [
           
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
+      opts.headers = opts.headers || {};
+      opts.headers['X-Referer'] = G.appUrl;
       return new $.Deferred(function(defer) {
         // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
         defer.always(function() {
@@ -207,18 +271,11 @@ define('utils', [
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if (status != 'success') {
-              defer.reject(jqXHR, status, opts);
-              return;
-            }
-            
-            if (jqXHR.status < 400) {
+          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {            
+            if (jqXHR.status < 400)
               defer.resolve(data, status, jqXHR);
-              return;
-            }
-            
-            defer.reject(jqXHR, data && data.error || {status: jqXHR.status}, opts);
+            else
+              defer.reject(jqXHR, data && data.error || {status: jqXHR.status}, opts);
           }, 
           function(jqXHR, status, err) {
 //            debugger;
@@ -2395,6 +2452,22 @@ define('utils', [
     isTempUri: function(uri) {
       return uri && uri.indexOf("?__tempId__=") != -1;
     },
+    buildUri: function(atts, model) {
+      if (U.isModel(atts)) {
+        model = atts.vocModel;
+        atts = atts.attributes;
+      }
+
+      var primaryKeys = U.getPrimaryKeys(model),
+          keyVals = _.pick(atts, primaryKeys);
+      
+      for (var key in keyVals) {
+        if (typeof keyVals[key] == 'undefined')
+          return null;
+      }
+      
+      return G.sqlUrl + '/' + model.type.slice(7) + '?' + $.param(keyVals);
+    },
     makeTempUri: function(type, id) {
       return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
     },
@@ -2508,7 +2581,6 @@ define('utils', [
       }
         
       return {
-        ___query___: true,
         name: name, 
         op: op || U.DEFAULT_WHERE_OPERATOR, 
         value: val
@@ -3255,12 +3327,55 @@ define('utils', [
       return {
         action: U.getRouteAction(route),
         route: route,
-        uri: uri == 'profile' ? uri : U.getLongUri1(uri),
+        uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
         type: U.getModelType(hash),
         query: query,
         params: params
       }
-    }
+    },
+    
+    partial: function(fn) {
+      var args = [].slice.call(arguments, 1);
+      return function() {
+        return fn.apply(null, args.concat(arguments));
+      };
+    },
+
+    partialWith: function(fn, context) {
+      var args = [].slice.call(arguments, 2);
+      return function() {
+        return fn.apply(context, args.concat(arguments));
+      };
+    },
+
+//    getIndexNames: function(vocModel) {
+//      var vc = vocModel.viewCols || '';
+//      var gc = vocModel.gridCols || '';
+//      var extras = U.getPositionProps(vocModel);
+//      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
+//        return c.trim().replace('DAV:displayname', 'davDisplayName')
+//      }));
+//      
+//      var props = vocModel.properties;
+//      cols = _.filter(cols, function(c) {
+//        var p = props[c];
+//        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+//      }).concat('_uri');
+//    },
+
+    /** 
+     * From http://eloquentjavascript.net/chapter6.html
+     */
+    op: {
+      "+": function(a, b){return a + b;},
+      "==": function(a, b){return a == b;},
+      "===": function(a, b){return a === b;},
+      "!": function(a){return !a;},
+      "!==": function(a, b){return a !== b;}
+      /* and so on */  
+    },
+    
+    HTML: HTML
   };
 
   for (var p in U.systemProps) {

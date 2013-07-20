@@ -84,10 +84,17 @@ define('models/Resource', [
       
       vocModel = vocModel || this.constructor;
       this.constructor = this.vocModel = vocModel;
+      this.properties = vocModel.properties;
       var uri = this.getUri();
       this.type = (uri && U.getTypeUri(uri)) || vocModel.type;
       if (!options || !options.silent)
         this.trigger('modelChanged');
+      
+//      var adapter = this.vocModel.adapter;
+//      if (adapter) {
+//        this.getUrl = adapter.getUrl || this.getUrl;
+//        this.parse = adapter.parse || this.parse;
+//      }
     },
     
     get: function(propName) {
@@ -113,6 +120,8 @@ define('models/Resource', [
       if (prop && !prop.backLink && U.isResourceProp(prop)) {
         if (val) {
           if (prop.range.endsWith('model/portal/Video'))
+            return val;
+          else if (prop.range.endsWith('model/portal/Image') && /^(http|https|ftp):\/\//.test(val))
             return val;
           else
             return val.startsWith('data:') ? val : U.getLongUri1(val);
@@ -219,7 +228,10 @@ define('models/Resource', [
 //      if (oldUri && this.collection)
 //        this.collection.add(this);
       
-      this.url = this.getUrl();
+      try {
+        this.url = this.getUrl();
+      } catch (err) {}
+      
       this.trigger('sync');
     },
     cancel: function(options) {
@@ -257,6 +269,10 @@ define('models/Resource', [
       this.remove();
     },
     getUrl: function() {
+      var adapter = this.vocModel.adapter;
+      if (adapter && adapter.getUrl)
+        return adapter.getUrl.call(this);
+      
       var uri = this.getUri();
       var type = this.vocModel.type;
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
@@ -288,11 +304,41 @@ define('models/Resource', [
       return U.getLongUri1(this.getUri());
     },
     getUri: function() {
-      return this.get('_uri');
+      var uri = this.get('_uri');
+      if (!uri && this.vocModel) {
+        uri = U.buildUri(this);
+        if (uri)
+          this.attributes['_uri'] = uri; // HACK?
+      }
+      
+      return uri;
     },
-    parse: function(resp) {
+    parse: function(resp, options) {
+      options = options || {};
       if (!this.vocModel)
         this.setModel();
+      
+      var adapter = this.vocModel.adapter,
+          parse = options.parse || this.lastFetchOrigin == 'server';
+      
+      if (adapter && adapter.parse) {
+        if (!parse)
+          return resp;
+        
+        if (resp.data)
+          resp = resp.data[0];
+        
+        var parsed = adapter.parse.call(this, resp);
+        if (!parsed._uri)
+          parsed._uri = this.attributes._uri = U.buildUri(parsed, this.vocModel);
+        
+        if (parse) {
+          this.loaded = true;
+          this.loadInlined(parsed);
+        }
+        
+        return parsed;
+      }
       
       resp = this.preParse.call(this, resp);
       if (resp) {
@@ -352,22 +398,50 @@ define('models/Resource', [
       if (lf)
         resp._lastFetchedOn = lf;
       
-      if (!this.loaded) {
-        var vocModel = this.vocModel;
-        var meta = vocModel.properties;
-        for (var p in resp) {
-          var prop = meta[p], val = resp[p];
-          if (prop && val && prop.displayInline && prop.backLink && val._list) {
-            Events.trigger('inlineResourceList', this, prop, val._list);
-//            this.inlineLists = this.inlineLists || {};
-//            this.inlineLists[prop.shortName] = val._list;
-            delete val._list; // we don't want to store a huge list of json objects under one resource in indexedDB
-          }
-        }
-      }
+      if (!this.loaded)
+        this.loadInlined(resp);
       
       this.loaded = true;
       return resp;
+    },
+    
+    loadInlined: function(atts) {
+      var meta = this.vocModel.properties;
+      for (var p in atts) {
+        var prop = meta[p],
+            backLink = prop && prop.backLink,
+            val = atts[p],
+            uri = this.getUri(),
+            list = null,
+            res = null;
+        
+        if (prop && val) {
+          list = backLink && (_.isArray(val) ? val : val._list);
+          res = U.isResourceProp(prop) && typeof val == 'object' && val;
+        }
+
+        if (res) {
+          delete atts[p];
+          Events.trigger('anonymousResource', this, prop, res);
+        }
+        else if (list) {
+//          this.inlineLists = this.inlineLists || {};
+//          this.inlineLists[prop.shortName] = val._list;
+          if (val._list)
+            delete val._list; // we don't want to store a huge list of json objects under one resource in indexedDB
+          else {
+            for (var i = 0; i < list.length; i++) {
+              var item = list[i];
+              item[backLink] = item[backLink] || uri;
+            }
+            
+            atts[p] = {count: val.length};
+          }
+          
+          if (list.length)
+            Events.trigger('newBackLink', this, prop, list);
+        }
+      }
     },
     
     setInlineList: function(propName, list) {
@@ -567,10 +641,24 @@ define('models/Resource', [
       return U.isAssignableFrom(this, interfaceName);
     },
     fetch: function(options) {
-      var self = this;
+      var self = this,
+          adapter = this.vocModel.adapter;
+      
+      if (adapter) {
+        auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
+        if (auth != 'simple')
+          return this.vocModel.API.oauth(parseInt(auth.slice(5)));
+      }
+      
       options = options || {};
       options.error = options.error || Error.getDefaultErrorHandler();
-      options.url = this.getUrl();
+
+      try {
+        options.url = this.getUrl();
+      } catch (err) {
+        return options.error(this, {status: 404, details: err.message}, options);
+      }
+      
       return Backbone.Model.prototype.fetch.call(this, options);
     },
     

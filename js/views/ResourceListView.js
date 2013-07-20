@@ -15,7 +15,7 @@ define('views/ResourceListView', [
     displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
-//    skipScrollEvent: false,
+    skipScrollEvent: false,
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
@@ -523,10 +523,7 @@ define('views/ResourceListView', [
       if (!this.isActive())
         return;
       
-      var $wnd = $(window);
-      if ($wnd.scrollTop() > 20)
-        this.skipScrollEvent = true;
-        
+      var $wnd = $(window);        
 //      if (this.skipScrollEvent) // wait for a new data portion
 //        return;
       
@@ -556,21 +553,21 @@ define('views/ResourceListView', [
       this.getNextPage();
     },
     
-//    resumeScrollEventProcessing: function () {
-//      this.skipScrollEvent = false;
-//      this.hideLoadingIndicator();
-//    },
+    resumeScrollEventProcessing: function () {
+      this.skipScrollEvent = false;
+      this.hideLoadingIndicator();
+    },
 
     // masonry bricks alignment
     onNewItemsAppend: function() {
       var hash = window.location.hash;
       if (hash.indexOf('make') == 1  ||  hash.indexOf('edit') == 1) {
-//        this.resumeScrollEventProcessing();
+        this.resumeScrollEventProcessing();
         return;
       }
       // no masonry or masonry is hidden
       if (!this.hasMasonry() || this.$el.width() == 0) {
-//        this.resumeScrollEventProcessing();
+        this.resumeScrollEventProcessing();
         return;
       }
       
@@ -626,12 +623,12 @@ define('views/ResourceListView', [
       if (needToReload) {
         this.$el.masonry('reload');
         if (hasImgSize) {
-//          this.resumeScrollEventProcessing();
+          this.resumeScrollEventProcessing();
         }
         else  {
           this.$el.imagesLoaded( function(){ 
             self.$el.masonry('reload'); 
-//            self.resumeScrollEventProcessing(); 
+            self.resumeScrollEventProcessing(); 
           });
         }
           
@@ -642,12 +639,12 @@ define('views/ResourceListView', [
       if ($allBricks.length != 0 && $allBricks.length == $newBricks.length) {
         if (hasImgSize) {
           this.$el.masonry();
-//          this.resumeScrollEventProcessing();
+          this.resumeScrollEventProcessing();
         }
         else {  
           this.$el.imagesLoaded( function(){ 
             self.$el.masonry(); 
-//            self.resumeScrollEventProcessing(); 
+            self.resumeScrollEventProcessing(); 
           });
         }
         
@@ -664,13 +661,14 @@ define('views/ResourceListView', [
       // filter unaligned "bricks" which do not have calculated, absolute position 
       if (hasImgSize) {
         this.$el.masonry('appended', $newBricks);
-//        this.resumeScrollEventProcessing();
+        this.resumeScrollEventProcessing();
       }
-      else  
+      else {
         this.$el.imagesLoaded( function(){ 
           self.$el.masonry('appended', $newBricks); 
-//          self.resumeScrollEventProcessing(); 
+          self.resumeScrollEventProcessing(); 
         });
+      }
       
       this.$el.trigger('create');      
     },
