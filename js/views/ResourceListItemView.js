@@ -203,6 +203,14 @@ define('views/ResourceListItemView', [
         json['chkId'] = G.nextId() + '.' + this.mvProp;
         if (this.checked)
           json['_checked'] = 'checked';
+        if (U.isA(this.vocModel, 'ImageResource')) {
+          var thumb = U.getCloneOf(this.vocModel, 'ImageResource.smallImage');
+          if (thumb  &&  thumb.length) {
+            var img = json[thumb[0]];
+            if (img)
+              json['_thumb'] = img;
+          }
+        }
 //        if (this.mvVals  &&  $.inArray(json.davDisplayName, this.mvVals) != -1)
 //          json['checked'] = 'checked';
       }
@@ -375,6 +383,7 @@ define('views/ResourceListItemView', [
               vCols += '<div>&#160;&#160;' + submitterName + '</div>'
               vCols += '</div>';
             }
+            json['_hasSubmittedBy'] = true;
           }
         }
         vCols += '</div>';

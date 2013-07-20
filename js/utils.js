@@ -1770,7 +1770,18 @@ define('utils', [
       if (prop.range == 'resource') 
         val.uri = val.value;
       else if (prop.range.endsWith('model/portal/Image')) {
-        val.img = val.value;
+        if (U.isCloneOf(prop, 'ImageResource.originalImage')) {
+          var cOf = U.getCloneOf(res.vocModel, "ImageResource.smallImage");
+          if (!cOf  ||  cOf.length == 0) {
+            cOf = U.getCloneOf(res.vocModel, "ImageResource.mediumImage");
+            if (!cOf  ||  cOf.length == 0)
+              cOf = U.getCloneOf(res.vocModel, "ImageResource.bigImage");
+          }
+          if (cOf && cOf.length == 1)
+            val.img = res.get(cOf[0]);
+        }
+        if (!val.img)
+          val.img = val.value;
         if (!val.displayName) {
           if (val.value.startsWith('data:'))
             val.displayName = 'camera shot';

@@ -295,9 +295,15 @@ define('views/ResourceListView', [
         if (prop  &&  forResource) {
           var type = U.getTypeUri(forResource);      
           var cModel = U.getModel(type);
-          
-          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage", cModel)) 
-            frag.appendChild(fileUploadTemplate({name: prop}));          
+          /*
+          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage", cModel)) { 
+            var rules = ' data-formEl="true"';
+            var location = this.hashParams['$location'];
+            var returnUri = this.hashParams['$returnUri'];
+            U.addToFrag(frag, this.fileUploadTemplate({name: prop, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
+//            frag.appendChild(this.fileUploadTemplate({name: prop, rules: rules, forResource: forResource}));
+          }
+          */
         }
       }
       

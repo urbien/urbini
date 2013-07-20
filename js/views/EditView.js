@@ -375,6 +375,10 @@ define('views/EditView', [
       Events.stopEvent(e);
       var el = e.target;
       var prop = e.target.name;
+      // could be <span> or <label>
+      if (!prop) {
+        prop = e.target.parentElement.name;
+      }
       var self = this;
       var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
       var pr = vocModel.properties[prop];
@@ -423,7 +427,10 @@ define('views/EditView', [
         var mvList = (e.target.text || e.target.textContent).trim(); //e.target.innerText;
         mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
         params['$' + prop] = mvList;
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFromType), params), {trigger: true});
+        var typeUri = U.getTypeUri(pr.lookupFromType);
+        typeUri = G.classMap[typeUri] ? G.classMap[typeUri] : typeUri;
+        
+        this.router.navigate(U.makeMobileUrl('chooser', typeUri, params), {trigger: true});
         return;
       }
       if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
@@ -475,7 +482,7 @@ define('views/EditView', [
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
       if (!isImage  &&  !prModel) {
         var idx = range.indexOf('model/portal/Image');
-        isImage = idx != -1  &&  idx == range.length - 6;
+        isImage = idx != -1  &&  idx == range.length - 'model/portal/Image'.length;
       }
       if (isImage) {
         var prName = pr.displayName;
@@ -655,6 +662,13 @@ define('views/EditView', [
           action = '',
           redirectPath = '',
           redirectTo = vocModel.onCreateRedirectTo;
+      if (vocModel.onCreateRedirectToMessage) {
+        if (redirectTo.indexOf('?') == -1)
+          redirectTo += '?';
+        else
+          redirectTo += '&';
+        redirectTo += '-info=' + encodeURIComponent(vocModel.onCreateRedirectToMessage);
+      }
       // check if we came here by backlink
       if (!redirectTo && params.$backLink) 
         redirectTo = U.getContainerProperty(vocModel);
