@@ -9,6 +9,18 @@ define('views/BasicView', [
 ], function(G, _Backbone, U, Templates, Events, $m) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
+    superInitialize: function() {
+      var superCl = this.constructor.__super__,
+          superInit = superCl.initialize;
+      
+      if (superInit == this.initialize) {
+        superCl = superCl.constructor.__super__;
+        superInit = superCl && superCl.initialize;
+      }
+      
+      if (superInit)
+        superInit.apply(this, arguments);
+    },
     initialize: function(options) {
 //      this._initOptions = options;
       this.TAG = this.TAG || this.constructor.displayName;
@@ -30,7 +42,7 @@ define('views/BasicView', [
       _.extend(this, _.pick(options, basicOptions));
       this.pageView = this.getPageView();
       
-      var res = this.data = this.model;
+      var res = this.data = this.model = this.model || options.resource || options.collection;
       if (res) {
         if (this.model instanceof Backbone.Collection) {
           this.collection = res;
@@ -51,10 +63,11 @@ define('views/BasicView', [
       this.router = G.Router || Backbone.history;
       var refresh = this.refresh;
       this.refresh = function(rOptions) {
-        if (!this.rendered)
+        var force = rOptions && rOptions.force;
+        if (!force && !this.rendered)
           return this;
         
-        if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
+        if (!force && !this.isPanel && !this.isActive()) {
           // to avoid rendering views 10 times in the background. Render when it's about to be visible
            this.__refreshArgs = arguments; 
            return false;
@@ -144,7 +157,7 @@ define('views/BasicView', [
             Events.trigger('navigate', hash, {trigger: false, replace: true});
         });
         
-        this.whenDoneLoading(function() {
+        this.onload(function() {
           var gluedError = self.hashParams['-gluedError'],
               error = gluedError || self.hashParams['-error'],
               gluedInfo = self.hashParams['-gluedInfo'],
@@ -186,6 +199,7 @@ define('views/BasicView', [
         }
       });
 
+      this.initialized = true;
       return this;
     }
   }, {
@@ -220,7 +234,7 @@ define('views/BasicView', [
       });
     },
     
-    whenDoneLoading: function(callback) {
+    onload: function(callback) {
       var promise = $.when.apply($, this._getLoadingDeferreds());
       callback && promise.then(callback);
       return promise;

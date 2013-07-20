@@ -129,7 +129,7 @@ define('views/ViewPage', [
           friend2 = 'movie';
         }
 
-        this.whenDoneLoading(function() {          
+        this.onload(function() {          
           U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
             Voc.getModels(friendType).done(function() {              
               var friendProps = {};

@@ -393,7 +393,7 @@ define('collections/ResourceList', [
             break;
           case 204:
             self.trigger('endOfList');
-            success(resp, status, xhr);
+            success([], status, xhr);
             return;
           case 304:
             var ms = self.models.slice(options.start, options.end);
@@ -402,6 +402,7 @@ define('collections/ResourceList', [
             });
             
             self.trigger('endOfList');
+            success([], status, xhr);
             return;
           default:
             err();
@@ -413,8 +414,7 @@ define('collections/ResourceList', [
           return;
         }
         
-        var newData = resp.data;
-        self.update(resp, options);
+        self.update(resp.data, options);
         success(resp, status, xhr);
       }; 
       

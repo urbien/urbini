@@ -40,6 +40,7 @@ define('views/AddButton', [
       var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
       var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
       var aUri = colParams[a];
+      var bUri = colParams[b];
       if (!aUri  &&  !bUri) {
         this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
         return this;

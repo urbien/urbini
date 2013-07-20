@@ -3374,6 +3374,13 @@ define('utils', [
       "!==": function(a, b){return a !== b;}
       /* and so on */  
     },
+
+    isMasonryModel: function(vocModel) {
+      var type = vocModel.type;
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial'], function(className) {
+        return type.endsWith('/' + className);
+      });
+    },
     
     HTML: HTML
   };

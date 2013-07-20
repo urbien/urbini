@@ -38,16 +38,9 @@ define('views/ListPage', [
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
-      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  (vocModel.type.endsWith('/Tournament') || 
-                                                                         vocModel.type.endsWith('/Theme')      || 
-                                                                         vocModel.type.endsWith('/App')        || 
-                                                                         vocModel.type.endsWith('/Goal')       ||  
-                                                                         vocModel.type.endsWith('/Movie')      ||
-                                                                         vocModel.type.endsWith('/Coupon')     ||
-                                                                         U.isA(this.vocModel, "VideoResource") || 
-                                                                         vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      this.isPhotogrid = _.contains([G.commonTypes.Handler/*, commonTypes.FriendApp*/], type);
+      this.isPhotogrid = _.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
       /*
       if (!this.isPhotogrid) {
         if (U.isA(this.vocModel, "Intersection")) {
@@ -152,7 +145,25 @@ define('views/ListPage', [
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
-      this.addChild('listView', new ResourceListView(_.extend({mode: this.mode}, commonParams , this.options)));
+      var listViewType;
+      if (this.isPhotogrid)
+        listViewType = 'PhotogridListView';
+      else if (this.isComment)
+        listViewType = 'CommentListView';
+      else if (isMasonry || isModification)
+        listViewType = 'MasonryListView';
+      else
+        listViewType = 'ResourceListView';
+      
+      var self = this,
+          readyDfd = $.Deferred();
+      
+      this.ready = readyDfd.promise();
+      U.require('views/' + listViewType).done(function(listViewCl) {
+        self.addChild('listView', new listViewCl(_.extend({mode: self.mode}, commonParams, self.options)));
+        readyDfd.resolve();
+      });
+      
       this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       this.on('endOfList', function() {
         this.$('#nextPage').hide();
@@ -191,17 +202,9 @@ define('views/ListPage', [
 ////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
     },
     orientationchange: function(e) {
-      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-      var isMasonry = this.isMasonry = !isChooser  &&  (this.vocModel.type.endsWith('/Tournament')                  || 
-                                                        this.vocModel.type.endsWith('/Theme')                       || 
-                                                        this.vocModel.type.endsWith('/Goal')                        ||
-                                                        this.vocModel.type.endsWith('/Coupon')                      ||
-                                                        U.isA(this.vocModel, "VideoResource")                       ||
-                                                        this.vocModel.type.endsWith('/Movie')                       ||
-                                                        this.vocModel.type.endsWith('/App')                         || 
-//                                                        vocModel.type.endsWith('/NominationForConnecttion')    || 
-                                                        this.vocModel.type.endsWith('/ThirtyDayTrial')); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      if (isMasonry) {
+//      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+//      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      if (this.isMasonry) {
         Events.stopEvent(e);
         Events.trigger('refresh', {model: this.model}); //, checked: checked});
       } 
@@ -308,8 +311,16 @@ define('views/ListPage', [
         }
       });
     },
-    
+
     render: function() {
+      var args = arguments;
+      this.ready.done(function() {
+        this.renderHelper.apply(this, args);
+        this.finish();
+      }.bind(this));
+    },
+
+    renderHelper: function() {
       var json = this.json;
       this.$el.html(this.template(json));
       var views = {
