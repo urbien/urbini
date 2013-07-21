@@ -211,8 +211,7 @@ define('vocManager', [
             return !_.contains(loadedTypes, model.type);
           });
           
-          var changedModels = _.union(newModels, notStale),
-              changedTypes = _.union(loadedTypes, _.map(notStale, function(model) {return model.type}));
+          var changedModels = _.union(newModels, notStale);
           
           Voc.models = _.union(Voc.models, changedModels);
           Voc.loadModels(changedModels).done(defer.resolve).fail(defer.reject);          
@@ -221,8 +220,8 @@ define('vocManager', [
           }, 100);
           
           Voc.setupPlugs(data.plugs);
-          if (changedTypes.length)
-            Events.trigger('modelsChanged', changedTypes);
+          if (newModels.length)
+            Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
           
         }, defer.reject);
       }).promise();

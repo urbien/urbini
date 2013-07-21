@@ -47,77 +47,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
       }
     }
   }
-  
-//  /**
-//   * Helper that notifies a 'success' event on a request, with a given
-//   * result object. This is typically either a cursor or a result array.
-//   */
-//  function notifySuccess(request, result) {
-//    var event = {type: "success",
-//                 target: request}; //TODO complete event interface
-//    request.readyState = IDBRequest.DONE;
-//    request.result = result;
-//    if (typeof request.onsuccess == "function") {
-//      request.onsuccess(event);
-//    }
-//  }
-//  
-//  /**
-//   * Create a cursor object.
-//   */
-//  function Cursor(store, request, keys, keyOnly) {
-//    var cursor = {
-//      "continue": function continue_() {
-//        if (!keys.length) {
-//          notifySuccess(request, undefined);
-//          return;
-//        }
-//        var key = keys.shift();
-//        if (keyOnly) {
-//          cursor.key = key;
-//          notifySuccess(request, cursor);
-//          return;
-//        }
-//        var r = store.get(key);
-//        r.onsuccess = function onsuccess() {
-//          cursor.key = key;
-//          cursor.value = r.result;
-//          notifySuccess(request, cursor);
-//        };
-//      }
-//      //TODO complete cursor interface
-//    };
-//    return cursor;
-//  }
-//  
-//  /**
-//   * Create a request object.
-//   */
-//  function Request() {
-//    return {
-//      result: undefined,
-//      onsuccess: null,
-//      onerror: null,
-//      readyState: IDBRequest.LOADING
-//      // TODO complete request interface
-//    };
-//  }
-//  
-//  /**
-//   * Create a request that will receive a cursor.
-//   *
-//   * This will also kick off the query, instantiate the Cursor when the
-//   * results are available, and notify the first 'success' event.
-//   */
-//  function CursorRequest(store, queryFunc, keyOnly) {
-//    var request = Request();
-//    queryFunc(store, function (keys) {
-//      var cursor = Cursor(store, request, keys, keyOnly);
-//      cursor.continue();
-//    });
-//    return request;
-//  }
-  
+    
   /**
    * Create a request that will receive a result array.
    *
@@ -148,14 +78,6 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
       or: function or(query2) {
         return Union(query, query2);
       },
-  
-//      openCursor: function openCursor(store) {
-//        return CursorRequest(store, queryFunc, false);
-//      },
-//  
-//      openKeyCursor: function openKeyCursor(store) {
-//        return CursorRequest(store, queryFunc, true);
-//      },
   
       getAll: function getAll(store) {
         return ResultRequest(store, queryFunc, false);
@@ -220,28 +142,21 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           range = values[0];
           break;
         case "lt":
-//          range = IDBKeyRange.upperBound(values[0], true);
           range = [null, values[0], true, true];
           break;
         case "lteq":
-//          range = IDBKeyRange.upperBound(values[0]);
           range = [null, values[0], true, false];
           break;
         case "gt":
-//          range = IDBKeyRange.lowerBound(values[0], true);
           range = [values[0], null, true, true];
           break;
         case "gteq":
-//          range = IDBKeyRange.lowerBound(values[0]);
-//          range.upperOpen = true;
           range = [values[0], null, false, true];
           break;
         case "between":
-//          range = IDBKeyRange.bound(values[0], values[1], true, true);
           range = [values[0], values[1], true, true];
           break;
         case "betweeq":
-//          range = IDBKeyRange.bound(values[0], values[1]);
           range = [values[0], values[1], false, false];
           break;
       }

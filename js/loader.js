@@ -137,7 +137,9 @@ define('globals', function() {
         default:
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          text += '\n//@ sourceMappingURL=' + url + '.map';
+          if (G.minify)
+            text += '\n//@ sourceMappingURL=' + url.slice(url.lastIndexOf('/') + 1) + '.map';
+          
           text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
             text += '*/\n';
@@ -348,29 +350,29 @@ define('globals', function() {
     onAppStart: function() {
       return G._appStartDfd.promise();
     },
-    putCached: function(urlToData, source) {
+    putCached: function(urlToData, destination) {
       return $.Deferred(function(defer) {        
-        if (source === 'localStorage') {
+        if (destination === 'localStorage') {
           for (var url in urlToData) {
             G.localStorage.put(url, urlToData[url]);
           }
           
           defer.resolve();
         }
-        else if (source === 'indexedDB') {
+        else if (destination === 'indexedDB') {
           if (G.dbType === 'none')
             return $.Deferred().reject().promise();
                 
           G.onAppStart().done(function() {
-            G.ResourceManager.$db.transaction(['modules'], 1).progress(function(trans) {
-              var modStore = trans.objectStore('modules', 1);
-              for (var url in urlToData) {
-                modStore.put({
-                  url: url, 
-                  data: urlToData[url]
-                });
-              }
-            }).done(defer.resolve).fail(defer.reject);
+            var modules = [];
+            for (var url in urlToData) {
+              modules.push({
+                url: url, 
+                data: urlToData[url]
+              });
+            };
+
+            G.ResourceManager.put('modules', modules).done(defer.resolve).fail(defer.reject);
           });
         }
       }).promise();
@@ -386,22 +388,24 @@ define('globals', function() {
         }
         else if (source === 'indexedDB') {
           var RM = G.ResourceManager;
-          if (!RM.storeExists('modules'))
-            return defer.reject();
           
-          var $db = RM && RM.$db;
-          if (!$db)
-            return defer.reject();
-          
-          RM.runTask(function() {
-            defer.always(this.resolve);
-            $db.objectStore('modules', 0).get(url).done(function(result) {
-              if (result)
-                defer.resolve(result.data)
-              else
-                defer.reject();
-            }).fail(defer.reject);
-          }, {name: 'get module: ' + url});
+//          if (!RM.storeExists('modules'))
+//            return defer.reject();
+//          
+//          var $db = RM && RM.$db;
+//          if (!$db)
+//            return defer.reject();
+//          
+//          RM.runTask(function() {
+          return RM.getItem('modules', url);
+//            defer.always(this.resolve);
+//            $db.objectStore('modules', 0).get(url).done(function(result) {
+//              if (result)
+//                defer.resolve(result.data)
+//              else
+//                defer.reject();
+//            }).fail(defer.reject);
+//          }, {name: 'get module: ' + url});
         }
       }).promise();
     },
@@ -763,7 +767,7 @@ define('globals', function() {
           bg: '#000'
         },
         db: {
-          on: false,
+          on: true,
           color: '#FFFFFF',
           bg: '#000'
         },

@@ -3348,21 +3348,28 @@ define('utils', [
       };
     },
 
-//    getIndexNames: function(vocModel) {
-//      var vc = vocModel.viewCols || '';
-//      var gc = vocModel.gridCols || '';
-//      var extras = U.getPositionProps(vocModel);
-//      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
-//        return c.trim().replace('DAV:displayname', 'davDisplayName')
-//      }));
-//      
-//      var props = vocModel.properties;
-//      cols = _.filter(cols, function(c) {
-//        var p = props[c];
-//        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
-//      }).concat('_uri');
-//    },
+    getIndexNames: function(vocModel) {
+      var vc = vocModel.viewCols || '';
+      var gc = vocModel.gridCols || '';
+      var extras = U.getPositionProps(vocModel);
+      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
+        return c.trim().replace('DAV:displayname', 'davDisplayName')
+      }));
+      
+      var props = vocModel.properties;
+      cols = _.filter(cols, function(c) {
+        var p = props[c];
+        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+      }).concat('_uri');
+      
+      return cols;
+    },
 
+    isPromise: function(obj) {
+      return obj && typeof obj.then == 'function';
+    },
+
+    
     /** 
      * From http://eloquentjavascript.net/chapter6.html
      */

@@ -1,154 +1,169 @@
-//'use strict';
-define('taskQueue', ['globals', 'utils'], function(G, U) {
+define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
+  function PriorityQueue() {
+    var queue = [];
+    return {
+      push: function(item) {
+        queue.push(item);
+        queue.sort(function(a, b) {
+          return a.isBlocking ? -1 : a.priority - b.priority;
+        });
+      },
+      
+      pop: function() {
+        return queue.splice(0, 1)[0];
+      },
+      
+      length: function() {
+        return queue.length;
+      },
+      
+      getRawQueue: function() {
+        return queue;
+      }
+    }
+  };
+  
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("taskQueue");
+    G.log.apply(G, args);
+  };
+  
   function TaskQueue(name) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
     
-    var q = this;
-    q.name = name;
-    this.nonseq = [];
-    this.seqQueue = [];
-    this.runningTasks = [];
-    this.blocked = false;
-
-    var runNonSeq = function(tasks, force) {
-      tasks = tasks || q.nonseq;
-      var dfd = $.when.apply($, _.map(_.pluck(tasks, "deferred"), function(m) {
-        return m.promise();
-      })).promise();
+    window.taskQueue = this;
+    
+    var tq = this,
+        queue = this.queue = new PriorityQueue('priority'),
+        running = this.running = [];
+    
+    tq.name = name;
+    tq.blocked = false;
+    
+    function runTask(task) {
+      if (!(task instanceof Task))
+        task = Task.apply(null, arguments);
       
-      _.map(tasks, function(t) {
-        q.runTask(t.task, {name: t.name, force: force}).done(t.deferred.resolve).fail(t.deferred.reject);
+      log('Running task:', task.name);
+//      task.notify();
+      var promise = task.run();
+      running.push(task);
+      promise.always(function() {
+        log('Task completed:', task.name);
+        running.splice(running.indexOf(task), 1);
+        tq.blocked = false;
+        if (!running.length)
+          next();
       });
       
-      tasks.length = 0;
-      return dfd;
-    }
-    
-    this.hasMoreTasks = function() {
-      return q.seqQueue.length > 0;
-    }
-    
-    /**
-     * @param sequential - if true, this task will wait till all other running tasks are done, then when it runs, no tasks will be allowed to run till its finished
-     * @param yield - if true, when it's time to run this SEQUENTIAL task, if there are non-sequential tasks queued up, it will let them run first  
-     */
-    this.runTask = function(task, options) {
-      var options = options || {},
-          timeout = options.timeout === false ? false : options.timeout || 10000,
-          sequential = options.sequential,
-          force = options.force,
-          yields = options.yields,
-          name = options.name;
+      if (!task.isBlocking)
+        next();
       
-      if (!sequential) {
-        if (options.preventPileup && _.filter(q.runningTasks, function(t) {return t.name === name}).length)
-          return;
-
-        if (q.blocked && !force) {
-          G.log(q.TAG, 'db', q.name, 'Waiting for sequential task to finish, queueing non-sequential task:', name);
-          var dfd = $.Deferred();
-          q.nonseq.push({task: task, name: name, deferred: dfd});
-          return dfd.promise();
+      return promise;
+    }
+    
+    function queueTask(task) {
+      if (!(task instanceof Task))
+        task = Task.apply(null, arguments);
+      
+      var qLength = queue.length();
+      log('Checking task:', task.name);
+      var isBlocking = task.isBlocking;
+      if (isBlocking) {
+        tq.blocked = true;
+        if (qLength || running.length) {
+          log('queueing blocking task:', task.name);
+          queue.push(task);
+        }        
+        else
+          runTask(task);
+      }
+      else {
+        if (tq.blocked) {
+          log('Queue blocked. Queueing non-blocking task:', task.name);
+          queue.push(task);
         }
-        else {
-          G.log(q.TAG, 'db', q.name, 'Running non-sequential task:', name);
-//          promise = task();
-          var promise = new $.Deferred(function() {
-            task.apply(this, []);
-          }).promise();
-
-          promise.name = name;
-          q.runningTasks.push(promise);
-          promise.always(function() {
-            G.log(q.TAG, 'db', q.name, 'Finished non-sequential task:', name);
-            if (q.runningTasks.indexOf(promise) === -1)
-              debugger;
-            
-            q.runningTasks.remove(promise);
-          }.bind(q));
-          
-          return promise;
-        }
+        else
+          runTask(task);
       }
       
-      // Sequential task - need to wait for all currently running tasks to finish
-      // and block any new tasks from starting until this one's done.
-      
-      // The 'preventPileup' option prevents a sequential task from being queued more than once at any given time
-      if (options.preventPileup && _.filter(q.seqQueue.tasks, function(t) {return t.name === name}).length)
+      return task.promise();
+    };
+    
+    function next() {
+      if (queue.length())
+        runTask(queue.pop());
+    };
+    
+    function log() {
+      if (!tq.debug)
         return;
       
-      if (q.blocked) {
-        if (!q.runningTasks.length) {
-          G.log(q.TAG, 'db', q.name, 'A sequential task finished but failed to report');
-          q.blocked = false;
-          debugger;
-        }
-        else {
-          G.log(q.TAG, 'db', q.name, 'Waiting for sequential task to finish, queueing sequential task', name);
-          var dfd = new $.Deferred();
-          q.seqQueue.push({task: task, name: name, deferred: dfd, yields: yields});
-          return dfd.promise();
-        }
+      console.log.apply(console, arguments);
+    };
+    
+    return {
+      log: log,
+      debug: function(debug) {
+        tq.debug = debug;
+      },
+      queueTask: queueTask,
+      hasTask: function(name) {
+        return _.any(this.queue.concat(this.running), function(t) { return t.name == name });
+      },
+      newTask: function() {
+        return Task.apply(null, arguments);
       }
-     
-      G.log(q.TAG, 'db', q.name, 'Waiting for non-sequential tasks to finish to run sequential task:', name);
-      q.blocked = true;
-      var defer = $.Deferred();
-      var yieldsFor = [];
-      if (yields) {
-        yieldsFor = q.nonseq.slice();
-        q.nonseq.length = 0;
-      }
-      
-      $.when.apply($, q.runningTasks).done(function() { // not sure if it's kosher to change runningTasks while this is running
-//        var redefer = yields ? [runNonSeq(true)] : []; 
-        $.when.apply($, yieldsFor.length ? [runNonSeq(yieldsFor, true)] : []).always(function() {  // if non-yielding, then run right away, otherwise force queued up non-sequentials to run first
-          G.log(q.TAG, 'db', q.name, 'Running sequential task:', name);
-          var taskDfd = new $.Deferred(function() {
-            task.apply(this, []);
-          });
-          
-          var taskPromise = taskDfd.promise();
-          taskPromise.name = name;
-          q.runningTasks.push(taskPromise);
-          taskPromise.always(function() {
-            if (q.runningTasks.indexOf(taskPromise) === -1)
-              debugger;
-            
-            q.runningTasks.remove(taskPromise);
-            G.log(q.TAG, 'db', q.name, 'Finished sequential task:', name);
-            q.blocked = false; // unblock to allow next task to start;
-            if (q.hasMoreTasks()) {
-              var next = q.seqQueue.shift();
-              var dfd = next.deferred;
-              q.runTask(next.task, {name: next.name, sequential: true, yields: next.yields}).done(dfd.resolve).fail(dfd.reject);
-            }
-            else {
-              if (q.nonseq.length) {
-                runNonSeq();
-              }
-            }
-            
-            defer.resolve();
-          }.bind(q));
-          
-          if (timeout) {
-            setTimeout(function() {
-              if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
-  //              debugger; // sth went wrong with task, it didn't finish
-                taskDfd.reject(null, {code: 0, type: 'timeout'});
-              }
-            }, timeout);
-          }
-        }.bind(q));
-      }.bind(q));
-      
-      return defer.promise();
     }
-  }
+  };
   
-  TaskQueue.prototype.TAG = "TaskQueue";
+  function Task(name, taskFn, isBlocking, priority) {
+    if (!(this instanceof Task))
+      return new Task(name, taskFn, isBlocking, priority);
+    
+    var self = this,
+        defer = $.Deferred(),
+        promise = defer.promise(), 
+        started = false;
+//        ,
+//        onDone = [],
+//        onFail = [];
+        
+    function finish() {
+      _.each(onDone, promise.done); 
+      _.each(onFail, promise.fail);
+    };
+    
+    this.name = name;
+    this.priority = priority || 0;
+    this.isBlocking = isBlocking || false;
+    this.run = function() {
+      started = true;
+      taskFn.call(defer, defer); //lazy.start().promise();
+      setTimeout(function() {
+        if (defer.state() === 'pending') {
+          debugger;
+          log('Task timed out: ' + self.name);
+          defer.reject();
+        }
+      }, 10000);
+      
+      return promise;
+    };
+    
+    // allow task consumers to treat the task as a promise
+    for (var fn in promise) {
+      if (typeof promise[fn] == 'function') {
+        this[fn] = promise[fn].bind(promise);
+      }
+    }
+    
+    this.isFinished = function() {
+      return started && promise.state() == 'resolved';
+    };
+  };
+  
   return TaskQueue;
 });

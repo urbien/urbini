@@ -336,7 +336,7 @@ define('collections/ResourceList', [
       if (adapter) {
         auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
         if (auth != 'simple')
-          return this.vocModel.API.oauth(parseInt(auth.slice(5)));
+          return this.vocModel.API.oauth(parseInt(auth.slice(5)), this.type);
       }
       
       try {

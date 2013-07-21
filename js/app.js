@@ -10,7 +10,8 @@ define('app', [
  'vocManager',
  'resourceManager',
  'router',
- 'collections/ResourceList'
+ 'collections/ResourceList',
+ 'jqueryPlugins'
  ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
@@ -71,17 +72,10 @@ define('app', [
             dbDfd = $.Deferred(),
             grabDfd = $.Deferred();
 
-        var startDB = function() {
-          if (RM.db)
-            dbDfd.resolve();
-          else
-            RM.restartDB().always(dbDfd.resolve);
-        };
-        
         var loadModels = function() {
           Voc.getModels().done(function() {
-            startDB();
-            App.initGrabs().done(grabDfd.resolve).fail(grabDfd.reject);
+            RM.openDB().then(dbDfd.resolve, dbDfd.reject);
+            App.initGrabs().then(grabDfd.resolve, grabDfd.reject);
             modelsDfd.resolve();
           }).fail(function()  {
             if (G.online) {

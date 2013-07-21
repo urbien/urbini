@@ -25,13 +25,14 @@ define('models/Resource', [
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onchange', 'onsynced', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsync', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
       options = options || {};
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
+      this.on('sync', this.onsync);
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -187,11 +188,11 @@ define('models/Resource', [
       // has no idea which resource the data it just got belongs to. Another option would
       // be to have a central cache of resources by uri (like in G.Router), and look up 
       // the resource there and use model.set
-      Events.on('synced:' + resUri, this.onsynced);
+      Events.on('synced:' + resUri, this.onsyncedChanges);
       Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
-    onsynced: function(data, newModel) {
+    onsyncedChanges: function(data, newModel) {
       if (!data) {
         this.trigger('sync');
         return;
@@ -208,8 +209,8 @@ define('models/Resource', [
 //        }
         
         this.trigger('uriChanged', oldUri);
-        Events.off('synced:' + oldUri, this.onsynced);
-        Events.on('synced:' + uri, this.onsynced);
+        Events.off('synced:' + oldUri, this.onsyncedChanges);
+        Events.on('synced:' + uri, this.onsyncedChanges);
         Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
         Events.on('updateBacklinkCounts:' + uri, this.updateCounts);
       }
@@ -254,13 +255,11 @@ define('models/Resource', [
 
       this.save(null, options);
     },
-    onchange: function(e) {
-//      Events.trigger('newResource', this);
-      if (this.lastFetchOrigin !== 'server')
-        return;
-      
-      Events.trigger('updatedResources', [this]);
+    onsync: function(e) {
+      if (this.lastFetchOrigin === 'server')
+        Events.trigger('updatedResources', [this]);
     },
+
     remove: function() {
       this.collection && this.collection.remove(this);
     },
@@ -843,7 +842,7 @@ define('models/Resource', [
           }
         }
         
-        data.$returnMade = options.$returnMade !== false;
+        options.$returnMade = options.$returnMade !== false;
         var isNew = this.isNew();
         if (!isNew)
           data._uri = this.getUri();

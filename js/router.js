@@ -17,6 +17,7 @@ define('router', [
 //  'views/EditPage' 
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m/*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
+  var Modules = {};
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
@@ -36,14 +37,14 @@ define('router', [
       ":type/:backlink"                                        : "list"
     },
 
-    CollectionViews: {},
-    MkResourceViews: {},
-    PrivateChatViews: {},
-    ChatViews: {},
-    LobbyChatViews: {},
-    MenuViews: {},
-    Views: {},
-    EditViews: {},
+//    CollectionViews: {},
+//    MkResourceViews: {},
+//    PrivateChatViews: {},
+//    ChatViews: {},
+//    LobbyChatViews: {},
+//    MenuViews: {},
+//    Views: {},
+//    EditViews: {},
 //    Models: {},
 //    Collections: {},
     Paginator: {},
@@ -61,6 +62,7 @@ define('router', [
       });
     },
     initialize: function () {
+      this.viewCache = new ViewCache();
 //      G._routes = _.clone(this.routes);
 //      _.bindAll(this, '_backOrHome');
       this.firstPage = true;
@@ -294,19 +296,20 @@ define('router', [
       if (!this.routePrereqsFulfilled('list', arguments))
         return;
 
-      var ListPage = this.ListPage;
-      var self = this;
-      var params = oParams.split("?");
-      var typeUri = U.getTypeUri(decodeURIComponent(params[0]));
-      var className = U.getClassName(typeUri);
-      var query = params.length > 1 ? params[1] : undefined;
+      var self = this,
+          ListPage = Modules.ListPage,
+          hashInfo = U.parseHash(oParams),
+          cachedView = this.getCachedView(hashInfo),
+          typeUri = hashInfo.type,
+          query = hashInfo.query;
+          
       if (query) {
         var q = query.split("&");
-        for (var i = 0; i < q.length; i++) {
+        for (var i = q.length - 1; i >= 0; i--) {
           if (q[i] == "$page") {
             this.page = parseInt(q[i].split("=")[1]); // page is special because we need it for lookup in db
-            q.remove(i);
-            query = q.length ? q.join("&") : null;
+            q.splice(i, 1);
+            query = q.length ? q.join("&") : '';
             break;
           }
         }
@@ -319,7 +322,8 @@ define('router', [
       if (!this.isModelLoaded(typeUri, 'list', arguments))
         return;
       
-      var model = U.getModel(typeUri);
+      var model = U.getModel(typeUri),
+          className = model.displayName;
       
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
@@ -333,15 +337,14 @@ define('router', [
         list = null;
       
       var meta = model.properties;      
-      var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
-      var cView = viewsCache[key];
+//      var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       if (list) {
-        if (!cView)
-          cView = viewsCache[key] = new ListPage({model: list});
+        if (!cachedView)
+          cachedView = this.cacheView(new ListPage({model: list}), hashInfo);
         
         this.currentModel = list;
-        cView.setMode(mode || G.LISTMODES.LIST);
-        this.changePage(cView, _.extend({page: page}));
+        cachedView.setMode(mode || G.LISTMODES.LIST);
+        this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
         list.fetch({page: page, forceFetch: forceFetch});
         this.monitorCollection(list);
@@ -350,7 +353,7 @@ define('router', [
       }
       
       list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
-      var listView = viewsCache[key] = new ListPage({model: list});
+      var listView = this.cacheView(new ListPage({model: list}), hashInfo);
       listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
@@ -384,7 +387,9 @@ define('router', [
       if (!this.routePrereqsFulfilled('templates', arguments))
         return;
 
-      var cached = this.CollectionViews[tName];
+      var hashInfo = U.parseHash(),
+          cached = this.getCachedView(hashInfo);
+      
       if (cached) {
         this.changePage(cached);
         return;
@@ -459,7 +464,7 @@ define('router', [
       if (!G.appTemplates)
         G.appTemplates = tList;
       
-      var lPage = this.CollectionViews[tName] = new this.ListPage({model: tList});
+      var lPage = this.cacheView(new Modules.ListPage({model: tList}), hashInfo);
       this.changePage(lPage);
     },
 
@@ -573,7 +578,7 @@ define('router', [
         U.require(unloadedMods, function() {
           var a = U.slice.call(arguments);
           for (var i = 0; i < a.length; i++) {              
-            self[unloaded[i]] = a[i];
+            Modules[unloaded[i]] = a[i];
           }
           
           caller.apply(self, args);
@@ -600,11 +605,9 @@ define('router', [
       if (!this.routePrereqsFulfilled('make', arguments))
         return;
       
-      var EditPage = this.EditPage; 
-      var parts = path.split('?');
-      var type = decodeURIComponent(parts[0]);
-      if (!type.startsWith('http'))
-        type = G.defaultVocPath + type;
+      var hashInfo = U.parseHash(),
+          EditPage = Modules.EditPage, 
+          type = hashInfo.type;
       
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
@@ -617,13 +620,13 @@ define('router', [
           makeId = params['-makeId'];
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
-      var mPage = this.MkResourceViews[makeId];
+      var mPage = this.getCachedView(hashInfo); //this.MkResourceViews[makeId];
       if (mPage && !mPage.model.getUri()) {
         // all good, continue making ur mkresource
       }
       else {
         var model = U.getModel(type);
-        mPage = this.MkResourceViews[makeId] = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
+        mPage = this.cacheView(new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash}), hashInfo);
       }
       
       this.currentModel = mPage.resource;
@@ -695,7 +698,7 @@ define('router', [
       
       if (views) {
         var missing = _.filter(views, function(view) {
-          return !self[view];
+          return !Modules[view];
         });
         
         if (missing.length) {
@@ -716,13 +719,13 @@ define('router', [
       return true;
     },
 
-    _updateCache: function(oldUri, newUri) {
-      _.each([this.EditViews, this.Views, this.MkResourceViews], function(views) {
-        var cached = views[oldUri];
-        if (cached)
-          views[newUri] = cached;
-      });
-    },
+//    _updateCache: function(oldUri, newUri) {
+//      _.each([this.EditViews, this.Views, this.MkResourceViews], function(views) {
+//        var cached = views[oldUri];
+//        if (cached)
+//          views[newUri] = cached;
+//      });
+//    },
     
     login: function(path) {
       var self = this;
@@ -742,7 +745,8 @@ define('router', [
       if (!this.routePrereqsFulfilled(action, arguments))
         return;
       
-      var hashInfo = U.parseHash(path),
+      var hashInfo = U.parseHash(),
+          cachedView = this.getCachedView(hashInfo),
           uri = hashInfo.uri,
           query = hashInfo.query,
           typeUri = hashInfo.type,
@@ -768,35 +772,37 @@ define('router', [
       
       switch (action) {
         case 'chat':
-          views = hashInfo.route.slice(4) + 'ChatViews';
-          viewPageCl = this.ChatPage;
+//          views = hashInfo.route.slice(4) + 'ChatViews';
+          viewPageCl = Modules.ChatPage;
           break;
         case 'edit':
-          views = 'EditView';
-          viewPageCl = this.EditPage;
+//          views = 'EditView';
+          viewPageCl = Modules.EditPage;
           break;
         default:
-          views = 'Views';
-          viewPageCl = this.ViewPage;
+//          views = 'Views';
+          viewPageCl = Modules.ViewPage;
       }
 
-      views = this[views];
+//      views = this[views];
       if (uri == 'profile') {
-        if (!G.currentUser.guest) {
-          var other = U.slice.call(arguments, 1);
-          other = other.length ? other : undefined;
-          this.view.apply(this, [U.encode(G.currentUser._uri) + (query ? "?" + query : '')].concat(other));
-        }
-        else {
+//        if (!G.currentUser.guest) {
+//          var other = U.slice.call(arguments, 1);
+//          other = other.length ? other : undefined;
+//          this.view.apply(this, [U.encode(G.currentUser._uri) + (query ? "?" + query : '')].concat(other));
+//        }
+//        else {
+        if (G.currentUser.guest) {
           this._requestLogin();
+          return;
 //          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         }
-        
-        return;
+        else
+          uri = G.currentUser._uri;
       }
       
       if (chat && /^_/.test(uri)) {
-        var chatPage = views[uri] = views[uri] || new this.ChatPage();
+        var chatPage = cachedView || this.cacheView(new Modules.ChatPage(), hashInfo);
         this.changePage(chatPage);
         return;
       }      
@@ -831,7 +837,7 @@ define('router', [
         
         if (isTemp || !newUri) {
           Events.once('synced:' + uri, function() {            
-            self._updateCache(uri, res.getUri());
+            self.viewCache.update(uri, res.getUri());
             var currentView = self.currentView;    
             if (currentView && currentView.resource === res) {
               updateHash(res);
@@ -841,7 +847,7 @@ define('router', [
           });
         }
         else {
-          self._updateCache(uri, newUri);
+          self.viewCache.update(uri, newUri);
           updateHash(res);
         }
       }
@@ -862,7 +868,7 @@ define('router', [
       
       if (res) {
         this.currentModel = res;
-        var v = views[uri] = views[uri] || new viewPageCl({model: res, source: this.previousHash});
+        var v = cachedView || this.cacheView(new viewPageCl({model: res, source: this.previousHash}), hashInfo);
 //        if (action === 'view')
 //          views[uri] = v;
         
@@ -876,7 +882,7 @@ define('router', [
       }
       
       var res = this.currentModel = new model({_uri: uri, _query: query});
-      var v = views[uri] = new viewPageCl({model: res, source: this.previousHash});
+      var v = this.cacheView(new viewPageCl({model: res, source: this.previousHash}), hashInfo);
 //      if (action === 'view')
 //        views[uri] = v;
       
@@ -1259,7 +1265,7 @@ define('router', [
         var redirect = pageOptions.postChangePageRedirect;
         if (redirect) {
           pageOptions.postChangePageRedirect = null;
-          view.whenDoneLoading(function() {
+          view.onload(function() {
             if (view.isActive())
               this.navigate(redirect, {trigger: true, replace: true});
           }.bind(this));
@@ -1366,16 +1372,72 @@ define('router', [
     }
   });
  
-//  var ViewCache = function(routes) {
-//    this.cache = {};
-//    for (var route in routes) {
-//      
-//    }  
-//  };
-//  
-//
-//  Router.viewCache = new ViewCache(_.clone(Router.routes));
+  var ViewCache = function() {
+    var cache = {};
+
+    function getSubCache(hashInfo) {
+      var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
+      if (hashInfo.type)
+        subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
+  
+      return subCache;
+    };
+    
+    function getKey(hashInfo) {
+      return hashInfo.query || hashInfo.uri;
+    };
+    
+    function getCached(hashInfo) {
+      hashInfo = hashInfo || U.parseHash();
+      var subCache = getSubCache(hashInfo);
+      return subCache[getKey(hashInfo)];
+    };
+    
+    function cacheView(view, hashInfo) {
+      hashInfo = hashInfo || U.parseHash();
+      var type = hashInfo.typeUri || '',
+          subCache = getSubCache(hashInfo);
+          
+      subCache[hashInfo.query || hashInfo.uri] = view;
+      view.on('invalidate', function() {
+        delete subCache[getKey(hashInfo)];
+      });
+      
+      return view;
+    };
+    
+    function update(oldUri, newUri) {
+      var hashInfo = {
+        type: U.getTypeUri(oldUri),
+        uri: oldUri
+      };
+      
+      var type = U.getTypeUri(oldUri);
+      _.each(['edit', 'view', 'make'], function(route) {
+        hashInfo.route = route;
+        var subCache = getSubCache(hashInfo),
+            cached = subCache[oldUri];
         
+        if (cached)
+          subCache[newUri] = cached;
+      });
+    };
+    
+    return {
+      getCached: getCached,
+      cacheView: cacheView,
+      update: update
+    }
+  };
+  
+  Router.prototype.getCachedView = function() {
+    return this.viewCache.getCached.apply(this.viewCache, arguments);
+  };
+
+  Router.prototype.cacheView = function() {
+    return this.viewCache.cacheView.apply(this.viewCache, arguments);
+  };
+
   return Router;
 });
   
