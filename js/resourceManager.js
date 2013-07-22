@@ -21,6 +21,9 @@ define('resourceManager', [
       REJECTED_PROMISE = $.Deferred().reject().promise(),
       REF_STORE = {
         name: 'ref',
+        options: {
+          keyPath: '_id'
+        },
         indices: {
           _uri: {unique: true, multiEntry: false},
           _dirty: {unique: false, multiEntry: false},
@@ -30,10 +33,14 @@ define('resourceManager', [
       //      _alert: {unique: false, multiEntry: false}      
         }
       },
-      REF_STORE_PROPS = _.keys(REF_STORE.indices).concat('_id'),
+      
+      REF_STORE_PROPS = _.keys(REF_STORE.indices).concat(REF_STORE.options.keyPath),
       
       MODULE_STORE = {
-        name: 'modules'      
+        name: 'modules',
+        options: {
+          keyPath: 'url'
+        }
       },
       
       REQUIRED_STORES = [REF_STORE, MODULE_STORE],
@@ -116,7 +123,7 @@ define('resourceManager', [
       params = collection.params;
       filter = U.getQueryParams(collection);
       isFilter = !!filter;
-      if (isCollection && options.startAfter) {
+      if (isCollection && options.from) {
         start = params.$offset; // not a jQuery thing
         options.start = start = start && parseInt(start);
       }
@@ -169,7 +176,7 @@ define('resourceManager', [
     
     var dbReqOptions = {key: key, data: data};
     if (isCollection) {
-      dbReqOptions.startAfter = options.startAfter,
+      dbReqOptions.from = options.from,
       dbReqOptions.perPage = collection.perPage;
       dbReqOptions.filter = isFilter && filter;
     }
@@ -301,8 +308,9 @@ define('resourceManager', [
       if (!obj) 
         return now;
       
-      var ts;
-      var type = U.getObjectType(obj).toLowerCase();
+      var ts,
+          type = U.getObjectType(obj).toLowerCase();
+      
       switch (type) {
         case '[object array]':
           ts = _.reduce(obj, function(memo, next)  {
@@ -361,10 +369,6 @@ define('resourceManager', [
       
       if (del.length)
         IDB.deleteObjectStores(del);
-//      if (!isOpen) {
-//        IDB.createObjectStore(REF_STORE.name, {keyPath: '_id', autoIncrement: true}, REF_STORE.indices);
-//        IDB.createObjectStore(MODULE_STORE.name, {keyPath: 'url', autoIncrement: false});
-//      }
       
       for (var i = 0; i < mk.length; i++) {
         var info = mk[i],
@@ -388,6 +392,10 @@ define('resourceManager', [
       }
 
       return IDB.start();
+    },
+    
+    put: function(storeName, items) {
+      return IDB.put(storeName, items);
     },
     
     addItems: function(items, classUri) {
@@ -424,7 +432,7 @@ define('resourceManager', [
           items[i] = U.isModel(item) ? item.toJSON() : item;
         }
         
-        IDB.put(classUri, items).then(defer.resolve, defer.reject);
+        RM.put(classUri, items).then(defer.resolve, defer.reject);
       }).promise();      
     }, //.async(100),
     
@@ -556,8 +564,8 @@ define('resourceManager', [
             debugger;
           }).progress(function(transaction) {
             var resStore = transaction.objectStore(type, 1);
-            IDB.put(resStore, data);
-            IDB.put(transaction.objectStore(REF_STORE.name, 1), ref);
+            RM.put(resStore, data);
+            RM.put(transaction.objectStore(REF_STORE.name, 1), ref);
             if (newUri !== oldUri) {
               resStore["delete"](oldUri);
               data._oldUri = oldUri;
@@ -630,7 +638,7 @@ define('resourceManager', [
       
       if (!U.isTempUri(uri) && !_.size(_.omit(ref, REF_STORE_PROPS))) {
         ref._dirty = 0;
-        return IDB.put(REF_STORE.name, ref);
+        return RM.put(REF_STORE.name, ref);
       }
       
       var updated = false, notReady = false;
@@ -663,9 +671,9 @@ define('resourceManager', [
         debugger;
         if (updated) {
           // not ready to sync with server, but we can update the item in its respective table
-          IDB.put(REF_STORE.NAME, ref).done(function() {
-            IDB.get(type, uri).done(function(item) {
-              IDB.put(type, _.extend(item, ref)).then(dfd.resolve, dfd.reject);
+          RM.put(REF_STORE.NAME, ref).done(function() {
+            RM.get(type, uri).done(function(item) {
+              RM.put(type, _.extend(item, ref)).then(dfd.resolve, dfd.reject);
             }).fail(dfd.resolve);
           }).fail(dfd.resolve);
         }
@@ -793,7 +801,7 @@ define('resourceManager', [
 //        }
       
       itemRef._problematic = 0;
-      IDB.put(REF_STORE.name, itemRef).done(function() {
+      RM.put(REF_STORE.name, itemRef).done(function() {
         RM.addItems([item], type).done(function() {
           addDefer.resolve();
         }).fail(function() {
@@ -816,7 +824,7 @@ define('resourceManager', [
       G.log(RM.TAG, 'db', 'deleting item', uri);
       IDB['delete'](type, uri);
       IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-        IDB['delete'](REF_STORE.name, _.pluck(results || [], '_id'));
+        IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));
       });      
     },
     
@@ -824,20 +832,14 @@ define('resourceManager', [
       if (!IDB.hasStore(type))
         return REJECTED_PROMISE;
       
-      var dfd = $.Deferred(),
-          promise = dfd.promise();
-      
-      IDB.get(type, uri).done(function(result) {
+      return IDB.get(type, uri).then(function(result) {
         if (result)
-          return dfd.resolve(result);
-        
-        if (!U.isTempUri(uri))
-          return dfd.reject(result);
-
-        IDB.queryByIndex('_tempUri').eq(uri).getAll(REF_STORE.name).then(dfd.resolve, dfd.reject);
-      }).fail(dfd.reject);
-      
-      return promise;  
+          return result;
+        else if (!U.isTempUri(uri))
+          return REJECTED_PROMISE;
+        else
+          return IDB.queryByIndex('_tempUri').eq(uri).getAll(REF_STORE.name);
+      });
     },
     
     getItems: function(options) {
@@ -853,18 +855,15 @@ define('resourceManager', [
       if (uri)
         return this.getItem(type, uri);
         
-      var startAfter = options.startAfter,
-          total = options.perPage,
-          filter = options.filter,
+      var filter = options.filter,
           data = options.data,
-          isCollection = U.isCollection(data),
-          vocModel = data.vocModel,
-          props = vocModel.properties,
+          props = data.vocModel.properties,
           temps = {},
           dfd = $.Deferred(),
           promise = dfd.promise(),
           query;
       
+      // no searching by composite keys like user.name
       if (_.any(filter, function(val, key) {
         return /\./.test(key);
       })) {
@@ -883,13 +882,14 @@ define('resourceManager', [
         function search() {
           options = _.clone(options);
           options.filter = data.belongsInCollection;
-          return IDB.search(type, options).then(dfd.resolve, dfd.reject);
+          return IDB.search(type, options);
         }
         
         query = QueryBuilder.buildQuery(data, filter);
         if (query) {
-          IDB.queryByIndex(query).getAll(type).done(dfd.resolve).fail(search);
-          return promise;
+          return IDB.queryByIndex(query).getAll(type).then(function(results) {
+            return results;
+          }, search);
         }
         else
           return search();
@@ -917,8 +917,10 @@ define('resourceManager', [
           }
         }
         
-        self.getItems(options).then(dfd.resolve, dfd.reject);
+        RM.getItems(options).then(dfd.resolve, dfd.reject);
       }).fail(dfd.reject);
+      
+      return promise;
     },
     
     restartDB: IDB.restart
@@ -943,61 +945,38 @@ define('resourceManager', [
     var commonTypes = G.commonTypes;
     var wClType = commonTypes.WebClass;
     var designerPkg = G.sqlUrl + '/www.hudsonfog.com/voc/system/designer/';
-    var dfd = $.Deferred();
-    dfd.promise().done(function() {
-      Events.trigger('goodToPublish', app);
-    }).fail(function(errors) {
-      Events.trigger('cannotPublish', errors);      
-    });
+    function notify(badBoys) {
+      if (badBoys)
+        Events.trigger('cannotPublish', errors)
+      else
+        Events.trigger('goodToPublish', app);
+    };
     
-    RM.Index('parentFolder').eq(appUri).getAll(RM.$db.objectStore(wClType, 0)).done(function(webCls) {
-      parse(webCls).done(function(webCls) {        
-        if (!webCls) {
-          dfd.resolve();
-          return;
+    IDB.queryByIndex('parentFolder').eq(appUri).getAll(wClType).then(function(webCls) {
+      if (!webCls)
+        return;
+      
+      var webClUris = _.pluck(webCls, '_uri');
+      // find all classes 
+      var isDesignObj = IDB.queryByIndex('_uri').betweeq(designerPkg, designerPkg + '\uffff');
+      var isBroken = IDB.queryByIndex('_problematic').eq(1);
+      return isDesignObj.and(isBroken).getAll(REF_STORE.name);
+    }).then(function(results) {
+      if (!results.length)
+        return;
+      
+      var badBoys = [];
+      _.each(results, function(designerObj) {
+        designerObj._error  = designerObj._error || {code: 400, details: 'Problems here. Help us out?'};
+        if (webClUris.indexOf(designerObj._uri) >= 0 || webClUris.indexOf(designerObj.domain) >= 0) {
+          badBoys.push(designerObj);
         }
-        
-        var webClUris = _.pluck(webCls, '_uri');
-        // find all classes 
-        var refStore = RM.$db.objectStore(REF_STORE.name);
-        var isDesignObj = RM.Index('_uri').betweeq(designerPkg, designerPkg + '\uffff');
-        var isBroken = RM.Index('_problematic').eq(1);
-        isDesignObj.and(isBroken).getAll(refStore).done(function(results) {
-          parse(results).done(function(results) {            
-            if (!results.length) {
-              dfd.resolve();
-              return;
-            }
-            
-            var badBoys = [];
-            _.each(results, function(designerObj) {
-              designerObj._error  = designerObj._error || {code: 400, details: 'Problems here. Help us out?'};
-              if (webClUris.indexOf(designerObj._uri) >= 0 || webClUris.indexOf(designerObj.domain) >= 0) {
-                badBoys.push(designerObj);
-              }
-            });
-            
-            if (!badBoys.length)
-              dfd.resolve();
-            else
-              dfd.reject(badBoys);
-          }).fail(function() {
-            debugger;
-            dfd.resolve();
-          });
-        }).fail(function() {
-          dfd.resolve();
-        });
-      }).fail(function() {
-        debugger;
-        dfd.resolve();
       });
-    }).fail(function(err, e){
-      debugger;
-      dfd.resolve();
-    });
+      
+      return badBoys;
+    }).then(notify);
   });
-  
+
   Events.on('VERSION:Models', RM.cleanDatabase);
   
   Events.on("saveToDB", function(resource) {

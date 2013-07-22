@@ -380,7 +380,9 @@ define('utils', [
       else if (hash.startsWith('home'))
         return null;
       
-      var route = U.getRoute(hash);
+      var route = U.getRoute(hash),
+          type;
+      
       hash = decodeURIComponent(hash);
       if (route) {
         var sqlIdx = hash.indexOf(G.sqlUri);

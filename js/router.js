@@ -976,7 +976,7 @@ define('router', [
       var self = this;
 //      Voc.loadStoredModels({models: [type]});
       var fetchModels = Voc.getModels(type, {sync: true});
-      if (fetchModels.isResolved())
+      if (fetchModels.state() === 'resolved')
         return true;
       else {
         fetchModels.done(function() {

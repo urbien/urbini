@@ -154,34 +154,25 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       return fetchModels(models, options);
       
     var modelsInfo = sortModelsByStatus(models, options);
-    var modelsDfd = $.Deferred(function(defer) {
-      if (G.online)
-        fetchAndLoadModels(modelsInfo, options).done(defer.resolve).fail(defer.reject);
-      else {
-        Events.once('online', function(online) {
-          var infoClone = _.clone(modelsInfo);
-          infoClone.have = [];
-          fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
-        });
-        
-        var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
-        loadModels(loading).done(defer.resolve).fail(defer.reject);
-      }
-    });
-    
-    var modelsPromise = modelsDfd.promise();
-    modelsDfd.__modelsDeferredId = G.nextId();
-    modelsPromise.__modelsPromiseId = G.nextId();
-    return modelsPromise;
+    if (G.online)
+      return fetchAndLoadModels(modelsInfo, options);
+    else {
+      Events.once('online', function(online) {
+        var infoClone = _.clone(modelsInfo);
+        infoClone.have = [];
+        fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
+      });
+      
+      var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
+      return loadModels(loading);
+    }
   };
 
   function fetchAndLoadModels(modelsInfo, options) {
-    var defer = $.Deferred(),
-        promise = defer.promise(),
-        mightBeStale = modelsInfo.mightBeStale,
+    var mightBeStale = modelsInfo.mightBeStale,
         modelsToGet = _.extend({}, modelsInfo.need, mightBeStale.infos);
     
-    $.when(fetchModels(modelsToGet, options), loadModels(modelsInfo.have, true)).then(function(data) {
+    return $.when(fetchModels(modelsToGet, options), loadModels(modelsInfo.have, true)).then(function(data) {
       G.checkVersion(data);
       if (!data) {
         // "need" should be empty
@@ -192,7 +183,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
 //              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
         }
         
-        return loadModels(mightBeStale.models, true).done(defer.resolve).fail(defer.reject);            
+        return loadModels(mightBeStale.models, true);
       }
       
       var mz = data.models || [],
@@ -224,9 +215,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       });
       
       var changedModels = _.union(newModels, notStale);
-      
       MODEL_CACHE = _.union(MODEL_CACHE, changedModels);
-      loadModels(changedModels).done(defer.resolve).fail(defer.reject);          
+      
+      // new promise
+      var promise = loadModels(changedModels); 
       setTimeout(function() {
         storeModels(newModels);
       }, 100);
@@ -236,9 +228,8 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       if (newModels.length)
         Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
       
-    }, defer.reject);
-      
-    return promise;
+      return promise;
+    });
   };
 
   function loadModels(models, dontOverwrite) {

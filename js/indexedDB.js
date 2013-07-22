@@ -16,6 +16,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   var instance,
       FileSystem,
+      fileSystemPromise,
       REJECTED_PROMISE = $.Deferred().reject().promise(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise()
 //      ,
@@ -25,6 +26,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   function Store(name, options, indices) {
     this.name = name;
     this.options = options;
+    if (options.keyPath)
+      options.keyPath = prepPropName(options.keyPath);
+    
     this.indices = [];
     for (var prop in indices) {
       this.indices.push(new Index(prop, indices[prop]));
@@ -42,21 +46,20 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     });
   };
   
-  function getFileSystem(items) {
-    var fsDfd = $.Deferred(), 
-        fsPromise = fsDfd.promise(),
-        self = this;
-    
+  function _getFileSystem(items) {
+    var self = this;
     items = !items ? null : _.isArray(items) ? items : [items];
     if (!items || (this.useFileSystem && !FileSystem && _.any(items, isFileOrFilePath ))) { // HACK
-      fsPromise = U.require('fileSystem').done(function(fs) { 
+      return (fileSystemPromise = U.require('fileSystem').then(function(fs) { 
         FileSystem = fs;
-      });
+      }));
     }
     else
-      fsDfd.resolve();
-    
-    return fsPromise;
+      return RESOLVED_PROMISE;
+  }
+  
+  function getFileSystem(items) {    
+    return fileSystemPromise || _getFileSystem(items);
   };
 
   function _prep(item) {
@@ -99,31 +102,25 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   function prep(items) {
-    var self = this,
-        dfds = [],
-        defer = $.Deferred(),
-        promise = defer.promise();
-    
+    var self = this;
     items = _.isArray(items) ? items : [items];
-    getFileSystem(items).done(function() {
-      $.when.apply($, _.map(items, _prep.bind(self))).then(function() {
-        defer.resolve([].slice.call(arguments));
-      }, defer.reject);
-    });
     
-    return promise;
+    return getFileSystem(items).then(function() {
+      return $.when.apply($, _.map(items, _prep.bind(self)));
+    }).then(function() {
+      return [].slice.call(arguments);
+    });
   };
   
   function _parse(_items) {
     var self = this,
         filePropName = self.filePropertyName,
-        defer = $.Deferred(),
         dfds,
         returnObj,
         items;
         
     if (!_items)
-      return defer.resolve(_items).promise(0);
+      return defer.resolve(_items).promise();
     
     dfds = [];
     returnObj = U.getObjectType(_items) === '[object Object]';
@@ -151,11 +148,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return item;
     });
     
-    $.when.apply($, dfds).always(function() {        
-      defer.resolve(returnObj ? items[0] : items);
-    });      
-    
-    return defer.promise();
+    return $.whenAll.apply($, dfds).then(function() {        
+      return returnObj ? items[0] : items;
+    });
   };
   
   function parse(_items) {
@@ -163,11 +158,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return RESOLVED_PROMISE;
     
     var self = this;
-    return $.Deferred(function(defer) {
-      getFileSystem(_items).done(function() {
-        _parse.call(self, _items).then(defer.resolve, defer.reject);
-      });
-    }).promise();
+    return getFileSystem(_items).then(function() {
+      return _parse.call(self, _items);
+    });
   }
   
   function alwaysTrue() {
@@ -228,8 +221,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   
   IDB.prototype.setDefaultStoreOptions = function(options) {
     this.defaultStoreOptions = _.clone(options);
-    if (this.defaultStoreOptions.keyPath)
-      this.defaultStoreOptions.keyPath = prepPropName(this.defaultStoreOptions.keyPath);
   };
   
   IDB.prototype.setDefaultIndexOptions = function(options) {
@@ -348,17 +339,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return this.db ? this.db.version : null;
   };
 
-  function start() {
+  IDB.prototype.start = function() {
     if (!this.storesToMake.length && !this.storesToKill.length)
       return RESOLVED_PROMISE;
     else {
       var version = this.getVersion();
       return this.restart(version && version + 1);
     }    
-  };
-  
-  IDB.prototype.start = function() {
-    return this._queueTask('running queued up IndexedDB operations for db: '.format(this.name), U.partialWith(start, this), true);
   };
 
   IDB.prototype.getStoreNames = function() {
@@ -406,22 +393,17 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.restart = function(version, reason) {
-    return this._queueTask('restarting IndexedDB {0}. {1}'.format(this.name, reason || ''), U.partialWith(restart, this, version, reason), true);
+    return this._queueTask('restarting IndexedDB {0}. {1}'.format(this.name, reason || ''), U.partialWith(restart, this, version), true);
   };
 
-  function get(storeName, uri) {
+  function get(storeName, primaryKey) {
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
-    
-    var self = this,
-        dfd = $.Deferred(),
-        promise = dfd.promise();
-    
-    this.$idb.objectStore(storeName).get(uri).done(function(item) {
-      parse.call(self, item).then(dfd.resolve, dfd.reject);
-    }).fail(dfd.reject);
-    
-    return promise;
+      
+    var self = this
+    return this.$idb.objectStore(storeName).get(prepPropName(primaryKey)).then(function(item) {
+      return parse.call(self, item);
+    });
   };
   
   IDB.prototype.get = function(storeName, uri) {
@@ -463,14 +445,11 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         return REJECTED_PROMISE;
       
       var args = arguments;
-      return self._queueTask('querying indexedDB by indices', function(defer) {          
+      return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {          
         args[0] = self.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
-        var promise = backup.apply(query, args);
-        promise.done(function(results) {
-          parse.call(self, results).then(defer.resolve, defer.reject);
-        }).fail(defer.reject);
-        
-        return defer.promise();
+        return backup.apply(query, args).then(function(results) {
+          return parse.call(self, results);
+        });
       });
     };
     
@@ -549,9 +528,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   function put(storeName, items) {
     var self = this,
         storeDfd = $.Deferred(),
-        storePromise = storeDfd.promise(),
-        dfd = $.Deferred(),
-        promise = dfd.promise();
+        storePromise = storeDfd.promise();
 
     if (typeof storeName == 'string') {
       self.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
@@ -562,15 +539,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       storeDfd.resolve(storeName);
     }
 
-    prep.call(this, items).done(function(items) {
-      storePromise.done(function(store) {
+    return prep.call(this, items).then(function(items) {
+      return storePromise.then(function(store) {
         _.each(items, function(item) {
           store.put(item);
         });
-      }).done(dfd.resolve).fail(dfd.reject);
-    }).fail(dfd.reject);
-    
-    return promise;
+      });
+    });
   };
   
   IDB.prototype.put = function(storeName, items) {
@@ -620,11 +595,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return wrapper;
   };
   
+  // Untested
   IDB.prototype.transaction = function(storeName, mode) {
     var wrapper = wrap(this.$idb, 'transaction', arguments);
     return this._queueTask('transaction against store {0}'.format(storeName), wrapper);
   };
   
+  // Untested
   IDB.prototype.objectStore = function(storeName, mode) {
     var wrapper = wrap(this.$idb, 'objectStore', arguments);
     return this._queueTask('open object store {0}'.format(storeName), wrapper);

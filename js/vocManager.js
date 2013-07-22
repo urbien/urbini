@@ -186,7 +186,7 @@ define('vocManager', [
 //    debugger;
     G.log(Voc.TAG, 'info', 'nuking models from LS');
     G.localStorage.clean(function(key) {
-      return key.startsWith(Voc.MODEL_PREFIX);
+      return key.startsWith(ModelLoader.getModelStoragePrefix());
     });
     
     if (!init) {
@@ -239,9 +239,10 @@ define('vocManager', [
       if (resource._changingModel)
         return;
       
-      var uri = resource.getUri();
-      var type = resource.vocModel.type;
-      var actualType = U.getTypeUri(uri);
+      var uri = resource.getUri(),
+          type = resource.vocModel.type,
+          actualType = U.getTypeUri(uri);
+      
       if (actualType && type != actualType) {
         var byType = actualTypes[actualType] = actualTypes[actualType] || [];
         byType.push(resource);

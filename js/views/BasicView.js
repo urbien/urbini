@@ -230,12 +230,12 @@ define('views/BasicView', [
     
     isDoneLoading: function() {
       return _.all(this._getLoadingDeferreds(), function(c) {
-        return c.isResolved() || c.isRejected();
+        return c.state() !== 'pending';
       });
     },
     
     onload: function(callback) {
-      var promise = $.when.apply($, this._getLoadingDeferreds());
+      var promise = $.whenAll.apply($, this._getLoadingDeferreds());
       callback && promise.then(callback);
       return promise;
     },

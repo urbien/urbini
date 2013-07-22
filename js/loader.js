@@ -1,6 +1,47 @@
 (function(window, doc, undefined) {
 var __started = new Date();
 
+$.extend({
+  RESOLVED_PROMISE: $.Deferred().resolve().promise(), 
+  whenAll: function() {
+    var dfd = $.Deferred(),
+        len = arguments.length;
+    
+    if (!len)
+      return $.RESOLVED_PROMISE;
+    
+    var results = [],
+        counter = 0,
+        state = "resolved",
+        resolveOrReject = function() {
+          if (this.state() === "rejected"){
+            state = "rejected";
+          }
+          
+          counter++;
+          switch (arguments.length) {
+            case 0:
+            case 1:            
+              results.push(arguments[0] || null);
+              break;
+            default:
+              results.push([].slice.call(arguments));
+              break;
+          }
+
+          if (counter === len) {
+            dfd[state === "rejected"? "reject": "resolve"](results);   
+          }  
+        };
+  
+    $.each(arguments, function(idx, item) {
+      item.always(resolveOrReject.bind(item)); 
+    });
+  
+    return dfd.promise();    
+  }
+});
+
 //// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
 //// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
 //$.extend({
@@ -31,16 +72,52 @@ var __started = new Date();
 //});
 
 //'use strict';
+
+// Use of jQuery.browser is frowned upon.
+// More details: http://docs.jquery.com/Utilities/jQuery.browser
+
 define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
 
+  // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
+  // Use of jQuery.browser is frowned upon.
+  // More details: http://docs.jquery.com/Utilities/jQuery.browser
   var G = Lablz,
-      browser = G.browser = $.browser,
+      browser = G.browser = (function detectBrowser() {
+        var browser = {},
+            rwebkit = /(webkit)[ \/]([\w.]+)/,
+            ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+            rmsie = /(msie) ([\w.]+)/,
+            rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
+    
+        function uaMatch( ua ) {
+          ua = ua.toLowerCase();
+    
+          var match = rwebkit.exec( ua ) ||
+                      ropera.exec( ua )  ||
+                      rmsie.exec( ua )   ||
+                      ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
+                      [];
+    
+          return { browser: match[1] || "", version: match[2] || "0" };
+        };
+    
+        var browserMatch = uaMatch( navigator.userAgent );
+        if ( browserMatch.browser ) {
+          browser[ browserMatch.browser ] = true;
+          browser.version = browserMatch.version;
+        }
+        
+        return browser;
+      })(),
+  
 //      ALL_IN_APPCACHE,
       hash = window.location.href.split('#')[1],
-      query = hash && hash.split('?')[1];
+      query = hash && hash.split('?')[1],
+      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
+      REJECTED_PROMISE = $.Deferred().resolve().promise();
   
   browser.chrome = browser.webkit && !!window.chrome;
   browser.safari = browser.webkit && !window.chrome;
@@ -351,63 +428,43 @@ define('globals', function() {
       return G._appStartDfd.promise();
     },
     putCached: function(urlToData, destination) {
-      return $.Deferred(function(defer) {        
-        if (destination === 'localStorage') {
+      if (destination === 'localStorage') {
+        for (var url in urlToData) {
+          G.localStorage.put(url, urlToData[url]);
+        }
+        
+        return RESOLVED_PROMISE;
+      }
+      else if (destination === 'indexedDB') {
+        if (G.dbType === 'none')
+          return REJECTED_PROMISE;
+              
+        return G.onAppStart().then(function() {
+          var modules = [];
           for (var url in urlToData) {
-            G.localStorage.put(url, urlToData[url]);
-          }
-          
-          defer.resolve();
-        }
-        else if (destination === 'indexedDB') {
-          if (G.dbType === 'none')
-            return $.Deferred().reject().promise();
-                
-          G.onAppStart().done(function() {
-            var modules = [];
-            for (var url in urlToData) {
-              modules.push({
-                url: url, 
-                data: urlToData[url]
-              });
-            };
+            modules.push({
+              url: url, 
+              data: urlToData[url]
+            });
+          };
 
-            G.ResourceManager.put('modules', modules).done(defer.resolve).fail(defer.reject);
-          });
-        }
-      }).promise();
+          return G.ResourceManager.put('modules', modules);
+        });
+      }
     },
     getCached: function(url, source) {
-      return $.Deferred(function(defer) {        
-        if (source === 'localStorage') {
+      if (source === 'localStorage') {
+        return $.Deferred(function(defer) {        
           var result = G.localStorage.get(url);
           if (result)
             defer.resolve(result);
           else
             defer.reject();
-        }
-        else if (source === 'indexedDB') {
-          var RM = G.ResourceManager;
-          
-//          if (!RM.storeExists('modules'))
-//            return defer.reject();
-//          
-//          var $db = RM && RM.$db;
-//          if (!$db)
-//            return defer.reject();
-//          
-//          RM.runTask(function() {
-          return RM.getItem('modules', url);
-//            defer.always(this.resolve);
-//            $db.objectStore('modules', 0).get(url).done(function(result) {
-//              if (result)
-//                defer.resolve(result.data)
-//              else
-//                defer.reject();
-//            }).fail(defer.reject);
-//          }, {name: 'get module: ' + url});
-        }
-      }).promise();
+        }).promise();
+      }
+      else if (source === 'indexedDB') {
+        return G.ResourceManager.getItem('modules', url);
+      }
     },
     dbType: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
@@ -974,25 +1031,20 @@ define('globals', function() {
         source = 'indexedDB';
       
       if (!modules.length)
-        pruneDfd.resolve(modules);
+        return $.Deferred().resolve(modules).promise;
       
       var minify = G.minify,
           def = G.minifyByDefault;
 
-      var pruned = [],
-          cachedPromises = [];
-      
-      $.each(modules, function(i, dmInfo) {
+      var pruned = [];
+      var cachedPromises = $.map(modules, function(dmInfo, i) {
         var url;
         for (var n in dmInfo) {
           url = n;
           break;
         }
         
-        var cachedDfd = $.Deferred();
-        cachedPromises.push(cachedDfd.promise());
-        var metadataPromise = G.getCached(getMetadataURL(url), source);
-        metadataPromise.done(function(metadata) {
+        return G.getCached(getMetadataURL(url), source).then(function(metadata) {
           metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
           var dateSaved = metadata.dateModified;
           var minified = metadata.minified;
@@ -1008,15 +1060,11 @@ define('globals', function() {
             }
 
             if (!fetch) {
-              G.getCached(url, source).done(function(text) {                
+              return G.getCached(url, source).then(function(text) {                
                 G.modules[url] = text;
-                cachedDfd.resolve();
               }).fail(function() {
                 pruned.push(url);
-                cachedDfd.resolve();
-              }); //G.localStorage.get(url);
-              
-              return;
+              });
             }
           }
           else {
@@ -1027,14 +1075,12 @@ define('globals', function() {
           }
           
           pruned.push(url);
-          cachedDfd.resolve();
-        }).fail(function() {          
+        }, function() {          
           pruned.push(url);
-          cachedDfd.resolve();
-        });        
+        });
       });
     
-      $.when.apply($, cachedPromises).done(function() {
+      $.whenAll.apply($, cachedPromises).always(function() {
         pruneDfd.resolve(pruned);
       });
       
@@ -1048,7 +1094,7 @@ define('globals', function() {
             async: false
           },
           source = options.source = options.source || 'localStorage',
-          async = options.async,
+          useWorker = G.hasWebWorkers && options.async,
           worker;
 
       // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
@@ -1057,6 +1103,48 @@ define('globals', function() {
           G.recycleXhrWorker(worker);
       });
       
+      function onResponse(resp) {
+        if (useWorker) {
+          if (resp.status == 304)
+            bundleDfd.resolve();
+          else
+            resp = resp.data;
+        }
+        else {
+          try {
+            resp = JSON.parse(resp);
+          } catch (err) {
+          }
+        }
+        
+        var newModules = {};
+        if (resp && !resp.error && resp.modules) {
+          for (var i = 0; i < resp.modules.length; i++) {
+            var m = resp.modules[i];
+            for (var name in m) {
+              var minIdx = name.indexOf('.min.js');
+              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+              G.modules[mName] = newModules[mName] = m[name];
+              break;
+            }
+          }
+        }
+      
+        setTimeout(function() {
+          for (var url in newModules) {
+            var text = newModules[url];
+            newModules[getMetadataURL(url)] = {
+              dateModified: G.serverTime,
+              minified: G.isMinified(url, text)
+            };
+          }
+          
+          G.putCached(newModules, source);
+        }, 100);
+        
+        bundleDfd.resolve();
+      };
+
       G.pruneBundle(bundle, options).done(function(pruned) {
         if (!pruned.length) {
           G.log('init', 'cache', 'bundle was cached', bundle);
@@ -1064,81 +1152,20 @@ define('globals', function() {
           return bundlePromise;
         }
         
-        var data = {modules: pruned.join(',')};
-  //      if (typeof G.minify !== 'undefined')
-  //        data.minify = G.minify;
-        
-        var useWorker = G.hasWebWorkers && async;
-        var getBundleReq = {
-          url: G.serverName + "/backboneFiles", 
-          type: 'POST',
-          data: data,
-          dataType: 'JSON'
-        };
-        
-        var complete = function(resp) {
-          if (useWorker) {
-            if (resp.status == 304)
-              bundleDfd.resolve();
-            else
-              resp = resp.data;
-          }
-          else {
-            try {
-              resp = JSON.parse(resp);
-            } catch (err) {
-            }
-          }
+        var data = {modules: pruned.join(',')},
+            getBundleReq = {
+              url: G.serverName + "/backboneFiles", 
+              type: 'POST',
+              data: data,
+              dataType: 'JSON'
+            };
           
-          var newModules = {};
-          if (resp && !resp.error && resp.modules) {
-            for (var i = 0; i < resp.modules.length; i++) {
-              var m = resp.modules[i];
-              for (var name in m) {
-                var minIdx = name.indexOf('.min.js');
-                var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
-                G.modules[mName] = newModules[mName] = m[name];
-                break;
-              }
-            }
-          }
-        
-//          if (hasLocalStorage) {
-            setTimeout(function() {
-              for (var url in newModules) {
-                var text = newModules[url];
-                newModules[getMetadataURL(url)] = {
-                  dateModified: G.serverTime,
-                  minified: G.isMinified(url, text)
-                };
-              }
-              
-              G.putCached(newModules, source);
-//              for (var url in newModules) {
-//                var text = newModules[url];
-////                G.localStorage.put(url, text);
-////                G.localStorage.put(getMetadataURL(url), {
-////                  dateModified: G.serverTime,
-////                  minified: G.isMinified(url, text)
-////                });
-//                G.putCached(url, text, source);
-//                G.putCached(getMetadataURL(url), {
-//                  dateModified: G.serverTime,
-//                  minified: G.isMinified(url, text)
-//                }, source);
-//              }
-            }, 100);
-//          }
-          
-          bundleDfd.resolve();
-        }
-  
         if (useWorker) {
           G.getXhrWorker().done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
               G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-              complete(event.data);
+              onResponse(event.data);
             };
             
             worker.onerror = bundleDfd.reject;
@@ -1146,7 +1173,7 @@ define('globals', function() {
           });
         }
         else {      
-          getBundleReq.success = complete; 
+          getBundleReq.success = onResponse; 
           G.sendXhr(getBundleReq);
         }
       });
@@ -1377,15 +1404,13 @@ require(['globals'], function(G) {
     }
     
 //    require(pModules);
-    require(pModules, function() {
-      loadRegular();
-    });
+    require(pModules).done(loadRegular);
   }
   else
     loadRegular();
 
   function loadRegular() {
-    G.loadBundle(preBundle).done(function() {
+    G.loadBundle(preBundle).then(function() {
 //      preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle");
       
@@ -1396,41 +1421,34 @@ require(['globals'], function(G) {
         css[i] = cssObj.name;
       }
       
-      require('__domReady__').done(function() {
-        require(['jqmConfig', 'events', 'app'].concat(css), function(jqmConfig, Events, App) {
-          Events.on('appStart', G._appStartDfd.resolve);
-          console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
-          G.finishedTask("loading modules");
-          G.browser = $.browser;
-          App.initialize();
-          G.startedTask('loading post-bundle');
-          G.loadBundle(postBundle, {async: true}).done(function() {
-            postBundle._deferred.resolve();
-            
-            G.finishedTask('loading post-bundle');
-            G.startedTask('loading extras-bundle');
-            G.onAppStart().done(function() {            
-              G.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
-                extrasBundle._deferred.resolve();
-              });
-            });
-          });
-          
-//          if (window.location.hash.length < 2) {
-            Events.once('appStart', function() {
-              G.hideSpinner(spinner);
-              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-            });
-//          }
-//          else {
-//            Events.once('pageChange', function() {
-//              G.hideSpinner(spinner);
-//              console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-//            });
-//          }
-        });
+      return require('__domReady__').then(function() {
+        return require(['jqmConfig', 'events', 'app'].concat(css));
       });
-    })
+    }).then(function(jqmConfig, Events, App) {
+      Events.on('appStart', G._appStartDfd.resolve);
+      G._appStartDfd.done(function() {
+        G.hideSpinner(spinner);
+        console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+      });
+
+      console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
+      G.finishedTask("loading modules");
+      G.browser = $.browser;
+      App.initialize();
+      G.startedTask('loading post-bundle');
+      return G.loadBundle(postBundle, {async: true}).done(function() {
+        G.finishedTask('loading post-bundle');
+        postBundle._deferred.resolve();
+      });
+    });
+
+    G.onAppStart().done(function() {            
+      G.startedTask('loading extras-bundle');
+      G.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
+        G.startedTask('loading extras-bundle');
+        extrasBundle._deferred.resolve();
+      });
+    });    
   }
 });
 })(window, document, undefined);

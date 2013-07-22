@@ -79,6 +79,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 								};
 							}
 						} catch (e) {
+						  debugger;
 							e.name = "exception";
 							dfd.rejectWith(idbRequest, ["exception", e]);
 						}

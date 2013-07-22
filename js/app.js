@@ -11,8 +11,7 @@ define('app', [
  'vocManager',
  'resourceManager',
  'router',
- 'collections/ResourceList',
- 'jqueryPlugins'
+ 'collections/ResourceList'
  ], function(G, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, RM, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
