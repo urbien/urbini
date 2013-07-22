@@ -1,5 +1,9 @@
 define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
   
+  var STATE_BLOCKED = 'blocked',
+      STATE_PAUSED = 'paused',
+      STATE_OPEN = 'open';
+  
   function PriorityQueue() {
     var queue = [];
     return {
@@ -9,7 +13,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       push: function(task) {
         queue.push(task);
         queue.sort(function(a, b) {
-          return a.isBlocking ? -1 : a.priority - b.priority;
+          return a.blocking ? -1 : a.priority - b.priority;
         });
       },
       
@@ -46,16 +50,48 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         queue = this.queue = new PriorityQueue(),
         running = this.running = [];
     
+    // state machine methods
+    _.extend(tq, {
+      pause: function() {
+        if (tq.state !== STATE_OPEN)
+          debugger;
+        
+        tq.state = STATE_PAUSED;
+      },
+      block: function() {
+        if (tq.state === STATE_BLOCKED)
+          debugger;
+        
+        tq.state = STATE_BLOCKED;
+      },
+      open: function() {
+        if (tq.state === STATE_PAUSED)
+          debugger;
+        
+        tq.state = STATE_OPEN;
+      },
+      isOpen: function () {
+        return tq.state === STATE_OPEN;
+      },
+      isPaused: function() {
+        return tq.state === STATE_PAUSED;
+      },
+      isBlocked: function() {
+        return tq.state === STATE_BLOCKED;
+      },
+    });
+    // end state machine methods
+
+    tq.open();
     tq.name = name;
-    tq.blocked = false;
     
     function checkForDisaster(task) {
-      if (task.isBlocking) {
+      if (task.blocking) {
         if (running.length)
           throw "About to run a blocking task {0} alongside other tasks: {1}!".format(task.name, _.pluck(running, name).join(', '));
       }
       else {
-        var runningBlockingTask = _.find(tq.running, function(t) { return t.isBlocking }); 
+        var runningBlockingTask = _.find(tq.running, function(t) { return t.blocking }); 
         if (runningBlockingTask)
           throw "About to run a non-blocking task {0} alongside a blocking task: {1}!".format(task.name, runningBlockingTask.name);
       }
@@ -68,22 +104,25 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       log('Running task:', task.name);
 //      task.notify();
       checkForDisaster(task);
+      if (task.blocking)
+        tq.block();
+
       var promise = task.run();
       running.push(task);
       promise.always(function() {
         log('Task completed:', task.name);
         running.splice(running.indexOf(task), 1);
-        if (!running.length) {
-          tq.blocked = false;        
-          next(); // if there are some tasks running already, 
-        }
+        if (tq.isBlocked())
+          tq.open();
+        
+        next(); 
       });
       
-      if (!task.isBlocking)
+      if (!task.blocking)
         next();
       
       return promise;
-    }
+    };
     
     function queueTask(task) {
       if (!(task instanceof Task))
@@ -91,29 +130,24 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       
       var qLength = queue.length();
       log('Checking task:', task.name);
-      var isBlocking = task.isBlocking;
-      if (isBlocking) {
-        tq.blocked = true;
-        if (qLength || running.length) {
-          log('queueing blocking task:', task.name);
-          queue.push(task);
-        }        
-        else
-          runTask(task);
-      }
-      else {
-        if (tq.blocked) {
-          log('Queue blocked. Queueing non-blocking task:', task.name);
-          queue.push(task);
-        }
-        else
-          runTask(task);
+      var blocking = task.blocking;
+      if (tq.isBlocked() || tq.isPaused()) {
+        log('queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
+        queue.push(task);
+        return task.promise();
       }
       
+      if (task.blocking)
+        tq.pause();
+      
+      runTask(task);
       return task.promise();
     };
     
     function next() {
+      if (tq.isBlocked())
+        return;
+      
       if (queue.length())
         runTask(queue.pop());
     };
@@ -122,11 +156,13 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       if (!tq.debug)
         return;
       
-      console.log.apply(console, arguments);
+      var args = [].slice.call(arguments);
+      args.unshift("taskQueue");
+      G.log.apply(G, args);
     };
     
     return {
-      log: log,
+      log: log,      
       debug: function(debug) {
         tq.debug = debug;
       },
@@ -140,30 +176,22 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     }
   };
   
-  function Task(name, taskFn, isBlocking, priority) {
+  function Task(name, taskFn, blocking, priority) {
     if (!(this instanceof Task))
-      return new Task(name, taskFn, isBlocking, priority);
+      return new Task(name, taskFn, blocking, priority);
     
     var self = this,
         defer = $.Deferred(),
         promise = defer.promise(), 
         started = false;
-//        ,
-//        onDone = [],
-//        onFail = [];
         
-    function finish() {
-      _.each(onDone, promise.done); 
-      _.each(onFail, promise.fail);
-    };
-    
     this.name = name;
     this.priority = priority || 0;
-    this.isBlocking = isBlocking || false;
+    this.blocking = blocking || false;
     this.run = function() {
       log('running task:', this.name);
       started = true;
-      taskFn.call(defer, defer); //lazy.start().promise();
+      taskFn.call(defer, defer);
       setTimeout(function() {
         if (defer.state() === 'pending') {
           debugger;
