@@ -766,6 +766,11 @@ define('globals', function() {
           color: '#88FFFF',
           bg: '#000'
         },
+        app: {
+          on: true,
+          color: '#88FFFF',
+          bg: '#000'
+        },
         db: {
           on: true,
           color: '#FFFFFF',
@@ -1192,7 +1197,7 @@ define('globals', function() {
         mobiscroll: 'lib/mobiscroll-datetime-min',
         simplewebrtc: 'lib/simplewebrtc',
         jqmConfig: 'jqm-config',
-        jqueryMobile: 'lib/jquery.mobile-1.3.1',
+        jqueryMobile: 'lib/jquery.mobile-1.3.2',
         underscore: 'lib/underscore',
         backbone: 'lib/backbone',
         indexedDBShim: 'lib/IndexedDBShim',
