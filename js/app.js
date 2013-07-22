@@ -7,12 +7,13 @@ define('app', [
  'events',
  'error',
  'cache',
+ 'modelLoader',
  'vocManager',
  'resourceManager',
  'router',
  'collections/ResourceList',
  'jqueryPlugins'
- ], function(G, Backbone, Templates, U, Events, Errors, C, Voc, RM, Router, ResourceList) {
+ ], function(G, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, RM, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -237,7 +238,7 @@ define('app', [
         extendMetadataKeys();
         App.setupNetworkEvents();
         Voc.checkUser();
-        Voc.loadEnums();
+        ModelLoader.loadEnums();
         var waitTime = 50;
         dbDfd.done(function() {
           getTemplates();

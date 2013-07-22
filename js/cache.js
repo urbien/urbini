@@ -148,7 +148,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     },
     
     // Plugs
-    plugs: {},
+//    plugs: {},
 //    PLUGS_PREFIX: 'plugs:',
 //    savePlugs: function(plugs) {
 //      for (var type in plugs) {
@@ -163,6 +163,10 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //      }
 //    },
 
+//    cachePlugs: function(plugs) {
+//      _.extend(C.plugs, plugs);
+//    },
+    
     clearCache: function() {
       C.shortNameToModel = {};
       C.typeToModel = {};
@@ -206,5 +210,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   });
   
   Events.on('newResource', C.cacheResource);
+  Events.on('newModel', C.cacheModel);
+//  Events.on('newPlugs', C.cachePlugs);
   return G.Cache = cache;
 });

@@ -10,12 +10,13 @@ define('router', [
   'vocManager',
   'views/HomePage',
   'templates',
-  'jqueryMobile'
+  'jqueryMobile',
+  'appAuth'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m/*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};
   var Router = Backbone.Router.extend({
@@ -249,6 +250,9 @@ define('router', [
     },
 
     home: function() {
+      if (!this.routePrereqsFulfilled('home', arguments))
+        return;
+      
       var prev = this.currentView;
       if (this.backClicked) {
         this.currentView = this.viewsStack.pop();
@@ -298,8 +302,8 @@ define('router', [
 
       var self = this,
           ListPage = Modules.ListPage,
-          hashInfo = U.parseHash(oParams),
-          cachedView = this.getCachedView(hashInfo),
+          hashInfo = G.currentHashInfo,
+          cachedView = this.getCachedView(),
           typeUri = hashInfo.type,
           query = hashInfo.query;
           
@@ -387,8 +391,8 @@ define('router', [
       if (!this.routePrereqsFulfilled('templates', arguments))
         return;
 
-      var hashInfo = U.parseHash(),
-          cached = this.getCachedView(hashInfo);
+      var hashInfo = G.currentHashInfo,
+          cached = this.getCachedView();
       
       if (cached) {
         this.changePage(cached);
@@ -605,22 +609,19 @@ define('router', [
       if (!this.routePrereqsFulfilled('make', arguments))
         return;
       
-      var hashInfo = U.parseHash(),
+      var hashInfo = G.currentHashInfo,
           EditPage = Modules.EditPage, 
           type = hashInfo.type;
       
       if (!this.isModelLoaded(type, 'make', arguments))
         return;
 
-      var vocModel = U.getModel(type);
-      if (!this.isAppLoadedAndInstalled(type))
-        return;
-
-      var params = U.getHashParams(),
+      var vocModel = U.getModel(type),
+          params = U.getHashParams(),
           makeId = params['-makeId'];
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
-      var mPage = this.getCachedView(hashInfo); //this.MkResourceViews[makeId];
+      var mPage = this.getCachedView(); //this.MkResourceViews[makeId];
       if (mPage && !mPage.model.getUri()) {
         // all good, continue making ur mkresource
       }
@@ -668,10 +669,22 @@ define('router', [
       }
     },
     
+    updateHashInfo: function() {
+      var oldHash = G.currentHash;
+      G.currentHash = U.getHash();
+      if (G.currentHash !== oldHash)
+        G.currentHashInfo = U.parseHash();
+    },
+    
     routePrereqsFulfilled: function(route, args) {
+      this.updateHashInfo();
       var self = this,
-          hashInfo = U.parseHash(),
-          views;
+          views,
+          installationState,
+          hashInfo = G.currentHashInfo;
+      
+      if (route == 'home')
+        return true;
       
       if (G.currentUser.guest && ['chat', 'edit', 'make'].indexOf(route) >= 0) {
         this._requestLogin();
@@ -707,13 +720,17 @@ define('router', [
         }
       }
       
+      var isWriteRoute = ['make', 'edit'].indexOf(hashInfo.action) >= 0;
       // the user is attempting to install the app, or at least pretending well
-      if (['make', 'edit'].indexOf(hashInfo.action) >= 0 && hashInfo.type.endsWith(G.commonTypes.AppInstall)) {
+      if (isWriteRoute && hashInfo.type.endsWith(G.commonTypes.AppInstall))
         return true;
-      }
       
-      if (G.currentApp.forceInstall && !this.isAppLoadedAndInstalled()) {
-        return false;
+      if (G.currentApp.forceInstall || isWriteRoute) {
+        installationState = AppAuth.getAppInstallationState(hashInfo.type);
+        if (!installationState.allowed) {
+          AppAuth.requestInstall(G.currentApp);
+          return false;
+        }
       }
       
       return true;
@@ -745,8 +762,8 @@ define('router', [
       if (!this.routePrereqsFulfilled(action, arguments))
         return;
       
-      var hashInfo = U.parseHash(),
-          cachedView = this.getCachedView(hashInfo),
+      var hashInfo = G.currentHashInfo,
+          cachedView = this.getCachedView(),
           uri = hashInfo.uri,
           query = hashInfo.query,
           typeUri = hashInfo.type,
@@ -973,234 +990,6 @@ define('router', [
       }
     },
 
-    _getInstallTitle: function(appName, edit) {
-      if (edit)
-        return 'Allow app {0}'.format(appName);
-      else
-        return 'Install app {0}'.format(appName);
-    },
-
-    _getInstallTerms: function(className, appName, appPlugs, edit) {
-      if (edit)
-        return 'Edit your inter-app connections here';
-      else {
-        var msg = 'Do you allow app {0} to be added to your profile'.format(appName);
-        if (appPlugs.length)
-          return '{0} and connect to app{1}? You can always disconnect apps on their app pages and/or remove them from profile.'.format(className, (appPlugs.length === 1 ? ' ' : 's ') + appPlugs.join(', '));
-        else
-          return '{0}?'.format(msg);
-      }
-    },
-
-    isAppConfigured: function(app) {
-      var appPath = U.getValue(app, 'appPath');
-      var userAccType = 'http://urbien.com/voc/dev/{0}/UserAccount'.format(appPath);
-      var type = U.getModelType();
-      if (type === userAccType)
-        return true;
-      
-      var accountModel = U.getModel(userAccType);
-      if (!accountModel)
-        return true;
-      
-      if (!_.size(_.omit(accountModel.properties, 'davDisplayName', 'davGetLastModified', '_uri', '_shortUri', 'id', 'app', 'user')))
-        return true;
-      
-//      var existing = C.getResource(function(res) {
-//        return res.vocModel == accountModel;
-//      });
-//      
-//      if (existing && existing.length)
-//        return true;
-
-      debugger;
-      var userAccounts = new ResourceList(null, {model: accountModel, params: {
-        user: G.currentUser._uri,
-        app: U.getValue(app, '_uri')
-      }});
-      
-      var redirectOptions = {
-        $returnUri: window.location.href, 
-        '-info': 'Configure your app below', 
-        $title: appPath + ' config'          
-      };
-
-      var self = this;
-      var error = function(uAccs, xhr, options) {
-//      switch (xhr.status) {
-//      case 404:
-        debugger;
-        self.navigate(U.makeMobileUrl('make', accountModel.type, redirectOptions), {trigger: true});            
-//      }
-      };
-      
-      var success = function(resp, status, options) {
-        var acc = userAccounts.models && userAccounts.models[0];
-        if (acc)
-          self.navigate(U.makeMobileUrl('edit', userAccounts.models[0], redirectOptions), {trigger: true});
-        else
-          error(userAccounts, status, options);
-      }
-      
-      userAccounts.fetch({
-        success: _.once(success),
-        error: _.once(error)
-      });
-
-      return false;
-    },
-    
-    isAppLoadedAndInstalled: function(type) {
-      var appPath,
-          className,
-          typeBased = !!type;
-      
-      if (type) {
-        if (!U.isAnAppClass(type))
-          return true;
-        
-        appPath = U.getAppPath(type).toLowerCase();
-        className = U.getModel(type).displayName;
-      }
-      else
-        appPath = G.currentApp.appPath.toLowerCase();
-      
-      var user = G.currentUser;
-      if (user.guest) {
-        this._requestLogin({
-          msg: 'Please login before you use this app' 
-        });
-        
-        return false;
-      }
-      
-//      var APP_TERMS = 'Make sure you agree to this app\'s terms and conditions';
-      var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
-      var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
-      if (appInfo) {
-        if (!appInfo.allowed) {
-          var title = this._getInstallTitle(appInfo.davDisplayName);
-          var redirectOptions = {
-            $returnUri: U.getHash(), 
-            $title: title, 
-            allow: true
-          };
-          
-          if (typeBased) {
-            var terms = this._getInstallTerms(className, appInfo.title, null, true);
-            if (terms) {
-              redirectOptions['-info'] = terms;
-            }
-          }
-          
-          this.navigate(U.makeMobileUrl('edit', appInfo.install, redirectOptions), {trigger: true, replace: true});
-          return false;
-        }
-      
-        return this.isAppConfigured(appInfo);
-      }
-
-      // theoretically, we can only be in G.currentApp, and it's not installed
-//      var appUri = G.currentApp._uri;
-      var self = this, 
-          commonTypes = G.commonTypes,
-          appType = commonTypes.App, 
-          friendAppType = commonTypes.FriendApp,
-          currentApp = G.currentApp;
-      
-      Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
-        var installOptions = {$returnUri: window.location.href};
-        var app, appUri, followsList, fetchFollows;
-        var fetchFollowsPipe = $.Deferred();
-        var appIsCurrentApp = currentApp.appPath === appPath;
-        if (appIsCurrentApp)
-          appUri = currentApp._uri;
-        
-        var fetchApp = $.Deferred(function(defer) {
-          var appModel = U.getModel(appType);
-          if (!appIsCurrentApp) {
-            var atts = {appPath: appPath};
-            if (!G.online) {
-              debugger;
-              app = C.search(atts);
-              if (!app) {
-                Errors.offline();
-                return defer.reject();
-              }
-            }
-            else {
-              var apps = new ResourceList(null, {model: appModel, params: atts});
-              apps.fetch({
-                sync: true, 
-                success: function() {
-                  app = apps.models[0];
-                  C.cacheResource(app);
-                  followsList = new ResourceList(null, {model: U.getModel(friendAppType), params: {friend1: app.getUri()}}); // FriendApp list representing apps this app follows
-                  followsList.fetch({sync: true, success: fetchFollowsPipe.resolve, error: fetchFollowsPipe.resolve});
-                  defer.resolve();
-                }, 
-                error: defer.reject
-              });
-            }
-          }
-          else {
-            app = C.getResource(appUri);
-            if (app) {
-              defer.resolve(app);
-              return;
-            }
-            
-            app = new appModel({_uri: appUri});
-            app.fetch({sync: true, success: defer.resolve, error: defer.reject});
-          }
-        }).promise();
-
-        if (appIsCurrentApp) {
-          followsList = new ResourceList(null, {model: U.getModel(friendAppType), params: {friend1: appUri}}); // FriendApp list representing apps this app follows
-          followsList.fetch({sync: true, success: fetchFollowsPipe.resolve, error: fetchFollowsPipe.resolve});
-        }
-
-        fetchApp.done(function() {
-          installOptions.application = app.getUri();
-        });
-        
-        $.when.apply($, [fetchFollowsPipe, fetchApp]).done(function() {
-          var installedAppUris = _.pluck(user.installedApps, '_uri');
-          followsList = followsList.filter(function(friend) {
-            var target = friend.get('friend2');
-            return _.contains(installedAppUris, target);
-          });
-          
-          var followsNames = _.pluck(followsList, 'davDisplayName');
-          var followsCSV = followsNames.join(', ');
-          var appName = U.getDisplayName(app);
-          var title = self._getInstallTitle(appName);
-          var redirectOptions = {
-            $returnUri: U.getHash(), 
-            $title: title, 
-            allow: true,
-            appPlugs: followsCSV
-          };
-          
-          if (typeBased) {
-            var terms = self._getInstallTerms(className, appName, followsNames);
-            if (terms) {
-              redirectOptions['-info'] = terms;
-            }
-          }
-
-          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default
-        }).fail(function() {
-          debugger;
-        });
-      }).fail(function() {
-        debugger;
-        Errors.getDefaultErrorHandler().apply(this, arguments);
-      });
-      
-      return false;
-    },
-    
     checkErr: function() {
 //      var q = U.getQueryParams();
 //      var msg = q['-errMsg'] || q['-info'] || this.errMsg || this.info;
@@ -1208,7 +997,7 @@ define('router', [
 //        U.alert({msg: msg, persist: true});
 //      
 //      this.errMsg = null, this.info = null;
-      var params = U.getHashParams(),
+      var params = G.currentHashInfo.params,
           info = params['-info'] || params['-gluedInfo'],
           error = params['-error'] || params['-gluedError'];
           
@@ -1376,6 +1165,7 @@ define('router', [
     var cache = {};
 
     function getSubCache(hashInfo) {
+      hashInfo = hashInfo || G.currentHashInfo;
       var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
       if (hashInfo.type)
         subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
@@ -1384,13 +1174,13 @@ define('router', [
     };
     
     function getKey(hashInfo) {
+      hashInfo = hashInfo || G.currentHashInfo;
       return hashInfo.query || hashInfo.uri;
     };
     
     function getCached(hashInfo) {
-      hashInfo = hashInfo || U.parseHash();
-      var subCache = getSubCache(hashInfo);
-      return subCache[getKey(hashInfo)];
+      hashInfo = hashInfo || G.currentHashInfo;
+      return getSubCache(hashInfo)[getKey(hashInfo)];
     };
     
     function cacheView(view, hashInfo) {
