@@ -78,7 +78,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       },
       isBlocked: function() {
         return tq.state === STATE_BLOCKED;
-      },
+      }
     });
     // end state machine methods
 
