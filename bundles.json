@@ -2,7 +2,7 @@
   pre: {
     js: ['jqm-config', 'lib/underscore', 'lib/backbone', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'cache', 'utils', 'error', 'events', 'models/Resource', 
     		 'collections/ResourceList', 'lib/jquery.anystretch', 'views/HomePage', 'vocManager', 'resourceManager', 'router', 'app'],
-    css: ['lib/jquery.mobile-1.3.1.min.css', 'lib/jquery.mobile.theme-1.3.1.min.css', {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.1.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
+    css: ['lib/jquery.mobile-1.3.2.min.css', 'lib/jquery.mobile.theme-1.3.2.min.css', {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.2.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
     html: ['../templates.jsp']
   },
   post: {
@@ -17,7 +17,7 @@
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css', '../styles/codemirror.css']
   },
   appcache: {
-    js: ['xhrWorker', 'lib/jquery.mobile-1.3.1', 'loader', 'simpleRequirePlusJQuery', 'bootoffline'],
-    css: ['lib/jqm-icon-pack-3.0.0-fa.css']
+    js: ['xhrWorker', 'lib/jquery.mobile-1.3.2', 'loader', 'simpleRequirePlusJQuery', 'bootoffline'],
+    css: ['lib/jqm-icon-pack-fa-3.2.0.css']
   }
 }
