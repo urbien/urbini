@@ -196,10 +196,16 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.setDefaultIndexOptions(options.defaultIndexOptions || {});
     this.taskQueue = new TaskQueue("indexedDB");
 //    this.defaultStoreOptions = defaultStoreOptions
+    this._openDfd = $.Deferred();
+    this._openPromise = this._openDfd.promise();
     
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
     };
+  };
+  
+  IDB.prototype.onOpen = function(cb) {
+    return this._openPromise.then(cb);
   };
 
   IDB.prototype._clearStoreMonitors = function() {
@@ -295,7 +301,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       store = new Store(name, _.defaults(options || {}, this.defaultStoreOptions || {}), indices);
     }
 
-    this.storesToMake.push(store);
+    if (!_.find(this.storesToMake, function(s) { return s.name === store.name }))
+      this.storesToMake.push(store);
+    
     return this;
   };
 
@@ -358,6 +366,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.wipe = function(filter, reason) {
+    if (!this.isOpen())
+      return this.onOpen(U.partialWith(this.wipe, this, filter, reason));
+    
     if (!filter)
       return this._queueTask('wiping IndexedDB {0}. {1}'.format(this.name, reason || ''), this.$idb.deleteDatabase, true);
     
@@ -381,6 +392,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.$idb = $.indexedDB(this.name, settings);
     this.$idb.done(function(db, event) {
       self.db = db;
+      self._openDfd.resolve();
     });
     
     return this.$idb;

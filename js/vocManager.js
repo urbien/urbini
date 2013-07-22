@@ -183,7 +183,6 @@ define('vocManager', [
   });
   
   Events.on('VERSION:Models', function(init) {
-//    debugger;
     G.log(Voc.TAG, 'info', 'nuking models from LS');
     G.localStorage.clean(function(key) {
       return key.startsWith(ModelLoader.getModelStoragePrefix());

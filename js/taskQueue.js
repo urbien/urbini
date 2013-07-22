@@ -23,7 +23,11 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       pop: function() {
         return queue.splice(0, 1)[0];
       },
-      
+
+      peek: function() {
+        return queue[0];
+      },
+
       length: function() {
         return queue.length;
       },
@@ -107,7 +111,8 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       if (task.blocking)
         tq.block();
 
-      var promise = task.run();
+      task.run();
+      var promise = task.promise();
       running.push(task);
       promise.always(function() {
         log('Task completed:', task.name);
@@ -124,6 +129,13 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       return promise;
     };
     
+    function push(task) {
+      if (!running.length)
+        debugger;
+      
+      queue.push(task);
+    };
+    
     function queueTask(task) {
       if (!(task instanceof Task))
         task = Task.apply(null, arguments);
@@ -133,28 +145,38 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       var blocking = task.blocking;
       if (tq.isBlocked() || tq.isPaused()) {
         log('queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
-        queue.push(task);
-        return task.promise();
+        push(task);
+      }      
+      else if (task.blocking) {
+        if (running.length) {
+          tq.pause();
+          push(task);
+        }
+        else
+          runTask(task);
       }
+      else
+        runTask(task);
       
-      if (task.blocking)
-        tq.pause();
-      
-      runTask(task);
       return task.promise();
     };
     
     function next() {
-      if (tq.isBlocked())
+      if (tq.isBlocked() || !queue.length())
         return;
       
-      if (queue.length())
+      var task = queue.peek();
+      if (task.blocking) {
+        if (!running.length)
+          runTask(queue.pop());
+      }
+      else if (!tq.isPaused())
         runTask(queue.pop());
     };
     
     function log() {
-      if (!tq.debug)
-        return;
+//      if (!tq.debug)
+//        return;
       
       var args = [].slice.call(arguments);
       args.unshift("taskQueue");
@@ -199,8 +221,6 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
           defer.reject();
         }
       }, 10000);
-      
-      return promise;
     };
     
     // allow task consumers to treat the task as a promise

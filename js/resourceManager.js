@@ -452,6 +452,10 @@ define('resourceManager', [
       if (version <= 1)
         return;
         
+      function retry() {
+        setTimeout(RM.sync, 2000);
+      };
+      
       IDB.queryByIndex('_problematic').neq(1).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
         if (!results.length)
           return;
@@ -463,13 +467,8 @@ define('resourceManager', [
         
         Voc.getModels(types, {sync: false}).done(function() {
           RM.syncResources(results);
-        }).fail(function() {
-          debugger;
-          setTimeout(RM.sync, 2000);
-        });
-      }).fail(function(error, event) {
-        debugger;
-      });
+        }).fail(retry);
+      }).fail(retry);
     },
 
     checkDelete: function(res) {
