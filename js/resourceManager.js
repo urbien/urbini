@@ -288,7 +288,8 @@ define('resourceManager', [
       var success = options.success;
       options.success = function() {
         G.finishedTask(tName);
-        success.apply(this, arguments);
+        data.lastFetchOrigin = 'server';
+        success.apply(data, arguments);
       }
       
       return Backbone.defaultSync(method, data, options);
