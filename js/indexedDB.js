@@ -25,9 +25,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   function Store(name, options, indices) {
     this.name = name;
-    this.options = options;
-    if (options.keyPath)
-      options.keyPath = prepPropName(options.keyPath);
+    this.options = _.clone(options);
+    if (this.options.keyPath)
+      this.options.keyPath = prepPropName(options.keyPath);
     
     this.indices = [];
     for (var prop in indices) {
@@ -37,7 +37,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   function Index(property, options) {
     this.property = prepPropName(property);
-    this.options = options;
+    this.options = _.clone(options);
   };
 
   function isFileOrFilePath(item) {
@@ -331,7 +331,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @param storeName - the name of the object stores to delete from the database
    */
   IDB.prototype.deleteObjectStore = function(storeName) {
-    this.storesToKill.push(storeName);
+    if (this.storesToKill.indexOf(storeName) == -1)
+      this.storesToKill.push(storeName);
+    
     return this;
   };
 
@@ -383,10 +385,10 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   IDB.prototype.open = function(version) {
     var self = this,
         settings = {
-        upgrade: doUpgrade.bind(this)
-    };
+          upgrade: doUpgrade.bind(this)
+        };
     
-    if (version !== undefined)
+    if (version)
       settings.version = version;
     
     this.$idb = $.indexedDB(this.name, settings);
@@ -413,7 +415,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return REJECTED_PROMISE;
       
     var self = this
-    return this.$idb.objectStore(storeName).get(prepPropName(primaryKey)).then(function(item) {
+    return this.$idb.objectStore(storeName).get(primaryKey).then(function(item) {
       return parse.call(self, item);
     });
   };
@@ -545,17 +547,17 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (typeof storeName == 'string') {
       self.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
         storeDfd.resolve(trans.objectStore(storeName));
-      });
+      }).fail(storeDfd.reject);
     }
     else if (storeName.createIndex) {
       storeDfd.resolve(storeName);
     }
-
+    
     return prep.call(this, items).then(function(items) {
       return storePromise.then(function(store) {
-        _.each(items, function(item) {
-          store.put(item);
-        });
+        return $.whenAll.apply($, _.map(items, function(item) {
+          return store.put(item);
+        }));
       });
     });
   };

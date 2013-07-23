@@ -10,7 +10,7 @@ define('views/ResourceListView', [
   'jqueryMobile'
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
   var RLV = BasicView.extend({
-    displayPerPage: 3, // for client-side paging
+    displayPerPage: 10, // for client-side paging
     page: null,
     changedViews: [],
     skipScrollEvent: false,
@@ -228,17 +228,13 @@ define('views/ResourceListView', [
     
       this.preRender(info);
       for (; i < num; i++) {
-        var res = resources[i];        
+        var res = resources[i],        
+            uri = res.getUri();
+        
         if (canceled && res.get(canceled))
           continue;
         
         info.index = i;        
-        var commonParams = {
-          model: res,
-          parentView: this
-        };
-        
-        var uri = res.getUri();
         if (i >= lis.length || _.contains(modifiedUris, uri)) {
           var liView = this.renderItem(res, info);
           

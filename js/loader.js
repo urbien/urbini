@@ -497,7 +497,9 @@ define('globals', function() {
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
         G.ResourceManager.deleteDatabase().done(function() {          
-          if (reload !== false)
+          if (reload === false)
+            G.ResourceManager.openDB();
+          else
             window.location.reload();
         });
       }

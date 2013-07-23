@@ -103,7 +103,6 @@ define('resourceManager', [
         return;
       }
       
-      data.lastFetchOrigin = 'server';
       RM.fetchResources(method, data, options, isUpdate, timeout, lastFetchedOn);
     };
     
@@ -212,16 +211,13 @@ define('resourceManager', [
         
         isUpdate = options.isUpdate = true;
         var lf = RM.getLastFetched(results, now);
-        if (isStale(lf, now)) {
-          data.lastFetchOrigin = 'server';
+        if (isStale(lf, now))
           fetchFromServer(isUpdate, 100);
-        }
         
         return;
       }
       
       if (forceFetch) {
-        data.lastFetchOrigin = 'server';
         return fetchFromServer(isUpdate, 0);
       }
       
@@ -230,10 +226,8 @@ define('resourceManager', [
         return fetchFromServer(isUpdate, 100);
       
       var lf = RM.getLastFetched(results, now);
-      if (isStale(lf, now)) {
-        data.lastFetchOrigin = 'server';
+      if (isStale(lf, now))
         return fetchFromServer(isUpdate, 100);
-      }
     }).fail(function(e) {
       if (e) 
         G.log(RM.TAG, 'error', "Error fetching data from db: " + e);
@@ -252,7 +246,6 @@ define('resourceManager', [
           return;
         }
       
-        data.lastFetchOrigin = 'server';
   //      if (!forceFetch && isUpdate) // && !shortPage)
         if (isUpdate && !options.forceFetch) {
           lastFetchedOn = lastFetchedOn || RM.getLastFetched(data);
@@ -273,7 +266,9 @@ define('resourceManager', [
       if (options.sync || !G.hasWebWorkers)
         return RM.defaultSync(method, data, options);
         
-      U.ajax({url: options.url, type: 'GET', headers: options.headers}).done(function(data, status, xhr) {
+      U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
+        data.lastFetchOrigin = 'server';
+      }).done(function(data, status, xhr) {
         options.success(data, status, xhr);
       }).fail(function(xhr, status, msg) {
 //        if (xhr.status === 304)
@@ -351,19 +346,31 @@ define('resourceManager', [
       });
     },
 
+    cleanDatabaseAndReopen: _.debounce(function() {
+      return RM.cleanDatabase().then(RM.openDB, RM.openDB);
+    }, 2000, true),
+
     cleanDatabase: function() {
-      return IDB.wipe(U.partial(U.op['!=='], MODULE_STORE.name));
+      return IDB.onOpen().then(function() {
+        IDB.wipe(U.partial(U.op['!=='], MODULE_STORE.name));
+      });
     },
 
     openDB: function() {
-      return this.upgrade([REF_STORE, MODULE_STORE]);
+      _.each(REQUIRED_STORES, function(info) {
+        IDB.createObjectStore(info.name, info.options, info.indices);
+      });
+      
+      return IDB.start();
     },
 
     upgrade: function(mk, del) {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
       
-      var isOpen = IDB.isOpen();
+      if (!IDB.isOpen())
+        return IDB.onOpen().then(U.partialWith(this.upgrade, this, mk, del));
+      
       mk = mk || [];
       del = del || [];
       
@@ -371,24 +378,19 @@ define('resourceManager', [
         IDB.deleteObjectStores(del);
       
       for (var i = 0; i < mk.length; i++) {
-        var info = mk[i],
-            options = info.options,
-            type = info.name || info,
-            indices = info.indices || {};
-        
+        var type = mk[i],
+            indices;
+            
         // is a model store, not one of the required stores
-        if (_.pluck(REQUIRED_STORES, 'name').indexOf(type) == -1) { 
-          if (U.getEnumModel(type) || U.getInlineResourceModel(type))
-            continue;
-          
-          var vocModel = U.getModel(type);
-          if (!vocModel)
-            throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
-          
-          indices = U.toObject(U.getIndexNames(vocModel) || []);
-        }
+        if (U.getEnumModel(type) || U.getInlineResourceModel(type))
+          continue;
         
-        IDB.createObjectStore(type, options, indices);
+        var vocModel = U.getModel(type);
+        if (!vocModel)
+          throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
+        
+        indices = U.toObject(U.getIndexNames(vocModel) || []);
+        IDB.createObjectStore(type, null, indices);
       }
 
       return IDB.start();
@@ -419,7 +421,7 @@ define('resourceManager', [
         }
         
         if (!IDB.hasStore(classUri)) {
-          IDB.createObjectStore(classUri).start().done(function() {
+          RM.upgrade([classUri]).done(function() {
             RM.addItems(items, classUri).then(defer.resolve, defer.reject);
           });
           
@@ -934,10 +936,18 @@ define('resourceManager', [
   });
 
   Events.on('modelsChanged', function(changedTypes) {
-    RM.upgrade(changedTypes, changedTypes);  
+    IDB.onOpen(function() {
+      changedTypes = _.filter(changedTypes, function(t) {
+        return IDB.hasStore(t);
+      });
+      
+      if (changedTypes.length)
+        RM.upgrade(changedTypes, changedTypes);  
+//        RM.deleteObjectStores(changedTypes).createObjectStores(changedTypes).start();
+    });
   });
   
-  Events.on('userChanged', RM.cleanDatabase);
+  Events.on('userChanged', RM.cleanDatabaseAndReopen);
 
   Events.on('preparingToPublish', function(app) {
     var appUri = app.getUri();
@@ -976,7 +986,7 @@ define('resourceManager', [
     }).then(notify);
   });
 
-  Events.on('VERSION:Models', RM.cleanDatabase);
+  Events.on('VERSION:Models', RM.cleanDatabaseAndReopen);
   
   Events.on("saveToDB", function(resource) {
     

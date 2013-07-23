@@ -17,7 +17,7 @@
     </div>
     <!-- ul id="columns">
     </ul -->
-    <table class="table-stroke" width="100%; style: display:none" id="comments">
+    <table class="table-stroke" width="100%;" style="style: display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
       <input type="submit" id="mvSubmit" value="Submit" />

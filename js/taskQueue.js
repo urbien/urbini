@@ -111,11 +111,18 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       if (task.blocking)
         tq.block();
 
-      task.run();
+      try {
+        task.run();
+      } catch (err) {
+        debugger;
+        log('task crashed: ', task.name);
+        task.reject();
+      }
+      
       var promise = task.promise();
       running.push(task);
       promise.always(function() {
-        log('Task completed:', task.name);
+        log('Task {0}: {1}'.format(promise.state() === 'resolved' ? 'completed' : 'failed', task.name));
         running.splice(running.indexOf(task), 1);
         if (tq.isBlocked())
           tq.open();
@@ -229,6 +236,10 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         this[fn] = promise[fn].bind(promise);
       }
     }
+    
+    _.each(['reject', 'resolve', 'notify'], function(dFn) {
+      self[dFn] = defer[dFn].bind(defer);
+    });
     
     this.isFinished = function() {
       return started && promise.state() == 'resolved';

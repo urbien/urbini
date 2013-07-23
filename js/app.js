@@ -543,7 +543,7 @@ define('app', [
         var init = data === true;
         var newV = data ? data.VERSION : G.getVersion();
         var oldV = G.getVersion(!data) || newV; // get old
-        if (newV.All > oldV.All) {
+        if (oldV.All && newV.All > oldV.All) {
           G.setVersion(newV);
           for (var key in newV) {
             Events.trigger('VERSION:' + key, init);
@@ -554,7 +554,7 @@ define('app', [
         
         for (var key in newV) {
           var setVersion = false;
-          if (newV[key] > oldV[key]) {
+          if (oldV[key] && newV[key] > oldV[key]) {
             if (!setVersion) {
               G.setVersion(newV);
               setVersion = true;

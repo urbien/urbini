@@ -144,7 +144,7 @@ define('vocManager', [
       var c = G.currentUser;
       var userChanged = !p && !c.guest || p && !c.guest && p._uri != c._uri || p && c.guest;
       if (userChanged) {
-        Events.trigger('userChanged')
+        Events.trigger('userChanged');
         if (c.guest) {
           G.localStorage.del(Voc.contactKey);
         }

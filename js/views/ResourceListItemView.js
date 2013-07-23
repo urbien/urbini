@@ -329,7 +329,6 @@ define('views/ResourceListItemView', [
       
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
-      _.extend(json);
       
       if (!json.liUri) {
         if (json['v_submitToTournament'])
@@ -337,6 +336,7 @@ define('views/ResourceListItemView', [
         else
           json.liUri = U.makePageUrl(action, json._uri);
       }  
+      
       this.$el.html(this.template(json));
       return this;
     },

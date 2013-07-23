@@ -5,7 +5,7 @@ define('models/Resource', [
   'error',
   'events',
   'cache'
-], function(G, U, Error, Events, C) {
+], function(G, U, Errors, Events, C) {
   var commonTypes = G.commonTypes;
   var APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
@@ -22,17 +22,22 @@ define('models/Resource', [
     return false;
   }
 
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("Resource");
+    G.log.apply(G, args);
+  };
+  
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsync', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
       options = options || {};
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
-      this.on('sync', this.onsync);
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -255,11 +260,6 @@ define('models/Resource', [
 
       this.save(null, options);
     },
-    onsync: function(e) {
-      if (this.lastFetchOrigin === 'server')
-        Events.trigger('updatedResources', [this]);
-    },
-
     remove: function() {
       this.collection && this.collection.remove(this);
     },
@@ -639,9 +639,15 @@ define('models/Resource', [
     isAssignableFrom: function(interfaceName) {
       return U.isAssignableFrom(this, interfaceName);
     },
+    _updateLastFetched: function() {
+      this.set('_lastFetchedOn', G.currentServerTime(), {silent: true});
+    },
     fetch: function(options) {
+      options = options || {};
       var self = this,
-          adapter = this.vocModel.adapter;
+          adapter = this.vocModel.adapter,
+          error = options.error,
+          success = options.success;
       
       if (adapter) {
         auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
@@ -649,16 +655,60 @@ define('models/Resource', [
           return this.vocModel.API.oauth(parseInt(auth.slice(5)));
       }
       
-      options = options || {};
-      options.error = options.error || Error.getDefaultErrorHandler();
+      options.error = function(model, err, options) {
+        var code = err.code || err.status;
+        debugger;
+        (error || Errors.getDefaultErrorHandler()).apply(this, arguments);
+      };
+      
+      options.success = function(resp, status, xhr) {
+        if (self.lastFetchOrigin != 'server')
+          return update();
+        
+        function err() {
+          debugger;
+          log('error', code, options.url);
+          error(resp && resp.error || {code: xhr.status}, status, xhr);            
+        };
+        
+        function update() {
+          if (self.set(self.parse(resp, options), options)) { 
+            if (success) 
+              success(resp, status, xhr);
+            
+            return true;
+          }
+        };
 
+        if (resp && resp.error)
+          return err();
+        
+        switch (xhr.status) {
+          case 200:
+            self._updateLastFetched();
+            if (update()) {
+              self.trigger('sync', self, resp, options);
+              Events.trigger('updatedResources', [self]);
+            }
+
+            break;
+          case 304:
+            self._updateLastFetched();
+            return;
+          default:
+            err();
+            return;
+        }        
+      };
+      
       try {
         options.url = this.getUrl();
       } catch (err) {
         return options.error(this, {status: 404, details: err.message}, options);
       }
       
-      return Backbone.Model.prototype.fetch.call(this, options);
+      return this.sync('read', this, options);
+//      return Backbone.Model.prototype.fetch.call(this, options);
     },
     
     triggerPlugs: function(options) {
@@ -901,7 +951,7 @@ define('models/Resource', [
    
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
       if (!options.fromDB) { 
-//        G.log(Resource.TAG, 'events', U.getDisplayName(this), 'changed');
+//        log('events', U.getDisplayName(this), 'changed');
         this.trigger('change', this, options);
       }
       

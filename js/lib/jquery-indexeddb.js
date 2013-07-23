@@ -79,7 +79,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 								};
 							}
 						} catch (e) {
-						  debugger;
+//						  debugger;
 							e.name = "exception";
 							dfd.rejectWith(idbRequest, ["exception", e]);
 						}
@@ -313,6 +313,13 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 								return idbIndex.openCursor(wrap.range(key));
 							}
 						},
+            "count": function() {
+              if (typeof idbIndex.count === "function") {
+                return wrap.request(idbIndex.count());
+              } else {
+                throw "Count not implemented for cursors";
+              }
+            },
 						"getKey": function(key){
 							if (typeof idbIndex.getKey === "function") {
 								return wrap.request(idbIndex.getKey(key));
@@ -358,122 +365,122 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			var openReqShim = function(dbName, version) {
-				var me = this;
-				var IDBRequest = function(){
-					this.onsuccess = this.onerror = this.onblocked = this.onupgradeneeded = null;
-				};
-				
-				function copyReq(req){
-					req = req || dbOpenReq;
-					for (var key in req) {
-						if (typeof result[key] === "undefined") {
-							result[key] = req[key];
-						}
-					}
-				}
-				
-				function callback(fn, context, argArray, func){
-					//window.setTimeout(function(){
-					(typeof context[fn] === "function") && context[fn].apply(context, argArray);
-					(typeof func === "function") && func();
-					//}, 1);
-				}
-				
-				//console.log("openReqShim: opening DB with", version);
-				var dbOpenReq = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
-				var result = new IDBRequest();
-				dbOpenReq.onsuccess = function(e){
-					copyReq();
-					var db = dbOpenReq.result;
-					if (usingShim && typeof db.setVersion === "function") {
-						var oldVersion = parseInt(db.version || 0, 10);
-						var newVersion = typeof version === "undefined" ? (oldVersion === 0 ? 1 : oldVersion) : parseInt(version, 10);
-						if (oldVersion < newVersion) {
-			        //console.log("using setVersion");
-							var versionReq = db.setVersion(newVersion);
-              //console.log("invoked setVersion");
-							versionReq.onsuccess = function(upgradeEvent){
-//							  debugger;
-								result.transaction = versionReq.result;
-								var event = new $.Event("upgradeneeded");
-								event.oldVersion = oldVersion;
-								event.newVersion = newVersion;
-								for (key in upgradeEvent) {
-									if (key !== "type") {
-										event[key] = upgradeEvent[key];
-									}
-								}
-								callback("onupgradeneeded", result, [event]);
-								// Version transaction is now complete, to open ordinary transaction
-								versionReq.result.db.close();
-								console.log("Database closed, and will try to open again, with same version");
-								var newDbOpenReq = indexedDB.open(dbName);
-								delete result.transaction;
-								delete result.result;
-								
-								newDbOpenReq.onsuccess = function(e){
-									console.log("DB Opened without version change", newDbOpenReq.result);
-									copyReq(newDbOpenReq);
-									callback("onsuccess", result, [e], function(){
+//			var openReqShim = function(dbName, version) {
+//				var me = this;
+//				var IDBRequest = function(){
+//					this.onsuccess = this.onerror = this.onblocked = this.onupgradeneeded = null;
+//				};
+//				
+//				function copyReq(req){
+//					req = req || dbOpenReq;
+//					for (var key in req) {
+//						if (typeof result[key] === "undefined") {
+//							result[key] = req[key];
+//						}
+//					}
+//				}
+//				
+//				function callback(fn, context, argArray, func){
+//					//window.setTimeout(function(){
+//					(typeof context[fn] === "function") && context[fn].apply(context, argArray);
+//					(typeof func === "function") && func();
+//					//}, 1);
+//				}
+//				
+//				//console.log("openReqShim: opening DB with", version);
+//				var dbOpenReq = version ? indexedDB.open(dbName, version) : indexedDB.open(dbName);
+//				var result = new IDBRequest();
+//				dbOpenReq.onsuccess = function(e){
+//					copyReq();
+//					var db = dbOpenReq.result;
+//					if (usingShim && typeof db.setVersion === "function") {
+//						var oldVersion = parseInt(db.version || 0, 10);
+//						var newVersion = typeof version === "undefined" ? (oldVersion === 0 ? 1 : oldVersion) : parseInt(version, 10);
+//						if (oldVersion < newVersion) {
+//			        //console.log("using setVersion");
+//							var versionReq = db.setVersion(newVersion);
+//              //console.log("invoked setVersion");
+//							versionReq.onsuccess = function(upgradeEvent){
+////							  debugger;
+//								result.transaction = versionReq.result;
+//								var event = new $.Event("upgradeneeded");
+//								event.oldVersion = oldVersion;
+//								event.newVersion = newVersion;
+//								for (key in upgradeEvent) {
+//									if (key !== "type") {
+//										event[key] = upgradeEvent[key];
+//									}
+//								}
+//								callback("onupgradeneeded", result, [event]);
+//								// Version transaction is now complete, to open ordinary transaction
+//								versionReq.result.db.close();
+//								console.log("Database closed, and will try to open again, with same version");
+//								var newDbOpenReq = indexedDB.open(dbName);
+//								delete result.transaction;
+//								delete result.result;
+//								
+//								newDbOpenReq.onsuccess = function(e){
+//									console.log("DB Opened without version change", newDbOpenReq.result);
+//									copyReq(newDbOpenReq);
+//									callback("onsuccess", result, [e], function(){
+////										newDbOpenReq.result.close();
+//									});
+////									newDbOpenReq.result.close();
+//								};
+//								newDbOpenReq.onerror = function(e){
+//									copyReq(newDbOpenReq);
+//									callback("onerror", result, [e], function(){
+//										console.log("Closed database in newRequest on error", newDbOpenReq);
+////										newDbOpenReq.result.close();
+//									});
+//								};
+//								newDbOpenReq.onblocked = function(e){
+//									console.log("DB Blocked without version change", newDbOpenReq.result);
+//									copyReq(newDbOpenReq);
+//									callback("onblocked", result, [e], function(){
+//										console.log("Closed database in newRequest on blocked", newDbOpenReq);
 //										newDbOpenReq.result.close();
-									});
-//									newDbOpenReq.result.close();
-								};
-								newDbOpenReq.onerror = function(e){
-									copyReq(newDbOpenReq);
-									callback("onerror", result, [e], function(){
-										console.log("Closed database in newRequest on error", newDbOpenReq);
-//										newDbOpenReq.result.close();
-									});
-								};
-								newDbOpenReq.onblocked = function(e){
-									console.log("DB Blocked without version change", newDbOpenReq.result);
-									copyReq(newDbOpenReq);
-									callback("onblocked", result, [e], function(){
-										console.log("Closed database in newRequest on blocked", newDbOpenReq);
-										newDbOpenReq.result.close();
-									});
-								};
-							};
-							versionReq.onerror = function(){
-								callback("onerror", result, [e]);
-								versionReq.result.close();
-							};
-							versionReq.onblocked = function(e){
-								// This always gets called, resulting the blocking the DB upgrade
-								console.log("Version transaction blocked, so calling the on blocked method");
-								callback("onblocked", result, [e]);
-							};
-						} else if (oldVersion === newVersion) {
-							callback("onsuccess", result, [e]);
-//							db.close();
-						} else {
-							callback("onerror", result, [e]);
-//							db.close();
-						}
-					} else {
-						callback("onsuccess", result, [e]);
-					}
-				};
-				dbOpenReq.onerror = function(e){
-					copyReq();
-					console.log("Error", dbOpenReq);
-					callback("onerror", result, [e]);
-				};
-				dbOpenReq.onblocked = function(e){
-					copyReq();
-					callback("onblocked", result, [e]);
-				};
-				dbOpenReq.onupgradeneeded = function(e){
-					copyReq();
-					if (typeof result["onupgradeneeded"] === "function") {
-						result["onupgradeneeded"](e);
-					}
-				};
-				
-				return result;
-			};
+//									});
+//								};
+//							};
+//							versionReq.onerror = function(){
+//								callback("onerror", result, [e]);
+//								versionReq.result.close();
+//							};
+//							versionReq.onblocked = function(e){
+//								// This always gets called, resulting the blocking the DB upgrade
+//								console.log("Version transaction blocked, so calling the on blocked method");
+//								callback("onblocked", result, [e]);
+//							};
+//						} else if (oldVersion === newVersion) {
+//							callback("onsuccess", result, [e]);
+////							db.close();
+//						} else {
+//							callback("onerror", result, [e]);
+////							db.close();
+//						}
+//					} else {
+//						callback("onsuccess", result, [e]);
+//					}
+//				};
+//				dbOpenReq.onerror = function(e){
+//					copyReq();
+//					console.log("Error", dbOpenReq);
+//					callback("onerror", result, [e]);
+//				};
+//				dbOpenReq.onblocked = function(e){
+//					copyReq();
+//					callback("onblocked", result, [e]);
+//				};
+//				dbOpenReq.onupgradeneeded = function(e){
+//					copyReq();
+//					if (typeof result["onupgradeneeded"] === "function") {
+//						result["onupgradeneeded"](e);
+//					}
+//				};
+//				
+//				return result;
+//			};
 			
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,7 +489,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			// Start with opening the database
 			var dbPromise = wrap.request(function(){
 				//console.log("Trying to open DB with", version);
-				return version ? openReqShim(dbName, version) : openReqShim(dbName);
+//				return version ? openReqShim(dbName, version) : openReqShim(dbName);
+      		return version ? indexedDB.open(dbName, parseInt(version)) : indexedDB.open(dbName);
 			});
 			dbPromise.then(function(db, e){
 				//console.log("DB opened at", db.version);
@@ -603,7 +611,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 									db.close();
 									dbPromise = wrap.request(function(){
 										//console.log("Now trying to open the database again", db.version);
-										return openReqShim(dbName, (parseInt(db.version, 10) || 1) + 1);
+//										return openReqShim(dbName, (parseInt(db.version, 10) || 1) + 1);
+                    					return indexedDB.open(dbName, (parseInt(db.version, 10) || 1) + 1);
 									});
 									dbPromise.then(function(db, e){
 										//console.log("Database opened, tto open transaction", db.version);
@@ -683,9 +692,12 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 							"get": function(key){
 								return indexOp("get", indexName, [key]);
 							},
-							"getKey": function(callback, range, direction){
-								return indexOp("getKey", indexName, [callback, range, direction]);
-							},
+              "count": function() {
+                return indexOp("count", indexName, []);
+              },
+              "getKey": function(key) {
+                return indexOp("getKey", indexName, [key]);
+              },
 							"getAll": function(range, direction){
 							  return indexOp("_getAll", indexName, [range, direction]);
 							},
