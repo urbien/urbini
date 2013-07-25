@@ -15,20 +15,6 @@ define('vocManager', [
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
 
-  function getOAuthVersion(oauthVersion) {
-    if (typeof oauthVersion == 'string') {
-      try {
-        oauthVersion = parseInt(oauthVersion);
-      } catch (err) {
-      }
-    }
-    
-    if (oauthVersion !== 1 && oauthVersion !== 2)
-      throw errMsg;
-    
-    return oauthVersion;
-  };
-  
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
   
   var Voc = {
