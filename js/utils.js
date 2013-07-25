@@ -155,6 +155,10 @@ define('utils', [
       return promise;
     },    
     
+    /**
+     * success handler is passed (resp, status, xhr)
+     * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
+     */
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers,
           opts = _.clone(options),
@@ -238,23 +242,35 @@ define('utils', [
           G.getXhrWorker().done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
-              var xhr = event.data;
-              var code = xhr.status;
+              var xhr = event.data,
+                  code = xhr.status,
+                  data = event.data,
+                  error = data && data.error;
 //              if (code === 304) {
 //  //              debugger;
 //                defer.reject(xhr, "unmodified", "unmodified");
 //              }
+              
               if (code > 399 && code < 600) {
-                var text = xhr.responseText;
+                var text = xhr.responseText,
+                    error;
+                
                 if (text && text.length) {
                   try {
-                    defer.reject(xhr, JSON.parse(xhr.responseText), opts);
-                    return;
+                    error = JSON.parse(xhr.responseText);
                   } catch (err) {
                   }
-                }
                   
-                defer.reject(xhr, "error", opts);
+                  if (error)
+                    error.code = _.isUndefined(error.code) ? code : error.code;
+                  else
+                    error = {code: code};
+                }
+              }
+              
+              if (error) {
+                debugger;
+                defer.reject(xhr, error, opts);
               }
               else {
                 defer.resolve(xhr.data, xhr.status, xhr);
@@ -271,16 +287,22 @@ define('utils', [
         }
         else {
           G.log(U.TAG, 'xhr', '$.ajax', opts.url);
-          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {            
-            if (jqXHR.status < 400)
+          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
+            if ((data && data.error) || jqXHR.status > 399) {
+              defer.reject(
+                jqXHR, 
+                data && data.error || {code: jqXHR.status}, 
+                opts
+              );
+            }
+            else if (jqXHR.status < 400)
               defer.resolve(data, status, jqXHR);
-            else
-              defer.reject(jqXHR, data && data.error || {status: jqXHR.status}, opts);
           }, 
-          function(jqXHR, status, err) {
+          function(jqXHR, textStatus, err) {
 //            debugger;
-            var text = jqXHR.responseText;
-            var error;
+            var text = jqXHR.responseText,
+                error;
+            
             if (text && text.length) {
               try {
                 error = JSON.parse(text).error;
@@ -288,8 +310,11 @@ define('utils', [
               }
             }
             
-            error = error || {code: jqXHR.status, details: err};
-            defer.reject(jqXHR, error, opts);
+            defer.reject(
+              jqXHR, 
+              error || {code: jqXHR.status, details: err}, 
+              opts
+            );
           });
         }
       }).promise();
@@ -2463,6 +2488,9 @@ define('utils', [
       var primaryKeys = U.getPrimaryKeys(model),
           keyVals = _.pick(atts, primaryKeys);
       
+      if (!_.size(keyVals))
+        return null;
+      
       for (var key in keyVals) {
         if (typeof keyVals[key] == 'undefined')
           return null;
@@ -3323,14 +3351,21 @@ define('utils', [
           qIdx = hash.indexOf("?"),
           route = U.getRoute(hash),
           hashParts = hash.split('?'),
-          uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]), 
+          uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]),
+          type = U.getModelType(hash),
           query = hashParts[1] || '';
 
+      if (route === 'templates') {
+        var subHashInfo = U.parseHash(uri);
+        uri = subHashInfo.uri;
+        type = subHashInfo.type;
+      }
+      
       return {
         action: U.getRouteAction(route),
         route: route,
         uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
-        type: U.getModelType(hash),
+        type: type,
         query: query,
         params: params
       }
@@ -3339,7 +3374,7 @@ define('utils', [
     partial: function(fn) {
       var args = [].slice.call(arguments, 1);
       return function() {
-        return fn.apply(null, args.concat(arguments));
+        return fn.apply(null, args.concat([].slice.call(arguments)));
       };
     },
 

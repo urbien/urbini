@@ -37,7 +37,7 @@ define('collections/ResourceList', [
 //      }
       
       var meta = vocModel.properties;
-      _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -226,7 +226,7 @@ define('collections/ResourceList', [
       options.nextPage = true;
       var length = this.models.length;
       if (length)
-        options.startAfter = this.models[length - 1].getUri();
+        options.from = this.models[length - 1].getUri();
       
       this.fetch(options);
     },
@@ -269,9 +269,6 @@ define('collections/ResourceList', [
       this.params = filtered;
       this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(U.getQueryParams(this), true); // sort params in alphabetical order for easier lookup
-    },
-    getKey: function() {
-      return this.vocModel.type;
     },
     isAll: function(interfaceNames) {
       return U.isAll(this.vocModel, interfaceNames);
@@ -330,7 +327,7 @@ define('collections/ResourceList', [
     fetch: function(options) {
       options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
-          error = options.error = options.error || Errors.getDefaultErrorHandler(),
+          error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = this.vocModel.adapter;
       
       if (adapter) {
@@ -373,21 +370,23 @@ define('collections/ResourceList', [
       };
       
       options.success = function(resp, status, xhr) {
-        var now = G.currentServerTime();
         if (self.lastFetchOrigin === 'db') {
           self.update(resp, options);
           success(resp, status, xhr);
           return;
         }
+        else
+          self._lastFetchedOn = now;
         
-        var code = xhr.status;
-        var err = function() {
+        var now = G.currentServerTime(),
+            code = xhr.status;
+        
+        function err() {
           debugger;
           G.log(self.TAG, 'error', code, options.url);
-          error(resp && resp.error || {code: code}, status, xhr);            
+          error(self, resp || {code: code}, options);            
         }
         
-        self._lastFetchedOn = now;
         switch (code) {
           case 200:
             break;
@@ -464,8 +463,6 @@ define('collections/ResourceList', [
         else
           saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
-      
-      var vocModel = this.vocModel;
       
       this.add(added);
       updated.length && this.trigger('updated', updated);

@@ -57,7 +57,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       case 'function':
         var filter = uri;
         var fromResCache = _.filter(C.Resources, filter);
-        var fromColCache = searchCollections(C.ResourceLists, filter);
+        var fromColCache = C.searchCollections(C.ResourceLists, filter);
         return fromResCache.concat(fromColCache || []);
       }
     },

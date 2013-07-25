@@ -1380,6 +1380,9 @@ define('views/EditView', [
       else
         this.$ul.trigger('create');
 
+      var doc = document;
+      var form = this.$form = this.$('form');
+      
       if (this.isForInterfaceImplementor) {
 //        var start = +new Date();
         var iCl = res.get('interfaceClass.davClassUri');
@@ -1434,8 +1437,6 @@ define('views/EditView', [
       }
       
 //        this.$ul.listview('refresh');
-      var doc = document;
-      var form = this.$form = this.$('form');
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       
       var initInputs = function(inputs) {

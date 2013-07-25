@@ -113,7 +113,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
   };
 
   function initPlug(plug) {
-    this.plugs = this.plugs || U.toObject(this.scriptActions);
+    this.plugs = this.plugs || U.toObject(scriptActions);
     var cause = plug.causeDavClassUri;
     var effect = plug.effectDavClassUri;
     var scripts = {};
@@ -175,7 +175,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
   
   function initPlugs(type) {
     // TODO: turn off plugs as needed, instead of this massacre
-    _.each(this.scriptActions, function(action) {
+    _.each(scriptActions, function(action) {
       Events.off(action + ':' + type);
     });
     
@@ -214,7 +214,8 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     
     U.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
       G.checkVersion(data);
-      setupPlugs(data.plugs);
+      if (data && data.plugs)
+        setupPlugs(data.plugs);
     });
   };
   

@@ -483,7 +483,7 @@ define('views/RightMenuPanel', [
 
       var model = this.vocModel;
       U.addToFrag(frag, this.groupHeaderTemplate({value: 'Page Assets'}));        
-      var wHash = U.getHash(true);
+      var wHash = U.getHash();
       var params = {};
       params.modelName = model.displayName;
       U.addToFrag(frag, this.menuItemTemplate({title: 'Templates', pageUrl: U.makePageUrl('templates', wHash, params)}));

@@ -105,8 +105,6 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       if (!(task instanceof Task))
         task = Task.apply(null, arguments);
       
-      log('Running task:', task.name);
-//      task.notify();
       checkForDisaster(task);
       if (task.blocking)
         tq.block();
@@ -181,17 +179,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         runTask(queue.pop());
     };
     
-    function log() {
-//      if (!tq.debug)
-//        return;
-      
-      var args = [].slice.call(arguments);
-      args.unshift("taskQueue");
-      G.log.apply(G, args);
-    };
-    
     return {
-      log: log,      
       debug: function(debug) {
         tq.debug = debug;
       },
@@ -218,9 +206,12 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     this.priority = priority || 0;
     this.blocking = blocking || false;
     this.run = function() {
-      log('running task:', this.name);
+      log('Running task:', this.name);
       started = true;
-      taskFn.call(defer, defer);
+      var otherPromise = taskFn.call(defer, defer);
+      if (otherPromise && typeof otherPromise.then == 'function')
+        otherPromise.done(defer.resolve, defer.reject);
+        
       setTimeout(function() {
         if (defer.state() === 'pending') {
           debugger;

@@ -365,6 +365,8 @@ define('views/ResourceListView', [
         if (!this.isMultiValueChooser)
           this.$el.listview('refresh');
       }
+//      else
+//        debugger;
     },
     
     postRenderItem: function(liView, info) {
@@ -484,6 +486,7 @@ define('views/ResourceListView', [
     },
   
     setupSearchAndFilter: function() {
+      var collection = this.collection;
       function onFilter(e, data) {
         var $ul = $(this),
             $input = $(data.input),

@@ -1,12 +1,14 @@
-define('appAuth', ['globals', 'underscore', 'utils'], function(G, _, U) {
+define('appAuth', ['globals', 'underscore', 'utils', 'events', 'vocManager', 'cache', 'collections/ResourceList'], function(G, _, U, Events, Voc, C, ResourceList) {
+  var COMMON_TYPES = G.commonTypes,
+      FRIEND_APP_TYPE = COMMON_TYPES.Friend,
+      APP_TYPE = COMMON_TYPES.App;
+  
   var AppAuth = {
     getAppInstallationState: function(type) {
       var appPath,
-          className,
-          typeBased = !!type,
           user = G.currentUser,
           state = {
-            guest: user.guest
+            guest: !user._uri
           };
       
       if (state.guest)
@@ -36,37 +38,39 @@ define('appAuth', ['globals', 'underscore', 'utils'], function(G, _, U) {
     getFollows: function(app) {
       return $.Deferred(function(defer) {        
         var followsList = new ResourceList(null, {
-          model: U.getModel(friendAppType), 
-          params: {friend1: app.getUri()}
+          model: U.getModel(FRIEND_APP_TYPE), 
+          params: {
+            friend1: U.getValue(app, '_uri')
+          }
         }); // FriendApp list representing apps that 'app' follows
         
         followsList.fetch({
           sync: true, 
-          success: U.partial(defer.resolve, followsList).bind(defer),
+          success: function() {
+            defer.resolve(followsList);
+          },
           error: defer.reject
         });
       }).promise();
     },
     
-    requestInstall: function(app) {
+    requestInstall: function(app, typeModel) {
       var self = this, 
           commonTypes = G.commonTypes,
-          appType = commonTypes.App,
-          friendAppType = commonTypes.FriendApp,
-          appPath = U.getValue(app, 'appPath').toLowerCase();
+          appPath = U.getValue(app, 'appPath').toLowerCase(),
           appUri = U.getValue(app, '_uri'),
-          user = G.currentUser;
-      
-      Voc.getModels([appType, friendAppType], {sync: true}).done(function() {
-        var installOptions = {
-            $returnUri: window.location.href
+          user = G.currentUser,
+          installOptions = {
+              $returnUri: window.location.href,
+              application: appUri
           },
+          installedAppUris = _.pluck(user.installedApps, '_uri'),
           followsList, 
           fetchFollows;
-          
-        
+      
+      Voc.getModels([APP_TYPE, FRIEND_APP_TYPE], {sync: true}).then(function() {
         var appPromise = $.Deferred(function(defer) {
-          var appModel = U.getModel(appType);
+          var appModel = U.getModel(APP_TYPE);
           app = C.getResource(appUri);
           if (app) {
             defer.resolve(app);
@@ -74,45 +78,40 @@ define('appAuth', ['globals', 'underscore', 'utils'], function(G, _, U) {
           }
           
           app = new appModel({_uri: appUri});
-          app.fetch({sync: true, success: defer.resolve, error: defer.reject});
+          app.fetch({sync: true, success: function() {
+            defer.resolve(app);
+          }, error: defer.reject});
         }).promise();
 
-        appPromise.done(function() {
-          installOptions.application = app.getUri();
+        return $.whenAll(self.getFollows(app), appPromise);
+      }).then(function(followsList, app) {
+        followsList = followsList.filter(function(friend) {
+          var target = friend.get('friend2');
+          return _.contains(installedAppUris, target);
         });
         
-        $.when(self.getFollows(app), fetchApp).done(function(followsList) {
-          var installedAppUris = _.pluck(user.installedApps, '_uri');
-          followsList = followsList.filter(function(friend) {
-            var target = friend.get('friend2');
-            return _.contains(installedAppUris, target);
-          });
-          
-          var followsNames = _.pluck(followsList, 'davDisplayName');
-          var followsCSV = followsNames.join(', ');
-          var appName = U.getDisplayName(app);
-          var title = self._getInstallTitle(appName);
-          var redirectOptions = {
-            $returnUri: U.getHash(), 
-            $title: title, 
-            allow: true,
-            appPlugs: followsCSV
-          };
-          
-          if (typeBased) {
-            var terms = self._getInstallTerms(className, appName, followsNames);
-            if (terms) {
-              redirectOptions['-info'] = terms;
-            }
+        var followsNames = _.pluck(followsList, 'davDisplayName'),
+            followsCSV = followsNames.join(', '),
+            appName = U.getDisplayName(app),
+            title = self._getInstallTitle(appName),
+            redirectOptions = {
+              $returnUri: U.getHash(), 
+              $title: title, 
+              allow: true,
+              appPlugs: followsCSV
+            };
+        
+        if (typeModel) {
+          var terms = self._getInstallTerms(typeModel.displayName, appName, followsNames);
+          if (terms) {
+            redirectOptions['-info'] = terms;
           }
+        }
 
-          self.navigate(U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default
-        }).fail(function() {
-          debugger;
-        });
+        Events.trigger('navigate', U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default
       }).fail(function() {
         debugger;
-        Errors.getDefaultErrorHandler().apply(this, arguments);
+        Errors.getXHRErrorHandler().apply(this, arguments);
       });
     },
     

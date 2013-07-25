@@ -31,9 +31,11 @@ define('views/HomePage', [
     
     installApp: function(e) {
       Events.stopEvent(e);
-      U.require('firefox').done(function(Firefox) {
-        Firefox.install();
-      });
+      if (G.inFirefoxOS) {
+        U.require('firefox').done(function(Firefox) {
+          Firefox.install();
+        });
+      }
     },
 
     pagehide: function(e) {

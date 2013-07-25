@@ -10,6 +10,9 @@ define('models/Resource', [
   var APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
   var willSave = function(res, meta, propName, val) {
+    if (typeof val == 'function')
+      debugger;
+    
     var prev = res.get(propName);
     var prop = meta[propName];
     var isBool = prop && prop.range === 'boolean';
@@ -31,7 +34,7 @@ define('models/Resource', [
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'getKey', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -264,7 +267,7 @@ define('models/Resource', [
       this.collection && this.collection.remove(this);
     },
     'delete': function() {
-      Events.trigger('delete', this);
+      this.trigger('delete', this);
       this.remove();
     },
     getUrl: function() {
@@ -298,9 +301,6 @@ define('models/Resource', [
       var type = this.vocModel.type;
       var isNew = this.isNew();
       return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type);
-    },
-    getKey: function() {
-      return U.getLongUri1(this.getUri());
     },
     getUri: function() {
       var uri = this.get('_uri');
@@ -646,8 +646,8 @@ define('models/Resource', [
       options = options || {};
       var self = this,
           adapter = this.vocModel.adapter,
-          error = options.error,
-          success = options.success;
+          error = options.error || Errors.getBackboneErrorHandler(),
+          success = options.success || function() {};
       
       if (adapter) {
         auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
@@ -658,17 +658,18 @@ define('models/Resource', [
       options.error = function(model, err, options) {
         var code = err.code || err.status;
         debugger;
-        (error || Errors.getDefaultErrorHandler()).apply(this, arguments);
+        error.apply(this, arguments);
       };
       
       options.success = function(resp, status, xhr) {
         if (self.lastFetchOrigin != 'server')
           return update();
         
+        var code = xhr.status;
         function err() {
           debugger;
           log('error', code, options.url);
-          error(resp && resp.error || {code: xhr.status}, status, xhr);            
+          error(self, resp || {code: xhr.status}, options);            
         };
         
         function update() {
@@ -680,10 +681,7 @@ define('models/Resource', [
           }
         };
 
-        if (resp && resp.error)
-          return err();
-        
-        switch (xhr.status) {
+        switch (code) {
           case 200:
             self._updateLastFetched();
             if (update()) {
@@ -892,7 +890,6 @@ define('models/Resource', [
           }
         }
         
-        options.$returnMade = options.$returnMade !== false;
         var isNew = this.isNew();
         if (!isNew)
           data._uri = this.getUri();
@@ -972,6 +969,9 @@ define('models/Resource', [
       var props = this.vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
         if (key == 'interfaceClass.properties') // HACK
+          return true;
+        
+        if (/^\$/.test(key)) // is an API param like $returnMade
           return true;
         
         if (window.Blob && val instanceof window.Blob)

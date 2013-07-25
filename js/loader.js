@@ -13,7 +13,7 @@ $.extend({
     var results = [],
         counter = 0,
         state = "resolved",
-        resolveOrReject = function() {
+        resolveOrReject = function(idx) {
           if (this.state() === "rejected"){
             state = "rejected";
           }
@@ -22,19 +22,20 @@ $.extend({
           switch (arguments.length) {
             case 0:
             case 1:            
-              results.push(arguments[0] || null);
+              results[this._idx] = arguments[0] || null;
               break;
             default:
-              results.push([].slice.call(arguments));
+              results[this._idx] = [].slice.call(arguments);
               break;
           }
 
           if (counter === len) {
-            dfd[state === "rejected"? "reject": "resolve"](results);   
+            dfd[state === "rejected"? "reject": "resolve"].apply(dfd, results);   
           }  
         };
   
     $.each(arguments, function(idx, item) {
+      item._idx = idx;
       item.always(resolveOrReject.bind(item)); 
     });
   
@@ -463,7 +464,9 @@ define('globals', function() {
         }).promise();
       }
       else if (source === 'indexedDB') {
-        return G.ResourceManager.getItem('modules', url);
+        return G.ResourceManager.getItem('modules', url).then(function(data) {
+          return data.data;
+        });
       }
     },
     dbType: (function() {
@@ -1150,8 +1153,7 @@ define('globals', function() {
       G.pruneBundle(bundle, options).done(function(pruned) {
         if (!pruned.length) {
           G.log('init', 'cache', 'bundle was cached', bundle);
-          bundleDfd.resolve();
-          return bundlePromise;
+          return bundleDfd.resolve();
         }
         
         var data = {modules: pruned.join(',')},
@@ -1262,6 +1264,7 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
   
+  G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome,
   function setParent() {
     if (browser.chrome)
       G.inWebview = true;
@@ -1435,7 +1438,6 @@ require(['globals'], function(G) {
 
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
-      G.browser = $.browser;
       App.initialize();
       G.startedTask('loading post-bundle');
       return G.loadBundle(postBundle, {async: true}).done(function() {

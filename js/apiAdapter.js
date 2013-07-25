@@ -1,4 +1,18 @@
-define('apiAdapter', ['globals'], function(Globals) {
+define('apiAdapter', ['globals', 'underscore'], function(G, _) {
+  
+  function getOAuthVersion(oauthVersion) {
+    if (typeof oauthVersion == 'string') {
+      try {
+        oauthVersion = parseInt(oauthVersion);
+      } catch (err) {
+      }
+    }
+    
+    if (oauthVersion !== 1 && oauthVersion !== 2)
+      throw errMsg;
+    
+    return oauthVersion;
+  };
   
   /**
    * @param consumer - the app's API account
@@ -18,7 +32,7 @@ define('apiAdapter', ['globals'], function(Globals) {
         return endpoint + '?' + $.param(params);
       else {
         params.$auth = 'simple';
-        return Globals.apiUrl + encodeURIComponent(this.type) + '?' + $.param(params);
+        return G.apiUrl + encodeURIComponent(this.type) + '?' + $.param(params);
       }
     },
 
@@ -157,4 +171,6 @@ define('apiAdapter', ['globals'], function(Globals) {
       }).promise();
     }
   });
+  
+  return API;
 });

@@ -1,4 +1,4 @@
-define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'models/Resource'], function(G, _, Events, U, C, Resource) {
+define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'models/Resource', 'collections/ResourceList', 'apiAdapter'], function(G, _, Events, U, C, Resource, ResourceList, API) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations';

@@ -378,7 +378,7 @@ define('router', [
             if (code == 400)
               Events.trigger('badList', list);
             
-            Errors.getDefaultErrorHandler().apply(this, arguments);
+            Errors.getBackboneErrorHandler().apply(this, arguments);
           }
         })
       });
@@ -401,11 +401,8 @@ define('router', [
         
       var previousView = this.currentView;
       if (!previousView) {
-        var qIdx = tName.indexOf("?");
-        if (qIdx >= 0) // these parameters are meant for the templates route, not for the previous view 
-          tName = tName.slice(0, qIdx);
-        
-        this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
+        tName = U.decode(tName.split('?')[0]); // url is of a form make%2f...?modelName=..., we just want the unencoded "make/..."        
+        this.navigate(tName, {trigger: true, postChangePageRedirect: U.getHash()});
         return;
       }
       
@@ -440,16 +437,8 @@ define('router', [
         });
       }
       
+      var type = hashInfo.type;
       var currentAppUri = G.currentApp._uri;
-      var modelUri = decodeURIComponent(tName);
-      var idx = modelUri.indexOf('?');
-      var sqlUri = '/' + G.sqlUri + '/';
-      var idx0 = modelUri.indexOf(sqlUri);
-      modelUri = idx0 == -1 ||  idx0 > idx ? modelUri.slice(0, idx) : 'http://' + modelUri.slice(idx0 + sqlUri.length, idx);
-      if (modelUri === 'view/profile')
-        modelUri = G.currentUser._uri;
-      if (modelUri.indexOf('http://') == -1)
-        modelUri = U.getModel(modelUri).type;
       var jstType = G.commonTypes.Jst;
       var jstModel = U.getModel(jstType);
       var jstUriBase = G.sqlUrl + '/' + jstType.slice(7) + '?';
@@ -458,7 +447,7 @@ define('router', [
           _uri:  jstUriBase + $.param({templateName: tName}),
           templateName: tName,
           forResource: currentAppUri,
-          modelDavClassUri: modelUri
+          modelDavClassUri: type
         }, {
           detached: true
         }));
@@ -686,7 +675,7 @@ define('router', [
       if (route == 'home')
         return true;
       
-      if (G.currentUser.guest && ['chat', 'edit', 'make'].indexOf(route) >= 0) {
+      if (G.currentUser.guest && _.contains(['chat', 'edit', 'make'], route)) {
         this._requestLogin();
         return false;
       }
@@ -728,7 +717,12 @@ define('router', [
       if (G.currentApp.forceInstall || isWriteRoute) {
         installationState = AppAuth.getAppInstallationState(hashInfo.type);
         if (!installationState.allowed) {
-          AppAuth.requestInstall(G.currentApp);
+          Voc.getModels(hashInfo.type).then(function() {
+            AppAuth.requestInstall(G.currentApp);
+          }, function() {
+            debugger;
+          });
+          
           return false;
         }
       }
@@ -983,7 +977,7 @@ define('router', [
           self[method].apply(self, args);
         }).fail(function() {
 //          debugger;
-          Errors.getDefaultErrorHandler().apply(this, arguments);
+          Errors.getBackboneErrorHandler().apply(this, arguments);
         });
         
         return false;

@@ -548,7 +548,7 @@
         getUserMedia(this.config.mediaConstraints, this.addMediaFromStream.bind(this), function() {
 //            throw new Error('Failed to get access to local media.');
             console.log("Failed to get access to local media");
-            constraints.video.send = contraints.video.preview = constraints.audio.send = false;
+            constraints.video.send = constraints.video.preview = constraints.audio.send = false;
             self.dontRequestMedia = true;
             self.testReadiness();
         });

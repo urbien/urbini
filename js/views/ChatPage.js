@@ -64,12 +64,7 @@ define('views/ChatPage', [
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
                       'setUserId', 'requestLocation', 'onclose', '_switchToApp'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      options = options || {};
-      
-      this.isWaitingRoom = U.isWaitingRoom();
-      this.isAgent = this.hashParams['-agent'] === 'y';
-      this.isClient = !this.isAgent;
-      this.isPrivate = U.isPrivateChat();
+      options = options || {};      
       this.headerButtons = {
         back: true,
         menu: true,
@@ -208,7 +203,7 @@ define('views/ChatPage', [
       this.config = {
         data: !(browser.mozilla && Math.floor(parseFloat(browser.version)) <= 23),
         video: {
-          send: this.isPrivate || this.isClient,
+          send: this.isPrivate || (this.isWaitingRoom && this.isClient),
           receive: !this.isWaitingRoom,
           preview: (!this.isWaitingRoom || this.isClient) && this.hasVideo
         },
