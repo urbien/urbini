@@ -257,6 +257,11 @@ define('vocManager', [
     });
   });
 
+  Events.on('newResource', function(res) {
+    if (!res.collection)
+      Voc.fetchLinkedAndReferredModels([res]);
+  });
+
   Events.on('newPlugs', Voc.savePlugsToStorage);
   return (G.Voc = Voc);
 });

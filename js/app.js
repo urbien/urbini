@@ -70,10 +70,11 @@ define('app', [
       return $.Deferred(function(defer) {        
         var modelsDfd = $.Deferred(),
             dbDfd = $.Deferred(),
-            grabDfd = $.Deferred();
+            grabDfd = $.Deferred(),
+            currentType = U.getModelType();
 
         var loadModels = function() {
-          Voc.getModels().done(function() {
+          Voc.getModels(currentType).done(function() {
             RM.openDB().then(dbDfd.resolve, dbDfd.reject);
             App.initGrabs().then(grabDfd.resolve, grabDfd.reject);
             modelsDfd.resolve();
@@ -276,6 +277,10 @@ define('app', [
 //      for (var type in C.typeToModel) {
 //        Voc.initPlugs(type);
 //      }
+      var currentType = U.getModelType();
+      if (currentType)
+        Voc.getModels();
+      
       setTimeout(function() { 
         RM.sync();
         App.setupPushNotifications();

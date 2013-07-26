@@ -8,7 +8,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
         mightBeStale = {infos: {}, models: {}},
         willLoad = [],
         force = options.force;
-        
+    
     for (var type in models) {
       if (force) {
         missingOrStale[type] = {};
@@ -81,19 +81,19 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
         return;
       }
 
-      var currentType = U.getModelType(),
-          urgent = options.sync && numModels > 1 && currentType && !U.getModel(currentType);
-          
-      if (urgent) {
-        fetchModels(currentType, options).done(function(data) {
-          defer.resolve(data);
-          models = U.filterObj(models, function(type, model) {
-            return type !== urgent;
-          });
-            
-          fetchModels(models, options);
-        }).fail(defer.reject);
-      }
+//      var currentType = U.getModelType(),
+//          urgent = /*options.sync && */ numModels > 1 && currentType && !U.getModel(currentType);
+//          
+//      if (urgent) {
+//        fetchModels(currentType, options).done(function(data) {
+//          defer.resolve(data);
+//          models = U.filterObj(models, function(type, model) {
+//            return type !== urgent;
+//          });
+//            
+//          fetchModels(models, options);
+//        }).fail(defer.reject);
+//      }
       
       var modelsCsv = JSON.stringify(models);
       var ajaxSettings = _.extend({

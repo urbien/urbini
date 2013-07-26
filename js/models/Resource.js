@@ -6,10 +6,10 @@ define('models/Resource', [
   'events',
   'cache'
 ], function(G, U, Errors, Events, C) {
-  var commonTypes = G.commonTypes;
-  var APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
+  var commonTypes = G.commonTypes,
+      APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
-  var willSave = function(res, meta, propName, val) {
+  function willSave(res, meta, propName, val) {
     if (typeof val == 'function')
       debugger;
     
@@ -23,12 +23,18 @@ define('models/Resource', [
       return true;
     
     return false;
-  }
+  };
 
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("Resource");
     G.log.apply(G, args);
+  };
+  
+  function hasResourceSpecificProps(atts) {  // we have some real props here, not just meta props
+    return _.any(_.keys(atts), function(key) {
+      return /^[a-zA-Z]/.test(key)
+    });
   };
   
   var Resource = Backbone.Model.extend({
@@ -41,12 +47,13 @@ define('models/Resource', [
       options = options || {};
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
+      this.on('load', this.announceNewResource);
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.detached = options.detached; // if true, this resource will not be persisted to the database, nor will it be fetched from the server
-      if (this.detached)
-        this.loaded = true;
+//      if (this.detached)
+//        this._load();
       
       if (this.isNew())
         this.setDefaults(options.query);
@@ -54,12 +61,12 @@ define('models/Resource', [
       if (atts) {
         this.parse(atts);
         // if no model based props are set, means we didn't "load" this resource yet
-        if (!_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)})) {
-          this.loaded = false;
-        }
+//        if (!_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)})) {
+//          this.loaded = false;
+//        }
       }
       
-      if (this.getUri() && !options.silent)
+      if (this.loaded && !options.silent)
         this.announceNewResource();
       else if (this.vocModel.type === commonTypes.Jst) {
         Events.trigger('newTemplate', this);
@@ -82,9 +89,20 @@ define('models/Resource', [
       this.unsavedChanges = this.isNew() ? this.toJSON() : {};
     },
     
+    _load: function(options) {
+      if (!this.loaded) {
+        this.loaded = true;
+        this.trigger('load');
+      }
+    },
+    
+    onload: function(cb) {
+      this.on('load', cb);
+    },
+    
     announceNewResource: function() {
-      Events.trigger('newResource', this);
       Events.trigger('newResource:' + this.type, this);
+      Events.trigger('newResource', this);
     },
     
     setModel: function(vocModel, options) {
@@ -332,7 +350,9 @@ define('models/Resource', [
           parsed._uri = this.attributes._uri = U.buildUri(parsed, this.vocModel);
         
         if (parse) {
-          this.loaded = true;
+//          if (_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)}))
+//            this.loaded = true;
+          
           this.loadInlined(parsed);
         }
         
@@ -381,7 +401,7 @@ define('models/Resource', [
         return null;
 
       if (!resp.data) {
-        this.loaded = true;
+//        this.loaded = true;
         return resp;
       }
         
@@ -400,7 +420,7 @@ define('models/Resource', [
       if (!this.loaded)
         this.loadInlined(resp);
       
-      this.loaded = true;
+//      this.loaded = true;
       return resp;
     },
     
@@ -545,6 +565,9 @@ define('models/Resource', [
         
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
+        
+        if (!this.loaded && hasResourceSpecificProps(props))
+          this._load();
         
         return result;
       }
@@ -840,7 +863,7 @@ define('models/Resource', [
     },
     
     save: function(attrs, options) {
-      this.loaded = true;
+      this._load();
       options = _.extend({patch: true, silent: true}, options || {});
       attrs = attrs || {};
       var isNew = this.isNew();

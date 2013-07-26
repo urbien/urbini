@@ -486,7 +486,9 @@ define('views/ResourceListView', [
     },
   
     setupSearchAndFilter: function() {
-      var collection = this.collection;
+      var collection = this.collection,
+          filtered = this.filteredCollection;
+      
       function onFilter(e, data) {
         var $ul = $(this),
             $input = $(data.input),
