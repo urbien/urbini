@@ -13,8 +13,8 @@ define('resourceSynchronizer', [
   var NO_DB = G.dbType === 'none',
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
-      REF_STORE = G.REF_STORE,
-      REF_STORE_PROPS = _.keys(REF_STORE.indices).concat(REF_STORE.options.keyPath);
+      REF_STORE,
+      REF_STORE_PROPS;
   
   Backbone.defaultSync = Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -517,6 +517,10 @@ define('resourceSynchronizer', [
     });      
   };
 
+  ResourceSynchronizer.init = _.once(function() {    
+    REF_STORE = G.getRefStoreInfo(),
+    REF_STORE_PROPS = _.keys(REF_STORE.indices).concat(REF_STORE.options.keyPath);
+  });
+  
   return ResourceSynchronizer;
 });
-

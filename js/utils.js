@@ -3398,6 +3398,16 @@ define('utils', [
       };
     },
 
+    getPropFn: function(obj, prop, clone) {
+      return function() {
+        var val = obj[prop];
+        if (typeof val === 'object' && clone)
+          val = _.clone(val);
+        
+        return val;
+      };
+    },
+    
     getIndexNames: function(vocModel) {
       var vc = vocModel.viewCols || '';
       var gc = vocModel.gridCols || '';

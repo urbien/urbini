@@ -12,7 +12,7 @@ define('app', [
  'resourceManager',
  'router',
  'collections/ResourceList'
- ], function(G, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, RM, Router, ResourceList) {
+ ], function(G, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -64,6 +64,9 @@ define('app', [
         waitTime = 50,
         promise;
     
+    if (!currentType)
+      return RESOLVED_PROMISE;
+    
     dfd = dfd || $.Deferred();
     promise = dfd.promise();
     
@@ -84,8 +87,8 @@ define('app', [
     }); 
     
     return promise;
-  };
-
+  }; 
+  
   function getAppAccounts() {
     var currentApp = G.currentApp,
         consumers = currentApp.dataConsumerAccounts || [],
@@ -304,13 +307,11 @@ define('app', [
   //  for (var type in C.typeToModel) {
   //    Voc.initPlugs(type);
   //  }
-    var currentType = U.getModelType();
-    if (currentType)
-      Voc.getModels();
     
+    Voc.getModels();    
     initGrabs();
     setupPushNotifications();
-    RM.sync();
+    ResourceManager.sync();
   //    if (G.inWebview) {
   //      App.replaceGetUserMedia();
   //      Events.on('messageToApp', function(msg) {
@@ -319,11 +320,56 @@ define('app', [
   //    }
   };
   
+  function prepDB() {
+    var requiredStores = {    
+      moduleStore: {
+        name: 'modules',
+        options: {
+          keyPath: 'url'
+        }
+      },
+      modelStore: {
+        name: 'models',
+        options: {
+          keyPath: 'url'
+        }      
+      },
+      refStore: {
+        name: 'ref',
+        options: {
+          keyPath: '_id'
+        },
+        indices: {
+          _uri: {unique: true, multiEntry: false},
+          _dirty: {unique: false, multiEntry: false},
+          _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
+          _problematic: {unique: false, multiEntry: false}
+          //      ,
+          //      _alert: {unique: false, multiEntry: false}      
+        }
+      }
+    }; 
+    
+    G.getBaseObjectStoresInfo = function() {
+      return _.clone(requiredStores);
+    };
+    
+    for (var storeName in requiredStores) {
+      G['get' + storeName.capitalizeFirst() + 'Info'] = U.getPropFn(requiredStores, storeName, true);
+    }
+    
+    ModelLoader.init('indexedDB');
+    ResourceManager.init();
+  };
+  
   function doPreStartTasks() {       
     setupAvailibilityMonitor();
     setupCleaner();
-    var modelsViewsTemplatesAndDB = getAppAccounts().then(loadCurrentModel).then(RM.openDB).then(function() {
-      return $.whenAll(getTemplates(), getViews());
+    prepDB();
+    var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {
+      return getAppAccounts().then(loadCurrentModel).then(function() {
+        return $.whenAll(getTemplates(), getViews());
+      });
     });
       
     setupWorkers();
@@ -451,7 +497,6 @@ define('app', [
       G.Router = new Router();
       Backbone.history.start();
       dfd.resolve();
-//      setTimeout(RM.sync, 1000);
     }).promise();
   };
       

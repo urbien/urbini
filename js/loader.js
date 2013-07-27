@@ -339,17 +339,31 @@ define('globals', function() {
               });
           
           if (!numRemoved) {
-            this.clean(function(key) {
+            numRemoved = this.clean(function(key) {
               return /^model\:/.test(key);
             });
           }
+          
+//          if (!numRemoved) {
+//            var extras = G.bundles.extras;
+//            for (var type in extras) {
+//              if (!/^_/.test(type)) {
+//                _.each(_.map(_.pluck(extras[type], 'name'), _.compose(G.getCanonicalPath, require.toUrl)), function(url) {
+//                  G.localStorage.del(url);
+//                  G.localStorage.del('metadata:' + url);
+//                });
+//              }
+//            }
+//          }
           
           if (!this.cleaning) { // TODO: unhack this garbage
             this.cleaning = true;
             G.Voc && G.Voc.saveModelsToStorage();
           }
           
-          force && this.put(key, value);
+          if (numRemoved)
+            this.put(key, value);
+          
           this.cleaning = false;
         } else {
           debugger;
@@ -423,15 +437,21 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  function putCached(urlToData, destination) {
-    if (destination === 'localStorage') {
+  function putCached(urlToData, options) {
+    options = options || {};
+    var storage = options.storage || 'localStorage';
+    if (storage === 'localStorage') {
       for (var url in urlToData) {
-        G.localStorage.put(url, urlToData[url]);
+        var val = urlToData[url];
+        if (typeof val == 'object')
+          val = JSON.stringify(val);
+        
+        G.localStorage.put(url, val);
       }
       
       return RESOLVED_PROMISE;
     }
-    else if (destination === 'indexedDB') {
+    else if (storage === 'indexedDB') {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
@@ -443,7 +463,7 @@ define('globals', function() {
         });
       };
 
-      return G.ResourceManager.put('modules', modules);
+      return G.ResourceManager.put(options.store || 'modules', modules);
     }
   };
   
@@ -452,7 +472,7 @@ define('globals', function() {
     onAppStart: function(fn) {
       return G._appStartDfd.promise().done(fn);
     },
-    putCached: function(urlToData, destination) {
+    putCached: function(urlToData, options) {
       var args = arguments;
       G.onAppStart(function() {
         G.whenNotRendering(function() {
@@ -460,7 +480,7 @@ define('globals', function() {
         });
       });
     },
-    getCached: function(url, source) {
+    getCached: function(url, source, storeName) {
       if (source === 'localStorage') {
         return $.Deferred(function(defer) {        
           var result = G.localStorage.get(url);
@@ -471,7 +491,7 @@ define('globals', function() {
         }).promise();
       }
       else if (source === 'indexedDB') {
-        return G.ResourceManager.getItem('modules', url).then(function(data) {
+        return G.ResourceManager.getItem(storeName || 'modules', url).then(function(data) {
           return data.data;
         });
       }
@@ -1150,7 +1170,10 @@ define('globals', function() {
             };
           }
           
-          G.putCached(newModules, source);
+          G.putCached(newModules, {
+            storage: source
+          });
+          
         }, 100);
         
         bundleDfd.resolve();
@@ -1270,7 +1293,7 @@ define('globals', function() {
     G[prop] = moreG[prop];
   }
   
-  G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+  G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
   function setParent() {
     if (browser.chrome)
       G.inWebview = true;
@@ -1278,7 +1301,7 @@ define('globals', function() {
       G.inFirefoxOS = true;
 //      window.top.postMessage({message: 'Hello world'}, G.serverName);
     }
-  }
+  };
 
   if (browser.chrome || browser.firefox) {
     var param = browser.chrome ? '-webview' : '-ffiframe';    

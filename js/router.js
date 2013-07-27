@@ -285,6 +285,7 @@ define('router', [
       if (mainDiv.is(':hidden'))
         mainDiv.show();
 
+      Events.trigger('pageChange');
       this.checkErr();
     },
     

@@ -22,17 +22,6 @@ define('resourceManager', [
   function getFileSystemPath(item, prop) {
     return U.getPath(item._uri) + '/' + prop;
   };
-
-  _.extend(G, {    
-    MODULE_STORE: {
-      name: 'modules',
-      options: {
-        keyPath: 'url'
-      }
-    },
-    
-    MAX_DATA_AGE: 180000
-  });
         
   var Blob = window.Blob,
       FileSystem,
@@ -41,8 +30,9 @@ define('resourceManager', [
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
       REF_STORE = G.REF_STORE,
-      MODULE_STORE = G.MODULE_STORE,
-      REQUIRED_STORES = [REF_STORE, MODULE_STORE],
+      MODULE_STORE,
+      MODEL_STORE,
+      REQUIRED_STORES,
       
       /**
        * data is considered old 3 minutes after it has last been fetched from the server
@@ -69,7 +59,14 @@ define('resourceManager', [
   
   var RM;
   var ResourceManager = RM = {
-    TAG: 'Storage',  
+    TAG: 'Storage', 
+    init: _.once(function() {
+      MODULE_STORE = G.getModuleStoreInfo();
+      MODEL_STORE = G.getModelStoreInfo();
+      REQUIRED_STORES = G.getBaseObjectStoresInfo();
+      Synchronizer.init();
+      ResourceSynchronizer.init();
+    }),
   
     /////////////////////////////////////////// START IndexedDB stuff ///////////////////////////////////////////
     /**

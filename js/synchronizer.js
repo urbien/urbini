@@ -1,27 +1,10 @@
 define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 'indexedDB'], function(G, _, U, Backbone, Events, IndexedDBModule) {
 
-  _.extend(G, { 
-    REF_STORE: {
-      name: 'ref',
-      options: {
-        keyPath: '_id'
-      },
-      indices: {
-        _uri: {unique: true, multiEntry: false},
-        _dirty: {unique: false, multiEntry: false},
-        _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
-        _problematic: {unique: false, multiEntry: false}
-        //      ,
-        //      _alert: {unique: false, multiEntry: false}      
-      }
-    }
-  });
-  
-  var MAX_DATA_AGE = 180000,
+  var MAX_DATA_AGE = G.MAX_DATA_AGE = 180000,
       NO_DB = G.dbType === 'none',
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
-      REF_STORE = G.REF_STORE;
+      REF_STORE;
   
   function getLastFetchedTimestamp(resOrJson) {
     return U.getValue(resOrJson, '_lastFetchedOn') || U.getValue(resOrJson, 'davGetLastModified');
@@ -248,5 +231,9 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     return IDB.put(classUri, items);
   };
 
+  Synchronizer.init = _.once(function() {
+    REF_STORE = G.getRefStoreInfo();
+  });
+  
   return Synchronizer;
 });

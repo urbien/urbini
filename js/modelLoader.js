@@ -1,18 +1,40 @@
-define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'models/Resource', 'collections/ResourceList', 'apiAdapter'], function(G, _, Events, U, C, Resource, ResourceList, API) {
+define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'models/Resource', 'collections/ResourceList', 'apiAdapter', 'indexedDB'], function(G, _, Events, U, C, Resource, ResourceList, API, IndexedDBModule) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
-      ENUMERATIONS_KEY = 'enumerations';
+      ENUMERATIONS_KEY = 'enumerations',
+      MODEL_STORE,
+      IDB;
+
+  G.REQUIRED_OBJECT_STORES = G.REQUIRED_OBJECT_STORES || [];
   
   function sortModelsByStatus(models, options) {
+    if (!IDB)
+      IDB = IndexedDBModule.getIDB();
+    
     var missingOrStale = {},
         mightBeStale = {infos: {}, models: {}},
         willLoad = [],
-        force = options.force;
+        force = options.force,
+        promises = [],
+        source = preferredStorage,
+        isIDB = false;
     
-    for (var type in models) {
+    if (!IDB)
+      source = 'localStorage';
+    
+    isIDB = source === 'indexedDB';
+    function require(type) {
+      missingOrStale[type] = {};
+    };    
+
+    _.each(_.keys(models), function(type) {
+      var requireType = U.partial(require, type),
+          getMetadata = U.partial(getModelMetadataFromStorage, type, source),
+          getData = U.partial(getModelFromStorage, type, source);
+      
       if (force) {
-        missingOrStale[type] = {};
-        continue;
+        requireType();
+        return;
       }
       
       var info = models[type];
@@ -21,53 +43,48 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
         info = models[type] = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || info;
       }
       
-      var storedInfo = getModelMetadataFromStorage(type);
-      if (!storedInfo) {
-        missingOrStale[type] = {};
-        continue;
-      }
-      
-      try {
-        storedInfo = JSON.parse(storedInfo);
-      } catch (err) {
-        debugger;
-        deleteModelFromStorage(type);
-        missingOrStale[type] = {};
-        continue;
-      }
-      
-      if (info.lastModified) {
-        var lm = Math.max(info.lastModified, G.lastModified);
-        if (lm > storedInfo.lastModified)
-          missingOrStale[type] = {};
-        else {
-          var jModel = getModelFromStorage(type);
-          if (jModel)
-            willLoad.push(jModel);
-          else
-            missingOrStale[type] = {};
+      var promise = getMetadata().then(function(storedInfo) {
+        if (info.lastModified) {
+          var lm = Math.max(info.lastModified, G.lastModified);
+          if (lm > storedInfo.lastModified)
+            return requireType();
+          else {
+            if (isIDB)
+              return willLoad.push(storedInfo); //intermediateDfd.resolve(storedInfo);
+            else {
+              getData().then(function(jModel) {
+                willLoad.push(jModel);
+              }, requireType);
+            }
+          }
         }
-      }
-      else {
-        // can't do this right away because we need to know that we actually have it in localStorage
-        var jModel = getModelFromStorage(type);
-        if (jModel) {
-          mightBeStale.infos[type] = {
-            lastModified: storedInfo.lastModified
-          };
         
-          mightBeStale.models[type] = jModel;
-        }
-        else
-          missingOrStale[type] = {};            
-      }
-    }
+        // can't do this right away because we need to know that we actually have it in localStorage
+        return getData().then(function(jModel) {            
+          if (jModel) {
+            mightBeStale.infos[type] = {
+              lastModified: storedInfo.lastModified
+            };
+          
+            mightBeStale.models[type] = jModel;
+          }
+          else
+            requireType();
+        });
+      }, requireType);
+      
+      promises.push(promise);
+    });
     
-    return {
-      have: willLoad,
-      need: missingOrStale,
-      mightBeStale: mightBeStale
-    };
+    return $.Deferred(function(defer) {
+      $.whenAll.apply($, promises).always(function() {
+        defer.resolve({
+          have: willLoad,
+          need: missingOrStale,
+          mightBeStale: mightBeStale
+        });
+      });
+    }).promise();
   };
   
   function fetchModels(models, options) {
@@ -124,20 +141,21 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     var force = options.force;    
     if (!G.hasLocalStorage)
       return fetchModels(models, options);
-      
-    var modelsInfo = sortModelsByStatus(models, options);
-    if (G.online)
-      return fetchAndLoadModels(modelsInfo, options);
-    else {
-      Events.once('online', function(online) {
-        var infoClone = _.clone(modelsInfo);
-        infoClone.have = [];
-        fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
-      });
-      
-      var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
-      return loadModels(loading);
-    }
+    
+    return sortModelsByStatus(models, options).then(function(modelsInfo) {
+      if (G.online)
+        return fetchAndLoadModels(modelsInfo, options);
+      else {
+        Events.once('online', function(online) {
+          var infoClone = _.clone(modelsInfo);
+          infoClone.have = [];
+          fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
+        });
+        
+        var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
+        return loadModels(loading);
+      }
+    });
   };
 
   function fetchAndLoadModels(modelsInfo, options) {
@@ -191,9 +209,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       
       // new promise
       var promise = loadModels(changedModels); 
-      setTimeout(function() {
+//      setTimeout(function() {
+      G.whenNotRendering(function() {
         storeModels(newModels);
-      }, 100);
+      });
+//      }, 100);
       
 //        Voc.setupPlugs(data.plugs);
       Events.trigger('newPlugs', data.plugs);
@@ -299,28 +319,37 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     }
   };
 
-  function storeModels(models) {
-    if (!localStorage)
-      return; // TODO: use indexedDB
-    
+  function storeModels(models, storageType) {
     models = models || MODEL_CACHE;
     if (!models.length)
       return;
   
+    storageType = storageType || preferredStorage;
+    var notUsingLocalStorage = storageType == 'localStorage' && !G.hasLocalStorage;
+    if (notUsingLocalStorage) {
+      storageType = 'indexedDB';
+    }
+    else if (storageType == 'indexedDB' && G.dbType === 'none') {
+      if (notUsingLocalStorage)
+        return; // we're out of options
+      else
+        storage = 'localStorage';
+    }
+    
     var enumModels = {};
     _.each(models, function(model) {
       var modelJson = U.toJSON(model);
       if (model.enumeration)
         enumModels[model.type] = modelJson;
       else
-        storeModel(modelJson);
+        storeModel(modelJson, storageType);
     });
     
     if (_.size(enumModels)) {
       var enums = getEnumsFromStorage();
       enums = enums ? JSON.parse(enums) : {};
       _.extend(enums, enumModels);
-      storeEnums(enums);
+      storeEnums(enums, storageType);
     }
   };
 
@@ -348,34 +377,69 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     return MODEL_PREFIX + 'metadata:' + uri;
   };
  
-  function getModelMetadataFromStorage(uri) {
-    return G.localStorage.get(getModelMetadataStorageURL(uri));
+  function getModelMetadataFromStorage(uri, source) {
+    if (source === 'indexedDB')
+      return getModelFromStorage(uri, source);
+          
+    return getItemFromStorage(getModelMetadataStorageURL(uri), source);
   };
 
-  function getModelFromStorage(uri) {
-    var jModel = G.localStorage.get(getModelStorageURL(uri));
-    try {
-      return JSON.parse(jModel);
-    } catch (err) {
-      debugger;
-      deleteModelFromStorage(uri);
-      return null;
-    }
+  function getModelFromStorage(uri, source) {
+    return getItemFromStorage(getModelStorageURL(uri), source);
   };
-
-  function storeModel(modelJson) {
-    setTimeout(function() {
-      var type = modelJson.type;
-      G.localStorage.putAsync(getModelMetadataStorageURL(type), {
-        lastModified: modelJson.lastModified
-      });
+  
+  function getItemFromStorage(url, source) {
+    return G.getCached(url, source, MODEL_STORE.name).then(function(data) {
+      if (typeof data == 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (err) {
+          debugger;
+          return null;
+        }
+      }
       
-      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
-      U.pushUniq(G.storedModelTypes, type);
-    }, 100);
+      return data;
+    });    
+  };
+
+  function storeModel(modelJson, storageType) {
+    var type = modelJson.type,
+        data = {},
+        metadata = {};
+    
+    if (storageType == 'localStorage') {
+      metadata[getModelMetadataStorageURL(type)] = {
+        lastModified: modelJson.lastModified
+      };
+      
+      G.putCached(metadata, {
+        storage: storageType
+      });
+    }
+    
+    data[getModelStorageURL(type)] = modelJson;
+    G.putCached(data, {
+      storage: storageType,
+      store: MODEL_STORE.name
+    });
+    
+//    setTimeout(function() {
+//      var type = modelJson.type;
+//      G.localStorage.putAsync(getModelMetadataStorageURL(type), {
+//        lastModified: modelJson.lastModified
+//      });
+//      
+//      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
+//      U.pushUniq(G.storedModelTypes, type);
+//    }, 100);
   };
 
   var ModelLoader = {
+    init: _.once(function(storageType) {
+      preferredStorage = storageType || 'indexedDB';
+      MODEL_STORE = G.getModelStoreInfo();
+    }),
     loadEnums: loadEnums,
     getModels: getModels,
     getModelStoragePrefix: function() {
