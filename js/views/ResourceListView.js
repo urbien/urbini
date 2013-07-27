@@ -362,11 +362,9 @@ define('views/ResourceListView', [
     postRender: function(info) {
       if (this.rendered) {
         this.$el.trigger('create');
-        if (!this.isMultiValueChooser)
-          this.$el.listview('refresh');
+        if (!this.isMultiValueChooser)// && this.$el.hasClass('ui-listview'))
+          this.$el.listview().listview('refresh');
       }
-//      else
-//        debugger;
     },
     
     postRenderItem: function(liView, info) {

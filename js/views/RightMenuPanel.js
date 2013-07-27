@@ -79,7 +79,7 @@ define('views/RightMenuPanel', [
       var uri = target.dataset.release;
       var grabbed = G.currentUser.grabbed;
       var item = U.isTempUri(uri) ? grabbed.where({_oldUri: uri})[0] : grabbed.get(uri);
-      item.cancel();
+      item && item.cancel();
       grabbed.remove(item);
       
       this.refresh();
@@ -253,6 +253,7 @@ define('views/RightMenuPanel', [
       ul.append(frag);
       var p = $('#' + this.viewId);
       p.append(this.$el);
+//      p.panel().panel("open");
       p.panel("open");
       ul.listview();
     },
@@ -266,6 +267,7 @@ define('views/RightMenuPanel', [
       var mi = $('#' + this.viewId).find('ul#rightMenuItems');
       if (mi  &&  mi.length != 0) {
         $('#' + this.viewId).panel("open");
+//        $('#' + this.viewId).panel().panel("open");
         return;
       }
       
@@ -348,6 +350,7 @@ define('views/RightMenuPanel', [
       var p = $('#' + this.viewId);
       p.append(this.$el);
       p.panel("open");
+//      p.panel().panel("open");
       ul.listview();
 //      p.trigger("updatelayout")
       return this;

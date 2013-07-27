@@ -96,6 +96,7 @@ define('views/MenuPanel', [
     render:function (eventName) {
       var mi = $('#' + this.viewId).find('ul#menuItems');
       if (mi  &&  mi.length != 0) {
+//        $('#' + this.viewId).panel().panel("open");
         $('#' + this.viewId).panel("open");
         return;
       }
@@ -218,6 +219,7 @@ define('views/MenuPanel', [
       var p = $('#' + this.viewId);
       p.append(this.$el);
       p.panel("open");
+//      p.panel().panel("open");
       this.$('#menuItems').listview();
       
 //      $('#menuItems').listview();

@@ -267,6 +267,7 @@ define('views/Header', [
       this.renderSpecialButtons();
       this.error = null;
       this.renderError();
+//      this.restyleNavbar();
       return this;
     },
     
@@ -514,6 +515,10 @@ define('views/Header', [
       return this;
     },
     
+    restyleNavbar: function() {
+      this.$('[data-role="navbar"]').navbar();
+    },
+    
     renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
@@ -613,6 +618,7 @@ define('views/Header', [
       // END HACK
       
       this.refreshCallInProgressHeader();
+      this.restyleNavbar();
       this.finish();
       return this;
     }

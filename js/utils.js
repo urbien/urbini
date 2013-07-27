@@ -2830,7 +2830,7 @@ define('utils', [
         if (!template)
           return null;
         
-        template = _.template(U.removeHTMLComments(template));
+        template = _.template(U.removeHTMLComments(template).trim());
       }
       else
         template = templateName;

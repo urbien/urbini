@@ -6,7 +6,7 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>

@@ -22,7 +22,8 @@ define('views/CommentListView', [
     postRender: function() {
       if (this.rendered) {
         this.$el.trigger('create');
-        this.$el.listview('refresh');
+//        if (this.$el.hasClass('ui-listview'))
+          this.$el.listview('refresh');
       }
       else
         this.$el.prevObject.find('#comments').css('display', 'block');
