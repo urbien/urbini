@@ -299,9 +299,9 @@ define('resourceManager', [
   };
   
   Events.on('updatedResources', function(resources) {
-    setTimeout(function() {
+    G.whenNotRendering(function() {
       RM.addItems(resources);
-    }, 100);
+    });
   });
 
   Events.on('modelsChanged', function(changedTypes) {

@@ -25,6 +25,15 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 	  idbTransaction && idbTransaction.readyState !== idbTransaction.DONE && idbTransaction.abort();
 	};
 	
+  function log() {
+//    var args = [].slice.call(arguments);
+//    args.unshift("jqueryIndexedDB");
+//    G.log.apply(G, args);
+  };
+
+  var pendingReqs = {},
+      pendingTrans = {};
+  
 	$.extend({
 		/**
 		 * The IndexedDB object used to open databases
@@ -50,20 +59,27 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			
 			var wrap = {
 				"request": function(req, args){
+			    var reqName = 'req' + G.nextId();
+			    pendingReqs[reqName] = true;
 					return $.Deferred(function(dfd){
-//					  dfd.__lablzId = G.nextId();
+					  dfd.promise().always(function() {
+					    delete pendingReqs[reqName];
+					  });
+					  
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
 							idbRequest.onsuccess = function(e) {
+			          log('req success');
 						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
-								//console.log("Error", idbRequest, e, this);
+								log("req failed", idbRequest, e, this);
 								dfd.rejectWith(idbRequest, [idbRequest.error, e]);
 							};
 							if (typeof idbRequest.onblocked !== "undefined" && idbRequest.onblocked === null) {
 								idbRequest.onblocked = function(e){
-									console.log("Blocked", idbRequest, e, this);
+								  debugger;
+									log("Blocked", idbRequest, e, this);
 									var res;
 									try {
 										res = idbRequest.result;
@@ -79,7 +95,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 								};
 							}
 						} catch (e) {
-//						  debugger;
+						  debugger;
 							e.name = "exception";
 							dfd.rejectWith(idbRequest, ["exception", e]);
 						}
@@ -156,18 +172,28 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                 results.push(result.value);
               }
               
-              wrap.cursor(function() {
+              var cPromise = wrap.cursor(function() {
                 var op = keysOnly ? "openKeyCursor" : "openCursor";
                 if (direction) {
                   return idbObjectStore[op](wrap.range(range), direction);
                 } else {
                   return idbObjectStore[op](wrap.range(range));
                 }
-              }, callback).done(function() {
-                dfd.resolve(results);
-              }).fail(function() {
-                dfd.rejectWith(this, arguments);
-              });
+              }, callback);
+              
+              function finish() {
+                var oncomplete = this.transaction.oncomplete;
+                this.transaction.oncomplete = function() {
+                  log('getAll transaction for store ' + idbObjectStore.name + ' complete');
+                  oncomplete.apply(this, arguments);
+                  if (cPromise.state() === 'resolved')
+                    dfd.resolve(results);
+                  else
+                    dfd.rejectWith(this, arguments);
+                }
+              }
+              
+              cPromise.always(finish);
             }).promise();
 					};
 					
@@ -547,7 +573,13 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 				"transaction": function(storeNames, mode){
 					!$.isArray(storeNames) && (storeNames = [storeNames]);
 					mode = getDefaultTransaction(mode);
-					return $.Deferred(function(dfd){
+          var transName = 'trans' + G.nextId();
+          pendingTrans[transName] = true;
+          return $.Deferred(function(dfd){
+            dfd.promise().always(function() {
+              delete pendingTrans[transName];
+            });
+            
 						dbPromise.then(function(db, e){
 							var idbTransaction;
 							try {
@@ -582,6 +614,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 					});
 				},
 				"objectStore": function(storeName, mode) {
+//          log('new objectStore connection');
 					var me = this, result = {};
 					
 					function op(callback) {

@@ -55,6 +55,23 @@ define('collections/ResourceList', [
       else
         this.parseQuery(options._query);
       
+      if (vocModel.adapter) {
+        var validator = vocModel.adapter.validateCollection,
+            valid = false;
+        
+        if (validator) {
+          try {
+            valid = validator.call(this);
+          } catch (err) {
+            // TODO handle error
+          }
+        }
+        
+        if (!valid) {
+          // TODO handle error
+        }
+      }
+      
       this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
       if (options.cache !== false)
         this.announceNewList();
@@ -413,7 +430,7 @@ define('collections/ResourceList', [
           return;
         }
         
-        self.update(resp.data, options);
+        self.update(resp, options);
         success(resp, status, xhr);
       }; 
       

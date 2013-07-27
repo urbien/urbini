@@ -666,6 +666,11 @@ define('router', [
     },
     
     routePrereqsFulfilled: function(route, args) {
+      Events.trigger('changingPage');
+      return this._routePrereqsFulfilled.apply(this, arguments); 
+    },
+    
+    _routePrereqsFulfilled: function(route, args) {
       this.updateHashInfo();
       var self = this,
           views,

@@ -2540,6 +2540,19 @@ define('utils', [
       return obj;
     },
     
+    toArray: function(obj) {
+      var arr = [];
+      for (var prop in obj) {
+        if (_.has(obj, prop)) {
+          var piece = {};
+          piece[prop] = obj[prop];
+          arr.push(piece);
+        }
+      }
+      
+      return arr;
+    },
+    
     DEFAULT_WHERE_OPERATOR: '==',
     whereParams: {
       $or: '||', 

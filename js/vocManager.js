@@ -16,11 +16,88 @@ define('vocManager', [
   };
 
   G.classUsage = _.map(G.classUsage, U.getTypeUri);
+  function ModelRequestCollector() {
+    var dfd, promise, collected;
+    this.reset = function() {
+      dfd = $.Deferred();
+      promise = dfd.promise();
+      collected = [];
+    };
+
+    this.appendRequest = function(models, options) {
+      delete options.wait;
+      _.extend(collected, normalizeModels(models, options));
+      return promise;
+    };
+    
+    this.execute = function(options) {
+      delete options.go;
+      return ModelLoader.getModels(collected, options).always(this.reset);
+    };
+    
+    this.getModels = function(models, options) {
+      return ModelLoader.getModels(normalizeModels(models, options), options);
+    };
+    
+    this.reset();
+  };
+  
+  function normalizeModels(models, options) {
+    if (!models) {
+      // if no models specified, get the base app models
+      models = _.clone(G.modelsMetadata);
+      var currentModel = U.getModelType();
+      if (currentModel && !models[currentModel])
+        models[currentModel] = {};
+    }
+    else {
+      switch (U.getObjectType(models)) {
+      case '[object String]':
+        models = U.toObject([U.getLongUri1(models)]);
+        break;
+      case '[object Array]':
+        models = U.toObject(_.map(models, U.getLongUri1));
+        break;
+      case '[object Object]':
+        break;
+      default:
+        throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
+      }
+    }
+    
+    if (!options.overwrite) {
+      models = U.filterObj(models, function(type, info) {
+        return !U.getModel(type);
+      });
+    }
+    
+    return models;
+  };
+      
+  function fetchLinkedAndReferredModels(list) {
+    var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
+    if (!resources.length)
+      return;
+    
+    var model = resources[0].vocModel;
+    var linkedModels = Voc.detectLinkedModels(resources[0]);
+    var referredModels = Voc.detectReferredModels(list);
+    var models = _.union(linkedModels || [], referredModels || []);
+    if (_.size(models))
+      Voc.getModels(models, {sync: false});
+  };
   
   var Voc = {
+    modelReqCollector: new ModelRequestCollector(),
 //    models: [],
     getModels: function(models, options) {
-      return ModelLoader.getModels(models, options);
+      options = options || {};
+      if (options.wait)
+        return this.modelReqCollector.appendRequest(models, options);
+      else if (options.go)
+        this.modelReqCollector.execute(options);
+      else
+        return this.modelReqCollector.getModels(models, options);
     },    
     detectLinkedModels: function(res) {
       var isResource = U.isModel(res);
@@ -63,18 +140,8 @@ define('vocManager', [
       return linkedModels;
     },
     
-    fetchLinkedAndReferredModels: function(list) {
-      var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
-      if (!resources.length)
-        return;
-      
-      var model = resources[0].vocModel;
-      var linkedModels = Voc.detectLinkedModels(resources[0]);
-      var referredModels = Voc.detectReferredModels(list);
-      var models = _.union(linkedModels || [], referredModels || []);
-      if (_.size(models)) {
-        Voc.getModels(models, {sync: false});
-      }
+    fetchLinkedAndReferredModels: function(listOrRes) {
+      G.whenNotRendering(U.partial(fetchLinkedAndReferredModels, listOrRes));
     },
 
     detectReferredModels: function(list) {      

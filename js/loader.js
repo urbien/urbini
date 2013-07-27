@@ -216,7 +216,7 @@ define('globals', function() {
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
           if (G.minify)
-            text += '\n//@ sourceMappingURL=' + url.slice(url.lastIndexOf('/') + 1) + '.map';
+            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
           
           text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
@@ -423,35 +423,42 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
+  function putCached(urlToData, destination) {
+    if (destination === 'localStorage') {
+      for (var url in urlToData) {
+        G.localStorage.put(url, urlToData[url]);
+      }
+      
+      return RESOLVED_PROMISE;
+    }
+    else if (destination === 'indexedDB') {
+      if (G.dbType === 'none')
+        return REJECTED_PROMISE;
+            
+      var modules = [];
+      for (var url in urlToData) {
+        modules.push({
+          url: url, 
+          data: urlToData[url]
+        });
+      };
+
+      return G.ResourceManager.put('modules', modules);
+    }
+  };
+  
   var moreG = {
     _appStartDfd: $.Deferred(),
-    onAppStart: function() {
-      return G._appStartDfd.promise();
+    onAppStart: function(fn) {
+      return G._appStartDfd.promise().done(fn);
     },
     putCached: function(urlToData, destination) {
-      if (destination === 'localStorage') {
-        for (var url in urlToData) {
-          G.localStorage.put(url, urlToData[url]);
-        }
-        
-        return RESOLVED_PROMISE;
-      }
-      else if (destination === 'indexedDB') {
-        if (G.dbType === 'none')
-          return REJECTED_PROMISE;
-              
-        return G.onAppStart().then(function() {
-          var modules = [];
-          for (var url in urlToData) {
-            modules.push({
-              url: url, 
-              data: urlToData[url]
-            });
-          };
-
-          return G.ResourceManager.put('modules', modules);
+      var args = arguments;
+      G.onAppStart(function() {
+        G.whenNotRendering(function() {
+          putCached.apply(null, args);
         });
-      }
+      });
     },
     getCached: function(url, source) {
       if (source === 'localStorage') {
@@ -862,9 +869,8 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (!G.trace.ON || !console || !console.log || !type)
+      if (G.minify || !G.trace.ON || !console || !console.log || !type)
         return;
-      
       
       var types = typeof type == 'string' ? [type] : type;
 //      if (types.indexOf('error') != -1)
@@ -1446,7 +1452,7 @@ require(['globals'], function(G) {
       });
     });
 
-    G.onAppStart().done(function() {            
+    G.onAppStart(function() {            
       G.startedTask('loading extras-bundle');
       G.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
         G.startedTask('loading extras-bundle');

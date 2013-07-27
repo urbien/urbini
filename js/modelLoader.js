@@ -99,8 +99,9 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       var ajaxSettings = _.extend({
         url: G.modelsUrl, 
         data: {models: modelsCsv}, 
-        type: 'POST', 
-        timeout: 10000
+        type: 'POST'
+//          , 
+//        timeout: 10000
       }, _.pick(options, 'sync'));
       
       U.ajax(ajaxSettings).done(function(data, status, xhr) {
@@ -120,36 +121,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
   
   function getModels(models, options) {
     options = options || {};
-    var force = options.force;
-    
-    if (!models) {
-      // if no models specified, get the base app models
-      models = _.clone(G.modelsMetadata);
-      var currentModel = U.getModelType();
-      if (currentModel && !models[currentModel])
-        models[currentModel] = {};            
-    }
-    else {
-      switch (U.getObjectType(models)) {
-      case '[object String]':
-        models = U.toObject([U.getLongUri1(models)]);
-        break;
-      case '[object Array]':
-        models = U.toObject(_.map(models, U.getLongUri1));
-        break;
-      case '[object Object]':
-        break;
-      default:
-        throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
-      }
-    }
-    
-    if (!options.overwrite) {
-      models = U.filterObj(models, function(type, info) {
-        return !U.getModel(type);
-      });
-    }
-  
+    var force = options.force;    
     if (!G.hasLocalStorage)
       return fetchModels(models, options);
       

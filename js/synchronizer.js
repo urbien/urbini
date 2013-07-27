@@ -101,8 +101,8 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   },
       
   Synchronizer.prototype._defaultSync = function() {
-    if (this._isSyncRequest())
-      this.options.timeout = 10000;
+//    if (this._isSyncRequest())
+//      this.options.timeout = 10000;
     
     var self = this,
         tName = 'sync ' + this.options.url;

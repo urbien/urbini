@@ -483,8 +483,7 @@ define('resourceSynchronizer', [
 //            IDB.put(transaction.objectStore(type, 1), toSave);
 //            IDB.put(transaction.objectStore(REF_STORE.name, 1), ref);
 //          }).then(dfd.resolve, dfd.reject); // resolve in any case, so sync operation can conclude
-        $.whenAll(IDB.put(type, toSave), IDB.put(REF_STORE.name, toSave)).then(function() {
-          debugger;
+        $.whenAll(IDB.put(type, toSave), IDB.put(REF_STORE.name, ref)).then(function() {
           dfd.resolve();
         }, function() {
           debugger;          
