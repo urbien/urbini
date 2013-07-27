@@ -1,0 +1,14 @@
+video {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.overlay {
+  border: 5px solid #AAA;  
+  max-width: 30%;
+  position: absolute;
+  z-index: 1;
+}
