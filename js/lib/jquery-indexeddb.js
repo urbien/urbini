@@ -31,8 +31,26 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 //    G.log.apply(G, args);
   };
 
-  var pendingReqs = {},
-      pendingTrans = {};
+//  var pendingReqs = {},
+//      pendingTrans = {},
+  var pendingTransactions = [],
+      pendingTransDfd = $.Deferred().resolve(),
+      readyForVersionChange = pendingTransDfd.promise();
+  
+  function startedTransaction(idbTransaction) {
+    pendingTransactions.push(idbTransaction);
+    pendingTransDfd = $.Deferred();
+    readyForVersionChange = pendingTransDfd.promise();
+  };
+  
+  function finishedTransaction(idbTransaction) {
+    var idx = pendingTransactions.indexOf(idbTransaction);
+    if (idx >= 0)
+      pendingTransactions.splice(idx, 1);
+    
+    if (!pendingTransactions.length)
+      pendingTransDfd.resolve();
+  };
   
 	$.extend({
 		/**
@@ -59,12 +77,12 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			
 			var wrap = {
 				"request": function(req, args){
-			    var reqName = 'req' + G.nextId();
-			    pendingReqs[reqName] = true;
+//			    var reqName = 'req' + (args ? args : G.nextId());
+//			    pendingReqs[reqName] = true;
 					return $.Deferred(function(dfd){
-					  dfd.promise().always(function() {
-					    delete pendingReqs[reqName];
-					  });
+//					  dfd.promise().always(function() {
+//					    delete pendingReqs[reqName];
+//					  });
 					  
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
@@ -172,28 +190,33 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                 results.push(result.value);
               }
               
-              var cPromise = wrap.cursor(function() {
+//              var cPromise = 
+              wrap.cursor(function() {
                 var op = keysOnly ? "openKeyCursor" : "openCursor";
                 if (direction) {
                   return idbObjectStore[op](wrap.range(range), direction);
                 } else {
                   return idbObjectStore[op](wrap.range(range));
                 }
-              }, callback);
+              }, callback).done(function() {
+                dfd.resolve(results);
+              }).fail(function() {
+                dfd.rejectWith(this, arguments);
+              });
               
-              function finish() {
-                var oncomplete = this.transaction.oncomplete;
-                this.transaction.oncomplete = function() {
-                  log('getAll transaction for store ' + idbObjectStore.name + ' complete');
-                  oncomplete.apply(this, arguments);
-                  if (cPromise.state() === 'resolved')
-                    dfd.resolve(results);
-                  else
-                    dfd.rejectWith(this, arguments);
-                }
-              }
-              
-              cPromise.always(finish);
+//              function finish() {
+//                var oncomplete = this.transaction.oncomplete;
+//                this.transaction.oncomplete = function() {
+//                  log('getAll transaction for store ' + idbObjectStore.name + ' complete');
+//                  oncomplete.apply(this, arguments);
+//                  if (cPromise.state() === 'resolved')
+//                    dfd.resolve(results);
+//                  else
+//                    dfd.rejectWith(this, arguments);
+//                }
+//              }
+//              
+//              cPromise.always(finish);
             }).promise();
 					};
 					
@@ -513,10 +536,12 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			
 			
 			// Start with opening the database
-			var dbPromise = wrap.request(function(){
+			var dbPromise = readyForVersionChange.then(function() {
+			  return wrap.request(function(){
 				//console.log("Trying to open DB with", version);
 //				return version ? openReqShim(dbName, version) : openReqShim(dbName);
       		return version ? indexedDB.open(dbName, parseInt(version)) : indexedDB.open(dbName);
+			  });
 			});
 			dbPromise.then(function(db, e){
 				//console.log("DB opened at", db.version);
@@ -573,18 +598,21 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 				"transaction": function(storeNames, mode){
 					!$.isArray(storeNames) && (storeNames = [storeNames]);
 					mode = getDefaultTransaction(mode);
-          var transName = 'trans' + G.nextId();
-          pendingTrans[transName] = true;
+//          var transName = 'trans' + G.nextId();
+//          pendingTrans[transName] = true;
           return $.Deferred(function(dfd){
+            var idbTransaction;
             dfd.promise().always(function() {
-              delete pendingTrans[transName];
+//              delete pendingTrans[transName];
+              finishedTransaction(idbTransaction);
             });
             
 						dbPromise.then(function(db, e){
-							var idbTransaction;
 							try {
 								//console.log("DB Opened, now trying to create a transaction", storeNames, mode);
 								idbTransaction = db.transaction(storeNames, mode);
+								startedTransaction(idbTransaction);
+								
 								//console.log("Created a transaction", idbTransaction, mode, storeNames);
 								idbTransaction.onabort = idbTransaction.onerror = function(e){
 									dfd.rejectWith(idbTransaction, [e]);
@@ -633,6 +661,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 									dfd.rejectWith(trans, [e, e]);
 								}
 							}
+							
 							me.transaction(storeName, getDefaultTransaction(mode)).then(function(){
 								//console.log("Transaction completed");
 								// Nothing to do when transaction is complete
@@ -642,11 +671,13 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 									//console.log("Object Not found, so will try to create one now");
 									var db = this.result;
 									db.close();
-									dbPromise = wrap.request(function(){
+									dbPromise = readyForVersionChange.then(function() {
+									  return wrap.request(function(){
 										//console.log("Now trying to open the database again", db.version);
 //										return openReqShim(dbName, (parseInt(db.version, 10) || 1) + 1);
-                    					return indexedDB.open(dbName, (parseInt(db.version, 10) || 1) + 1);
-									});
+            					return indexedDB.open(dbName, (parseInt(db.version, 10) || 1) + 1);
+									  });
+								  });
 									dbPromise.then(function(db, e){
 										//console.log("Database opened, tto open transaction", db.version);
 										db.onversionchange = function(){
