@@ -1,13 +1,14 @@
 window.onload = function() {
   console.log('bootoffline init');
-  var copout = function() {
+  function copout() {
     alert('You are currently offline');
   };
   
-  if (!localStorage || !localStorage.getItem)
+  var ls = localStorage;
+  if (!ls || !ls.getItem)
     return copout();
   
-  var g = localStorage.getItem('Globals');
+  var g = ls.getItem('Globals');
   if (!g) {
     copout();
     return;
@@ -18,7 +19,7 @@ window.onload = function() {
   window.Lablz = g;
 
   var div = document.createElement('div');
-  div.innerHTML = localStorage.getItem('homePage');
+  div.innerHTML = ls.getItem('homePage');
   document.getElementById('page').appendChild(div);
 
   new Function("d", g.boot)(document);

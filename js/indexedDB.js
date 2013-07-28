@@ -17,8 +17,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   var instance,
       FileSystem,
       fileSystemPromise,
-      REJECTED_PROMISE = $.Deferred().reject().promise(),
-      RESOLVED_PROMISE = $.Deferred().resolve().promise()
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise();
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};

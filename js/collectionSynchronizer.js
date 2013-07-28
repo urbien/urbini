@@ -1,7 +1,7 @@
 define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronizer', 'idbQueryBuilder', 'indexedDB'], function(G, _, U, Synchronizer, QueryBuilder, IndexedDBModule) {
   var NO_DB = G.dbType === 'none',
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().reject().promise();
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise();
 
   function CollectionSynchronizer() {
     Synchronizer.apply(this, arguments);

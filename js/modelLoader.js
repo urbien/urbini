@@ -140,7 +140,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     options = options || {};
     var force = options.force;    
     if (!G.hasLocalStorage)
-      return fetchModels(models, options);
+      return fetchModels(models, options).then(parseAndLoadModels);
     
     return sortModelsByStatus(models, options).then(function(modelsInfo) {
       if (G.online)
@@ -159,69 +159,76 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
   };
 
   function fetchAndLoadModels(modelsInfo, options) {
-    var mightBeStale = modelsInfo.mightBeStale,
+    var mightBeStale = modelsInfo.mightBeStale || {},
         modelsToGet = _.extend({}, modelsInfo.need, mightBeStale.infos);
     
     return $.when(fetchModels(modelsToGet, options), loadModels(modelsInfo.have, true)).then(function(data) {
-      G.checkVersion(data);
-      if (!data) {
-        // "need" should be empty
-        if (_.size(modelsInfo.need)) {
-          debugger;
-          defer.reject();
-          return;
-//              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
-        }
-        
-        return loadModels(mightBeStale.models, true);
-      }
-      
-      var mz = data.models || [],
-          more = data.linkedModelsMetadata;
-      
-      G.lastModified = Math.max(data.lastModified, G.lastModified);
-      G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
-      if (more) {
-        _.extend(G.linkedModelsMetadata, U.mapObj(more, function(type, meta) {
-          return [U.getLongUri1(type), meta];
-        }));
-      }
-      
-      if (data.classMap)
-        _.extend(G.classMap, data.classMap);
-      
-      var newModels = [],
-          loadedTypes = [];
-      
-      for (var i = 0; i < mz.length; i++) {
-        var newModel = mz[i];
-        newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;            
-        loadedTypes.push(newModel.type);
-        U.pushUniq(newModels, newModel);
-      }
-      
-      var notStale = _.filter(_.values(mightBeStale.models), function(model) {
-        return !_.contains(loadedTypes, model.type);
-      });
-      
-      var changedModels = _.union(newModels, notStale);
-      MODEL_CACHE = _.union(MODEL_CACHE, changedModels);
-      
-      // new promise
-      var promise = loadModels(changedModels); 
-//      setTimeout(function() {
-      G.whenNotRendering(function() {
-        storeModels(newModels);
-      });
-//      }, 100);
-      
-//        Voc.setupPlugs(data.plugs);
-      Events.trigger('newPlugs', data.plugs);
-      if (newModels.length)
-        Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
-      
-      return promise;
+      return parseAndLoadModels(data, modelsInfo);
     });
+  };
+  
+  function parseAndLoadModels(data, modelsInfo) {
+    modelsInfo = modelsInfo || {};
+    var mightBeStale = modelsInfo.mightBeStale || {};
+    
+    G.checkVersion(data);
+    if (!data) {
+      // "need" should be empty
+      if (_.size(modelsInfo.need)) {
+        debugger;
+        defer.reject();
+        return;
+//              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
+      }
+      
+      return loadModels(mightBeStale.models, true);
+    }
+    
+    var mz = data.models || [],
+        more = data.linkedModelsMetadata;
+    
+    G.lastModified = Math.max(data.lastModified, G.lastModified);
+    G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
+    if (more) {
+      _.extend(G.linkedModelsMetadata, U.mapObj(more, function(type, meta) {
+        return [U.getLongUri1(type), meta];
+      }));
+    }
+    
+    if (data.classMap)
+      _.extend(G.classMap, data.classMap);
+    
+    var newModels = [],
+        loadedTypes = [];
+    
+    for (var i = 0; i < mz.length; i++) {
+      var newModel = mz[i];
+      newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;            
+      loadedTypes.push(newModel.type);
+      U.pushUniq(newModels, newModel);
+    }
+    
+    var notStale = _.filter(_.values(mightBeStale.models), function(model) {
+      return !_.contains(loadedTypes, model.type);
+    });
+    
+    var changedModels = _.union(newModels, notStale);
+    MODEL_CACHE = _.union(MODEL_CACHE, changedModels);
+    
+    // new promise
+    var promise = loadModels(changedModels); 
+//      setTimeout(function() {
+    G.whenNotRendering(function() {
+      storeModels(newModels);
+    });
+//      }, 100);
+    
+//        Voc.setupPlugs(data.plugs);
+    Events.trigger('newPlugs', data.plugs);
+    if (newModels.length)
+      Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
+    
+    return promise;
   };
 
   function loadModels(models, dontOverwrite) {

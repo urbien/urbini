@@ -18,8 +18,8 @@ define('app', [
   Backbone.emulateJSON = true;
   var pushEndpointType = G.commonTypes.PushEndpoint,
       pushChannelType = G.commonTypes.PushChannel,
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().reject().promise();
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise();
 //  ,
 //      modelsNeededImmediately = [];
   
