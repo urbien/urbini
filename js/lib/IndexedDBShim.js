@@ -402,7 +402,7 @@ var idbModules = window.idbModules = {};
     IDBIndex.prototype.__createIndex = function(indexName, keyPath, optionalParameters) {
       var me = this;
       var transaction = me.__idbObjectStore.transaction;
-      transaction.tq.runTask(function() {
+      transaction.tq.queueTask("create index " + indexName, function() {
         var defer = this;
         transaction.db.__db.transaction(function(tx){
           me.__idbObjectStore.__getStoreProps(tx, function(){
@@ -456,7 +456,7 @@ var idbModules = window.idbModules = {};
             }, error);
           }, "createObjectStore");
         });
-      }, {name: "create index " + indexName});
+      }, false, 100);
     };
     
     IDBIndex.prototype.openCursor = function(range, direction){
@@ -1039,7 +1039,7 @@ var idbModules = window.idbModules = {};
       var result = new idbModules.IDBObjectStore(storeName, me.__versionTransaction, false);
       
       var transaction = me.__versionTransaction;
-      transaction.tq.runTask(function() {
+      transaction.tq.queueTask("create object store " + storeName, function() {
         var defer = this;
 //          transaction.__addToTransactionQueue(function(tx, args, success, failure){
         transaction.db.__db.transaction(function(tx){
@@ -1064,7 +1064,7 @@ var idbModules = window.idbModules = {};
 //          });
         
         });
-      }, {name: "create object store " + storeName, sequential: true});
+      }, false, 100);
         
       // The IndexedDB Specification needs us to return an Object Store immediately, but WebSQL does not create and return the store immediatly
       // Hence, this can technically be unusable, and we hack around it, by setting the ready value to false
@@ -1075,7 +1075,7 @@ var idbModules = window.idbModules = {};
     IDBDatabase.prototype.deleteObjectStore = function(storeName) {
       var me = this;
       var transaction = me.__versionTransaction;
-      transaction.tq.runTask(function() {
+      transaction.tq.queueTask("delete object store " + storeName, function() {
         var defer = this;
 //        return $.Deferred(function (defer) {
         var error = function(){
@@ -1102,7 +1102,7 @@ var idbModules = window.idbModules = {};
                 });
             });
         });
-      }, {name: "delete object store " + storeName});
+      }, false, 100);
     };
     
     IDBDatabase.prototype.close = function(){
@@ -1187,11 +1187,11 @@ var idbModules = window.idbModules = {};
                                         var trans = req.transaction = req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
                                         trans.tq = new TaskQueue("IDBShim upgrade to " + version);
                                         idbModules.util.callback("onupgradeneeded", req, e, function(){
-                                          trans.tq.runTask(function() {
+                                          trans.tq.queueTask("Complete upgrade transaction", function() {
                                             var e = idbModules.Event("success");
                                             idbModules.util.callback("onsuccess", req, e);
                                             this.resolve();
-                                          }, {name: "Complete upgrade transaction", sequential: true, yields: true});
+                                          }, true, 10);
                                         });
                                         
                                     }, dbCreateError);

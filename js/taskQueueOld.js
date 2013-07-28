@@ -1,5 +1,5 @@
 //'use strict';
-define('taskQueue', ['globals', 'utils'], function(G, U) {
+define('taskQueueOld', ['globals', 'utils'], function(G, U) {
   function TaskQueue(name) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
@@ -136,8 +136,8 @@ define('taskQueue', ['globals', 'utils'], function(G, U) {
           
           if (timeout) {
             setTimeout(function() {
-              if (!taskDfd.isResolved() && !taskDfd.isRejected()) {
-  //              debugger; // sth went wrong with task, it didn't finish
+              if (taskDfd.state() === 'pending') {
+                debugger; // sth went wrong with task, it didn't finish
                 taskDfd.reject(null, {code: 0, type: 'timeout'});
               }
             }, timeout);

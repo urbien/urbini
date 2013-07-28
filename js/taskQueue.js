@@ -13,7 +13,11 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       push: function(task) {
         queue.push(task);
         queue.sort(function(a, b) {
-          return a.blocking ? -1 : a.priority - b.priority;
+          var priorityDiff = a.priority - b.priority;
+          if (priorityDiff)
+            return priorityDiff;
+          else
+            return a.blocking ? -1 : b.blocking ? 1 : 0;
         });
       },
       
@@ -235,10 +239,6 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     this.isFinished = function() {
       return started && promise.state() == 'resolved';
     };
-  };
-  
-  function test() {
-    
   };
   
   return TaskQueue;

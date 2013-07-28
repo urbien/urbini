@@ -117,16 +117,19 @@ define('resourceManager', [
       for (var i = 0; i < mk.length; i++) {
         var type = mk[i],
             indices;
-            
-        // is a model store, not one of the required stores
-        if (U.getEnumModel(type) || U.getInlineResourceModel(type))
-          continue;
+
+        if (type.startsWith('http')) {
+          // is a model store, not one of the required stores
+          if (U.getEnumModel(type) || U.getInlineResourceModel(type))
+            continue;
+          
+          var vocModel = U.getModel(type);
+          if (!vocModel)
+            throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
+          
+          indices = U.toObject(U.getIndexNames(vocModel) || []);
+        }
         
-        var vocModel = U.getModel(type);
-        if (!vocModel)
-          throw new Error("missing model for " + type + ", it should have been loaded before store create operation was queued");
-        
-        indices = U.toObject(U.getIndexNames(vocModel) || []);
         IDB.createObjectStore(type, null, indices);
       }
 
@@ -159,7 +162,7 @@ define('resourceManager', [
           classUri = U.getTypeUri(items[0]._uri);
       }
       
-      if (!U.getModel(classUri)) {
+      if (classUri.startsWith('http') && !U.getModel(classUri)) {
         return Voc.getModels(classUri).then(function() {
           return RM.addItems(classUri, items);
         });

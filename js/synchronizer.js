@@ -221,11 +221,13 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
         });
       }).promise();
     }
-            
-    var vocModel = U.getModel(classUri);
-    for (var i = 0; i < items.length; i++) {
-      var item = items[i];
-      items[i] = U.isModel(item) ? item.toJSON() : item;
+
+    if (classUri.startsWith('http')) {
+      var vocModel = U.getModel(classUri);
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        items[i] = U.isModel(item) ? item.toJSON() : item;
+      }
     }
     
     return IDB.put(classUri, items);

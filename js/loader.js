@@ -463,7 +463,7 @@ define('globals', function() {
         });
       };
 
-      return G.ResourceManager.put(options.store || 'modules', modules);
+      return G.ResourceManager.addItems(options.store || 'modules', modules);
     }
   };
   
