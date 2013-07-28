@@ -344,6 +344,15 @@ define('globals', function() {
             });
           }
           
+          if (!numRemoved) {
+            numRemoved = this.clean(function(key) {
+              return !/\//.test(key); // all except Globals, Version, other state variables
+            });
+          }
+          
+          if (!numRemoved)
+            localStorage.clean();
+          
 //          if (!numRemoved) {
 //            var extras = G.bundles.extras;
 //            for (var type in extras) {
