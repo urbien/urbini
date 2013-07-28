@@ -444,7 +444,8 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     getModels: getModels,
     getModelStoragePrefix: function() {
       return MODEL_PREFIX;
-    }
+    },
+    storeModels: storeModels
   };
   
   _.extend(ModelLoader, Backbone.Events);

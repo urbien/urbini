@@ -98,7 +98,10 @@ define('vocManager', [
         this.modelReqCollector.execute(options);
       else
         return this.modelReqCollector.getModels(models, options);
-    },    
+    },
+    storeModels: function(models, storageType) {
+      ModelLoader.storeModels(models, storageType);
+    },
     detectLinkedModels: function(res) {
       var isResource = U.isModel(res);
       var model = isResource ? res.vocModel : res;
@@ -233,6 +236,10 @@ define('vocManager', [
     if (!U.isTempResource(appInstall)) {
       PlugManager.fetchPlugs({appInstall: appInstall.getUri()});
     }
+  });
+  
+  Events.on('VERSION', function() {
+    G.localStorage.clean();
   });
   
   Events.on('VERSION:Models', function(init) {

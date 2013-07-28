@@ -351,7 +351,7 @@ define('globals', function() {
           }
           
           if (!numRemoved)
-            localStorage.clean();
+            this.clean();
           
 //          if (!numRemoved) {
 //            var extras = G.bundles.extras;
@@ -446,16 +446,20 @@ define('globals', function() {
     return 'metadata:' + url;
   }
 
-  function putCached(urlToData, options) {
+  function putCached(keyToData, options) {
     options = options || {};
-    var storage = options.storage || 'localStorage';
+    var storage = options.storage || 'localStorage',
+        store = options.store || 'modules',
+        storeInfo = store === 'modules' ? G.getModuleStoreInfo() : G.getModelStoreInfo(),
+        keyPath = storeInfo.options.keyPath;        
+    
     if (storage === 'localStorage') {
-      for (var url in urlToData) {
-        var val = urlToData[url];
+      for (var key in keyToData) {
+        var val = keyToData[key];
         if (typeof val == 'object')
           val = JSON.stringify(val);
         
-        G.localStorage.put(url, val);
+        G.localStorage.put(key, val);
       }
       
       return RESOLVED_PROMISE;
@@ -464,15 +468,17 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
-      var modules = [];
-      for (var url in urlToData) {
-        modules.push({
-          url: url, 
-          data: urlToData[url]
-        });
+      var stuff = [];
+      for (var key in keyToData) {
+        var stuffInfo = {
+          data: keyToData[key]
+        };
+        
+        stuffInfo[keyPath] = key;
+        stuff.push(stuffInfo);
       };
 
-      return G.ResourceManager.addItems(options.store || 'modules', modules);
+      return G.ResourceManager.addItems(options.store || 'modules', stuff);
     }
   };
   

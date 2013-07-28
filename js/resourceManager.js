@@ -356,6 +356,11 @@ define('resourceManager', [
   });
 
   Events.on('VERSION:Models', RM.cleanDatabaseAndReopen);
+  Events.on('VERSION', function(init) {
+    RM.deleteDatabase().then(function() {
+      Voc.storeModels();
+    })
+  });
   
   Events.on("saveToDB", function(resource) {
     

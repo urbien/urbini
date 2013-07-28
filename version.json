@@ -2,5 +2,6 @@
 	All: 12,
 	JS: 3,
 	CSS: 1,
-	Models: 5
+	Models: 5,
+	DB: 1
 }

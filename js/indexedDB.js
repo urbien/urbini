@@ -368,6 +368,11 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return this.getStoreNames().indexOf(storeName) !== -1;
   };
   
+  function deleteAndReopen() {
+    this.db = null;
+    return this.$idb.deleteDatabase().then(this.open);
+  };
+  
   IDB.prototype.wipe = function(filter, reason) {
     if (!this.isOpen())
       return this.onOpen(U.partialWith(this.wipe, this, filter, reason));
@@ -376,7 +381,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return RESOLVED_PROMISE;
     
     if (!filter)
-      return this._queueTask('wiping IndexedDB {0}. {1}'.format(this.name, reason || ''), this.$idb.deleteDatabase, true);
+      return this._queueTask('wiping IndexedDB {0}. {1}'.format(this.name, reason || ''), deleteAndReopen.bind(this), true);
     
     this.storesToKill = this.storesToKill.concat(_.filter(this.getStoreNames(), filter));
     return this.start();

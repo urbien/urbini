@@ -374,11 +374,11 @@ define('app', [
       
     setupWorkers();
 //        getAppAccounts().always(loadModels);
+    Voc.checkUser();
     G.checkVersion();
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
-    Voc.checkUser();
     ModelLoader.loadEnums();
     
     return modelsViewsTemplatesAndDB;
@@ -387,15 +387,17 @@ define('app', [
   
   function setupCleaner() {
     G.checkVersion = function(data) {
-      var init = data === true;
-      var newV = data ? data.VERSION : G.getVersion();
-      var oldV = G.getVersion(!data) || newV; // get old
+      var init = data === true,
+          newV = data ? data.VERSION : G.getVersion(),
+          oldV = G.getVersion(!data) || newV; // get old
+      
       if (oldV.All && newV.All > oldV.All) {
         G.setVersion(newV);
-        for (var key in newV) {
-          Events.trigger('VERSION:' + key, init);
-        }
+//        for (var key in newV) {
+//          Events.trigger('VERSION:' + key, init);
+//        }
         
+        Events.trigger('VERSION', init);
         return;
       }
       
@@ -412,8 +414,9 @@ define('app', [
       }
     };
 
-    _.each(['.js', '.css', '.jsp'], function(ext) {
-      Events.on("VERSION" + ext.toUpperCase(), function() {
+    var fileTypes = ['js', 'css', 'jsp'];
+    _.each(fileTypes, function(ext) {
+      Events.on("VERSION:" + ext.toUpperCase(), function() {
         G.log(App.TAG, 'info', 'nuking', ext, 'from LS');
         var keys = _.keys(localStorage);
         for (var i = 0; i < keys.length; i++) {
@@ -422,6 +425,16 @@ define('app', [
             G.localStorage.del(key);
         }
       });
+    });
+    
+    Events.on("VERSION", function() {
+      G.log(App.TAG, 'info', 'nuking all cached files from LS');
+      var keys = _.keys(localStorage);
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (/\.[a-zA-Z]+$/.test(key))
+          G.localStorage.del(key);
+      }        
     });
   };
   
