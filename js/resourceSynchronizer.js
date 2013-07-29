@@ -11,8 +11,8 @@ define('resourceSynchronizer', [
   'cache'
 ], function(G, _, Backbone, U, Events, Synchronizer, Voc, TaskQueue, IndexedDBModule, C) {  
   var NO_DB = G.dbType === 'none',
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().reject().promise(),
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE,
       REF_STORE_PROPS;
   

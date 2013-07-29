@@ -85,46 +85,59 @@ define('globals', function() {
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
   // More details: http://docs.jquery.com/Utilities/jQuery.browser
-  var G = Lablz,
-      browser = G.browser = (function detectBrowser() {
-        var browser = {},
-            rwebkit = /(webkit)[ \/]([\w.]+)/,
-            ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
-            rmsie = /(msie) ([\w.]+)/,
-            rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
-    
-        function uaMatch( ua ) {
-          ua = ua.toLowerCase();
-    
-          var match = rwebkit.exec( ua ) ||
-                      ropera.exec( ua )  ||
-                      rmsie.exec( ua )   ||
-                      ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
-                      [];
-    
-          return { browser: match[1] || "", version: match[2] || "0" };
-        };
-    
-        var browserMatch = uaMatch( navigator.userAgent );
-        if ( browserMatch.browser ) {
-          browser[ browserMatch.browser ] = true;
-          browser.version = browserMatch.version;
-        }
-        
-        return browser;
-      })(),
-  
-//      ALL_IN_APPCACHE,
-      hash = window.location.href.split('#')[1],
-      query = hash && hash.split('?')[1],
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().resolve().promise();
-  
-  browser.chrome = browser.webkit && !!window.chrome;
-  browser.safari = browser.webkit && !window.chrome;
-  browser.firefox = browser.mozilla;
-  browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+  function detectBrowser() {
+    var browser = {},
+        rwebkit = /(webkit)[ \/]([\w.]+)/,
+        ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+        rmsie = /(msie) ([\w.]+)/,
+        rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
 
+    function uaMatch( ua ) {
+      ua = ua.toLowerCase();
+
+      var match = rwebkit.exec( ua ) ||
+                  ropera.exec( ua )  ||
+                  rmsie.exec( ua )   ||
+                  ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
+                  [];
+
+      return { browser: match[1] || "", version: match[2] || "0" };
+    };
+
+    var browserMatch = uaMatch( navigator.userAgent );
+    if ( browserMatch.browser ) {
+      browser[ browserMatch.browser ] = true;
+      browser.version = browserMatch.version;
+    }
+    
+    browser.chrome = browser.webkit && !!window.chrome;
+    browser.safari = browser.webkit && !window.chrome;
+    browser.firefox = browser.mozilla;
+    browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+    return browser;
+  };
+  
+  function hasLocalStorage() {
+    var supported = false;
+    try{
+      supported = window && ("localStorage" in window) && ("getItem" in localStorage);
+    } catch(e) {}
+    
+    return supported;
+  };
+  
+  function saveBootInfo() {
+    var ls = G.localStorage;
+    if (!ls)
+      return;
+    
+    var v = ls.get('VERSION');
+    v ? ls.put('OLD_VERSION', v) : ls.clean();
+    ls.put('VERSION', JSON.stringify(Lablz.VERSION));
+    delete Lablz.VERSION;
+    ls.put('Globals', JSON.stringify(Lablz));
+  };
+  
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
     // Script Injection
@@ -146,12 +159,7 @@ define('globals', function() {
     else
       return window.eval(text);
   }
-  
-  var $head = $('head'),
-      head = $head[0],
-      $body = $('body'),
-      body = $body[0];
-  
+    
   Function.prototype.async = function(constantTimeout) {
     var self = this;
     return function() {
@@ -162,19 +170,6 @@ define('globals', function() {
       }, timeout);
     }
   };
-
-  G.localTime = new Date().getTime();
-  G.online = !!navigator.onLine;
-  
-  window.addEventListener("offline", function(e) {
-    // we just lost our connection and entered offline mode, disable eternal link
-    G.setOnline(false);
-  }, false);
-
-  window.addEventListener("online", function(e) {
-    // just came back online, enable links
-    G.setOnline(true);
-  }, false);
 
   function needModule(name) {
     switch (name) {
@@ -243,9 +238,9 @@ define('globals', function() {
       if (/\.(jsp|css|html)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
   
-      var inAppcache = realPath = G.getFromAppcacheBundle(url);
+      var inAppcache = realPath = Bundler.getFromAppcacheBundle(url);
       if (inAppcache || (G.inFirefoxOS && G.minify)) {
-        var path = G.requireConfig.paths[name] || name;
+        var path = requireConfig.paths[name] || name;
         if (!/\.(jsp|css|html)$/.test(url)) {
           orgLoad(name, url.replace(path, realPath));
           return;
@@ -282,7 +277,7 @@ define('globals', function() {
         return;
       
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
-      G.loadBundle(name).done(function() {
+      Bundler.loadBundle(name).done(function() {
         if (G.modules[url])
           loadModule(name, url, G.modules[url]).done(defer.resolve);
         else {
@@ -292,152 +287,15 @@ define('globals', function() {
       });        
     }).promise();
   };
-
   
-  var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
-      hasLocalStorage = (function(){
-        var supported = false;
-        try{
-          supported = window && ("localStorage" in window) && ("getItem" in localStorage);
-        }catch(e){}
-        return supported;
-      })();
-  
-  G.serverName = (function() {     
-    var s = $('base')[0].href;
-    return s.match("/$") ? s.slice(0, s.length - 1) : s;
-  })();
-  
-  G.domain = (function() {
+  function getDomain() {
     return G.serverName.match(/([^\.\/]+\.com)/)[0];
-  })();
-  
-  G.localStorage = {
-    get: function(url) {
-      var item = localStorage.getItem(url);
-      return item;
-    },
-    del: function(key) {
-      localStorage.removeItem(key);
-    },
-    put: function(key, value, force) {
-      if (!G.hasLocalStorage)
-        return false;
-
-      value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
-      try {
-//        G.localStorage.del(key);
-        localStorage.setItem(key, value);
-      } catch(e) {
-        debugger;
-        if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
-          // clean to make space
-          var appModelRegexp = G.appModelRegExp,
-              thisAppModelRegexp = G.currentAppModelRegExp,
-              numRemoved = this.clean(function(key) {
-                return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
-              });
-          
-          if (!numRemoved) {
-            numRemoved = this.clean(function(key) {
-              return /^model\:/.test(key);
-            });
-          }
-          
-          if (!numRemoved) {
-            numRemoved = this.clean(function(key) {
-              return !/\//.test(key); // all except Globals, Version, other state variables
-            });
-          }
-          
-          if (!numRemoved)
-            this.clean();
-          
-//          if (!numRemoved) {
-//            var extras = G.bundles.extras;
-//            for (var type in extras) {
-//              if (!/^_/.test(type)) {
-//                _.each(_.map(_.pluck(extras[type], 'name'), _.compose(G.getCanonicalPath, require.toUrl)), function(url) {
-//                  G.localStorage.del(url);
-//                  G.localStorage.del('metadata:' + url);
-//                });
-//              }
-//            }
-//          }
-          
-          if (!this.cleaning) { // TODO: unhack this garbage
-            this.cleaning = true;
-            G.Voc && G.Voc.saveModelsToStorage();
-          }
-          
-          if (numRemoved)
-            this.put(key, value);
-          
-          this.cleaning = false;
-        } else {
-          debugger;
-          G.hasLocalStorage = false;
-          G.log(G.TAG, "Local storage write failure: ", e);
-        }
-      }
-    },
-    
-    clean: function(test) {
-      var cleaning = this.cleaning,
-          numRemoved = 0;
-      
-      this.cleaning = true;
-      for (var i = localStorage.length - 1; i > -1; i--) {
-        var key = localStorage.key(i);
-        if (!test || test(key)) {
-          G.localStorage.del(key);
-          numRemoved++;
-        }
-      }  
-      
-      return numRemoved;
-    },
-    
-    nukeScripts: function() {
-      var start = new Date().getTime();
-      var length = localStorage.length;
-      console.log("nuking scripts, localStorage has", length, "keys", start);
-      for (var i = length - 1; i > -1; i--) {
-        var key = localStorage.key(i);
-        if (/\.(?:js|css|jsp)$/.test(key)) {          
-          var start1 = new Date().getTime();
-          G.localStorage.del(key);
-          console.log("nuked", key, new Date().getTime() - start1);
-        }
-      }
-
-      console.log("nuking scripts took", new Date().getTime() - start, "ms");
-    },
-    
-    nukePlugs: function() {
-      var length = localStorage.length;
-      var types = [], plugs;
-      for (var i = length - 1; i > -1; i--) {
-        var key = localStorage.key(i);
-        if (/^plugs/.test(key)) {
-          types.push(key.slice(9));
-          G.localStorage.del(key);
-        }
-      }
-      
-      return types;
-    }
   };
   
   function testCSS(prop) {
     return prop in doc.documentElement.style;
   }
-  
-  
-  G.localStorage.putAsync = G.localStorage.put.async(100);
-  G.localStorage.cleanAsync = G.localStorage.clean.async(100);
-  // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
-  
+    
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
   }
@@ -481,12 +339,695 @@ define('globals', function() {
       return G.ResourceManager.addItems(options.store || 'modules', stuff);
     }
   };
+
+  function setMiscGlobals() {
+    var path = window.location.pathname,
+        appPath = path.slice(path.lastIndexOf('/') + 1),
+        devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
+        regex = devVoc + appPath + '\/[^\/]*$',
+        commonTypes = G.commonTypes, 
+        defaultVocPath = G.defaultVocPath;
+    
+    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
+    G.currentAppRegExp      = new RegExp(regex);
+    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);    
+    G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
+    G.apiUrl                = G.serverName + '/api/v1/';
+    G.timeOffset            = G.localTime - G.serverTime;
+    for (var type in commonTypes) {
+      commonTypes[type] = defaultVocPath + commonTypes[type];
+    }
+  };
+
+  function testIfInsidePackagedApp() {
+    // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
+    if (!browser.chrome && !browser.firefox)
+      return;
+    
+    function setParent() {
+      if (browser.chrome)
+        G.inWebview = true;
+      else if (browser.firefox) {
+        G.inFirefoxOS = true;
+//        window.top.postMessage({message: 'Hello world'}, G.serverName);
+      }
+    };
+
+    var param = browser.chrome ? '-webview' : '-ffiframe';    
+    if (hasLocalStorage) {
+      if (localStorage.getItem(param) === 'y') {
+        setParent();
+      }
+    }
+    
+    if (navigator.mozApps) {
+      setParent();          
+      G.localStorage.put(param, 'y');
+    }
+    else if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
+      var params = query.split('&');
+      for (var i = 0; i < params.length; i++) {
+        var keyVal = params[i].split('=');
+        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
+          setParent();          
+          G.localStorage.put(param, 'y');
+          break;
+        }
+      }
+    }
+    
+    console.log('inWebview:', G.inWebview);
+    console.log('inFFIframe:', G.inFirefoxOS);
+  //    ALL_IN_APPCACHE = G.inFirefoxOS;
+  };
   
-  var moreG = {
-    _appStartDfd: $.Deferred(),
-    onAppStart: function(fn) {
-      return G._appStartDfd.promise().done(fn);
+  function determineMinificationMode() {
+    // Determine whether we want the server to minify stuff
+    // START minify
+    var qIdx = hash.indexOf('?'),
+        set = false,
+        mCookieName = G.serverName + '/cookies/minify',
+        minified = G.getCookie(mCookieName);
+        
+    if (qIdx != -1) {    
+      var hParams = hash.slice(qIdx + 1).split('&');
+      for (var i = 0; i < hParams.length; i++) {
+        var p = hParams[i].split('=');
+        if (p[0] == '-min') {
+          G.setCookie(mCookieName, p[1], 100000);
+          if (p[1] != minified) {
+            minified = p[1];
+          }
+          
+          break;
+        }
+      }
+    }
+
+    G.minify = minified === 'y' ? true : minified === 'n' ? false : G.minifyByDefault;
+  };
+
+  function setupLocalStorage() {
+    if (!hasLocalStorage)
+      return;
+    
+    G.localStorage = {
+      get: function(url) {
+        var item = localStorage.getItem(url);
+        return item;
+      },
+      del: function(key) {
+        localStorage.removeItem(key);
+      },
+      put: function(key, value, force) {
+        if (!G.hasLocalStorage)
+          return false;
+  
+        value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
+        try {
+  //        G.localStorage.del(key);
+          localStorage.setItem(key, value);
+        } catch(e) {
+          debugger;
+          if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
+            // clean to make space
+            var appModelRegexp = G.appModelRegExp,
+                thisAppModelRegexp = G.currentAppModelRegExp,
+                numRemoved = this.clean(function(key) {
+                  return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
+                });
+            
+            if (!numRemoved) {
+              numRemoved = this.clean(function(key) {
+                return /^model\:/.test(key);
+              });
+            }
+            
+            if (!numRemoved) {
+              numRemoved = this.clean(function(key) {
+                return !/\//.test(key); // all except Globals, Version, other state variables
+              });
+            }
+            
+            if (!numRemoved)
+              this.clean();
+            
+  //          if (!numRemoved) {
+  //            var extras = G.bundles.extras;
+  //            for (var type in extras) {
+  //              if (!/^_/.test(type)) {
+  //                _.each(_.map(_.pluck(extras[type], 'name'), _.compose(G.getCanonicalPath, require.toUrl)), function(url) {
+  //                  G.localStorage.del(url);
+  //                  G.localStorage.del('metadata:' + url);
+  //                });
+  //              }
+  //            }
+  //          }
+            
+            if (!this.cleaning) { // TODO: unhack this garbage
+              this.cleaning = true;
+              G.Voc && G.Voc.saveModelsToStorage();
+            }
+            
+            if (numRemoved)
+              this.put(key, value);
+            
+            this.cleaning = false;
+          } else {
+            debugger;
+            G.hasLocalStorage = false;
+            G.log(G.TAG, "Local storage write failure: ", e);
+          }
+        }
+      },
+      
+      clean: function(test) {
+        var cleaning = this.cleaning,
+            numRemoved = 0;
+        
+        this.cleaning = true;
+        for (var i = localStorage.length - 1; i > -1; i--) {
+          var key = localStorage.key(i);
+          if (!test || test(key)) {
+            G.localStorage.del(key);
+            numRemoved++;
+          }
+        }  
+        
+        return numRemoved;
+      },
+      
+      nukeScripts: function() {
+        var start = new Date().getTime();
+        var length = localStorage.length;
+        console.log("nuking scripts, localStorage has", length, "keys", start);
+        for (var i = length - 1; i > -1; i--) {
+          var key = localStorage.key(i);
+          if (/\.(?:js|css|jsp)$/.test(key)) {          
+            var start1 = new Date().getTime();
+            G.localStorage.del(key);
+            console.log("nuked", key, new Date().getTime() - start1);
+          }
+        }
+  
+        console.log("nuking scripts took", new Date().getTime() - start, "ms");
+      },
+      
+      nukePlugs: function() {
+        var length = localStorage.length;
+        var types = [], plugs;
+        for (var i = length - 1; i > -1; i--) {
+          var key = localStorage.key(i);
+          if (/^plugs/.test(key)) {
+            types.push(key.slice(9));
+            G.localStorage.del(key);
+          }
+        }
+        
+        return types;
+      }
+    };
+    
+    G.localStorage.putAsync = G.localStorage.put.async(100);
+    G.localStorage.cleanAsync = G.localStorage.clean.async(100);
+  };
+
+  function load() {
+    var spinner = 'app init',
+        priorityModules = [];
+
+    G.startedTask("loading pre-bundle");
+    G.showSpinner({name: spinner, timeout: 10000});
+    APP_START_DFD.done(function() {
+      G.hideSpinner(spinner);
+      console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+    });
+
+    for (var type in preBundle) {
+      var subBundle = preBundle[type];
+      for (var i = 0; i < subBundle.length; i++) {
+        var module = subBundle[i];
+        if (module.hasOwnProperty('priority')) {
+          subBundle.splice(i, 1);
+          priorityModules.push(module);
+        }
+      }
+    }
+
+    if (priorityModules.length) {
+      priorityModules.sort(function(a, b) {
+        return b.priority - a.priority;
+      });
+      
+//      var pModules = [];
+      for (var i = 0; i < priorityModules.length; i++) {
+        priorityModules[i] = priorityModules[i].name;
+//        pModules.push(priorityModules[i].name);
+      }
+      
+//        require(pModules);
+      require(priorityModules).done(loadRegular);
+    }
+    else
+      loadRegular();
+  };
+  
+  function loadRegular() {
+    Bundler.loadBundle(preBundle).then(function() {
+//        preBundle._deferred.resolve();
+      G.finishedTask("loading pre-bundle");
+      
+      G.startedTask("loading modules");
+      var css = preBundle.css.slice();
+      for (var i = 0; i < css.length; i++) {
+        var cssObj = css[i];
+        css[i] = cssObj.name;
+      }
+      
+      return require('__domReady__').then(function() {
+        return require(['jqmConfig', 'events', 'app'].concat(css));
+      });
+    }).then(function(jqmConfig, Events, App) {
+      Events.on('appStart', APP_START_DFD.resolve);
+      console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
+      G.finishedTask("loading modules");
+      App.initialize();
+      G.startedTask('loading post-bundle');
+      return Bundler.loadBundle(postBundle, {async: true}).done(function() {
+        G.finishedTask('loading post-bundle');
+        postBundle._deferred.resolve();
+      });
+    });
+
+    G.onAppStart(function() {            
+      G.startedTask('loading extras-bundle');
+      Bundler.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
+        G.startedTask('loading extras-bundle');
+        extrasBundle._deferred.resolve();
+      });
+    });    
+  };
+  
+  var Bundler = {
+    pruneBundle: function(bundle, options) {
+      options = options || {};
+      var source = options.source || 'localStorage';
+      var pruneDfd = $.Deferred();
+      var prunePromise = pruneDfd.promise();
+      var modules = [];
+      var appcache = G.files.appcache;
+      var bType = Object.prototype.toString.call(bundle);
+      var noTS = bType === '[object String]';
+      if (noTS) {
+        var info = {
+          name: bundle
+        }
+        
+        var timestamp = G.files[name];
+        if (timestamp && timestamp.timestamp)
+          info.timestamp = timestamp.timestamp;
+        
+        bundle = {def: [info]};
+      }
+      else if (Object.prototype.toString.call(bundle) === '[object Array]') {
+        bundle = {def: bundle};
+      }
+
+      for (var type in bundle) {
+        var bt = bundle[type];
+        for (var i = 0; i < bt.length; i++) {
+          var info = bt[i];
+          var name, timestamp;
+          if (typeof info === 'string')
+            name = info, timestamp = G.files[name];
+          else {
+            name = info.name;
+            timestamp = info.timestamp;
+            
+            // for some files, like xhrWorker, we need the full name (e.g. xhrWorker.min_en_18908809988.js)
+//              if (timestamp.timestamp) { 
+//                name = timestamp.name;
+//                timestamp = timestamp.timestamp;
+//              }
+          }
+          
+          if (!name || appcache[name])
+            continue;
+          
+//            var inAppcache = !!appcache[name];
+
+          info = {};
+          var path = G.getCanonicalPath(require.toUrl(name));
+//            var ext = name.match(/\.[a-zA-Z]+$/g);
+//            if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
+//              path += '.js';
+          
+          if (G.modules[path])
+            continue;
+          
+          info[path] = timestamp; // || G.modules(G.bundles, path)[path];
+//            if (inAppcache)
+//              info.appcache = true;
+          modules.push(info);
+        }
+      }
+      
+      if (!hasLocalStorage)
+        source = 'indexedDB';
+      
+      if (!modules.length)
+        return $.Deferred().resolve(modules).promise;
+      
+      var minify = G.minify,
+          def = G.minifyByDefault;
+
+      var pruned = [];
+      var cachedPromises = $.map(modules, function(dmInfo, i) {
+        var url;
+        for (var n in dmInfo) {
+          url = n;
+          break;
+        }
+        
+        return G.getCached(getMetadataURL(url), source).then(function(metadata) {
+          metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+          var dateSaved = metadata.dateModified;
+          var minified = metadata.minified;
+          var dateModified = dmInfo[url];
+          if (dateModified <= dateSaved) {
+            var fetch = false;
+            if (G.isMinifiable(url)) {
+              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
+                  (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
+                // wrong minification mode on this file
+                fetch = true;
+              }
+            }
+
+            if (!fetch) {
+              return G.getCached(url, source).then(function(text) {                
+                G.modules[url] = text;
+              }).fail(function() {
+                pruned.push(url);
+              });
+            }
+          }
+          else {
+            if (!info)
+              G.log('init', 'error', 'no info found for file: ' + url);
+              
+//              G.localStorage.del(url);
+          }
+          
+          pruned.push(url);
+        }, function() {          
+          pruned.push(url);
+        });
+      });
+    
+      $.whenAll.apply($, cachedPromises).always(function() {
+        pruneDfd.resolve(pruned);
+      });
+      
+      return prunePromise;
     },
+    
+    loadBundle: function(bundle, options) {
+      var bundleDfd = $.Deferred(),
+          bundlePromise = bundleDfd.promise(),
+          options = options || {
+            async: false
+          },
+          source = options.source = options.source || 'localStorage',
+          useWorker = G.hasWebWorkers && options.async,
+          worker;
+
+      // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
+      bundlePromise.always(function() {
+        if (worker)
+          G.recycleXhrWorker(worker);
+      });
+      
+      function onResponse(resp) {
+        if (useWorker) {
+          if (resp.status == 304)
+            bundleDfd.resolve();
+          else
+            resp = resp.data;
+        }
+        else {
+          try {
+            resp = JSON.parse(resp);
+          } catch (err) {
+          }
+        }
+        
+        var newModules = {};
+        if (resp && !resp.error && resp.modules) {
+          for (var i = 0; i < resp.modules.length; i++) {
+            var m = resp.modules[i];
+            for (var name in m) {
+              var minIdx = name.indexOf('.min.js');
+              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+              G.modules[mName] = newModules[mName] = m[name];
+              break;
+            }
+          }
+        }
+      
+        setTimeout(function() {
+          for (var url in newModules) {
+            var text = newModules[url];
+            newModules[getMetadataURL(url)] = {
+              dateModified: G.serverTime,
+              minified: G.isMinified(url, text)
+            };
+          }
+          
+          G.putCached(newModules, {
+            storage: source
+          });
+          
+        }, 100);
+        
+        bundleDfd.resolve();
+      };
+
+      Bundler.pruneBundle(bundle, options).done(function(pruned) {
+        if (!pruned.length) {
+          G.log('init', 'cache', 'bundle was cached', bundle);
+          return bundleDfd.resolve();
+        }
+        
+        var data = {modules: pruned.join(',')},
+            getBundleReq = {
+              url: G.serverName + "/backboneFiles", 
+              type: 'POST',
+              data: data,
+              dataType: 'JSON'
+            };
+          
+        if (useWorker) {
+          G.getXhrWorker().done(function() {
+            worker = arguments[0];
+            worker.onmessage = function(event) {
+              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
+              onResponse(event.data);
+            };
+            
+            worker.onerror = bundleDfd.reject;
+            worker.postMessage(getBundleReq);  
+          });
+        }
+        else {      
+          getBundleReq.success = onResponse; 
+          G.sendXhr(getBundleReq);
+        }
+      });
+      
+      return bundlePromise;
+    },
+    
+    prepAppCacheBundle: function() {
+      var bundles = G.bundles;
+      G.files = {appcache: {}};
+      for (var when in bundles) {
+        var bundle = bundles[when];
+        bundle._deferred = $.Deferred();
+        for (var type in bundle) {
+          var bt = bundle[type];
+          for (var i = bt.length - 1; i >= 0; i--) {
+            var info = bt[i];
+            if (!needModule(info.name))
+              bt.splice(i, 1);
+              
+            G.files[info.name] = info;
+            if (when === 'appcache') {
+    //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
+              G.files.appcache[info.name] = info;
+            }
+          }
+        }
+      }
+    },
+    getFromAppcacheBundle: function(url) {
+      var appcacheBundle = G.bundles.appcache;
+      url = url.slice(url.indexOf('/') + 1);
+      if (/\.js$/.test(url)) 
+        url = url.slice(0, url.length - 3);
+      
+      var info = G.files.appcache[url];
+      return info ? info.fullName || info.name : null;
+    }
+  };
+  
+  var TRACE = {
+    ON: true,
+    DEFAULT: {on: true},
+    types : {
+      error: {
+        on: true,
+        color: '#FF0000',
+        bg: '#333'
+      },
+      checkpoints: {
+        on: false,
+        color: '#FF88FF',
+        bg: '#000'
+      },
+      xhr: {
+        on: false,
+        color: '#2288FF',
+        bg: '#000'
+      },
+      tasks: {
+        on: false,
+        color: '#88FFFF',
+        bg: '#000'
+      },
+      app: {
+        on: true,
+        color: '#88FFFF',
+        bg: '#000'
+      },
+      db: {
+        on: true,
+        color: '#FFFFFF',
+        bg: '#000'
+      },
+      render: {
+        on: true,
+        color: '#AA00FF',
+        bg: '#DDD'
+      },
+      events: {
+        on: true,
+        color: '#baFF00',
+        bg: '#555'
+      },
+      history: {
+        on: true,
+        color: '#baFF66',
+        bg: '#555'
+      },
+      cache: {
+        on: false,
+        color: '#CCCCCC',
+        bg: '#555'
+      }
+    }
+  };
+  
+  var requireConfig = {
+    paths: {
+      mobiscroll: 'lib/mobiscroll-datetime-min',
+      simplewebrtc: 'lib/simplewebrtc',
+      jqmConfig: 'jqm-config',
+      jqueryMobile: 'lib/jquery.mobile-1.3.2',
+      underscore: 'lib/underscore',
+      backbone: 'lib/backbone',
+      indexedDBShim: 'lib/IndexedDBShim',
+      jqueryIndexedDB: 'lib/jquery-indexeddb',
+      queryIndexedDB: 'lib/queryIndexedDB',
+      codemirror: 'lib/codemirror',
+      codemirrorCss: '../styles/codemirror.css',
+      codemirrorJSMode: 'lib/codemirrorJSMode',
+      codemirrorXMLMode: 'lib/codemirrorXMLMode',
+      codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
+      codemirrorCSSMode: 'lib/codemirrorCSSMode',
+      leaflet: 'lib/leaflet',
+      leafletMarkerCluster: 'lib/leaflet.markercluster',
+      jqueryImagesloaded: 'lib/jquery.imagesloaded',
+      jqueryMasonry: 'lib/jquery.masonry',
+      jqueryAnyStretch: 'lib/jquery.anystretch'
+    },
+    shim: {
+      backbone: {
+        deps: ['underscore'],
+        exports: 'Backbone'
+      },
+      leafletMarkerCluster: ['leaflet'],
+      mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
+      codemirrorJSMode: ['codemirror', 'codemirrorCss'],
+      codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
+      codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
+    }
+  };
+  
+  /////////////////// START SETUP ///////////////////////////////
+
+  var G = Lablz,
+      APP_START_DFD = $.Deferred(),
+      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
+      REJECTED_PROMISE = $.Deferred().reject().promise(),
+      browser = G.browser = detectBrowser(),
+      
+      // DOM stuff
+//      ALL_IN_APPCACHE,
+      hash = window.location.href.split('#')[1] || '',
+      query = hash.split('?')[1],
+      $head = $('head'),
+      head = $head[0],
+      $body = $('body'),
+      body = $body[0],
+      
+      // XHR
+      PROG_IDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
+      
+      // localStorage
+      hasLocalStorage = hasLocalStorage(), // yes, overwrite the function reference, we don't need it anymore
+      
+      // bundles
+      bundles = G.bundles, // is part of initial globals
+      preBundle = bundles.pre,
+      postBundle = bundles.post, 
+      extrasBundle = bundles.extras;
+  
+  window.addEventListener("offline", function(e) {
+    // we just lost our connection and entered offline mode, disable eternal link
+    G.setOnline(false);
+  }, false);
+
+  window.addEventListener("online", function(e) {
+    // just came back online, enable links
+    G.setOnline(true);
+  }, false);
+
+
+  $.extend(G, {
+    onAppStart: function(fn) {
+      return APP_START_DFD.promise().done(fn);
+    },
+    getResolvedPromise: function() {
+      return RESOLVED_PROMISE;
+    },
+    getRejectedPromise: function() {
+      return REJECTED_PROMISE;
+    },
+    serverName: (function() {     
+      var s = $('base')[0].href;
+      return s.match("/$") ? s.slice(0, s.length - 1) : s;
+    })(),
     putCached: function(urlToData, options) {
       var args = arguments;
       G.onAppStart(function() {
@@ -506,7 +1047,11 @@ define('globals', function() {
         }).promise();
       }
       else if (source === 'indexedDB') {
-        return G.ResourceManager.getItem(storeName || 'modules', url).then(function(data) {
+        var RM = G.ResourceManager;
+        if (!RM)
+          return REJECTED_PROMISE;
+        
+        return RM.getItem(storeName || 'modules', url).then(function(data) {
           return data.data;
         });
       }
@@ -611,15 +1156,8 @@ define('globals', function() {
     },
     
     DEV_PACKAGE_PATH: 'http://urbien.com/voc/dev/',
-    getFromAppcacheBundle: function(url) {
-      var appcacheBundle = G.bundles.appcache;
-      url = url.slice(url.indexOf('/') + 1);
-      if (/\.js$/.test(url)) 
-        url = url.slice(0, url.length - 3);
-      
-      var info = G.files.appcache[url];
-      return info ? info.fullName || info.name : null;
-    },
+    localTime: new Date().getTime(),
+    online: !!navigator.onLine,    
     setOnline: function(online) {
       G.online = online;
     }, // will fill out in app.js
@@ -662,7 +1200,7 @@ define('globals', function() {
       
       if (missing.length) {
         debugger; // should only happen when dynamically deciding which modules to load (like based on browser)
-        bundlePromises.push(G.loadBundle(missing));
+        bundlePromises.push(Bundler.loadBundle(missing));
       }
       
       return $.when.apply($, bundlePromises);
@@ -687,9 +1225,14 @@ define('globals', function() {
     defaults: {
       radius: 2000 // km
     },
-    modelsMetadataMap: {},
-    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
-    LISTMODES: {LIST: 'LIST', CHOOSER: 'CHOOSER', DEFAULT: 'LIST'},
+//    modelsMetadataMap: {},
+//    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for    
+    LISTMODES: {
+      // TODO: get this out of here
+      LIST: 'LIST', 
+      CHOOSER: 'CHOOSER', 
+      DEFAULT: 'LIST'
+    },
     classMap: G.classMap || {},
     appUrl: G.serverName + '/' + G.pageRoot,
     sqlUrl: G.serverName + '/' + G.sqlUri,
@@ -726,7 +1269,6 @@ define('globals', function() {
 //        urbien: ['Urbien']
 //      }
 //    },
-    timeOffset: G.localTime - G.serverTime,
     currentServerTime: function() {
       return new Date().getTime() - G.timeOffset;
     },
@@ -790,13 +1332,13 @@ define('globals', function() {
         return new XMLHttpRequest();
       } else {
         for (i = 0; i < 3; i++) {
-          progId = progIds[i];
+          progId = PROG_IDS[i];
           try {
             xhr = new ActiveXObject(progId);
           } catch (e) {}
 
           if (xhr) {
-            progIds = [progId];  // so faster next time
+            PROG_IDS = [progId];  // so faster next time
             break;
           }
         }
@@ -845,66 +1387,9 @@ define('globals', function() {
       
       xhr.send(params);
     },
-  
-    trace: {
-      ON: true,
-      DEFAULT: {on: true},
-      types : {
-        error: {
-          on: true,
-          color: '#FF0000',
-          bg: '#333'
-        },
-        checkpoints: {
-          on: false,
-          color: '#FF88FF',
-          bg: '#000'
-        },
-        xhr: {
-          on: false,
-          color: '#2288FF',
-          bg: '#000'
-        },
-        tasks: {
-          on: false,
-          color: '#88FFFF',
-          bg: '#000'
-        },
-        app: {
-          on: true,
-          color: '#88FFFF',
-          bg: '#000'
-        },
-        db: {
-          on: true,
-          color: '#FFFFFF',
-          bg: '#000'
-        },
-        render: {
-          on: true,
-          color: '#AA00FF',
-          bg: '#DDD'
-        },
-        events: {
-          on: true,
-          color: '#baFF00',
-          bg: '#555'
-        },
-        history: {
-          on: true,
-          color: '#baFF66',
-          bg: '#555'
-        },
-        cache: {
-          on: false,
-          color: '#CCCCCC',
-          bg: '#555'
-        }
-      }
-    },
     
     log: function(tag, type) {
-      if (G.minify || !G.trace.ON || !console || !console.log || !type)
+      if (G.minify || !TRACE.ON || !console || !console.log || !type)
         return;
       
       var types = typeof type == 'string' ? [type] : type;
@@ -912,9 +1397,10 @@ define('globals', function() {
 //        debugger;
       
       for (var i = 0; i < types.length; i++) {
-        var t = types[i];
-        var trace = G.trace.types[t] || G.trace.DEFAULT;
-        if (!trace.on)
+        var type = types[i],
+            typeTrace = TRACE.types[type] || TRACE.DEFAULT;
+        
+        if (!typeTrace.on)
           continue;
         
         var b = G.browser;
@@ -926,9 +1412,9 @@ define('globals', function() {
           if (i < msg.length - 1) msgStr += ' ';
         }
 
-        var txt = t + ' : ' + tag + ' : ' + msgStr + ' : ';
+        var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(" ") + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (trace.bg || '#FFF') + '; color: ' + (trace.color || '#000') : '');        
+        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(" ") + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
       }
     },
     
@@ -1010,229 +1496,10 @@ define('globals', function() {
         q.shift().resolve(G.captureWorker(worker));
     },
     
-    pruneBundle: function(bundle, options) {
-      options = options || {};
-      var source = options.source || 'localStorage';
-      var pruneDfd = $.Deferred();
-      var prunePromise = pruneDfd.promise();
-      var modules = [];
-      var appcache = G.files.appcache;
-      var bType = Object.prototype.toString.call(bundle);
-      var noTS = bType === '[object String]';
-      if (noTS) {
-        var info = {
-          name: bundle
-        }
-        
-        var timestamp = G.files[name];
-        if (timestamp && timestamp.timestamp)
-          info.timestamp = timestamp.timestamp;
-        
-        bundle = {def: [info]};
-      }
-      else if (Object.prototype.toString.call(bundle) === '[object Array]') {
-        bundle = {def: bundle};
-      }
-
-      for (var type in bundle) {
-        var bt = bundle[type];
-        for (var i = 0; i < bt.length; i++) {
-          var info = bt[i];
-          var name, timestamp;
-          if (typeof info === 'string')
-            name = info, timestamp = G.files[name];
-          else {
-            name = info.name;
-            timestamp = info.timestamp;
-            
-            // for some files, like xhrWorker, we need the full name (e.g. xhrWorker.min_en_18908809988.js)
-//            if (timestamp.timestamp) { 
-//              name = timestamp.name;
-//              timestamp = timestamp.timestamp;
-//            }
-          }
-          
-          if (!name || appcache[name])
-            continue;
-          
-//          var inAppcache = !!appcache[name];
-
-          info = {};
-          var path = G.getCanonicalPath(require.toUrl(name));
-//          var ext = name.match(/\.[a-zA-Z]+$/g);
-//          if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
-//            path += '.js';
-          
-          if (G.modules[path])
-            continue;
-          
-          info[path] = timestamp; // || G.modules(G.bundles, path)[path];
-//          if (inAppcache)
-//            info.appcache = true;
-          modules.push(info);
-        }
-      }
-      
-      if (!hasLocalStorage)
-        source = 'indexedDB';
-      
-      if (!modules.length)
-        return $.Deferred().resolve(modules).promise;
-      
-      var minify = G.minify,
-          def = G.minifyByDefault;
-
-      var pruned = [];
-      var cachedPromises = $.map(modules, function(dmInfo, i) {
-        var url;
-        for (var n in dmInfo) {
-          url = n;
-          break;
-        }
-        
-        return G.getCached(getMetadataURL(url), source).then(function(metadata) {
-          metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-          var dateSaved = metadata.dateModified;
-          var minified = metadata.minified;
-          var dateModified = dmInfo[url];
-          if (dateModified <= dateSaved) {
-            var fetch = false;
-            if (G.isMinifiable(url)) {
-              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
-                  (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
-                // wrong minification mode on this file
-                fetch = true;
-              }
-            }
-
-            if (!fetch) {
-              return G.getCached(url, source).then(function(text) {                
-                G.modules[url] = text;
-              }).fail(function() {
-                pruned.push(url);
-              });
-            }
-          }
-          else {
-            if (!info)
-              G.log('init', 'error', 'no info found for file: ' + url);
-              
-//            G.localStorage.del(url);
-          }
-          
-          pruned.push(url);
-        }, function() {          
-          pruned.push(url);
-        });
-      });
-    
-      $.whenAll.apply($, cachedPromises).always(function() {
-        pruneDfd.resolve(pruned);
-      });
-      
-      return prunePromise;
-    },
-    
-    loadBundle: function(bundle, options) {
-      var bundleDfd = $.Deferred(),
-          bundlePromise = bundleDfd.promise(),
-          options = options || {
-            async: false
-          },
-          source = options.source = options.source || 'localStorage',
-          useWorker = G.hasWebWorkers && options.async,
-          worker;
-
-      // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
-      bundlePromise.always(function() {
-        if (worker)
-          G.recycleXhrWorker(worker);
-      });
-      
-      function onResponse(resp) {
-        if (useWorker) {
-          if (resp.status == 304)
-            bundleDfd.resolve();
-          else
-            resp = resp.data;
-        }
-        else {
-          try {
-            resp = JSON.parse(resp);
-          } catch (err) {
-          }
-        }
-        
-        var newModules = {};
-        if (resp && !resp.error && resp.modules) {
-          for (var i = 0; i < resp.modules.length; i++) {
-            var m = resp.modules[i];
-            for (var name in m) {
-              var minIdx = name.indexOf('.min.js');
-              var mName = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
-              G.modules[mName] = newModules[mName] = m[name];
-              break;
-            }
-          }
-        }
-      
-        setTimeout(function() {
-          for (var url in newModules) {
-            var text = newModules[url];
-            newModules[getMetadataURL(url)] = {
-              dateModified: G.serverTime,
-              minified: G.isMinified(url, text)
-            };
-          }
-          
-          G.putCached(newModules, {
-            storage: source
-          });
-          
-        }, 100);
-        
-        bundleDfd.resolve();
-      };
-
-      G.pruneBundle(bundle, options).done(function(pruned) {
-        if (!pruned.length) {
-          G.log('init', 'cache', 'bundle was cached', bundle);
-          return bundleDfd.resolve();
-        }
-        
-        var data = {modules: pruned.join(',')},
-            getBundleReq = {
-              url: G.serverName + "/backboneFiles", 
-              type: 'POST',
-              data: data,
-              dataType: 'JSON'
-            };
-          
-        if (useWorker) {
-          G.getXhrWorker().done(function() {
-            worker = arguments[0];
-            worker.onmessage = function(event) {
-              G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
-              onResponse(event.data);
-            };
-            
-            worker.onerror = bundleDfd.reject;
-            worker.postMessage(getBundleReq);  
-          });
-        }
-        else {      
-          getBundleReq.success = onResponse; 
-          G.sendXhr(getBundleReq);
-        }
-      });
-      
-      return bundlePromise;
-    },
-    
     setCookie: function(name, value, exdays) {
       var exdate = new Date();
       exdate.setDate(exdate.getDate() + exdays);
-      var c_value = escape(value) + ((exdays==null) ? "" : ";domain=." + G.domain + ";path=/;expires="+exdate.toUTCString());
+      var c_value = escape(value) + ((exdays==null) ? "" : ";domain=." + getDomain() + ";path=/;expires="+exdate.toUTCString());
       doc.cookie = name + "=" + c_value;
     },
     
@@ -1265,238 +1532,19 @@ define('globals', function() {
 
       head.appendChild(script);
       head.removeChild(script);
-    },
-    
-    requireConfig: {
-      paths: {
-        mobiscroll: 'lib/mobiscroll-datetime-min',
-        simplewebrtc: 'lib/simplewebrtc',
-        jqmConfig: 'jqm-config',
-        jqueryMobile: 'lib/jquery.mobile-1.3.2',
-        underscore: 'lib/underscore',
-        backbone: 'lib/backbone',
-        indexedDBShim: 'lib/IndexedDBShim',
-        jqueryIndexedDB: 'lib/jquery-indexeddb',
-        queryIndexedDB: 'lib/queryIndexedDB',
-        codemirror: 'lib/codemirror',
-        codemirrorCss: '../styles/codemirror.css',
-        codemirrorJSMode: 'lib/codemirrorJSMode',
-        codemirrorXMLMode: 'lib/codemirrorXMLMode',
-        codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
-        codemirrorCSSMode: 'lib/codemirrorCSSMode',
-        leaflet: 'lib/leaflet',
-        leafletMarkerCluster: 'lib/leaflet.markercluster',
-        jqueryImagesloaded: 'lib/jquery.imagesloaded',
-        jqueryMasonry: 'lib/jquery.masonry',
-        jqueryAnyStretch: 'lib/jquery.anystretch'
-      },
-      shim: {
-        backbone: {
-          deps: ['underscore'],
-          exports: 'Backbone'
-        },
-        leafletMarkerCluster: ['leaflet'],
-        mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
-        codemirrorJSMode: ['codemirror', 'codemirrorCss'],
-        codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
-        codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
-      }
-    }
-  }; 
-  
-  for (var prop in moreG) {
-    G[prop] = moreG[prop];
-  }
-  
-  G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
-  function setParent() {
-    if (browser.chrome)
-      G.inWebview = true;
-    else if (browser.firefox) {
-      G.inFirefoxOS = true;
-//      window.top.postMessage({message: 'Hello world'}, G.serverName);
-    }
-  };
+    }    
+  });
 
-  if (browser.chrome || browser.firefox) {
-    var param = browser.chrome ? '-webview' : '-ffiframe';    
-    if (hasLocalStorage) {
-      if (localStorage.getItem(param) === 'y') {
-        setParent();
-      }
-    }
-    
-    if (navigator.mozApps) {
-      setParent();          
-      G.localStorage.put(param, 'y');
-    }
-    else if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
-      var params = query.split('&');
-      for (var i = 0; i < params.length; i++) {
-        var keyVal = params[i].split('=');
-        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
-          setParent();          
-          G.localStorage.put(param, 'y');
-          break;
-        }
-      }
-    }
-    
-    console.log('inWebview:', G.inWebview);
-    console.log('inFFIframe:', G.inFirefoxOS);
-//    ALL_IN_APPCACHE = G.inFirefoxOS;
-  }
-
-  var bundles = G.bundles;
-  G.files = {appcache: {}};
-  for (var when in bundles) {
-    var bundle = bundles[when];
-    bundle._deferred = $.Deferred();
-    for (var type in bundle) {
-      var bt = bundle[type];
-      for (var i = bt.length - 1; i >= 0; i--) {
-        var info = bt[i];
-        if (!needModule(info.name))
-          bt.splice(i, 1);
-          
-        G.files[info.name] = info;
-        if (when === 'appcache') {
-//        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
-          G.files.appcache[info.name] = info;
-        }
-      }
-    }
-  }  
-
-  G.apiUrl = G.serverName + '/api/v1/';
-  (function() {
-    var path = window.location.pathname,
-        appPath = path.slice(path.lastIndexOf('/') + 1);
-        devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
-        regex = devVoc + appPath + '\/[^\/]*$';
-    
-    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
-    G.currentAppRegExp      = new RegExp(regex);
-    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);
-  })();
-
-  var c = G.commonTypes, d = G.defaultVocPath;
-  for (var type in c) {
-    c[type] = G.defaultVocPath + c[type];
-  }
+  setupLocalStorage();
+  saveBootInfo();
+  setMiscGlobals();
+  testIfInsidePackagedApp();
+  Bundler.prepAppCacheBundle();
+  determineMinificationMode();
+  require.config(requireConfig);   
+  load();
   
-  
-  // Determine whether we want the server to minify stuff
-  // START minify
-  var hash = window.location.href;
-  var hashIdx = hash.indexOf('#');
-  hash = hashIdx === -1 ? '' : hash.slice(hashIdx + 1);
-  var qIdx = hash.indexOf('?');
-  var set = false;
-  var mCookie = G.serverName + '/cookies/minify';
-  var minified = G.getCookie(mCookie);
-  if (qIdx != -1) {    
-    var hParams = hash.slice(qIdx + 1).split('&');
-    for (var i = 0; i < hParams.length; i++) {
-      var p = hParams[i].split('=');
-      if (p[0] == '-min') {
-        G.setCookie(mCookie, p[1], 100000);
-        if (p[1] != minified) {
-          minified = p[1];
-        }
-        
-        break;
-      }
-    }
-  }
-  
-  if (typeof minified === 'undefined')
-    G.minify = G.minifyByDefault;
-  else
-    G.minify = minified === 'y' ? true : minified === 'n' ? false : undefined;
-  
-  require.config(G.requireConfig);   
   return G;
 });
 
-require(['globals'], function(G) {
-  G.startedTask("loading pre-bundle");
-  var spinner = 'app init';
-  G.showSpinner({name: spinner, timeout: 10000});
-  
-  var bundles = G.bundles,
-      preBundle = bundles.pre,
-      postBundle = bundles.post, 
-      extrasBundle = bundles.extras,
-      priorities = [],
-      appcache = G.files.appcache;
-  
-  for (var type in preBundle) {
-    var subBundle = preBundle[type];
-    for (var i = 0; i < subBundle.length; i++) {
-      var module = subBundle[i];
-      if (module.hasOwnProperty('priority')) {
-        subBundle.splice(i, 1);
-        priorities.push(module);
-      }
-    }
-  }
-
-  if (priorities.length) {
-    priorities.sort(function(a, b) {
-      return b.priority - a.priority;
-    });
-    
-    var pModules = [];
-    for (var i = 0; i < priorities.length; i++) {
-      pModules.push(priorities[i].name);
-    }
-    
-//    require(pModules);
-    require(pModules).done(loadRegular);
-  }
-  else
-    loadRegular();
-
-  function loadRegular() {
-    G.loadBundle(preBundle).then(function() {
-//      preBundle._deferred.resolve();
-      G.finishedTask("loading pre-bundle");
-      
-      G.startedTask("loading modules");
-      var css = preBundle.css.slice();
-      for (var i = 0; i < css.length; i++) {
-        var cssObj = css[i];
-        css[i] = cssObj.name;
-      }
-      
-      return require('__domReady__').then(function() {
-        return require(['jqmConfig', 'events', 'app'].concat(css));
-      });
-    }).then(function(jqmConfig, Events, App) {
-      Events.on('appStart', G._appStartDfd.resolve);
-      G._appStartDfd.done(function() {
-        G.hideSpinner(spinner);
-        console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
-      });
-
-      console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
-      G.finishedTask("loading modules");
-      App.initialize();
-      G.startedTask('loading post-bundle');
-      return G.loadBundle(postBundle, {async: true}).done(function() {
-        G.finishedTask('loading post-bundle');
-        postBundle._deferred.resolve();
-      });
-    });
-
-    G.onAppStart(function() {            
-      G.startedTask('loading extras-bundle');
-      G.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
-        G.startedTask('loading extras-bundle');
-        extrasBundle._deferred.resolve();
-      });
-    });    
-  }
-});
 })(window, document, undefined);

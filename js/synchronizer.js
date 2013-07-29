@@ -2,8 +2,8 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
 
   var MAX_DATA_AGE = G.MAX_DATA_AGE = 180000,
       NO_DB = G.dbType === 'none',
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().reject().promise(),
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE;
   
   function getLastFetchedTimestamp(resOrJson) {
@@ -57,7 +57,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     }
     
     if (U.isModel(this.data) && U.isTempUri(this.data.getUri()))
-      return this._error(data, {code: 204}, this.options);
+      return this._error(this.data, {code: 204}, this.options);
   
     if (this._isUpdate() && !this._isForceFetch())
       this._setLastFetched();

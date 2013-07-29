@@ -27,8 +27,8 @@ define('resourceManager', [
       FileSystem,
       useWebSQL = G.dbType == 'shim',//window.webkitIndexedDB && window.shimIndexedDB;
       NO_DB = G.dbType == 'none',
-      RESOLVED_PROMISE = $.Deferred().resolve().promise(),
-      REJECTED_PROMISE = $.Deferred().reject().promise(),
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE = G.REF_STORE,
       MODULE_STORE,
       MODEL_STORE,

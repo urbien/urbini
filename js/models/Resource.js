@@ -863,7 +863,6 @@ define('models/Resource', [
     },
     
     save: function(attrs, options) {
-      this._load();
       options = _.extend({patch: true, silent: true}, options || {});
       attrs = attrs || {};
       var isNew = this.isNew();
@@ -896,7 +895,7 @@ define('models/Resource', [
         this.triggerPlugs(options);
         this.notifyContainers();
         if (isNew) {
-          this.announceNewResource();
+          this._load();
         }
         
         this.trigger('saved', this, options);
@@ -939,7 +938,7 @@ define('models/Resource', [
           
           Events.trigger('updatedResources', [this]);
           if (this.isNew()) // was a synchronous mkresource operation
-            this.announceNewResource();
+            this._load();
           else if (isNew) { 
             // completed sync with db
           }
