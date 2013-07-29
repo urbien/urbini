@@ -17,7 +17,7 @@
     </div>
     <!-- ul id="columns">
     </ul -->
-    <table class="table-stroke" width="100%;" style="style: display:none" id="comments">
+    <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
       <input type="submit" id="mvSubmit" value="Submit" />
@@ -37,7 +37,7 @@
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <!-- "Next" button removed after endless page introduction>
      {{ if (this.collection.length > this.collection.perPage) { }}
-       <a data-role="button" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
+       <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
      {{ }                                                       }}
      -->
   </div>
@@ -47,6 +47,7 @@
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
@@ -75,8 +76,8 @@
     </ul>
   </div>
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
+     <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
+     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
   </div>
 </script>  
 
@@ -539,9 +540,11 @@
     {{ if (!isJst  &&  obj._hasSubmittedBy) { }}
       style="min-height:59px;"
     {{ } }}
+    <!--
     {{ if (!isJst  &&  !obj._hasSubmittedBy) { }}
       style="min-height:39px;"
     {{ } }}
+    -->
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     style="padding:.7em 10px 10px 0px;min-height:39px;"
@@ -692,7 +695,7 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li>
+<li data-icon="false">
   <i class="icon-home"></i>
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
@@ -750,13 +753,13 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value  &&  !chat) { }}  
-   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
-     <i class="{{= icon }}" style="right: -20px; font-size: 20px;"></i>&#160;{{= name }}
+   <a data-role="button" data-shadow="false" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
+     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px;"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
-   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <i class="{{= icon }}" style="right: -20px; font-size:20px;top:35%"></i>&#160;{{= name }}{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
    </a>
  {{ } }}
 </script>
@@ -766,14 +769,14 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
-   <a data-role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; border: 1px solid #ccc; min-width:110px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#">
-       {{= obj.icon ? '<i class="' + icon + '" style="font-size: 20px;margin-left:-5px;"></i>' : '' }} {{= name }} 
+   <a data-role="button" data-shadow="false" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; border: 1px solid #ccc; min-width:115px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#">
+       <span style="font-size: 18px;">{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
-   <a data-role="button" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:100px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     {{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -10px;top: -70%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
