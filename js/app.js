@@ -363,7 +363,7 @@ define('app', [
   };
   
   function doPreStartTasks() {       
-    setupAvailibilityMonitor();
+    setupAvailibilityMonitor(true);
     setupCleaner();
     prepDB();
     var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {

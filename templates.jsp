@@ -1443,9 +1443,15 @@
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
   </a>
-  {{ if (prop.range && G.canWebcam && ((prop.range.endsWith('model/portal/Image') && prop.camera) || prop.range.endsWith('model/portal/Video') || prop.range.endsWith('model/portal/Audio'))) }}
-    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : prop.range.endsWith('model/portal/Audio') ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
-  {{                                                              }}
+  
+  {{ if (prop.range && G.canWebcam && ((prop.range.endsWith('model/portal/Image') && prop.camera) || prop.range.endsWith('model/portal/Video') || prop.range.endsWith('model/portal/Audio'))) { }}
+    {{ if (G.canWebcam) { }}
+      <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : prop.range.endsWith('model/portal/Audio') ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
+    {{ }                  }}
+    {{ if (!G.canWebCam) { }}
+      <input type="file" class="cameraCapture" accept="image/*; capture=camera" style="visibility:hidden;" />
+    {{ }                   }}
+  {{ }                                                                                                                                                                                        }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 

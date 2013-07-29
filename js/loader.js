@@ -137,6 +137,15 @@ define('globals', function() {
     delete Lablz.VERSION;
     ls.put('Globals', JSON.stringify(Lablz));
   };
+
+  function isModuleNeeded(name) {
+    if (name === 'lib/IndexedDBShim' && G.dbType !== 'shim')
+      return false;
+    if (name === 'lib/whammy' && browser.firefox)
+      return false;
+      
+    return true;
+  };
   
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
@@ -273,8 +282,10 @@ define('globals', function() {
         } 
       }
       
-      if (loadedCached)
+      if (loadedCached) {
+        delete G.modules[url];
         return;
+      }
       
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
       Bundler.loadBundle(name).done(function() {
@@ -671,7 +682,7 @@ define('globals', function() {
 //              }
           }
           
-          if (!name || appcache[name])
+          if (!name || appcache[name] || !isModuleNeeded(name))
             continue;
           
 //            var inAppcache = !!appcache[name];
@@ -1058,15 +1069,16 @@ define('globals', function() {
     },
     dbType: (function() {
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
-      var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB;
+      var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
+          type;
       if (using) {
         if (window.openDatabase) {
           console.debug('using indexeddb shim');
-          return 'shim'
+          type = 'shim';
         }
         else {
           console.debug('local db is not supported');
-          return 'none';
+          type = 'none';
         }
       }
       else {
@@ -1077,8 +1089,10 @@ define('globals', function() {
           pre.splice(shimIdx, 1);
         
         console.debug("don't need indexeddb shim");
-        return 'idb';
+        type = 'idb';
       }
+      
+      return type;
     })(),
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 

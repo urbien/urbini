@@ -33,7 +33,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
       var propType = U.getTypeUri(prop.range),
           backlinkName = backlink[1]; // ingredients in the example
       
-      ModelLoader.getModels([propType]).done(function() {
+      getModels([propType]).done(function() {
         var propModel = U.getModel(propType);     // Recipe in the example
         if (!propModel) {
           debugger; // should never happen
@@ -47,7 +47,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
         }
         
         var backlinkType = U.getTypeUri(backlinkProp.range);
-        ModelLoader.getModels(backlinkType).done(function() { 
+        getModels(backlinkType).done(function() { 
           var backlinkModel = U.getModel(backlinkType); // Ingredient in the example
           if (!backlinkModel) {
             debugger; // should never happen
@@ -248,7 +248,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     var type = effectType.slice(effectType.lastIndexOf("/") + 1).camelize();
     var effect = {};
 
-    ModelLoader.getModels(effectType).done(function() {
+    getModels(effectType).done(function() {
       var effectModel =  U.getModel(effectType),
           causeModel = U.getModel(plug.causeDavClassUri),
           toolSuite = getPlugToolSuite(cause, causeModel, effect, effectModel, plug);
@@ -353,6 +353,14 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     }
   };
 
+  function getModels(models) {
+    var dfd = $.Deferred(),
+        promise = dfd.promise();
+    
+    Events.trigger('getModels', models, dfd);
+    return dfd.promise();
+  };
+  
   var PlugManager = {
     fetchPlugs: fetchPlugs
   };

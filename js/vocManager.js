@@ -337,5 +337,10 @@ define('vocManager', [
   });
 
   Events.on('newPlugs', Voc.savePlugsToStorage);
+  
+  Events.on('getModels', function(models, dfd) {
+    Voc.getModels(models).then(dfd.resolve, dfd.reject);
+  });
+  
   return (G.Voc = Voc);
 });

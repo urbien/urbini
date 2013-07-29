@@ -566,7 +566,7 @@ define('models/Resource', [
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
         
-        if (!this.loaded && hasResourceSpecificProps(props))
+        if (!this.loaded && (this.getUri() || props._uri) && hasResourceSpecificProps(props))
           this._load();
         
         return result;

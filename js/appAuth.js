@@ -1,4 +1,4 @@
-define('appAuth', ['globals', 'underscore', 'utils', 'events', 'vocManager', 'cache', 'collections/ResourceList'], function(G, _, U, Events, Voc, C, ResourceList) {
+define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocManager', 'cache', 'collections/ResourceList'], function(G, _, U, Events, Errors, Voc, C, ResourceList) {
   var COMMON_TYPES = G.commonTypes,
       FRIEND_APP_TYPE = COMMON_TYPES.Friend,
       APP_TYPE = COMMON_TYPES.App;

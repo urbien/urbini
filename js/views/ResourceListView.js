@@ -484,7 +484,8 @@ define('views/ResourceListView', [
     },
   
     setupSearchAndFilter: function() {
-      var collection = this.collection,
+      var self = this,
+          collection = this.collection,
           filtered = this.filteredCollection;
       
       function onFilter(e, data) {

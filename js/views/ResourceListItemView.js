@@ -118,6 +118,9 @@ define('views/ResourceListItemView', [
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
+      var params = U.getQueryParams(),
+          parentView = this.parentView;
+      
       if (this.mvProp) 
         return;
       if (U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
@@ -127,7 +130,11 @@ define('views/ResourceListItemView', [
         this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;
       }
-      var params = U.getParamMap(window.location.href);
+      if (parentView && parentView.mode == G.LISTMODES.CHOOSER) {
+        Events.stopEvent(e);
+        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+        return;
+      }
       if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
         Events.stopEvent(e);
         var type = params['$type'];
@@ -158,12 +165,6 @@ define('views/ResourceListItemView', [
         this.router.navigate('make/' + encodeURIComponent(type) + '?' + $.param(rParams), {trigger: true, forceFetch: true});        
 //        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;        
-      }
-      var p = this.parentView;
-      if (p && p.mode == G.LISTMODES.CHOOSER) {
-        Events.stopEvent(e);
-        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
-        return;
       }
       if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
         var params = U.getParamMap(window.location.href);
