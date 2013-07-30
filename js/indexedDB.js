@@ -235,9 +235,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   function doUpgrade(versionTrans) {
     var self = this,
-        currentStores = this.getStoreNames();
+        currentStores = this.getStoreNames(),
+        doDelete = this.storesToKill.length;
     
     this._wasEmpty = !currentStores.length;
+    
+    // Commented out because decided to not delete stores, just clear them (key path never changes, so deleting all the items is better as it doesn't require a version change transaction)
     _.each(this.storesToKill, function(storeName) {
       if (self.hasStore(storeName)) {
         try {
@@ -252,12 +255,21 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       }
     });
     
+    if (doDelete && _.intersection(this.storesToKill, _.pluck(this.storesToMake, 'name')).length) {
+      // run delete and create separately to make sure stores are deleted before they are recreated 
+      // this hack is for the benefit of WebSQL
+      // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
+      this.storesToKill = []
+      this.start(); 
+      return;
+    }
+    
     _.each(this.storesToMake, function(storeObj) {
       var storeName = storeObj.name,
           store;
       
       // don't remake an existing store, unless we just deleted it
-      if (_.contains(currentStores, storeName) && !_.contains(self.storesToKill, storeName))
+      if (_.contains(currentStores, storeName)) // && !_.contains(self.storesToKill, storeName))
         return;
       
       try {
@@ -328,13 +340,27 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return this;
   };
 
+  IDB.prototype.deleteObjectStore = function(storeName, reason) {
+    log('deleting object store, not recommended unless you want to recreate it with new object store options. If you just want to reset the store, use clearObjectStore');
+    if (!_.contains(this.storesToKill, storeName))
+      this.storesToKill.push(storeName);
+    
+    return this;
+  };
+  
   /**
    * @param storeName - the name of the object stores to delete from the database
    */
-  IDB.prototype.deleteObjectStore = function(storeName) {
-    if (this.storesToKill.indexOf(storeName) == -1)
-      this.storesToKill.push(storeName);
-    
+  IDB.prototype.clearObjectStore = function(storeName, reason) {
+    var self = this;
+    return this._queueTask('clearing object store {0}. {1}'.format(storeName, reason || ''), function() {
+      return self.$idb.objectStore(storeName, IDBTransaction.READ_WRITE).clear();
+    }, true);
+    return this;
+  };
+
+  IDB.prototype.clearObjectStores = function(storeNames) {
+    _.each(storeNames, this.clearObjectStore);
     return this;
   };
 
@@ -342,6 +368,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @param storeNames - the names of the object stores to delete from the database
    */
   IDB.prototype.deleteObjectStores = function(storeNames) {
+    log('deleting object stores, not recommended unless you want to recreate it with new object store options. If you just want to reset the store, use clearObjectStore');
     _.each(storeNames, this.deleteObjectStore);
     return this;
   };
@@ -373,9 +400,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return this.$idb.deleteDatabase().then(this.open);
   };
   
-  IDB.prototype.wipe = function(filter, reason) {
+  IDB.prototype.wipe = function(filter, doDeleteStores) {
     if (!this.isOpen())
-      return this.onOpen(U.partialWith(this.wipe, this, filter, reason));
+      return this.onOpen(U.partialWith(this.wipe, this, filter, doDeleteStores));
     
     if (this._wasEmpty)
       return RESOLVED_PROMISE;
@@ -383,7 +410,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (!filter)
       return this._queueTask('wiping IndexedDB {0}. {1}'.format(this.name, reason || ''), deleteAndReopen.bind(this), true);
     
-    this.storesToKill = this.storesToKill.concat(_.filter(this.getStoreNames(), filter));
+    var cleanMethod = doDeleteStores ? this.deleteObjectStores : this.clearObjectStores;
+    cleanMethod(_.filter(this.getStoreNames(), filter));
+//    this.storesToKill = this.storesToKill.concat(_.filter(this.getStoreNames(), filter));
     return this.start();
   };
   
@@ -669,7 +698,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return this._queueTask('open object store {0}'.format(storeName), wrapper);
   };
   
-  return {
+  return (Lablz.IDB = {
     getIDB: getIDB
-  };
+  });
 });

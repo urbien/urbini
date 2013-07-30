@@ -1080,6 +1080,9 @@ define('globals', function() {
       }
     },
     dbType: (function() {
+      if (browser.chrome)
+        return 'shim'; // testing shim
+      
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
           type;

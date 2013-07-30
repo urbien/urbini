@@ -73,7 +73,7 @@ define('resourceManager', [
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
     remakeObjectStores: function(types) {
-      IDB.deleteObjectStores(types).createObjectStores(types).start();      
+      IDB.clearObjectStores(types).createObjectStores(types).start();      
     },
     
     deleteDatabase: function() {
@@ -83,13 +83,15 @@ define('resourceManager', [
       });
     },
 
-    cleanDatabaseAndReopen: _.debounce(function() {
-      return RM.cleanDatabase().then(RM.openDB, RM.openDB);
+    cleanDatabaseAndReopen: _.debounce(function(del) {
+      return RM.cleanDatabase(del).then(RM.openDB, RM.openDB);
     }, 2000, true),
 
-    cleanDatabase: function() {
+    cleanDatabase: function(del) {
       return IDB.onOpen().then(function() {
-        IDB.wipe(U.partial(U.op['!=='], MODULE_STORE.name));
+        IDB.wipe(function(storeName) {
+          return !_.contains([MODULE_STORE.name, MODEL_STORE.name], storeName);
+        }, del);
       });
     },
 
@@ -112,7 +114,7 @@ define('resourceManager', [
       del = del || [];
       
       if (del.length)
-        IDB.deleteObjectStores(del);
+        IDB.clearObjectStores(del);
       
       for (var i = 0; i < mk.length; i++) {
         var type = mk[i],
@@ -355,7 +357,10 @@ define('resourceManager', [
     }).then(notify);
   });
 
-  Events.on('VERSION:Models', RM.cleanDatabaseAndReopen);
+  Events.on('VERSION:Models', function() {
+    RM.cleanDatabaseAndReopen(true); // delete stores, don't just clear them
+  });
+  
   Events.on('VERSION', function(init) {
     RM.deleteDatabase().then(function() {
       Voc.storeModels();
