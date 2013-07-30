@@ -478,26 +478,37 @@ define('views/EditView', [
         return;
       }
 
-      var range = U.getLongUri1(pr.range);
-      var prModel = U.getModel(range);
-      var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
-      if (!isImage  &&  !prModel) {
-        var idx = range.indexOf('model/portal/Image');
-        isImage = idx != -1  &&  idx == range.length - 'model/portal/Image'.length;
+      if (pr.range != 'Class') {
+        var range = U.getLongUri1(pr.range);
+        var prModel = U.getModel(range);
+        var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
+        if (!isImage  &&  !prModel) {
+          var idx = range.indexOf('model/portal/Image');
+          isImage = idx != -1  &&  idx == range.length - 'model/portal/Image'.length;
+        }
+        if (isImage) {
+          var prName = pr.displayName;
+          if (!prName)
+            prName = pr.shortName;
+          var rParams = { forResource: res.getUri(), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
+          this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+          return;
+        }
       }
-      if (isImage) {
-        var prName = pr.displayName;
-        if (!prName)
-          prName = pr.shortName;
-        var rParams = { forResource: res.getUri(), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
-        return;
-      }
-
       var rParams = {
-        $prop: pr.shortName,
-        $type: vocModel.type
-      };
+          $prop: pr.shortName,
+          $type: vocModel.type
+        };
+      if (this.reqParams) {
+        for (var p in this.reqParams) {
+          var prop = vocModel.properties[p];
+          if (prop  &&  prop.containerMember) {
+            rParams['$forResource'] = this.reqParams[p];
+            break;
+          }
+        }
+      }
+      
       
       this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        var w = pr.where;
@@ -722,7 +733,7 @@ define('views/EditView', [
           break;
         case 'PROPFIND':
         case 'PROPPATCH':
-          if (!redirectTo || redirectTo === '-$this') {
+          if (!redirectTo || redirectTo.indexOf('-$this') === 0) {
             redirectPath = uri;
           }
           else {
@@ -1281,13 +1292,17 @@ define('views/EditView', [
       
       var reqParams = U.getParamMap(window.location.href);
       var editCols = reqParams['$editCols'];
+      var mkResourceCols = this.vocModel['mkResourceCols'];
       var editProps = editCols ? editCols.replace(/\s/g, '').split(',') : null;
         
       if (!editProps) {
         propsForEdit = vocModel.propertiesForEdit;
         editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
         if (!editProps  &&  this.action == 'make') {
-          if (vocModel.type.endsWith('WebProperty')) {
+          var mkResourceCols = this.vocModel['mkResourceCols'];
+          if (mkResourceCols)
+            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+          else if (vocModel.type.endsWith('WebProperty')) {
             editProps = ['label', 'propertyType'];
           }
           else if (vocModel.type.endsWith('Connection')) {

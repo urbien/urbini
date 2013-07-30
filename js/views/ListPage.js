@@ -63,7 +63,7 @@ define('views/ListPage', [
       }      
 
       var showAddButton;
-      if (!isChooser) {
+      if (!isChooser  ||  this.vocModel['skipAccessControl']) {
         showAddButton = type.endsWith('/App')                      || 
                         U.isAnAppClass(type)                       ||
                         vocModel.properties['autocreated']         ||
