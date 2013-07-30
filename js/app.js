@@ -58,10 +58,10 @@ define('app', [
       G.linkedModelsMetadata = {};
   };
   
-  function loadCurrentModel(dfd) {
+  function loadCurrentModel(dfd, waitTime) {
     var self = this,
         currentType = U.getModelType(),
-        waitTime = 50,
+        waitTime = waitTime || 50,
         promise;
     
     if (!currentType)
@@ -76,8 +76,7 @@ define('app', [
       if (G.online) {
         Errors.timeout();
         setTimeout(function() {
-          loadCurrentModel(dfd);
-          waitTime *= 2;
+          loadCurrentModel(dfd, waitTime * 2);
         }, waitTime);
       }
       else {
