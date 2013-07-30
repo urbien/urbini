@@ -215,12 +215,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   
   IDB.prototype._queueTask = function(name, taskFn, isBlocking, priority) {
     log('db', 'queueing task', name);
-    var originalTaskFn = taskFn;
-    taskFn = function(defer) {
-      var promise = originalTaskFn.apply(this, arguments);
-      if (promise !== defer.promise() && U.isPromise(promise))
-        promise.then(defer.resolve, defer.reject);
-    };
+//    var originalTaskFn = taskFn;
+//    taskFn = function(defer) {
+//      var promise = originalTaskFn.apply(this, arguments);
+//      if (promise !== defer.promise() && U.isPromise(promise))
+//        promise.then(defer.resolve, defer.reject);
+//    };
     
     return this.taskQueue.queueTask(name, taskFn, isBlocking, priority);
   };

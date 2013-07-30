@@ -1120,7 +1120,8 @@ define('router', [
         if (!this.backClicked  ||  lostHistory) {
           if (!view.rendered) {
             view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-            view.trigger('active', true) && (activated = true);
+            view.trigger('active', true);
+            activated = true;
             view.render();
           }
       

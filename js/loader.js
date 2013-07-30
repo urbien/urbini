@@ -127,10 +127,25 @@ define('globals', function() {
   };
   
   function saveBootInfo() {
-    var ls = G.localStorage;
+    var ls = G.localStorage,
+        sortable = [],
+        count = 0;
+    
     if (!ls)
       return;
     
+    for (var source in ls) {
+      sortable.push([source, ls[source].length]);
+    }
+    
+    sortable.sort(function(a, b) {return a[1] - b[1]})
+    for (var i = 0; i < sortable.length; i++) { 
+      count += sortable[i][1];
+      console.log(sortable[i][1] + ' ' + sortable[i][0]);
+    }
+    
+    console.log('total: ' + count);
+
     var v = ls.get('VERSION');
     v ? ls.put('OLD_VERSION', v) : ls.clean();
     ls.put('VERSION', JSON.stringify(Lablz.VERSION));
@@ -388,14 +403,11 @@ define('globals', function() {
     if (hasLocalStorage) {
       if (localStorage.getItem(param) === 'y') {
         setParent();
+        return;
       }
     }
     
-    if (navigator.mozApps) {
-      setParent();          
-      G.localStorage.put(param, 'y');
-    }
-    else if (!G.inWebview && !G.inFirefoxOS && query && query.length) {
+    if (query && query.length) {
       var params = query.split('&');
       for (var i = 0; i < params.length; i++) {
         var keyVal = params[i].split('=');

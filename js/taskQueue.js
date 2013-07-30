@@ -214,7 +214,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       started = true;
       var otherPromise = taskFn.call(defer, defer);
       if (otherPromise && typeof otherPromise.then == 'function')
-        otherPromise.done(defer.resolve, defer.reject);
+        otherPromise.then(defer.resolve, defer.reject);
         
       setTimeout(function() {
         if (defer.state() === 'pending') {

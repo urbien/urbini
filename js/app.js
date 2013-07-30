@@ -290,14 +290,17 @@ define('app', [
       dfd = $.Deferred();
       promise = dfd.promise();
       
+      if (oldDfd)
+        Events.off('pageChange', oldDfd.resolve);
+      
+      Events.on('pageChange', dfd.resolve);
       if (oldPromise && oldPromise.state() === 'pending')
         promise.then(oldDfd.resolve);
       
-      Events.on('changingPage', reset);
-      Events.on('pageChange', dfd.resolve);
     }
     
     reset();
+    Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
       promise.done(U.partial(run, fn, context));
     };
@@ -363,7 +366,7 @@ define('app', [
   };
   
   function doPreStartTasks() {       
-    setupAvailibilityMonitor(true);
+    setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
     var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {
