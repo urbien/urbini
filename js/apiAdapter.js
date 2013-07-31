@@ -32,7 +32,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
         return endpoint + '?' + $.param(params);
       else {
         params.$auth = 'simple';
-        return G.apiUrl + encodeURIComponent(this.type) + '?' + $.param(params);
+        return G.apiUrl + encodeURIComponent(type) + '?' + $.param(params);
       }
     },
 
