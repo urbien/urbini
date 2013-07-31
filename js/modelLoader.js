@@ -145,7 +145,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
   };
   
   function fetchModels(models, options) {
-    return $.Deferred(function(defer) {
+    var promise = $.Deferred(function(defer) {
       var numModels = _.size(models);
       if (!numModels)
         return defer.resolve();
@@ -189,12 +189,16 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
           return defer.rejectWith(this, [xhr, data.error, options]);
         
         defer.resolve(data);
-      }).fail(function() {
-        for (var type in models) {
-          didntGetModel(type);
-        }
-      });
+      }).fail(defer.reject);
     }).promise();
+    
+    promise.fail(function() {
+      for (var type in models) {
+        didntGetModel(type);
+      }
+    });
+    
+    return promise;
   };
   
   function getModels(models, options) {
