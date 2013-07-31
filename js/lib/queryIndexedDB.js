@@ -217,17 +217,14 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
     return function(query1, query2) {
       var query;
       function queryFunc(store, op) {
-        var dfd = $.Deferred();
-        $.when(query1._queryFunc(store, op), query2._queryFunc(store, op)).then(function(results1, results2) {
+        return $.when(query1._queryFunc(store, op), query2._queryFunc(store, op)).then(function(results1, results2) {
           var sort = query.sortFunction || function(items) {return items};
-          dfd.resolve(arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey).sort(sort), query.offset), query.limit));
+          return arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey).sort(sort), query.offset), query.limit);
         }, function(err) {
           debugger;
         }, function(event) {
           debugger;
         });
-        
-        return dfd;
       }
   
       function toString() {

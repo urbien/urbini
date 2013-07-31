@@ -259,8 +259,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       // run delete and create separately to make sure stores are deleted before they are recreated 
       // this hack is for the benefit of WebSQL
       // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
-      this.storesToKill = []
-      this.start(); 
+      this.storesToKill = [];
+      this.restart(this.getVersion() + 2); 
       return;
     }
     
@@ -408,7 +408,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return RESOLVED_PROMISE;
     
     if (!filter)
-      return this._queueTask('wiping IndexedDB {0}. {1}'.format(this.name, reason || ''), deleteAndReopen.bind(this), true);
+      return this._queueTask('deleting IndexedDB {0}'.format(this.name), deleteAndReopen.bind(this), true);
     
     var cleanMethod = doDeleteStores ? this.deleteObjectStores : this.clearObjectStores;
     cleanMethod(_.filter(this.getStoreNames(), filter));

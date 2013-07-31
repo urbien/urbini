@@ -26,7 +26,7 @@ define('vocManager', [
 
     this.appendRequest = function(models, options) {
       delete options.wait;
-      _.extend(collected, normalizeModels(models, options));
+      _.union(collected, normalizeModels(models, options));
       return promise;
     };
     
@@ -45,28 +45,28 @@ define('vocManager', [
   function normalizeModels(models, options) {
     if (!models) {
       // if no models specified, get the base app models
-      models = _.clone(G.modelsMetadata);
+      models = _.keys(G.modelsMetadata);
       var currentModel = U.getModelType();
-      if (currentModel && !models[currentModel])
-        models[currentModel] = {};
+      if (currentModel && !_.contains(models, currentModel))
+        models.push(currentModel);
     }
     else {
       switch (U.getObjectType(models)) {
       case '[object String]':
-        models = U.toObject([U.getLongUri1(models)]);
+        models = [U.getLongUri1(models)];
         break;
       case '[object Array]':
-        models = U.toObject(_.map(models, U.getLongUri1));
+        models = _.map(models, U.getLongUri1);
         break;
-      case '[object Object]':
-        break;
+//      case '[object Object]':
+//        break;
       default:
         throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
       }
     }
     
     if (!options.overwrite) {
-      models = U.filterObj(models, function(type, info) {
+      models = _.filter(models, function(type) {
         return !U.getModel(type);
       });
     }

@@ -205,7 +205,7 @@ var idbModules = window.idbModules = {};
     };
     
     IDBKeyRange.only = function(value){
-        return new IDBKeyRange(value, value, true, true);
+        return new IDBKeyRange(value, value, false, false);
     };
     
     IDBKeyRange.lowerBound = function(value, open){
