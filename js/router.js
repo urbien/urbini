@@ -177,6 +177,7 @@ define('router', [
     
     defaultOptions: {
 //      extraParams: {},
+      trigger: true,
       replace: false
     },
     
@@ -214,9 +215,9 @@ define('router', [
       if (options.transition)
         this.nextTransition = options.transition;
       
-      var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
-      _.extend(this, this.defaultOptions);
-      return ret;
+      return Backbone.Router.prototype.navigate.call(this, fragment, options);
+//      _.extend(this, this.defaultOptions);
+//      return ret;
     },
     
 //    route: function() {

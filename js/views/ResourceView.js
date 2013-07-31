@@ -71,6 +71,7 @@ define('views/ResourceView', [
     click: function(e) {
       if (!this.isBuyGroup)
         return;
+      
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
       while (tagName  &&  tagName != 'a') {
@@ -79,21 +80,29 @@ define('views/ResourceView', [
       }
       if (tagName != 'a'  ||  !t.id)
         return;
+      
       if (t.id != 'buy') {
         if (t.id == 'sell')
           Events.stopEvent(e);
+        
         return;
       }
-      Events.stopEvent(e);
-
-      var res = this.resource;
       
+      var href = t.href;
+      if (href && !G.domainRegExp.test(href)) {
+        window.location.href = href;
+        return;
+      }
+      
+      Events.stopEvent(e);
+      var res = this.resource;
       var bl = this.purchasesBacklinkProp;
       var cbType = bl.range;
       var props = {};
       props[bl.backLink] = res.getUri();
       return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
     },
+    
     refresh: function(resource, options) {
       options = options || {};
       if (options.skipRefresh || options.fromDB)

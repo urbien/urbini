@@ -374,6 +374,7 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
+    G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
     G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
     G.currentAppRegExp      = new RegExp(regex);
     G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);    
