@@ -338,9 +338,10 @@ define('models/Resource', [
       if (this.lastFetchOrigin === 'db' || !hasNonMetaProps(resp))
         return resp;
       
-      var adapter = this.vocModel.adapter,
-          parse = options.parse || this.lastFetchOrigin == 'server';
+      if (!options.parse && this.lastFetchOrigin !== 'server')
+        return resp;
       
+      var adapter = this.vocModel.adapter;
       if (adapter && adapter.parse) {
         if (!parse)
           return resp;
@@ -639,6 +640,7 @@ define('models/Resource', [
       return U.isAll(this.vocModel, interfaceNames);
     },
     isOneOf: function(interfaceNames) {
+//      interfaceNames = [].concat.apply([], [].slice.call(arguments));
       return U.isOneOf(this.vocModel, interfaceNames);
     },
     isA: function(interfaceName) {
@@ -710,7 +712,7 @@ define('models/Resource', [
       try {
         options.url = this.getUrl();
       } catch (err) {
-        return options.error(this, {status: 404, details: err.message}, options);
+        return options.error(this, {code: 404, details: err.message}, options);
       }
       
       return this.sync('read', this, options);

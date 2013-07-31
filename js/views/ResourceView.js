@@ -168,18 +168,21 @@ define('views/ResourceView', [
 
         if (this.vocModel.type.endsWith("coupon/Coupon")) {
           if (json.discount < 90) {
-            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
-            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, json['dealPrice'])})));
+            U.addToFrag(frag, this.priceTemplate({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)})); //json['discount']})));
+            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, json['dealPrice'])}));
           }
           else
-            U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'Deal value', shortName: 'dealValue', value: U.getFlatValue(meta.dealAmount, json.dealValue)})));
-          U.addToFrag(frag, this.buyTemplate(_.extend({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, json['dealPrice'])})));
+            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'Deal value', shortName: 'dealValue', value: U.getFlatValue(meta.dealAmount, json.dealValue)}));
+          
+          var buyUrl = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()});
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, json['dealPrice']), buyUrl: buyUrl}));
         }
         else {        
 //          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
 //          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, json['price'])})));
-          U.addToFrag(frag, this.buyTemplate(_.extend({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, json['price'])})));
-          U.addToFrag(frag, this.sellTemplate(_.extend({color: color[2], background: 'rgba(255, 0, 0, 0.9)'})));
+          var buyUrl = res.get('ItemListing.externalBuyUrl');
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, json['price']), buyUrl: buyUrl}));
+          U.addToFrag(frag, this.sellTemplate({color: color[2], background: 'rgba(255, 0, 0, 0.9)'}));
         }
         this.$el.html(frag);      
         this.$el.trigger('create');
