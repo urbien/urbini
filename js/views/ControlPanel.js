@@ -129,7 +129,7 @@ define('views/ControlPanel', [
         this.$el.trigger('create');
       else {
         this.$el.trigger('create');
-        this.$el.listview('refresh');
+        this.$el.listview().listview('refresh');
       }
     },
     render: function(options) {

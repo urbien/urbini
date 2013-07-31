@@ -69,10 +69,8 @@ define('app', [
     
     dfd = dfd || $.Deferred();
     promise = dfd.promise();
-    
-    Voc.getModels(currentType).then(function() {
-      dfd.resolve();
-    }, function()  {
+
+    Voc.getModels(currentType).then(dfd.resolve, function()  {
       if (G.online) {
         Errors.timeout();
         setTimeout(function() {
