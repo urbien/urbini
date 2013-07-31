@@ -733,7 +733,7 @@
 <script type="text/template" id="buyTemplate">
 <!-- button for an important buyable resource on the resource's view page -->
 <div>
-   <a data-role="button" id="buy" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">
+   <a data-role="button" id="buy" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= buyUrl }}">
       <span style="float:right;padding-left:3px;">Buy for<br/><span style="font-size: 20px;"> ${{= value }}</span></span><i class="ui-icon-shopping-cart" style="color:red; margin-left: -10px; font-size:35px;top:35%;"></i>
    </a>
 </div>   

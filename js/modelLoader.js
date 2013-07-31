@@ -6,6 +6,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       IDB,
       MODEL_PROMISES = {};
 
+//  window.MODEL_PROMISES = MODEL_PROMISES;
   G.REQUIRED_OBJECT_STORES = G.REQUIRED_OBJECT_STORES || [];
 
   function ModelsPromise(models, options) {
@@ -53,6 +54,12 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     var promiseInfo = MODEL_PROMISES[model.type];
     if (promiseInfo)
       promiseInfo.deferred.resolve(model);
+  };
+
+  function didntGetModel(model) {
+    var promiseInfo = MODEL_PROMISES[model.type];
+    if (promiseInfo)
+      promiseInfo.deferred.reject(model);
   };
 
   function sortModelsByStatus(types, options) {
@@ -182,7 +189,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
           return defer.rejectWith(this, [xhr, data.error, options]);
         
         defer.resolve(data);
-      }).fail(defer.reject);
+      }).fail(function() {
+        for (var type in models) {
+          didntGetModel(type);
+        }
+      });
     }).promise();
   };
   
@@ -195,7 +206,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
         
     models = _.filter(models, function(type) {
       var promise = !force && getModelPromise(models);
-      if (promise) {
+      if (promise && promise.state() !== 'rejected') {
         promises.push(promise);
       }
       else {
