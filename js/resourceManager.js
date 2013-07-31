@@ -391,7 +391,7 @@ define('resourceManager', [
 
   Events.on('newBackLink', function(baseResource, prop, backLinkData) {
     var inline = prop.displayInline,
-        setting = inline ? '_settingInlineList' : '_settingBackLink';
+        setting = inline ? '_settingInlineList' : '_settingBackLink',
         range = U.getTypeUri(prop.range);
         
     if (baseResource[setting])

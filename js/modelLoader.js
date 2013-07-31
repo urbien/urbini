@@ -4,6 +4,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       ENUMERATIONS_KEY = 'enumerations',
       MODEL_STORE,
       IDB,
+      preferredStorage,
       MODEL_PROMISES = {};
 
 //  window.MODEL_PROMISES = MODEL_PROMISES;
@@ -56,10 +57,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
       promiseInfo.deferred.resolve(model);
   };
 
-  function didntGetModel(model) {
-    var promiseInfo = MODEL_PROMISES[model.type];
+  function didntGetModel(type) {
+    var promiseInfo = MODEL_PROMISES[type];
     if (promiseInfo)
-      promiseInfo.deferred.reject(model);
+      promiseInfo.deferred.reject();
   };
 
   function sortModelsByStatus(types, options) {

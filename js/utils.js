@@ -416,7 +416,7 @@ define('utils', [
         else
           type = 'http://' + hash.slice(sqlIdx + G.sqlUri.length + 1);
         
-        qIdx = type.indexOf('?');
+        var qIdx = type.indexOf('?');
         if (qIdx != -1)
           type = type.slice(0, qIdx);
       }
@@ -581,9 +581,10 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
-      var results = {};
-      var meta = model.properties;
+      var cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1)),
+          results = {},
+          meta = model.properties;
+      
       for (var i = 0; i < cloneOf.length; i++) {
         var vals = [];
         var iProp = cloneOf[i];

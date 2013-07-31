@@ -348,7 +348,7 @@ define('collections/ResourceList', [
           adapter = this.vocModel.adapter;
       
       if (adapter) {
-        auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
+        var auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
         if (auth != 'simple')
           return this.vocModel.API.oauth(parseInt(auth.slice(5)), this.type);
       }
@@ -465,8 +465,8 @@ define('collections/ResourceList', [
         var saved = this.get(uri);
         var ts = saved && saved.get(tsProp) || 0;
         var newLastModified = r[tsProp];
-        if (typeof newLastModified === "undefined") 
-          newR = 0;
+//        if (typeof newLastModified === "undefined") 
+//          newR = 0;
         
         if (!newLastModified || newLastModified > ts) {
           if (saved) {

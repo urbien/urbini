@@ -276,7 +276,7 @@ define('views/ListPage', [
   //  },
 //    tap: Events.defaultTapHandler,
     click: function(e) {
-      clicked = true;
+      this.clicked = true;
       var buyLink;
       var tryLink;
       if (!U.isA(this.vocModel, 'Buyable') || ((buyLink = $(e.target).closest($('#buyLink'))).length == 0  &&  (tryLink = $(e.target).closest($('#tryLink'))).length == 0)) {

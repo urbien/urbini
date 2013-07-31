@@ -10,9 +10,6 @@ define('models/Resource', [
       APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
   function willSave(res, meta, propName, val) {
-    if (typeof val == 'function')
-      debugger;
-    
     var prev = res.get(propName);
     var prop = meta[propName];
     var isBool = prop && prop.range === 'boolean';
@@ -87,6 +84,7 @@ define('models/Resource', [
       });
       
       this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+      this.checkIfLoaded();
     },
     
     _load: function(options) {
@@ -162,7 +160,7 @@ define('models/Resource', [
     
     setDefaults: function(query) {
       var vocModel = this.vocModel,
-          query = U.getQueryParams(query); // will default to current url's query if query is undefined
+          query = U.getQueryParams(query), // will default to current url's query if query is undefined
           defaults = U.filterInequalities(U.getQueryParams(query, vocModel));
 
       if (this.isA('Submission')) {
@@ -324,8 +322,10 @@ define('models/Resource', [
       var uri = this.get('_uri');
       if (!uri && this.vocModel) {
         uri = U.buildUri(this);
-        if (uri)
+        if (uri) {
           this.attributes['_uri'] = uri; // HACK?
+          this.checkIfLoaded();
+        }
       }
       
       return uri;
@@ -343,16 +343,11 @@ define('models/Resource', [
       
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parse) {
-        if (!parse)
-          return resp;
-        
         var parsed = adapter.parse.call(this, resp);
         if (!parsed._uri)
           parsed._uri = this.attributes._uri = U.buildUri(parsed, this.vocModel);
         
-        if (parse)
-          this.loadInlined(parsed);
-        
+        this.loadInlined(parsed);
         return parsed;
       }
       
@@ -552,9 +547,7 @@ define('models/Resource', [
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
         
-        if (!this.loaded && (this.getUri() || props._uri) && hasNonMetaProps(props))
-          this._load();
-        
+        this.checkIfLoaded();        
         return result;
       }
     },
@@ -667,7 +660,7 @@ define('models/Resource', [
       
       options.error = function(model, err, options) {
         var code = err.code || err.status;
-        debugger;
+        G.log(this.TAG, 'error', 'failed to fetch resource:', err);
         error.apply(this, arguments);
       };
       
@@ -712,7 +705,8 @@ define('models/Resource', [
       try {
         options.url = this.getUrl();
       } catch (err) {
-        return options.error(this, {code: 404, details: err.message}, options);
+        // can only sync from db
+//        return options.error(this, {code: 404, details: err.message}, options);
       }
       
       return this.sync('read', this, options);
@@ -818,6 +812,11 @@ define('models/Resource', [
       this.set(atts, {skipValidation: true});
     },
     
+    checkIfLoaded: function() {
+      if (!this.loaded && this.getUri() && hasNonMetaProps(this.attributes))
+        this._load();
+    },
+    
 //    handleTypeBased: function(data) {
 //      var isNew = this.isNew();
 //      var vocModel = this.vocModel;
@@ -881,9 +880,8 @@ define('models/Resource', [
         
         this.triggerPlugs(options);
         this.notifyContainers();
-        if (isNew) {
+        if (isNew)
           this._load();
-        }
         
         this.trigger('saved', this, options);
         this.unsavedChanges = {};

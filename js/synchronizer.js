@@ -55,7 +55,12 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       this._error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
       return;
     }
-    
+
+    if (!options.url) {
+      this._error(null, {code: 400, type: 'not_found', details: 'This resource cannot be fetched directly, it probably came bundled with another'}, options);
+      return;
+    }
+
     if (U.isModel(this.data) && U.isTempUri(this.data.getUri()))
       return this._error(this.data, {code: 204}, this.options);
   

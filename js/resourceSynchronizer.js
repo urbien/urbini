@@ -215,7 +215,7 @@ define('resourceSynchronizer', [
     }
       
     var IDB = IndexedDBModule.getIDB(),
-        version = IDB.getVersion() || 0;
+        version = IDB.getVersion() || 0,
         types = [],
         self = this;
     
