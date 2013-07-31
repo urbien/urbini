@@ -31,7 +31,7 @@ define('models/Resource', [
     G.log.apply(G, args);
   };
   
-  function hasResourceSpecificProps(atts) {  // we have some real props here, not just meta props
+  function hasNonMetaProps(atts) {  // we have some real props here, not just meta props
     return _.any(_.keys(atts), function(key) {
       return /^[a-zA-Z]/.test(key)
     });
@@ -335,6 +335,9 @@ define('models/Resource', [
       if (!this.vocModel)
         this.setModel();
       
+      if (this.lastFetchOrigin === 'db' || !hasNonMetaProps(resp))
+        return resp;
+      
       var adapter = this.vocModel.adapter,
           parse = options.parse || this.lastFetchOrigin == 'server';
       
@@ -342,19 +345,12 @@ define('models/Resource', [
         if (!parse)
           return resp;
         
-        if (resp.data)
-          resp = resp.data[0];
-        
         var parsed = adapter.parse.call(this, resp);
         if (!parsed._uri)
           parsed._uri = this.attributes._uri = U.buildUri(parsed, this.vocModel);
         
-        if (parse) {
-//          if (_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)}))
-//            this.loaded = true;
-          
+        if (parse)
           this.loadInlined(parsed);
-        }
         
         return parsed;
       }
@@ -385,18 +381,7 @@ define('models/Resource', [
       return resp;
     },
     preParse: function (resp) {
-      var lf;
-      switch (this.lastFetchOrigin) {
-        case 'db':
-          if (this.loaded)
-            return resp;
-        case 'edit':
-          break;
-        default:
-          lf = G.currentServerTime();
-          break;          
-      }
-      
+      var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
       if (!resp || resp.error)
         return null;
 
@@ -566,7 +551,7 @@ define('models/Resource', [
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
         
-        if (!this.loaded && (this.getUri() || props._uri) && hasResourceSpecificProps(props))
+        if (!this.loaded && (this.getUri() || props._uri) && hasNonMetaProps(props))
           this._load();
         
         return result;

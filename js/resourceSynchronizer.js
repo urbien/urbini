@@ -182,13 +182,8 @@ define('resourceSynchronizer', [
   };
   
   ResourceSynchronizer.prototype._onDBSuccess = function(result) {
-    var lastFetchedTS,
-        resp = {
-          data: [result], 
-          metadata: {}
-        };
-    
-    this._success(resp, 'success', null); // add to / update collection
+    var lastFetchedTS
+    this._success(result, 'success', null); // add to / update collection
     if (this._isForceFetch())
       return this._fetchFromServer();
     
