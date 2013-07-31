@@ -57,6 +57,36 @@ define('views/ResourceListItemView', [
    //      this.$el.attr("class", "image_fitted ui-btn ui-li-has-arrow ui-li ui-li-has-thumb ui-first-child ui-btn-up-c");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
+
+      this.gridCols = U.getColsMeta(this.vocModel, 'grid');
+      this.commonBlockProps = [];
+      if (this.gridCols) {
+        if (U.isA(this.vocModel, 'Submission')) {
+          var dateSubmittedCOf = U.getCloneOf(this.vocModel, 'Submission.dateSubmitted');
+          var dateSubmitted = (dateSubmittedCOf.length == 0) ? null : dateSubmittedCOf[0];
+          if (dateSubmitted) 
+            this.commonBlockProps.push(dateSubmitted);   
+          
+          var submittedByCOf = U.getCloneOf(this.vocModel, 'Submission.submittedBy');
+          var submittedBy = (submittedByCOf.length == 0) ? null : submittedByCOf[0];
+          if (submittedBy)
+            this.commonBlockProps.push(submittedBy);
+        }
+        if (this.commonBlockProps) {
+          var n = this.commonBlockProps.length; 
+          for (var i=0; i<n; i++) {
+            var p = this.commonBlockProps[i];
+            var idx = this.gridCols.indexOf(p);
+            if  (idx != -1) 
+              this.gridCols.splice(idx, 1);
+            else {
+              this.commonBlockProps.splice(i, 1);
+              n--;
+              i--
+            }
+          }
+        }
+      }
       return this;
     },
     events: {
@@ -119,7 +149,11 @@ define('views/ResourceListItemView', [
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
       var params = U.getQueryParams(),
-          parentView = this.parentView;
+          parentView = this.parentView,
+          type = params['$type'],
+          isWebCl = U.isAssignableFrom(this.vocModel, "WebClass"),
+          isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
+
       
       if (this.mvProp) 
         return;
@@ -128,11 +162,6 @@ define('views/ResourceListItemView', [
         var atype = this.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
         this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
-        return;
-      }
-      if (parentView && parentView.mode == G.LISTMODES.CHOOSER) {
-        Events.stopEvent(e);
-        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         return;
       }
       if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
@@ -162,7 +191,8 @@ define('views/ResourceListItemView', [
           }
           rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
         }
-        this.router.navigate('make/' + encodeURIComponent(type) + '?' + $.param(rParams), {trigger: true, forceFetch: true});        
+        
+        this.router.navigate(U.makeMobileUrl('make', type, rParams), {trigger: true, forceFetch: true});        
 //        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;        
       }
@@ -178,6 +208,12 @@ define('views/ResourceListItemView', [
           return;
         }
       }
+      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
+        Events.stopEvent(e);
+        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+        return;
+      }
+
       if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
         this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
       else {
@@ -317,9 +353,9 @@ define('views/ResourceListItemView', [
         var dim = U.fitToFrame(80, 80, json[oW] / json[oH])
         json.width = dim.w;
         json.height = dim.h;
-        json.top = dim.y;
+        json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
         json.right = dim.w - dim.x;
-        json.bottom = dim.h - dim.y;
+        json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
         json.left = dim.x;
       }
       var params = U.getParamMap(window.location.hash);
@@ -327,7 +363,7 @@ define('views/ResourceListItemView', [
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
       this.addCommonBlock(viewCols, json);
-      
+
       if (this.imageProperty)
         json['image'] = json[this.imageProperty];
       
@@ -344,13 +380,18 @@ define('views/ResourceListItemView', [
     
     addCommonBlock: function(viewCols, json) {
       var vocModel = this.vocModel;
+      
+      if (!this.commonBlockProps.length) { 
+        json.viewCols = viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
+        return viewCols;
+      }
       var isSubmission = this.resource.isA('Submission');
       if (!viewCols.length  ||  isSubmission) {
         var vCols = '';
         if (isSubmission) {
           var d = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
           var dateSubmitted = d  &&  d.length ? json[d[0]] : null;
-          if (dateSubmitted)
+          if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1)
             vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
         }
         if (viewCols.length)
@@ -367,7 +408,7 @@ define('views/ResourceListItemView', [
         if (isSubmission) {
           var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
           var submittedBy = d  &&  d.length ? json[d[0]] : null;
-          if (submittedBy) {
+          if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
 //            vCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
             var thumb = json[d[0] + '.thumb'];
             vCols += '<div class="submitter">';
@@ -420,7 +461,8 @@ define('views/ResourceListItemView', [
       var meta = this.vocModel.properties;
       
       var viewCols = '';
-      var grid = U.getCols(res, 'grid', true);
+      
+      var grid = this.gridCols ? U.makeCols(res, this.gridCols) : U.getCols(res, 'grid', true);
       if (!grid) 
         return viewCols;
       var firstProp = true;
@@ -586,9 +628,12 @@ define('views/ResourceListItemView', [
         var dim = U.fitToFrame(80, 80, w / h)
         json.width = dim.w;
         json.height = dim.h;
-        json.top = dim.y;
+        json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
         json.right = dim.w - dim.x;
-        json.bottom = dim.h - dim.y;
+        json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
+//        json.top = dim.y;
+//        json.right = dim.w - dim.x;
+//        json.bottom = dim.h - dim.y;
         json.left = dim.x;
       }
       if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
@@ -620,7 +665,7 @@ define('views/ResourceListItemView', [
       if (!viewCols)
         viewCols = dn;
       this.addCommonBlock(viewCols, tmpl_data);
-
+      
 //      tmpl_data['viewCols'] = viewCols;
       
       var type = rUri ? U.getTypeUri(rUri) : null;
