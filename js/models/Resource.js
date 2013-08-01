@@ -29,7 +29,7 @@ define('models/Resource', [
   };
   
   function hasNonMetaProps(atts) {  // we have some real props here, not just meta props
-    return _.any(_.keys(atts), function(key) {
+    return atts && _.any(_.keys(atts), function(key) {
       return /^[a-zA-Z]/.test(key)
     });
   };

@@ -353,9 +353,10 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    */
   IDB.prototype.clearObjectStore = function(storeName, reason) {
     var self = this;
-    return this._queueTask('clearing object store {0}. {1}'.format(storeName, reason || ''), function() {
+    this._queueTask('clearing object store {0}. {1}'.format(storeName, reason || ''), function() {
       return self.$idb.objectStore(storeName, IDBTransaction.READ_WRITE).clear();
     }, true);
+    
     return this;
   };
 

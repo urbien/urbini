@@ -381,7 +381,7 @@ define('views/ResourceListView', [
 //        this.$el.masonry('reload');
 //    },
     
-    getNextPage: function() {
+    getNextPage: _.debounce(function() {
       if (!this.rendered)
         return this;
 //      var before = this.model.models.length;
@@ -414,7 +414,7 @@ define('views/ResourceListView', [
         self.hideLoadingIndicator();
       };
       
-      var error = function() { after(); };
+//      var error = function() { after(); };
 //      if (requested <= rl.models.length && rl.models.length % this.displayPerPage > 0) {
 //        this.refresh(rl);
 //        return;
@@ -427,9 +427,9 @@ define('views/ResourceListView', [
 
       rl.getNextPage({
         success: after,
-        error: error
+        error: after
       });      
-    },
+    }, 2000, true),
     
 //    tap: Events.defaultTapHandler,
 //    click: Events.defaultClickHandler,

@@ -66,8 +66,14 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       
       return;
     }
-    else if (this.options.start < this.data.length) {
+    else if (this.info.start < this.data.length) {
       return; // no need to refetch from db, we already did
+    }
+    
+    var adapter = this.data.vocModel.adapter;
+    if (adapter && adapter.supportsPaging && !adapter.supportsPaging()) {
+      this._error(null, {code: 204, details: 'End of list'}, options);
+      return;
     }
     
     Synchronizer.prototype._read.call(this);

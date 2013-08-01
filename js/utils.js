@@ -8,8 +8,10 @@ define('utils', [
   'events',
   'jqueryMobile'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
-  var ArrayProto = Array.prototype, slice = ArrayProto.slice;
-  var Blob = window.Blob;
+  var ArrayProto = Array.prototype, slice = ArrayProto.slice,
+      Blob = window.Blob,
+      RESOLVED_PROMISE = G.getResolvedPromise(),
+      REJECTED_PROMISE = G.getRejectedPromise();
   
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
@@ -3275,16 +3277,33 @@ define('utils', [
       
       return obj;
     },
+
+    toModelLatLon: function(coords, model) {
+      var lat, lon, modelLatLon = {};
+      if (model) {
+        lat = U.getCloneOf(model, 'Locatable.latitude')[0],
+        lon = U.getCloneOf(model, 'Locatable.longitude')[0];
+        if (!lat && !lon)
+          return null;
+      }
+      
+      if (lat)
+        modelLatLon[lat] = coords.latitude;
+      if (lon)
+        modelLatLon[lon] = coords.longitude;
+      
+      return modelLatLon;
+    },
     
     getCurrentLocation: function() {
       return $.Deferred(function(defer) {
         navigator.geolocation.getCurrentPosition(function(position) {
           var coords = position.coords;
-          position = _.extend({
-            time: position.timestamp
-          }, coords);
-          
-          position = {latitude: position.latitude, longitude: position.longitude};
+          position = {
+            latitude: coords.latitude, 
+            longitude: coords.longitude,
+            timestamp: position.timestamp
+          };
 // position has several params like (accuracy, time) that are causing the error like "property 'accuracy' was not found in Urbien1"            
 //          position = U.filterObj(position, function(key, val) {
 //            return val != null  &&  (key == 'latitude' || key == 'longitude');
@@ -3293,7 +3312,7 @@ define('utils', [
           Events.trigger('location', position);
           defer.resolve(position);
         }, defer.reject);
-      });
+      }).promise();
     },
     randomString: function() {
       return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');

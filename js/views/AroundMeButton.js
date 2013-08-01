@@ -71,7 +71,7 @@ define('views/AroundMeButton', [
       var isCollection = U.isCollection(this.model), 
           params = isCollection ? U.getQueryParams(this.model) : {};
 
-      _.extend(params, coords, {'-item': item || 'me', '$orderBy': 'distance'});
+      _.extend(params, U.toModelLatLon(coords, this.vocModel), {'-item': item || 'me', '$orderBy': 'distance'});
       
       this.reset();
       this.router.navigate(U.makeMobileUrl(null, this.vocModel.type, params), {trigger: true});

@@ -307,18 +307,23 @@ define('router', [
           hashInfo = G.currentHashInfo,
           cachedView = this.getCachedView(),
           typeUri = hashInfo.type,
+          params = hashInfo.params,
           query = hashInfo.query;
           
-      if (query) {
-        var q = query.split("&");
-        for (var i = q.length - 1; i >= 0; i--) {
-          if (q[i] == "$page") {
-            this.page = parseInt(q[i].split("=")[1]); // page is special because we need it for lookup in db
-            q.splice(i, 1);
-            query = q.length ? q.join("&") : '';
-            break;
-          }
+      if (query) {        
+        if (_.has(params, '$page')) {
+          this.page = parseInt(params.$page);
+          query = $.param(params);
         }
+//        var q = query.split("&");
+//        for (var i = q.length - 1; i >= 0; i--) {
+//          if (q[i] == "$page") {
+//            this.page = parseInt(q[i].split("=")[1]); // page is special because we need it for lookup in db
+//            q.splice(i, 1);
+//            query = q.length ? q.join("&") : '';
+//            break;
+//          }
+//        }
       }
       
       var page = this.page = this.page || 1;
@@ -330,6 +335,18 @@ define('router', [
       
       var model = U.getModel(typeUri),
           className = model.displayName;
+      
+      if (params.$aroundMe == 'y') {
+        // auto load location-based results
+        U.getCurrentLocation(model).done(function(position) {
+          _.extend(params, U.toModelLatLon(position, model), {'-item': 'me', '$orderBy': 'distance'});            
+        }).always(function() {
+          delete params.$aroundMe;
+          self.navigate(U.makeMobileUrl(null, typeUri, params), {trigger: true, replace: true});
+        });
+        
+        return;
+      }
       
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;

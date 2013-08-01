@@ -64,7 +64,7 @@ define('resourceSynchronizer', [
     this._preProcess();
     if (NO_DB || this._isSyncRequest()) {
       if (!G.online) {
-        this.options.error && this.options.error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+        this._error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
         return;
       }
       else
