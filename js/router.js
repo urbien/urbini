@@ -336,12 +336,12 @@ define('router', [
       var model = U.getModel(typeUri),
           className = model.displayName;
       
-      if (params.$aroundMe == 'y') {
+      if (params['-aroundMe'] == 'y') {
         // auto load location-based results
         U.getCurrentLocation(model).done(function(position) {
           _.extend(params, U.toModelLatLon(position, model), {'-item': 'me', '$orderBy': 'distance'});            
         }).always(function() {
-          delete params.$aroundMe;
+          delete params['-aroundMe'];
           self.navigate(U.makeMobileUrl(null, typeUri, params), {trigger: true, replace: true});
         });
         

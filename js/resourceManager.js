@@ -354,7 +354,7 @@ define('resourceManager', [
       });
       
       return badBoys;
-    }).then(notify);
+    }).always(notify);
   });
 
   Events.on('VERSION:Models', function() {
