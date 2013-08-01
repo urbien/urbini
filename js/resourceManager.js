@@ -73,11 +73,11 @@ define('resourceManager', [
      * Check if we need to delete any stores. Creation of stores happens on demand, deletion happens when models change
      */
     remakeObjectStores: function(types) {
-      IDB.clearObjectStores(types).createObjectStores(types).start();      
+      IDB.deleteObjectStores(types).createObjectStores(types).start();      
     },
     
     deleteDatabase: function() {
-      return IDB.wipe().done(function() {
+      return IDB.wipe(null, true).done(function() {
         G.log(RM.TAG, 'info', 'deleted db');
         RM.databaseCompromised = false;
       });
@@ -114,7 +114,7 @@ define('resourceManager', [
       del = del || [];
       
       if (del.length)
-        IDB.clearObjectStores(del);
+        IDB.deleteObjectStores(del);
       
       for (var i = 0; i < mk.length; i++) {
         var type = mk[i],
@@ -318,7 +318,9 @@ define('resourceManager', [
     });
   });
   
-  Events.on('userChanged', RM.cleanDatabaseAndReopen);
+  Events.on('userChanged', function() {
+    RM.cleanDatabaseAndReopen(true);
+  });
 
   Events.on('preparingToPublish', function(app) {
     var appUri = app.getUri();
