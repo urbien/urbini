@@ -137,8 +137,10 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
       asc = U.isTrue(params.$asc);
     }
     
-    if (orderBy)
-      orderBy = [meta[orderBy]];
+    if (orderBy) {
+      var prop = meta[orderBy];
+      orderBy = prop && [prop];
+    }
     else {
       var ordered = U.getPropertiesWith(meta, "sortAscending");
       if (_.size(ordered)) {
