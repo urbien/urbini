@@ -311,11 +311,13 @@ define('views/ChatPage', [
         });
       }
 
-      this.on('video:on', this.videoFadeIn, this);
-      this.on('video:on', this.enableTakeSnapshot, this);
-      this.on('newRTCCall', this.videoFadeIn, this);
+      if (!this.textOnly) {
+        this.on('video:on', this.videoFadeIn, this);
+        this.on('video:on', this.enableTakeSnapshot, this);
+        this.on('newRTCCall', this.videoFadeIn, this);
+      }
+      
       Events.on('hangUp', this.endChat, this);
-
       this.autoFinish = false;
     },
     
@@ -346,7 +348,7 @@ define('views/ChatPage', [
       return !this._switchToApp(e);
     },
     toggleChat: function(e) {
-      if (!this.rendered)
+      if (!this.rendered || this.textOnly)
         return;
 
 //      var el = e.target;
