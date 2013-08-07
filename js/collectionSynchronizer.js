@@ -23,7 +23,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       key: this._getKey(),
       data: this.data,
       from: this.options.from,
-      perPage: this.data.perPage,
+      limit: this.options.limit || this.data.perPage,
       filter: U.getQueryParams(this.data)
     });
   };
@@ -48,8 +48,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     
 //    shortPage = !!(numNow && numNow < perPage);
     info.isUpdate = numNow >= info.end; // || shortPage;
-    if (numNow) // we've already gotten everything out of the DB
-      this.info.isForceFetch = true;
+//    if (numNow) // we've already gotten everything out of the DB
+//      this.info.isForceFetch = true;
     
     return result;
   };
@@ -58,16 +58,18 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     if (!this._preProcess())
       return;
     
+    var isStale = this._isStale();
     if (this._isUpdate()) {
-      if (this._isForceFetch() || this._isStale())
+      if (this._isForceFetch() || isStale)
         this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
       else if (this.data.length)
         this._success(null, 'success', {status: 304}); // the data is fresh, let's get out of here
       
       return;
     }
-    else if (this.info.start < this.data.length) {
-      return; // no need to refetch from db, we already did
+    else if (isStale && this.info.start < this.data.length) {
+      this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
+      return; 
     }
     
     var adapter = this.data.vocModel.adapter;

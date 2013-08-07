@@ -1,4 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue'], function(G, _, U, idbq, TaskQueue) {
+define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache'], function(G, _, U, idbq, TaskQueue, C) {
   
 
 // IndexedDB desired interface
@@ -17,6 +17,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   var instance,
       FileSystem,
       fileSystemPromise,
+      filePropertyName,
+      useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise();
 //      ,
@@ -42,14 +44,21 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   function isFileOrFilePath(item) {
     return _.any(item, function(val) { 
-      return val && (val instanceof Blob || val[self.filePropertyName]) 
+      return val && (val instanceof Blob || val[filePropertyName]); // || (typeof val === 'object' && isFileOrFilePath(val)); 
     });
   };
-  
+
+  function getFileSystemPath(item, prop, blob) {
+    var displayName = item[prop + '.displayName'];
+    if (!displayName && blob && blob.type)
+      displayName = blob.type.split('/')[1];
+      
+    return U.getPath(item._uri) + '/' + (displayName || prop);
+  };        
+
   function _getFileSystem(items) {
-    var self = this;
     items = !items ? null : _.isArray(items) ? items : [items];
-    if (!items || (this.useFileSystem && !FileSystem && _.any(items, isFileOrFilePath ))) { // HACK
+    if (!items || (useFileSystem && !FileSystem && _.any(items, isFileOrFilePath))) { // HACK
       return (fileSystemPromise = U.require('fileSystem').then(function(fs) { 
         FileSystem = fs;
       }));
@@ -59,39 +68,39 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   }
   
   function getFileSystem(items) {    
-    return fileSystemPromise || _getFileSystem(items);
+    return FileSystem ? fileSystemPromise :  _getFileSystem(items);
   };
 
   function _prep(item) {
-    var self = this,
-        defer = $.Deferred(),
+    var defer = $.Deferred(),
         promise = defer.promise(),
-        dfds = [],
+        saveFilePromises = [],
         _item = {};
     
-    for (var prop in item) {
-      var val = item[prop];
+    _.each(item, function(val, prop) {
       var dbPropName = prepPropName(prop);
-      if (self.useFileSystem && val instanceof Blob) {
-        var dfd = FileSystem.writeFile({
+      if (useFileSystem && val instanceof Blob) {
+        var promise = FileSystem.writeFile({
           blob: val,
-          filePath: self.getFileSystemPath(item, prop)
+          filePath: getFileSystemPath(item, prop, val)
         }).done(function(fileEntry) {
           var placeholder = _item[dbPropName] = item[prop] = {};
-          placeholder[self.filePropertyName] = fileEntry.fullPath;
+          placeholder[filePropertyName] = fileEntry.fullPath;
           
           var resource = C.getResource(item._uri);
           if (resource)
             resource.set(prop, placeholder, {silent: true});
+        }).fail(function() {
+          debugger;
         });
         
-        dfds.push(dfd);
+        saveFilePromises.push(promise);
       }
       else
         _item[dbPropName] = val;
-    }
+    });
 
-    $.when.apply($, dfds).then(function() {
+    $.when.apply($, saveFilePromises).then(function() {
       defer.resolve(_item);
     }, function() {
       debugger;
@@ -104,7 +113,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   function prep(items) {
     var self = this;
     items = _.isArray(items) ? items : [items];
-    
     return getFileSystem(items).then(function() {
       return $.when.apply($, _.map(items, _prep.bind(self)));
     }).then(function() {
@@ -113,9 +121,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   function _parse(_items) {
-    var self = this,
-        filePropName = self.filePropertyName,
-        dfds,
+    var dfds,
         returnObj,
         items;
         
@@ -132,9 +138,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       _.each(_item, function(val, prop) {
         var parsedPropName = parsePropName(prop);
         var val = _item[prop];  
-        if (val  &&  val[filePropName]) {
+        if (val  &&  val[filePropertyName]) {
           var dfd = $.Deferred();
-          FileSystem.readAsBlob(val[self.filePropertyName]).done(function(blob) {
+          FileSystem.readAsBlob(val[filePropertyName]).done(function(blob) {
             item[parsedPropName] = blob;
             dfd.resolve();
           }).fail(dfd.reject);
@@ -189,7 +195,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     var self = this;
     this.name = name;
     _.extend(this, options);
-    this.useFileSystem = !!this.filePropertyName;
+    filePropertyName = this.filePropertyName;
+    useFileSystem = !!this.filePropertyName;
     this.stores = {};
     this._clearStoreMonitors();
     this.setDefaultStoreOptions(options.defaultStoreOptions || {});
@@ -264,13 +271,17 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return;
     }
     
-    _.each(this.storesToMake, function(storeObj) {
+    _.each(self.storesToMake, function(storeObj) {
       var storeName = storeObj.name,
           store;
       
       // don't remake an existing store, unless we just deleted it
       if (_.contains(currentStores, storeName)) // && !_.contains(self.storesToKill, storeName))
         return;
+      
+      // HACK, need to catch a bug
+      if (!/^http/.test(storeName) && !/^_/.test(storeObj.options.keyPath))
+        debugger;
       
       try {
         store = versionTrans.createObjectStore(storeName, storeObj.options);
@@ -341,7 +352,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   IDB.prototype.deleteObjectStore = function(storeName, reason) {
-    log('deleting object store, not recommended unless you want to recreate it with new object store options. If you just want to reset the store, use clearObjectStore');
+//    log('deleting object store, not recommended unless you want to recreate it with new object store options. If you just want to reset the store, use clearObjectStore');
     if (!_.contains(this.storesToKill, storeName))
       this.storesToKill.push(storeName);
     
@@ -402,6 +413,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.wipe = function(filter, doDeleteStores) {
+    if (!doDeleteStores)
+      debugger;
+    
     if (!this.isOpen())
       return this.onOpen(U.partialWith(this.wipe, this, filter, doDeleteStores));
     
@@ -446,17 +460,34 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.restart = function(version, reason) {
-    var prefix = this.db ? 're' : ''; 
-    return this._queueTask('{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''), U.partialWith(restart, this, version), true);
+    var prefix = this.db ? 're' : '', 
+        name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
+        alreadyQueued = this.taskQueue.getQueued(name);
+    
+    return alreadyQueued || this._queueTask(name, U.partialWith(restart, this, version), true);
   };
 
   function get(storeName, primaryKey) {
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
       
-    var self = this
-    return this.$idb.objectStore(storeName).get(primaryKey).then(function(item) {
-      return parse.call(self, item);
+    var self = this,
+        resultDfd = $.Deferred(),
+        resultPromise = resultDfd.promise(),
+        transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
+          log('started transaction to get ' + primaryKey);
+          trans.objectStore(storeName).get(primaryKey).then(function(item) {
+            log('parsing result for ' + primaryKey);
+            return parse.call(self, item).then(resultDfd.resolve, resultDfd.reject);
+          });
+        });
+    
+    return $.when(resultPromise, transPromise).then(function(result) {
+      log('returning result for ' + primaryKey);
+      if (result)
+        return result;
+      else
+        return $.Deferred().reject().promise();
     });
   };
   
@@ -466,7 +497,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
   function wrapQuery(query) {
-    var self = this;
     for (var fn in query) {
       if (_.contains(queryRunMethods, fn))
         wrapQueryRunMethod.call(this, query, fn);
@@ -552,26 +582,23 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
         promises = [],
         done = false,
-        defer = $.Deferred(),
-        promise = defer.promise();
-    
-    promise.done(function() {
-      done = true;
-    });
-    
-    filter = filter || alwaysTrue;
-    trans.progress(function(trans) {
+        finish = function() {
+          return results;
+        };
+
+    filter = filter || alwaysTrue;    
+    return trans.progress(function(trans) {
       log("db", 'Starting getItems Transaction, query with valueTester');
       var store = trans.objectStore(storeName);
       function processItem(item) {
         if (done)
-          return;
+          return false; // ends the cursor transaction
         
         var parsePromise = parse.call(self, item.value).done(function(val) {
           if (filter(val)) {
             results.push(val);
-            if (results.length == limit)
-              defer.resolve(results);
+            if (results.length >= limit)
+              done = true;
           }
         });
         
@@ -579,17 +606,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       };
           
       store.each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);
+    }).fail(function() {
+      debugger;
     }).then(function() {
-      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));
-      if (_.any(promises, function(p) { return p.state() !== 'resolved' }))
-        debugger;
-      
-      $.when.apply($, promises).always(function() {
-        defer.resolve(results);
-      });
-    });
-    
-    return promise;
+      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));      
+      return $.when.apply($, promises);
+    }).then(finish, finish);
   }
   
   /**
@@ -618,23 +640,21 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         storePromise = storeDfd.promise(),
         transPromise;
 
-    if (typeof storeName == 'string') {
-      transPromise = self.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
-        storeDfd.resolve(trans.objectStore(storeName));
-      }).fail(storeDfd.reject);
-    }
-    else if (storeName.createIndex) {
+    if (storeName.createIndex) {
       throw "Operation not supported at this time, please call 'put' with arguments storeName and items";
 //      storeDfd.resolve(storeName);
     }
     
-    $.when(prep.call(this, items), storePromise).then(function(items, store) {
-      _.map(items, function(item) {
-        return store.put(item);
-      });
+    // do them consecutively instead of in parallel because we don't want the db transaction to timeout in case prep() needs time to store stuff to the fileSystem
+    // if prep doesn't involve saving files to the fileSystem, it's synchronous and takes very little time
+    return prep.call(this, items).then(function(items) {      
+      return self.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
+        var store = trans.objectStore(storeName);
+        _.map(items, function(item) {
+          return store.put(item);
+        });
+      }).fail(storeDfd.reject);
     });
-    
-    return transPromise;
   };
   
   IDB.prototype.put = function(storeName, items) {

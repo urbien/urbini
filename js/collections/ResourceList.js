@@ -15,7 +15,7 @@ define('collections/ResourceList', [
       options = options || {};
       _.extend(this, {
         page: 0,
-        perPage: 45, // 30,
+        perPage: 30,
         offset: 0,
         firstPage: 0,
         params: {},
@@ -28,15 +28,10 @@ define('collections/ResourceList', [
           this[o] = options[o];
       }
       
-      var vocModel = this.vocModel = this.model;
-//          adapter = vocModel.adapter;
-      
-//      if (adapter) {
-//        this.getUrl = adapter.getCollectionUrl || this.getUrl;
-//        this.parse = adapter.parseCollection || this.parse;
-//      }
-      
-      var meta = vocModel.properties;
+      var self = this,
+          vocModel = this.vocModel = this.model,
+          meta = vocModel.properties;
+          
       _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
@@ -90,53 +85,40 @@ define('collections/ResourceList', [
 
       Events.on('newResource:' + this.type, function(resource, options) {
         // we are adding this resource to this collection at the moment
-        if (this.adding || this.get(resource))
-          return;
-        
-        if (!resource.isNew() && resource.collection) // wait for newResourceList event and check all in bulk
-          return;
-        
-//        var types = U.getTypes(resource.vocModel);
-//        if (!_.contains(types, this.type))
-//          return;
-        
-        if (this.belongsInCollection(resource)) {
-          this.add(resource);
-          this.trigger('added', [resource]);
-        }
-      }.bind(this));
+        self.filterAndAddResources([resource], options);
+      });
       
+      Events.on('newResources:' + this.type, function(resources, options) {
+        // we are adding this resource to this collection at the moment
+        self.filterAndAddResources(resources, options);
+      });
       
       Events.on('newResourceList:' + this.type, function(list) {
-        if (list === this)
+        if (list === self)
           return;
-        
-//        var types = U.getTypes(list.vocModel);
-//        if (!_.contains(types, this.type))
-//          return;
-        
-        var candidates = list.filter(function(res) {
-          return !this.get(res);
-        }.bind(this));
-        
-        if (!candidates.length)
-          return;
-        
-        var added = [];
-        _.each(candidates, function(resource) {
-          if (this.belongsInCollection(resource))
-            this.add(resource) && added.push(resource);
-        }.bind(this));
-        
-        if (added.length)
-          this.trigger('added', added);
-        
-      }.bind(this));
-      
-//      this.sync = this.constructor.sync;
+
+        self.filterAndAddResources(list.models);        
+      });
       
       this.monitorQueryChanges();
-      G.log(this.TAG, "info", "init " + this.shortName + " resourceList");
+      G.log(this.TAG, "info", "init " + this.shortName + " resourceList");      
+    },
+
+    filterAndAddResources: function(resources) {
+//      if (this.adding) // avoid infinite loop
+//        return;
+      
+      var self = this,
+          added = [];
+      
+      _.each(resources, function(resource) {          
+        if (!self.get(resource) && self.belongsInCollection(resource))
+          added.push(resource);
+      });
+      
+      self.add(added, {
+        announce: false
+      });
     },
     
     announceNewList: function() {
@@ -174,6 +156,7 @@ define('collections/ResourceList', [
         this.trigger('updated', [resource]);
     },
     add: function(models, options) {
+      options = options || {};
       var multiAdd = _.isArray(models);
       models = multiAdd ? models : [models];
       if (!models.length)
@@ -200,16 +183,17 @@ define('collections/ResourceList', [
         return resource;
       }.bind(this));
       
-      this.adding = true;
+//      this.adding = true;
       try {
         return Backbone.Collection.prototype.add.call(this, models, options);
       } finally {
-        this.adding = false;
+//        this.adding = false;
         if (multiAdd && !this.resetting) {
           this.trigger('added', models);
         }
         
-        Events.trigger('newResources', models);
+        if (options.announce !== false)
+          Events.trigger('newResources', models);
       }
     },
 //    replace: function(resource, oldUri) {
@@ -223,17 +207,17 @@ define('collections/ResourceList', [
 //    },
     getNextPage: function(options) {
       G.log(this.TAG, "info", "fetching next page");
-      this.offset += this.perPage;
-      this.offset = Math.min(this.offset, this.models.length);
+      this.setOffset(this.offset + this.perPage);
+      this.setOffset(Math.min(this.offset, this.models.length));
       this.pager(options);
     },
     getPreviousPage: function () {
-      this.offset -= this.perPage;
-      this.offset = Math.max(0, this.offset);
+      this.setOffset(this.offset - this.perPage);
+      this.setOffset(Math.max(0, this.offset));
       this.pager();
     },
     getPageAtOffset: function(offset) {
-      this.offset = offset;
+      this.setOffset(offset);
       this.pager();
     },
     pager: function(options) {
@@ -271,7 +255,7 @@ define('collections/ResourceList', [
       
       for (var name in params) {
         if (name == '$offset') {
-          this.offset = parseInt(val); // offset is special because we need it for lookup in db
+          this.setOffset(parseInt(val)); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
         else if (name == '$limit') {
@@ -296,6 +280,12 @@ define('collections/ResourceList', [
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },
+    
+    setOffset: function(offset) {
+      if (typeof offset !== 'undefined')
+        this.offset = offset;
+    },
+    
     parse: function(response) {
       if (this.lastFetchOrigin !== 'db')
         this._lastFetchedOn = G.currentServerTime();
@@ -309,7 +299,7 @@ define('collections/ResourceList', [
 
       var metadata = response.metadata;
       if (response.data) {
-        this.offset = response.metadata.offset;
+        this.setOffset(response.metadata.offset);
         if (this.offset)
           G.log(this.TAG, "info", "received page, offset = " + this.offset);
         
@@ -326,13 +316,18 @@ define('collections/ResourceList', [
       
       return response;
     },
-    reset: function() {
+    reset: function(models, options) {
+      var needsToBeStored = !U.isModel(models[0]);
+      
       this.resetting = true;
       try {
         return Backbone.Collection.prototype.reset.apply(this, arguments);
       } finally {
         this.resetting = false;
       }
+      
+      if (needsToBeStored)
+        Events.trigger('updatedResources', this.models);
     },
     onReset: function(model, options) {
       if (options.params) {
@@ -347,22 +342,10 @@ define('collections/ResourceList', [
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = this.vocModel.adapter;
       
-      if (adapter) {
-        var auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
-        if (auth != 'simple')
-          return this.vocModel.API.oauth(parseInt(auth.slice(5)), this.type);
-      }
-      
-      try {
-        options.url = this.getUrl();
-      } catch (err) {
-        error(this, {status: 204, details: err.message}, options);
-        return;
-      }
-
       this.params = this.params || {};
       if (this.offset)
         this.params.$offset = this.offset;
+      
       this.rUri = options.rUri;
       var urlParams = this.rUri ? U.getParamMap(this.rUri) : {};
       var limit;
@@ -373,13 +356,22 @@ define('collections/ResourceList', [
       if (!limit)
         limit = this.perPage;
       
-      if (limit && limit > 50)
+      if (limit > 50)
         options.timeout = 5000 + limit * 50;
       
-      options.error = function() {
+      this.params.$limit = limit;
+      
+      try {
+        options.url = this.getUrl();
+      } catch (err) {
+        error(this, {status: 204, details: err.message}, options);
+        return;
+      }
+
+      options.error = function(xhr, resp, options) {
         self._lastFetchedOn = G.currentServerTime();
         if (error)
-          error.apply(this, arguments);
+          error.call(self, self, resp, options);
       }
       
       var success = options.success || function(resp, status, xhr) {

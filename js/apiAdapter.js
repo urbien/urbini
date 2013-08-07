@@ -55,7 +55,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
       }
     },
     
-    oauth: function(oauthVersion, type, redirectUri) {
+    oauth: function(type, redirectUri) {
       debugger;
       var params = {};
       if (type) {
@@ -68,9 +68,11 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
       if (redirectUri)
         params.$returnUri = redirectUri;
       
-      oauthVersion = getOAuthVersion(oauthVersion);
-      window.location.href = G.apiUrl + 'oauth' + oauthVersion + '?' + $.param(params);
-      
+//      oauthVersion = getOAuthVersion(oauthVersion);
+//      window.location.href = G.apiUrl + 'oauth' + oauthVersion + '?' + $.param(params);
+
+      window.location.href = G.apiUrl + 'oauth?' + $.param(params);
+
 //      var self = this,
 //          authDfd = $.Deferred(),
 //          access = this.access || G.dataAccesses.where({

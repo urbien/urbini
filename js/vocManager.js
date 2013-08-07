@@ -153,7 +153,6 @@ define('vocManager', [
       var meta = model.properties;
       
       var tmp = [];
-      var cache = C.typeToModel;
       var modelsToFetch = [];
 
       for (var propName in meta) {
@@ -174,7 +173,7 @@ define('vocManager', [
         var res = resources[i];
         for (var j = 0; j < tmp.length; j++) {
           var uri = res.get(tmp[j]);
-          if (!uri || typeof uri === 'pbject') // could be a file upload
+          if (!uri || typeof uri === 'object') // could be a file upload
             continue;
           
           var idx = uri.indexOf("?");
@@ -182,7 +181,7 @@ define('vocManager', [
           if (idx0 == -1) // could be S3 Image uri
             continue;
           var type = 'http://' + uri.substring(idx0 + G.sqlUri.length + 2, idx);
-          if (!_.contains(modelsToFetch, type)  &&  !_.has(cache, type))
+          if (!_.contains(modelsToFetch, type)  &&  !C.getModel(type))
             modelsToFetch.push(type);
         }  
       }  
