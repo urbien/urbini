@@ -997,7 +997,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} >
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -1447,12 +1447,10 @@
     {{ } }} 
   </a>
   
-  {{ if (prop.range && G.canWebcam && ((prop.range.endsWith('model/portal/Image') && prop.camera) || prop.range.endsWith('model/portal/Video') || prop.range.endsWith('model/portal/Audio'))) { }}
-    {{ if (G.canWebcam) { }}
-      <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : prop.range.endsWith('model/portal/Audio') ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
-    {{ }                  }}
-    {{ if (!G.canWebCam) { }}
-      <input type="file" class="cameraCapture" accept="image/*; capture=camera" style="visibility:hidden;" />
+  {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
+    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : prop.range.endsWith('model/portal/Audio') ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
+    {{ if (!G.canWebcam) { }}
+      <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
