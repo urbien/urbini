@@ -381,6 +381,8 @@ define('globals', function() {
     G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
     G.apiUrl                = G.serverName + '/api/v1/';
     G.timeOffset            = G.localTime - G.serverTime;
+    G.firefoxManifestPath   = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp';
+    G.chromeManifestPath    = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json';
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }
@@ -420,6 +422,7 @@ define('globals', function() {
       }
     }
     
+    G.hasFFApps = browser.firefox && 'mozApps' in navigator;
     console.log('inWebview:', G.inWebview);
     console.log('inFFIframe:', G.inFirefoxOS);
   //    ALL_IN_APPCACHE = G.inFirefoxOS;
@@ -981,7 +984,7 @@ define('globals', function() {
       codemirrorCSSMode: 'lib/codemirrorCSSMode',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
-      jqueryImagesloaded: 'lib/jquery.imagesloaded',
+      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry',
       jqueryAnyStretch: 'lib/jquery.anystretch'
     },

@@ -1,78 +1,60 @@
 define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
-  var C;
-  var cache = C = {
-    TAG: 'Cache',
-    // Models
-//    MODEL_PREFIX: 'model:',
-//    ENUMERATIONS_KEY: 'enumerations',
-    shortNameToModel: {},
-    typeToModel: {},
-    shortNameToEnum: {},
-    typeToEnum: {},
-    shortNameToInline: {},
-    typeToInline: {},
-    modCache: {},
+  var shortNameToModel = {},
+      typeToModel = {},
+      shortNameToEnum = {},
+      typeToEnum = {},
+      shortNameToInline = {},
+      typeToInline = {},
+      modCache = {},
+      resourceCache = ResourceCache(),
+      viewCache = ViewCache(),
+      // codemirror editors
+      codemirrors = {},
+      MAX_VIEWS_TO_CACHE = 6;
 
-//    usedModels: {},
+//  function CacheEntry(obj, permanent) {
+//    this.permanent = permanent;
+//  };
+//  
+//  CacheEntry.prototype.isPermanent = function() {
+//    return permanent;
+//  };
+//      
+//  function ResourceCacheEntry(resource, permanent) {
+//    CacheEntry.apply(this, arguments);
+//  };
+//
+//  function ResourceListCacheEntry(list, permanent) {
+//    CacheEntry.apply(this, arguments);
+//  };
 
-    // Resources and ResourceLists
-    Resources: {},
-    ResourceLists: {},
+  function ResourceCache() {
+    var resources = {},
+        lists = {};
     
-    // codemirror editors
-    codemirrors: {},
-    
-    cacheModel: function(model) {
-      var snCache, typeCache;
-      if (model.enumeration) {
-        snCache = C.shortNameToEnum;
-        typeCache = C.typeToEnum;
-      }
-      else if (model.alwaysInlined) {
-        snCache = C.shortNameToInline;
-        typeCache = C.typeToInline;
-      }
-      else {
-        snCache = C.shortNameToModel;
-        typeCache = C.typeToModel;
-      }
-      
-      snCache[model.shortName] = model;
-      typeCache[model.type] = model;
-    },
-    cacheResource: function(resource) {
+//    var resources = [],
+//        lists = [];
+//    
+//    function clean() {
+//      resources = _.filter(resources, CacheEntry.prototype.isPermanent);
+//      lists = _.filter(lists, CacheEntry.prototype.isPermanent);
+//    };
+
+    function cacheResource(resource) {
       var uri = resource.getUri();
       if (uri)
-        C.Resources[uri] = resource;
-    },
-    getResource: function(uri) {
-      switch (typeof uri) {
-      case 'string':
-        var res = C.Resources[uri];
-        if (res)
-          return res;
-        
-        var search = C.searchCollections(uri);
-        return search && search.resource;
-      case 'function':
-        var filter = uri;
-        var fromResCache = _.filter(C.Resources, filter);
-        var fromColCache = C.searchCollections(C.ResourceLists, filter);
-        return fromResCache.concat(fromColCache || []);
-      }
-    },
-    getResourceList: function(model, query) {
-      var typeUri = model.type;
-      return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[query || typeUri];
-    },
-    cacheResourceList: function(list) {
+        resources[uri] = resource;
+    };
+    
+    function cacheList(list) {
       var qs = list.query; // || $.param(list.params);
 //      if (qs) // taken care of in ResourceList
 //        qs = U.getQueryString(U.getQueryParams(qs, list.vocModel), true);
         
       var typeUri = list.vocModel.type;
-      return (C.ResourceLists[typeUri] = C.ResourceLists[typeUri] || {})[qs || typeUri] = list;
-    },
+      return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
+    };
+    
     /**
      * search a collection map for a collection with a given model
      * @return if filter function is passed in, return all resources that matched across all collections, otherwise return {collection: collection, resource: resource}, 
@@ -80,11 +62,11 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
      *         
      * @param uri: uri of a model, or filter function
      */
-    searchCollections: function(collections, uri) {
+    function searchCollections(collections, uri) {
       var filter;
       if (arguments.length == 1) { // if just uri is passed in, search all available collections
         uri = collections;
-        collections = C.ResourceLists;
+        collections = lists;
       }
       else {
         filter = typeof uri === 'function' && uri;
@@ -103,19 +85,23 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           }
           else {
             resource = collectionsByQuery[query].get(uri);
-            if (resource)
-              return {collection: collectionsByQuery[query], resource: resource};
+            if (resource) {
+              return {
+                collection: collectionsByQuery[query], 
+                resource: resource
+              };
+            }
           }
         }
       }
       
       return matches || null;
-    },
+    };
     
     /**
      * @param atts: attributes that must be present on the resource we're searching for
      */
-    search: function(type, atts) {
+    function search(type, atts) {
       var tester = function(res) {
         for (var name in atts) {
           var value = atts[name];
@@ -126,14 +112,14 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         return true;
       };
       
-      for (var uri in C.Resources) {
-        var res = C.Resources[uri];
+      for (var uri in resources) {
+        var res = resources[uri];
         if (tester(res))
           return res;
       }
       
-      for (var colType in C.ResourceLists) {
-        var cols = C.ResourceLists[colType];
+      for (var colType in lists) {
+        var cols = lists[colType];
         for (var query in cols) {
           var col = cols[query], resources = col.models;
           for (var i = 0; i < resources.length; i++) {
@@ -145,6 +131,244 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       }
       
       return null;
+    };
+    
+    function getResource(uri) {
+      switch (typeof uri) {
+      case 'string':
+        var res = resources[uri];
+        if (res)
+          return res;
+        
+        var search = searchCollections(uri);
+        return search && search.resource;
+      case 'function':
+        var filter = uri;
+        var fromResCache = _.filter(resources, filter);
+        var fromColCache = searchCollections(lists, filter);
+        return fromResCache.concat(fromColCache || []);
+      }
+    };
+    
+    function getList(model, query) {
+      var typeUri = model.type;
+      return (lists[typeUri] = lists[typeUri] || {})[query || typeUri];
+    };
+
+    Events.on('badList', function(list) {
+      for (var colType in lists) {
+        var cols = lists[colType];
+        for (var query in cols) {
+          if (cols[query] === list)
+            delete cols[query];
+        }
+      }
+    });
+
+    return {
+      cacheResource: cacheResource,
+      cacheList: cacheList,
+      getResource: getResource,
+      getList: getList
+    };
+  };
+      
+  function ViewCacheEntry(view, url) {
+    var self = this,
+        age = 0;
+    
+    return {
+      age: function() {
+        return age;
+      },
+      growOlder: function() {
+        age++;
+      },
+      rejuvenate: function() {
+        age = 0;
+      },
+      getUrl: function() {
+        return url;
+      },
+      getView: function() {
+        return view;
+      }
+    };
+  };
+
+  function ViewCache() {
+    var cache = [];
+    function getCachedView(url) {
+      var cached = getCached(url || window.location.href);
+      return cached ? cached.getView() : null;
+    };
+
+    function getCached(url) {
+      return _.find(cache, function(entry) {
+        return entry.getUrl() == url;
+      });
+    };
+    
+    function put(view, url) {
+      url = url || window.location.href;
+      var cached = getCached(url),
+          entry;
+      
+      _.each(cache, function(entry) {
+        entry.growOlder();
+      });
+      
+      if (cached && cached.getView() === view) {
+        cached.rejuvenate();
+        return false;
+      }
+      
+      entry = ViewCacheEntry(view, url, this);
+      cache.push(entry);
+      
+      clean();
+    };
+    
+    function overCapacity() {
+      return cache.length > MAX_VIEWS_TO_CACHE; 
+    };
+    
+    function clean() {
+      if (overCapacity()) {
+        cache.sort(function(entryA, entryB) {
+          return entryA.age() - entryB.age();
+        });
+      
+        while (overCapacity()) {
+          var entry = cache.peek(),
+              view = entry.getView();
+          
+          if (view.destroy) { // some views, like homePage, are indestructible :)
+            cache.pop();
+            view.destroy();
+          }
+        }
+      }
+    };
+    
+    function getViews() {
+      return _.map(cache, function(entry) {
+        return entry.getView();
+      });
+    }
+
+    function getResources() {
+      return _.compact(_.pluck(getViews(), 'resource'));
+    };
+
+    function getLists() {
+      var cols = [];
+      _.each(getViews(), function(view) {
+        var res = view.resource,
+            col = view.collection;
+        
+        if (res) {
+          col = res.collection;
+          if (col)
+            cols = _.union(cols, [col]);
+          
+          cols = _.union(cols, view.resource.getInlineLists());
+        }
+        else if (col) {
+          cols = _.union(cols, [col]);
+        }
+      });
+      
+      return cols;
+    };
+    
+    Events.on('pageChange', function(prev, current) {
+      if (current.isCacheable())
+        put(current);
+    });
+    
+    Events.on('viewDestroyed', function(destroyedView) {
+      cache = _.filter(cache, function(entry) {
+        return entry.getView() !== destroyedView;
+      });
+    });
+    
+    return {
+      getCachedView: getCachedView,
+      getViews: getViews,
+      getResources: getResources,
+      getLists: getLists,
+      remove: function(entry) {
+        cache.remove(entry);
+      }
+    };
+  };
+
+  function cacheModel(model) {
+    var snCache, typeCache;
+    if (model.enumeration) {
+      snCache = shortNameToEnum;
+      typeCache = typeToEnum;
+    }
+    else if (model.alwaysInlined) {
+      snCache = shortNameToInline;
+      typeCache = typeToInline;
+    }
+    else {
+      snCache = shortNameToModel;
+      typeCache = typeToModel;
+    }
+    
+    snCache[model.shortName] = model;
+    typeCache[model.type] = model;
+  };
+  
+  function findResource(lists, uri) {
+    var res,
+        col = _.find(lists, function(list) {
+          return (res = list.get(uri));
+        });
+    
+    return res;
+  };
+  
+  var Cache = {
+    TAG: 'Cache',
+    // Models
+//    MODEL_PREFIX: 'model:',
+//    ENUMERATIONS_KEY: 'enumerations',
+    getCachedView: viewCache.getCachedView.bind(viewCache),
+    getModel: function(type) {
+      return typeToModel[type] || shortNameToModel[type];
+    },
+    
+    getInlineResourceModel: function(type) {
+      return shortNameToInline[type] || typeToInline[type];
+    },
+    
+    getEnumModel: function(type) {
+      return shortNameToEnum[type] || typeToEnum[type];      
+    },
+
+    getResource: function(uri) {
+      var res = resourceCache.getResource(uri);
+      if (res)
+        return res;
+      
+      res = _.find(viewCache.getResources(), function(r) {
+        return r.getUri() == uri;
+      });
+      
+      return res || findResource(viewCache.getLists(), uri);
+    },
+    
+    getResourceList: function(model, query) {
+      var type = model.type,
+          list = resourceCache.getList(model, query);
+      
+      return list || _.find(viewCache.getLists(), function(list) {
+        return list.type === type && list.query == query;
+      });
     },
     
     // Plugs
@@ -168,12 +392,12 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    },
     
     clearCache: function() {
-      C.shortNameToModel = {};
-      C.typeToModel = {};
-      C.shortNameToEnum = {};
-      C.typeToEnum = {};
-      C.shortNameToInline = {};
-      C.typeToInline = {};
+      shortNameToModel = {};
+      typeToModel = {};
+      shortNameToEnum = {};
+      typeToEnum = {};
+      shortNameToInline = {};
+      typeToInline = {};
 //      Voc.models = [];
 //      Voc.mightBeStale = {};
     }
@@ -185,32 +409,30 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    }
   };
 
-  Events.on('badList', function(list) {
-    for (var colType in C.ResourceLists) {
-      var cols = C.ResourceLists[colType];
-      for (var query in cols) {
-        if (cols[query] === list)
-          delete cols[query];
-      }
-    }
-  });
-
-  Events.on('newResourceList', function(list) {
-    C.cacheResourceList(list);
-    var listType = list.vocModel.type;
-//    if (listType === G.commonTypes.Jst)
-//      C.templatesList = list;
-    
-    for (var uri in C.Resources) {
-      var res = C.Resources[uri];
-      if (res.vocModel.type == listType && !list.get(uri) && list.belongsInCollection(res)) {
-        list.add(res);
-      }
-    }
+//  Events.on('newResourceList', function(list) {
+//    cacheResourceList(list);
+//    var listType = list.vocModel.type;
+////    if (listType === G.commonTypes.Jst)
+////      C.templatesList = list;
+//    
+//    for (var uri in Resources) {
+//      var res = Resources[uri];
+//      if (res.vocModel.type == listType && !list.get(uri) && list.belongsInCollection(res)) {
+//        list.add(res);
+//      }
+//    }
+//  });
+//  
+//  Events.on('newResource', cacheResource);
+  Events.on('cacheList', function (list, permanent) {
+    resourceCache.cacheList(list, true);
   });
   
-  Events.on('newResource', C.cacheResource);
-  Events.on('newModel', C.cacheModel);
+  Events.on('cacheResource', function (resource, permanent) {
+    resourceCache.cacheResource(resource, true);
+  });
+
+  Events.on('newModel', cacheModel);
 //  Events.on('newPlugs', C.cachePlugs);
-  return G.Cache = cache;
+  return Cache;
 });
