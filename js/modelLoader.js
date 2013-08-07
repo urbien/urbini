@@ -1,4 +1,4 @@
-define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'models/Resource', 'collections/ResourceList', 'apiAdapter', 'indexedDB'], function(G, _, Events, U, C, Resource, ResourceList, API, IndexedDBModule) {
+define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resource', 'collections/ResourceList', 'apiAdapter', 'indexedDB'], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
@@ -205,12 +205,12 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
   function getModels(models, options) {
     options = options || {};
     var promises = [],
-        filtered = {},
+        filtered,
         force = options.force,
         overallPromise;
         
-    models = _.filter(models, function(type) {
-      var promise = !force && getModelPromise(models);
+    filtered = _.filter(models, function(type) {
+      var promise = !force && getModelPromise(type);
       if (promise && promise.state() !== 'rejected') {
         promises.push(promise);
       }
@@ -221,9 +221,9 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     });
     
     if (!G.hasLocalStorage && G.dbType === 'none')
-      fetchModels(models, options).then(parseAndLoadModels);
+      fetchModels(filtered, options).then(parseAndLoadModels);
     else {
-      sortModelsByStatus(models, options).then(function(modelsInfo) {
+      sortModelsByStatus(filtered, options).then(function(modelsInfo) {
         if (G.online)
           fetchAndLoadModels(modelsInfo, options);
         else {
@@ -326,7 +326,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
   function loadModels(models, dontOverwrite) {
     var models = models || MODEL_CACHE;
     _.each(models, function(model) {
-      if (!dontOverwrite || !C.typeToModel[model.type])
+      if (!dontOverwrite || !U.getModel(model.type))
         loadModel(model);
     });
   };
@@ -338,7 +338,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
           consumers = currentApp.dataConsumerAccounts,
           providers = currentApp.dataProviders,
           consumer = consumers && consumers.where({
-            app: currentApp._uri
+            provider: m.app
           }, true),
           provider = providers && providers.where({
             app: m.app
@@ -361,7 +361,6 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'cache', 'mod
     }
     
     var type = m.type = U.getTypeUri(m.type);
-//    C.cacheModel(m);
     Events.trigger('newModel', m);
     
     if (!m.enumeration && !m.alwaysInlined) {
