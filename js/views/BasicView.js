@@ -203,8 +203,9 @@ define('views/BasicView', [
       return this;
     }
   }, {
-    displayName: 'BasicView',
+    displayName: 'BasicView'
   });
+  
   
   _.extend(BasicView.prototype, {
     refresh: function() {
