@@ -565,6 +565,11 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
+      var oW = U.getCloneOf(this.vocModel, 'ImageResource.originalWidth');
+      var oH;
+      if (oW)
+        oH = U.getCloneOf(this.vocModel, 'ImageResource.originalHeight');
+      
       var type = vocModel.type;
       var img;
       var dn;
