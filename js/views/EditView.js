@@ -108,6 +108,7 @@ define('views/EditView', [
       'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture'              :'cameraCapture',
+      'change .cameraCapture'             :'cameraCapture',
       'click #check-all'                  :'checkAll',
       'click #uncheck-all'                :'uncheckAll',
       'click'                             :'click'
@@ -145,21 +146,42 @@ define('views/EditView', [
       }
       
       var prop = options.prop, 
-          data = options.data;
+          data = options.data,
+          name = options.name,
+          res = this.resource,
+          unsetOptions = {
+            validate: false,
+            skipRefresh: true, 
+            userEdit: true,
+            remove: true
+          };
 
       var props = {};
       props[prop] = data;
-      for (var p in data) {
-        props[prop + '.' + p] = data[p]; 
+      if (data instanceof Blob) {
+        _.each(['audio', 'video'], function(sub) {          
+          res.unset(prop + '.' + sub, unsetOptions);
+        });
+      }
+      else {
+        res.unset(prop, unsetOptions);
+        for (var p in data) {
+          props[prop + '.' + p] = data[p]; 
+        }
+        
+        delete props[prop];
       }
       
-      delete props[prop];
-      this.setValues(props, {skipValidation: true, skipRefresh: true});
+      if (name)
+        props[prop + '.displayName'] = name;
+      
+      this.setValues(props, {skipValidation: true, skipRefresh: false});
     },
 
     cameraCapture: function(e) {
-      Events.stopEvent(e);
-      var link = $(e.currentTarget);
+      var self = this,
+          target = e.currentTarget;
+      
 //      if (!G.navigator.isChrome) {
 //        U.alert({
 //          msg: "Your browser doesn't support recording video"
@@ -168,17 +190,78 @@ define('views/EditView', [
 //        return;
 //      }
       
-      U.require('views/CameraPopup').done(function(CameraPopup) {
-        if (this.CameraPopup) {
-          this.CameraPopup.destroy();
-          this.stopListening(this.CameraPopup);
-        }
+      function makeCameraPopup() {
+        Events.stopEvent(e);
+        var link = $(target);
+        U.require('views/CameraPopup').done(function(CameraPopup) {
+          if (self.CameraPopup) {
+            self.CameraPopup.destroy();
+            self.stopListening(self.CameraPopup);
+          }
+          
+          self.CameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
+          self.CameraPopup.render();
+          self.listenTo(self.CameraPopup, 'image', self.capturedImage);
+          self.listenTo(self.CameraPopup, 'video', self.capturedVideo);
+        });        
+      }
+      
+      function getBlob(file) {
+        return $.Deferred(function(defer) {
+          if (file instanceof Blob)
+            defer.resolve(file);
+          else {
+            return U.require('fileSystem').then(function(FS) {
+              return FS.readAsBlob(file);
+            });
+          }
+        }).promise();
+      };
+      
+      function loadFile() {
+        var propName = target.dataset.prop,
+            prop = self.vocModel.properties[propName],
+            file = target.files[0],
+            isImage = prop.range.endsWith('model/portal/Image');
         
-        this.CameraPopup = new CameraPopup({model: this.model, parentView: this, prop: link.data('prop')});
-        this.CameraPopup.render();
-        this.listenTo(this.CameraPopup, 'image', this.capturedImage);
-        this.listenTo(this.CameraPopup, 'video', this.capturedVideo);
-      }.bind(this));
+        if (isImage) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            self.capturedImage({
+              prop: propName,
+              data: e.target.result
+            });
+          };
+
+          // Read in the image file as a data URL.
+          reader.readAsDataURL(file);            
+        }
+        else {
+          getBlob(file).then(function(blob) {
+            self.capturedVideo({
+              prop: propName,
+              data: blob,
+              name: file.name
+            });
+          })
+        }
+      };
+      
+      if (G.canWebcam) {
+        makeCameraPopup();
+        return;
+      }
+      
+      // not using camera popup, using <input type="file" /> possibly with accept="image/*|audio/*|video/*;capture=camera;"
+      if (e.type === 'click' && e.currentTarget.tagName == 'A') {
+        // trigger native file dialog or camera capture 
+        Events.stopEvent(e);
+        var input = $(target).parent().children().find('input[type="file"]');
+        input.trigger('click');
+      }
+      else if (e.type === 'change') {
+        loadFile();
+      }
     },
     
     disable: function(msg) {
@@ -254,7 +337,7 @@ define('views/EditView', [
       hash = hash.slice(hash.indexOf('#') + 1);
       var self = this, 
           commonTypes = G.commonTypes,
-          vocModel = this.vocModel;
+          vocModel = this.vocModel; 
       
       return function(options) {
         var chosenRes;
