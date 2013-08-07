@@ -261,13 +261,14 @@ define('utils', [
                   try {
                     error = JSON.parse(xhr.responseText);
                   } catch (err) {
-                  }
-                  
-                  if (error)
-                    error.code = _.isUndefined(error.code) ? code : error.code;
-                  else
-                    error = {code: code};
+                    G.log(U.TAG, 'failed to parse error responseText:', xhr.responseText);
+                  } 
                 }
+                
+                if (error)
+                  error.code = _.isUndefined(error.code) ? code : error.code;
+                else
+                  error = {code: code};
               }
               
               if (error) {
@@ -903,6 +904,11 @@ define('utils', [
       var vocModel = res.vocModel;
       var cols = vocModel[colsType + 'Cols'];
       cols = cols && cols.split(',');
+      return U.makeCols(res, cols, isListView);
+    },
+    
+    makeCols: function(res, cols, isListView) {
+      var vocModel = res.vocModel;
       var resourceLink;
       var rows = {};
       var i = 0;
@@ -941,6 +947,7 @@ define('utils', [
       
       return i == 0 ? null : rows;
     },
+
     
     isMasonry: function(vocModel) {
       var meta = vocModel.properties;
@@ -1317,6 +1324,11 @@ define('utils', [
             dn += ' ';
           
           if (U.isResourceProp(prop)) {
+            if (resource) {
+            var rdn = resource[shortName + '.displayName'];
+            if (rdn)
+              dn += rdn;
+            }
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
           }
           else {
@@ -1731,7 +1743,7 @@ define('utils', [
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000)
             val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
-          else
+          else 
             val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
