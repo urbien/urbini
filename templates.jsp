@@ -12,7 +12,11 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
-    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+    {{ if (this.collection.models.length > 5) { }}
+     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}"
+   {{ } }}
+   ></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -33,14 +37,14 @@
     </form>  
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
+  <!-- div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a -->
      <!-- "Next" button removed after endless page introduction>
      {{ if (this.collection.length > this.collection.perPage) { }}
        <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
      {{ }                                                       }}
      -->
-  </div>
+  <!-- /div -->
 </script>  
  
 <script type="text/template" id="resource">
@@ -493,9 +497,9 @@
     <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
-    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+    {{ if (typeof obj.width != 'undefined') { }}  
       style="
-        width:{{= width }}px; height:{{= height }}px;
+        height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
@@ -634,7 +638,7 @@
     
     <!-- {{ if (!obj.homePage) { }} -->   
     <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
-    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+    {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
@@ -642,7 +646,7 @@
     {{ } }}
     /> 
     <!-- {{ } }} -->
-    <div class="ui-btn-text" style="min-height:38px;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+    <div class="gradientEllipsis" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -654,6 +658,7 @@
       <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
     {{ }               }}
       {{= title }}
+      {{= obj.image || title.length < 20 ? '' : '<div class="dimmer">' }}
     </div>
     
     {{ if (obj.icon  &&  !obj.homePage) { }}
@@ -700,7 +705,15 @@
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" />
+      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      {{ if (obj.width) { }}  
+      style="max-height:none;max-width:none;
+        height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      
+      />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -759,7 +772,9 @@
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
    <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' :  ''  }}
+
+
    </a>
  {{ } }}
 </script>
@@ -776,7 +791,7 @@
  {{ if (typeof value != 'undefined') { }}  
    <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -10px;top: -70%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
+     <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -843,7 +858,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign">Create</a>
+  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
+  <!-- a target="#" data-icon="plus-sign" class="hint--bottom hint--always" data-hint="Add item">Create</a -->
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
