@@ -26,8 +26,9 @@ define('views/BasicView', [
       this.TAG = this.TAG || this.constructor.displayName;
       G.log(this.TAG, 'new view', this.getPageTitle());
       options = options || {};
+      this._hashInfo = G.currentHashInfo;
       this.hash = U.getHash();
-      this.hashParams = U.getHashParams();
+      this.hashParams = this._hashInfo && this._hashInfo.params;
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
         if (!this.rendered) {
@@ -134,6 +135,24 @@ define('views/BasicView', [
       
       var self = this;
       if (this.isPageView()) {
+//        if (navigator.mozApps) {
+//          var getSelf = navigator.mozApps.getSelf();
+//          getSelf.onsuccess = function(e) {
+//            var isInstalled = getSelf.result != null;
+//            if (!isInstalled) {
+//              debugger;
+//              var req = navigator.mozApps.install(G.firefoxManifestPath);
+//              req.onsuccess = function(e) {
+//                debugger;
+//              };
+//             
+//              req.onerror = function(e) {
+//                debugger;
+//              };
+//            }
+//          };
+//        }
+        
         Events.on('headerMessage', function(data) {
           var error = data.error,
               errMsg = error ? error.msg || error : null,
@@ -203,7 +222,7 @@ define('views/BasicView', [
       return this;
     }
   }, {
-    displayName: 'BasicView',
+    displayName: 'BasicView'
   });
   
   _.extend(BasicView.prototype, {
@@ -222,6 +241,11 @@ define('views/BasicView', [
         this.refresh.apply(this, arguments);
       else
         this.render.apply(this, arguments);
+    },
+    
+    destroy: function() {
+      Events.trigger('viewDestroyed', this);
+      this.remove();
     },
     
     _getLoadingDeferreds: function() {
@@ -464,10 +488,27 @@ define('views/BasicView', [
         clearTimeout(timeoutId);
       
       $m.loading('hide');
+    },
+    
+    getHashInfo: function() {
+      return _.clone(this._hashInfo);
+    },
+    
+    isCacheable: function() {
+      return true;
+    },
+
+    isPortrait: function() {
+      return this.getOrientation() == 'portrait';
+    },
+    
+    isLandscape: function() {
+      return this.getOrientation() == 'landscape';
+    },
+    
+    getOrientation: function() {
+      return ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';
     }
-  },
-  {
-    displayName: 'BasicView'
   });
 
   return BasicView; 
