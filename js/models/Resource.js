@@ -194,7 +194,57 @@ define('models/Resource', [
         }
       }
     
-      this.set(defaults, {silent: true})
+      if (U.isA(this.vocModel, 'Intersection')) { 
+        var aProp = U.getCloneOf(vocModel, "Intersection.a")[0];
+        var bProp = U.getCloneOf(vocModel, "Intersection.b")[0];
+        
+        var resA = C.getResource(defaults[aProp]);
+        var resB = C.getResource(defaults[bProp]);
+        var mA = resA.vocModel;
+        var mB = resB.vocModel;
+        var rA = mA.adapter ? mA.adapter : null;
+        var rB = mB.adapter ? mB.adapter : null;
+        if (rA  ||  rB) {
+          var m = rA ? mA : mB;
+          if (U.isA(m, 'ImageResource')) {
+            var res = rA ? resA : resB;
+              
+            var thumb = U.getCloneOf(m, "ImageResource.smallImage")[0];
+            if (thumb) {
+              var img = res.get(thumb);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aThumb")[0] : U.getCloneOf(vocModel, "Intersection.bThumb")[0];
+                defaults[p] = img;
+              }
+            }
+            var featured = U.getCloneOf(m, "ImageResource.mediumImage")[0];
+            if (featured) {
+              var img = res.get(featured);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aFeatured")[0] : U.getCloneOf(vocModel, "Intersection.bFeatured")[0];
+                defaults[p] = img;
+              }
+            }
+            var oW = U.getCloneOf(m, "ImageResource.originalWidth")[0];
+            if (oW) {
+              var img = res.get(oW);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalWidth")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalWidth")[0];
+                defaults[p] = img;
+              }
+            }
+            var oH = U.getCloneOf(m, "ImageResource.originalHeight")[0];
+            if (oH) {
+              var img = res.get(oH);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalHeight")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalHeight")[0];
+                defaults[p] = img;
+              }
+            }
+          }
+        }
+      }
+      this.set(defaults, {silent: true});
     },
     
     subscribeToUpdates: function() {
@@ -345,9 +395,10 @@ define('models/Resource', [
       if (adapter && adapter.parse) {
         var parsed = adapter.parse.call(this, resp);
         if (!parsed._uri)
-          parsed._uri = this.attributes._uri = U.buildUri(parsed, this.vocModel);
+          parsed._uri = /*this.attributes._uri = */U.buildUri(parsed, this.vocModel);
         
         this.loadInlined(parsed);
+//        this.checkIfLoaded();
         return parsed;
       }
       
