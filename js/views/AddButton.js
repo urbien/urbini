@@ -75,8 +75,11 @@ define('views/AddButton', [
       
       if (typeof options !== 'undefined' && options.append)
         this.$el.append(this.template());
-      else
+      else if (this.collection.models.length)
         this.$el.html(this.template());
+      else
+        this.$el.html(this.template({empty: true}));
+
       
       return this;
     }
