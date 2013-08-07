@@ -144,6 +144,15 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       }
       
       Events.trigger('newPushEndpoint', channelId);
+    },
+    install: function() {
+      return $.Deferred(function(defer) {
+        if (chrome.webstore && chrome.app) {
+          if (chrome.app.isInstalled)
+            return defer.resolve();
+          
+          chrome.webstore.install(G.chromeManifestPath, defer.resolve, defer.reject);
+      }).promise();
     }
   };
   
