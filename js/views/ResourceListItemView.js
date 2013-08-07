@@ -164,11 +164,20 @@ define('views/ResourceListItemView', [
         this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         return;
       }
-      if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
+      // Setting values to TaWith does not work if this block is lower then next if()
+      var p1 = params['$propA'];
+      var p2 = params['$propB'];
+      var type = params['$type'];
+      var isIntersection = type ? U.isAssignableFrom(U.getModel(params['$type']), 'Intersection') : false;
+      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
+        if (!isIntersection  ||  (!p1  &&  !p2)) {
+          Events.stopEvent(e);
+          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+          return;
+        }
+      }
+      if (params  &&  type && isIntersection) {
         Events.stopEvent(e);
-        var type = params['$type'];
-        var p1 = params['$propA'];
-        var p2 = params['$propB'];
         var rParams = {};
         rParams[p1] = params['$forResource'];
         this.forResource = params['$forResource'];
@@ -198,20 +207,32 @@ define('views/ResourceListItemView', [
       }
       if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
         var params = U.getParamMap(window.location.href);
-        var app = params.application; 
+        var app = params.application;
+        var appModel;
+        var tag = params['tagUses.tag.tag'];
+        var tag = params['tags'];
         if (app) {
           delete params.application;
           params.$title = this.resource.get('tag');
-          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
-//              params['tagUses.tag.application'] = app; 
-          this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
-          return;
+//          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+//              params['tagUses.tag.application'] = app;
         }
-      }
-      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
-        Events.stopEvent(e);
-        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
-        return;
+        else { //if (tag  ||  tags) {
+          app = window.location.hash.substring(1);
+          app = decodeURIComponent(app.substring(0, idx));
+        }
+        if (app) {
+          appModel = U.getModel(app);
+          if (appModel) {
+            var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
+            if (tagProp) {
+              params[tagProp] = '*' + this.resource.get('tag') + '*';
+    
+              this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+              return;
+            }
+          }
+        }
       }
 
       if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
@@ -382,7 +403,7 @@ define('views/ResourceListItemView', [
       var vocModel = this.vocModel;
       
       if (!this.commonBlockProps.length) { 
-        json.viewCols = viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
+        json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
         return viewCols;
       }
       var isSubmission = this.resource.isA('Submission');
@@ -565,6 +586,8 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
+      var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
+      var oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
       var type = vocModel.type;
       var img;
       var dn;
