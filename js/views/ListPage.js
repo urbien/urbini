@@ -63,62 +63,63 @@ define('views/ListPage', [
       }      
 
       var showAddButton;
-      if (!isChooser  ||  this.vocModel['skipAccessControl']) {
-        showAddButton = type.endsWith('/App')                      || 
-                        U.isAnAppClass(type)                       ||
-                        vocModel.properties['autocreated']         ||
-                        vocModel.skipAccessControl                 ||
-                        U.isUserInRole(U.getUserRole(), 'siteOwner');
-        if (!showAddButton) {
-          var p = U.getContainerProperty(vocModel);
-          if (p && U.getParamMap[p])
-            showAddButton = true;
-        }
-      }
-//                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
-      if (showAddButton) { 
-        if (U.isA(this.vocModel, "Reference"))
-          showAddButton = false;
-      }
-      else if (isOwner  &&  !isChooser) {
-        Voc.getModels("model/social/App").done(function() {
-          var m = U.getModel("App");
-          var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
-          if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
-            showAddButton = true;
-        });
-      }
-      var idx;
-      if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
-        var s = hash.substring(idx + 1).split('&');
-        if (s && s.length > 0) {
-          for (var i=0; i<s.length; i++) {
-            var p = s[i].split('=');
-            var prop = vocModel.properties[p[0]];
-            if (!prop  ||  !prop.containerMember) 
-              continue;
-            var type = U.getLongUri1(prop.range);
-            var cM = U.getModel(type);
-            if (!cM) {
-              var rType = U.getTypeUri(decodeURIComponent(p[1]));
-              if (rType)
-                cM = U.getModel(rType);
-              if (!cM)
-                continue;
-            }
-            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-            var bl = [];
-            for (var p in blProps) {
-              var b = blProps[p];
-              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
-                bl.push(b);
-            }
-            if (bl.length > 0)
+      if (!this.vocModel.adapter) {
+        if (!isChooser  ||  this.vocModel['skipAccessControl']) {
+          showAddButton = type.endsWith('/App')                      || 
+                          U.isAnAppClass(type)                       ||
+                          vocModel.properties['autocreated']         ||
+                          vocModel.skipAccessControl                 ||
+                          U.isUserInRole(U.getUserRole(), 'siteOwner');
+          if (!showAddButton) {
+            var p = U.getContainerProperty(vocModel);
+            if (p && U.getParamMap[p])
               showAddButton = true;
           }
         }
+  //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
+        if (showAddButton) { 
+          if (U.isA(this.vocModel, "Reference"))
+            showAddButton = false;
+        }
+        else if (isOwner  &&  !isChooser) {
+          Voc.getModels("model/social/App").done(function() {
+            var m = U.getModel("App");
+            var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+              showAddButton = true;
+          });
+        }
+        var idx;
+        if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
+          var s = hash.substring(idx + 1).split('&');
+          if (s && s.length > 0) {
+            for (var i=0; i<s.length; i++) {
+              var p = s[i].split('=');
+              var prop = vocModel.properties[p[0]];
+              if (!prop  ||  !prop.containerMember) 
+                continue;
+              var type = U.getLongUri1(prop.range);
+              var cM = U.getModel(type);
+              if (!cM) {
+                var rType = U.getTypeUri(decodeURIComponent(p[1]));
+                if (rType)
+                  cM = U.getModel(rType);
+                if (!cM)
+                  continue;
+              }
+              var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+              var bl = [];
+              for (var p in blProps) {
+                var b = blProps[p];
+                if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
+                  bl.push(b);
+              }
+              if (bl.length > 0)
+                showAddButton = true;
+            }
+          }
+        }
       }
-
       this.headerButtons = {
         back: true,
         add: showAddButton,
@@ -215,7 +216,7 @@ define('views/ListPage', [
 //      if (p && p.mode == G.LISTMODES.CHOOSER) {
       Events.stopEvent(e);
       var checked = this.$('input:checked');
-      var editList = this.$('input:[data-formel]');
+      var editList = this.$('input[data-formel]');
       if (checked.length) {
         Events.trigger('chooser:' + U.getQueryParams().$multiValue, {model: this.model, checked: checked});
         return;
