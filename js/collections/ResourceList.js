@@ -239,7 +239,7 @@ define('collections/ResourceList', [
     getUrl: function() {
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.getCollectionUrl)
-        return adapter.getCollectionUrl.call(this);
+        return adapter.getCollectionUrl.call(this, _.clone(this.params));
       
       var url = this.baseUrl + (this.params ? "?$minify=y&$mobile=y&" + $.param(this.params) : '');
       if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
