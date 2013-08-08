@@ -102,7 +102,12 @@ define('resourceSynchronizer', [
     
     function found(results) {
       var result = results[0];
-      _.extend(result, itemJson);
+      if (!result._dirty) {
+        // if result._dirty == 0, we've already synced this resource to the server, so we should overwrite any resource-specific properties it has, and keep only the meta-props
+        result = _.pick(result, REF_STORE_PROPS);
+      }
+        
+      _.extend(result, itemJson);      
       return self._saveItemHelper(result, item);            
     };
     

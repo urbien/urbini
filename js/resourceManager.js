@@ -19,10 +19,6 @@ define('resourceManager', [
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
   };
 
-  function getFileSystemPath(item, prop) {
-    return U.getPath(item._uri) + '/' + prop;
-  };
-        
   var Blob = window.Blob,
       FileSystem,
       useWebSQL = G.dbType == 'shim',//window.webkitIndexedDB && window.shimIndexedDB;
@@ -41,8 +37,7 @@ define('resourceManager', [
       IDB = IndexedDBModule.getIDB(G.serverName, {
         defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
         defaultIndexOptions: {unique: false, multiEntry: false},
-        filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null,
-        getFileSystemPath: G.storeFilesInFileSystem ? getFileSystemPath : null
+        filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null
       });
   
   
@@ -377,39 +372,92 @@ define('resourceManager', [
     RM.deleteItem(res);
   });
 
-  Events.on('anonymousResource', function(baseResource, prop, res) {
-    if (arguments.length == 1)
-      res = baseResource;
+  function getTypeToInfoMap(infos) {
+    var isBLs = !!U.getFirstPropertyValue(infos).list,
+        isResources = !isBLs;
     
-    var type = res._uri ? U.getTypeUri(res._uri) : prop.range;
-    Voc.getModels(type).done(function() {
-      var model = U.getModel(type),
-          newRes = new model(res); // let it get cached
+    function getTypeUri(info) {
+      var range;
+      if (isBLs)
+        range = info.prop && info.prop.range;
+      else
+        range = info.resource._uri ? U.getTypeUri(info.resource._uri) : info.property.range;
       
-      if (prop)
-        baseResource.set(prop.shortName, newRes.getUri());
+      return U.getTypeUri(range); 
+    };
+    
+    var typeToInfos = {};
+    _.each(_.values(infos), function(info) {
+      var type = getTypeUri(info);
+      typeToInfos[type] = typeToInfos[type] || [];
+      typeToInfos[type].push(info);
+    });    
+    
+    return typeToInfos;
+  };
+  
+  /**
+   * @param resources - map of propName to info objects: {
+   *  property: prop,
+   *  resource: resource
+   * }
+   */
+  Events.on('inlineResources', function(baseResource, resInfos) {
+//    if (arguments.length == 1)
+//      res = baseResource;
+    
+    var typeToResInfos = getTypeToInfoMap(resInfos);
+    
+//    var type = res._uri ? U.getTypeUri(res._uri) : prop.range;
+    Voc.getModels(_.keys(typeToResInfos)).done(function() {
+      var update = {};
+      for (var type in typeToResInfos) {
+        var resInfos = typeToResInfos[type],
+            model = U.getModel(type);
+
+        _.each(resInfos, function(resInfo) {
+          var newRes = new model(resInfo.resource); // let it get cached
+          if (resInfo.property)
+            update[propName] = newRes.getUri();
+        });
+      }
+      
+      baseResource.set(update);
     });
   });
 
-  Events.on('newBackLink', function(baseResource, prop, backLinkData) {
-    var inline = prop.displayInline,
-        setting = inline ? '_settingInlineList' : '_settingBackLink',
-        range = U.getTypeUri(prop.range);
-        
-    if (baseResource[setting])
-      return;
-    
-    baseResource[setting] = true;
-    Voc.getModels(range).done(function() {
-      var model = U.getModel(range);
-//      _.map(backLinkData, function(res) { return new model(res); })
-      var rl = new ResourceList(backLinkData, {model: model, params: U.getListParams(baseResource, prop), parse: true}); // get this cached
-      if (inline)
-        baseResource.setInlineList(prop.shortName, rl);
-      
-      RM.addItems(rl.models);
-      baseResource[setting] = false;
-    });
+  Events.on('inlineBacklinks', function(baseResource, backlinkInfos) {
+    var typeToBLInfos = getTypeToInfoMap(backlinkInfos);
+    Voc.getModels(_.keys(typeToBLInfos)).done(function() {
+      for (var type in typeToBLInfos) {
+        var blInfos = typeToBLInfos[type],
+            model = U.getModel(type);
+
+        _.each(blInfos, function(info) {
+          var prop = info.prop,
+              propName = prop.shortName,
+              inline = prop.displayInline,
+              setting = inline ? '_settingInlineList' : '_settingBackLink';
+          
+          var currentlySetting = baseResource[setting] || [];
+          if (_.contains(currentlySetting, propName))
+            return;
+          else
+            currentlySetting.push(propName);
+          
+          var rl = new ResourceList(backLinkData, {
+            model: model, 
+            params: U.getListParams(baseResource, prop), 
+            parse: true
+          }); // get this cached
+          
+          if (inline)
+            baseResource.setInlineList(prop.shortName, rl);
+          
+          currentlySetting.remove(propName);
+        });
+      }
+    });    
   });
 
   Events.on('createObjectStores', function(stores, cb) {

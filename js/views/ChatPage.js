@@ -576,7 +576,7 @@ define('views/ChatPage', [
       this.$('#inChatBacklinks').html("");
       var self = this;
       if (window.location.hash.startsWith("#chatLobby")  &&  !G.currentUser.guest) {
-        var res = C.getResource(G.currentUser._uri);
+        var res = U.getResource(G.currentUser._uri);
         if (!res) {
           var utype = G.serverName + '/voc/dev/' + G.currentApp.appPath + '/Urbien1';
           var Urbien1 = U.getModel(utype);

@@ -2,7 +2,8 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
   var gManifestName = "/manifest.webapp",
       TAG = 'Firefox',
       connectedDfd = $.Deferred(),
-      connectedPromise = connectedDfd.promise();
+      connectedPromise = connectedDfd.promise(),
+      inIFrame = G.inFirefoxOS;
 
   if (G.appWindow)
     connectedDfd.resolve();
@@ -119,6 +120,23 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     });
   };
 
+  function makeReq(obj, path, success, error) {
+    if (inIFrame) {
+      return U.rpc(path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
+    }
+    else {
+      var req = U.leaf(obj, path, '.');
+      if (req) {
+        if (success)
+          req.onsuccess = success;
+        if (error)
+          req.onerror = error;
+      }
+      
+      return req;
+    }
+  };
+  
   function setup() {
 //    console.log("creating notification");
 //    firefox.mozNotification.createNotification("Hello Mark", "This is for your eyes only", "icon_128.png", {
@@ -189,44 +207,73 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
        * })
        */
       createNotification: function(title, desc, iconURL, callbacks) {
-        var args = arguments;
-        if (callbacks) {
-          for (var cbName in callbacks) {
-            callbacks[cbName] = createCallbackEvent(callbacks[cbName]);
+        if (inIFrame) {
+          var args = arguments;
+          if (callbacks) {
+            for (var cbName in callbacks) {
+              callbacks[cbName] = createCallbackEvent(callbacks[cbName]);
+            }
           }
+            
+          [].unshift.call(args, this._path);
+          U.rpc.apply(null, args);
+          return;
         }
+        else if ('mozNotification' in navigator) {
+          var notification = navigator.mozNotification.createNotification(title, desc, iconURL);
+          if (callbacks) {
+            for (var cbName in callbacks) {
+              notification[cbName] = callbacks[cbName];
+            }
+          }
           
-        [].unshift.call(args, this._path);
-        U.rpc.apply(null, args);
+          return notification;
+        }
+        else
+          throw "notifications are not supported in this Firefox configuration";
       }
     },
     push: {
       register: function(success, error) {
-        U.rpc(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
+        return makeReq(navigator, this._path, success, error);
       },
       unregister: function(endpoint) {
-        U.rpc(this._path, endpoint, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
+        return makeReq(navigator, this._path, success, error);
       },
       registrations: function() {
-        U.rpc(this._path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));        
+        return makeReq(navigator, this._path, success, error);
       }
     },
     setMessageHandler: function(messageType, callback) {
-      U.rpc(this._path, messageType, createCallbackEvent(callback));      
+      if (inIFrame)
+        U.rpc(this._path, messageType, createCallbackEvent(callback));
+      else if ('mozSetMessageHandler' in navigator)
+        navigator.mozSetMessageHandler(messageType, getCallback(callbackEvent));
     },
     install: function() {
-      var req = navigator.mozApps.install(G.serverName + '/FirefoxApp/NursMe/manifest.webapp', null);
-//      var req = navigator.mozApps.install(G.currentApp.firefoxManifest, null);
-      req.onerror = function(e) {
-        debugger;
-        console.log("Error installing app : " + req.error.name);
-      };
-      
-      req.onsuccess = function(e) {
-        debugger;
-        var app = req.result;
-        console.log("Success installing app : " + app.manifest.name + " " + app.installState);
-      };
+      return $.Deferred(function(defer) {
+        var getSelf = navigator.mozApps.getSelf();
+        getSelf.onsuccess = function(e) {
+          if (e.result)
+            return defer.resolve(e.result);
+          
+          var req = navigator.mozApps.install(G.firefoxManifestPath, null);
+          req.onerror = function(e) {
+            debugger;
+            console.log("Error installing app : " + req.error.name);
+            defer.reject(e.error);
+          };
+          
+          req.onsuccess = function(e) {
+            debugger;
+            var app = req.result;
+            console.log("Success installing app : " + app.manifest.name + " " + app.installState);
+            defer.resolve(app);
+          };
+        };
+        
+        getSelf.onerror = defer.reject.bind(defer);
+      }).promise();
     }
   };
   

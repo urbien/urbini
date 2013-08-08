@@ -38,6 +38,28 @@ html { height: 100%; }
 .nab .nabP img  { width: 24px; padding-right: 5px; border: 0; }
 .nab .nabP #-inner img  { padding-right: 0px; }
 
+@media screen and (orientation:portrait) {
+    /* Portrait styles */
+  .nabBoard {
+    width: 292px !important;
+  }
+  
+  .nab .anab .galleryItem_css3 img {
+    max-width: 272px !important;
+  }
+}
+
+@media screen and (orientation:landscape) {
+    /* Landscape styles */
+  .nabBoard {
+    width: 225px !important;
+  }
+  
+  .nab .anab .galleryItem_css3 img {
+    max-width: 205px !important;
+  }
+}
+
 .anab .nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
 
 .masonry .masonry-brick .ui-li-aside {

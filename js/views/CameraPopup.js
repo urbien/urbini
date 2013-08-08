@@ -46,6 +46,7 @@ define('views/CameraPopup', [
       });
       
       this.hasAudio = !!AudioContext && (this.isVideo || this.isAudio);
+      this.hasVideo = this.isVideo || this.isImage;
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       var req = this.hasAudio || this.isVideo ? ['lib/recorder', 'lib/recorderWorker'] : [];
@@ -196,7 +197,7 @@ define('views/CameraPopup', [
       var streaming     = false;
       this.$previewDiv = this.$('#camPreview');
       this.previewDiv = this.$previewDiv[0];
-      if (this.isVideo || this.isImage) {
+      if (this.hasVideo) {
         // video
         this.$video       = this.$('#camVideo');
         this.video        = this.$video[0];
@@ -227,7 +228,7 @@ define('views/CameraPopup', [
       this.setstate('previewing');
       navigator.getMedia(
         {
-          video: this.isVideo,
+          video: this.hasVideo,
           audio: this.hasAudio
         }
         ,
@@ -240,7 +241,7 @@ define('views/CameraPopup', [
             return;
           }
           
-          if (this.isVideo)
+          if (this.hasVideo)
             this.startVideo(stream);
           if (this.hasAudio)
             this.startAudio(stream);
@@ -344,7 +345,8 @@ define('views/CameraPopup', [
 //      this.$canvas.attr('width', vWidth);
 //      this.$canvas.attr('height', vHeight);
       var $popup = this.$el.parent();
-      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
+      var offset = $(document).scrollTop();
+      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2) + offset);
       $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
     },
     

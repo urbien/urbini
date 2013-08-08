@@ -383,20 +383,7 @@ define('views/Header', [
             if (res.get('_uri') != G.currentApp._uri)
               this.doTry = true;
             this.forkMe = true;
-          }
-          
-          if (G.inFirefoxOS && navigator.mozApps) {
-            debugger;
-            var appSelf = navigator.mozApps.getSelf();
-            appSelf.onerror = function() {
-              debugger;
-              self.installApp = true;
-            };
-            
-            appSelf.onsuccess = function() {
-              debugger;
-            };
-          }
+          }          
         }
 
         else if (!G.currentUser.guest) {
@@ -557,11 +544,16 @@ define('views/Header', [
         }
       }
 
+      var templateSettings = {};
+      if (U.isChatPage()) {
+//        templateSettings.more = $.param({
+//          "data-position": "fixed"
+//        });
+      }
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
-        this.$el.html(this.template({className: 'ui-grid-b'}));
-      else
-        this.$el.html(this.template());
-
+        templateSettings.className = 'ui-grid-b';
+      
+      this.$el.html(this.template(templateSettings));
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);

@@ -38,6 +38,10 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       
       getRawQueue: function() {
         return queue;
+      },
+      
+      has: function(name) {
+        return _.contains(_.pluck(queue, 'name'), name);
       }
     }
   };
@@ -52,7 +56,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
     
-//    window.taskQueue = this;
+    window.taskQueue = this;
     
     var tq = this,
         queue = this.queue = new PriorityQueue(),
@@ -188,11 +192,22 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         tq.debug = debug;
       },
       queueTask: queueTask,
-      hasTask: function(name) {
-        return _.any(this.queue.concat(this.running), function(t) { return t.name == name });
-      },
       newTask: function() {
         return Task.apply(null, arguments);
+      },
+      getRunning: function(name) {
+        var running = _.compact(_.map(running, function(task) {
+          return task.name == name ? task.promise() : null;
+        }));
+        
+        return running.length ? $.whenAll.apply($, running) : null;
+      },
+      getQueued: function(name) {
+        var queued = _.compact(_.map(queue.getRawQueue(), function(task) {
+          return task.name == name ? task.promise() : null;
+        }));
+        
+        return queued.length ? $.whenAll.apply($, queued) : null;
       }
     }
   };

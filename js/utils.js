@@ -11,12 +11,27 @@ define('utils', [
   var ArrayProto = Array.prototype, slice = ArrayProto.slice,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
-      REJECTED_PROMISE = G.getRejectedPromise();
-  
+      REJECTED_PROMISE = G.getRejectedPromise(),
+      xhrHistory = [];
+
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift(U.TAG);
+    G.log.apply(G, args);
+  };
+
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
   }
   
+  function index(obj, i) {
+    return obj[i];
+  };
+
+  function _leaf(obj, path, separator) {
+    return path.split(separator).reduce(index, obj);
+  }
+
   ArrayProto.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -28,7 +43,11 @@ define('utils', [
     
     return this;
   };
-  
+
+  ArrayProto.last = ArrayProto.peek = function() {
+    return this.length ? this[this.length - 1] : null;
+  };
+
   String.prototype.format = function() {
     var args = arguments;
     return this.replace(/{(\d+)}/g, function(match, number) { 
@@ -237,10 +256,20 @@ define('utils', [
             opts.data = U.toFormData(data, opts);
         }
 
+        // start repeat url check - see if we're calling a url we already called before
+        var _url = opts.url + (_.size(opts.data) ? '?' + $.param(opts.data) : '');
+        if (_.contains(xhrHistory, _url)) {
+          log('ajax', 'calling this url again!', _url);
+        }
+        else
+          xhrHistory.push(_url);
+        
+        // end repeat url check
+        
         if (opts.success) defer.done(opts.success);
-        if (opts.error) defer.fail(opts.error);
+        if (opts.error) defer.fail(opts.error);        
         if (useWorker) {
-          G.log(U.TAG, 'xhr', 'webworker', opts.url);
+          log('xhr', 'webworker', opts.url);
           G.getXhrWorker().done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
@@ -289,7 +318,7 @@ define('utils', [
           });
         }
         else {
-          G.log(U.TAG, 'xhr', '$.ajax', opts.url);
+          log('xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
             if ((data && data.error) || jqXHR.status > 399) {
               defer.reject(
@@ -629,7 +658,7 @@ define('utils', [
     
     getLongUri1: function(uri, vocModel) {
       if (!uri) {
-        G.log(U.TAG, 'error', 'null passed to getLongUri1');
+        log('error', 'null passed to getLongUri1');
         return uri;
       }
 
@@ -648,7 +677,7 @@ define('utils', [
           return G.currentUser._uri;
       }
       
-      G.log(U.TAG, 'info', 'couldnt derive long uri for ' + uri);
+      log('info', 'couldnt derive long uri for ' + uri);
       return uri;
 //      throw new Error("couldn't parse uri: " + uri);
     },
@@ -795,7 +824,7 @@ define('utils', [
         
       var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
 //      if (!uri) {
-//        G.log(U.TAG, 'error', 'match undefined 3');
+//        log('error', 'match undefined 3');
 //        console.trace();
 //      }
 
@@ -1123,7 +1152,7 @@ define('utils', [
         else {
           return U.filterObj(params, function(name, val) {
 //            if (!name)
-//              G.log(U.TAG, 'error', 'match undefined 4');
+//              log('error', 'match undefined 4');
 
             return name.match(/^[a-zA-Z]+/);
           });
@@ -1330,6 +1359,11 @@ define('utils', [
               dn += rdn;
             }
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
+            if (resource) {
+            var rdn = resource[shortName + '.displayName'];
+            if (rdn)
+              dn += rdn;
+            }
           }
           else {
             dn += value.displayName ? value.displayName : value;
@@ -1555,26 +1589,34 @@ define('utils', [
     },
 
     getInlineResourceModel: function(type) {
-      return C.shortNameToInline[type] || C.typeToInline[type] || C.typeToInline[U.getTypeUri(type)];      
+      return C.getInlineResourceModel(type) || C.getInlineResourceModel(U.getTypeUri(type));      
     },
 
     getEnumModel: function(type) {
-      return C.shortNameToEnum[type] || C.typeToEnum[type] || C.typeToEnum[U.getTypeUri(type)];      
+      return C.getEnumModel(type) || C.getEnumModel(U.getTypeUri(type));      
     },
-    
+
+    getResource: function(uri) {
+      return C.getResource(uri);
+    },
+
+    getResourceList: function(model, query) {
+      return C.getResourceList(model, query);
+    },
+
     getModel: function() {
       var arg0 = arguments[0];
-      var argType = U.getObjectType(arg0);
+      var argType = Object.prototype.toString.call(arg0);
       switch (argType) {
       case '[object String]':
-        var model = C.shortNameToModel[arg0] || C.typeToModel[arg0];
+        var model = C.getModel(arg0);
         if (model != null)
           return model;
         
         if (arg0.indexOf('/') != -1) {
           var longUri = U.getLongUri1(arg0);
           if (longUri !== arg0)
-            return U.getModel(longUri);
+            return C.getModel(longUri);
         }
         
         return null;
@@ -1662,6 +1704,32 @@ define('utils', [
 //      return path.split(separator || '.').reduce(index, obj);
 //    },
     
+    leaf: function(obj, path, separator) {
+      if (typeof obj == 'undefined' || !obj)
+        return undefined;
+
+      separator = separator || '.'; 
+      var lastSep = path.lastIndexOf(separator),
+          parent,
+          child;
+      
+      if (lastSep == -1)
+        return obj;
+      else {
+        try {
+          parent = _leaf(obj, path.slice(0, lastSep), separator);
+          child = parent[path.slice(lastSep + separator.length)];
+        } catch (err) {
+          return undefined;
+        }        
+      }
+      
+      if (typeof child == 'function')
+        return child.bind(parent);
+      else
+        return child;
+    },
+
     getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
@@ -1837,7 +1905,13 @@ define('utils', [
     makeEditProp: function(res, prop, val, formId) {
       var p = prop.shortName;
       val = typeof val === 'undefined' ? res.get(p) : val;
-      var propTemplate = Templates.getPropTemplate(prop, true, val);
+      
+      var propTemplate = Templates.getPropTemplate(prop, true, val),
+          isEnum = propTemplate === 'enumPET',      
+          isImage = prop.range.endsWith('model/portal/Image'),
+          isVideo = prop.range.endsWith('model/portal/Video'),
+          isAudio = prop.range.endsWith('model/portal/Audio');
+      
       if (typeof val === 'undefined')
         val = {};
       else {
@@ -1851,7 +1925,10 @@ define('utils', [
           val.displayName = dn;
       }
       
-      var isEnum = propTemplate === 'enumPET';      
+      val.isImage = isImage;
+      val.isAudio = isAudio;
+      val.isVideo = isVideo;
+      
       if (isEnum) {
         var facet = prop.facet;
         var eCl = U.getEnumModel(U.getLongUri1(facet));
@@ -1868,8 +1945,13 @@ define('utils', [
       val.value = val.value || '';
       if (prop.range == 'resource') 
         val.uri = val.value;
-      else if (prop.range.endsWith('model/portal/Image')) {
-        if (U.isCloneOf(prop, 'ImageResource.originalImage')) {
+      else if (isImage) {
+        var isDataUrl = val.value.startsWith('data:');
+        if (isDataUrl) {
+          val.img = val.value;
+          val.displayName = val.displayName || 'camera shot';
+        }
+        else if (U.isCloneOf(prop, 'ImageResource.originalImage')) {
           var cOf = U.getCloneOf(res.vocModel, "ImageResource.smallImage");
           if (!cOf  ||  cOf.length == 0) {
             cOf = U.getCloneOf(res.vocModel, "ImageResource.mediumImage");
@@ -1879,19 +1961,18 @@ define('utils', [
           if (cOf && cOf.length == 1)
             val.img = res.get(cOf[0]);
         }
+        
         if (!val.img)
           val.img = val.value;
         if (!val.displayName) {
-          if (val.value.startsWith('data:'))
-            val.displayName = 'camera shot';
-          else {
-            var ix = val.value.lastIndexOf('/');
-            val.displayName = val.value.substring(ix + 1);
-          }
+          var ix = val.value.lastIndexOf('/');
+          val.displayName = val.value.substring(ix + 1);
         }
       }
+      
       if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
+      
       val.shortName = prop.shortName;
       val.id = (formId || G.nextId()) + '.' + prop.shortName;
       val.prop = prop;
@@ -1934,7 +2015,11 @@ define('utils', [
       val.rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
       if (prop.comment)
         val.comment = prop.comment;
-      var propInfo = {value: U.template(propTemplate)(val)};
+      
+      var propInfo = {
+        value: U.template(propTemplate)(val)
+      };
+      
       if (prop.comment)
         propInfo.comment = prop.comment;
       
@@ -2399,7 +2484,7 @@ define('utils', [
       }
       
 //      if (!date)
-//        G.log(U.TAG, 'error', 'match undefined 5');
+//        log('error', 'match undefined 5');
       var parsed = date.match(/(\d)* ?(second|minute|hour|day|week|month|year){1}s? ?(ago|ahead)/);
       if (!parsed)
         throw new Error('couldn\'t parse date: ' + date);
@@ -2669,7 +2754,7 @@ define('utils', [
       for (var i = 0; i < query.length; i++) {
         var clause = U.parseAPIClause(query[i]);
         if (!clause) {
-          G.log(U.TAG, 'error', 'bad query: ' + query[i]);          
+          log('error', 'bad query: ' + query[i]);          
           return null;
         }
         
@@ -2761,7 +2846,7 @@ define('utils', [
           
           var prop = meta[param];
           if (!prop || U.getObjectType(clause) !== '[object Object]') {
-            G.log(U.TAG, 'info', 'couldnt find property {0} in class {1}'.format(param, vocModel.type));
+            log('info', 'couldnt find property {0} in class {1}'.format(param, vocModel.type));
             return function() {
               return true;
             }
@@ -2822,7 +2907,7 @@ define('utils', [
           try {
             bound = U.parseDate(bound);
           } catch (err) {
-            G.log(U.TAG, 'error', "couldn't parse date bound: " + bound);
+            log('error', "couldn't parse date bound: " + bound);
             return function() {return true};
           }
           // fall through to default
@@ -3309,6 +3394,7 @@ define('utils', [
     
     getCurrentLocation: function() {
       return $.Deferred(function(defer) {
+        setTimeout(defer.reject, 5000);
         navigator.geolocation.getCurrentPosition(function(position) {
           var coords = position.coords;
           position = {
@@ -3334,7 +3420,7 @@ define('utils', [
      * sends a remote procedure call to the packaged app code
      */
     rpc: function(method) {
-      G.log(U.TAG, 'app', method);
+      log('app', method);
       var args = [].slice.call(arguments, 1),
           msg = {
               type: 'rpc:' + method
@@ -3398,7 +3484,8 @@ define('utils', [
           hashParts = hash.split('?'),
           uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]),
           type = U.getModelType(hash),
-          query = hashParts[1] || '';
+          query = hashParts[1] || '',
+          info;
 
       if (route === 'templates') {
         var subHashInfo = U.parseHash(uri);
@@ -3406,14 +3493,20 @@ define('utils', [
         type = subHashInfo.type;
       }
       
-      return {
+      info = {
         action: U.getRouteAction(route),
         route: route,
         uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
         type: type,
         query: query,
         params: params
-      }
+      };
+      
+      info.equals = function(otherInfo) {
+        return _.isEqual(_.omit(otherInfo, 'equals'), _.omit(info, 'equals'));
+      };
+      
+      return info;
     },
     
     partial: function(fn) {

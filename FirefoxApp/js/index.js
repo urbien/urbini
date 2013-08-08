@@ -7,7 +7,7 @@
   iframeOrigin,
   tabId,
   isLoading = false,
-  SHOW_BUTTONS = true,
+  SHOW_BUTTONS,
 //  visibilityState,
 
   /* START HTML elements / JQuery objects */
@@ -46,12 +46,7 @@
        */
       createNotification: function(title, desc, iconURL, callbacks) {
         console.log("creating notification", title, desc, iconURL, JSON.stringify(callbacks));
-        var dotIdx = this._path.lastIndexOf('.');
-        var parent = leaf(navigator, this._path.slice(0, dotIdx));
-        var fn = parent[this._path.slice(dotIdx + 1)];
-
-//        var notification = leaf(navigator, this._path)(title, desc, iconURL);
-        var notification = fn.apply(parent, [].slice.call(arguments, 0, 2));
+        var notification = leaf(navigator, this._path).apply(parent, [].slice.call(arguments, 0, 2));
         if (callbacks) {
           for (var cbName in callbacks) {            
             notification[cbName] = getCallback(cbName);
@@ -234,11 +229,30 @@
     return obj[i];
   };
 
+  function _leaf(obj, path, separator) {
+    return path.split(separator).reduce(index, obj);
+  }
+
   function leaf(obj, path, separator) {
     if (typeof obj == 'undefined' || !obj)
       return null;
 
-    return path.split(separator || '.').reduce(index, obj);
+    separator = separator || '.'; 
+    var lastSep = path.lastIndexOf(separator),
+        parent,
+        child;
+    
+    if (lastSep == -1)
+      return obj;
+    else {
+      parent = _leaf(obj, path.slice(0, lastSep), separator);
+      child = parent[path.slice(lastSep + separator.length)];
+    }
+    
+    if (typeof child == 'function')
+      return child.bind(parent);
+    else
+      return child;
   };
 
   function getCallback(eventName) {
@@ -393,6 +407,7 @@
 //      logger.log('DOESNT HAVE GETUSERMEDIA');
     
     controls = $('#controls');
+    SHOW_BUTTONS = !!controls;
     iframe = $('#iframe');
     if (SHOW_BUTTONS) { 
       back = $('#back');

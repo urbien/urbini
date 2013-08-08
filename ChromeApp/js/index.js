@@ -7,7 +7,7 @@
   webviewOrigin,
   tabId,
   isLoading = false,
-  SHOW_BUTTONS = true,
+  SHOW_BUTTONS,
 //  visibilityState,
 
   /* START HTML elements / JQuery objects */
@@ -159,11 +159,36 @@
     return obj[i];
   };
 
+//  function leaf(obj, path, separator) {
+//    if (typeof obj == 'undefined' || !obj)
+//      return null;
+//
+//    return path.split(separator || '.').reduce(index, obj);
+//  };
+  function _leaf(obj, path, separator) {
+    return path.split(separator).reduce(index, obj);
+  }
+
   function leaf(obj, path, separator) {
     if (typeof obj == 'undefined' || !obj)
       return null;
 
-    return path.split(separator || '.').reduce(index, obj);
+    separator = separator || '.'; 
+    var lastSep = path.lastIndexOf(separator),
+        parent,
+        child;
+    
+    if (lastSep == -1)
+      return obj;
+    else {
+      parent = _leaf(obj, path.slice(0, lastSep), separator);
+      child = parent[path.slice(lastSep + separator.length)];
+    }
+    
+    if (typeof child == 'function')
+      return child.bind(parent);
+    else
+      return child;
   };
 
   function proxyWithCallback(path, args, callbackIdx) {
@@ -313,6 +338,7 @@
 
   window.onload = function() {
     controls = $('#controls');
+    SHOW_BUTTONS = !!controls;
     if (SHOW_BUTTONS) { 
       back = $('#back');
       forward = $('#forward');

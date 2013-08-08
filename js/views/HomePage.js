@@ -2,15 +2,17 @@
 define('views/HomePage', [
   'globals',
   'events',
-  'backbone',
   'jqueryAnyStretch',
-  'utils'
-], function(G, Events, Backbone, Jas, U) {
-  return Backbone.View.extend({
+  'utils',
+  'views/BasicView'
+], function(G, Events, Jas, U, BasicView) {
+  return BasicView.extend({
     TAG: 'HomePage',
     first: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow', 'click');
+      this.constructor.__super__.initialize.apply(this, arguments);
+      
 //      Events.on('pagehide', this.pagehide);
 //      $(document).on('pagehide',       this.pagehide);
 //      $(document).on('pagebeforeshow', this.pagebeforeshow);

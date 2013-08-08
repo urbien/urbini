@@ -263,7 +263,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 					} else if (typeof r === "undefined" || r === null) {
 						return null;
 					} else {
-						return typeof r === IDBKeyRange ? r : IDBKeyRange.only(r);
+						return r.lower || r.upper ? r : IDBKeyRange.only(r);
 					}
 				},
 				
@@ -336,7 +336,6 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 					
 					var indexWrapper = {
 						"each": function(callback, range, direction){
-					  debugger;
 							return wrap.cursor(function(){
 								if (direction) {
 									return idbIndex.openCursor(wrap.range(range), direction);

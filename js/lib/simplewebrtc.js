@@ -536,7 +536,7 @@
             constraints = this.config.mediaConstraints;
         
         if (this.dontRequestMedia)
-            throw new Error('You have disabled video preview, and video/audio broadcasting');
+            return; //throw new Error('You have disabled video preview, and video/audio broadcasting');
 
         if (element) {
             if (element instanceof MediaStream)

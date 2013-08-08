@@ -42,9 +42,6 @@ define('models/Resource', [
 //        this.urlRoot += "?" + options._query;
       
       options = options || {};
-      this.on('cancel', this.remove);
-      this.on('change', this.onchange);
-      this.on('load', this.announceNewResource);
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -84,7 +81,10 @@ define('models/Resource', [
       });
       
       this.unsavedChanges = this.isNew() ? this.toJSON() : {};
-      this.checkIfLoaded();
+      this.on('cancel', this.remove);
+      this.on('change', this.onchange);
+      this.on('load', this.announceNewResource);
+//      this.checkIfLoaded();
     },
     
     _load: function(options) {
@@ -368,13 +368,23 @@ define('models/Resource', [
       var isNew = this.isNew();
       return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type);
     },
+    
+    updateUri: function(uri, options) {
+      this.set('_uri', uri, {
+        silent: options.silent
+      });
+      
+      this.checkIfLoaded();
+    },
+    
     getUri: function() {
       var uri = this.get('_uri');
       if (!uri && this.vocModel) {
         uri = U.buildUri(this);
         if (uri) {
-          this.attributes['_uri'] = uri; // HACK?
-          this.checkIfLoaded();
+          this.trigger('uriChanged', uri);
+//          this.attributes['_uri'] = uri; // HACK?
+//          this.checkIfLoaded();
         }
       }
       
@@ -395,7 +405,7 @@ define('models/Resource', [
       if (adapter && adapter.parse) {
         var parsed = adapter.parse.call(this, resp);
         if (!parsed._uri)
-          parsed._uri = /*this.attributes._uri = */U.buildUri(parsed, this.vocModel);
+          parsed._uri = U.buildUri(parsed, this.vocModel);
         
         this.loadInlined(parsed);
 //        this.checkIfLoaded();
@@ -457,7 +467,10 @@ define('models/Resource', [
     },
     
     loadInlined: function(atts) {
-      var meta = this.vocModel.properties;
+      var meta = this.vocModel.properties,
+          resources = {},
+          backLinks = {};
+      
       for (var p in atts) {
         var prop = meta[p],
             backLink = prop && prop.backLink,
@@ -473,7 +486,11 @@ define('models/Resource', [
 
         if (res) {
           delete atts[p];
-          Events.trigger('anonymousResource', this, prop, res);
+//          Events.trigger('anonymousResource', this, prop, res);
+          resources[p] = {
+            property: prop,
+            resource: res
+          };
         }
         else if (list) {
 //          this.inlineLists = this.inlineLists || {};
@@ -489,9 +506,22 @@ define('models/Resource', [
             atts[p] = {count: val.length};
           }
           
-          if (list.length)
-            Events.trigger('newBackLink', this, prop, list);
+          if (list.length) {
+//            Events.trigger('newBackLink', this, prop, list);
+            backlinks[p] = {
+              property: prop,
+              list: list
+            };
+          }
         }
+      }
+      
+      if (_.size(resources)) {
+        Events.trigger('inlineResources', this, resources);
+      }
+      
+      if (_.size(backLinks)) {
+        Events.trigger('inlineBacklinks', this, backLinks);
       }
     },
     
@@ -499,6 +529,10 @@ define('models/Resource', [
       this.inlineLists = this.inlineLists || {};
       this.inlineLists[propName] = list;
       this.trigger('inlineList', propName);
+    },
+    
+    getInlineLists: function() {
+      return _.values(this.inlineLists || {});
     },
     
     clear: function() {
@@ -703,11 +737,12 @@ define('models/Resource', [
           error = options.error || Errors.getBackboneErrorHandler(),
           success = options.success || function() {};
       
-      if (adapter) {
-        auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
-        if (auth != 'simple')
-          return this.vocModel.API.oauth(parseInt(auth.slice(5)));
-      }
+//      if (adapter) {
+//        auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
+//        var auth = 
+//        if (auth != 'simple')
+//          return this.vocModel.API.oauth(parseInt(auth.slice(5)));
+//      }
       
       options.error = function(model, err, options) {
         var code = err.code || err.status;
@@ -898,110 +933,129 @@ define('models/Resource', [
     getUnsavedChanges: function() {
       return _.clone(this.unsavedChanges);
     },
-    
-    save: function(attrs, options) {
-      options = _.extend({patch: true, silent: true}, options || {});
-      attrs = attrs || {};
-      var isNew = this.isNew();
-      var data;
+
+    _save: function(data, options) {
+      var vocModel = this.vocModel,
+          isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall),
+          isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
+          isNew = this.isNew(),
+          saved = Backbone.Model.prototype.save.call(this, data, options);
+      
+      if (isAppInstall)
+        Events.trigger('appInstall', this);
+      else if (isTemplate)
+        Events.trigger('templateUpdate:' + this.get('templateName'), this);
+      
+      this.triggerPlugs(options);
+      this.notifyContainers();
       if (isNew)
-        data = _.extend({}, this.attributes, attrs);
+        this.checkIfLoaded();
+      
+      Events.trigger('cacheResource', this);
+      this.trigger('saved', this, options);
+      this.unsavedChanges = {};
+      return saved;
+    },
+    
+    _sync: function(data, options) {
+      var self = this,
+          vocModel = this.vocModel,
+          isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall),
+          isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
+          isApp = U.isAssignableFrom(vocModel, commonTypes.App),
+          isNew = this.isNew(),
+          success = options.success, 
+          error = options.error;
+
+      data = this.prepForSync(data);
+      if (_.size(data) == 0) {
+        if (!isNew) {
+          if (options.success)
+            options.success(this, {code: 304, details: "unmodified"}, options);
+          
+          return; 
+        }
+      }
+      
+      if (!isNew)
+        data._uri = this.getUri();
       else
-        data = _.extend({}, this.getUnsavedChanges(), attrs);
+        delete data._uri;
+
+      options = _.extend({
+        url: this.saveUrl(data), 
+        silent: false, 
+        patch: true, 
+        resource: this
+      }, options, {
+        data: data
+      });
       
-      this.clearErrors();
-//      if (!options.skipTypeBased) {
-//        if (!this.handleTypeBased(data, options)) // delayed execution
-//          return
-//      }
-      
-      var vocModel = this.vocModel;
-      var isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall);
-      var isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst);
-      var isApp = U.isAssignableFrom(vocModel, commonTypes.App);
-      
-      var saved;
-      if (!options.sync) {
-        saved = Backbone.Model.prototype.save.call(this, data, options);
-//        G.cacheResource(this);
+      options.success = function(resource, response, opts) {
+        if (response && response.error)
+          return;
+
+        if (!options.fromDB)
+          this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+
         if (isAppInstall)
           Events.trigger('appInstall', this);
         else if (isTemplate)
           Events.trigger('templateUpdate:' + this.get('templateName'), this);
         
-        this.triggerPlugs(options);
-        this.notifyContainers();
-        if (isNew)
-          this._load();
+        success && success.apply(this, arguments);
+        // trigger this first because "success" may want to redirect to mkresource for some app-related model
         
-        this.trigger('saved', this, options);
-        this.unsavedChanges = {};
-      }
-      else {
-        data = this.prepForSync(data);
-        if (_.size(data) == 0) {
-          if (!isNew) {
-            if (options.success)
-              options.success(this, {code: 304, details: "unmodified"}, options);
-            
-            return; 
+        Events.trigger('updatedResources', [this]);
+        if (this.isNew()) // was a synchronous mkresource operation
+          this.checkIfLoaded();
+        else if (isNew) { 
+          // completed sync with db
+        }
+        
+        this.trigger('saved', self, options);
+        this.triggerPlugs(options);
+        if (!options.fromDB)
+          this.notifyContainers();
+        
+        this.trigger('syncedWithServer');
+      }.bind(this);
+      
+      options.error = function(originalModel, err, opts) {
+        var code = err.code || err.status;
+        if (code === 409 && err.error) {
+          var conflict = err.error.conflict;
+          if (conflict) { // conflict is the json for the conflicting resource
+            // TODO: handle this case
+            debugger;
+//            return;
           }
         }
         
-        var isNew = this.isNew();
-        if (!isNew)
-          data._uri = this.getUri();
-        else
-          delete data._uri;
-  
-        var self = this;
-        options = _.extend({url: this.saveUrl(attrs), silent: true, patch: true, resource: this}, options, {data: data});
-        var success = options.success, error = options.error;
-        options.success = function(resource, response, opts) {
-          if (response && response.error)
-            return;
-
-          if (!options.fromDB)
-            this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
-
-          if (isAppInstall)
-            Events.trigger('appInstall', this);
-          else if (isTemplate)
-            Events.trigger('templateUpdate:' + this.get('templateName'), this);
-          
-          success && success.apply(this, arguments);
-          // trigger this first because "success" may want to redirect to mkresource for some app-related model
-          
-          Events.trigger('updatedResources', [this]);
-          if (this.isNew()) // was a synchronous mkresource operation
-            this._load();
-          else if (isNew) { 
-            // completed sync with db
-          }
-          
-          this.trigger('saved', self, options);
-          this.triggerPlugs(options);
-          if (!options.fromDB)
-            this.notifyContainers();
-          
-          this.trigger('syncedWithServer');
-        }.bind(this);
-        
-        options.error = function(originalModel, err, opts) {
-          var code = err.code || err.status;
-          if (code === 409 && err.error) {
-            var conflict = err.error.conflict;
-            if (conflict) { // conflict is the json for the conflicting resource
-              // TODO: handle this case
-              debugger;
-//              return;
-            }
-          }
-          
-          error && error.apply(this, arguments);
-        }.bind(this);
-        
-        saved = Backbone.Model.prototype.save.call(this, data, options);
+        error && error.apply(this, arguments);
+      }.bind(this);
+      
+      return Backbone.Model.prototype.save.call(this, data, options);
+    },
+    
+    save: function(attrs, options) {
+      options = _.extend({patch: true, silent: false}, options || {});
+      attrs = attrs || {};
+      var isNew = this.isNew(),
+          data,
+          saved;
+      
+      if (isNew)
+        data = _.extend({}, this.attributes, attrs);
+      else
+        data = _.extend({}, this.getUnsavedChanges(), attrs);
+      
+      this.clearErrors();      
+      if (!options.sync) {
+        saved = this._save(data, options);
+      }
+      else {
+        saved = this._sync(data, options);
       }
    
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
@@ -1023,6 +1077,16 @@ define('models/Resource', [
 //      }
     },
     
+    unset: function(attr, options) {
+      var result = Backbone.Model.prototype.unset.apply(this, arguments);
+      if (options && options.remove) {
+        delete this.attributes[attr];
+        delete this.unsavedChanges[attr];
+      }
+      
+      return result;
+    },
+    
     prepForSync: function(item) {
       var props = this.vocModel.properties;
       var filtered = U.filterObj(item, function(key, val) {
@@ -1032,14 +1096,17 @@ define('models/Resource', [
         if (/^\$/.test(key)) // is an API param like $returnMade
           return true;
         
+        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
+          return false;        
+        
+//        if (typeof val === 'undefined') // you sure?
+//          return false;
+        
         if (window.Blob && val instanceof window.Blob)
           return true;
         
         if (val._filePath) // placeholder for local filesystem file, meaningless to the server
           return false;
-        
-        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
-          return false;        
         
         var prop = props[key];
         return prop && !U.isSystemProp(key); 
@@ -1047,34 +1114,34 @@ define('models/Resource', [
       
 //      return U.flattenModelJson(filtered, vocModel, preserve);
       return filtered;
-    },
-    
-    getMiniVersion: function() {
-      var res = this,
-          miniMe = {
-            displayName: U.getDisplayName(this),
-            _uri: this.getUri()
-          },
-          vocModel = this.vocModel,
-          meta = vocModel.properties,
-          viewCols = vocModel.viewCols || '';
-          
-      
-      if (this.isA("ImageResource")) {
-        miniMe.image = this.get('ImageResource.mediumImage') || this.get('ImageResource.bigImage')  || this.get('ImageResource.bigImage');
-      }
-      
-      _.each(viewCols.split(','), function(p) {
-        p = p.trim();
-        var prop = meta[p], 
-            val = res.get(p);
-        
-        if (prop && typeof val !== 'undefined')
-          miniMe[U.getPropDisplayName(prop)] = val;
-      });
-      
-      return miniMe;
     }
+//    ,
+//    getMiniVersion: function() {
+//      var res = this,
+//          miniMe = {
+//            displayName: U.getDisplayName(this),
+//            _uri: this.getUri()
+//          },
+//          vocModel = this.vocModel,
+//          meta = vocModel.properties,
+//          viewCols = vocModel.viewCols || '';
+//          
+//      
+//      if (this.isA("ImageResource")) {
+//        miniMe.image = this.get('ImageResource.mediumImage') || this.get('ImageResource.bigImage')  || this.get('ImageResource.bigImage');
+//      }
+//      
+//      _.each(viewCols.split(','), function(p) {
+//        p = p.trim();
+//        var prop = meta[p], 
+//            val = res.get(p);
+//        
+//        if (prop && typeof val !== 'undefined')
+//          miniMe[U.getPropDisplayName(prop)] = val;
+//      });
+//      
+//      return miniMe;
+//    }
   },
   {
 //    type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",

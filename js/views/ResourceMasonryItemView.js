@@ -5,8 +5,7 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
-  'jqueryMasonry',
-  'jqueryImagesloaded'
+  'jqueryMasonry'
 ], function(G, _, U, Events, BasicView) {
   return BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',

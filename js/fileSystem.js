@@ -4,6 +4,7 @@ define('fileSystem', ['globals'], function(G) {
     return null;
   
   function error(level, e, defer) {
+    debugger;
     var msg = '';
 
     switch (e.code) {
@@ -31,9 +32,7 @@ define('fileSystem', ['globals'], function(G) {
         msg = 'SECURITY_ERR: Are you using chrome incognito mode? It seems that access to "requestFileSystem" API is denied.';
 
     G.log(G.TAG, 'fileSystem', msg);
-    defer.reject({
-      error: level + ': ' + msg
-    });
+    defer.reject(e);
   };
   
   function dataURLToBlob(dataURL) {
@@ -69,10 +68,19 @@ define('fileSystem', ['globals'], function(G) {
     };
   };
   
+  function getFile(filePath) {
+    return $.Deferred(function(defer) {
+      getFileEntry(filePath).done(function(fileEntry) {
+        fileEntry.file(defer.resolve, getErrorFunc('file read error', defer));
+      }).fail(getErrorFunc('fileEntry error', defer));
+    }).promise();
+  };
+  
   function readFile(options) {
     return $.Deferred(function(defer) {
       options = options || {};
       var format = options.format || 'DataURL',
+          file = options.file,
           filePath = options.filePath;
   
       var reader = new window.FileReader();
@@ -83,19 +91,17 @@ define('fileSystem', ['globals'], function(G) {
         throw new Error('Invalid format ' + format);
       }
   
-      getFileEntry(filePath).done(function(fileEntry) {
-        fileEntry.file(function(file) {
-          if (blobby)
-            method = 'readAsDataURL';
-          
-          reader[method](file);
-          reader.onload = function(e) {
-            var res = e.target.result;
-            defer.resolve(blobby ? dataURLToBlob(res) : res);
-          };
-          
-        }, getErrorFunc('file read error', defer));
-      }).fail(getErrorFunc('fileEntry error', defer));  
+      var filePromise = file ? $.Deferred().resolve(file).promise() : getFile(filePath);
+      filePromise.then(function(file) {
+        if (blobby)
+          method = 'readAsDataURL';
+        
+        reader[method](file);
+        reader.onload = function(e) {
+          var res = e.target.result;
+          defer.resolve(blobby ? dataURLToBlob(res) : res);
+        };
+      }, getErrorFunc('fileEntry error', defer));
     }).promise();
   };
   
@@ -251,10 +257,12 @@ define('fileSystem', ['globals'], function(G) {
   $.each(formats, function(idx, format) {
     // provide convenient handles, FileSystem.readFileAsDataURL, FileSystem.readFileAsText, etc.
     FileSystem['readAs' + format] = function(filePath, context) {
-      return readFile({
-        filePath: filePath,
+      var info = {
         format: format
-      });
+      };
+      
+      info[filePath instanceof File ? 'file' : 'filePath'] = filePath;
+      return readFile(info);
     }
   });
   

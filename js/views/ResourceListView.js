@@ -10,19 +10,20 @@ define('views/ResourceListView', [
   'jqueryMobile'
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
   var RLV = BasicView.extend({
-    displayPerPage: 10, // for client-side paging
+    displayPerPage: 4, // for client-side paging
     page: null,
     changedViews: [],
-    skipScrollEvent: false,
+//    skipScrollEvent: false,
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', 'onAppend', 'setMode'); // fixes loss of context for 'this' within methods
-      this.superInitialize(options);      
+      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
+//      this.superInitialize(options);
+      BasicView.prototype.initialize.call(this, options);
       options = options || {};
       $(window).on('scroll', this.onScroll);
-      Events.on('pageChange', this.onAppend);
-      this.$el.on('create', this.onAppend);
+//      Events.on('pageChange', this.onAppend);
+//      this.$el.on('create', this.onAppend);
 //      this.collection.on('reset', this.render, this);
 //      this.collection.on('add', this.onadd, this);
 //      this.collection.on('refresh', this.refresh);
@@ -67,9 +68,9 @@ define('views/ResourceListView', [
       return this;
     },
     
-    onAppend: function() {
-      this.resumeScrollEventProcessing();
-    },
+//    onAppend: function() {
+//      this.resumeScrollEventProcessing();
+//    },
     
     onadd: function(resources, options) {
       if (options && options.refresh) {
@@ -223,7 +224,8 @@ define('views/ResourceListView', [
       var info = {
         isFirstPage: !nextPage,
         frag: frag,
-        total: num
+        total: num,
+        appended: []
       };
     
       this.preRender(info);
@@ -278,6 +280,7 @@ define('views/ResourceListView', [
 //              table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
 //          }
 //          else {
+          info.appended.push(liView.el);
           this.postRenderItem(liView, info);
 //          }
         }
@@ -306,16 +309,16 @@ define('views/ResourceListView', [
 //      }
       
       delete info.index;
-      this.postRender(info);  
       if (!nextPage)
         this.$el.html(frag);
       
+      this.postRender(info);  
 //      if (!isComment)
 //        this.$el.prevObject.find('#comments').css('display', 'none');
 //
 //      this.$el.html(frag);
 //      this.renderMany(this.model.models.slice(0, lis.length));
-      var self = this;
+//      var self = this;
       
 //      this.restyle();
       
@@ -345,6 +348,7 @@ define('views/ResourceListView', [
       
 //      if (renderDfd)
 //        renderDfd.resolve();
+      this.trigger('refreshed');
       return this;
       
 //      else {
@@ -363,7 +367,7 @@ define('views/ResourceListView', [
       if (this.rendered) {
         this.$el.trigger('create');
         if (!this.isMultiValueChooser)// && this.$el.hasClass('ui-listview'))
-          this.$el.listview().listview('refresh');
+          this.$el.listview('refresh');
       }
     },
     
@@ -381,55 +385,79 @@ define('views/ResourceListView', [
 //        this.$el.masonry('reload');
 //    },
     
-    getNextPage: _.debounce(function() {
-      if (!this.rendered)
-        return this;
-//      var before = this.model.models.length;
-//
-//      console.log("called getNextPage");
+    getNextPage: function() {
+//      console.debug(printStackTrace());
+      if (this._pagingPromise && this._pagingPromise.state() === 'pending')
+        return this._pagingPromise;
+      
+      var self = this,
+          rl = this.filteredCollection,
+          before = rl.models.length,
+          displayedBefore = this.getListItems().length,
+          requested = (this.page + 1) * this.displayPerPage;
+      
+//      if (this._requested == requested)
+//        debugger;
 //      
-//      // there is nothing to fetch, we've got them all
-//      if (before < this.model.perPage)
-//        return;
-      
-      var self = this;
-      var rl = this.filteredCollection;
-      var before = rl.models.length;
-      if (!before)
-        return;
-      
-//      var before = this.model.offset;
-      this.page++;
-      var requested = (this.page + 1) * this.displayPerPage;
-//      var requested = this.page * this.displayPerPage;
-      var after = function() {
-//        var numShowing = (self.page + 1) * self.displayPerPage;
-//        if (requested <= rl.models.length  ||  rl.models.length % self.displayPerPage > 0) {
-//          self.refresh();
-//        }
-        // listview (not masonry) can resume to process events immediately
-        if (!self.hasMasonry())
-          self.skipScrollEvent = false;
-        
-        self.hideLoadingIndicator();
-      };
-      
-//      var error = function() { after(); };
-//      if (requested <= rl.models.length && rl.models.length % this.displayPerPage > 0) {
-//        this.refresh(rl);
-//        return;
-//      }
-      if (before >= requested) {
-        this.refresh({resources: rl.models.slice(requested), added: true});
-        after();
-        return;
-      }
+//      this._requested = requested;
+//      
+//      Events.stopListening(self, 'refreshed');
+//      Events.listenTo(self, 'refreshed', function() {          
+//        if (self.scrolledToNextPage())
+//          return self.getNextPage();
+//      });
 
-      rl.getNextPage({
-        success: after,
-        error: after
-      });      
-    }, 2000, true),
+      this._pagingPromise = $.Deferred(function(defer) {
+        this._paging = true;
+        if (!self.rendered)
+          return defer.reject();
+        
+        if (!before)
+          return defer.reject();
+        
+        self.page++;
+        if (before >= requested) {
+          self.refresh({
+            resources: rl.models.slice(requested), 
+            added: true
+          });
+          
+          return defer.resolve();
+        }
+  
+        rl.getNextPage({
+          success: function(resp, status, xhr) {
+            if (self.collection.models.length <= before)
+              defer.reject();
+            else
+              defer.resolve();
+          },
+          error: defer.reject
+        });
+      }).promise();
+      
+      this._pagingPromise.done(function() {
+        self.checkIfNeedMore(displayedBefore);
+      }).always(function() {
+        self._paging = false;
+        self.hideLoadingIndicator();
+      });
+
+      return this._pagingPromise;
+    },
+    
+    checkIfNeedMore: function(before) {
+      var self = this;
+      clearTimeout(self._pagingTimeout);
+      this._pagingTimeout = setTimeout(function() {          
+        if (!self.scrolledToNextPage()) // we've got our buffer back
+          return;
+        else if (self.getListItems().length > before) // we loaded some, but we need more
+          return self.getNextPage();
+        else
+          self.checkIfNeedMore(before); // the items we loaded haven't been added to the DOM yet 
+      }, 200);
+    },
     
 //    tap: Events.defaultTapHandler,
 //    click: Events.defaultClickHandler,
@@ -537,11 +565,22 @@ define('views/ResourceListView', [
       if (!this.isActive())
         return;
       
-      var $wnd = $(window);        
-//      if (this.skipScrollEvent) // wait for a new data portion
-//        return;
       
-      // scroll up - no need to fetch new portion of data
+//      var self = this;
+      // order is important, because view.getNextPage() may return immediately if we have some cached rows
+      // if scrollTop is near to zero then it is "initial" next page retriving not by a user
+//      if ($wnd.scrollTop() > 20) {  
+//        this.skipScrollEvent = true; 
+////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
+//      }
+
+      if (this.scrolledToNextPage())
+        this.getNextPage();
+    },
+    
+    scrolledToNextPage: function() {
+      var $wnd = $(window);        
+
       if (this.prevScrollPos > $wnd.scrollTop()) {
         this.prevScrollPos = $wnd.scrollTop();
         return;
@@ -556,19 +595,11 @@ define('views/ResourceListView', [
       if ($m.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
         return;
       
-//      var self = this;
-      // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      // if scrollTop is near to zero then it is "initial" next page retriving not by a user
-//      if ($wnd.scrollTop() > 20) {  
-//        this.skipScrollEvent = true; 
-////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
-//      }
-      
-      this.getNextPage();
+      return true;
     },
     
     resumeScrollEventProcessing: function () {
-      this.skipScrollEvent = false;
+//      this.skipScrollEvent = false;
       this.hideLoadingIndicator();
     }
   }, {

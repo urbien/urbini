@@ -161,7 +161,7 @@ define('views/ResourceImageView', [
     },
     
     render: function(options) {
-      if (!this.isImage && !(this.isVideo || this.isAudio))
+      if (!this.isImage && !this.isVideo && !this.isAudio)
         return this;
       
       var self = this;

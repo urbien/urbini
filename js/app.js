@@ -304,10 +304,6 @@ define('app', [
   };
   
   function doPostStartTasks() {
-  //  for (var type in C.typeToModel) {
-  //    Voc.initPlugs(type);
-  //  }
-    
     Voc.getModels();    
     initGrabs();
     setupPushNotifications();

@@ -54,7 +54,7 @@ define('router', [
     errMsg: null,
     homePage: null,
     info: null,
-    viewsStack: [],
+//    viewsStack: [],
     urlsStack: [],
 //    LoginView: null,
     _failToGoBack: function() {      
@@ -63,7 +63,6 @@ define('router', [
       });
     },
     initialize: function () {
-      this.viewCache = new ViewCache();
 //      G._routes = _.clone(this.routes);
 //      _.bindAll(this, '_backOrHome');
       this.firstPage = true;
@@ -256,7 +255,7 @@ define('router', [
       
       var prev = this.currentView;
       if (this.backClicked) {
-        this.currentView = this.viewsStack.pop();
+        this.currentView = C.getCachedView(); // this.viewsStack.pop();
         if (!this.currentView) {
           this.homePage.render();
           this.currentView = this.homePage;
@@ -289,7 +288,7 @@ define('router', [
       if (mainDiv.is(':hidden'))
         mainDiv.show();
 
-      Events.trigger('pageChange');
+      Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
     },
     
@@ -308,7 +307,7 @@ define('router', [
       var self = this,
           ListPage = Modules.ListPage,
           hashInfo = G.currentHashInfo,
-          cachedView = this.getCachedView(),
+          cachedView = C.getCachedView(),
           typeUri = hashInfo.type,
           params = hashInfo.params,
           query = hashInfo.query;
@@ -353,12 +352,12 @@ define('router', [
       
 //      var t = className;  
 //      var key = query ? t + '?' + query : t;
-      var key = query || typeUri;
-      if (query)
-        key = U.getQueryString(U.getQueryParams(key, model), true);
+//      var key = query || typeUri;
+//      if (query)
+//        key = U.getQueryString(U.getQueryParams(key, model), true);
 
       var params = U.getHashParams();
-      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, key);
+      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       if (list && !list._lastFetchedOn)
         list = null;
       
@@ -366,7 +365,7 @@ define('router', [
 //      var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};
       if (list) {
         if (!cachedView)
-          cachedView = this.cacheView(new ListPage({model: list}), hashInfo);
+          cachedView = new ListPage({model: list});
         
         this.currentModel = list;
         cachedView.setMode(mode || G.LISTMODES.LIST);
@@ -379,7 +378,7 @@ define('router', [
       }
       
       list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
-      var listView = this.cacheView(new ListPage({model: list}), hashInfo);
+      var listView = new ListPage({model: list});
       listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
@@ -392,8 +391,8 @@ define('router', [
 //          self.loadExtras(oParams);
         }),
 //        error: Errors.getDefaultErrorHandler()
-        error: _.once(function(collection, xhr, opts) {
-          var code = xhr.status;
+        error: _.once(function(collection, resp, opts) {
+          var code = resp.code;
           if (code === 204)
             self.changePage(listView);
           else {
@@ -414,7 +413,7 @@ define('router', [
         return;
 
       var hashInfo = G.currentHashInfo,
-          cached = this.getCachedView();
+          cached = C.getCachedView();
       
       if (cached) {
         this.changePage(cached);
@@ -479,7 +478,7 @@ define('router', [
       if (!G.appTemplates)
         G.appTemplates = tList;
       
-      var lPage = this.cacheView(new Modules.ListPage({model: tList}), hashInfo);
+      var lPage = new Modules.ListPage({model: tList});
       this.changePage(lPage);
     },
 
@@ -632,13 +631,13 @@ define('router', [
           makeId = params['-makeId'];
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
-      var mPage = this.getCachedView(); //this.MkResourceViews[makeId];
+      var mPage = C.getCachedView(); //this.MkResourceViews[makeId];
       if (mPage && !mPage.model.getUri()) {
         // all good, continue making ur mkresource
       }
       else {
         var model = U.getModel(type);
-        mPage = this.cacheView(new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash}), hashInfo);
+        mPage = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
       }
       
       this.currentModel = mPage.resource;
@@ -685,6 +684,8 @@ define('router', [
       G.currentHash = U.getHash();
       if (G.currentHash !== oldHash)
         G.currentHashInfo = U.parseHash();
+      
+      return G.currentHashInfo;
     },
     
     routePrereqsFulfilled: function(route, args) {
@@ -784,7 +785,7 @@ define('router', [
         return;
       
       var hashInfo = G.currentHashInfo,
-          cachedView = this.getCachedView(),
+          cachedView = C.getCachedView(),
           uri = hashInfo.uri,
           query = hashInfo.query,
           typeUri = hashInfo.type,
@@ -835,12 +836,15 @@ define('router', [
           return;
 //          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         }
-        else
+        else {
           uri = G.currentUser._uri;
+          this.navigate(U.makeMobileUrl('view', uri), {trigger: false, replace: true});
+          hashInfo = this.updateHashInfo();
+        }
       }
       
       if (chat && /^_/.test(uri)) {
-        var chatPage = cachedView || this.cacheView(new Modules.ChatPage(), hashInfo);
+        var chatPage = cachedView || new Modules.ChatPage();
         this.changePage(chatPage);
         return;
       }      
@@ -875,7 +879,7 @@ define('router', [
         
         if (isTemp || !newUri) {
           Events.once('synced:' + uri, function() {            
-            self.viewCache.update(uri, res.getUri());
+//            self.viewCache.update(uri, res.getUri());
             var currentView = self.currentView;    
             if (currentView && currentView.resource === res) {
               updateHash(res);
@@ -885,7 +889,7 @@ define('router', [
           });
         }
         else {
-          self.viewCache.update(uri, newUri);
+//          self.viewCache.update(uri, newUri);
           updateHash(res);
         }
       }
@@ -906,7 +910,7 @@ define('router', [
       
       if (res) {
         this.currentModel = res;
-        var v = cachedView || this.cacheView(new viewPageCl({model: res, source: this.previousHash}), hashInfo);
+        var v = cachedView || new viewPageCl({model: res, source: this.previousHash});
 //        if (action === 'view')
 //          views[uri] = v;
         
@@ -920,7 +924,7 @@ define('router', [
       }
       
       var res = this.currentModel = new model({_uri: uri, _query: query});
-      var v = this.cacheView(new viewPageCl({model: res, source: this.previousHash}), hashInfo);
+      var v = new viewPageCl({model: res, source: this.previousHash});
 //      if (action === 'view')
 //        views[uri] = v;
       
@@ -1088,73 +1092,35 @@ define('router', [
     },
     
     changePage1: function(view) {
+      var activated = false,
+          prev = this.currentView,
+          options = this.getChangePageOptions(),
+          replace = options.replace,
+          transition = 'slide',
+          isReverse = false;
+      
       if (view == this.currentView) {
         G.log(this.TAG, "render", "Not replacing view with itself, but will refresh it");
         view.refresh();
         return;
       }
-
-      var activated = false;
-      var prev = this.currentView;
-      if (prev && prev !== view)
-        prev.trigger('active', false);
-      
-      var options = this.getChangePageOptions();
-      var replace = options.replace;
-      var lostHistory = false;
-      if (this.backClicked) {
-        var currentView = this.currentView;
-        if (currentView && !(this.currentView instanceof Backbone.View))
-          debugger;
-        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
-          this.currentView.clicked = false;
-        
-        this.currentView = this.viewsStack.pop();
-        this.currentUrl = this.urlsStack.pop();
-        if (currentView && currentView === this.currentView) {
-          debugger;
+            
+      if (prev) {
+        if (prev == view) {
           G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
           Events.trigger('back');
           return;
         }
-        
-        if (this.currentView)
-          view = this.currentView;
         else
-          lostHistory = true;
+          prev.trigger('active', false);
       }
       
-      var transition = "slide";
-      if (!this.backClicked || lostHistory) {
-        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
-          this.currentView.clicked = false;
-        // Check if browser's Back button was clicked
-        else if (!this.backClicked  &&  this.viewsStack.length != 0) {
-          var url = this.urlsStack[this.viewsStack.length - 1];
-          if (url == window.location.href) {
-            this.currentView = this.viewsStack.pop();
-            this.currentUrl = this.urlsStack.pop();
-            view = this.currentView;
-            this.backClicked = true;
-          }
-        }
-        if (!this.backClicked  ||  lostHistory) {
-          if (!view.rendered) {
-            view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-            view.trigger('active', true);
-            activated = true;
-            view.render();
-          }
-      
-//          transition = "slide"; //$m.defaultPageTransition;
-          if (!replace  &&  this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
-            this.viewsStack.push(this.currentView);
-            this.urlsStack.push(this.currentUrl);
-          }
-          
-          this.currentView = view;
-          this.currentUrl = window.location.href;
-        }
+      this.currentView = view;
+      if (!view.rendered) {
+        view.trigger('active', true);
+        activated = true;
+        view.render();
+        view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
       }
 
       if (this.firstPage) {
@@ -1162,8 +1128,7 @@ define('router', [
         this.firstPage = false;
       }
       
-      // hot to transition
-      var isReverse = false;
+      this.checkBackClick();
       if (this.backClicked == true) {
         this.backClicked = false;
         isReverse = true;
@@ -1184,76 +1149,276 @@ define('router', [
       this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;
+    },
+    
+    checkBackClick: function() {
+      if (this.backClicked) {
+        this.urlsStack.pop();
+        return;
+      }
+      
+      var options = this.getChangePageOptions(),
+          replace = options.replace,
+          here = window.location.href;
+      
+//      if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked) {
+//        this.currentView.clicked = false;
+//        return;
+//      }
+//      // Check if browser's Back button was clicked
+//      else 
+      if (this.urlsStack.length != 0) {
+        var url = this.urlsStack[this.urlsStack.length - 2];
+        if (url == here) {
+          this.backClicked = true;
+          this.urlsStack.pop();
+          return;
+        }
+      }
+      
+      if (replace)
+        this.urlsStack = this.urlsStack.slice(0, this.urlsStack.length - 1);
+      
+      this.urlsStack.push(here);
     }
+//    ,
+//    
+//    changePage2: function(view) {
+//      if (view == this.currentView) {
+//        G.log(this.TAG, "render", "Not replacing view with itself, but will refresh it");
+//        view.refresh();
+//        return;
+//      }
+//
+//      var activated = false;
+//      var prev = this.currentView;
+//      if (prev && prev !== view)
+//        prev.trigger('active', false);
+//      
+//      var options = this.getChangePageOptions();
+//      var replace = options.replace;
+//      var lostHistory = false;
+//      if (this.backClicked) {
+//        var currentView = this.currentView;
+//        if (currentView && !(this.currentView instanceof Backbone.View))
+//          debugger;
+//        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+//          this.currentView.clicked = false;
+//        
+//        this.currentView = this.viewsStack.pop();
+//        this.currentUrl = this.urlsStack.pop();
+//        if (currentView && currentView === this.currentView) {
+//          debugger;
+//          G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
+//          Events.trigger('back');
+//          return;
+//        }
+//        
+//        if (this.currentView)
+//          view = this.currentView;
+//        else
+//          lostHistory = true;
+//      }
+//      
+//      var transition = "slide";
+//      if (!this.backClicked || lostHistory) {
+//        if (this.currentView instanceof Backbone.View  &&  this.currentView.clicked)
+//          this.currentView.clicked = false;
+//        // Check if browser's Back button was clicked
+//        else if (!this.backClicked  &&  this.viewsStack.length != 0) {
+//          var url = this.urlsStack[this.viewsStack.length - 1];
+//          if (url == window.location.href) {
+//            this.currentView = this.viewsStack.pop();
+//            this.currentUrl = this.urlsStack.pop();
+//            view = this.currentView;
+//            this.backClicked = true;
+//          }
+//        }
+//        if (!this.backClicked  ||  lostHistory) {
+//          if (!view.rendered) {
+//            view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+//            view.trigger('active', true);
+//            activated = true;
+//            view.render();
+//          }
+//      
+////          transition = "slide"; //$m.defaultPageTransition;
+//          if (!replace  &&  this.currentView  &&  this.currentUrl.indexOf('#menu') == -1) {
+//            this.viewsStack.push(this.currentView);
+//            this.urlsStack.push(this.currentUrl);
+//          }
+//          
+//          this.currentView = view;
+//          this.currentUrl = window.location.href;
+//        }
+//      }
+//
+//      if (this.firstPage) {
+//        transition = 'none';
+//        this.firstPage = false;
+//      }
+//      
+//      // hot to transition
+//      var isReverse = false;
+//      if (this.backClicked == true) {
+//        this.backClicked = false;
+//        isReverse = true;
+//      }
+//
+//      // back button: remove highlighting after active page was changed
+//      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+//      
+//      if (!activated)
+//        view.trigger('active', true);
+//      
+//      // perform transition        
+//      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+//      this.nextTransition = null;
+//      Events.trigger('pageChange', prev, view);
+//      return view;
+//    }
   });
  
-  var ViewCache = function() {
-    var cache = {};
-
-    function getSubCache(hashInfo) {
-      hashInfo = hashInfo || G.currentHashInfo;
-      var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
-      if (hashInfo.type)
-        subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
+//  var ViewCache = function() {
+//    var cache = {};
+//
+//    function getSubCache(hashInfo) {
+//      hashInfo = hashInfo || G.currentHashInfo;
+//      var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
+//      if (hashInfo.type)
+//        subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
+//  
+//      return subCache;
+//    };
+//    
+//    function getKey(hashInfo) {
+//      hashInfo = hashInfo || G.currentHashInfo;
+//      return hashInfo.query || hashInfo.uri;
+//    };
+//    
+//    function getCached(hashInfo) {
+//      hashInfo = hashInfo || G.currentHashInfo;
+//      return getSubCache(hashInfo)[getKey(hashInfo)];
+//    };
+//    
+//    function cacheView(view, hashInfo) {
+//      hashInfo = hashInfo || U.parseHash();
+//      var type = hashInfo.typeUri || '',
+//          subCache = getSubCache(hashInfo);
+//          
+//      subCache[hashInfo.query || hashInfo.uri] = view;
+//      view.on('invalidate', function() {
+//        delete subCache[getKey(hashInfo)];
+//      });
+//      
+//      return view;
+//    };
+//    
+//    function update(oldUri, newUri) {
+//      var hashInfo = {
+//        type: U.getTypeUri(oldUri),
+//        uri: oldUri
+//      };
+//      
+//      var type = U.getTypeUri(oldUri);
+//      _.each(['edit', 'view', 'make'], function(route) {
+//        hashInfo.route = route;
+//        var subCache = getSubCache(hashInfo),
+//            cached = subCache[oldUri];
+//        
+//        if (cached)
+//          subCache[newUri] = cached;
+//      });
+//    };
+//    
+//    function clean() {
+//      
+//    };
+//    
+//    return {
+//      getCached: getCached,
+//      cacheView: cacheView,
+//      update: update
+//    }
+//  };
   
-      return subCache;
-    };
-    
-    function getKey(hashInfo) {
-      hashInfo = hashInfo || G.currentHashInfo;
-      return hashInfo.query || hashInfo.uri;
-    };
-    
-    function getCached(hashInfo) {
-      hashInfo = hashInfo || G.currentHashInfo;
-      return getSubCache(hashInfo)[getKey(hashInfo)];
-    };
-    
-    function cacheView(view, hashInfo) {
-      hashInfo = hashInfo || U.parseHash();
-      var type = hashInfo.typeUri || '',
-          subCache = getSubCache(hashInfo);
-          
-      subCache[hashInfo.query || hashInfo.uri] = view;
-      view.on('invalidate', function() {
-        delete subCache[getKey(hashInfo)];
-      });
-      
-      return view;
-    };
-    
-    function update(oldUri, newUri) {
-      var hashInfo = {
-        type: U.getTypeUri(oldUri),
-        uri: oldUri
-      };
-      
-      var type = U.getTypeUri(oldUri);
-      _.each(['edit', 'view', 'make'], function(route) {
-        hashInfo.route = route;
-        var subCache = getSubCache(hashInfo),
-            cached = subCache[oldUri];
-        
-        if (cached)
-          subCache[newUri] = cached;
-      });
-    };
-    
-    return {
-      getCached: getCached,
-      cacheView: cacheView,
-      update: update
-    }
-  };
-  
-  Router.prototype.getCachedView = function() {
-    return this.viewCache.getCached.apply(this.viewCache, arguments);
-  };
-
-  Router.prototype.cacheView = function() {
-    return this.viewCache.cacheView.apply(this.viewCache, arguments);
-  };
-
+//  function ViewCache() {
+//    var idx = -1,
+//        back = false,
+//        urls = [],
+//        views = [];
+//    
+//    function back() {
+//      debugger;
+//      idx--;
+//    };
+//    
+//    function forward(view) {      
+//      debugger;
+//      idx++;
+//      var currentUrl = window.location.href;
+//      if (urls[idx] !== currentUrl) {
+//        views = views.slice(0, idx);
+//        urls = urls.slice(0, idx);
+//      }
+//      
+//      views[idx] = view;
+//      urls[idx] = currentUrl;
+//    };
+//
+////    function getCurrent() {
+////      debugger;
+////      return views[idx];
+////    }
+//
+//    function next() {
+//      return {
+//        url: urls[idx + 1],
+//        view: views[idx + 1]
+//      };
+//    };
+//
+//    function prev() {
+//      return {
+//        url: urls[idx - 1],
+//        view: views[idx - 1]
+//      };
+//    };
+//
+//    function getCached() {
+//      var prev = urls[idx - 1],
+//          next = urls[idx + 1],
+//          url = window.location.href;
+//      
+//      return url === prev ? prev() : url === next : next() : null;
+//    }
+//
+//    Events.on('back', function() {
+//      back = true;
+//    });
+//
+//    Events.on('pageChange', function(prev, current) {
+//      var prev = urls[idx - 1],
+//          next = urls[idx + 1],
+//          url = window.location.href;
+//      
+//      if (url === prev)
+//        idx --;
+//      else if (url === next)
+//        idx++;
+//      else
+//        back ? back() : forward(current);
+//        
+//      back = false;
+//    });
+//    
+//    return {
+//      getNext: getNext,
+//      getPrev: getPrev,
+//      getCached: getCached
+//    };
+//  };
+           
   return Router;
 });
   
