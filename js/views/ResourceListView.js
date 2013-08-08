@@ -11,7 +11,7 @@ define('views/ResourceListView', [
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
   var RLV = BasicView.extend({
     displayPerPage: 4, // for client-side paging
-    page: null,
+    page: 0,
     changedViews: [],
 //    skipScrollEvent: false,
     prevScrollPos: 0,
@@ -228,17 +228,21 @@ define('views/ResourceListView', [
         appended: []
       };
     
+      var updated = [];
       this.preRender(info);
       for (; i < num; i++) {
         var res = resources[i],        
-            uri = res.getUri();
+            uri = res.getUri(),
+            liView;
         
         if (canceled && res.get(canceled))
           continue;
         
         info.index = i;        
-        if (i >= lis.length || _.contains(modifiedUris, uri)) {
-          var liView = this.renderItem(res, info);
+        
+        info.updated = _.contains(modifiedUris, uri);
+        if (i >= lis.length || info.updated) {
+          liView = this.renderItem(res, info);
           
 //          var viewName = 'liView' + i;
 //          if (this.isPhotogrid) {
@@ -280,14 +284,21 @@ define('views/ResourceListView', [
 //              table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
 //          }
 //          else {
-          info.appended.push(liView.el);
-          this.postRenderItem(liView, info);
 //          }
         }
         else if (!nextPage)
           frag.appendChild(lis[i]);
+        
+        var el = liView ? liView.el : lis[i];
+        if (info.updated)
+          updated.push(el);
+        else
+          info.appended.push(el);
+
+        liView && this.postRenderItem(liView, info);
       }
-            
+         
+      info.updated = updated;
 
 //      if (isChooser) {
 //        var params = U.getParamMap(window.location.href, '&');
@@ -348,7 +359,6 @@ define('views/ResourceListView', [
       
 //      if (renderDfd)
 //        renderDfd.resolve();
-      this.trigger('refreshed');
       return this;
       
 //      else {
@@ -368,6 +378,8 @@ define('views/ResourceListView', [
         this.$el.trigger('create');
         if (!this.isMultiValueChooser)// && this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
+        
+        this.trigger('refreshed');
       }
     },
     
@@ -394,8 +406,8 @@ define('views/ResourceListView', [
           rl = this.filteredCollection,
           before = rl.models.length,
           displayedBefore = this.getListItems().length,
-          requested = (this.page + 1) * this.displayPerPage;
-      
+          requested = (this.page + 2) * this.displayPerPage; // page starts at 0, 'requested' is the number of items that will be displayed after the next page is loaded 
+            
 //      if (this._requested == requested)
 //        debugger;
 //      
@@ -409,10 +421,7 @@ define('views/ResourceListView', [
 
       this._pagingPromise = $.Deferred(function(defer) {
         this._paging = true;
-        if (!self.rendered)
-          return defer.reject();
-        
-        if (!before)
+        if (!self.rendered || !before || requested <= displayedBefore)
           return defer.reject();
         
         self.page++;
@@ -437,7 +446,7 @@ define('views/ResourceListView', [
       }).promise();
       
       this._pagingPromise.done(function() {
-        self.checkIfNeedMore(displayedBefore);
+        self.once('refreshed', U.partialWith(self.checkIfNeedMore, self, displayedBefore));
       }).always(function() {
         self._paging = false;
         self.hideLoadingIndicator();
@@ -446,17 +455,17 @@ define('views/ResourceListView', [
       return this._pagingPromise;
     },
     
-    checkIfNeedMore: function(before) {
+    checkIfNeedMore: function(displayedBefore) {
       var self = this;
-      clearTimeout(self._pagingTimeout);
-      this._pagingTimeout = setTimeout(function() {          
+//      clearTimeout(self._pagingTimeout);
+//      this._pagingTimeout = setTimeout(function() {          
         if (!self.scrolledToNextPage()) // we've got our buffer back
           return;
-        else if (self.getListItems().length > before) // we loaded some, but we need more
+        else if (self.getListItems().length > displayedBefore) // we loaded some, but we need more
           return self.getNextPage();
         else
-          self.checkIfNeedMore(before); // the items we loaded haven't been added to the DOM yet 
-      }, 200);
+          self.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
+//      }, 100);
     },
     
 //    tap: Events.defaultTapHandler,
@@ -561,7 +570,7 @@ define('views/ResourceListView', [
     },
     
     // endless page function
-    onScroll: function() {
+    onScroll: function(e) {
       if (!this.isActive())
         return;
       

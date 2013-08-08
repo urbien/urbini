@@ -155,18 +155,20 @@ define('collections/ResourceList', [
       if (!options.partOfUpdate)
         this.trigger('updated', [resource]);
     },
-    add: function(models, options) {
+    add: function(resources, options) {
       options = options || {};
-      var multiAdd = _.isArray(models);
-      models = multiAdd ? models : [models];
-      if (!models.length)
+      var self = this,
+          multiAdd = _.isArray(resources);
+      
+      resources = multiAdd ? resources : [resources];
+      if (!resources.length)
         return;
       
-      models = _.map(models, function(m) {
-        var resource = m instanceof Backbone.Model ? m : new this.vocModel(m, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
-        
-        // just in case we're already subscribed, unsubscribe
-//        resource.off('replaced', this.replace);
+      resources = _.map(resources, function(resource) {
+        return resource instanceof Backbone.Model ? resource : new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event        
+      }.bind(this));
+
+      _.each(resources, function(resource) {
         var uri = resource.getUri();
         if (U.isTempUri(uri)) {
           resource.once('uriChanged', function(oldUri) {
@@ -176,24 +178,21 @@ define('collections/ResourceList', [
           }.bind(this));
         }
         
-        resource.off('change', this.onResourceChange);
-        
-//        resource.on('replaced', this.replace);
-        resource.on('change', this.onResourceChange);
-        return resource;
-      }.bind(this));
+        resource.off('change', self.onResourceChange);
+        resource.on('change', self.onResourceChange);
+      });
       
 //      this.adding = true;
       try {
-        return Backbone.Collection.prototype.add.call(this, models, options);
+        return Backbone.Collection.prototype.add.call(this, resources, options);
       } finally {
 //        this.adding = false;
         if (multiAdd && !this.resetting) {
-          this.trigger('added', models);
+          this.trigger('added', resources);
         }
         
         if (options.announce !== false)
-          Events.trigger('newResources', models);
+          Events.trigger('newResources', resources);
       }
     },
 //    replace: function(resource, oldUri) {
@@ -316,6 +315,12 @@ define('collections/ResourceList', [
       
       return response;
     },
+    
+    set: function(resources, options) {
+      options = _.defaults(options || {}, {partOfUpdate: true});
+      return Backbone.Collection.prototype.set.call(this, resources, options);
+    },
+    
     reset: function(models, options) {
       var needsToBeStored = !U.isModel(models[0]);
       
@@ -432,7 +437,7 @@ define('collections/ResourceList', [
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.models.length;
-        Backbone.Collection.prototype.set.call(this, resources, options);
+        this.set(resources, options);
         return;
       }
 
@@ -462,7 +467,10 @@ define('collections/ResourceList', [
         
         if (!newLastModified || newLastModified > ts) {
           if (saved) {
-            saved.set(r, {partOfUpdate: true}); // to avoid updating collection (and thus views) 20 times
+            saved.set(r, {
+              partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
+            }); 
+            
             updated.push(saved);
           }
           else {

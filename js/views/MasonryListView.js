@@ -52,10 +52,17 @@ define('views/MasonryListView', [
     postRender: function(info) {
       var self = this;
       if (this.rendered) {
-        this.$el.trigger('create');
+//        this.$el.trigger('create');
         if (info.appended.length) {
+          var $newElems = $(info.appended);
+//          $newElems.css({opacity: 0});
           this.$el.imagesLoaded(function() {            
-            self.masonry('appended', $(info.appended));
+//            $newElems.css({opacity: 1});
+            self.masonry('appended', $newElems); //, true);
+            if (info.updated.length)
+              self.masonry('reload');
+            
+            self.trigger('refreshed');
           });
         }
       }
@@ -65,6 +72,7 @@ define('views/MasonryListView', [
             itemSelector: ITEM_SELECTOR
           });
           
+          self.masonry('bindResize');
           self.finish();
         });        
       }
