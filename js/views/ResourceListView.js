@@ -47,18 +47,16 @@ define('views/ResourceListView', [
 //      // END HACK
       
       var vocModel = this.vocModel;
-      this.imageProperty = U.getImageProperty(this.collection);
+//      this.imageProperty = U.getImageProperty(this.collection);
       this.mvProp = this.hashParams.$multiValue;
       this.isMultiValueChooser = !!this.mvProp;
       if (this.mvProp) {
         this.mvVals = [];
-        if (this.mvProp) {
-          var pr = '$' + this.mvProp;
-          var s = params[pr];
-          s = s.split(',');
-          for (var i = 0; i < s.length; i++)
-            this.mvVals.push(s[i].trim());
-        }
+        var pr = '$' + this.mvProp;
+        var s = this.hashParams[pr];
+        s = s.split(',');
+        for (var i = 0; i < s.length; i++)
+          this.mvVals.push(s[i].trim());
       }
 
       this.isEdit = this.hashParams['$editList'];
@@ -99,7 +97,7 @@ define('views/ResourceListView', [
           liView;
           
       if (this.isEdit) {
-        liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: params['$editCols'], edit: true}, commonParams)));
+        liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams)));
       }
       else if (this.isMultiValueChooser) {
 //        var params = hash ? U.getParamMap(hash) : {};
@@ -168,7 +166,7 @@ define('views/ResourceListView', [
 //        if (litemplate)
 //          isMasonry = false;
 //      }
-//      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
+//      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('model/portal/Comment'));
 //      var params = U.getParamMap(window.location.hash);
 //      var isEdit = !isModification  &&  !isMasonry  &&  (params['$editList']); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty));
 
@@ -227,7 +225,8 @@ define('views/ResourceListView', [
         total: num,
         appended: []
       };
-    
+      this.imageProperty = U.getImageProperty(this.collection);
+
       this.preRender(info);
       for (; i < num; i++) {
         var res = resources[i],        
@@ -515,7 +514,7 @@ define('views/ResourceListView', [
       var self = this,
           collection = this.collection,
           filtered = this.filteredCollection;
-      
+
       function onFilter(e, data) {
         var $ul = $(this),
             $input = $(data.input),
