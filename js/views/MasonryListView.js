@@ -27,7 +27,7 @@ define('views/MasonryListView', [
     },
     
     masonry: function() {
-      return this.$el[MASONRY_FN];
+      return this.$el[MASONRY_FN].apply(this.$el, arguments);
     },
     
     getListItems: function() {
