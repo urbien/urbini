@@ -2916,6 +2916,8 @@ define('utils', [
       }
     },
 
+    
+    _reservedTemplateKeywords: ['U', 'G', '$', 'translate'],
     template: function(templateName, type, context) {
       var template;
       if (typeof templateName === 'string') {
@@ -2930,13 +2932,16 @@ define('utils', [
       
       context = context || this;
       return function(json) {
+        if (_.any(U._reservedTemplatedKeywords, U.partial(_.has, json)))
+          throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
+          
         json = json || {};
-        if (!_.has(json, 'U'))
-          json.U = U;
-        if (!_.has(json, 'G'))
-          json.G = G;
-        if (!_.has(json, '$'))
-          json.$ = $;
+        json.U = U;
+        json.G = G;
+        json.$ = $;
+        var l10n = document.l10n;
+        if (l10n)
+          json.translate = l10n.get.bind(l10n);
         
         return template.call(context, json);
       };

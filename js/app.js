@@ -85,6 +85,13 @@ define('app', [
     
     return promise;
   }; 
+
+  function buildLocalizationContext() {
+    G.localizationContext = {
+      user: G.currentUser,
+      app: G.currentApp
+    };
+  };
   
   function getAppAccounts() {
     var currentApp = G.currentApp,
@@ -369,6 +376,7 @@ define('app', [
     });
       
     setupWorkers();
+    buildLocalizationContext();
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
     G.checkVersion();

@@ -20,7 +20,7 @@
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="Submit" />
+      <input type="submit" id="mvSubmit" value="{{= translate('submit') }}" />
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
