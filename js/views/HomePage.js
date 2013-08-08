@@ -67,7 +67,7 @@ define('views/HomePage', [
     
     render: function(options) {
       var item = $('#homePage');
-      item.css('display', 'inline');
+      item.css('display', 'block');
       if (!item || item.length == 0) { 
         var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
         if (itemS) { 

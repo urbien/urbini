@@ -330,8 +330,8 @@ define('views/RightMenuPanel', [
           }
         }
         
-        this.buildGrabbed(frag);
-        this.buildGrab(frag);
+//        this.buildGrabbed(frag);
+//        this.buildGrab(frag);
         this.buildActionsMenu(frag);
         
         if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
@@ -478,10 +478,18 @@ define('views/RightMenuPanel', [
         haveActions = this.buildActionsMenuForList(frag);
       
       if (!G.currentUser.guest) {
-        if (!haveActions)
+        if (haveActions)
           this.addActionsHeader(frag);
+        if (this.resource  &&  U.isA(this.vocModel, 'CollaborationPoint')  &&  !U.isAssignableFrom(this.vocModel, 'Contact')) {
+          var cOf = U.getCloneOf(this.vocModel, 'CollaborationPoint.members');
+          if (cOf  &&  cOf.length) { 
+            var loc = window.location.href;
+            loc += (loc.indexOf('?') == -1 ? '?' : '&') + "&-info=" + encodeURIComponent("You successfully subscribed to notifications for any changes of this resource");
+            U.addToFrag(frag, this.menuItemTemplate({title: "Follow", id: 'follow', mobileUrl: U.makePageUrl('make', 'model/portal/MySubscription', {owner: '_me', forum: this.resource._uri, $returnUri: loc})}));
+          }
+        }
         
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Follow', mobileUrl: '', id: 'subscribe'}));
+//        U.addToFrag(frag, this.menuItemTemplate({title: 'Follow', mobileUrl: '', id: 'subscribe'}));
       }
 
       var model = this.vocModel;
@@ -504,7 +512,7 @@ define('views/RightMenuPanel', [
       U.addToFrag(frag, this.groupHeaderTemplate({value: 'Misc'}));        
       var uri = U.getLongUri1(G.currentApp._uri);
       pageUrl = U.makePageUrl('view', uri);
-      var title = 'Edit ' + G.currentApp.title;
+      var title = 'Edit App'; // + G.currentApp.title;
       var img = G.currentApp.smallImage;
       if (!img) 
         U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl}));

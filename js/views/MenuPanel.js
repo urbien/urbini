@@ -85,6 +85,13 @@ define('views/MenuPanel', [
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;
 
+      var hash = window.location.hash;
+      if (hash  &&  href == hash.substring(1)) {
+        var menu = this.$el.closest('[data-role="panel"]');
+//        menu.hide('slow');
+        menu.panel('close');
+        return;
+      }
       this.router.navigate(href, {trigger: true});
 //      var link = $(t).attr('link');
 //      if (link) {
@@ -198,11 +205,17 @@ define('views/MenuPanel', [
         // Apps I created
 //        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
-        if (user.newAlertsCount) {
-//          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));
+//        if (user.newAlertsCount) {
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
+//        }
+        /*
+        if (user.alertsCount) {
+          var loc = window.location.href;
+          loc += (loc.indexOf('?') == -1 ? '?' : '&') + '$clearAlerts=y' + "&-info=" + encodeURIComponent("Notifications were successfully deleted");
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: lo }));
+//        U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', $clear: 'true', $returnUri: window.location.href}) }));
         }
-        
+        */
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 

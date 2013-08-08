@@ -273,6 +273,9 @@ define('router', [
         this.currentUrl = window.location.href;
         this.homePage.render();
         this.currentView = this.homePage;
+        // no need to call change page when home page is displayed for the very first time
+        if (this.urlsStack.length)
+          $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
 
       if (this.backClicked) {
@@ -341,7 +344,7 @@ define('router', [
           _.extend(params, U.toModelLatLon(position, model), {'-item': 'me', '$orderBy': 'distance'});            
         }).always(function() {
           delete params['-aroundMe'];
-          self.navigate(U.makeMobileUrl(null, typeUri, params), {trigger: true, replace: true});
+          self.navigate(U.makeMobileUrl(hashInfo.action, typeUri, params), {trigger: true, replace: true});
         });
         
         return;
@@ -1130,6 +1133,10 @@ define('router', [
         this.backClicked = false;
         isReverse = true;
       }
+      
+      // HACK //
+//      isReverse = false;
+      // END HACK //
 
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');

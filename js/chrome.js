@@ -157,7 +157,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     }
   };
   
-  window.addEventListener('message', onMessageFromApp);
   setPaths(chrome);
   window.addEventListener('message', onMessageFromApp);
   Events.on('messageToApp', sendMessageToApp);

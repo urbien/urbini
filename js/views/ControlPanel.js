@@ -156,8 +156,8 @@ define('views/ControlPanel', [
         }
         else {
           this.$el.css("float", "right");
-          this.$el.css("width", "35%");
-          this.$el.css("min-width", "130");
+          this.$el.css("max-width", "220px");
+          this.$el.css("min-width", "130px");
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
@@ -254,7 +254,7 @@ define('views/ControlPanel', [
             params.name = U.getDisplayName(iRes);
 
             var grid = U.getCols(iRes, 'grid', true);
-            if (U.isAssignableFrom(iRes.vocModel, 'Intersection')) {  
+            if (U.isA(iRes.vocModel, 'Intersection')) {  
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
               var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
               if (a == meta[name].backLink) {
@@ -277,15 +277,44 @@ define('views/ControlPanel', [
                   params.gridCols = gridCols;
               }
             }
-            else if (grid) {
-              var gridCols = '';
-              for (var row in grid) 
-                gridCols += grid[row].value;
-              
-              params.gridCols = gridCols;
+            else {
+              if (grid) {
+                var gridCols = '';
+                for (var row in grid) 
+                  gridCols += grid[row].value;
+                
+                params.gridCols = gridCols;
+              }
+              if (U.isA(iRes.vocModel, 'ImageResource')) {
+                var imgProp = U.getImageProperty(iRes);
+                if (imgProp) {
+                  var img = iRes.get(imgProp);
+                  if (img) {
+                    params.img = img;
+                    var oW = U.getCloneOf(iRes.vocModel, 'ImageResource.originalWidth');
+                    var oH;
+                    if (oW)
+                      oH = U.getCloneOf(iRes.vocModel, 'ImageResource.originalHeight');
+                    
+                    if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
+                      
+//                      this.$el.addClass("image_fitted");
+//                      
+                      var dim = U.fitToFrame(80, 80, iRes.get(oW) / iRes.get(oH));
+                      params.width = dim.w;
+                      params.height = dim.h;
+                      params.top = oW > oH ? dim.y : dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                      params.right = dim.w - dim.x;
+                      params.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                      params.left = dim.x;
+                    }
+                  }
+                }
+              }
             }
 
-            params._uri = U.isAssignableFrom(iRes.vocModel, 'Intersection') ? U.makePageUrl('view', iRes.getUri(), {title: params.name}) : U.makePageUrl('edit', iRes.getUri(), {title: params.name});
+            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+            params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
             iRes.off('change', this.refreshOrRender, this);

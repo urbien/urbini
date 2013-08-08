@@ -535,7 +535,7 @@ define('views/EditView', [
           };
 
         if (vocModel.type.endsWith('BacklinkProperty')) {
-          var pf = U.getLongUri1(res.get('parentFolder'));
+          var pf = G.currentApp._uri; //U.getLongUri1(res.get('parentFolder'));
           if (G.currentUser.guest) 
             _.extend(rParams, {parentFolder: pf});
           else {
@@ -1140,6 +1140,7 @@ define('views/EditView', [
       this.render();
       this.refreshScrollers();
     },
+    
     click: function(e) {
 //      var from = e.target;
 //      if (from.tagName === 'select') {

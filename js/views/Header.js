@@ -380,7 +380,8 @@ define('views/Header', [
           var noWebClasses = !res.get('lastModifiedWebClass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = res.get('lastModifiedWebClass') < res.get('lastPublished');
           if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
-            this.doTry = true;
+            if (res.get('_uri') != G.currentApp._uri)
+              this.doTry = true;
             this.forkMe = true;
           }          
         }
@@ -524,12 +525,22 @@ define('views/Header', [
       else if (!res) {
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
-        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  this.hashParams['$prop'] == 'range') { 
+        var prop = this.hashParams['$prop'];
+        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  prop /* == 'range'*/) { 
           this.moreRanges = true;
-          if (this.hashParams['$more'])
-            this.moreRangesTitle = 'Less ranges';
+          var type = this.hashParams['$type'];
+          
+          var pname;
+          if (type) {
+            var pModel = U.getModel(type);
+            pname = U.getPropDisplayName(pModel.properties[prop]);
+          }
           else
-            this.moreRangesTitle = 'More ranges';
+            pname =  this.vocModel.properties[prop].displayName;
+          if (this.hashParams['$more'])
+            this.moreRangesTitle = 'Less ' + pname;
+          else
+            this.moreRangesTitle = 'More ' + pname;
         }
       }
 
