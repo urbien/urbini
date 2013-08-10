@@ -60,8 +60,8 @@ define('models/Resource', [
 //        }
       }
       
-      if (this.loaded && !options.silent)
-        this.announceNewResource();
+      if (this.loaded)
+        this.announceNewResource(options);
       else if (this.vocModel.type === commonTypes.Jst) {
         Events.trigger('newTemplate', this);
       }
@@ -98,7 +98,11 @@ define('models/Resource', [
       this.on('load', cb);
     },
     
-    announceNewResource: function() {
+    announceNewResource: function(options) {
+      options = options || {};
+      if (options.silent || options.partOfUpdate)
+        return;
+      
       Events.trigger('newResource:' + this.type, this);
       Events.trigger('newResource', this);
     },
@@ -421,14 +425,14 @@ define('models/Resource', [
         var unsaved = this.getUnsavedChanges();
         // don't overwrite changes the user has made but hasn't saved yet
         if (_.size(unsaved) && this.lastFetchOrigin !== 'edit') {
-          _.each(resp, function(val, key) {
+          for (var key in resp) {
             if (_.has(unsaved, key)) {
               if (/^_/.test(key))
-                return;
+                continue;
               
               delete resp[key];
             }
-          }.bind(this));
+          }
         }
         
         var sideEffects = resp._sideEffects;
