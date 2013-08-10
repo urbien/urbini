@@ -7,7 +7,7 @@ define('error', [
 
   function log() {
     var args = [].slice.call(arguments);
-    args.unshift("Errors");
+    args.unshift("Errors", "error");
     G.log.apply(G, args);
   };
   

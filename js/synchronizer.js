@@ -12,7 +12,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
 
   function log() {
     var args = [].slice.call(arguments);
-    args.unshift("taskQueue");
+    args.unshift("synchronizer");
     G.log.apply(G, args);
   };
 

@@ -178,7 +178,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   
   function log() {
     var args = [].slice.call(arguments);
-    args.unshift("indexedDB");
+    args.unshift("indexedDB", "db");
     G.log.apply(G, args);
   };
   

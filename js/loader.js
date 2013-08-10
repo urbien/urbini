@@ -933,6 +933,11 @@ define('globals', function() {
         color: '#88FFFF',
         bg: '#000'
       },
+      taskQueue: {
+        on: false,
+        color: '#88FFFF',
+        bg: '#000'
+      },
       app: {
         on: true,
         color: '#88FFFF',

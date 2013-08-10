@@ -20,7 +20,7 @@ define('utils', [
 
   function log() {
     var args = [].slice.call(arguments);
-    args.unshift(U.TAG);
+    args.unshift('Utils');
     G.log.apply(G, args);
   };
 
@@ -164,7 +164,6 @@ define('utils', [
   };
   
   var U = {
-    TAG: 'Utils',
     /**
      * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
      */
@@ -294,7 +293,7 @@ define('utils', [
                   try {
                     error = JSON.parse(xhr.responseText);
                   } catch (err) {
-                    G.log(U.TAG, 'failed to parse error responseText:', xhr.responseText);
+                    log('error', 'failed to parse error responseText:', xhr.responseText);
                   } 
                 }
                 
@@ -434,7 +433,7 @@ define('utils', [
       
       hash = hash.split('?')[0];
 //      if (!hash)
-//        G.log(U.TAG, 'error', 'match undefined 0');
+//        log('error', 'match undefined 0');
       
       if (hash.startsWith('templates'))
         return G.commonTypes.Jst;
@@ -3358,8 +3357,8 @@ define('utils', [
       'public': 'chat',
       'lobby': 'chatLobby'
     },
-    isChatPage: function() {
-      return /^chat/.test(U.getHash());
+    isChatPage: function(hash) {
+      return /^chat/.test(hash || U.getHash());
     },
     isPrivateChat: function() {
       return U.getHash().startsWith('chatPrivate');

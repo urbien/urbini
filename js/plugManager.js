@@ -1,4 +1,10 @@
 define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader', 'collections/ResourceList'], function(G, _, Events, U, ModelLoader, ResourceList) {
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("plugManager");
+    G.log.apply(G, args);
+  };
+
   var PLUGS_PREFIX = 'plugs:',
       scriptActions = ['create', 'edit'],
       CACHE = {};
@@ -85,13 +91,6 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
 //      }
   };
   
-
-  function log() {
-    var args = [].slice.call(arguments);
-    args.unshift("plugManager");
-    G.log.apply(G, args);
-  };
-
   // from http://www.bennadel.com/blog/1929-Using-The-WITH-Keyword-With-Javascript-s-Function-Constructor.htm
   function FunctionProxy(sourceCode) {
     

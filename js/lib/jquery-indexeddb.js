@@ -26,9 +26,9 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 	};
 	
   function log() {
-//    var args = [].slice.call(arguments);
-//    args.unshift("jqueryIndexedDB");
-//    G.log.apply(G, args);
+    var args = [].slice.call(arguments);
+    args.unshift("jqueryIndexedDB", "db");
+    G.log.apply(G, args);
   };
 
 //  var pendingReqs = {},
@@ -87,7 +87,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 						try {
 							var idbRequest = typeof req === "function" ? req(args) : req;
 							idbRequest.onsuccess = function(e) {
-			          log('req success');
+//			          log('req success');
 						    dfd.resolveWith(idbRequest, [idbRequest.result, e]);
 							};
 							idbRequest.onerror = function(e){
