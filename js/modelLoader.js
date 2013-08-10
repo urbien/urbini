@@ -535,7 +535,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   var ModelLoader = {
     init: _.once(function(storageType) {
       preferredStorage = storageType || 'indexedDB';
-      MODEL_STORE = G.getModelStoreInfo();
+      MODEL_STORE = G.getModelsStoreInfo();
     }),
     loadEnums: loadEnums,
     getModels: function(models, options) {

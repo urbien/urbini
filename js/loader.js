@@ -334,7 +334,7 @@ define('globals', function() {
     options = options || {};
     var storage = options.storage || 'localStorage',
         store = options.store || 'modules',
-        storeInfo = store === 'modules' ? G.getModuleStoreInfo() : G.getModelStoreInfo(),
+        storeInfo = store === 'modules' ? G.getModulesStoreInfo() : G.getModelsStoreInfo(),
         keyPath = storeInfo.options.keyPath;        
     
     if (storage === 'localStorage') {
@@ -374,6 +374,7 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
+    G.DEBUG                 = !G.minify;
     G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
     G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
     G.currentAppRegExp      = new RegExp(regex);
@@ -1288,7 +1289,9 @@ define('globals', function() {
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
       PushEndpoint: 'model/social/PushEndpoint',
-      PushChannel: 'model/social/PushChannel'
+      PushChannel: 'model/social/PushChannel',
+      Tour: 'commerce/urbien/Tour',
+      TourStep: 'commerce/urbien/TourStep'
     },
 //    commonTypes: {
 //      model: {
@@ -1422,13 +1425,10 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (G.minify || !TRACE.ON || !console || !console.log || !type)
+      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
       
       var types = typeof type == 'string' ? [type] : type;
-//      if (types.indexOf('error') != -1)
-//        debugger;
-      
       for (var i = 0; i < types.length; i++) {
         var type = types[i],
             typeTrace = TRACE.types[type] || TRACE.DEFAULT;
@@ -1565,7 +1565,10 @@ define('globals', function() {
 
       head.appendChild(script);
       head.removeChild(script);
-    }    
+    },
+    support: {
+      pushState: false //!!(window.history && history.pushState)
+    }
   });
 
   setupLocalStorage();
