@@ -314,7 +314,10 @@ define('views/ChatPage', [
       if (!this.textOnly) {
         this.on('video:on', this.videoFadeIn, this);
         this.on('video:on', this.enableTakeSnapshot, this);
-        this.on('newRTCCall', this.videoFadeIn, this);
+        Events.on('newRTCCall', function() {
+          if (this.isActive())
+            this.videoFadeIn();
+        }, this);
       }
       
       Events.on('hangUp', this.endChat, this);
@@ -454,8 +457,15 @@ define('views/ChatPage', [
       }
 
       if (this.isWaitingRoom && this.isClient) {
-        Events.trigger('headerMessage', {
-          info: 'Calling...'
+        var id = 'calling' + G.nextId();
+        Events.trigger('header.info', {
+          message: 'Calling...',
+          persist: true,
+          id: headerId
+        });
+        
+        Events.once('pageChange', function() {
+          Events.trigger('header.info.clear', id);
         });
       }
 

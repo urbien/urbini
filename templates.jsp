@@ -94,7 +94,7 @@
     <div id="localMedia"></div>
     <div id="remoteMedia"></div>
   </div>    
-  <div id="headerMessageBar" style="opacity:0.7"></div>
+  <!--div id="headerMessageBar" style="opacity:0.7"></div-->
   <!--div id="localVideoMonitor" style="z-index:100;width:100%;height:100%;left:0;top:0;position:fixed;">
   </div-->
   <div id="ringtoneHolder" style="visibility: hidden; display: none;">
@@ -997,9 +997,9 @@
   <div class="ui-grid-d mygrid">
     <div class="ui-block-a" id="backToCall"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#0f2">Back to call</button></div>
     <div class="ui-block-b"></div>
-    <div class="ui-block-c" id="sendToCall"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
+    <div class="ui-block-c" id="sendToCall" style="text-align:center"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
     <div class="ui-block-d"></div>
-    <div class="ui-block-e" id="hangUp"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
+    <div class="ui-block-e" id="hangUp" style="text-align:right"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
   </div>
 </script>
 
@@ -1067,8 +1067,20 @@
         </div>
       </div>
     </div>
-    <div id="headerErrorBar">
-    </div>
+    <!--div id="headerErrorBar">
+    </div-->
+  </div>
+</script>
+
+<script type="text/template" id="messageBarTemplate">
+  <div class="headerMessageBar {{= obj['class'] || '' }}">
+    <h3 id="{{= obj.id || 'messageBar' + G.nextId() }}">
+      {{ if (obj.icon) { }}
+        <i class="{{= 'ui-icon-' + icon}}"></i>
+      {{ }               }}
+      
+      {{= message }}      
+    </h3>
   </div>
 </script>
 
@@ -1281,42 +1293,41 @@
 </script -->
 
 
-<script type="text/template" id="errorListTemplate">
+<script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<!--
-  <ul id="errList" data-split-theme="{{= G.theme.error || 'c' }}" data-role="listview" data-split-icon="delete" data-inset="true">
-  {{  _.each(errors, function(err) {  }}
-     <li>
-       <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
-       <a href="#" class="closeparent" data-position-to="window">Dismiss error</a>
-     </li>
-  {{  });                           }}
-  </ul>
--->
-<div id="errList" data-theme="{{= G.theme.error || 'c' }}">
-{{  _.each(errors, function(err) {  }}
-     <div style="display:block">
-{{     if (err.link) {            }}
-         <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
-{{     }                          }}
-{{     if (!err.link) {           }}
-{{=      '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}
-{{     }                          }}
-       <i class="ui-icon-delete closeparent" style="float:right; width:20px; height:20px; color: white"></i>
+<div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
+{{  _.each(messages, function(msg) {  }}
+     <div style="display:block" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+  {{ if (msg.link) {            }}
+       <a href="{{= msg.link }}">
+  {{ }                        }}
+  {{ if (msg.icon) {    }}
+       <i class="ui-icon-{{= msg.icon }"></i>
+  {{ }                  }}
+  
+    {{= msg.message }}
+    
+  {{ if (msg.link) {            }}
+       </a>
+  {{ }                        }}
+  
+  {{ if (!msg.link && msg.icon) {    }}
+       <i class="ui-icon-{{= msg.icon }}"></i>
+  {{ }                               }}
+       <i class="ui-icon-delete closeparent"></i>
      </div>
 {{  });                           }}
 </div>
 
 </script>
 
-
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
-<div id="headerMessageBar"></div>
+<!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>

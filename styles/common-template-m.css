@@ -345,8 +345,31 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 /* JQM toggle switch ali gnment in a listview */
 .ui-field-contain div.ui-slider-switch { right: 15px; }
-#headerInfo {background-color:#fffc40;margin:0;padding:10px 0 10px 0;text-align:center;color:#000;text-shadow:none}
-#headerError {background-color:red;margin:0;padding:10px 0 10px 0;text-align:center;color:#ccc;text-shadow:none}
+.headerMessageBar {
+  margin:0;
+  padding:10px 0 10px 0;
+  text-align:center;
+  text-shadow:none;
+  border: 1px solid black;
+}
+
+.headerMessageBar.errorMessageBar {
+  background-color:red;
+  color:#ccc;
+}
+
+.headerMessageBar.infoMessageBar {
+  background-color:#fffc40;
+  color:#000;
+}
+
+.ui-icon-delete.closeparent {
+  float:right; 
+  width:20px; 
+  height:20px; 
+  color: white;
+}
+
 .buyButton { float:right; }
 
 *.ui-listview *.ui-btn-up-c,

@@ -27,7 +27,7 @@ define('views/BasicView', [
       options = options || {};
       this._hashInfo = G.currentHashInfo;
       this.hash = U.getHash();
-      this.hashParams = this._hashInfo && this._hashInfo.params;
+      this.hashParams = this._hashInfo && this._hashInfo.params || {};
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
         if (!this.rendered)
@@ -149,13 +149,8 @@ define('views/BasicView', [
 //      this.initialized = true;
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
-    }
-  }, {
-    displayName: 'BasicView'
-  });
-  
-  
-  _.extend(BasicView.prototype, {
+    },
+    
     refresh: function() {
       // override this
 //      this.render();
@@ -175,6 +170,7 @@ define('views/BasicView', [
     
     destroy: function() {
       Events.trigger('viewDestroyed', this);
+      Events.trigger('viewDestroyed:' + this.cid, this);
       this.remove();
     },
     
@@ -264,6 +260,12 @@ define('views/BasicView', [
       this[name] = this.children[name] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
+      
+      Events.on('viewDestroyed:' + view.cid, function(view) {
+        if (self.children)
+          delete self.children[name];
+      });
+
       return view;
     },
     
@@ -484,6 +486,8 @@ define('views/BasicView', [
         G.log.apply(G, args);
       }
     }
+  }, {
+    displayName: 'BasicView'
   });
 
   return BasicView; 
