@@ -3514,7 +3514,7 @@ define('utils', [
           subInfo;
 
       if (!route)
-        return null;
+        route = 'home';
       
       if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
         var uriParams = {};
@@ -3567,7 +3567,7 @@ define('utils', [
     partialWith: function(fn, context) {
       var args = [].slice.call(arguments, 2);
       return function() {
-        return fn.apply(context, args.concat(arguments));
+        return fn.apply(context, args.concat([].slice.call(arguments)));
       };
     },
 
