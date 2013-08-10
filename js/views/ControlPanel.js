@@ -63,7 +63,7 @@ define('views/ControlPanel', [
     
           params[prop.backLink] = self.resource.getUri();
           
-          self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+          self.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
           G.log(self.TAG, 'add', 'user wants to add to backlink');
         };
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
@@ -96,7 +96,7 @@ define('views/ControlPanel', [
             $title: title
           };
 
-        self.router.navigate('chooser/' + encodeURIComponent(rtype) + '?' + $.param(params), {trigger: true});
+        self.router.navigate(U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
 //          '$backLink': prop.backLink,

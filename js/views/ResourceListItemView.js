@@ -161,7 +161,7 @@ define('views/ResourceListItemView', [
         Events.stopEvent(e);
         var atype = this.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-        this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl(action, this.resource.get('forum'), {'-info': this.resource.get('davDisplayName')}), {trigger: true, forceFetch: true});
         return;
       }
       // Setting values to TaWith does not work if this block is lower then next if()
@@ -192,7 +192,7 @@ define('views/ResourceListItemView', [
               var props = {interfaceClass: uri, implementor: self.forResource};
               m.save(props, {
                 success: function() {
-                  self.router.navigate('view/' + encodeURIComponent(self.forResource), {trigger: true, forceFetch: true});        
+                  self.router.navigate(U.makeMobileUrl('view', self.forResource), {trigger: true, forceFetch: true});        
                 }
               });
             });
@@ -218,7 +218,7 @@ define('views/ResourceListItemView', [
 //              params['tagUses.tag.application'] = app;
         }
         else { //if (tag  ||  tags) {
-          app = window.location.hash.substring(1);
+          app = this.hash;
           app = decodeURIComponent(app.substring(0, idx));
         }
         if (app) {
@@ -236,11 +236,11 @@ define('views/ResourceListItemView', [
       }
 
       if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
-        this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, forceFetch: true});
       else {
         var pr;
 //          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-        this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl('view', this.resource.getUri()), {trigger: true, forceFetch: true});
 //          else {
 //            var r = U.getParamMap(window.location.href);
 //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
@@ -326,7 +326,7 @@ define('views/ResourceListItemView', [
         this.$el.html(this.template(json));
         return this;
       }
-      var params = U.getQueryParams(window.location.hash);
+      var params = this.hashParams;
       var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
       if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
@@ -379,7 +379,7 @@ define('views/ResourceListItemView', [
         json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
         json.left = dim.x;
       }
-      var params = U.getParamMap(window.location.hash);
+      var params = this.hashParams;
       if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
