@@ -200,6 +200,8 @@ define('models/Resource', [
         
         var resA = C.getResource(defaults[aProp]);
         var resB = C.getResource(defaults[bProp]);
+        if (resA != null  &&  resB != null) {
+          
         var mA = resA.vocModel;
         var mB = resB.vocModel;
         var rA = mA.adapter ? mA.adapter : null;
@@ -243,6 +245,7 @@ define('models/Resource', [
             }
           }
         }
+      }
       }
       this.set(defaults, {silent: true});
     },

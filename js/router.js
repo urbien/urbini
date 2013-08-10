@@ -253,6 +253,7 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
+      this.checkBackClick();
       var prev = this.currentView;
       if (this.backClicked) {
         this.currentView = C.getCachedView(); // this.viewsStack.pop();
@@ -268,20 +269,21 @@ define('router', [
 //            this.currentView = $.mobile.firstPage;
         }
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
       else {
         this.currentUrl = window.location.href;
         this.homePage.render();
         this.currentView = this.homePage;
         // no need to call change page when home page is displayed for the very first time
-        if (this.urlsStack.length)
+//        if (this.urlsStack.length)
+        if (!this.firstPage)
           $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
 
-      if (this.backClicked) {
+//      if (this.backClicked) {
 //        Events.trigger('pageChange', prev, this.currentView);
-        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
-      }
+//      }
       
       // HACK, this div is hidden for some reason when going to #home/...
       var mainDiv = $('.mainDiv'); 
@@ -1147,7 +1149,7 @@ define('router', [
       // perform transition        
       $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
       this.nextTransition = null;
-      Events.trigger('pageChange', prev, view);
+//      Events.trigger('pageChange', prev, view);
       return view;
     },
     

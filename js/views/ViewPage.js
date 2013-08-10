@@ -11,9 +11,10 @@ define('views/ViewPage', [
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
+      _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit', 'pageChange');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
+      this.$el.on('pageshow', setTimeout(this.pageChange, 1000));
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
       
@@ -204,6 +205,19 @@ define('views/ViewPage', [
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
+//      'pagechange': 'pageChange'
+    },
+    pageChange: function(e) {
+      if (this.hashParams.$tour) {
+        var selector = '[' + this.hashParams.$tourSelector + ']';
+        
+        var elm = this.$el.find(selector);
+        var direction = this.hashParams.$tourD;
+        if (!direction)
+          direction = 'left';
+        elm.addClass('hint--' + direction + ' hint--always');
+        elm.attr('data-hint', this.hashParams.$tourM);
+      }
     },
     swipeleft: function(e) {
       // open backlinks
