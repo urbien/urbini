@@ -5,12 +5,12 @@ define('views/ListPage', [
   'utils',
   'error',
   'vocManager',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicView, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
   var MapView;
-  return BasicView.extend({
+  return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {

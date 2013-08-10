@@ -7,15 +7,15 @@ define('views/EditPage', [
   'vocManager',
   'cache',
   'collections/ResourceList',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/Header',
   'views/EditView',
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, _, U, Events, Voc, C, ResourceList, BasicView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+], function(G, _, U, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
-  return BasicView.extend({
+  return BasicPageView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);

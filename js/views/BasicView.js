@@ -24,18 +24,14 @@ define('views/BasicView', [
     initialize: function(options) {
 //      this._initOptions = options;
       this.TAG = this.TAG || this.constructor.displayName;
-      G.log(this.TAG, 'new view', this.getPageTitle());
       options = options || {};
       this._hashInfo = G.currentHashInfo;
       this.hash = U.getHash();
       this.hashParams = this._hashInfo && this._hashInfo.params;
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
-        if (!this.rendered) {
+        if (!this.rendered)
           this.rendered = true;
-          if (this.pageView === this)
-            this.$el.one('pageshow', this.scrollToTop);
-        }
       }.bind(this));
       
       this._templates = [];
@@ -61,7 +57,7 @@ define('views/BasicView', [
         this.modelType = this.vocModel.type;
       }
       
-      this.router = G.Router || Backbone.history;
+      this.router = window.router || Backbone.history; //G.Router || Backbone.history;
       var refresh = this.refresh;
       this.refresh = function(rOptions) {
         var force = rOptions && rOptions.force;
@@ -134,74 +130,6 @@ define('views/BasicView', [
 ////////// comment end
       
       var self = this;
-      if (this.isPageView()) {
-//        if (navigator.mozApps) {
-//          var getSelf = navigator.mozApps.getSelf();
-//          getSelf.onsuccess = function(e) {
-//            var isInstalled = getSelf.result != null;
-//            if (!isInstalled) {
-//              debugger;
-//              var req = navigator.mozApps.install(G.firefoxManifestPath);
-//              req.onsuccess = function(e) {
-//                debugger;
-//              };
-//             
-//              req.onerror = function(e) {
-//                debugger;
-//              };
-//            }
-//          };
-//        }
-        
-        Events.on('headerMessage', function(data) {
-          var error = data.error,
-              errMsg = error ? error.msg || error : null,
-              info = data.info,
-              infoMsg = info ? info.msg || info : null,
-              errorBar = self.$('div#headerMessageBar');
-          
-          if (!errorBar.length)
-            return;
-          
-          errorBar.html("");
-          errorBar.html(U.template('headerErrorBar')({error: errMsg, info: infoMsg, style: "background-color:#FFFC40;"}));
-
-          var hash = U.getHash(), orgHash = hash;
-          if (error && !error.glued)
-            hash = U.replaceParam(hash, {'-error': null});
-          if (info && !info.glued)
-            hash = U.replaceParam(hash, {'-info': null});
-          
-          if (hash != orgHash)
-            Events.trigger('navigate', hash, {trigger: false, replace: true});
-        });
-        
-        this.onload(function() {
-          var gluedError = self.hashParams['-gluedError'],
-              error = gluedError || self.hashParams['-error'],
-              gluedInfo = self.hashParams['-gluedInfo'],
-              info = gluedInfo || self.hashParams['-info'];
-          
-          var data = {};
-          if (info) {
-            data.info = {
-              msg: info,
-              glued: !!gluedInfo
-            };
-          }
-          if (error) {
-            data.error = {
-              msg: error,
-              glued: !!gluedError
-            };
-          }
-          
-          if (_.size(data))
-            Events.trigger('headerMessage', data);
-        });        
-      }
-
-      var self = this;
       _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
           var event = listener.slice(2);
@@ -218,7 +146,8 @@ define('views/BasicView', [
         }
       });
 
-      this.initialized = true;
+//      this.initialized = true;
+      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     }
   }, {
@@ -352,41 +281,39 @@ define('views/BasicView', [
     },
     
     isPageView: function(view) {
-      view = view || this;
-      return view && view.cid === this.getPageView().cid;
+      return false;
     },
     
     getPageView: function() {
+      if (this.pageView)
+        return this.pageView;
+      
       var parent = this;
       while (parent.parentView) {
         parent = parent.parentView;
+        if (parent.isPageView())
+          return parent;
       }
-      
-      return parent;
     },
     
     getPageTitle: function() {
-      var pageView = this.getPageView();
-      if (!pageView)
-        return null;
-      
-      var title = pageView.$('#pageTitle');
-      return title.length ? title.text() : null;
+      return this.pageView && this.pageView.getPageTitle();
     },
     
     isActive: function() {
-      if (this.active)
-        return true;
-      
-      var view = this.parentView;
-      while (view) {
-        if (view.active)
-          return true;
-        
-        view = view.parentView;
-      }
-      
-      return false;
+//      if (this.active)
+//        return true;
+//      
+//      var view = this.parentView;
+//      while (view) {
+//        if (view.active)
+//          return true;
+//        
+//        view = view.parentView;
+//      }
+//      
+//      return false;
+      return this.active || (this.pageView && this.pageView.isActive());
     },
   
     isChildOf: function(view) {
@@ -433,13 +360,13 @@ define('views/BasicView', [
     finalize: function () {
     },
 
-    isPortrait: function() {
-      return window.innerHeight > window.innerWidth;
-    },
-    
-    isLandscape: function() {
-      return !this.isPortrait();
-    },
+//    isPortrait: function() {
+//      return window.innerHeight > window.innerWidth;
+//    },
+//    
+//    isLandscape: function() {
+//      return !this.isPortrait();
+//    },
     
     padding: function(horizontal) {
       var one = horizontal ? 'left' : 'top';
@@ -470,7 +397,7 @@ define('views/BasicView', [
     },
     
     isActivePage: function() {
-      return $m.activePage === this.pageView.$el;
+      return this.pageView && $m.activePage === this.pageView.$el;
     },
     
     showLoadingIndicator: function(timeout) {
@@ -506,9 +433,56 @@ define('views/BasicView', [
     isLandscape: function() {
       return this.getOrientation() == 'landscape';
     },
+
+    getTitle: function() {
+      if (this.resource)
+        return U.getDisplayName(this.resource);
+      else if (this.collection)
+        return this.collection.models[0] && U.getDisplayName(this.collection.models[0]);
+      else
+        return "Unknown";
+    },
+    
+    isInViewport: function() {
+      return this.el && U.isInViewport(this.el);
+    },
+
+    isAtLeastPartiallyInViewport: function() {
+      return this.el && U.isAtLeastPartiallyInViewport(this.el);
+    },
+
+    onScroll: function() {
+      this.log('visibility', 'START VISIBILITY REPORT');
+      this.logVisibility();
+      this.log('visibility', 'END VISIBILITY REPORT');
+    },
+    
+    logVisibility: function() {      
+      var numVisible = 0,
+          numPartiallyVisible = 0,
+          numInvisible = 0;
+      
+      _.each(this.children, function(child) {
+        child.logVisibility();
+        var isVisible = child.isInViewport(),
+            isPartiallyVisible = child.isAtLeastPartiallyInViewport();
+        
+        isVisible ? numVisible++ && numPartiallyVisible++ : numInvisible++;
+        child.log('visibility', '"{0}" is {1}visible'.format(child.getTitle(), isVisible ? '' : 
+                                                                                 isPartiallyVisible ? 'partially ' : 'in'));
+      });
+    },
     
     getOrientation: function() {
       return ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';
+    },
+    
+    log: function() {
+      if (G.DEBUG) {
+        var args = [].slice.call(arguments);
+        args.unshift(this.TAG);
+        G.log.apply(G, args);
+      }
     }
   });
 

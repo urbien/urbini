@@ -6,9 +6,9 @@ define('views/ChatPage', [
   'events',
   'cache',
   'vocManager',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/Header'
-], function(G, _, U, Events, C, Voc, BasicView, Header) {
+], function(G, _, U, Events, C, Voc, BasicPageView, Header) {
   // To avoid shortest-path interpolation.
   var BTN_ACTIVE_CLASS = 'ui-btn-active',
       SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889',
@@ -58,7 +58,7 @@ define('views/ChatPage', [
     return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(date.getMinutes()) + ampm);
   };
 
-  return BasicView.extend({
+  return BasicPageView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 

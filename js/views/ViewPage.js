@@ -3,12 +3,12 @@ define('views/ViewPage', [
   'globals',
   'utils',
   'events',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel'
-], function(G, U, Events, BasicView, Header, ResourceView, ControlPanel) {
-  return BasicView.extend({
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel) {
+  return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');

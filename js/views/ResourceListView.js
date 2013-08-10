@@ -9,8 +9,9 @@ define('views/ResourceListView', [
   'collections/ResourceList',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
+  var $wnd = $(window);
   var RLV = BasicView.extend({
-    displayPerPage: 4, // for client-side paging
+    displayPerPage: 10, // for client-side paging
     page: 0,
     changedViews: [],
 //    skipScrollEvent: false,
@@ -21,7 +22,7 @@ define('views/ResourceListView', [
 //      this.superInitialize(options);
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
-      $(window).on('scroll', this.onScroll);
+      $wnd.on('scroll', this.onScroll);
 //      Events.on('pageChange', this.onAppend);
 //      this.$el.on('create', this.onAppend);
 //      this.collection.on('reset', this.render, this);
@@ -583,12 +584,10 @@ define('views/ResourceListView', [
 //      }
 
       if (this.scrolledToNextPage())
-        this.getNextPage();
+        this.getNextPage();      
     },
     
     scrolledToNextPage: function() {
-      var $wnd = $(window);        
-
       if (this.prevScrollPos > $wnd.scrollTop()) {
         this.prevScrollPos = $wnd.scrollTop();
         return;
