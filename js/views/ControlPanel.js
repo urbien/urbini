@@ -29,9 +29,20 @@ define('views/ControlPanel', [
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add'
-//        ,
-//      'click': 'click'
+      'click a[data-shortName]': 'add',
+      'click': 'click'
+    },
+    click: function(e) {
+      var t = e.target;
+      while (t && t.tagName != 'A') {
+        t = t.parentNode;
+      }
+      
+      if (!t)
+        return;
+      this.prop = this.vocModel.properties[t.dataset.propname];
+      if (prop)
+        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
     },
     add: function(e) {
       var t = e.target;
@@ -49,6 +60,8 @@ define('views/ControlPanel', [
       
       var shortName = t.dataset.shortname;
       this.prop = this.vocModel.properties[shortName];
+
+      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       var self = this;       
       Voc.getModels(this.prop.range).done(function() {
@@ -397,20 +410,20 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
+              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
               colorIdx++;
               if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
                 
                 if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({icon: icon}, common)));
                 else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({icon: icon}, common)));
               }
               else {
                 if (isPropEditable)
-                  U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+                  U.addToFrag(frag, this.cpTemplate(common));
                 else
                   U.addToFrag(frag, this.cpTemplateNoAdd(common));                
               }
@@ -489,9 +502,9 @@ define('views/ControlPanel', [
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
             var comment = prop.comment;
-            var common = {range: range, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
+            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+              U.addToFrag(frag, this.cpTemplate(common));
             else
               U.addToFrag(frag, this.cpTemplateNoAdd(common));            
           }
@@ -499,7 +512,13 @@ define('views/ControlPanel', [
       }
       
       this.$el.html(frag);
-      
+//      if (this.hashParams.$tour) {
+//        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
+//        s.css('class', 'hint--left');
+//        s.css('class', 'hint--always');
+//        s.css('data-hint', this.hashParams.$tourM);
+//      }
+
 //      var self = this;
 //      var problems = $('.problematic');
 //      problems.each(function() {
