@@ -42,6 +42,7 @@ define('views/MenuPanel', [
     },
     logout: function(e) {
       Events.stopEvent(e);
+      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
       return;
     },
@@ -52,10 +53,12 @@ define('views/MenuPanel', [
       while (t.tagName.toLowerCase() != 'li') 
         t = t.parentNode;
       
-      if (t.id == 'home123')
+      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
+      if (t.id == 'home123') 
         window.location.href = here.slice(0, here.indexOf('#'));
-      else
+      else 
         window.location.href = G.serverName + '/app/UrbienApp';
+      
       return this;
     },
     click: function(e) {
@@ -71,7 +74,18 @@ define('views/MenuPanel', [
         return;
       
       text = U.removeHTML(text).trim();
-      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+      var attr;
+      if ($(t).attr('href'))
+        attr = 'href';
+      else if ($(t).attr('link'))
+        attr = 'link';
+      else
+        attr = 'data-href';
+      
+      var href = $(t).attr(attr); //$(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+      G.log(this.TAG, "Recording step for tour: selector = '" + attr + "'; value = '" + href + "'");
+      
+      
       var idx = href.lastIndexOf('#');
       href = idx == -1 ? href : href.slice(idx + 1);
           
