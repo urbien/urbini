@@ -725,7 +725,9 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.footer) : '<li>' }}
+<li data-propName="{{= shortName }}"
+{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
+>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
@@ -771,7 +773,7 @@
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
-   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-shadow="false" data-propName="{{= shortName }}" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' :  ''  }}
 
 
@@ -789,7 +791,7 @@
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
-   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-shadow="false" data-propName="{{= shortName }}" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
      <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
@@ -798,7 +800,9 @@
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
+<li data-propName="{{= shortName }}"
+  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
+>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp"></a>
