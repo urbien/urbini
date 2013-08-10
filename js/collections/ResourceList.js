@@ -32,7 +32,7 @@ define('collections/ResourceList', [
           vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -101,6 +101,8 @@ define('collections/ResourceList', [
       });
       
       this.monitorQueryChanges();
+      this.enablePaging();
+      this.on('endOfList', this.disablePaging);
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");      
     },
 
@@ -191,8 +193,10 @@ define('collections/ResourceList', [
           this.trigger('added', resources);
         }
         
-        if (options.announce !== false)
+        if (options.announce !== false) {
           Events.trigger('newResources', resources);
+          Events.trigger('newResources:' + this.type, resources);
+        }
       }
     },
 //    replace: function(resource, oldUri) {
@@ -320,8 +324,22 @@ define('collections/ResourceList', [
       options = _.defaults(options || {}, {partOfUpdate: true});
       return Backbone.Collection.prototype.set.call(this, resources, options);
     },
+
+    disablePaging: function() {
+      this._outOfData = true;
+      setTimeout(this.enablePaging, 3 * 60000);
+    },
+
+    enablePaging: function() {
+      this._outOfData = false;
+    },
+    
+    isOutOfResources: function() {
+      return this._outOfData;
+    },
     
     reset: function(models, options) {
+      this.enablePaging();
       var needsToBeStored = !U.isModel(models[0]);
       
       this.resetting = true;

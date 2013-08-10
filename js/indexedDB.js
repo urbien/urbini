@@ -71,34 +71,37 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return FileSystem ? fileSystemPromise :  _getFileSystem(items);
   };
 
+  function _saveFile(item, prop, val) {
+    return FileSystem.writeFile({
+      blob: val,
+      filePath: getFileSystemPath(item, prop, val)
+    }).done(function(fileEntry) {
+      var placeholder = _item[dbPropName] = item[prop] = {};
+      placeholder[filePropertyName] = fileEntry.fullPath;
+      
+      var resource = C.getResource(item._uri);
+      if (resource)
+        resource.set(prop, placeholder, {silent: true});
+    }).fail(function() {
+      debugger;
+    });
+  }
+  
   function _prep(item) {
     var defer = $.Deferred(),
         promise = defer.promise(),
         saveFilePromises = [],
         _item = {};
     
-    _.each(item, function(val, prop) {
-      var dbPropName = prepPropName(prop);
-      if (useFileSystem && val instanceof Blob) {
-        var promise = FileSystem.writeFile({
-          blob: val,
-          filePath: getFileSystemPath(item, prop, val)
-        }).done(function(fileEntry) {
-          var placeholder = _item[dbPropName] = item[prop] = {};
-          placeholder[filePropertyName] = fileEntry.fullPath;
-          
-          var resource = C.getResource(item._uri);
-          if (resource)
-            resource.set(prop, placeholder, {silent: true});
-        }).fail(function() {
-          debugger;
-        });
-        
-        saveFilePromises.push(promise);
-      }
+    for (var prop in item) {
+      var val = item[prop],
+          dbPropName = prepPropName(prop);
+      
+      if (useFileSystem && val instanceof Blob)
+        saveFilePromises.push(_saveFile(item, prop, val));
       else
         _item[dbPropName] = val;
-    });
+    }
 
     $.when.apply($, saveFilePromises).then(function() {
       defer.resolve(_item);
@@ -278,10 +281,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       // don't remake an existing store, unless we just deleted it
       if (_.contains(currentStores, storeName)) // && !_.contains(self.storesToKill, storeName))
         return;
-      
-      // HACK, need to catch a bug
-      if (!/^http/.test(storeName) && !/^_/.test(storeObj.options.keyPath))
-        debugger;
       
       try {
         store = versionTrans.createObjectStore(storeName, storeObj.options);

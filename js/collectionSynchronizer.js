@@ -27,6 +27,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       filter: U.getQueryParams(this.data)
     });
   };
+
+//  CollectionSynchronizer.prototype._fetchFromServer = function() {
+//    if (!this.data.isUpdate())
+//  };
   
   CollectionSynchronizer.prototype._preProcess = function() {
     var result = Synchronizer.prototype._preProcess.call(this),
@@ -67,14 +71,21 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       
       return;
     }
-    else if (isStale && this.info.start < this.data.length) {
-      this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
-      return; 
+    else {
+      if (this.data.isOutOfResources()) {
+        this._error(null, {code: 204, details: 'End of list'}, this.options);
+        return;
+      }
+      
+      if (isStale && this.info.start < this.data.length) {
+        this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
+        return; 
+      }
     }
     
     var adapter = this.data.vocModel.adapter;
     if (adapter && adapter.supportsPaging && !adapter.supportsPaging()) {
-      this._error(null, {code: 204, details: 'End of list'}, options);
+      this._error(null, {code: 204, details: 'End of list'}, this.options);
       return;
     }
     
