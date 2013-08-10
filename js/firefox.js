@@ -10,7 +10,8 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
 
   function log() {
     var args = [].slice.call(arguments);
-    G.log.apply([TAG, 'app comm'].concat(args));
+    args.unshift(TAG, 'app comm');
+    G.log.apply(G, args);
     U.rpc.apply(null, ['log'].concat(args));
   }
   

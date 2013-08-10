@@ -318,19 +318,19 @@ define('app', [
   
   function prepDB() {
     var requiredStores = {    
-      moduleStore: {
+      modules: {
         name: 'modules',
         options: {
           keyPath: 'url'
         }
       },
-      modelStore: {
+      models: {
         name: 'models',
         options: {
           keyPath: 'url'
         }      
       },
-      refStore: {
+      ref: {
         name: 'ref',
         options: {
           keyPath: '_id'
@@ -351,7 +351,7 @@ define('app', [
     };
     
     for (var storeName in requiredStores) {
-      G['get' + storeName.capitalizeFirst() + 'Info'] = U.getPropFn(requiredStores, storeName, true);
+      G['get' + storeName.capitalizeFirst() + 'StoreInfo'] = U.getPropFn(requiredStores, storeName, true);
     }
     
     ModelLoader.init('indexedDB');
@@ -503,8 +503,16 @@ define('app', [
         window.location.hash = '';
       }
       
-      G.Router = new Router();
-      Backbone.history.start();
+      App.router = new Router();
+      if (G.support.pushState) {
+        Backbone.history.start({
+          pushState: true, 
+          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+        });
+      }
+      else
+        Backbone.history.start();
+      
       dfd.resolve();
     }).promise();
   };
@@ -711,5 +719,9 @@ define('app', [
     }
   };
   
+  if (G.DEBUG)
+    G.App = App;
+  
+
   return App;
 });
