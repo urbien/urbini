@@ -129,7 +129,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       running.push(task);
       promise.always(function() {
         var good = promise.state() === 'resolved';
-        log(good ? 'info', 'error', 'Task {0}: {1}'.format(good ? 'completed' : 'failed', task.name));
+        log(good ? 'taskQueue' : 'error', 'Task {0}: {1}'.format(good ? 'completed' : 'failed', task.name));
         running.splice(running.indexOf(task), 1);
         if (tq.isBlocked())
           tq.open();
@@ -155,10 +155,10 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         task = Task.apply(null, arguments);
       
       var qLength = queue.length();
-      log('info', 'Checking task:', task.name);
+      log('taskQueue', 'Checking task:', task.name);
       var blocking = task.blocking;
       if (tq.isBlocked() || tq.isPaused()) {
-        log('info', 'queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
+        log('taskQueue', 'queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
         push(task);
       }      
       else if (task.blocking) {
@@ -226,7 +226,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     this.priority = priority || 0;
     this.blocking = blocking || false;
     this.run = function() {
-      log('info', 'Running task:', this.name);
+      log('taskQueue', 'Running task:', this.name);
       started = true;
       var otherPromise = taskFn.call(defer, defer);
       if (otherPromise && typeof otherPromise.then == 'function')
@@ -235,7 +235,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       setTimeout(function() {
         if (defer.state() === 'pending') {
           debugger;
-          log('info', 'Task timed out: ' + self.name);
+          log('taskQueue', 'Task timed out: ' + self.name);
           defer.reject();
         }
       }, 10000);

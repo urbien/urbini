@@ -14,11 +14,15 @@ define('views/ViewPage', [
       _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit', 'pageChange');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
-      this.$el.on('pageshow', setTimeout(this.pageChange, 1000));
+      var self = this,
+          res = this.resource;
+      
+      this.$el.on('pageshow', function() {
+        setTimeout(self.pageChange, 1000);
+      });
+      
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
-      
-      var res = this.resource;
       
       var commonTypes = G.commonTypes;
       this.headerButtons = {

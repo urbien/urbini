@@ -938,13 +938,18 @@ define('globals', function() {
         color: '#88FFFF',
         bg: '#000'
       },
+      visibility: {
+        on: false,
+        color: '#FFFFFF',
+        bg: '#000'
+      },
       app: {
         on: true,
         color: '#88FFFF',
         bg: '#000'
       },
       db: {
-        on: true,
+        on: false,
         color: '#FFFFFF',
         bg: '#000'
       },
