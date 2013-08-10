@@ -55,5 +55,8 @@ define('events', [
   //  };
   }, Backbone.Events);
   
-  return (Lablz.Events = Events);
+  if (G.DEBUG)
+    G.Events = Events;
+  
+  return Events;
 });

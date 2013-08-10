@@ -12,7 +12,11 @@ define('utils', [
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      xhrHistory = [];
+      xhrHistory = [],
+      doc = document,
+      compiledTemplates = {},
+      HAS_PUSH_STATE = G.support.pushState,
+      FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
   function log() {
     var args = [].slice.call(arguments);
@@ -301,7 +305,7 @@ define('utils', [
               }
               
               if (error) {
-                debugger;
+//                debugger;
                 defer.reject(xhr, error, opts);
               }
               else {
@@ -1845,7 +1849,7 @@ define('utils', [
     },
     
     makePageUrl: function() {
-      return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
+      return G.pageRoot + FRAGMENT_SEPARATOR + U.makeMobileUrl.apply(this, arguments);
     },
     
     getAppPathFromTitle: function(title) {
@@ -1886,16 +1890,16 @@ define('utils', [
       }
         
       var url = '';
-      switch (action) {
-        case 'list':
-          break;
-        default: 
-          url += action + '/';
-          break;
-      }
+//      switch (action) {
+//        case 'list':
+//          break;
+//        default: 
+//          url += action + '/';
+//          break;
+//      }
       
 //      var encOptions = {delimiter: '&amp;'};
-      url += encodeURIComponent(typeOrUri);
+      url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
       if (_.size(params))
         url += '?' + U.getQueryString(params); //, encOptions);
       
@@ -2332,10 +2336,14 @@ define('utils', [
     },
     
     getHash: function(decode) {
-      var match = (window || this).location.href.match(/#(.*)$/),
-          hash = match ? match[1] : '';
-          
-      return decode ? decodeURIComponent(hash) : hash;
+      if (HAS_PUSH_STATE)
+        return window.location.href.slice(G.appUrl.length + 1);
+      else {
+        var match = (window || this).location.href.match(/#(.*)$/),
+            hash = match ? match[1] : '';
+            
+        return decode ? decodeURIComponent(hash) : hash;
+      }  
     },
     
 //    flattenModelJson: function(m, vocModel, preserve) {
@@ -2924,7 +2932,14 @@ define('utils', [
     },
 
     template: function(templateName, type, context) {
-      var template;
+      var template,
+          typeKey = type || '',
+          subCache = compiledTemplates[templateName] = compiledTemplates[templateName] || {},
+          templateFn = subCache[typeKey];
+      
+      if (templateFn)
+        return context ? templateFn.bind(context) : templateFn;
+      
       if (typeof templateName === 'string') {
         template = Templates.get(templateName, type);
         if (!template)
@@ -2935,8 +2950,7 @@ define('utils', [
       else
         template = templateName;
       
-      context = context || this;
-      return function(json) {
+      templateFn = function(json) {
         json = json || {};
         if (!_.has(json, 'U'))
           json.U = U;
@@ -2945,8 +2959,15 @@ define('utils', [
         if (!_.has(json, '$'))
           json.$ = $;
         
-        return template.call(context, json);
+        return template.call(this, json);
       };
+      
+      subCache[typeKey] = templateFn;
+      setTimeout(function() {
+        delete subCache[typeKey];
+      }, 2000);
+      
+      return templateFn;
     },
     
     getOrderByProps: function(collection) {
@@ -3186,7 +3207,7 @@ define('utils', [
         cancel: true
       }));
       
-      ($m.activePage || $(document.body)).append(dialogHtml);
+      ($m.activePage || $(doc.body)).append(dialogHtml);
       var $dialog = $('#' + id);
       $dialog.trigger('create');
       $dialog.popup().popup("open");
@@ -3248,7 +3269,7 @@ define('utils', [
       });
 
       
-      var $dialog = ($m.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      var $dialog = ($m.activePage || $(doc.body)).append(dialogHtml).find('#' + id);
       _.each(options, function(option) {
         if (option.action) {
           $dialog.find('#' + option.id).click(option.action);
@@ -3476,30 +3497,58 @@ define('utils', [
       return vib;
     })(),
     
+    isMetaParameter: function(param) {
+      return /^[$-]+/.test(param);
+    },
+    
     parseHash: function(hash) {
       hash = hash || U.getHash();
       var params = U.getHashParams(hash),
           qIdx = hash.indexOf("?"),
           route = U.getRoute(hash),
+          subRoute,
           hashParts = hash.split('?'),
-          uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]),
           type = U.getModelType(hash),
           query = hashParts[1] || '',
-          info;
+          uri,
+          info,
+          subInfo;
 
-      if (route === 'templates') {
-        var subHashInfo = U.parseHash(uri);
-        uri = subHashInfo.uri;
-        type = subHashInfo.type;
+      if (!route)
+        return null;
+      
+      if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+        var uriParams = {};
+        for (var param in params) {
+          if (U.isMetaParameter(param)) {
+            uriParams[param] = params[param];
+            delete params[param];
+          }
+        }
+        
+        uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
       }
+      else {
+        uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+      }
+        
+      if (window.router.isProxyRoute(route)) {
+        subInfo = U.parseHash(uri);
+//        uri = subHashInfo.uri;
+//        type = subHashInfo.type;
+//        subRoute = subHashInfo.route;
+      }
+      
       
       info = {
         action: U.getRouteAction(route),
         route: route,
+        sub: subInfo,
         uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
         type: type,
         query: query,
-        params: params
+        params: params,
+        fragment: hash
       };
       
       info.equals = function(otherInfo) {
@@ -3574,7 +3623,41 @@ define('utils', [
       });
     },
     
-    HTML: HTML
+    HTML: HTML,
+    
+    isInViewport: function(element) {
+      var rect = element.getBoundingClientRect(),
+          documentElement = doc.documentElement;
+
+      return  rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
+              rect.right <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+    },
+    
+    isAtLeastPartiallyInViewport: function(element) {
+      if (element.offsetWidth === 0 || element.offsetHeight === 0) 
+        return false;
+      
+      var height = doc.documentElement.clientHeight,
+          rects = element.getClientRects();
+        
+      for (var i = 0, l = rects.length; i < l; i++) {
+        var r = rects[i],
+            in_viewport = r.top > 0 ? r.top <= height : (r.bottom > 0 && r.bottom <= height);
+            
+        if (in_viewport) 
+          return true;
+      }
+        
+      return false;
+    },
+    
+    negate: function(fn, context) {
+      return function() {
+        return !fn.apply(context || this, arguments);
+      }
+    }
   };
 
   for (var p in U.systemProps) {

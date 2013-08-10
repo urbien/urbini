@@ -110,6 +110,9 @@ define('error', [
   for (var m in Errors.msgs) {
     Errors[m] = errDialogFunction(Errors.msgs[m]);
   }
-  
+
+  if (G.DEBUG)
+    G.Errors = Errors;  
+
   return Errors;
 });
