@@ -19,10 +19,12 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
+//      _.extend(this.events, this.prototype.events);
+      _.bindAll(this, 'pageshow', 'swiperight', 'swipeleft');      
       this.setupErrorHandling();
-      this._loadingDfd.promise().done(function() {
-        self.$el.one('pageshow', self.scrollToTop);
-      });
+//      this._loadingDfd.promise().done(function() {
+//        self.$el.one('pageshow', self.scrollToTop);
+//      });
       
       $(window).on('scroll', this.onScroll.bind(this));
       
@@ -95,12 +97,50 @@ define('views/BasicPageView', [
       });      
     },
     
+    events: {
+      'scrollstart': 'reverseBubbleEvent',
+      'scrollstop': 'reverseBubbleEvent',      
+      'scroll': 'reverseBubbleEvent',
+      'pageshow': 'pageshow',
+      'pagebeforeshow': 'reverseBubbleEvent',
+      'swiperight': 'swiperight',
+      'swipeleft': 'swipeleft'
+    },
+
+    pageshow: function() {
+      if (!this._scrolledToTopOnLoad) {
+        this.scrollToTop();
+        this._scrolledToTopOnLoad = true;
+      }
+      
+      this.reverseBubbleEvent.apply(this, arguments);
+    },
+    
+    swipeleft: function(e) {
+      this.log('events', 'swipeleft');
+      Events.trigger('forward');
+      return false;
+    },
+    
+    swiperight: function(e) {
+      this.log('events', 'swiperight');
+      Events.trigger('back');
+      return false;
+    },
+
     getPageView: function() {
       return this;
     },
     
     isPageView: function() {
       return true;
+    },
+    
+    onScroll: function() {
+      this.$el.triggerHandler('scroll');
+      this.log('visibility', 'START visibility report for ' + this.TAG);
+      this.logVisibility();
+      this.log('visibility', 'END visibility report for ' + this.TAG);
     },
     
     runTourStep: function(step) {
@@ -142,7 +182,6 @@ define('views/BasicPageView', [
           vocModel = this.vocModel,
           type = this.modelType;
       
-      // on error, create a MessageBar
       _.each(['info', 'error'], function(type) {
         Events.on('header.' + type, U.partialWith(self.createMessageBar, self, type));
       });

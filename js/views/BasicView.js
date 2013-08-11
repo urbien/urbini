@@ -15,7 +15,8 @@ define('views/BasicView', [
       
       if (superInit == this.initialize) {
         superCl = superCl.constructor.__super__;
-        superInit = superCl && superCl.initialize;
+        if (superCl)
+          superInit = superCl.initialize;
       }
       
       if (superInit)
@@ -23,6 +24,17 @@ define('views/BasicView', [
     },
     initialize: function(options) {
 //      this._initOptions = options;
+      _.bindAll(this, 'reverseBubbleEvent');
+      var superCtor = this.constructor;
+      while (superCtor.__super__) {
+        var superDuperCtor = superCtor.__super__.constructor;
+        if (superCtor === superDuperCtor) // prevent infinite loops
+          break;
+        
+        _.defaults(this.events, superDuperCtor.prototype.events);
+        superCtor = superDuperCtor;
+      }
+      
       this.TAG = this.TAG || this.constructor.displayName;
       options = options || {};
       this._hashInfo = G.currentHashInfo;
@@ -282,6 +294,15 @@ define('views/BasicView', [
       }
     },
     
+    reverseBubbleEvent: function(e) {
+      if (!this.isActive())
+        return;
+      
+      _.each(this.children, function(child) {
+        child.$el && child.$el.triggerHandler(e.type, e); // triggerHandler will prevent the event from bubbling back up and creating an infinite loop
+      });
+    },
+    
     isPageView: function(view) {
       return false;
     },
@@ -453,12 +474,6 @@ define('views/BasicView', [
       return this.el && U.isAtLeastPartiallyInViewport(this.el);
     },
 
-    onScroll: function() {
-      this.log('visibility', 'START VISIBILITY REPORT');
-      this.logVisibility();
-      this.log('visibility', 'END VISIBILITY REPORT');
-    },
-    
     logVisibility: function() {      
       var numVisible = 0,
           numPartiallyVisible = 0,
