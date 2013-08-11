@@ -29,8 +29,8 @@ define('views/ResourceMasonryItemView', [
       return this;
     },
     events: {
-      'click .like': 'like',
-      'click': 'click'
+      'vclick .like': 'like',
+      'vclick': 'click'
     },
     like: function(e) {
       var likeModel = U.getModel('Vote');

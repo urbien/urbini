@@ -29,21 +29,22 @@ define('views/ControlPanel', [
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add',
-      'click': 'click'
+      'vclick a[data-shortName]': 'add'
+//        ,
+//      'click': 'click'
     },
-    click: function(e) {
-      var t = e.target;
-      while (t && t.tagName != 'A') {
-        t = t.parentNode;
-      }
-      
-      if (!t)
-        return;
-      this.prop = this.vocModel.properties[t.dataset.propname];
-      if (prop)
-        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
-    },
+//    click: function(e) {
+//      var t = e.target;
+//      while (t && t.tagName != 'A') {
+//        t = t.parentNode;
+//      }
+//      
+//      if (!t)
+//        return;
+//      this.prop = this.vocModel.properties[t.dataset.propname];
+//      if (prop)
+//        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
+//    },
     add: function(e) {
       var t = e.target;
       while (t && t.tagName != 'A') {

@@ -358,7 +358,12 @@ define('app', [
     ResourceManager.init();
   };
   
-  function doPreStartTasks() {       
+  function setupHashMonitor() {
+    $(window).on('hashchange')
+  };
+  
+  function doPreStartTasks() {
+    setupHashMonitor();
     setupAvailibilityMonitor();
     setupCleaner();
     prepDB();

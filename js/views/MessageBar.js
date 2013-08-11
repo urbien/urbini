@@ -18,7 +18,7 @@ define('views/MessageBar', [
     },
     
     events: {
-      'click .closeparent': 'checkMessageList'
+      'vclick .closeparent': 'checkMessageList'
     },
     
     checkMessageList: function(e) {

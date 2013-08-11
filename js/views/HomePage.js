@@ -25,10 +25,10 @@ define('views/HomePage', [
     
     },
     events: {
-      'pagehide': 'pagehide',
-      'pagebeforeshow': 'pagebeforeshow',
-      'click': 'click',
-      'click #installApp': 'installApp'
+      'pagehide'            : 'pagehide',
+      'pagebeforeshow'      : 'pagebeforeshow',
+      'vclick'              : 'click',
+      'vclick #installApp'  : 'installApp'
     },
     
     installApp: function(e) {

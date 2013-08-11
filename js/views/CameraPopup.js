@@ -27,11 +27,11 @@ define('views/CameraPopup', [
     events: {
 //      'click #camVideo'         : 'stop',
 //      'click canvas'            : 'start',
-      'click #cameraSubmitBtn'  : 'submit',
-      'click #cameraShootBtn'   : 'startOrStop',
-      'click #cameraCancelBtn'  : 'destroy',
-      'resize'                  : 'onresize',
-      'orientationchange'       : 'onorientationchange'
+      'vclick #cameraSubmitBtn'  : 'submit',
+      'vclick #cameraShootBtn'   : 'startOrStop',
+      'vclick #cameraCancelBtn'  : 'destroy',
+      'resize'                   : 'onresize',
+      'orientationchange'        : 'onorientationchange'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');

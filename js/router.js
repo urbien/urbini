@@ -23,7 +23,12 @@ define('router', [
       TOUR_PARAM = '$tour',
       TOUR_STEP_PARAM = '$tourStep';
   
-
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("router");
+    G.log.apply(G, args);
+  };
+  
   function getTour(tourUri, tourModel) {
     return $.Deferred(function(defer) {
       var tourRes = C.getResource(tourUri);
@@ -187,12 +192,12 @@ define('router', [
         self.checkTour();
       });
       
-      Events.on('back', function() {
-        var now = +new Date();
-        if (self.lastBackClick && now - self.lastBackClick < 100)
-          debugger;
-          
-        self.lastBackClick = now;
+      Events.on('back', _.debounce(function() {
+//        var now = +new Date();
+//        if (self.lastBackClick && now - self.lastBackClick < 100)
+//          debugger;
+//          
+//        self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
@@ -239,7 +244,12 @@ define('router', [
 //        self.previousHash = null;
 //        self.backClicked = true;
 //        window.history.back();
+      }, 100, true));
+      
+      Events.on('forward', function() {
+        window.history.forward();
       });
+
 
       // a hack to prevent browser address bar from dropping down
       // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
@@ -291,7 +301,27 @@ define('router', [
 //          Events.stopEvent(e);
 //          Events.trigger('back');
 //        }
-//      }  
+//      }
+      
+      Backbone.history.loadUrl = function(fragmentOverride) {
+        var fragment = this.fragment = this.getFragment(fragmentOverride);
+        // validate tour step if needed
+//        if (adjustedOptions.trigger && this._currentTourStep) {
+        if (self._currentTourStep) {
+          fragment = self.adjustFragmentForTour(fragment);
+          if (fragment == null) {
+            Events.trigger('back');
+            return false;
+          }
+        }
+          
+        return _.any(this.handlers, function(handler) {
+          if (handler.route.test(fragment)) {
+            handler.callback(fragment);
+            return true;
+          }
+        });
+      };
     },
     
     defaultOptions: {
@@ -340,12 +370,6 @@ define('router', [
       var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
           hashInfo = G.currentHashInfo;
       
-      if (adjustedOptions.trigger && this._currentTourStep) {
-        fragment = this.adjustFragmentForTour(fragment);
-        if (fragment == null)
-          return;
-      }
-        
       if (G.inFirefoxOS)
         U.rpc('setUrl', window.location.href);
       
@@ -840,9 +864,10 @@ define('router', [
     },
     
     updateHashInfo: function() {
-      var oldHash = G.currentHash;
+      G.previousHash = G.currentHash;
+      G.previousHashInfo = G.currentHashInfo;
       G.currentHash = U.getHash();
-      if (G.currentHash !== oldHash)
+      if (G.currentHash !== G.previousHash)
         G.currentHashInfo = U.parseHash();
       
       return G.currentHashInfo;

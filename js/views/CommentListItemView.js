@@ -19,7 +19,7 @@ define('views/CommentListItemView', [
       return this;
     },
     events: {
-      'click .like': 'like'
+      'vclick .like': 'like'
     },
     like: function(e) {
       var likeModel = U.getModel('Vote');

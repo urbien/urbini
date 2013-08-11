@@ -66,7 +66,7 @@ define('views/ResourceView', [
       return this;
     },
     events: {
-      'click': 'click'
+      'vclick': 'click'
     },
     click: function(e) {
       if (!this.isBuyGroup)

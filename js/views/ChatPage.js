@@ -325,18 +325,18 @@ define('views/ChatPage', [
     },
     
     events: {
-      'click'                             : '_switchToApp',
-      'click #videoChat'                  : 'toggleChat',
-      'click #textChat'                   : 'toggleChat',
-      'click input'                       : 'chatFadeIn',
-      'click #chatSendBtn'                : '_sendMessage',
+      'vclick'                             : '_switchToApp',
+      'vclick #videoChat'                  : 'toggleChat',
+      'vclick #textChat'                   : 'toggleChat',
+      'vclick input'                       : 'chatFadeIn',
+      'vclick #chatSendBtn'                : '_sendMessage',
 //      'click #endChat'                    : 'endChat',
-      'click #chatReqLocBtn'              : 'requestLocation',
-      'click #chatShareLocBtn'            : 'shareLocation',
-      'click #chatCaptureBtn'             : 'takeSnapshot',
-      'resize'                            : 'resize',
-      'orientationchange'                 : 'resize',
-      'pagehide'                          : 'pagehide' 
+      'vclick #chatReqLocBtn'              : 'requestLocation',
+      'vclick #chatShareLocBtn'            : 'shareLocation',
+      'vclick #chatCaptureBtn'             : 'takeSnapshot',
+      'resize'                             : 'resize',
+      'orientationchange'                  : 'resize',
+      'pagehide'                           : 'pagehide' 
     },
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);

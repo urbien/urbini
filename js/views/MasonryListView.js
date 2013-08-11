@@ -72,7 +72,6 @@ define('views/MasonryListView', [
             itemSelector: ITEM_SELECTOR
           });
           
-          self.masonry('bindResize');
           self.finish();
         });        
       }

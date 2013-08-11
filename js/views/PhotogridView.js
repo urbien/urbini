@@ -49,7 +49,7 @@ define('views/PhotogridView', [
       return this;
     },
     events: {
-      'click [data-intersection]': 'goToIntersection',
+      'vclick [data-intersection]': 'goToIntersection',
       'orientationchange': 'resize',
       'resize': 'resize'
     },

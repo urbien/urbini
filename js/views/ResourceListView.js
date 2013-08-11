@@ -13,16 +13,16 @@ define('views/ResourceListView', [
   var RLV = BasicView.extend({
     displayPerPage: 10, // for client-side paging
     page: 0,
-    changedViews: [],
+//    changedViews: [],
 //    skipScrollEvent: false,
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
 //      this.superInitialize(options);
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
-      $wnd.on('scroll', this.onScroll);
+//      $wnd.on('scroll', this.onScroll);
 //      Events.on('pageChange', this.onAppend);
 //      this.$el.on('create', this.onAppend);
 //      this.collection.on('reset', this.render, this);
@@ -80,9 +80,13 @@ define('views/ResourceListView', [
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
-        throw new Error('this view doesn\'t have a mode ' + mode);
+        throw 'this view doesn\'t have a mode ' + mode;
       
       this.mode = mode;
+    },
+  
+    events: {
+      'scroll': 'onScroll'
     },
     
     getListItems: function() {
@@ -467,16 +471,10 @@ define('views/ResourceListView', [
           self.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
 //      }, 100);
     },
-    
-//    tap: Events.defaultTapHandler,
-//    click: Events.defaultClickHandler,
-    swipe: function(e) {
-      G.log(this.TAG, "info", "swipe");
-    },
-    
-    changed: function(view) {
-      this.changedViews.push(view);
-    },
+        
+//    changed: function(view) {
+//      this.changedViews.push(view);
+//    },
     
     render: function(e) {
       if (!this.rendered) {

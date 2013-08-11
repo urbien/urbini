@@ -90,9 +90,9 @@ define('views/ResourceListItemView', [
       return this;
     },
     events: {
-      'click': 'click',
+      'vclick': 'click',
 //      'click .recipeShoppingList': 'recipeShoppingListHack',
-      'click .cancelItem': 'cancelItem'
+      'vclick .cancelItem': 'cancelItem'
     },
     cancelItem: function(e) {
       Events.stopEvent(e);

@@ -11,7 +11,7 @@ define('views/ViewPage', [
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit', 'pageChange');
+      _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       var self = this,
@@ -204,11 +204,12 @@ define('views/ViewPage', [
 //      });
 //    },
     events: {
-      'click #edit': 'edit',
+      'vclick #edit': 'edit',
 //      'click': 'click',
-      'click #homeBtn': 'home',
+      'vclick #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
+//        ,
 //      'pagechange': 'pageChange'
     },
     pageChange: function(e) {
@@ -223,14 +224,7 @@ define('views/ViewPage', [
         elm.attr('data-hint', this.hashParams.$tourM);
       }
     },
-    swipeleft: function(e) {
-      // open backlinks
-      G.log(this.TAG, 'events', 'swipeleft');
-    },
-    swiperight: function(e) {
-      // open menu
-      G.log(this.TAG, 'events', 'swiperight');
-    },
+
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
       var here = window.location.href;

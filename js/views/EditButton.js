@@ -7,7 +7,7 @@ define('views/EditButton', [
   return BasicView.extend({
     template: 'editButtonTemplate',
     events: {
-      'click #edit': 'edit'
+      'vclick #edit': 'edit'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit');

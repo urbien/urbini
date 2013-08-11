@@ -101,17 +101,17 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click .cancel'                     :'cancel',
-      'submit form'                       :'submit',
-      'click .resourceProp'               :'chooser',
-      'click input[data-duration]'        :'scrollDuration',
-      'click input[data-date]'            :'scrollDate',
+      'vclick .cancel'                     :'cancel',
+      'submit form'                        :'submit',
+      'vclick .resourceProp'               :'chooser',
+      'vclick input[data-duration]'        :'scrollDuration',
+      'vclick input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
-      'click .cameraCapture'              :'cameraCapture',
-      'change .cameraCapture'             :'cameraCapture',
-      'click #check-all'                  :'checkAll',
-      'click #uncheck-all'                :'uncheckAll',
-      'click'                             :'click'
+      'vclick .cameraCapture'              :'cameraCapture',
+      'change .cameraCapture'              :'cameraCapture',
+      'vclick #check-all'                  :'checkAll',
+      'vclick #uncheck-all'                :'uncheckAll',
+      'vclick'                             :'click'
     },
 
     /** 

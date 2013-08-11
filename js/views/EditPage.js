@@ -17,7 +17,7 @@ define('views/EditPage', [
   var editParams = ['action', 'viewId'];//, 'backlinkResource'];
   return BasicPageView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'edit', 'home', 'swipeleft', 'swiperight', 'set', 'resetForm');
+      _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.makeTemplate('resourceEdit', 'template', this.vocModel.type);
@@ -72,22 +72,12 @@ define('views/EditPage', [
         this.editParams = params;
     },
     events: {
-      'click #edit': 'edit',
+      'vclick #edit'   : 'edit',
 //      'click': 'click',
-      'click #homeBtn': 'home',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
+      'vclick #homeBtn': 'home'
     },
     resetForm: function() {
       this.editView && this.editView.resetForm();
-    },
-    swipeleft: function(e) {
-      // open backlinks
-      G.log(this.TAG, 'events', 'swipeleft');
-    },
-    swiperight: function(e) {
-      // open menu
-      G.log(this.TAG, 'events', 'swiperight');
     },
     home: function() {
 //      this.router.navigate('', {trigger: true, replace: false});

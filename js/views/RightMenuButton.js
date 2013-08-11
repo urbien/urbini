@@ -11,7 +11,7 @@ define('views/RightMenuButton', [
     id: '#rightMenuBtn',
     templateName: 'rightMenuButtonTemplate',
     events: {
-      'click': 'menu'
+      'vclick': 'menu'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');

@@ -13,7 +13,7 @@ define('views/LoginButton', [
     tagName: 'li',
     id: '#loginButton',
     events: {
-      'click' : 'showPopup'
+      'vclick' : 'showPopup'
 //        ,
 //      'click #logout': 'logout'
     },

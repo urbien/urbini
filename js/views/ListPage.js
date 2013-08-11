@@ -14,9 +14,8 @@ define('views/ListPage', [
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode', 'orientationchange');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange');
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on('pageChange', this.pageChanged);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
@@ -183,25 +182,14 @@ define('views/ListPage', [
         this.listView.setMode(mode);
     },
     events: {
-      'click': 'click',
-      'click #nextPage': 'getNextPage',
-      'click #homeBtn': 'home',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft',
-      'pageshow': 'pageshow',
-      'submit': 'submit',
-      'orientationchange': 'orientationchange',
-      'resize': 'orientationchange'
+      'vclick'            : 'click',
+      'vclick #nextPage'  : 'getNextPage',
+      'vclick #homeBtn'   : 'home',
+      'submit'            : 'submit',
+      'orientationchange' : 'orientationchange',
+      'resize'            : 'orientationchange'
     },
-    swipeleft: function(e) {
-      // open backlinks
-    },
-    swiperight: function(e) {
-//      // open menu
-//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
-//      menuPanel.render();
-////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
-    },
+
     orientationchange: function(e) {
 //      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
 //      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
@@ -251,18 +239,6 @@ define('views/ListPage', [
       */
 //      this.redirect({trigger: true, replace: true, removeFromView: true});
     }, 
-    pageshow: function(e) {
-      G.log(this.TAG, 'events', 'pageshow');
-/*
-*      if (this.isMasonry)
-*        $('#nabs_grid', this.$el).masonry();
-*/
-    },
-    pageChanged: function(view) {
-//      G.log(this.TAG, 'events', 'pageChanged');
-//      this.visible = (this == view || this.listView == view);
-//      this.listView && (this.listView.visible = this.visible);
-    },
     home: function() {
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));

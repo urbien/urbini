@@ -148,10 +148,10 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload'        : 'fileUpload',
-      'click #categories'         : 'showCategories',
+      'change #fileUpload'         : 'fileUpload',
+      'vclick #categories'         : 'showCategories',
 //      'click #installApp'         : 'installApp',
-      'click #moreRanges'         : 'showMoreRanges'
+      'vclick #moreRanges'         : 'showMoreRanges'
     },
     
     fileUpload: function(e) {

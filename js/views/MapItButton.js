@@ -10,7 +10,7 @@ define('views/MapItButton', [
     tagName: 'li',
     id: 'mapIt',
     events: {
-      'click': 'mapIt'
+      'vclick': 'mapIt'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'mapIt');
