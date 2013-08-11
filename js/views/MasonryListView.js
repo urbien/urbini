@@ -52,13 +52,10 @@ define('views/MasonryListView', [
     postRender: function(info) {
       var self = this;
       if (this.rendered) {
-//        this.$el.trigger('create');
-        if (info.appended.length) {
-          var $newElems = $(info.appended);
-//          $newElems.css({opacity: 0});
-          this.$el.imagesLoaded(function() {            
-//            $newElems.css({opacity: 1});
-            self.masonry('appended', $newElems); //, true);
+        if (info.appended.length || info.updated.length) {
+          this.$el.imagesLoaded(function() {
+            if (info.appended.length) {
+              self.masonry('appended', $(info.appended));
             if (info.updated.length)
               self.masonry('reload');
             
