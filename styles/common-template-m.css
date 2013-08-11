@@ -351,6 +351,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   text-align:center;
   text-shadow:none;
   border: 1px solid black;
+  color:#000;
 }
 
 .headerMessageBar.errorMessageBar {
@@ -360,7 +361,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 .headerMessageBar.infoMessageBar {
   background-color:#fffc40;
-  color:#000;
+}
+
+.headerMessageBar.tipMessageBar {
+  background-color:#b3cafa;
 }
 
 .ui-icon-delete.closeparent {

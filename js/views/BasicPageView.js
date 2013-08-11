@@ -6,6 +6,8 @@ define('views/BasicPageView', [
   'views/BasicView',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, $m) {
+  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'];
+  
   function removeTooltip(elm) {
     elm.removeClass('hint--always hint--left hint--right')
        .removeAttr('data-hint');
@@ -25,7 +27,6 @@ define('views/BasicPageView', [
     });
   };
   
-
   function cloneTouch(touch) {
     return {
       pageX: touch.pageX,
@@ -33,23 +34,12 @@ define('views/BasicPageView', [
     }
   };
   
-//  function addTooltip(elm, tooltip, direction) {
-//    elm.addClass('hint--always hint--{0}'.format(direction))
-//       .attr('data-hint', tooltip);
-//  };
-  
   var $wnd = $(window);
   var PageView = BasicView.extend({
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-//      _.extend(this.events, this.prototype.events);
-      _.bindAll(this, 'pageshow', 'pagebeforeshow', 'swiperight', 'swipeleft', 'scroll');      
-      this.setupErrorHandling();
-//      this._loadingDfd.promise().done(function() {
-//        self.$el.one('pageshow', self.scrollToTop);
-//      });
-      
+      _.bindAll(this, 'pageshow', 'pagebeforeshow', 'swiperight', 'swipeleft', 'scroll');            
       $(window).on('scroll', this.onScroll.bind(this));
       
 //    if (navigator.mozApps) {
@@ -75,28 +65,9 @@ define('views/BasicPageView', [
           self.runTourStep(step);
       });
       
-//      Events.on('headerMessage', function(data) {
-//        var error = data.error,
-//            errMsg = error ? error.msg || error : null,
-//            info = data.info,
-//            infoMsg = info ? info.msg || info : null,
-//            errorBar = self.$('div#headerMessageBar');
-//        
-//        if (!errorBar.length)
-//          return;
-//        
-//        errorBar.html("");
-//        errorBar.html(U.template('headerErrorBar')({error: errMsg, info: infoMsg, style: "background-color:#FFFC40;"}));
-//  
-//        var hash = U.getHash(), orgHash = hash;
-//        if (error && !error.glued)
-//          hash = U.replaceParam(hash, {'-error': null});
-//        if (info && !info.glued)
-//          hash = U.replaceParam(hash, {'-info': null});
-//        
-//        if (hash != orgHash)
-//          Events.trigger('navigate', hash, {trigger: false, replace: true});
-//      });
+      Events.on('messageBar', function(type, data) {
+        self.createMessageBar(type, data);
+      });
       
       var refresh = this.refresh;
       this.refresh = function() {
@@ -114,7 +85,7 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-      this.onload(this._checkError.bind(this));
+      this.onload(this._checkMessageBar.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -128,7 +99,7 @@ define('views/BasicPageView', [
       
       this.on('active', function(active) {
         if (active) {
-          self._checkError();
+          self._checkMessageBar();
         }
         else {
           self._clearMessageBar();
@@ -297,7 +268,8 @@ define('views/BasicPageView', [
     },
     
     runTourStep: function(step) {      
-      var element;
+      var element,
+          info = step.get('infoMessage');
       
       try {
         element = this.$(step.get('selector'));
@@ -311,6 +283,13 @@ define('views/BasicPageView', [
           element: element,
           direction: step.get('direction') || 'left',
           tooltip: step.get('tooltip')
+        });
+      }
+      
+      if (info) {
+        Events.trigger('messageBar', 'tip', {
+          message: info,
+          persist: true
         });
       }
     },
@@ -328,15 +307,15 @@ define('views/BasicPageView', [
       return false;
     },
     
-    setupErrorHandling: function() {
-      var self = this,
-          vocModel = this.vocModel,
-          type = this.modelType;
-      
-      _.each(['info', 'error'], function(type) {
-        Events.on('header.' + type, U.partialWith(self.createMessageBar, self, type));
-      });
-    },
+//    setupErrorHandling: function() {
+//      var self = this,
+//          vocModel = this.vocModel,
+//          type = this.modelType;
+//      
+//      _.each(MESSAGE_BAR_TYPES, function(type) {
+//        Events.on('header.' + type, U.partialWith(self.createMessageBar, self, type));
+//      });
+//    },
     
     getChildView: function(name) {
       return this.children && this.children[name];
@@ -362,7 +341,7 @@ define('views/BasicPageView', [
         
         bar.render(data);
         self.$el.prepend(bar.$el);
-        Events.on('header.' + type + '.clear', function(id) {
+        Events.on('messageBar.' + type + '.clear', function(id) {
           if (id == data.id)
             bar.destroy();
         });
@@ -401,47 +380,46 @@ define('views/BasicPageView', [
       }
     },
 
-    _checkError: function() {
-      var gluedError = this.hashParams['-gluedError'],
-          error = gluedError || this.hashParams['-error'],
-          gluedInfo = this.hashParams['-gluedInfo'],
-          info = gluedInfo || this.hashParams['-info'],
+    _checkMessageBar: function() {
+      var self = this,
           hash = this.hash,
           events = {};
       
-      if (info) {
-        events['header.info'] = {
-          message: info,
-          persist: !!gluedInfo
-        };
-      }
-      
-      if (error) {
-        events['header.error'] = {
-          message: error,
-          persist: !!gluedError
-        }
-      }
-      else if (this.resource) {
-        error = this.resource.get('_error');
-        if (error) {
-          events['header.error'] = {
-            resource: this.resource,
-            message: error.details,
-            persist: true
+      _.each(MESSAGE_BAR_TYPES, function(type) {
+        var glued = self.hashParams['-glued' + type.capitalizeFirst()],
+            regularParam = '-' + type;
+            data = glued || self.hashParams[regularParam],
+            isError = type !== 'error';
+        
+        if (isError && !data && this.resource) {
+          data = this.resource.get('_error');
+          if (data) {
+            events[type] = {
+              resource: this.resource,
+              message: data.details,
+              persist: true
+            }
           }
+          
+          return;
         }
-      }
+            
+        if (!data)
+          return;
+        
+        events[type] = {
+          message: data,
+          persist: !!glued
+        };
+        
+        if (!glued)
+          hash = U.replaceParam(hash, regularParam, null);
+      });      
 
       for (event in events) {
-        Events.trigger(event, events[event]);
+        Events.trigger('messageBar', event, events[event]);
       }
-            
-      if (error && !gluedError)
-        hash = U.replaceParam(hash, {'-error': null});
-      if (info && !gluedInfo)
-        hash = U.replaceParam(hash, {'-info': null});
-      
+
       if (hash != this.hash)
         Events.trigger('navigate', hash, {trigger: false, replace: true});
     },

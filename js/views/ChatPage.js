@@ -458,14 +458,14 @@ define('views/ChatPage', [
 
       if (this.isWaitingRoom && this.isClient) {
         var headerId = 'calling' + G.nextId();
-        Events.trigger('header.info', {
+        Events.trigger('messageBar', 'info', {
           message: 'Calling...',
           persist: true,
           id: headerId
         });
         
         Events.once('pageChange', function() {
-          Events.trigger('header.info.clear', headerId);
+          Events.trigger('messageBar.info.clear', headerId);
         });
       }
 

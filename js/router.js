@@ -357,7 +357,7 @@ define('router', [
           params[TOUR_STEP_PARAM] = step.get('number');
           var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
           Events.once('pageChange', function() {
-            Events.trigger('header.info', {
+            Events.trigger('messageBar', 'info', {
               messages: [{
                 message: "You've abandoned your tour! Click here if you wish to get back on it.", 
                 link: prev,
