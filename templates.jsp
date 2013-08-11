@@ -1303,7 +1303,7 @@
        <a href="{{= msg.link }}">
   {{ }                        }}
   {{ if (msg.icon) {    }}
-       <i class="ui-icon-{{= msg.icon }"></i>
+       <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                  }}
   
     {{= msg.message }}

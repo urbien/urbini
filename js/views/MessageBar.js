@@ -34,9 +34,11 @@ define('views/MessageBar', [
           messageList = options.messages;
 
       if (message) {
-        messageList = [{
+        message = typeof message === 'object' ? message : {
           message: message
-        }]
+        };
+        
+        messageList = [message];
       }
       
       if (messageList)
@@ -46,18 +48,7 @@ define('views/MessageBar', [
         return;
       }
       
-//      var persistByDefault = !!(this.hashParams['-info'] || this.hashParams['-errMsg']);
-//      if (options.persist === false || (_.isUndefined(options.persist) && !persistByDefault)) {
-//        setTimeout(function() {        
-//          $(errDiv).fadeOut(2000, function() {
-//            errDiv.html("");
-//          });
-//        }, length * 80);
-//      }
-      
       this.$el.trigger('create');
-//      errDiv.show();
-      
       _.extend(this, _.pick(options, 'persist'));
       if (!this.persist) {
         var self = this,
@@ -71,14 +62,6 @@ define('views/MessageBar', [
       return this;
     },
 
-    renderOne: function(message) {
-      this.$el.html(this.messageTemplate({
-        'class': this.type + 'MessageBar',
-        message: message
-      }));
-      
-    },
-    
     renderList: function(messages) {
       this.$el.html(this.messageListTemplate({
         'class': this.type + 'MessageBar',

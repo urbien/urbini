@@ -189,6 +189,7 @@ define('router', [
       });
       
       Events.on('pageChange', function() {
+        self.backClicked = false;
         self.checkTour();
       });
       
@@ -302,26 +303,28 @@ define('router', [
 //          Events.trigger('back');
 //        }
 //      }
-      
+
+      var loadUrl = Backbone.history.loadUrl;
       Backbone.history.loadUrl = function(fragmentOverride) {
         var fragment = this.fragment = this.getFragment(fragmentOverride);
-        // validate tour step if needed
-//        if (adjustedOptions.trigger && this._currentTourStep) {
+        // validate against next tour step if on a tour
         if (self._currentTourStep) {
           fragment = self.adjustFragmentForTour(fragment);
-          if (fragment == null) {
-            Events.trigger('back');
-            return false;
+          if (fragment !== this.fragment) {
+            this._updateHash(this.location, fragment, true);
           }
         }
           
-        return _.any(this.handlers, function(handler) {
-          if (handler.route.test(fragment)) {
-            handler.callback(fragment);
-            return true;
-          }
-        });
+        return loadUrl.call(this, this.fragment);
       };
+      
+//      $('a').click(function(e) {
+//        if (this.href.startsWith(G.appUrl)) {
+//          e.preventDefault();
+//          self.navigate(this.href.slice(G.appUrl + 1));
+//          return false;
+//        }        
+//      });
     },
     
     defaultOptions: {
@@ -345,12 +348,29 @@ define('router', [
           params[TOUR_STEP_PARAM] = next.get('number');
           fragment = U.makeMobileUrl(hashInfo.action, hashInfo.uri, params);
         }
+        else if (hashInfoCompliesWithTourStep(hashInfo, step)) {
+          // going back a step
+        }
         else {
-          U.alert({
-            msg: "Nuh uh! Please either follow the tour or cancel it."
+          var params = U.getParamMap(step.get('urlQuery')) || {};
+          params[TOUR_PARAM] = getTourId(this._currentTour);
+          params[TOUR_STEP_PARAM] = step.get('number');
+          var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
+          Events.once('pageChange', function() {
+            Events.trigger('header.info', {
+              messages: [{
+                message: "You've abandoned your tour! Click here if you wish to get back on it.", 
+                link: prev,
+                icon: 'warning-sign'
+              }], 
+              persist: true
+            });
           });
-          
-          return null;
+//          U.alert({
+//            msg: "Nuh uh! Please either follow the tour or cancel it."
+//          });
+          log('info', 'abandoned tour?');
+//          return fragment;
         }
       }
       else
@@ -433,8 +453,10 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
+      var prev = this.currentView,
+          reverse;
+      
       this.checkBackClick();
-      var prev = this.currentView;
       if (this.backClicked) {
         this.currentView = C.getCachedView(); // this.viewsStack.pop();
         if (!this.currentView) {
@@ -471,7 +493,7 @@ define('router', [
       if (mainDiv.is(':hidden'))
         mainDiv.show();
 
-      this.currentView.trigger('active', true);
+      Events.trigger('activeView', this.homePage);
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
     },
@@ -1060,7 +1082,7 @@ define('router', [
         }
         else {
           uri = G.currentUser._uri;
-          this.navigate(U.makeMobileUrl('view', uri), {trigger: false, replace: true});
+          this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: false, replace: true});
           hashInfo = this.updateHashInfo();
         }
       }
@@ -1385,13 +1407,14 @@ define('router', [
           Events.trigger('back');
           return;
         }
-        else
-          prev.trigger('active', false);
+//        else
+//          prev.trigger('active', false);
       }
-      
+
+      Events.trigger('activeView', view);
       this.currentView = view;
       if (!view.rendered) {
-        view.trigger('active', true);
+//        view.trigger('active', true);
         activated = true;
         view.render();
         view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
@@ -1403,11 +1426,6 @@ define('router', [
       }
       
       this.checkBackClick();
-      if (this.backClicked == true) {
-        this.backClicked = false;
-        isReverse = true;
-      }
-      
       // HACK //
 //      isReverse = false;
       // END HACK //
@@ -1419,7 +1437,7 @@ define('router', [
         view.trigger('active', true);
       
       // perform transition        
-      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
       this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;

@@ -753,7 +753,7 @@ define('models/Resource', [
       
       options.error = function(model, err, options) {
         var code = err.code || err.status;
-        self.log('error', 'failed to fetch resource:', err);
+        log('error', 'failed to fetch resource:', err);
         error.apply(this, arguments);
       };
       

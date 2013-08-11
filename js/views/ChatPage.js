@@ -457,7 +457,7 @@ define('views/ChatPage', [
       }
 
       if (this.isWaitingRoom && this.isClient) {
-        var id = 'calling' + G.nextId();
+        var headerId = 'calling' + G.nextId();
         Events.trigger('header.info', {
           message: 'Calling...',
           persist: true,
@@ -465,7 +465,7 @@ define('views/ChatPage', [
         });
         
         Events.once('pageChange', function() {
-          Events.trigger('header.info.clear', id);
+          Events.trigger('header.info.clear', headerId);
         });
       }
 
@@ -538,10 +538,13 @@ define('views/ChatPage', [
     },
 
     getStats: function() {
-      var max = Math.min(document.width / 3, document.height / 3, 300),
-          w = document.width || max,
-          h = document.height || max,
-          dim = Math.min(w, h, max);
+//      var max = Math.min(document.width / 3, document.height / 3, 300),
+//          w = document.width || max,
+//          h = document.height || max,
+//          dim = Math.min(w, h, max);
+      var docW = document.width || 1000,
+          docH = document.height || 1000,
+          dim = Math.min(docW / 3, docH / 3, 300);
       
       return {
         width: dim,
@@ -596,7 +599,7 @@ define('views/ChatPage', [
         }
       }
       
-      U.require(['views/ControlPanel']).done(function(ControlPanel) {
+      U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
         var $bl = self.$("div#inChatBacklinks");
         $bl.drags();
         self.addChild('backlinks', new ControlPanel({
@@ -676,7 +679,7 @@ define('views/ChatPage', [
 
     paintConcentricStats: function(divId, options) {
       var self = this, args = arguments;
-      U.require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {
+      U.require(['lib/d3', 'd3widgets', 'jqueryDraggable'], function(_d3_, widgets) {
         D3Widgets = widgets;
         self._paintConcentricStats(divId, options);
       });      

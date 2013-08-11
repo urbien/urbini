@@ -4,9 +4,8 @@ define('views/BasicView', [
   'backbone',
   'utils',
   'templates',
-  'events',
-  'jqueryMobile'
-], function(G, _Backbone, U, Templates, Events, $m) {
+  'events'
+], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'];
   var BasicView = Backbone.View.extend({
     superInitialize: function() {
@@ -206,10 +205,6 @@ define('views/BasicView', [
       this._loadingDfd.resolve();
     },
     
-    scrollToTop: function() {
-      $m.silentScroll(0);
-    },
-    
     getTemplate: function(templateName, type) {
       return Templates.get(templateName, type);
     },
@@ -253,12 +248,6 @@ define('views/BasicView', [
       return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
     },
     
-    scrollToBottom: function() {
-      $('html, body').animate({
-        scrollTop: this.pageView.$el.height()
-      }, 200);
-    },
-
     onInactive: function(callback) {
       this._inactiveDfd.done(callback);
     },
@@ -303,6 +292,18 @@ define('views/BasicView', [
       });
     },
     
+    showLoadingIndicator: function() {
+      var page = this.pageView;
+      if (page)
+        page.showLoadingIndicator.apply(page, arguments);
+    },
+
+    hideLoadingIndicator: function() {
+      var page = this.pageView;
+      if (page)
+        page.hideLoadingIndicator.apply(page, arguments);
+    },
+
     isPageView: function(view) {
       return false;
     },
@@ -417,28 +418,6 @@ define('views/BasicView', [
       this.$el.find('button[data-role="button"]').button();
       this.$el.find('input,textarea').textinput();
 //      this.$el.page();
-    },
-    
-    isActivePage: function() {
-      return this.pageView && $m.activePage === this.pageView.$el;
-    },
-    
-    showLoadingIndicator: function(timeout) {
-      $m.loading('show');
-      // in case if fetch failed to invoke a callback
-      // then hide loading indicator after 3 sec.
-      if (timeout) {
-        return timeoutId = setTimeout(function() {
-          this.hideLoadingIndicator(timeoutId);
-        }.bind(this), timeout);
-      }
-    },
-    
-    hideLoadingIndicator: function(timeoutId) {
-      if (typeof timeoutId !== 'undefined')
-        clearTimeout(timeoutId);
-      
-      $m.loading('hide');
     },
     
     getHashInfo: function() {

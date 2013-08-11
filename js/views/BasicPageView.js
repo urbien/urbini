@@ -3,24 +3,48 @@ define('views/BasicPageView', [
   'globals',
   'utils',
   'events',
-  'views/BasicView'
-], function(G, U, Events, BasicView) {
+  'views/BasicView',
+  'jqueryMobile'
+], function(G, U, Events, BasicView, $m) {
   function removeTooltip(elm) {
     elm.removeClass('hint--always hint--left hint--right')
        .removeAttr('data-hint');
   };
-  
-  function addTooltip(elm, tooltip, direction) {
-    elm.addClass('hint--always hint--{0}'.format(direction))
-       .attr('data-hint', tooltip);
+
+  function isInsideDraggableElement(element) {
+    return !!$(element).parents('[draggable=true]').length;
   };
   
+  function isTouchWithinBounds(touch1, touch2, bound) {
+    if (!touch1 || !touch2)
+      return false;
+    
+    bound = bound || 10;
+    return _.all(['pageX', 'pageY'], function(p) {        
+      return Math.abs(touch1[p] - touch2[p]) < bound;
+    });
+  };
+  
+
+  function cloneTouch(touch) {
+    return {
+      pageX: touch.pageX,
+      pageY: touch.pageY
+    }
+  };
+  
+//  function addTooltip(elm, tooltip, direction) {
+//    elm.addClass('hint--always hint--{0}'.format(direction))
+//       .attr('data-hint', tooltip);
+//  };
+  
+  var $wnd = $(window);
   var PageView = BasicView.extend({
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
 //      _.extend(this.events, this.prototype.events);
-      _.bindAll(this, 'pageshow', 'swiperight', 'swipeleft');      
+      _.bindAll(this, 'pageshow', 'pagebeforeshow', 'swiperight', 'swipeleft', 'scroll');      
       this.setupErrorHandling();
 //      this._loadingDfd.promise().done(function() {
 //        self.$el.one('pageshow', self.scrollToTop);
@@ -77,7 +101,7 @@ define('views/BasicPageView', [
       var refresh = this.refresh;
       this.refresh = function() {
         refresh.apply(self, arguments);
-        self.checkError();
+//        self.checkError();
         if (G.callInProgress)
           self.createCallInProgressHeader(G.callInProgress);        
       };
@@ -85,47 +109,161 @@ define('views/BasicPageView', [
       var render = this.render;
       this.render = function() {
         render.apply(self, arguments);
-        self.checkError();
+//        self.checkError();
         if (G.callInProgress)
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-      this.onload(this.checkError.bind(this));
-      
+      this.onload(this._checkError.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
-      });      
+      });
+
+      Events.on('activeView', function(view) {
+        if (view !== self)
+          self.trigger('active', false);
+        else
+          self.trigger('active', true);
+      });
+      
+      this.on('active', function(active) {
+        if (active) {
+          self._checkError();
+        }
+        else {
+          self._clearMessageBar();
+          self._pageshowFired = false;
+          self._pagebeforeshowFired = false;
+        }
+      });
     },
     
     events: {
       'scrollstart': 'reverseBubbleEvent',
       'scrollstop': 'reverseBubbleEvent',      
-      'scroll': 'reverseBubbleEvent',
+      'scroll': 'scroll',
       'pageshow': 'pageshow',
-      'pagebeforeshow': 'reverseBubbleEvent',
+      'pagebeforeshow': 'pagebeforeshow',
       'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
+      'swipeleft': 'swipeleft',
+      'touchstart': 'highlightOnTouchStart',
+      'touchmove': 'unhighlightOnTouchMove',
+      'touchend': 'unhighlightOnTouchEnd'
     },
 
+    highlightOnTouchStart: function(e) {
+      var self = this,
+          touches = e.touches;
+      
+      if (_.isUndefined(touches))
+        return;
+      
+      // Mobile safari doesn't let you copy touch objects, so copy it manually
+      this._firstTouch = cloneTouch(touches[0]);
+      this.touchStartTimer = setTimeout(function() {
+        self.highlight(e.target, e);
+      }, 100);
+    },
+
+    unhighlightOnTouchMove: function(e) {
+      if (_.isUndefined(this._firstTouch))
+        return;
+      
+      var touches = e.touches;
+      if (_.isUndefined(touches))
+        return;
+      
+      // Mobile safari doesn't let you copy touch objects, so copy it manually
+      var tMove = cloneTouch(touches[0]);
+      
+      // remove this class only if you're a certain distance away from the initial touch
+      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
+        this.clearTouchStartTimer();
+        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
+      }
+    },
+
+    unhighlightOnTouchEnd: function(e) {
+      // removing active class needs to be on timer because adding is also on a timer
+      // if this is not done, sometimes the active class removal is called before...
+      var self = this;
+      setTimeout(function() {
+        self.unhighlight(e.target, e);
+      }, 100);
+    },
+    
+    /**
+     * Stub. Override this
+     */
+    highlight: function(target, e) {
+//      throw "highlight needs to be implemented by all subclasses";
+    },
+
+    /**
+     * Stub. Override this
+     */
+    unhighlight: function(target, e) {
+//      throw "unhighlight needs to be implemented by all subclasses";
+    },
+
+    clearTouchStartTimer: function() {
+      clearTimeout(this.touchStartTimer);
+      this.touchStartTimer = null;
+    },
+    
+    pagebeforeshow: function() {
+      this._pagebeforeshowFired = true;
+      this.reverseBubbleEvent.apply(this, arguments);      
+    },
+
+    _restoreScroll: function() {
+      this.scrollTo(this._scrollPosition);
+    },
+    
     pageshow: function() {
-      if (!this._scrolledToTopOnLoad) {
-        this.scrollToTop();
-        this._scrolledToTopOnLoad = true;
+      this._pageshowFired = true;
+      this._restoreScroll();
+      this.reverseBubbleEvent.apply(this, arguments);
+    },
+    
+    scroll: function() {
+//      if (this._scrollPosition && $wnd.scrollTop() == 0)
+//        debugger;
+      
+      if (this._pageshowFired && this.isActive()) {
+        this._scrollPosition = $wnd.scrollTop();
+//        this.log('scroll', this._scrollPosition);
       }
       
       this.reverseBubbleEvent.apply(this, arguments);
     },
     
     swipeleft: function(e) {
+      if (isInsideDraggableElement(e.target))
+        return;
+      
       this.log('events', 'swipeleft');
       Events.trigger('forward');
       return false;
     },
     
     swiperight: function(e) {
+      if (isInsideDraggableElement(e.target))
+        return;
+      
       this.log('events', 'swiperight');
       Events.trigger('back');
       return false;
+    },
+
+    scrollTo: function(position) {
+      $m.silentScroll(position || 0);
+    },
+
+    scrollToBottom: function() {
+      $('html, body').animate({
+        scrollTop: this.pageView.$el.height()
+      }, 200);
     },
 
     getPageView: function() {
@@ -143,24 +281,37 @@ define('views/BasicPageView', [
       this.log('visibility', 'END visibility report for ' + this.TAG);
     },
     
-    runTourStep: function(step) {
-      var selector = step.get('selector'),
-          tooltip = step.get('tooltip'),
-          direction = (step.get('direction') || 'left');
-       
-      if (!selector || !tooltip)
-        return;
+    addTooltip: function(data) {
+//      if (!this._tooltipTemplate)
+//        this.makeTemplate('tooltipTemplate', '_tooltipTemplate', this.modelType);
+//      
+//      var html = this._tooltipTemplate(data),
+      var element = data.element; //.parent('div');
+      element.addClass('hint--always hint--{0}'.format(data.direction));
+      element.attr('data-hint', data.tooltip);
+      
+      this.once('active', function(active) {
+        if (!active)
+          removeTooltip(element);
+      });
+    },
+    
+    runTourStep: function(step) {      
+      var element;
       
       try {
-        var elm = this.$(selector);
-        addTooltip(elm, tooltip, direction);
-        this.once('active', function(active) {
-          if (!active)
-            removeTooltip(elm);
-        });
-        
+        element = this.$(step.get('selector'));
       } catch (err) {
         this.log('error', 'bad selector for tour step: {0}, err: '.format(selector), err);
+        return;
+      }
+      
+      if (element.length) {
+        this.addTooltip({
+          element: element,
+          direction: step.get('direction') || 'left',
+          tooltip: step.get('tooltip')
+        });
       }
     },
 
@@ -243,7 +394,14 @@ define('views/BasicPageView', [
       });      
     },
 
-    checkError: function() {
+    _clearMessageBar: function() {
+      for (var name in this.children) {
+        if (/^messageBar/.test(name))
+          this.children[name].destroy();
+      }
+    },
+
+    _checkError: function() {
       var gluedError = this.hashParams['-gluedError'],
           error = gluedError || this.hashParams['-error'],
           gluedInfo = this.hashParams['-gluedInfo'],
@@ -286,6 +444,28 @@ define('views/BasicPageView', [
       
       if (hash != this.hash)
         Events.trigger('navigate', hash, {trigger: false, replace: true});
+    },
+    
+    isActivePage: function() {
+      return this.pageView && $m.activePage === this.pageView.$el;
+    },
+    
+    showLoadingIndicator: function(timeout) {
+      $m.loading('show');
+      // in case if fetch failed to invoke a callback
+      // then hide loading indicator after 3 sec.
+      if (timeout) {
+        return timeoutId = setTimeout(function() {
+          this.hideLoadingIndicator(timeoutId);
+        }.bind(this), timeout);
+      }
+    },
+    
+    hideLoadingIndicator: function(timeoutId) {
+      if (typeof timeoutId !== 'undefined')
+        clearTimeout(timeoutId);
+      
+      $m.loading('hide');
     }
   }, {
     displayName: 'BasicPageView'
