@@ -65,12 +65,6 @@ define('vocManager', [
       }
     }
     
-    if (!options.overwrite) {
-      models = _.filter(models, function(type) {
-        return !U.getModel(type);
-      });
-    }
-    
     return models;
   };
       
@@ -249,7 +243,7 @@ define('vocManager', [
     
     if (!init) {
       var currentModels = _.keys(G.modelsMetadata);
-      Voc.getModels(currentModels, {force: true, overwrite: true});
+      Voc.getModels(currentModels, {force: true});
     }
   });
 

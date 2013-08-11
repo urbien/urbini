@@ -17,13 +17,20 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   
   function makeModelsPromise(types) {
     var modelToPromiseObj = {},
+        promises = [],
         overallPromise;
 
     _.each(types, function(type) {      
-      modelToPromiseObj[type] = MODEL_PROMISES[type].promise;
+      var promise = modelToPromiseObj[type] = MODEL_PROMISES[type].promise;
+      promises.push(promise);
     });
     
-    overallPromise = $.whenAll.apply($, _.values(modelToPromiseObj));
+    overallPromise = $.whenAll.apply($, promises);
+    overallPromise.then(function() {
+      if (!_.all([].slice.call(arguments)))
+        debugger;
+    });
+    
     return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
   };
   
@@ -220,6 +227,8 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       }
     });
     
+    if (!filtered.length)
+      return;
     if (!G.hasLocalStorage && G.dbType === 'none')
       fetchModels(filtered, options).then(parseAndLoadModels);
     else {
@@ -230,11 +239,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           Events.once('online', function(online) {
             var infoClone = _.clone(modelsInfo);
             infoClone.have = [];
-            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
+            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false}));
           });
           
           var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
-          loadModels(loading);
+          loadModels(loading, !force);
         }
       });
     }    
@@ -323,10 +332,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     return promise;
   };
 
-  function loadModels(models, dontOverwrite) {
+  function loadModels(models, preventOverwrite) {
     var models = models || MODEL_CACHE;
     _.each(models, function(model) {
-      if (!dontOverwrite || !U.getModel(model.type))
+      if (!preventOverwrite || !U.getModel(model.type))
         loadModel(model);
     });
   };
