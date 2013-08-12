@@ -29,7 +29,7 @@ define('views/ControlPanel', [
       return this;
     },
     events: {
-      'vclick a[data-shortName]': 'add'
+      'click a[data-shortName]': 'add'
 //        ,
 //      'click': 'click'
     },

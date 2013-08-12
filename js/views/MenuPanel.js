@@ -26,14 +26,14 @@ define('views/MenuPanel', [
     },
     tabs: {},
     events: {
-      'vclick #edit'      : 'edit',
+      'click #edit'      : 'edit',
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
-      'vclick #logout'    : 'logout',
-      'vclick #home123'   : 'home',
-      'vclick #urbien123' : 'home',
-      'vclick'            : 'click'
+      'click #logout'    : 'logout',
+      'click #home123'   : 'home',
+      'click #urbien123' : 'home',
+      'click'            : 'click'
     },
     edit: function(e) {
       Events.stopEvent(e);

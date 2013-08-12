@@ -72,9 +72,9 @@ define('views/EditPage', [
         this.editParams = params;
     },
     events: {
-      'vclick #edit'   : 'edit',
+      'click #edit'   : 'edit',
 //      'click': 'click',
-      'vclick #homeBtn': 'home'
+      'click #homeBtn': 'home'
     },
     resetForm: function() {
       this.editView && this.editView.resetForm();

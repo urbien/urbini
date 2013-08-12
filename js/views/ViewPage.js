@@ -204,9 +204,9 @@ define('views/ViewPage', [
 //      });
 //    },
     events: {
-      'vclick #edit': 'edit',
+      'click #edit': 'edit',
 //      'click': 'click',
-      'vclick #homeBtn': 'home',
+      'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
 //        ,

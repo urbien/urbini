@@ -12,7 +12,7 @@ define('views/MenuButton', [
     id: 'menuBtn',
     templateName: 'menuButtonTemplate',
     events: {
-      'vclick': 'menu'
+      'click': 'menu'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');

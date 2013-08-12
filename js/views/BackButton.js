@@ -10,7 +10,7 @@ define('views/BackButton', [
     tagName: 'li',
     id: 'back',
     events: {
-      'vclick': 'back'
+      'click': 'back'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');

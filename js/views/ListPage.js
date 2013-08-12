@@ -182,9 +182,9 @@ define('views/ListPage', [
         this.listView.setMode(mode);
     },
     events: {
-      'vclick'            : 'click',
-      'vclick #nextPage'  : 'getNextPage',
-      'vclick #homeBtn'   : 'home',
+      'click'            : 'click',
+      'click #nextPage'  : 'getNextPage',
+      'click #homeBtn'   : 'home',
       'submit'            : 'submit',
       'orientationchange' : 'orientationchange',
       'resize'            : 'orientationchange'

@@ -36,7 +36,7 @@ define('views/ChatButton', [
     },
     
     events: {
-      'vclick': 'click'
+      'click': 'click'
     },
     
     click: function(e) {

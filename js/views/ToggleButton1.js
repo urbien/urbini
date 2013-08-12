@@ -61,7 +61,7 @@ define('views/ToggleButton1', [
       return this;
     },
     events: {
-      'vclick': 'toggle'
+      'click': 'toggle'
     },
     toggle: function(e) {
       Events.stopEvent(e);

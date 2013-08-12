@@ -34,6 +34,20 @@ define('views/BasicView', [
         superCtor = superDuperCtor;
       }
       
+      // replace click with vclick and so on, if necessary
+      for (var eventSelectorName in this.events) {
+        var eventName = eventSelectorName.match(/^([^\.\ ]+)/);
+        if (!eventName)
+          continue;
+        
+        eventName = eventName[1];
+        var actualName = Events.getEventName(eventName);
+        if (actualName !== eventName && !events[actualName]) {
+          this.events[eventSelectorName.replace(eventName, actualName)] = this.events[eventSelectorName];
+          delete this.events[eventSelectorName];
+        }
+      }
+      
       this.TAG = this.TAG || this.constructor.displayName;
       options = options || {};
       this._hashInfo = G.currentHashInfo;

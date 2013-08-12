@@ -11,7 +11,7 @@ define('views/AddButton', [
     tagName: 'li',
     id: '#addBtn',
     events: {
-      'vclick': 'add'
+      'click': 'add'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'add');

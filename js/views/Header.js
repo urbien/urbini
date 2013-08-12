@@ -149,9 +149,9 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
-      'vclick #categories'         : 'showCategories',
+      'click #categories'         : 'showCategories',
 //      'click #installApp'         : 'installApp',
-      'vclick #moreRanges'         : 'showMoreRanges'
+      'click #moreRanges'         : 'showMoreRanges'
     },
     
     fileUpload: function(e) {

@@ -11,7 +11,7 @@ define('views/AroundMeButton', [
     tagName: 'li',
     templateName: 'aroundMeButtonTemplate',
     events: {
-      'vclick': 'toggleAroundMe'
+      'click': 'toggleAroundMe'
     },
     initialize: function(options) {      
       _.bindAll(this, 'render', 'toggleAroundMe', 'isOn');

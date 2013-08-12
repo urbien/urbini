@@ -20,9 +20,9 @@ define('views/CallInProgressHeader', [
     },
     
     events: {
-      'vclick #backToCall'         : 'backToCall',
-      'vclick #hangUp'             : 'hangUp',
-      'vclick #sendToCall'         : 'sendToCall'
+      'click #backToCall'         : 'backToCall',
+      'click #hangUp'             : 'hangUp',
+      'click #sendToCall'         : 'sendToCall'
     },
     
     render: function() {

@@ -29,15 +29,15 @@ define('views/RightMenuPanel', [
       this.stopListening();
     },
     events: {
-      'vclick [data-grab]'        : 'grab',
-      'vclick [data-release]'     : 'release',
+      'click [data-grab]'        : 'grab',
+      'click [data-release]'     : 'release',
 //      'click #edit': 'edit',
-      'vclick #add'               : 'add',
-      'vclick #delete'            : 'delete',
-      'vclick #subscribe'         : 'subscribe',
-      'vclick .chattee'           : 'chat',
-      'vclick #urbien123'         : 'home',
-      'vclick'                    : 'click'
+      'click #add'               : 'add',
+      'click #delete'            : 'delete',
+      'click #subscribe'         : 'subscribe',
+      'click .chattee'           : 'chat',
+      'click #urbien123'         : 'home',
+      'click'                    : 'click'
 //      'click #logout': 'logout',
     },
     home: function(e) {
