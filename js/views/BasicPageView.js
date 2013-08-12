@@ -8,9 +8,17 @@ define('views/BasicPageView', [
 ], function(G, U, Events, BasicView, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'];
   
-  function removeTooltip(elm) {
-    elm.removeClass('hint--always hint--left hint--right')
-       .removeAttr('data-hint');
+  function removeTooltip($el) {
+//    if (elm[0].tagName == 'DIV')
+//      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
+//    else
+//      elm.unwrap();
+    
+    var nonHintClasses = _.filter($el.attr("class").split(" "), function(item) {
+      return !item.startsWith("hint--");
+    });
+    
+    $el.attr("class", nonHintClasses.join(" "));
   };
 
   function isInsideDraggableElement(element) {
@@ -251,22 +259,7 @@ define('views/BasicPageView', [
       this.logVisibility();
       this.log('visibility', 'END visibility report for ' + this.TAG);
     },
-    
-    addTooltip: function(data) {
-//      if (!this._tooltipTemplate)
-//        this.makeTemplate('tooltipTemplate', '_tooltipTemplate', this.modelType);
-//      
-//      var html = this._tooltipTemplate(data),
-      var element = data.element; //.parent('div');
-      element.addClass('hint--always hint--{0}'.format(data.direction));
-      element.attr('data-hint', data.tooltip);
-      
-      this.once('active', function(active) {
-        if (!active)
-          removeTooltip(element);
-      });
-    },
-    
+        
     runTourStep: function(step) {      
       var element,
           info = step.get('infoMessage');
@@ -278,20 +271,39 @@ define('views/BasicPageView', [
         return;
       }
       
-      if (element.length) {
-        this.addTooltip({
-          element: element,
-          direction: step.get('direction') || 'left',
-          tooltip: step.get('tooltip')
-        });
-      }
-      
       if (info) {
         Events.trigger('messageBar', 'tip', {
           message: info,
           persist: true
         });
       }
+
+      if (element.length) {
+        this.addTooltip(element, 
+                        step.get('tooltip'), 
+                        step.get('direction'),
+                        step.get('tooltipType') || 'info',
+                        step.get('tooltipStyle') == 'squareCorners' ? 'square' : 'rounded');
+      }
+    },
+    
+    addTooltip: function(el, tooltip, direction, type, style) {
+      el = el instanceof $ ? el : $(el);
+      var classes = ['always', 
+                     direction || 'left', 
+                     type      || 'info', 
+                     style     || 'rounded'];
+     
+      classes = _.map(classes, function(cl) {
+        return 'hint--' + cl;
+      });
+     
+      el.addClass(classes.join(' '), {duration: 1000});
+      el.attr('data-hint', tooltip);
+      this.once('active', function(active) {
+        if (!active)
+          removeTooltip(el);
+      });
     },
 
     getPageTitle: function() {
@@ -340,7 +352,9 @@ define('views/BasicPageView', [
         }));
         
         bar.render(data);
+        bar.$el.css({opacity: 0});
         self.$el.prepend(bar.$el);
+        bar.$el.animate({opacity: 1}, 500);
         Events.on('messageBar.' + type + '.clear', function(id) {
           if (id == data.id)
             bar.destroy();

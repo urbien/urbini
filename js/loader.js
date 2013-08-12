@@ -375,6 +375,7 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
+    G.tourGuideEnabled      = true;
     G.DEBUG                 = !G.minify;
     G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
     G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
@@ -1301,9 +1302,7 @@ define('globals', function() {
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
       PushEndpoint: 'model/social/PushEndpoint',
-      PushChannel: 'model/social/PushChannel',
-      Tour: 'commerce/urbien/Tour',
-      TourStep: 'commerce/urbien/TourStep'
+      PushChannel: 'model/social/PushChannel'
     },
 //    commonTypes: {
 //      model: {

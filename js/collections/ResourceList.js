@@ -83,22 +83,24 @@ define('collections/ResourceList', [
 //        debugger;
 //      });
 
-      Events.on('newResource:' + this.type, function(resource, options) {
-        // we are adding this resource to this collection at the moment
-        self.filterAndAddResources([resource], options);
-      });
-      
-      Events.on('newResources:' + this.type, function(resources, options) {
-        // we are adding this resource to this collection at the moment
-        self.filterAndAddResources(resources, options);
-      });
-      
-      Events.on('newResourceList:' + this.type, function(list) {
-        if (list === self)
-          return;
-
-        self.filterAndAddResources(list.models);        
-      });
+      if (!this['final']) {
+        Events.on('newResource:' + this.type, function(resource, options) {
+          // we are adding this resource to this collection at the moment
+          self.filterAndAddResources([resource], options);
+        });
+        
+        Events.on('newResources:' + this.type, function(resources, options) {
+          // we are adding this resource to this collection at the moment
+          self.filterAndAddResources(resources, options);
+        });
+        
+        Events.on('newResourceList:' + this.type, function(list) {
+          if (list === self)
+            return;
+  
+          self.filterAndAddResources(list.models);        
+        });
+      }
       
       this.monitorQueryChanges();
       this.enablePaging();
@@ -158,6 +160,9 @@ define('collections/ResourceList', [
         this.trigger('updated', [resource]);
     },
     add: function(resources, options) {
+      if (this['final'] && this.models.length)
+        throw "This list is locked, it cannot be changed";
+      
       options = options || {};
       var self = this,
           multiAdd = _.isArray(resources);
@@ -339,6 +344,9 @@ define('collections/ResourceList', [
     },
     
     reset: function(models, options) {
+      if (this['final'] && this.models.length)
+        throw "This list is locked, it cannot be changed";
+      
       this.enablePaging();
       var needsToBeStored = !U.isModel(models[0]);
       
@@ -352,6 +360,7 @@ define('collections/ResourceList', [
       if (needsToBeStored)
         Events.trigger('updatedResources', this.models);
     },
+    
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
@@ -359,12 +368,18 @@ define('collections/ResourceList', [
         this._lastFetchedOn = null;
       }
     },
+    
     fetch: function(options) {
       options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = this.vocModel.adapter;
-      
+
+      if (this['final']) {
+        error(this, {status: 204, details: "This list is locked"}, options);
+        return;      
+      }
+
       this.params = this.params || {};
       if (this.offset)
         this.params.$offset = this.offset;

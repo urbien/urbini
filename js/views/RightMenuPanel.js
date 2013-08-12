@@ -37,6 +37,7 @@ define('views/RightMenuPanel', [
       'click #subscribe'         : 'subscribe',
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
+      'click #login'             : 'login',
       'click'                    : 'click'
 //      'click #logout': 'logout',
     },
@@ -119,6 +120,12 @@ define('views/RightMenuPanel', [
       
       return this;
     },
+    
+    login: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('req-login');
+    },
+    
 //    edit: function(e) {
 //      Events.stopEvent(e);
 //      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
@@ -296,7 +303,7 @@ define('views/RightMenuPanel', [
         }
         var uri = 'view/profile';
         if (G.currentUser.guest)
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Login', icon: 'user', mobileUrl: uri, homePage: 'y'}));
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Login', icon: 'user', mobileUrl: uri, homePage: 'y', id: 'login'}));
         else
           U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
         if (G.pageRoot != 'app/UrbienApp') {

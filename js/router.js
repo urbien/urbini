@@ -18,91 +18,12 @@ define('router', [
 //  'views/EditPage' 
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var Modules = {},
-      SEQ_PROP,
-      TOUR_PARAM = '$tour',
-      TOUR_STEP_PARAM = '$tourStep';
+  var Modules = {};
   
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("router");
     G.log.apply(G, args);
-  };
-  
-  function getTour(tourUri, tourModel) {
-    return $.Deferred(function(defer) {
-      var tourRes = C.getResource(tourUri);
-      if (tourRes)
-        return defer.resolve(tourRes);
-      
-      tourRes = new tourModel({
-        _uri: tourUri
-      });
-      
-      tourRes.fetch({
-        success: function() {
-          defer.resolve(tourRes);
-        },
-        error: defer.reject
-      })
-    }).promise();
-  };
-
-  function getSteps(tourUri, stepModel) {
-    return $.Deferred(function(defer) {
-      var stepParams = {
-            tour: tourUri
-          },
-          steps = C.getResourceList(stepModel, $.param(stepParams));
-      
-      if (!steps)
-        steps = new ResourceList(null, {model: stepModel, params: stepParams});
-      
-      if (steps.length)
-        return defer.resolve(steps);
-      else {
-        steps.fetch({
-          success: function() {
-            defer.resolve(steps);
-          },
-          error: defer.reject
-        });
-        
-        return;
-      }
-    }).promise().then(function(steps) {
-      steps.comparator = function(a, b) {
-        return a.get(SEQ_PROP) - b.get(SEQ_PROP);
-      };
-      
-      return steps.sort();
-    });
-  };
-  
-  function hashInfoCompliesWithTourStep(hashInfo, step) {
-    var isModelParam = U.negate(U.isMetaParameter),
-        hashInfoModelParams = U.filterObj(hashInfo.params, isModelParam),
-        stepParams = U.getParamMap(step.get('urlQuery')),
-        stepModelParams = U.filterObj(stepParams, isModelParam),
-        stepType = step.get('typeUri'),
-        stepRoute = step.get('route'),
-        ///////////////////////////
-        routeMatches = hashInfo.route == stepRoute,
-        isProfile = stepType == 'profile' && (hashInfo.uri == 'profile' || hashInfo.uri == G.currentUser._uri),
-        typeMatches = isProfile || hashInfo.type == stepType,
-        paramsMatch = _.isEqual(hashInfoModelParams, stepModelParams);
-    
-    return routeMatches && typeMatches && paramsMatch;
-  };
-
-  function getStepByNumber(steps, num) {
-    var filter = {};
-    filter[SEQ_PROP] = num;
-    return steps.where(filter)[0];
-  }
-  
-  function getTourId(tour) {
-    return tour.get('id');
   };
   
   var Router = Backbone.Router.extend({
@@ -166,31 +87,11 @@ define('router', [
         self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
       });
 
-      Events.on('tourStart', function(tour, steps, stepNum) {
-        self._currentTour = tour;
-        self._currentTourSteps = steps;
-        self.setCurrentTourStep(stepNum || 1);
-      });
-
-      Events.on('tourCanceled', function() {
-        delete self._currentTour;
-        delete self._currentTourStep;
-        delete self._currentTourSteps;
-      });
-
-      Events.on('tourEnd', function() {
-        delete self._currentTour;
-        delete self._currentTourStep;
-        delete self._currentTourSteps;
-      });
-
-      Events.on('tourStep', function(step) {
-        self._currentTourStep = step;
-      });
-      
-      Events.on('pageChange', function() {
-        self.backClicked = false;
+      Events.on('pageChange', function(prev, current) {
+        self.backClicked = self.firstPage = false;
         self.checkTour();
+        if (G.DEBUG)
+          window.view = current;
       });
       
       Events.on('back', _.debounce(function() {
@@ -303,21 +204,6 @@ define('router', [
 //          Events.trigger('back');
 //        }
 //      }
-
-      var loadUrl = Backbone.history.loadUrl;
-      Backbone.history.loadUrl = function(fragmentOverride) {
-        var fragment = this.fragment = this.getFragment(fragmentOverride);
-        // validate against next tour step if on a tour
-        if (self._currentTourStep) {
-          fragment = self.adjustFragmentForTour(fragment);
-          if (fragment !== this.fragment) {
-            this._updateHash(this.location, fragment, true);
-          }
-        }
-          
-        return loadUrl.call(this, this.fragment);
-      };
-      
 //      $('a').click(function(e) {
 //        if (this.href.startsWith(G.appUrl)) {
 //          e.preventDefault();
@@ -335,49 +221,6 @@ define('router', [
     
     fragmentToOptions: {},
     
-    
-    adjustFragmentForTour: function(fragment) {
-      var step = this._currentTourStep,
-          next = getStepByNumber(this._currentTourSteps, step.get(SEQ_PROP) + 1),
-          hashInfo = U.parseHash(fragment);
-      
-      if (next) {
-        if (hashInfoCompliesWithTourStep(hashInfo, next)) {
-          var params = _.clone(hashInfo.params);
-          params[TOUR_PARAM] = getTourId(this._currentTour);
-          params[TOUR_STEP_PARAM] = next.get('number');
-          fragment = U.makeMobileUrl(hashInfo.action, hashInfo.uri, params);
-        }
-        else if (hashInfoCompliesWithTourStep(hashInfo, step)) {
-          // going back a step
-        }
-        else {
-          var params = U.getParamMap(step.get('urlQuery')) || {};
-          params[TOUR_PARAM] = getTourId(this._currentTour);
-          params[TOUR_STEP_PARAM] = step.get('number');
-          var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
-          Events.once('pageChange', function() {
-            Events.trigger('messageBar', 'info', {
-              messages: [{
-                message: "You've abandoned your tour! Click here if you wish to get back on it.", 
-                link: prev,
-                icon: 'warning-sign'
-              }], 
-              persist: true
-            });
-          });
-//          U.alert({
-//            msg: "Nuh uh! Please either follow the tour or cancel it."
-//          });
-          log('info', 'abandoned tour?');
-//          return fragment;
-        }
-      }
-      else
-        Events.trigger('tourEnd');
-      
-      return fragment;
-    },      
     
     navigate: function(fragment, options) {
 //      if (this.previousHash === fragment) {
@@ -977,61 +820,6 @@ define('router', [
       return true;
     },
     
-    checkTour: function() {
-      var self = this,
-          hashInfo = G.currentHashInfo,
-          params = hashInfo.params,
-          tourId = params[TOUR_PARAM],
-          tourUri,
-          stepNum = params[TOUR_STEP_PARAM];
-      
-      if (!tourId)
-        return;
-      
-      if (!_.isUndefined(stepNum))
-        stepNum = parseInt(stepNum);
-      
-      stepNum = stepNum || 1;
-      if (this._currentTour && getTourId(this._currentTour) == tourId) {
-        this.setCurrentTourStep(stepNum);
-        return;
-      }
-
-      Voc.getModels([G.commonTypes.Tour, G.commonTypes.TourStep]).then(function(tourModel, stepModel) {
-        if (!SEQ_PROP)
-          SEQ_PROP = U.getCloneOf(stepModel, 'Step.seq')[0];
-        
-        var tourUri = U.buildUri({
-          id: tourId
-        }, tourModel);
-
-        return $.whenAll(
-          getTour(tourUri, tourModel), 
-          getSteps(tourUri, stepModel)
-        );
-      }).then(function(tour, steps) {
-        if (!self._currentTour) {
-          var step = steps.where({
-            number: stepNum
-          })[0];
-          
-          if (step) {
-            if (hashInfoCompliesWithTourStep(hashInfo, step))
-              Events.trigger('tourStart', tour, steps, stepNum);
-            else 
-              debugger;
-          }
-        }
-        else
-          self.setCurrentTourStep(stepNum);
-      }, function() {
-        debugger;
-        delete hashInfo.params.$tour;
-        delete hashInfo.params.$tourStep;
-        self.navigate(U.makeMobileUrl(hashInfo.action, hashInfo.type, hashInfo.params), {replace: true});
-      });        
-    },
-    
     login: function(path) {
       var self = this;
       this._requestLogin({
@@ -1228,16 +1016,6 @@ define('router', [
 //      ).then(success, fail);
 //    },
     
-    setCurrentTourStep: function(stepNum) {
-      var step = this._currentTourSteps && this._currentTourSteps.where({
-        number: stepNum
-      })[0];
-      
-      if (step)
-        Events.trigger('tourStep', step);
-
-      return step;
-    },
     _checkUri: function(res, uri, action) {
       if (U.isTempUri(uri)) {
         var newUri = res.getUri();
@@ -1420,10 +1198,8 @@ define('router', [
         view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
       }
 
-      if (this.firstPage) {
+      if (this.firstPage)
         transition = 'none';
-        this.firstPage = false;
-      }
       
       this.checkBackClick();
       // HACK //
@@ -1472,6 +1248,16 @@ define('router', [
         this.urlsStack = this.urlsStack.slice(0, this.urlsStack.length - 1);
       
       this.urlsStack.push(here);
+    },
+    
+    checkTour: function() {
+      if (G.tourGuideEnabled) {
+        G.whenNotRendering(function() {          
+          U.require('tourGuide').done(function(TourGuide) {
+            TourGuide.getTour();
+          });
+        });
+      }
     }
 //    ,
 //    
@@ -1583,147 +1369,7 @@ define('router', [
       return _.contains(['make', 'edit'], route);
     }
   });
- 
-//  var ViewCache = function() {
-//    var cache = {};
-//
-//    function getSubCache(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
-//      if (hashInfo.type)
-//        subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
-//  
-//      return subCache;
-//    };
-//    
-//    function getKey(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      return hashInfo.query || hashInfo.uri;
-//    };
-//    
-//    function getCached(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      return getSubCache(hashInfo)[getKey(hashInfo)];
-//    };
-//    
-//    function cacheView(view, hashInfo) {
-//      hashInfo = hashInfo || U.parseHash();
-//      var type = hashInfo.typeUri || '',
-//          subCache = getSubCache(hashInfo);
-//          
-//      subCache[hashInfo.query || hashInfo.uri] = view;
-//      view.on('invalidate', function() {
-//        delete subCache[getKey(hashInfo)];
-//      });
-//      
-//      return view;
-//    };
-//    
-//    function update(oldUri, newUri) {
-//      var hashInfo = {
-//        type: U.getTypeUri(oldUri),
-//        uri: oldUri
-//      };
-//      
-//      var type = U.getTypeUri(oldUri);
-//      _.each(['edit', 'view', 'make'], function(route) {
-//        hashInfo.route = route;
-//        var subCache = getSubCache(hashInfo),
-//            cached = subCache[oldUri];
-//        
-//        if (cached)
-//          subCache[newUri] = cached;
-//      });
-//    };
-//    
-//    function clean() {
-//      
-//    };
-//    
-//    return {
-//      getCached: getCached,
-//      cacheView: cacheView,
-//      update: update
-//    }
-//  };
-  
-//  function ViewCache() {
-//    var idx = -1,
-//        back = false,
-//        urls = [],
-//        views = [];
-//    
-//    function back() {
-//      debugger;
-//      idx--;
-//    };
-//    
-//    function forward(view) {      
-//      debugger;
-//      idx++;
-//      var currentUrl = window.location.href;
-//      if (urls[idx] !== currentUrl) {
-//        views = views.slice(0, idx);
-//        urls = urls.slice(0, idx);
-//      }
-//      
-//      views[idx] = view;
-//      urls[idx] = currentUrl;
-//    };
-//
-////    function getCurrent() {
-////      debugger;
-////      return views[idx];
-////    }
-//
-//    function next() {
-//      return {
-//        url: urls[idx + 1],
-//        view: views[idx + 1]
-//      };
-//    };
-//
-//    function prev() {
-//      return {
-//        url: urls[idx - 1],
-//        view: views[idx - 1]
-//      };
-//    };
-//
-//    function getCached() {
-//      var prev = urls[idx - 1],
-//          next = urls[idx + 1],
-//          url = window.location.href;
-//      
-//      return url === prev ? prev() : url === next : next() : null;
-//    }
-//
-//    Events.on('back', function() {
-//      back = true;
-//    });
-//
-//    Events.on('pageChange', function(prev, current) {
-//      var prev = urls[idx - 1],
-//          next = urls[idx + 1],
-//          url = window.location.href;
-//      
-//      if (url === prev)
-//        idx --;
-//      else if (url === next)
-//        idx++;
-//      else
-//        back ? back() : forward(current);
-//        
-//      back = false;
-//    });
-//    
-//    return {
-//      getNext: getNext,
-//      getPrev: getPrev,
-//      getCached: getCached
-//    };
-//  };
-           
+            
   return Router;
 });
   

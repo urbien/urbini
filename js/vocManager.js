@@ -108,7 +108,7 @@ define('vocManager', [
       
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
         if (isResource && prop.backLink) {
-          var count = res.get(name + 'Count') || res.get(name).count;
+          var count = U.getBacklinkCount(res, name);
           if (!count)
             return null;
         }

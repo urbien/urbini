@@ -372,6 +372,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   width:20px; 
   height:20px; 
   color: white;
+  cursor: pointer;
 }
 
 .buyButton { float:right; }

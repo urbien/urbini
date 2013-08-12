@@ -3656,6 +3656,10 @@ define('utils', [
       return function() {
         return !fn.apply(context || this, arguments);
       }
+    },
+    
+    getBacklinkCount: function(res, name) {
+      return res.get(name + 'Count') || res.get(name).count;
     }
   };
 

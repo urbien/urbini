@@ -369,20 +369,28 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       
     }
     
-    var type = m.type = U.getTypeUri(m.type);
-    Events.trigger('newModel', m);
+    var type = m.type = U.getTypeUri(m.type),
+        isCustomModel = U.isAnAppClass(type);
     
-    if (!m.enumeration && !m.alwaysInlined) {
-      if (U.isAnAppClass(type)) {
-        var meta = m.properties;
-        for (var p in meta) {
-          var prop = meta[p];
-          if (prop.displayName) {
-            var sn = prop.shortName;
-            prop.altName = p;
-            delete meta[p];
-            meta[sn] = prop;
-          }
+    Events.trigger('newModel', m);
+
+    if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
+      var meta = m.properties;
+      for (var p in meta) {
+        var prop = meta[p];
+//        if (prop.backLink) {
+//          meta[prop.shortName + 'Count'] = {
+//            range: "int",
+//            avoidDisplaying: true,
+//            readOnly: true
+//          };
+//        }
+        
+        if (prop.displayName) {
+          var sn = prop.shortName;
+          prop.altName = p;
+          delete meta[p];
+          meta[sn] = prop;
         }
       }
     }

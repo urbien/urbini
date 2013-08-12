@@ -7,7 +7,7 @@
     html: ['../templates.jsp']
   },
   post: {
-    js: ['views/BasicView', 'views/BasicPageView', 'views/MessageBar', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
+    js: ['views/BasicView', 'views/BasicPageView', 'views/MessageBar', 'tourGuide', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/MasonryListView', 'views/PhotogridListView', 'views/CommentListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 'views/RightMenuPanel', 'views/MapView', 'views/PublishButton', 
          'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/swipeview', 'views/ChatPage', 'views/VideoButton', 'views/ToggleButton1', 'views/ChatButton', 'views/CallInProgressHeader', 'chrome', 'firefox'],
     css: ['../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css']

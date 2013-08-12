@@ -306,9 +306,11 @@ define('resourceManager', [
   };
   
   Events.on('updatedResources', function(resources) {
-    G.whenNotRendering(function() {
-      RM.addItems(resources);
-    });
+    if (resources.length) {
+      G.whenNotRendering(function() {
+        RM.addItems(resources);
+      });
+    }
   });
 
   Events.on('modelsChanged', function(changedTypes) {
