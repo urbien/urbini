@@ -509,11 +509,19 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   function wrapQueryBuildingMethod(query, fn) {
     var self = this,
         backup = query[fn];
-    
+
     query[fn] = function() {
       var subQuery = backup.apply(query, arguments);
       return wrapQuery.call(self, subQuery);
     };
+    
+    if (fn == 'sort') {
+      var backup2 = query[fn];
+      query[fn] = function(column, reverse) {
+        arguments[0] = prepPropName(arguments[0]);
+        return backup2.apply(query, arguments);
+      }
+    }
   };
 
   function wrapQueryRunMethod(query, fn) {
