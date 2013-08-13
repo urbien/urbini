@@ -265,19 +265,23 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     };
     
     function guessTour() {
-      var modelQuery = {};
-      if (_type)
-        modelQuery.$in = 'modelType,' + _query.modelType.join(',');
+      var ands = [{
+//            stepsCount: '>0',
+            $in: 'app,null,' + _app
+          }, {
+            $in: 'route,null,' + _route
+          }];
+           
+      if (_type) {
+        ands.push({
+          $in: 'modelType,' + _query.modelType.join(',')
+        });
+      }
       
       var tours = new ResourceList(null, {
           model: TOUR_MODEL,
           params: {
-            $and: U.$and({
-//                stepsCount: '>0',
-                $in: 'app,null,' + _app
-              }, {
-                $in: 'route,null,' + _route
-              }, modelQuery)
+            $and: U.$and.apply(null, ands)
           }
         }),
         tour; 
