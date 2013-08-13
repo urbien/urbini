@@ -84,7 +84,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         ///////////////////////////
         routeMatches = hashInfo.route == stepRoute,
         isProfile = stepType == 'profile' && (hashInfo.uri == 'profile' || hashInfo.uri == G.currentUser._uri),
-        typeMatches = isProfile || isSubType(hashInfo.type, stepType),
+        typeMatches = isProfile || hashInfo.type == stepType || isSubType(hashInfo.type, stepType),
         paramsMatch = _.isEqual(hashInfoModelParams, stepModelParams);
     
     return routeMatches && typeMatches && paramsMatch;
@@ -112,6 +112,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     var _tour, 
         _steps,
         _step,
+        _myTours,
         currentSearches = [],
         
         // INITIALIZATION
@@ -120,10 +121,13 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
     function init() {
       _initPromise = Voc.getModels(['commerce/urbien/Tour', 'commerce/urbien/TourStep', 'commerce/urbien/MyTour']).then(function(t, s, m) {
-        _initialized = true;
         TOUR_MODEL = t;
         STEP_MODEL = s;
         MY_TOUR_MODEL = m;
+        return getMyTours().always(function(myTours) {
+          _myTours = myTours;
+          _initialized = true;
+        });
       });
     };
     
@@ -191,8 +195,38 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       },
       getCurrentStep: function() {
         return _step;
+      },
+      getMyTours: function() {
+        return _myTours;
       }
     };
+  };
+
+  function getMyTours(tours) {
+    if (G.currentUser.guest)
+      return REJECTED_PROMISE;
+    
+    var params = {
+      user: G.currentUser._uri
+    };
+    
+    if (tours)
+      params.$in = 'tour,' + _.map(tours, function(t) { return t.getUri(); }).join(',');
+    
+    return $.Deferred(function(defer) {
+      var myTours = new ResourceList(null, {
+        model: MY_TOUR_MODEL,
+        params: params
+      });
+      
+      myTours.fetch({
+        success: function() {
+          if (!myTours._fetchPromise || myTours._fetchPromise.state() !== 'pending')
+            defer.resolve(myTours)
+        },
+        error: defer.reject
+      });
+    }).promise();
   };
   
   function SearchOperation(_tour, _steps, _step) {
@@ -257,10 +291,18 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
     function wrap(fn, context) {
       return function() {
-        if (_canceled || _done)
-          return REJECTED_PROMISE;
+        var args = arguments,
+            dfd = $.Deferred(),
+            promise = dfd.promise();
         
-        return fn.apply(context, arguments);
+        G.whenNotRendering(function() {
+          if (_canceled || _done)
+            return REJECTED_PROMISE;
+          
+          fn.apply(context, args).then(dfd.resolve, dfd.reject);
+        });
+        
+        return promise;
       };
     };
     
@@ -286,60 +328,28 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         }),
         tour; 
       
-      tours.fetch({
-        success: function() {
-          if (tour) // success may get called twice, once from search in DB, once from the server
-            return;
-          
-          chooseTour(tours).done(function(tourRes) {
-            if (tour) // success may get called twice, once from search in DB, once from the server
-              return;
-            
-            tour = tourRes;
-            fetchSteps(tour.getUri(), STEP_MODEL).then(function(steps) {
-              return validateAndRunTour(tour, steps);
-            }, function() {
-              debugger;
-            });
-          });
-        },
-        error: function() {
-//          debugger;
-        }
-      });
-    };
-
-    function getMyTours(tourList) {
-      if (G.currentUser.guest)
-        return REJECTED_PROMISE;
-      
-      return $.Deferred(function(defer) {
-        var myTours = new ResourceList(null, {
-          model: MY_TOUR_MODEL,
-          params: {
-            user: _user,
-            $in: 'tour,' + tourList.pluck('_uri').join(',')
+      return $.Deferred(function(defer){        
+        tours.fetch({
+          success: function(resp) {
+            if (!tours._fetchPromise || tours._fetchPromise.state() !== 'pending')
+              chooseTour(tours.models).then(defer.resolve, defer.reject);
+          },
+          error: function() {
+            defer.reject();
           }
         });
-        
-        myTours.fetch({
-          success: function() {
-            defer.resolve(myTours)
-          },
-          error: defer.reject
-        });
-      });
+      }).promise();
     };
-    
+
     function matches(val, desiredVal) {
       return _.isArray(desiredVal) ? _.contains(desiredVal, val) : val == desiredVal;
     }
 
-    function chooseTour(tourList) {
-      if (!tourList.length)
+    function chooseTour(tours) {
+      if (!tours.length)
         return REJECTED_PROMISE;
 
-      var tours = _.filter(tourList.models, function(tour) {
+      tours = _.filter(tours, function(tour) {
         // ideally this should be part of the original query to the server, but it was too complex to make
         return _.all(_tourProps, function(p) {
           var val = tour.get(p);
@@ -350,14 +360,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (!tours.length)
         return REJECTED_PROMISE;
       
-      tourList = new ResourceList(tours, {'final': true}); // don't allow any fetching of this resource list or adding to it
-      return getMyTours(tourList).then(function(myTours) {
-        return _chooseTour(tourList, myTours);
-      }); 
-    };
-
-    function _chooseTour(tourList, myTours) {
-      var tours = tourList.models;
+      var myTours = tourManager.getMyTours();
       if (myTours.length) {
         tours = _.filter(tours, function(tour) {
           return !myTours.where({
@@ -390,7 +393,24 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return result || 0;
       });
       
-      return $.Deferred().resolve(tours[0]).promise();
+      return _chooseTour(tours);
+    };
+    
+    function _chooseTour(tours) {
+      if (!tours.length)
+        return REJECTED_PROMISE;
+      
+      var theChosenOne = tours[0];
+      return fetchSteps(theChosenOne.getUri(), STEP_MODEL).then(function(steps) {
+        return validateAndRunTour(theChosenOne, steps);
+      }, function() {
+        debugger;
+      }).then(function() {
+        // we're good
+      }, function() {
+        // tour fizzled out
+        return chooseTour(tours.slice(1));
+      });
     };
     
     function validateAndRunTour(tour, steps) {
@@ -401,14 +421,10 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       }
       
       var step = getTourStep(steps, stepNum);
-      if (step) {
-        if (hashInfoCompliesWithTourStep(_hashInfo, step)) {
-          Events.trigger('tourStart', tour, steps);
-          setTourStep(step);
-          return RESOLVED_PROMISE;
-        }
-//        else 
-//          debugger;
+      if (step && hashInfoCompliesWithTourStep(_hashInfo, step)) {
+        Events.trigger('tourStart', tour, steps);
+        setTourStep(step);
+        return RESOLVED_PROMISE;
       }
       
       return REJECTED_PROMISE;
