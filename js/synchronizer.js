@@ -49,44 +49,62 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
 
   Synchronizer.prototype._fetchFromServer = function(delay) {
     var self = this,
-        options = this.options;
+        options = this.options,
+        dfd = $.Deferred(),
+        promise = dfd.promise();
+    
+    this.data._fetchPromise = promise; // this may turn out badly in case there's a second _fetchFromServer call before the first returns;
+    promise.then(self._success, self._error).always(function() {
+      self.data._fetchPromise = null;
+    });
     
     if (!G.online) {
-      this._error(null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options);
+      return dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
       return;
     }
 
     if (!options.url) {
-      this._error(null, {code: 400, type: 'not_found', details: 'This resource cannot be fetched directly, it probably came bundled with another'}, options);
+      dfd.rejectWith(this.data, [null, {code: 400, type: 'not_found', details: 'This resource cannot be fetched directly, it probably came bundled with another'}, options]);
       return;
     }
 
-    if (U.isModel(this.data) && U.isTempUri(this.data.getUri()))
-      return this._error(this.data, {code: 204}, this.options);
+    if (U.isModel(this.data) && U.isTempUri(this.data.getUri())) {
+      dfd.rejectWith(this.data, [this.data, {code: 204}, this.options]);
+      return;
+    }
   
     if (this._isUpdate() && !this._isForceFetch())
       this._setLastFetched();
 
     if (delay) {
-      setTimeout(this._fetchFromServer.bind(this), delay);
-      return;
+      return $.Deferred(function(defer) {
+        setTimeout(function() {
+          self._fetchFromServer().then(defer.resolve, defer.reject);
+        }, delay);
+      }).promise();
     }
     
+    var intermediatePromise;
     if (this._isSyncRequest() || !G.hasWebWorkers)
-      return this._defaultSync();
+      intermediatePromise = this._defaultSync();
+    else {
+      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
+        self.data.lastFetchOrigin = 'server';
+      });
+    }
       
-    U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
-      self.data.lastFetchOrigin = 'server';
-    }).done(function(data, status, xhr) {
-      self._success(data, status, xhr);
+    intermediatePromise.done(function(data, status, xhr) {
+      dfd.resolveWith(self.data, [data, status, xhr]);
     }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
   //      return;
-  //    
+      
       log('error', 'failed to get resources from url', options.url, msg);
-      self._error(null, xhr, options);
-    });      
-  },
+      dfd.rejectWith(self.data, [null, xhr, options]);
+    });
+  
+    return promise;
+  };
       
   Synchronizer.prototype._defaultSync = function() {
 //    if (this._isSyncRequest())

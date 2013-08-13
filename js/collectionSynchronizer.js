@@ -103,17 +103,20 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
           }
         };
       
-    this._success(resp, 'success', null); // add to / update collection
-    if (this._isForceFetch())
-      return this._fetchFromServer();
+    try {
+      if (this._isForceFetch())
+        return this._fetchFromServer();
+        
+      numAfter = this.data.length;
+      if (!this._isUpdate() && numAfter === numBefore) // db results are useless
+        return this._delayedFetch();
       
-    numAfter = this.data.length;
-    if (!this._isUpdate() && numAfter === numBefore) // db results are useless
-      return this._delayedFetch();
-    
-    lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
-    if (this._isStale(lastFetchedTS, this._getNow()))
-      return this._delayedFetch();
+      lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
+      if (this._isStale(lastFetchedTS, this._getNow()))
+        return this._delayedFetch();
+    } finally {    
+      this._success(resp, 'success', null); // add to / update collection
+    }
   };
 
   CollectionSynchronizer.prototype._getItems = function(options) {
