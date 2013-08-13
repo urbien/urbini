@@ -452,7 +452,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     
     var enumModels = {};
     _.each(models, function(model) {
-      var modelJson = U.toJSON(model);
+      var modelJson = model; //U.toJSON(model);
       if (model.enumeration)
         enumModels[model.type] = modelJson;
       else

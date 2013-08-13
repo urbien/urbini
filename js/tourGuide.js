@@ -62,6 +62,18 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     return fragment;
   };
 
+  function getAllTypes(vocModel) {
+    vocModel = typeof vocModel == 'string' ? U.getModel(vocModel) : vocModel;
+    if (!vocModel)
+      return false;
+    
+    return U.getTypes(vocModel).concat(vocModel.interfaces || [])
+  }
+  
+  function isSubType(type1, type2) {
+    return _.contains(getAllTypes(type1), type2);
+  };
+  
   function hashInfoCompliesWithTourStep(hashInfo, step) {
     var isModelParam = U.negate(U.isMetaParameter),
         hashInfoModelParams = U.filterObj(hashInfo.params, isModelParam),
@@ -72,7 +84,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         ///////////////////////////
         routeMatches = hashInfo.route == stepRoute,
         isProfile = stepType == 'profile' && (hashInfo.uri == 'profile' || hashInfo.uri == G.currentUser._uri),
-        typeMatches = isProfile || hashInfo.type == stepType,
+        typeMatches = isProfile || isSubType(hashInfo.type, stepType),
         paramsMatch = _.isEqual(hashInfoModelParams, stepModelParams);
     
     return routeMatches && typeMatches && paramsMatch;
@@ -191,12 +203,13 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         _hashInfo = G.currentHashInfo,
         _params = _hashInfo.params,
         _type = _hashInfo.type,
+        _model = _type && U.getModel(_type),
         _route = _hashInfo.route,
         _tourProps = ['app', 'route', 'modelType'],
         _query = {
           app: _app,
           route: _route,
-          modelType: _type
+          modelType: _type ? getAllTypes(_type) : null
         };
 
 
@@ -238,7 +251,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         else
           return $.Deferred().resolve(_tour, _steps, _step).promise();
       }, function() {
-        debugger; // nothing found
+//        debugger; // nothing found
       });
     };
 
@@ -252,19 +265,19 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     };
     
     function guessTour() {
-      var tourParams = {
-            app: _app
-          };
-      
+      var modelQuery = {};
       if (_type)
-        tourParams.modelType = _type;
+        modelQuery.$in = 'modelType,' + _query.modelType.join(',');
       
       var tours = new ResourceList(null, {
           model: TOUR_MODEL,
           params: {
-            $or: U.getQueryString(tourParams, {delimiter: '||'}) + '||app=null',
-            stepsCount: '>0', // db doesn't understand this (yet)
-            route: _route
+            $and: U.$and({
+//                stepsCount: '>0',
+                $in: 'app,null,' + _app
+              }, {
+                $in: 'route,null,' + _route
+              }, modelQuery)
           }
         }),
         tour; 
@@ -287,7 +300,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           });
         },
         error: function() {
-          debugger;
+//          debugger;
         }
       });
     };
@@ -314,6 +327,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       });
     };
     
+    function matches(val, desiredVal) {
+      return _.isArray(desiredVal) ? _.contains(desiredVal, val) : val == desiredVal;
+    }
 
     function chooseTour(tourList) {
       if (!tourList.length)
@@ -323,7 +339,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // ideally this should be part of the original query to the server, but it was too complex to make
         return _.all(_tourProps, function(p) {
           var val = tour.get(p);
-          return !val || val == _query[p]; 
+          return !val || matches(val, _query[p]); 
         });
       });
 
@@ -357,11 +373,11 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
               bVal = b.get(p),
               desired = _query[p];
           
-          if (aVal == desired) {
-            if (bVal != desired)
+          if (matches(aVal, desired)) {
+            if (!matches(bVal, desired))
               result = -1;
           }
-          else if (bVal == desired)
+          else if (matches(bVal, desired))
             result = 1;
           
           return result || 0;
@@ -387,8 +403,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           setTourStep(step);
           return RESOLVED_PROMISE;
         }
-        else 
-          debugger;
+//        else 
+//          debugger;
       }
       
       return REJECTED_PROMISE;

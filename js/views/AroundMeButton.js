@@ -45,8 +45,7 @@ define('views/AroundMeButton', [
         return this;
       }
         
-      var iFaces = vocModel.interfaces;
-      if (!_.contains(iFaces, 'Locatable'))
+      if (!U.isA(vocModel, 'Locatable'))
         return this;
       
   //    if (!props.distance || !props.latitude || !props.longitude)
