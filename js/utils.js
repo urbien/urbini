@@ -8,7 +8,9 @@ define('utils', [
   'events',
   'jqueryMobile'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
-  var ArrayProto = Array.prototype, slice = ArrayProto.slice,
+  var asArray = function(stuff) { return [].slice.call(stuff) },
+      slice = [].slice,
+      concat = [].concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
@@ -19,7 +21,7 @@ define('utils', [
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
   function log() {
-    var args = [].slice.call(arguments);
+    var args = slice.call(arguments);
     args.unshift('Utils');
     G.log.apply(G, args);
   };
@@ -36,7 +38,7 @@ define('utils', [
     return path.split(separator).reduce(index, obj);
   }
 
-  ArrayProto.remove = function() {
+  Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
       what = a[--L];
@@ -48,7 +50,7 @@ define('utils', [
     return this;
   };
 
-  ArrayProto.last = ArrayProto.peek = function() {
+  Array.prototype.last = Array.prototype.peek = function() {
     return this.length ? this[this.length - 1] : null;
   };
 
@@ -616,7 +618,7 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      var cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1)),
+      var cloneOf = concat.apply([], slice.call(arguments, 1)),
           results = {},
           meta = model.properties;
       
@@ -846,7 +848,7 @@ define('utils', [
     isA: function(model, interfaceNames, op) {
       var OR = op === 'OR';
       interfaceNames = typeof interfaceNames === 'string' ? [interfaceNames] : interfaceNames;
-      var intersection = _.intersection(model.interfaces, interfaceNames);
+      var intersection = _.intersection(_.map(model.interfaces, U.getClassName), interfaceNames);
       if (OR && intersection.length || !OR && intersection.length === interfaceNames.length)
         return true;
       else
@@ -859,6 +861,24 @@ define('utils', [
 //      
 //      var m = U.getModel(superCl);
 //      return m ? U.isA(m, leftOver) : impl;
+    },
+    
+    $or: function() {
+      if (arguments.length == 1)
+        return U.getQueryString(arguments[0], '||');
+      
+      return _.map(slice.call(arguments), function(arg) {
+        return U.$or(arg);
+      }).join('||');
+    },
+    
+    $and: function() {
+      if (arguments.length == 1)
+        return $.param(arguments[0]);
+      
+      return _.map(slice.call(arguments), function(arg) {
+        return U.$and(arg);
+      }).join('&');      
     },
     
     getPackagePath: function(type) {
@@ -2554,7 +2574,7 @@ define('utils', [
       case '[object Object]':
         return _.pick.apply(null, arguments);
       case '[object Array]':
-        var keys = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
+        var keys = concat.apply([], slice.call(arguments, 1));
         var arrCopy = [];
         for (var i = 0; i < obj.length; i++) {
           var item = obj[i], copy = {};
@@ -3514,7 +3534,7 @@ define('utils', [
           subInfo;
 
       if (!route)
-        route = 'home';
+        route = hash ? 'list' : 'home';
       
       if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
         var uriParams = {};
