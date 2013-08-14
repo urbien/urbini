@@ -2287,7 +2287,7 @@ define('l20n/compiler', function(require, exports, module) {
         locals[this.args[i].id.name] = args[i];
       }
       var _final = this.expression(locals, ctxdata);
-      locals = final[0], _final = _final[1];
+      locals = _final[0], _final = _final[1];
       return [locals, _resolve(_final, locals, ctxdata)];
     };
 
