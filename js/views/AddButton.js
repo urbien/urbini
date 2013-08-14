@@ -9,7 +9,7 @@ define('views/AddButton', [
   return BasicView.extend({
     template: 'addButtonTemplate',
     tagName: 'li',
-    id: '#addBtn',
+    id: 'addBtn',
     events: {
       'click': 'add'
     },

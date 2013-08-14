@@ -61,6 +61,9 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
    * @param val value or a combination of operator and value, e.g. ">=7"
    */
   function buildSubQuery(name, val, vocModel, indexNames) {
+    if (!_.contains(indexNames, name))
+      return null;
+    
     var clause = parseAPIClause(name, val),
         Index = getIDB().queryByIndex;
     

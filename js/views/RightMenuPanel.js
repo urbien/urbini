@@ -123,7 +123,9 @@ define('views/RightMenuPanel', [
     
     login: function(e) {
       Events.stopEvent(e);
-      Events.trigger('req-login');
+      Events.trigger('req-login', {
+        dismissible: true
+      });
     },
     
 //    edit: function(e) {
@@ -288,6 +290,11 @@ define('views/RightMenuPanel', [
         uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Like', G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: 'Like', pageUrl: uri, icon: 'heart', homePage: 'y'}));
 
+        if (!G.currentUser.guest) {
+          var icons = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google'], function(n) { return '<i class="ui-icon-{0}"></i>'.format(U.getSocialNetFontIcon(n)) }).join(' ');
+          U.addToFrag(frag, this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'}));
+        }
+
         uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle('Comment', G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: 'Comment', pageUrl: uri, icon: 'comments', homePage: 'y'}));
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
@@ -304,8 +311,9 @@ define('views/RightMenuPanel', [
         var uri = 'view/profile';
         if (G.currentUser.guest)
           U.addToFrag(frag, this.menuItemTemplate({title: 'Login', icon: 'user', mobileUrl: uri, homePage: 'y', id: 'login'}));
-        else
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
+//        else
+//          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
+        
         if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
           U.addToFrag(frag, this.menuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'}));

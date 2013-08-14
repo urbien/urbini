@@ -11,7 +11,7 @@ define('views/LoginButton', [
 //    logoutTemplate: 'logoutButtonTemplate',
 //    popupTemplate: 'loginPopupTemplate',
     tagName: 'li',
-    id: '#loginButton',
+    id: 'loginButton',
     events: {
       'click' : 'showPopup'
 //        ,
@@ -51,7 +51,10 @@ define('views/LoginButton', [
     },
     
     showPopup: function() {
-      Events.trigger('req-login');
+      Events.trigger('req-login', {
+        dismissible: true
+      });
+      
       return false;
 //      var $popup = $('.ui-page-active #login_popup');
 //      if ($popup.length == 0) {

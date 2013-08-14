@@ -14,7 +14,7 @@
   <div id="sidebarDiv" class="ui-content" role="main">
     <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
     {{ if (this.collection.models.length > 5) { }}
-     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}"
+     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'Search...') }}"
    {{ } }}
    ></ul>
     <div id="nabs_grid" class="masonry">
@@ -24,7 +24,7 @@
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="Submit" />
+      <input type="submit" id="mvSubmit" value="{{= loc('Submit') }}" />
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
@@ -219,6 +219,24 @@
   </table>
 </script>
 
+<script type="text/template" id="socialNetworkPageTemplate">
+<!-- View where the user can connect various social networks -->  
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="headerDiv"></div>
+  <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
+</script>  
+
+<script type="text/template" id="socialNetButtonTemplate">
+  <div class="{{= obj['class'] || '' }}" style="text-align:center;">
+    <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
+    <a href="#" data-role="button">
+      <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
+      <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
+    </a>
+  </div>
+</script>
+
 <script type="text/template" id="genericOptionsDialogTemplate">
   <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
     <ul data-role="listview" data-inset="false" data-theme="d"> 
@@ -260,11 +278,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= typeof cancel === 'string' ? cancel : 'Cancel' }}</a>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'Cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= typeof ok === 'string' ? ok : 'Ok' }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'Ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -906,16 +924,16 @@
     
     {{ _.forEach(nets, function(net) { }} 
 
-    <a data-role="button" href="{{= net.url }}" {{= net.socialNet == 'Facebook' ? ' target="_top"' : '' }}>
+    <a data-role="button" href="{{= net.url }}" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
         <span class="big_symbol 
-      {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
-        "/ >
+      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
+      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
+        ">
        </span>
-     {{= net.socialNet }}
+     {{= net.name }}
     </a>
 
     {{ }); }}

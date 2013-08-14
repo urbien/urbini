@@ -1579,7 +1579,8 @@ define('globals', function() {
     },
     support: {
       pushState: false //!!(window.history && history.pushState)
-    }
+    },
+    language: navigator.language.split('-')[0]
   });
 
   setupLocalStorage();

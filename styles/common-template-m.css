@@ -332,6 +332,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 /* login popup icon for Live social net (lack in awesome font currently) */
 .ui-icon-live-sign:before { content: url(../images/frame/white_bg/live-sign.png); border-radius: 4px; background-color: #aaa; padding: 2px; margin-left: 1px; }
 .ui-icon-live-sign { margin-top: 0px !important; line-height: 10px !important; }
+/* login popup icon for Tendril social net (lack in awesome font currently) */
+.ui-icon-tendrilconnect-sign:before { content: url(../images/frame/white_bg/tendril-sign.png); border-radius: 4px; background-color: #aaa; padding: 2px; margin-left: 1px; }
+.ui-icon-tendrilconnect-sign { margin-top: 0px !important; line-height: 10px !important; }
 #login_popup .big_symbol { float: left; font-size: 25px; color: #aaaaaa; line-height: 100%; margin: 0px 0px 0px -8px; }
 
 /* default images 'fitting' in RL in case when image dimensions are uknown. Use "max-height: none" only with processed images */

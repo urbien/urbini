@@ -31,6 +31,7 @@ define('router', [
     routes:{
       ""                                                       : "home",
       "home/*path"                                             : "home",
+      "social/*path"                                           : "social",
 //      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
       "list/*path"                                             : "list", 
@@ -221,7 +222,6 @@ define('router', [
     
     fragmentToOptions: {},
     
-    
     navigate: function(fragment, options) {
 //      if (this.previousHash === fragment) {
 ////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
@@ -339,6 +339,17 @@ define('router', [
       Events.trigger('activeView', this.homePage);
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
+    },
+    
+    social: function() {
+      if (!this.routePrereqsFulfilled('social', arguments))
+        return;
+      
+      var view = C.getCachedView();
+      if (!view)
+        view = new Modules.SocialNetworkPage();
+      
+      this.changePage(view);
     },
     
     choose: function(path) { //, checked, props) {
@@ -751,7 +762,7 @@ define('router', [
           isWriteRoute,
           hashInfo = G.currentHashInfo;
       
-      if (G.currentUser.guest && /^(chat|edit|make)/.test(route)) {
+      if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
         return false;
       }
@@ -759,6 +770,9 @@ define('router', [
       switch (route) {
       case 'chat':        
         views = ['ChatPage'];
+        break;
+      case 'social':        
+        views = ['SocialNetworkPage'];
         break;
       case 'view':
         views = ['ViewPage'];

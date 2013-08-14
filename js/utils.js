@@ -881,6 +881,54 @@ define('utils', [
       }).join('&');      
     },
     
+    getSocialNetFontIcon: function(net) {
+      var icon;
+      if (net == 'Google')
+        icon = 'google-plus';
+      else
+        icon = net.toLowerCase();
+      
+      return icon + '-sign';
+    },
+    
+    buildSocialNetOAuthUrl: function(net, action, returnUri) {
+      returnUri = returnUri || window.location.href;
+      if (action === 'Disconnect') {
+        return G.serverName + '/social/socialsignup?' + U.getQueryString({
+          actionType: action,
+          returnUri: returnUri,
+          socialNet: net.socialNet
+        }, {sort: true})
+      };
+      
+      var state = U.getQueryString({
+        socialNet: net.socialNet, 
+        returnUri: returnUri,
+        actionType: action
+      }, {sort: true}); // sorted alphabetically
+    
+      var params;
+      if (net.oAuthVersion == 1) {
+        params = {
+          episode: 1, 
+          socialNet: net.socialNet,
+          actionType: action
+        };
+      }
+      else {
+        params = {
+          scope: net.settings,
+          display: 'touch', // 'page', 
+          state: state, 
+          redirect_uri: G.serverName + '/social/socialsignup', 
+          response_type: 'code', 
+          client_id: net.appId || net.appKey
+        };
+      }
+      
+      return net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
+    },
+    
     getPackagePath: function(type) {
 //      if (type == 'Resource' || type.endsWith('#Resource'))
 //        return 'packages';

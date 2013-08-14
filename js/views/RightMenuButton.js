@@ -8,7 +8,7 @@ define('views/RightMenuButton', [
 ], function(G, _, Events, U, BasicView) {
   return BasicView.extend({
     tagName: 'li',
-    id: '#rightMenuBtn',
+    id: 'rightMenuBtn',
     templateName: 'rightMenuButtonTemplate',
     events: {
       'click': 'menu'

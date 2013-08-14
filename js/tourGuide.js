@@ -308,16 +308,23 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     
     function guessTour() {
       var ands = [{
-//            stepsCount: '>0',
-            $in: 'app,null,' + _app
-          }, {
-            $in: 'route,null,' + _route
-          }];
+//        stepsCount: '>0',
+        $in: 'app,null,' + _app,
+        route: _route
+      }];
+//              , {
+//            $in: 'route,null,' + _route
+//          }];
            
       if (_type) {
         ands.push({
           $in: 'modelType,' + _query.modelType.join(',')
         });
+      }
+      else {
+        ands.push({
+          modelType: null
+        })
       }
       
       var tours = new ResourceList(null, {
@@ -353,7 +360,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // ideally this should be part of the original query to the server, but it was too complex to make
         return _.all(_tourProps, function(p) {
           var val = tour.get(p);
-          return !val || matches(val, _query[p]); 
+//          return !val || matches(val, _query[p]); 
+          return matches(val, _query[p]); 
         });
       });
 
@@ -409,7 +417,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // we're good
       }, function() {
         // tour fizzled out
-        return chooseTour(tours.slice(1));
+        return _chooseTour(tours.slice(1));
       });
     };
     

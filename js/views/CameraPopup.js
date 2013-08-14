@@ -23,7 +23,6 @@ define('views/CameraPopup', [
   return BasicView.extend({
     template: 'cameraPopupTemplate',
     tagName: 'li',
-    id: '#addBtn',
     events: {
 //      'click #camVideo'         : 'stop',
 //      'click canvas'            : 'start',
