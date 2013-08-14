@@ -6,7 +6,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       TOUR_MODEL,
       STEP_MODEL,
       MY_TOUR_MODEL,
-      backboneLoadUrl = Backbone.history.loadUrl,
+//      backboneLoadUrl = Backbone.history.loadUrl,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
       tourManager;
@@ -85,23 +85,30 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         routeMatches = hashInfo.route == stepRoute,
         isProfile = stepType == 'profile' && (hashInfo.uri == 'profile' || hashInfo.uri == G.currentUser._uri),
         typeMatches = isProfile || hashInfo.type == stepType || isSubType(hashInfo.type, stepType),
-        paramsMatch = _.isEqual(hashInfoModelParams, stepModelParams);
+        paramsMatch = true;
+    
+    for (var param in hashInfoModelParams) {
+      if (_.has(stepModelParams, param) && stepModelParams[param] !== hashInfoModelParams[param]) {
+        paramsMatch = false;
+        break;
+      }
+    }
     
     return routeMatches && typeMatches && paramsMatch;
   };
   
-  Backbone.history.loadUrl = function(fragmentOverride) {
-    var fragment = this.fragment = this.getFragment(fragmentOverride);
-    // validate against next tour step if on a tour
-    if (tourManager.getCurrentStep()) {
-      fragment = adjustFragmentForTour(fragment);
-      if (fragment !== this.fragment) {
-        this._updateHash(this.location, fragment, true);
-      }
-    }
-      
-    return backboneLoadUrl.call(this, this.fragment);
-  };  
+//  Backbone.history.loadUrl = function(fragmentOverride) {
+//    var fragment = this.fragment = this.getFragment(fragmentOverride);
+//    // validate against next tour step if on a tour
+//    if (tourManager.getCurrentStep()) {
+//      fragment = adjustFragmentForTour(fragment);
+//      if (fragment !== this.fragment) {
+//        this._updateHash(this.location, fragment, true);
+//      }
+//    }
+//      
+//    return backboneLoadUrl.call(this, this.fragment);
+//  };  
 
   
   ///////////// END BACKBONE HACKERY ///////////////
@@ -151,12 +158,14 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
     Events.on('tourStep', function(step) {
       _step = step;
-      if (_step.get('number') == _steps.length) {
+      if (_step.get('number') >= _steps.length) {
         new MY_TOUR_MODEL().save({
           status: 'completed',
           user: G.currentUser._uri,
           tour: _tour.getUri()
         });
+        
+        Events.trigger('tourEnd', _tour);
       }
     });
 
@@ -183,7 +192,12 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           currentSearches = [];
         });
         
-        var searchOp = SearchOperation();
+        var searchOp = SearchOperation({
+          tour: _tour, 
+          steps: _steps, 
+          step: _step
+        });
+        
         currentSearches.push(searchOp);
         searchOp.run();
       },
@@ -229,9 +243,13 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     }).promise();
   };
   
-  function SearchOperation(_tour, _steps, _step) {
+  function SearchOperation(current) {
+    current = current || {};
     var _canceled, 
         _done,
+        _tour = current.tour,
+        _steps = current.steps,
+        _step = current.step,
         _app = G.currentApp._uri,
         _user = G.currentUser._uri,
         _hashInfo = G.currentHashInfo,
@@ -258,13 +276,20 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     };
 
     function checkForTour() {
-      var tourId = _params[TOUR_PARAM];
+      var currentTourId = _tour && getTourId(_tour),
+          tourId = _params[TOUR_PARAM] || currentTourId;
+      
       if (!tourId)
         return guessTour();
-       
-      if (_tour && getTourId(_tour) == tourId) {
-        setTourStep();
-        return RESOLVED_PROMISE;
+      
+      if (tourId == currentTourId) {
+        var stepNum = getStepNum(_hashInfo) || _step.get('number') + 1;
+        if (stepNum && _steps.length >= stepNum) {
+          setTourStep(getTourStep(_steps, stepNum));
+          return RESOLVED_PROMISE;
+        }
+        else
+          return guessTour();
       }
       
       var tourUri = U.buildUri({
@@ -358,11 +383,22 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
       tours = _.filter(tours, function(tour) {
         // ideally this should be part of the original query to the server, but it was too complex to make
-        return _.all(_tourProps, function(p) {
-          var val = tour.get(p);
-//          return !val || matches(val, _query[p]); 
-          return matches(val, _query[p]); 
-        });
+        var app = tour.get('app');
+        if (app && app !== _app)
+          return false;
+
+        var route = tour.get('route');
+        if (!route || route !== _route)
+          return false;
+
+        var modelType = tour.get('modelType');
+        if (!modelType && _type || modelType && !_type)
+          return false;
+        
+        if (modelType && !_.contains(_query.modelType, modelType))
+          return false;
+        
+        return true;
       });
 
       if (!tours.length)
@@ -422,7 +458,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     };
     
     function validateAndRunTour(tour, steps) {
-      var stepNum = getStepNum(_hashInfo);
+      var stepNum = getStepNum(_hashInfo) || 1;
       if (_tour == tour) {
         setTourStep(stepNum);
         return RESOLVED_PROMISE;
@@ -526,7 +562,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     var params = hashInfo.params || {},
         stepNum = params[TOUR_STEP_PARAM];
     
-    return parseInt(stepNum) || 1;
+    return parseInt(stepNum);
   };
   
 
