@@ -227,6 +227,7 @@ define('globals', function() {
           break;
         case '.html':
         case '.jsp':
+        case '.lol':
           G.log(G.TAG, 'cache', 'cache.get: ' + url);
 //          onLoad(text);
           defer.resolve(text);
@@ -413,16 +414,21 @@ define('globals', function() {
       }
     }
     
-    if (query && query.length) {
-      var params = query.split('&');
-      for (var i = 0; i < params.length; i++) {
-        var keyVal = params[i].split('=');
-        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
-          setParent();          
-          G.localStorage.put(param, 'y');
-          break;
-        }
-      }
+//    if (query && query.length) {
+//      var params = query.split('&');
+//      for (var i = 0; i < params.length; i++) {
+//        var keyVal = params[i].split('=');
+//        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
+//          setParent();          
+//          G.localStorage.put(param, 'y');
+//          break;
+//        }
+//      }
+//    }
+    
+    if (params[param] == 'y') {
+      setParent();          
+      G.localStorage.put(param, 'y');
     }
     
     G.hasFFApps = browser.firefox && 'mozApps' in navigator;
@@ -635,7 +641,12 @@ define('globals', function() {
       }
       
       return require('__domReady__').then(function() {
-        return require(['jqmConfig', 'events', 'app'].concat(css));
+        var essential = ['jqmConfig', 'events', 'app'];
+        if (G.modules['js/lib/l20n.js'])
+          essential.push('lib/l20n');
+        
+        essential = essential.concat(css)
+        return require(essential);
       });
     }).then(function(jqmConfig, Events, App) {
       Events.on('appStart', APP_START_DFD.resolve);
@@ -1027,6 +1038,16 @@ define('globals', function() {
 //      ALL_IN_APPCACHE,
       hash = window.location.href.split('#')[1] || '',
       query = hash.split('?')[1],
+      decode = decodeURIComponent,
+      params = query ? (function() {
+        var pairs = query.split('&'), map = {};
+        $.each(pairs, function(idx, pair) {
+          pair = pair.split('=');
+          map[decode(pair[0])] = decode(pair[1]);
+        });
+          
+        return map;
+      })() : {},
       $head = $('head'),
       head = $head[0],
       $body = $('body'),
@@ -1043,7 +1064,7 @@ define('globals', function() {
       preBundle = bundles.pre,
       postBundle = bundles.post, 
       extrasBundle = bundles.extras;
-  
+    
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
     G.setOnline(false);
@@ -1580,7 +1601,7 @@ define('globals', function() {
     support: {
       pushState: false //!!(window.history && history.pushState)
     },
-    language: navigator.language.split('-')[0]
+    language: params['-lang'] || navigator.language.split('-')[0]
   });
 
   setupLocalStorage();

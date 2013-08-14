@@ -136,7 +136,7 @@ define('views/MenuPanel', [
       if (!G.currentUser.guest) {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
-          var title = 'Profile';
+          var title = this.loc('profile');
           U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
           self.tabs[title] = U.getPageUrl(mobileUrl);
         } 
@@ -180,7 +180,7 @@ define('views/MenuPanel', [
 */      
 
       if (!G.currentUser.guest) {
-        U.addToFrag(frag, self.groupHeaderTemplate({value: 'Account'}));
+        U.addToFrag(frag, self.groupHeaderTemplate({value: this.loc('account')}));
 //        var mobileUrl = 'view/profile';
 //        if (!hash  ||  hash != mobileUrl) {
 //          var title = 'Profile';
@@ -213,14 +213,14 @@ define('views/MenuPanel', [
           var $in = '_uri,' + _.pluck(_.toArray(installed), '_uri').join(',');
           
           // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
         }
         
         // Apps I created
 //        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
 //        if (user.newAlertsCount) {
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
 //        }
         /*
         if (user.alertsCount) {
@@ -230,16 +230,16 @@ define('views/MenuPanel', [
 //        U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', $clear: 'true', $returnUri: window.location.href}) }));
         }
         */
-        U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("logout"), id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 
 //      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
       if (window.location.hash.length > 0)
-        U.addToFrag(frag, this.menuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
       
       if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123', mobileUrl: '#'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#'}));
       }
       
       ul.append(frag);      

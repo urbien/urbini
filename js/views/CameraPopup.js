@@ -227,7 +227,15 @@ define('views/CameraPopup', [
       this.setstate('previewing');
       navigator.getMedia(
         {
-          video: this.hasVideo,
+          video: this.hasVideo ? {
+            "mandatory": {
+              "minWidth": 320,
+              "minHeight": 240,
+              "maxWidth": 320,
+              "maxHeight": 240
+            }
+          } : false,
+//          video: this.hasVideo,
           audio: this.hasAudio
         }
         ,
@@ -301,6 +309,9 @@ define('views/CameraPopup', [
       if (!this.hasAudio)
         return;
       
+      if (G.browser.chrome)
+        stream = new window.webkitMediaStream(stream.getAudioTracks());
+        
       this.inputPoint = this.audioContext.createGainNode();
 
       // Create an AudioNode from the stream.
@@ -336,11 +347,18 @@ define('views/CameraPopup', [
         vHeight = this.video.videoHeight;
       }
       
+//      if (vWidth % 2 == 1)
+//        vWidth = this.video.videoWidth = vWidth + 1;
+//      if (vHeight % 2 == 1)
+//        vHeight = this.video.videoHeight = vHeight + 1;
+      
       this.videoWidth = vWidth;
       this.videoHeight = vHeight;
       this.height = Math.round(vHeight / (vWidth / this.width));
-      this.$canvas.attr('width', this.width);
-      this.$canvas.attr('height', this.height);
+//      this.$canvas.attr('width', this.width % 2 ? this.width - 1 : this.width);
+//      this.$canvas.attr('height', this.height % 2 ? this.height - 1: this.height);
+      this.$canvas.attr('width', 320);//this.width);
+      this.$canvas.attr('height', 240);//this.height);
 //      this.$canvas.attr('width', vWidth);
 //      this.$canvas.attr('height', vHeight);
       var $popup = this.$el.parent();

@@ -1103,14 +1103,14 @@ define('models/Resource', [
         if (/^\$/.test(key)) // is an API param like $returnMade
           return true;
         
-        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
-          return false;        
-        
 //        if (typeof val === 'undefined') // you sure?
 //          return false;
         
         if (window.Blob && val instanceof window.Blob)
           return true;
+        
+        if (/\./.test(key)) // if it has a '.' in it, it's not writeable
+          return false;        
         
         if (val._filePath) // placeholder for local filesystem file, meaningless to the server
           return false;

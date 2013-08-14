@@ -9610,7 +9610,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     body = doc.getElementsByTagName('head')[0],
     isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
 //    readyRegExp = /^(complete|loaded)$/,
-    extRegExp = /\.(jsp|html|htm|css|jsp|js)$/,
+    extRegExp = /\.(jsp|html|htm|css|jsp|lol|js)$/,
     currentlyAddingScript = null,
 //    useInteractive = false,
     config = {

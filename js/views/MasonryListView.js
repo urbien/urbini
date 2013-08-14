@@ -54,7 +54,7 @@ define('views/MasonryListView', [
       if (this.rendered) {
         if (info.appended.length || info.updated.length) {
           this.$el.imagesLoaded(function() {
-            if (info.appended.length) {
+            if (info.appended.length)
               self.masonry('appended', $(info.appended));
             if (info.updated.length)
               self.masonry('reload');

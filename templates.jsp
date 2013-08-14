@@ -14,7 +14,7 @@
   <div id="sidebarDiv" class="ui-content" role="main">
     <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
     {{ if (this.collection.models.length > 5) { }}
-     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'Search...') }}"
+     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
    {{ } }}
    ></ul>
     <div id="nabs_grid" class="masonry">
@@ -24,7 +24,7 @@
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="{{= loc('Submit') }}" />
+      <input type="submit" id="mvSubmit" value="{{= loc('submit') }}" />
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
@@ -41,7 +41,7 @@
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a -->
      <!-- "Next" button removed after endless page introduction>
      {{ if (this.collection.length > this.collection.perPage) { }}
-       <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
+       <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">{{= loc('next') }}</a>
      {{ }                                                       }}
      -->
   <!-- /div -->
@@ -65,7 +65,7 @@
     <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">Woo me</a></div>
+          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     <ul data-role="listview" data-inset="true" data-shadow="false" style="padding: 10px;" data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
@@ -81,7 +81,7 @@
   </div>
   <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">Edit</a>
+     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
   </div>
 </script>  
 
@@ -134,7 +134,7 @@
       <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
     </div>  
     <div class="floatleft">
-      <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
+      <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
     </div>
   </div>
   {{ } }}
@@ -159,7 +159,7 @@
           
           <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">
             {{ if (obj['private']) { }}
-              <span class="private-message"><i> (Private message) </i></span> 
+              <span class="private-message"><i>{{= '(' + loc('privateMsg') + ')' }}</i></span> 
             {{ }                 }}
             {{= obj.sender ? message : '{0} ({1})'.format(message, time) }}
           </span>
@@ -278,11 +278,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'Cancel') }}</a>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'Ok') }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -329,7 +329,7 @@
             <input type="text" id="chatMessageInput" value="" data-mini="true" />
           </td>
           <td>
-            <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
+            <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
           </td>
         </tr>
       </table-->
@@ -352,15 +352,15 @@
         <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
       </div>  
       <div class="floatleft">
-        <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">Send</button>
+        <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
       </div>
     </div>
     
     <!--div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
       <div id="chatInputs" style="padding:0 0 0 5px;">
-        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">Capture</button></div>
+        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">{{= loc('capture') }}</button></div>
         <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-right:5px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">Send</button></div>
+        <div style="width:20%; padding-right:5px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">{{= loc('send') }}</button></div>
       </div>
     </div-->
   {{ }                                          }}
@@ -444,7 +444,7 @@
 </script -->
 
 <script type="text/template" id="booleanPT">
-  <span>{{= typeof value === 'undefined' || !value ? 'No' : 'Yes' }}</span>
+  <span>{{= loc(typeof value === 'undefined' || !value ? 'no' : 'yes') }}</span>
 </script>
 
 <script type="text/template" id="intPT">
@@ -899,7 +899,7 @@
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
-  <a target="#" data-icon="signin">Sign In</a>
+  <a target="#" data-icon="signin">{{= loc('signIn') }}</a>
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
@@ -908,9 +908,9 @@
     <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
-      <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">Buy<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
-      <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">Try<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
-      <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">Cancel</a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">{{= loc('buy') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">{{= loc('try') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">{{= loc('cancel') }}</a> 
     </div>
   </div>
 </script>
@@ -957,53 +957,53 @@
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
-    <a id="logout" target="#" data-icon="signout">Sign Out</a>
+    <a id="logout" target="#" data-icon="signout">{{= loc('signOut') }}</a>
   </li>
 </script>
 
 <!--script type="text/template" id="aroundMeButtonTemplate">
   <!-- button for toggling ordering of results by geo-promixity to the user -->
-  <a target="#" data-icon="map-marker">Around Me</a>
+  <a target="#" data-icon="map-marker">{{= loc('aroundMe') }}</a>
 </script-->
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= wasPublished ? 'This app was changed, click to re-Publish' : 'Publish your app when you\'re done' }}</a>
+  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
 <!-- button to reset a template to its default value -->
-<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">Reset to default</a>
+<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
 </script>
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">Goto app</a>
+  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a>
 </script>
 
 <script type="text/template" id="installAppBtnTemplate">
   <!-- button that installs a given app when clicked -->
-  <a target="#" data-icon="plus-sign" id="installApp" data-role="button" data-position="notext" style="background:#0F0;color:#FFF">Install</a>
+  <a target="#" data-icon="plus-sign" id="installApp" data-role="button" data-position="notext" style="background:#0F0;color:#FFF">{{= loc('install') }}</a>
 </script>
 
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">Fork me</a>
+  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a>
 </script>
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">Enter: {{= name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
   <!-- button that allows you to test a script connecting two apps -->
-  <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">Test this plug</a>
+  <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">{{= loc('testThisPlug') }}</a>
 </script>
 
 <script type="text/template" id="callInProgressHeaderTemplate1">
   <div id="backToCall" style="display:inline" width="99%">
-    <a href="{{= url }}" data-role="none" style="font-size:20px">{{= title }}</a>
+    <a href="{{= url }}" data-role="none" style="font-size:20px">{{= {{= title }}</a>
   </div>
   <div id="sendToCall" style="display:inline;" width="1%">
     <!--a href="#" data-role="button" data-icon="upload" data-iconpos="notext">Send link to call</a-->
@@ -1013,11 +1013,11 @@
 
 <script type="text/template" id="callInProgressHeaderTemplate">
   <div class="ui-grid-d mygrid">
-    <div class="ui-block-a" id="backToCall"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#0f2">Back to call</button></div>
+    <div class="ui-block-a" id="backToCall"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#0f2">{{= loc('backToCall') }}</button></div>
     <div class="ui-block-b"></div>
-    <div class="ui-block-c" id="sendToCall" style="text-align:center"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
+    <div class="ui-block-c" id="sendToCall" style="text-align:center"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">{{= loc('sendToCall') }}</button></div>
     <div class="ui-block-d"></div>
-    <div class="ui-block-e" id="hangUp" style="text-align:right"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
+    <div class="ui-block-e" id="hangUp" style="text-align:right"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">{{= loc('hangUp') }}</button></div>
   </div>
 </script>
 
@@ -1027,7 +1027,7 @@
       <a href="{{= url }}" data-role="button" data-iconpos="notext" data-icon="phone">{{= title }}</a>
     </li>
     <li id="callFunctions">
-      <a href="#" id="sendToCall" data-role="none" data-iconpos="notext" data-icon="upload" data-role="button">Send to call</a>
+      <a href="#" id="sendToCall" data-role="none" data-iconpos="notext" data-icon="upload" data-role="button">{{= loc('sendToCall') }}</a>
     </li>
   </ul>
 </script>

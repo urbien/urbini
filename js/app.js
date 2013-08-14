@@ -86,12 +86,12 @@ define('app', [
     return promise;
   }; 
 
-  function buildLocalizationContext() {
-    G.localizationContext = {
-      user: G.currentUser,
-      app: G.currentApp
-    };
-  };
+//  function buildLocalizationContext() {
+//    G.localizationContext = {
+//      user: G.currentUser,
+//      app: G.currentApp
+//    };
+//  };
   
   function getAppAccounts() {
     var currentApp = G.currentApp,
@@ -365,15 +365,47 @@ define('app', [
     ResourceManager.init();
   };
   
-  function setupHashMonitor() {
-    $(window).on('hashchange')
+//  function setupHashMonitor() {
+//    $(window).on('hashchange')
+//  };
+
+  function localize() {
+    var locale = G.modules['locale/{0}.lol'.format(G.language)] || G.modules['locale/en.lol'];
+    return $.Deferred(function(defer) {      
+      var ctx = window.L20n.getContext({
+        delimiter: {
+          start: '((',
+          end: '))'
+        }
+      });
+      
+      ctx.addResource(locale);
+      ctx.freeze();
+      G.localizationContext = document.l10n = ctx;
+      G.localize = function() {
+        return ctx.get.apply(ctx, arguments);
+      };
+      
+      ctx.ready(function() {
+        defer.resolve();
+        console.log("context is ready");
+      });
+      
+      ctx.addEventListener('error', function(err) {
+        if (err instanceof L20n.Compiler.Error) {
+          // do something
+        }
+      });
+      
+    }).promise();
   };
   
   function doPreStartTasks() {
-    setupHashMonitor();
+//    setupHashMonitor();
     setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
+    var localized = localize();
     var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {
       return getAppAccounts().then(loadCurrentModel).then(function() {
         return $.whenAll(getTemplates(), getViews());
@@ -381,7 +413,7 @@ define('app', [
     });
       
     setupWorkers();
-    buildLocalizationContext();
+//    buildLocalizationContext();
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
     G.checkVersion();
@@ -390,7 +422,7 @@ define('app', [
     setupNetworkEvents();
     ModelLoader.loadEnums();
     
-    return modelsViewsTemplatesAndDB;
+    return $.whenAll.apply($, [modelsViewsTemplatesAndDB, localized]);
   };
   
   
@@ -677,8 +709,11 @@ define('app', [
         };
       });
       
-      if (!options.dismissible)
-        onDismiss = options.onDismiss || function() { Events.trigger('back') }; //G.Router._backOrHome;
+      if (!options.dismissible) {
+        onDismiss = options.onDismiss || function() { 
+          Events.trigger('back'); 
+        };
+      }
         
       $('#login_popup').remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});

@@ -172,6 +172,13 @@ define('views/BasicView', [
       });
 
 //      this.initialized = true;
+      var localize = G.localize,
+          ctx = G.localizationContext;
+      
+      this.loc = function() {
+        return localize.apply(ctx, arguments);
+      };
+
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },

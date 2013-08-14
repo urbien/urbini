@@ -3027,15 +3027,13 @@ define('utils', [
         json.U = U;
         json.G = G;
         json.$ = $;
-        var l10n = document.l10n;
-        if (l10n)
-          json.loc = l10n.get.bind(l10n);
+        json.loc = G.localize;
         
         return template.call(this, json);
       };
       
       subCache[typeKey] = templateFn;
-      setTimeout(function() {
+      setTimeout(function() { // TODO: make this less stupid
         delete subCache[typeKey];
       }, 2000);
       

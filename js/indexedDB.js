@@ -71,12 +71,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return FileSystem ? fileSystemPromise :  _getFileSystem(items);
   };
 
-  function _saveFile(item, prop, val) {
+  function _saveFile(item, _item, prop, val) {
     return FileSystem.writeFile({
       blob: val,
       filePath: getFileSystemPath(item, prop, val)
     }).done(function(fileEntry) {
-      var placeholder = _item[dbPropName] = item[prop] = {};
+      var placeholder = _item[prepPropName(prop)] = item[prop] = {};
       placeholder[filePropertyName] = fileEntry.fullPath;
       
       var resource = C.getResource(item._uri);
@@ -94,13 +94,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         _item = {};
     
     for (var prop in item) {
-      var val = item[prop],
-          dbPropName = prepPropName(prop);
+      var val = item[prop];
       
       if (useFileSystem && val instanceof Blob)
-        saveFilePromises.push(_saveFile(item, prop, val));
+        saveFilePromises.push(_saveFile(item, _item, prop, val));
       else
-        _item[dbPropName] = val;
+        _item[prepPropName(prop)] = val;
     }
 
     $.when.apply($, saveFilePromises).then(function() {
