@@ -342,6 +342,9 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 
   function loadModel(m) {
     m = Resource.extend({}, m);
+    if (m.interfaces)
+      m.interfaces = _.map(m.interfaces, U.getLongUri1);
+    
     if (m.adapter) {
       var currentApp = G.currentApp,
           consumers = currentApp.dataConsumerAccounts,
