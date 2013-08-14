@@ -3,21 +3,26 @@ define('views/ViewPage', [
   'globals',
   'utils',
   'events',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel'
-], function(G, U, Events, BasicView, Header, ResourceView, ControlPanel) {
-  return BasicView.extend({
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel) {
+  return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'swipeleft', 'swiperight', 'edit');
+      _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       this.constructor.__super__.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
+      var self = this,
+          res = this.resource;
+      
+      this.$el.on('pageshow', function() {
+        setTimeout(self.pageChange, 1000);
+      });
+      
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
-      
-      var res = this.resource;
       
       var commonTypes = G.commonTypes;
       this.headerButtons = {
@@ -204,15 +209,22 @@ define('views/ViewPage', [
       'click #homeBtn': 'home',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft'
+//        ,
+//      'pagechange': 'pageChange'
     },
-    swipeleft: function(e) {
-      // open backlinks
-      G.log(this.TAG, 'events', 'swipeleft');
+    pageChange: function(e) {
+      if (this.hashParams.$tour) {
+        var selector = '[' + this.hashParams.$tourSelector + ']';
+        
+        var elm = this.$el.find(selector);
+        var direction = this.hashParams.$tourD;
+        if (!direction)
+          direction = 'left';
+        elm.addClass('hint--' + direction + ' hint--always');
+        elm.attr('data-hint', this.hashParams.$tourM);
+      }
     },
-    swiperight: function(e) {
-      // open menu
-      G.log(this.TAG, 'events', 'swiperight');
-    },
+
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
       var here = window.location.href;

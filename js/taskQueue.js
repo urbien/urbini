@@ -121,14 +121,18 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         task.run();
       } catch (err) {
         debugger;
-        log('task crashed: ', task.name);
+        log('error', 'task crashed: ', task.name);
         task.reject();
       }
       
       var promise = task.promise();
       running.push(task);
       promise.always(function() {
-        log('Task {0}: {1}'.format(promise.state() === 'resolved' ? 'completed' : 'failed', task.name));
+        var resolved = promise.state() === 'resolved';
+        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name));
+        if (!resolved)
+          debugger;
+        
         running.splice(running.indexOf(task), 1);
         if (tq.isBlocked())
           tq.open();
@@ -154,10 +158,10 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         task = Task.apply(null, arguments);
       
       var qLength = queue.length();
-      log('Checking task:', task.name);
+      log('taskQueue', 'Checking task:', task.name);
       var blocking = task.blocking;
       if (tq.isBlocked() || tq.isPaused()) {
-        log('queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
+        log('taskQueue', 'queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
         push(task);
       }      
       else if (task.blocking) {
@@ -225,16 +229,16 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     this.priority = priority || 0;
     this.blocking = blocking || false;
     this.run = function() {
-      log('Running task:', this.name);
+      log('taskQueue', 'Running task:', this.name);
       started = true;
       var otherPromise = taskFn.call(defer, defer);
       if (otherPromise && typeof otherPromise.then == 'function')
-        otherPromise.then(defer.resolve, defer.reject);
+        otherPromise.always(defer.resolve);
         
       setTimeout(function() {
         if (defer.state() === 'pending') {
           debugger;
-          log('Task timed out: ' + self.name);
+          log('taskQueue', 'Task timed out: ' + self.name);
           defer.reject();
         }
       }, 10000);

@@ -325,19 +325,19 @@ define('app', [
   
   function prepDB() {
     var requiredStores = {    
-      moduleStore: {
+      modules: {
         name: 'modules',
         options: {
           keyPath: 'url'
         }
       },
-      modelStore: {
+      models: {
         name: 'models',
         options: {
           keyPath: 'url'
         }      
       },
-      refStore: {
+      ref: {
         name: 'ref',
         options: {
           keyPath: '_id'
@@ -358,14 +358,19 @@ define('app', [
     };
     
     for (var storeName in requiredStores) {
-      G['get' + storeName.capitalizeFirst() + 'Info'] = U.getPropFn(requiredStores, storeName, true);
+      G['get' + storeName.capitalizeFirst() + 'StoreInfo'] = U.getPropFn(requiredStores, storeName, true);
     }
     
     ModelLoader.init('indexedDB');
     ResourceManager.init();
   };
   
-  function doPreStartTasks() {       
+  function setupHashMonitor() {
+    $(window).on('hashchange')
+  };
+  
+  function doPreStartTasks() {
+    setupHashMonitor();
     setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
@@ -511,8 +516,16 @@ define('app', [
         window.location.hash = '';
       }
       
-      G.Router = new Router();
-      Backbone.history.start();
+      App.router = new Router();
+      if (G.support.pushState) {
+        Backbone.history.start({
+          pushState: true, 
+          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+        });
+      }
+      else
+        Backbone.history.start();
+      
       dfd.resolve();
     }).promise();
   };
@@ -642,6 +655,7 @@ define('app', [
   function setupLoginLogout() {
     Events.on('req-login', function(options) {
       options = _.extend({online: 'Login via a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+      var onDismiss;
       if (!G.online) {
         Errors.offline();
         return;
@@ -655,31 +669,19 @@ define('app', [
         returnUri = G.pageRoot;
       }
       
-      _.each(G.socialNets, function(net) {
-        var state = U.getQueryString({socialNet: net.socialNet, returnUri: returnUri, actionType: 'Login'}, {sort: true}); // sorted alphabetically
-        var params = net.oAuthVersion == 1 ?
-          {
-            episode: 1, 
-            socialNet: net.socialNet,
-            actionType: 'Login'
-          }
-          : 
-          {
-            scope: net.settings,
-            display: 'touch', // 'page', 
-            state: state, 
-            redirect_uri: G.serverName + '/social/socialsignup', 
-            response_type: 'code', 
-            client_id: net.appId || net.appKey
-          };
-          
-        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
-        net.url = net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
+      var nets = _.map(G.socialNets, function(net) {
+//        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
+        return {
+          name: net.socialNet,
+          url: U.buildSocialNetOAuthUrl(net, 'Login')
+        };
       });
       
-      var onDismiss = options.onDismiss || function() { Events.trigger('back') }; //G.Router._backOrHome;
+      if (!options.dismissible)
+        onDismiss = options.onDismiss || function() { Events.trigger('back') }; //G.Router._backOrHome;
+        
       $('#login_popup').remove();
-      var popupHtml = U.template('loginPopupTemplate')({nets: G.socialNets, msg: options.online, dismissible: false});
+      var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
@@ -719,5 +721,9 @@ define('app', [
     }
   };
   
+  if (G.DEBUG)
+    G.App = App;
+  
+
   return App;
 });

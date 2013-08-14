@@ -12,48 +12,18 @@ define('events', [
       e.preventDefault();
       e.stopImmediatePropagation();
     },
-//    defaultClickHandler: _.debounce(function(e) {
-    defaultClickHandler: function(e) {
-//      G.log(Events.TAG, 'events', 'click');
-//      var el = e.target;
-//      var $el = $(el);
-//      var p = $el;
-//      var foundLink = false;
-//      while (!(foundLink = p.prop('tagName') == 'A') && (p = p.parentNode)) {
-//      }
-//      
-//      if (!foundLink)
-//        return true;
-//      
-//      var href = $el.attr('href') || $el.attr('link');
-//      if (href && href != '#') {
-//        Events.stopEvent(e);
-//        var hashIdx = href.indexOf('#');
-//        var fragment = hashIdx == -1 ? href : href.slice(hashIdx + 1);
-//        p.attr('disabled', true);
-//        return G.Router.navigate(fragment);//, {trigger: true});
-//      }
-//      else
-//        return true;
-      return true;
+    getEventName: function(event) {
+      switch(event) {
+      case 'click':
+        return 'click'; // or click?
+      default:
+        return event;
+      }
     }
-//    }, 500, true)
-  
-  //  Events.defaultClickHandler = function(e) {
-  //    G.log(this.TAG || Events.TAG, 'events', 'click');
-  //    return Events.defaultTapHandler.apply(this, arguments);
-  //    G.log(this.TAG || Events.TAG, 'events', 'click');
-  //    var event = e.originalEvent;
-  //    var el = event.target;
-  //    var $el = $(el);
-  //    if ($el.prop('tagName') != 'A')
-  //      return true;
-  //  
-  //    event.preventDefault();
-  //    var href = $el.prop('href');
-  //    (G.Router || Backbone.history).navigate(href.slice(href.indexOf('#') + 1), {trigger: true});
-  //  };
   }, Backbone.Events);
   
-  return (Lablz.Events = Events);
+  if (G.DEBUG)
+    G.Events = Events;
+  
+  return Events;
 });

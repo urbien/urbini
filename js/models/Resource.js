@@ -60,8 +60,8 @@ define('models/Resource', [
 //        }
       }
       
-      if (this.loaded && !options.silent)
-        this.announceNewResource();
+      if (this.loaded)
+        this.announceNewResource(options);
       else if (this.vocModel.type === commonTypes.Jst) {
         Events.trigger('newTemplate', this);
       }
@@ -98,7 +98,11 @@ define('models/Resource', [
       this.on('load', cb);
     },
     
-    announceNewResource: function() {
+    announceNewResource: function(options) {
+      options = options || {};
+      if (options.silent || options.partOfUpdate)
+        return;
+      
       Events.trigger('newResource:' + this.type, this);
       Events.trigger('newResource', this);
     },
@@ -194,7 +198,60 @@ define('models/Resource', [
         }
       }
     
-      this.set(defaults, {silent: true})
+      if (U.isA(this.vocModel, 'Intersection')) { 
+        var aProp = U.getCloneOf(vocModel, "Intersection.a")[0];
+        var bProp = U.getCloneOf(vocModel, "Intersection.b")[0];
+        
+        var resA = C.getResource(defaults[aProp]);
+        var resB = C.getResource(defaults[bProp]);
+        if (resA != null  &&  resB != null) {
+          
+        var mA = resA.vocModel;
+        var mB = resB.vocModel;
+        var rA = mA.adapter ? mA.adapter : null;
+        var rB = mB.adapter ? mB.adapter : null;
+        if (rA  ||  rB) {
+          var m = rA ? mA : mB;
+          if (U.isA(m, 'ImageResource')) {
+            var res = rA ? resA : resB;
+              
+            var thumb = U.getCloneOf(m, "ImageResource.smallImage")[0];
+            if (thumb) {
+              var img = res.get(thumb);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aThumb")[0] : U.getCloneOf(vocModel, "Intersection.bThumb")[0];
+                defaults[p] = img;
+              }
+            }
+            var featured = U.getCloneOf(m, "ImageResource.mediumImage")[0];
+            if (featured) {
+              var img = res.get(featured);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aFeatured")[0] : U.getCloneOf(vocModel, "Intersection.bFeatured")[0];
+                defaults[p] = img;
+              }
+            }
+            var oW = U.getCloneOf(m, "ImageResource.originalWidth")[0];
+            if (oW) {
+              var img = res.get(oW);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalWidth")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalWidth")[0];
+                defaults[p] = img;
+              }
+            }
+            var oH = U.getCloneOf(m, "ImageResource.originalHeight")[0];
+            if (oH) {
+              var img = res.get(oH);
+              if (img) {
+                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalHeight")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalHeight")[0];
+                defaults[p] = img;
+              }
+            }
+          }
+        }
+      }
+      }
+      this.set(defaults, {silent: true});
     },
     
     subscribeToUpdates: function() {
@@ -358,6 +415,7 @@ define('models/Resource', [
           parsed._uri = U.buildUri(parsed, this.vocModel);
         
         this.loadInlined(parsed);
+//        this.checkIfLoaded();
         return parsed;
       }
       
@@ -367,14 +425,14 @@ define('models/Resource', [
         var unsaved = this.getUnsavedChanges();
         // don't overwrite changes the user has made but hasn't saved yet
         if (_.size(unsaved) && this.lastFetchOrigin !== 'edit') {
-          _.each(resp, function(val, key) {
+          for (var key in resp) {
             if (_.has(unsaved, key)) {
               if (/^_/.test(key))
-                return;
+                continue;
               
               delete resp[key];
             }
-          }.bind(this));
+          }
         }
         
         var sideEffects = resp._sideEffects;
@@ -695,7 +753,7 @@ define('models/Resource', [
       
       options.error = function(model, err, options) {
         var code = err.code || err.status;
-        G.log(this.TAG, 'error', 'failed to fetch resource:', err);
+        log('error', 'failed to fetch resource:', err);
         error.apply(this, arguments);
       };
       

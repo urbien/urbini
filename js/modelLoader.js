@@ -17,13 +17,20 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   
   function makeModelsPromise(types) {
     var modelToPromiseObj = {},
+        promises = [],
         overallPromise;
 
     _.each(types, function(type) {      
-      modelToPromiseObj[type] = MODEL_PROMISES[type].promise;
+      var promise = modelToPromiseObj[type] = MODEL_PROMISES[type].promise;
+      promises.push(promise);
     });
     
-    overallPromise = $.whenAll.apply($, _.values(modelToPromiseObj));
+    overallPromise = $.whenAll.apply($, promises);
+    overallPromise.then(function() {
+      if (!_.all([].slice.call(arguments)))
+        debugger;
+    });
+    
     return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
   };
   
@@ -220,6 +227,8 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       }
     });
     
+    if (!filtered.length)
+      return;
     if (!G.hasLocalStorage && G.dbType === 'none')
       fetchModels(filtered, options).then(parseAndLoadModels);
     else {
@@ -230,11 +239,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           Events.once('online', function(online) {
             var infoClone = _.clone(modelsInfo);
             infoClone.have = [];
-            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false, overwrite: true}));
+            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false}));
           });
           
           var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
-          loadModels(loading);
+          loadModels(loading, !force);
         }
       });
     }    
@@ -323,10 +332,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     return promise;
   };
 
-  function loadModels(models, dontOverwrite) {
+  function loadModels(models, preventOverwrite) {
     var models = models || MODEL_CACHE;
     _.each(models, function(model) {
-      if (!dontOverwrite || !U.getModel(model.type))
+      if (!preventOverwrite || !U.getModel(model.type))
         loadModel(model);
     });
   };
@@ -360,20 +369,28 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       
     }
     
-    var type = m.type = U.getTypeUri(m.type);
-    Events.trigger('newModel', m);
+    var type = m.type = U.getTypeUri(m.type),
+        isCustomModel = U.isAnAppClass(type);
     
-    if (!m.enumeration && !m.alwaysInlined) {
-      if (U.isAnAppClass(type)) {
-        var meta = m.properties;
-        for (var p in meta) {
-          var prop = meta[p];
-          if (prop.displayName) {
-            var sn = prop.shortName;
-            prop.altName = p;
-            delete meta[p];
-            meta[sn] = prop;
-          }
+    Events.trigger('newModel', m);
+
+    if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
+      var meta = m.properties;
+      for (var p in meta) {
+        var prop = meta[p];
+//        if (prop.backLink) {
+//          meta[prop.shortName + 'Count'] = {
+//            range: "int",
+//            avoidDisplaying: true,
+//            readOnly: true
+//          };
+//        }
+        
+        if (prop.displayName) {
+          var sn = prop.shortName;
+          prop.altName = p;
+          delete meta[p];
+          meta[sn] = prop;
         }
       }
     }
@@ -435,7 +452,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     
     var enumModels = {};
     _.each(models, function(model) {
-      var modelJson = U.toJSON(model);
+      var modelJson = model; //U.toJSON(model);
       if (model.enumeration)
         enumModels[model.type] = modelJson;
       else
@@ -535,7 +552,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   var ModelLoader = {
     init: _.once(function(storageType) {
       preferredStorage = storageType || 'indexedDB';
-      MODEL_STORE = G.getModelStoreInfo();
+      MODEL_STORE = G.getModelsStoreInfo();
     }),
     loadEnums: loadEnums,
     getModels: function(models, options) {

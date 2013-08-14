@@ -19,12 +19,22 @@ define('router', [
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};
+  
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("router");
+    G.log.apply(G, args);
+  };
+  
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
       ""                                                       : "home",
       "home/*path"                                             : "home",
+      "social/*path"                                           : "social",
+//      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
+      "list/*path"                                             : "list", 
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
 //      "views/*path"                                            : "views",
@@ -65,7 +75,9 @@ define('router', [
     initialize: function () {
 //      G._routes = _.clone(this.routes);
 //      _.bindAll(this, '_backOrHome');
+      window.router = this;
       this.firstPage = true;
+      this.updateHashInfo();
       this.homePage = new HomePage({el: $('div#homePage')});
       var self = this;
       Events.on('home', function() {
@@ -75,13 +87,20 @@ define('router', [
       Events.on('navigate', function(fragment, options) {
         self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
       });
+
+      Events.on('pageChange', function(prev, current) {
+        self.backClicked = self.firstPage = false;
+        self.checkTour();
+        if (G.DEBUG)
+          window.view = current;
+      });
       
-      Events.on('back', function() {
-        var now = +new Date();
-        if (self.lastBackClick && now - self.lastBackClick < 100)
-          debugger;
-          
-        self.lastBackClick = now;
+      Events.on('back', _.debounce(function() {
+//        var now = +new Date();
+//        if (self.lastBackClick && now - self.lastBackClick < 100)
+//          debugger;
+//          
+//        self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
@@ -128,7 +147,12 @@ define('router', [
 //        self.previousHash = null;
 //        self.backClicked = true;
 //        window.history.back();
+      }, 100, true));
+      
+      Events.on('forward', function() {
+        window.history.forward();
       });
+
 
       // a hack to prevent browser address bar from dropping down
       // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
@@ -172,6 +196,22 @@ define('router', [
 //          self.previousHash = self.currentHash;
 //        }
 //      });
+      
+//      window.onpopstate = function(e) {
+//        if (self.firstPage)
+//          return;
+//        else {
+//          Events.stopEvent(e);
+//          Events.trigger('back');
+//        }
+//      }
+//      $('a').click(function(e) {
+//        if (this.href.startsWith(G.appUrl)) {
+//          e.preventDefault();
+//          self.navigate(this.href.slice(G.appUrl + 1));
+//          return false;
+//        }        
+//      });
     },
     
     defaultOptions: {
@@ -189,6 +229,10 @@ define('router', [
 //        return;
 //      }
       
+      options = options || {};
+      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
+          hashInfo = G.currentHashInfo;
+      
       if (G.inFirefoxOS)
         U.rpc('setUrl', window.location.href);
       
@@ -203,9 +247,8 @@ define('router', [
       }
       
       G.log(this.TAG, 'events', 'navigate', fragment);
-      options = options || {};
       
-      this.fragmentToOptions[fragment] = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect'));
+      this.fragmentToOptions[fragment] = adjustedOptions;
       _.extend(this, {
         previousView: this.currentView, 
         previousHash: U.getHash() 
@@ -253,7 +296,10 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
-      var prev = this.currentView;
+      var prev = this.currentView,
+          reverse;
+      
+      this.checkBackClick();
       if (this.backClicked) {
         this.currentView = C.getCachedView(); // this.viewsStack.pop();
         if (!this.currentView) {
@@ -267,26 +313,43 @@ define('router', [
 //          if (!this.viewsStack.length)
 //            this.currentView = $.mobile.firstPage;
         }
+        
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
       else {
         this.currentUrl = window.location.href;
         this.homePage.render();
         this.currentView = this.homePage;
+        // no need to call change page when home page is displayed for the very first time
+//        if (this.urlsStack.length)
+        if (!this.firstPage)
+          $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
 
-      if (this.backClicked) {
+//      if (this.backClicked) {
 //        Events.trigger('pageChange', prev, this.currentView);
-        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
-      }
+//      }
       
       // HACK, this div is hidden for some reason when going to #home/...
       var mainDiv = $('.mainDiv'); 
       if (mainDiv.is(':hidden'))
         mainDiv.show();
 
+      Events.trigger('activeView', this.homePage);
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
+    },
+    
+    social: function() {
+      if (!this.routePrereqsFulfilled('social', arguments))
+        return;
+      
+      var view = C.getCachedView();
+      if (!view)
+        view = new Modules.SocialNetworkPage();
+      
+      this.changePage(view);
     },
     
     choose: function(path) { //, checked, props) {
@@ -329,8 +392,8 @@ define('router', [
       var options = this.getChangePageOptions();
       var forceFetch = options.forceFetch;
       
-      if (!this.isModelLoaded(typeUri, 'list', arguments))
-        return;
+//      if (!this.isModelLoaded(typeUri, 'list', arguments))
+//        return;
       
       var model = U.getModel(typeUri),
           className = model.displayName;
@@ -341,7 +404,7 @@ define('router', [
           _.extend(params, U.toModelLatLon(position, model), {'-item': 'me', '$orderBy': 'distance'});            
         }).always(function() {
           delete params['-aroundMe'];
-          self.navigate(U.makeMobileUrl(null, typeUri, params), {trigger: true, replace: true});
+          self.navigate(U.makeMobileUrl(hashInfo.action, typeUri, params), {trigger: true, replace: true});
         });
         
         return;
@@ -455,7 +518,7 @@ define('router', [
         });
       }
       
-      var type = hashInfo.type;
+      var type = hashInfo.sub.type;
       var currentAppUri = G.currentApp._uri;
       var jstType = G.commonTypes.Jst;
       var jstModel = U.getModel(jstType);
@@ -620,8 +683,8 @@ define('router', [
           EditPage = Modules.EditPage, 
           type = hashInfo.type;
       
-      if (!this.isModelLoaded(type, 'make', arguments))
-        return;
+//      if (!this.isModelLoaded(type, 'make', arguments))
+//        return;
 
       var vocModel = U.getModel(type),
           params = U.getHashParams(),
@@ -677,9 +740,10 @@ define('router', [
     },
     
     updateHashInfo: function() {
-      var oldHash = G.currentHash;
+      G.previousHash = G.currentHash;
+      G.previousHashInfo = G.currentHashInfo;
       G.currentHash = U.getHash();
-      if (G.currentHash !== oldHash)
+      if (G.currentHash !== G.previousHash)
         G.currentHashInfo = U.parseHash();
       
       return G.currentHashInfo;
@@ -695,12 +759,10 @@ define('router', [
       var self = this,
           views,
           installationState,
+          isWriteRoute,
           hashInfo = G.currentHashInfo;
       
-      if (route == 'home')
-        return true;
-      
-      if (G.currentUser.guest && _.contains(['chat', 'edit', 'make'], route)) {
+      if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
         return false;
       }
@@ -708,6 +770,9 @@ define('router', [
       switch (route) {
       case 'chat':        
         views = ['ChatPage'];
+        break;
+      case 'social':        
+        views = ['SocialNetworkPage'];
         break;
       case 'view':
         views = ['ViewPage'];
@@ -733,9 +798,23 @@ define('router', [
           return false;
         }
       }
+ 
+      var types = [],
+          sub = hashInfo;
       
-      var isWriteRoute = ['make', 'edit'].indexOf(hashInfo.action) >= 0;
+      while (sub) {
+        if (sub.type)
+          types.push(sub.type);
+        
+        sub = sub.sub;
+      }
+      
+      types = _.uniq(types);
+      if (!this.areModelsLoaded(types, this[route], args))
+        return false;
+      
       // the user is attempting to install the app, or at least pretending well
+      isWriteRoute = this.isWriteRoute();
       if (isWriteRoute && hashInfo.type.endsWith(G.commonTypes.AppInstall))
         return true;
       
@@ -754,14 +833,6 @@ define('router', [
       
       return true;
     },
-
-//    _updateCache: function(oldUri, newUri) {
-//      _.each([this.EditViews, this.Views, this.MkResourceViews], function(views) {
-//        var cached = views[oldUri];
-//        if (cached)
-//          views[newUri] = cached;
-//      });
-//    },
     
     login: function(path) {
       var self = this;
@@ -781,7 +852,8 @@ define('router', [
       if (!this.routePrereqsFulfilled(action, arguments))
         return;
       
-      var hashInfo = G.currentHashInfo,
+      var self = this,
+          hashInfo = G.currentHashInfo,
           cachedView = C.getCachedView(),
           uri = hashInfo.uri,
           query = hashInfo.query,
@@ -789,53 +861,30 @@ define('router', [
           views,
           edit = hashInfo.action == 'edit',
           chat = hashInfo.action == 'chat',
-          viewPageCl;
-      
-//      var params = U.getHashParams(),
-//          qIdx = path.indexOf("?"),
-//          route = U.getRoute(),
-//          uri, 
-//          query;
-//      
-//      if (qIdx == -1) {
-//        uri = path;
-//        query = '';
-//      }
-//      else {
-//        uri = path.slice(0, qIdx);
-//        query = path.slice(qIdx + 1);
-//      }
+          viewPageCl,
+          view,
+          model,
+          res;
       
       switch (action) {
         case 'chat':
-//          views = hashInfo.route.slice(4) + 'ChatViews';
           viewPageCl = Modules.ChatPage;
           break;
         case 'edit':
-//          views = 'EditView';
           viewPageCl = Modules.EditPage;
           break;
         default:
-//          views = 'Views';
           viewPageCl = Modules.ViewPage;
       }
 
-//      views = this[views];
       if (uri == 'profile') {
-//        if (!G.currentUser.guest) {
-//          var other = U.slice.call(arguments, 1);
-//          other = other.length ? other : undefined;
-//          this.view.apply(this, [U.encode(G.currentUser._uri) + (query ? "?" + query : '')].concat(other));
-//        }
-//        else {
         if (G.currentUser.guest) {
           this._requestLogin();
           return;
-//          window.location.replace(G.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + U.encode(window.location.href) + "&" + p);
         }
         else {
           uri = G.currentUser._uri;
-          this.navigate(U.makeMobileUrl('view', uri), {trigger: false, replace: true});
+          this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: false, replace: true});
           hashInfo = this.updateHashInfo();
         }
       }
@@ -846,10 +895,7 @@ define('router', [
         return;
       }      
 
-      if (!this.isModelLoaded(typeUri, 'view', arguments))
-        return;
-      
-      var model = U.getModel(typeUri);
+      model = U.getModel(typeUri);
       if (!model)
         return this;
 
@@ -861,22 +907,21 @@ define('router', [
           model = altModel;
         }
       }
-      var res = C.getResource(uri);
+      
+      res = C.getResource(uri);
       if (res && !res.loaded)
         res = null;
 
       var newUri = res && res.getUri();
       var wasTemp = U.isTempUri(uri);
       var isTemp = newUri && U.isTempUri(newUri);
-      var self = this;
       if (wasTemp) {
-        var updateHash = function(resource) {
+        function updateHash(resource) {
           self.navigate(U.makeMobileUrl(action, resource.getUri()), {trigger: false, replace: true});
         }
         
         if (isTemp || !newUri) {
           Events.once('synced:' + uri, function() {            
-//            self.viewCache.update(uri, res.getUri());
             var currentView = self.currentView;    
             if (currentView && currentView.resource === res) {
               updateHash(res);
@@ -886,32 +931,17 @@ define('router', [
           });
         }
         else {
-//          self.viewCache.update(uri, newUri);
           updateHash(res);
         }
       }
 
       var options = this.getChangePageOptions();
       var forceFetch = options.forceFetch;
-      var collection;
-      if (!res) {
-        var colCandidate = C.getResourceList(model);
-        if (colCandidate) {
-          var result = colCandidate.get(uri); // C.searchCollections(collections, uri);
-          if (result) {
-            collection = result.collection;
-            res = result.resource;
-          }
-        }
-      }
-      
       if (res) {
         this.currentModel = res;
-        var v = cachedView || new viewPageCl({model: res, source: this.previousHash});
-//        if (action === 'view')
-//          views[uri] = v;
+        view = cachedView || new viewPageCl({model: res, source: this.previousHash});
         
-        this.changePage(v);
+        this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
         res.fetch({forceFetch: forceFetch});
         if (wasTemp && !isTemp)
@@ -920,29 +950,85 @@ define('router', [
         return this;
       }
       
-      var res = this.currentModel = new model({_uri: uri, _query: query});
-      var v = new viewPageCl({model: res, source: this.previousHash});
-//      if (action === 'view')
-//        views[uri] = v;
+      res = this.currentModel = new model({_uri: uri});
+      view = new viewPageCl({model: res, source: this.previousHash});
       
-      var changedPage = false;
-      var success = function() {
+      function success() {
         if (wasTemp)
           self._checkUri(res, uri, action);
-        self.changePage(v);
+        
+        self.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-//        Voc.fetchModelsForLinkedResources(res);
       };
       
       if (chat) {
         res.fetch();
         success();
       }
-      else
-        res.fetch({sync: true, forceFetch: forceFetch, success: _.once(success)});
+      else {
+        res.fetch({
+          sync: true, 
+          forceFetch: forceFetch, 
+          success: _.once(success)
+        });
+      }
       
       return true;
     },
+    
+//    tour: function(path) {
+//      if (!this.routePrereqsFulfilled('tour', arguments))
+//        return;
+//      
+//      var self = this,
+//          hashInfo = G.currentHashInfo,
+//          sub = hashInfo.sub,
+//          params = hashInfo.params,
+//          tourUri = hashInfo.uri,
+//          tourModel = U.getModel(G.commonTypes.Tour),
+//          stepUri = params.$step && U.getLongUri1(params.$step),
+//          stepModel = U.getModel(G.commonTypes.TourStep);
+//
+////      else if (sub)
+////        debugger; // TODO figure out what the hell the user is trying to do
+////      else if (hashInfo.type == TOUR_STEP_TYPE)
+////        stepUri = hashInfo.uri;
+////      else if (hashInfo.type == TOUR_TYPE)
+////        debugger; // TODO go to the first step
+////
+////          ,
+////          steps,
+////          tourUri,
+////          tourRes;
+//      
+//      debugger;
+//      if (!tourUri || !stepUri)
+//        return fail();
+//      
+//      function fail() {
+//        debugger;
+////        self.navigate(hashInfo.sub.hash);
+//      };
+//
+//      function success(tour, steps) {
+//        step = steps.get(stepUri);
+//        var action = step.get('action');
+//        if (self._currentTour !== tour)
+//          Events.trigger('tourStart', tour, steps);
+//        
+//        Events.trigger('tourStep', step);
+////        if (sub.type)
+////          self[route].apply(self, hashInfo.sub.hash);
+////        else
+////          self.navigate(U.makeMobileUrl('tour', U.makeMobileUri(step.get('action'), step.get('typeUri'), U.getParamMap(step.get('urlQuery') || ''))), {replace: true});
+//        self[action].apply(self, U.makeMobileUrl(action, step.get('typeUri'), U.getParamMap(step.get('urlQuery') || '')));
+//      }
+//      
+//      $.whenAll(
+//          getTour(tourUri, tourModel), 
+//          getSteps(tourUri, stepModel)
+//      ).then(success, fail);
+//    },
     
     _checkUri: function(res, uri, action) {
       if (U.isTempUri(uri)) {
@@ -989,27 +1075,32 @@ define('router', [
 //      
 //      console.log("painting map");
 //    },
-    
-    isModelLoaded: function(type, method, args) {
-      var m = U.getModel(type);
-      if (m)
-        return m;
 
-      var self = this;
+    isModelLoaded: function(type, method, args) {
+      return this.areModelsLoaded([type], method, args);
+    },
+
+    areModelsLoaded: function(types, method, args) {
+      var self = this,
+          missing = _.filter(types, U.negate(U.getModel));
+      
+      if (!missing.length)
+        return true;
+      
+      var fetchModels = Voc.getModels(missing, {sync: true});
+      method = typeof method == 'function' ? method : self[method];
 //      Voc.loadStoredModels({models: [type]});
-      var fetchModels = Voc.getModels(type, {sync: true});
       if (fetchModels.state() === 'resolved')
         return true;
-      else {
-        fetchModels.done(function() {
-          self[method].apply(self, args);
-        }).fail(function() {
+      
+      fetchModels.done(function() {
+        method.apply(self, args);
+      }).fail(function() {
 //          debugger;
-          Errors.getBackboneErrorHandler().apply(this, arguments);
-        });
+        Errors.getBackboneErrorHandler().apply(this, arguments);
+      });
         
-        return false;
-      }
+      return false;
     },
 
     checkErr: function() {
@@ -1024,29 +1115,29 @@ define('router', [
           error = params['-error'] || params['-gluedError'];
           
       if (info || error) {
-        if (/^home\//.test(U.getHash())) {
-//          Events.trigger('headerMessage', {
-//            info: {
-//              msg: info,
-//              glued: info === params['-gluedInfo']
-//            },
-//            error: {
-//              msg: error,
-//              glued: error === params['-gluedError']
-//            }
-//          });
-          var errorBar = $.mobile.activePage.find('#headerMessageBar');
-          errorBar.html("");
-          errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
-
-          if (!params['-gluedInfo']) {
-            var hash = U.getHash().slice(1);
-            delete params['-info'];
-            delete params['-error']; 
-            // so the dialog doesn't show again on refresh
-            Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
-          }
-        }
+//        if (/^home\//.test(U.getHash())) {
+////          Events.trigger('headerMessage', {
+////            info: {
+////              msg: info,
+////              glued: info === params['-gluedInfo']
+////            },
+////            error: {
+////              msg: error,
+////              glued: error === params['-gluedError']
+////            }
+////          });
+//          var errorBar = $.mobile.activePage.find('#headerMessageBar');
+//          errorBar.html("");
+//          errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
+//
+//          if (!params['-gluedInfo']) {
+//            var hash = U.getHash().slice(1);
+//            delete params['-info'];
+//            delete params['-error']; 
+//            // so the dialog doesn't show again on refresh
+//            Events.trigger('navigate', U.replaceParam(U.getHash(), {'-error': null, '-info': null}), {trigger: false, replace: true});
+//          }
+//        }
       
         var data = {};
         if (info) {
@@ -1108,28 +1199,26 @@ define('router', [
           Events.trigger('back');
           return;
         }
-        else
-          prev.trigger('active', false);
+//        else
+//          prev.trigger('active', false);
       }
-      
+
+      Events.trigger('activeView', view);
       this.currentView = view;
       if (!view.rendered) {
-        view.trigger('active', true);
+//        view.trigger('active', true);
         activated = true;
         view.render();
         view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
       }
 
-      if (this.firstPage) {
+      if (this.firstPage)
         transition = 'none';
-        this.firstPage = false;
-      }
       
       this.checkBackClick();
-      if (this.backClicked == true) {
-        this.backClicked = false;
-        isReverse = true;
-      }
+      // HACK //
+//      isReverse = false;
+      // END HACK //
 
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
@@ -1138,7 +1227,7 @@ define('router', [
         view.trigger('active', true);
       
       // perform transition        
-      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: isReverse});
+      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
       this.nextTransition = null;
       Events.trigger('pageChange', prev, view);
       return view;
@@ -1173,6 +1262,16 @@ define('router', [
         this.urlsStack = this.urlsStack.slice(0, this.urlsStack.length - 1);
       
       this.urlsStack.push(here);
+    },
+    
+    checkTour: function() {
+      if (G.tourGuideEnabled) {
+        G.whenNotRendering(function() {          
+          U.require('tourGuide').done(function(TourGuide) {
+            TourGuide.getTour();
+          });
+        });
+      }
     }
 //    ,
 //    
@@ -1270,148 +1369,21 @@ define('router', [
 //      Events.trigger('pageChange', prev, view);
 //      return view;
 //    }
+    ,
+    isListRoute: function(route) {
+      return _.contains(['list', 'chooser', 'templates'], route);
+    },
+    isResourceRoute: function(route) {
+      return !this.isListRoute(route);
+    },
+    isProxyRoute: function(route) {
+      return _.contains(['templates'/*, 'tour'*/], route);
+    },
+    isWriteRoute: function(route) {
+      return _.contains(['make', 'edit'], route);
+    }
   });
- 
-//  var ViewCache = function() {
-//    var cache = {};
-//
-//    function getSubCache(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      var subCache = cache[hashInfo.route] = cache[hashInfo.route] || {};
-//      if (hashInfo.type)
-//        subCache = subCache[hashInfo.type] = subCache[hashInfo.type] || {};
-//  
-//      return subCache;
-//    };
-//    
-//    function getKey(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      return hashInfo.query || hashInfo.uri;
-//    };
-//    
-//    function getCached(hashInfo) {
-//      hashInfo = hashInfo || G.currentHashInfo;
-//      return getSubCache(hashInfo)[getKey(hashInfo)];
-//    };
-//    
-//    function cacheView(view, hashInfo) {
-//      hashInfo = hashInfo || U.parseHash();
-//      var type = hashInfo.typeUri || '',
-//          subCache = getSubCache(hashInfo);
-//          
-//      subCache[hashInfo.query || hashInfo.uri] = view;
-//      view.on('invalidate', function() {
-//        delete subCache[getKey(hashInfo)];
-//      });
-//      
-//      return view;
-//    };
-//    
-//    function update(oldUri, newUri) {
-//      var hashInfo = {
-//        type: U.getTypeUri(oldUri),
-//        uri: oldUri
-//      };
-//      
-//      var type = U.getTypeUri(oldUri);
-//      _.each(['edit', 'view', 'make'], function(route) {
-//        hashInfo.route = route;
-//        var subCache = getSubCache(hashInfo),
-//            cached = subCache[oldUri];
-//        
-//        if (cached)
-//          subCache[newUri] = cached;
-//      });
-//    };
-//    
-//    function clean() {
-//      
-//    };
-//    
-//    return {
-//      getCached: getCached,
-//      cacheView: cacheView,
-//      update: update
-//    }
-//  };
-  
-//  function ViewCache() {
-//    var idx = -1,
-//        back = false,
-//        urls = [],
-//        views = [];
-//    
-//    function back() {
-//      debugger;
-//      idx--;
-//    };
-//    
-//    function forward(view) {      
-//      debugger;
-//      idx++;
-//      var currentUrl = window.location.href;
-//      if (urls[idx] !== currentUrl) {
-//        views = views.slice(0, idx);
-//        urls = urls.slice(0, idx);
-//      }
-//      
-//      views[idx] = view;
-//      urls[idx] = currentUrl;
-//    };
-//
-////    function getCurrent() {
-////      debugger;
-////      return views[idx];
-////    }
-//
-//    function next() {
-//      return {
-//        url: urls[idx + 1],
-//        view: views[idx + 1]
-//      };
-//    };
-//
-//    function prev() {
-//      return {
-//        url: urls[idx - 1],
-//        view: views[idx - 1]
-//      };
-//    };
-//
-//    function getCached() {
-//      var prev = urls[idx - 1],
-//          next = urls[idx + 1],
-//          url = window.location.href;
-//      
-//      return url === prev ? prev() : url === next : next() : null;
-//    }
-//
-//    Events.on('back', function() {
-//      back = true;
-//    });
-//
-//    Events.on('pageChange', function(prev, current) {
-//      var prev = urls[idx - 1],
-//          next = urls[idx + 1],
-//          url = window.location.href;
-//      
-//      if (url === prev)
-//        idx --;
-//      else if (url === next)
-//        idx++;
-//      else
-//        back ? back() : forward(current);
-//        
-//      back = false;
-//    });
-//    
-//    return {
-//      getNext: getNext,
-//      getPrev: getPrev,
-//      getCached: getCached
-//    };
-//  };
-           
+            
   return Router;
 });
   

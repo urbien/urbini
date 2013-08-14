@@ -1,6 +1,5 @@
 define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceList'], function(G, Events, U, C, ResourceList) {
   var gManifestName = "/manifest.webapp",
-      TAG = 'Firefox',
       connectedDfd = $.Deferred(),
       connectedPromise = connectedDfd.promise(),
       inIFrame = G.inFirefoxOS;
@@ -10,7 +9,8 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
 
   function log() {
     var args = [].slice.call(arguments);
-    G.log.apply([TAG, 'app comm'].concat(args));
+    args.unshift('Firefox', 'app comm');
+    G.log.apply(G, args);
     U.rpc.apply(null, ['log'].concat(args));
   }
   

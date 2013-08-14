@@ -65,12 +65,6 @@ define('vocManager', [
       }
     }
     
-    if (!options.overwrite) {
-      models = _.filter(models, function(type) {
-        return !U.getModel(type);
-      });
-    }
-    
     return models;
   };
       
@@ -114,7 +108,7 @@ define('vocManager', [
       
       var tmp = _.filter(_.uniq(_.map(props, function(prop, name) {
         if (isResource && prop.backLink) {
-          var count = res.get(name + 'Count') || res.get(name).count;
+          var count = U.getBacklinkCount(res, name);
           if (!count)
             return null;
         }
@@ -249,7 +243,7 @@ define('vocManager', [
     
     if (!init) {
       var currentModels = _.keys(G.modelsMetadata);
-      Voc.getModels(currentModels, {force: true, overwrite: true});
+      Voc.getModels(currentModels, {force: true});
     }
   });
 

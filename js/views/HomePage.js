@@ -4,9 +4,9 @@ define('views/HomePage', [
   'events',
   'jqueryAnyStretch',
   'utils',
-  'views/BasicView'
-], function(G, Events, Jas, U, BasicView) {
-  return BasicView.extend({
+  'views/BasicPageView'
+], function(G, Events, Jas, U, BasicPageView) {
+  return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
     initialize: function(options) {
@@ -25,10 +25,10 @@ define('views/HomePage', [
     
     },
     events: {
-      'pagehide': 'pagehide',
-      'pagebeforeshow': 'pagebeforeshow',
-      'click': 'click',
-      'click #installApp': 'installApp'
+      'pagehide'            : 'pagehide',
+      'pagebeforeshow'      : 'pagebeforeshow',
+      'click'              : 'click',
+      'click #installApp'  : 'installApp'
     },
     
     installApp: function(e) {
@@ -67,7 +67,7 @@ define('views/HomePage', [
     
     render: function(options) {
       var item = $('#homePage');
-      item.css('display', 'inline');
+      item.css('display', 'block');
       if (!item || item.length == 0) { 
         var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
         if (itemS) { 

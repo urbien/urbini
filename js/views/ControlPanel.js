@@ -33,6 +33,18 @@ define('views/ControlPanel', [
 //        ,
 //      'click': 'click'
     },
+//    click: function(e) {
+//      var t = e.target;
+//      while (t && t.tagName != 'A') {
+//        t = t.parentNode;
+//      }
+//      
+//      if (!t)
+//        return;
+//      this.prop = this.vocModel.properties[t.dataset.propname];
+//      if (prop)
+//        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
+//    },
     add: function(e) {
       var t = e.target;
       while (t && t.tagName != 'A') {
@@ -50,6 +62,8 @@ define('views/ControlPanel', [
       var shortName = t.dataset.shortname;
       this.prop = this.vocModel.properties[shortName];
 
+      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+
       var self = this;       
       Voc.getModels(this.prop.range).done(function() {
         var prop = self.prop;
@@ -63,7 +77,7 @@ define('views/ControlPanel', [
     
           params[prop.backLink] = self.resource.getUri();
           
-          self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+          self.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
           G.log(self.TAG, 'add', 'user wants to add to backlink');
         };
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
@@ -96,7 +110,7 @@ define('views/ControlPanel', [
             $title: title
           };
 
-        self.router.navigate('chooser/' + encodeURIComponent(rtype) + '?' + $.param(params), {trigger: true});
+        self.router.navigate(U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
 //          '$backLink': prop.backLink,
@@ -156,8 +170,8 @@ define('views/ControlPanel', [
         }
         else {
           this.$el.css("float", "right");
-          this.$el.css("width", "35%");
-          this.$el.css("min-width", "130");
+          this.$el.css("max-width", "220px");
+          this.$el.css("min-width", "130px");
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
@@ -254,7 +268,7 @@ define('views/ControlPanel', [
             params.name = U.getDisplayName(iRes);
 
             var grid = U.getCols(iRes, 'grid', true);
-            if (U.isAssignableFrom(iRes.vocModel, 'Intersection')) {  
+            if (U.isA(iRes.vocModel, 'Intersection')) {  
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
               var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
               if (a == meta[name].backLink) {
@@ -277,15 +291,44 @@ define('views/ControlPanel', [
                   params.gridCols = gridCols;
               }
             }
-            else if (grid) {
-              var gridCols = '';
-              for (var row in grid) 
-                gridCols += grid[row].value;
-              
-              params.gridCols = gridCols;
+            else {
+              if (grid) {
+                var gridCols = '';
+                for (var row in grid) 
+                  gridCols += grid[row].value;
+                
+                params.gridCols = gridCols;
+              }
+              if (U.isA(iRes.vocModel, 'ImageResource')) {
+                var imgProp = U.getImageProperty(iRes);
+                if (imgProp) {
+                  var img = iRes.get(imgProp);
+                  if (img) {
+                    params.img = img;
+                    var oW = U.getCloneOf(iRes.vocModel, 'ImageResource.originalWidth');
+                    var oH;
+                    if (oW)
+                      oH = U.getCloneOf(iRes.vocModel, 'ImageResource.originalHeight');
+                    
+                    if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
+                      
+//                      this.$el.addClass("image_fitted");
+//                      
+                      var dim = U.fitToFrame(80, 80, iRes.get(oW) / iRes.get(oH));
+                      params.width = dim.w;
+                      params.height = dim.h;
+                      params.top = oW > oH ? dim.y : dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                      params.right = dim.w - dim.x;
+                      params.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                      params.left = dim.x;
+                    }
+                  }
+                }
+              }
             }
 
-            params._uri = U.isAssignableFrom(iRes.vocModel, 'Intersection') ? U.makePageUrl('view', iRes.getUri(), {title: params.name}) : U.makePageUrl('edit', iRes.getUri(), {title: params.name});
+            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+            params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
             iRes.off('change', this.refreshOrRender, this);
@@ -368,20 +411,20 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
+              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
               colorIdx++;
               if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
                 
                 if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({shortName: p, icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({icon: icon}, common)));
                 else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({shortName: p, icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({icon: icon}, common)));
               }
               else {
                 if (isPropEditable)
-                  U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+                  U.addToFrag(frag, this.cpTemplate(common));
                 else
                   U.addToFrag(frag, this.cpTemplateNoAdd(common));                
               }
@@ -460,9 +503,9 @@ define('views/ControlPanel', [
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
             var comment = prop.comment;
-            var common = {range: range, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
+            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(_.extend({shortName: p}, common)));
+              U.addToFrag(frag, this.cpTemplate(common));
             else
               U.addToFrag(frag, this.cpTemplateNoAdd(common));            
           }
@@ -470,7 +513,13 @@ define('views/ControlPanel', [
       }
       
       this.$el.html(frag);
-      
+//      if (this.hashParams.$tour) {
+//        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
+//        s.css('class', 'hint--left');
+//        s.css('class', 'hint--always');
+//        s.css('data-hint', this.hashParams.$tourM);
+//      }
+
 //      var self = this;
 //      var problems = $('.problematic');
 //      problems.each(function() {

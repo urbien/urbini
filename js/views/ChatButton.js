@@ -34,6 +34,18 @@ define('views/ChatButton', [
         $menuBadge[unread ? 'show' : 'hide']();
       }
     },
+    
+    events: {
+      'click': 'click'
+    },
+    
+    click: function(e) {
+      if (this.isChat) {
+        Events.stopEvent(e);
+        this.pageView.trigger('chat:on');
+      }
+    },
+    
     render: function(options) {      
       var res = this.model;
       this.isChat = U.isChatPage();
@@ -48,15 +60,8 @@ define('views/ChatButton', [
       }));
       
       this.finish();
-      if (this.isChat) {
-        var chatPage = this.pageView;
-        this.$el.on('click', function(e) {
-          Events.stopEvent(e);
-          chatPage.trigger('chat:on');
-        });
-        
+      if (this.isChat)
         this.$('.menuBadge').hide();
-      }
       else
         this.refresh();
       

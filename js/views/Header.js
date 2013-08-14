@@ -19,7 +19,7 @@ define('views/Header', [
   return BasicView.extend({
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       this.constructor.__super__.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -38,31 +38,17 @@ define('views/Header', [
       if (this.buttons)
         this.getButtonViews();
       
-//      this.calcTitle();
-      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
-      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
-
-      _.each(['info', 'error'], function(event) {
-        var handler = this._updateInfoErrorBar;
-        Events.off(event, handler);
-        Events.on(event, handler);
-      }.bind(this));
+////      this.calcTitle();
+//      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
+//      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
+//
+//      _.each(['info', 'error'], function(event) {
+//        var handler = this._updateInfoErrorBar;
+//        Events.off(event, handler);
+//        Events.on(event, handler);
+//      }.bind(this));
 
       this.autoFinish = false;
-      this.isEdit = /^(edit|make)\//.test(this.hash);
-      this.isChat = U.isChatPage();
-
-      var self = this;
-      if (!this.isChat) {
-        Events.on('newRTCCall', function(call) {
-          self.refresh();
-        });
-  
-        Events.on('endRTCCall', function() {
-          self.refresh();
-        });
-      }
-
       return this;
     },
     
@@ -72,7 +58,6 @@ define('views/Header', [
       var type = vocModel && vocModel.type;
       
 //      _.extend(this, options);
-      this.makeTemplate('headerErrorBar', 'headerErrorBar', type);
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       this.info = this.hashParams['-info'];
@@ -114,42 +99,6 @@ define('views/Header', [
         
         this.readyDfd.resolve();
       }.bind(this));
-    },
-    
-    checkErrorList: function(e) {
-      var $errList = this.$('#errList');
-      var errList = $errList[0];
-      if (errList && errList.children.length <= 1)
-        this.$('#headerErrorBar').html("");
-    },
-
-    _updateInfoErrorBar: function(options) {
-      options = options || {};
-      var res = options.resource, col = options.collection;
-      if ((res && res !== this.model) || (col && col !== this.model))
-        return;
-
-      var page = options.page;
-      if (page && !this.isPageView(page))
-        return;
-      
-//      if (typeof options === 'string') {
-//        this.renderError({error: options});
-//        return;
-//      }
-
-      var error = options.error;
-      if (options.errors) {
-        error = this.errorListTemplate({
-          errors: options.errors
-        });
-      }
-      
-      this.renderError(_.extend({
-        error: error,
-        info: options.info,
-        withIcon: false
-      }, _.omit(options, 'errors')));
     },
     
     calcTitle: function() {
@@ -199,13 +148,10 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload'        : 'fileUpload',
+      'change #fileUpload'         : 'fileUpload',
       'click #categories'         : 'showCategories',
-      'click #moreRanges'         : 'showMoreRanges',
-      'click #backToCall'         : 'backToCall',
-      'click #hangUp'             : 'hangUp',
 //      'click #installApp'         : 'installApp',
-      'click #sendToCall'         : 'sendToCall'
+      'click #moreRanges'         : 'showMoreRanges'
     },
     
     fileUpload: function(e) {
@@ -261,12 +207,12 @@ define('views/Header', [
     },
     
     refresh: function() {
-      this.refreshCallInProgressHeader();
+//      this.refreshCallInProgressHeader();
       this.refreshTitle();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
-      this.error = null;
-      this.renderError();
+//      this.error = null;
+//      this.renderError();
 //      this.restyleNavbar();
       return this;
     },
@@ -284,67 +230,6 @@ define('views/Header', [
         this.renderHelper.apply(this, args);
         this.finish();
       }.bind(this)); 
-    },
-
-    refreshCallInProgressHeader: function() {
-      var cip = G.callInProgress;
-      var $cipDiv = this.parentView.$('div#callInProgress');
-      if (!cip || window.location.href == cip.url) {
-        $cipDiv.html("");
-        return;
-      }
-      
-      $cipDiv.html(this.callInProgressHeaderTemplate(cip));
-      (function pulse(){
-        if (!G.callInProgress)
-          return;
-        
-        $cipDiv.delay(250).fadeTo('slow', 0.9).delay(250).fadeTo('slow', 1,  pulse);
-      })();
-      (function anime(){
-        if (!G.callInProgress) 
-          return;
-        $cipDiv.css({marginTop: '-42px'});
-        $cipDiv.animate({marginTop: '+=42px'}, 2000); //.delay(5000).animate({marginTop: '-42px'}, 1, anime);
-      })();
-      
-//      $cipDiv.find('#backToCall').css('cursor', 'pointer').click(function() {
-//        window.location.href = $('a', this).attr('href');
-//      });
-    },
-
-    backToCall: function(e) {
-      Events.stopEvent(e);
-      var cip = G.callInProgress,
-          url = cip.url,
-          hashIdx = url.indexOf('#'),
-          path = url.slice(0, hashIdx),
-          hash = url.slice(hashIdx + 1);
-          
-      if (window.location.href.startsWith(path))
-        Events.trigger('navigate', hash);
-      else
-        window.location.href = url;
-    },
-
-    hangUp: function(e) {
-      Events.trigger('hangUp');
-    },
-
-    sendToCall: function(e) {
-      Events.stopEvent(e);
-      if (this.resource) {
-        Events.trigger('messageForCall:resource', {
-          _uri: this.resource.getUri(),
-          displayName: U.getDisplayName(this.resource)
-        });
-      }
-      else {
-        Events.trigger('messageForCall:list', {
-          title: this.getPageTitle(),
-          hash: this.hash
-        }); 
-      }
     },
 
     refreshTitle: function() {
@@ -380,7 +265,8 @@ define('views/Header', [
           var noWebClasses = !res.get('lastModifiedWebClass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = res.get('lastModifiedWebClass') < res.get('lastPublished');
           if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
-            this.doTry = true;
+            if (res.get('_uri') != G.currentApp._uri)
+              this.doTry = true;
             this.forkMe = true;
           }          
         }
@@ -464,44 +350,6 @@ define('views/Header', [
         this.noButtons = true;      
     },
     
-    renderError: function(options) {
-      var errDiv = this.$('#headerErrorBar');
-      errDiv.html("");
-      
-      options = options || {};
-      var error = options.error;
-      if (!error) {
-        error = this.resource && this.resource.get('_error');
-        if (error)
-          error = error.details;
-        else
-          error = this.error;
-      }
-      
-      var info = options.info || this.info;
-      if (error == null && info == null)
-        return this;
-      
-      var length = Math.max(error ? error.length : 0, info ? info.length : 0);
-      errDiv.html(this.headerErrorBar({error: error, info: info, withIcon: options.withIcon !== false}));
-      errDiv.trigger('create');
-      errDiv.show();
-      this.error = null;
-      this.info = null;
-      this.$('#errList').find('.closeparent').click(this.checkErrorList);
-      
-      var persistByDefault = !!(this.hashParams['-info'] || this.hashParams['-errMsg']);
-      if (options.persist === false || (_.isUndefined(options.persist) && !persistByDefault)) {
-        setTimeout(function() {        
-          $(errDiv).fadeOut(2000, function() {
-            errDiv.html("");
-          });
-        }, length * 80);
-      }
-      
-      return this;
-    },
-    
     restyleNavbar: function() {
       this.$('[data-role="navbar"]').navbar();
     },
@@ -524,12 +372,22 @@ define('views/Header', [
       else if (!res) {
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
-        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  this.hashParams['$prop'] == 'range') { 
+        var prop = this.hashParams['$prop'];
+        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  prop /* == 'range'*/) { 
           this.moreRanges = true;
-          if (this.hashParams['$more'])
-            this.moreRangesTitle = 'Less ranges';
+          var type = this.hashParams['$type'];
+          
+          var pname;
+          if (type) {
+            var pModel = U.getModel(type);
+            pname = U.getPropDisplayName(pModel.properties[prop]);
+          }
           else
-            this.moreRangesTitle = 'More ranges';
+            pname =  this.vocModel.properties[prop].displayName;
+          if (this.hashParams['$more'])
+            this.moreRangesTitle = 'Less ' + pname;
+          else
+            this.moreRangesTitle = 'More ' + pname;
         }
       }
 
@@ -577,7 +435,7 @@ define('views/Header', [
       var $ul = this.$('#headerUl');
       $ul.html(frag);
       
-      this.renderError();
+//      this.renderError();
       this.renderSpecialButtons();
       
       this.$el.trigger('create');
@@ -609,7 +467,7 @@ define('views/Header', [
       
       // END HACK
       
-      this.refreshCallInProgressHeader();
+//      this.refreshCallInProgressHeader();
       this.restyleNavbar();
       this.finish();
       return this;

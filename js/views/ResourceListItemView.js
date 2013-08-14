@@ -161,14 +161,23 @@ define('views/ResourceListItemView', [
         Events.stopEvent(e);
         var atype = this.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-        this.router.navigate(action + '/' + encodeURIComponent(this.resource.get('forum')) + '?-info=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl(action, this.resource.get('forum'), {'-info': this.resource.get('davDisplayName')}), {trigger: true, forceFetch: true});
         return;
       }
-      if (params  &&  params['$type'] && U.isAssignableFrom(U.getModel(params['$type']), 'Intersection')) {
+      // Setting values to TaWith does not work if this block is lower then next if()
+      var p1 = params['$propA'];
+      var p2 = params['$propB'];
+      var type = params['$type'];
+      var isIntersection = type ? U.isAssignableFrom(U.getModel(params['$type']), 'Intersection') : false;
+      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
+        if (!isIntersection  ||  (!p1  &&  !p2)) {
+          Events.stopEvent(e);
+          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+          return;
+        }
+      }
+      if (params  &&  type && isIntersection) {
         Events.stopEvent(e);
-        var type = params['$type'];
-        var p1 = params['$propA'];
-        var p2 = params['$propB'];
         var rParams = {};
         rParams[p1] = params['$forResource'];
         this.forResource = params['$forResource'];
@@ -183,7 +192,7 @@ define('views/ResourceListItemView', [
               var props = {interfaceClass: uri, implementor: self.forResource};
               m.save(props, {
                 success: function() {
-                  self.router.navigate('view/' + encodeURIComponent(self.forResource), {trigger: true, forceFetch: true});        
+                  self.router.navigate(U.makeMobileUrl('view', self.forResource), {trigger: true, forceFetch: true});        
                 }
               });
             });
@@ -198,28 +207,40 @@ define('views/ResourceListItemView', [
       }
       if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
         var params = U.getParamMap(window.location.href);
-        var app = params.application; 
+        var app = params.application;
+        var appModel;
+        var tag = params['tagUses.tag.tag'];
+        var tag = params['tags'];
         if (app) {
           delete params.application;
           params.$title = this.resource.get('tag');
-          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
-//              params['tagUses.tag.application'] = app; 
-          this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
-          return;
+//          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+//              params['tagUses.tag.application'] = app;
         }
-      }
-      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
-        Events.stopEvent(e);
-        Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
-        return;
+        else { //if (tag  ||  tags) {
+          app = this.hash;
+          app = decodeURIComponent(app.substring(0, idx));
+        }
+        if (app) {
+          appModel = U.getModel(app);
+          if (appModel) {
+            var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
+            if (tagProp) {
+              params[tagProp] = '*' + this.resource.get('tag') + '*';
+    
+              this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+              return;
+            }
+          }
+        }
       }
 
       if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
-        this.router.navigate('edit/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, forceFetch: true});
       else {
         var pr;
 //          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-        this.router.navigate('view/' + encodeURIComponent(this.resource.getUri()), {trigger: true, forceFetch: true});
+        this.router.navigate(U.makeMobileUrl('view', this.resource.getUri()), {trigger: true, forceFetch: true});
 //          else {
 //            var r = U.getParamMap(window.location.href);
 //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
@@ -305,7 +326,7 @@ define('views/ResourceListItemView', [
         this.$el.html(this.template(json));
         return this;
       }
-      var params = U.getQueryParams(window.location.hash);
+      var params = this.hashParams;
       var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
       if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
@@ -358,7 +379,7 @@ define('views/ResourceListItemView', [
         json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
         json.left = dim.x;
       }
-      var params = U.getParamMap(window.location.hash);
+      var params = this.hashParams;
       if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
@@ -382,7 +403,7 @@ define('views/ResourceListItemView', [
       var vocModel = this.vocModel;
       
       if (!this.commonBlockProps.length) { 
-        json.viewCols = viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
+        json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
         return viewCols;
       }
       var isSubmission = this.resource.isA('Submission');
@@ -565,11 +586,8 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
-      var oW = U.getCloneOf(this.vocModel, 'ImageResource.originalWidth');
-      var oH;
-      if (oW)
-        oH = U.getCloneOf(this.vocModel, 'ImageResource.originalHeight');
-      
+      var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
+      var oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
       var type = vocModel.type;
       var img;
       var dn;

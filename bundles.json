@@ -4,17 +4,18 @@
     		 'collections/ResourceList', 'lib/jquery.anystretch', 'views/HomePage', 'vocManager', 'modelLoader', 'plugManager', 'resourceManager', 'indexedDB', 'idbQueryBuilder', 'synchronizer', 'resourceSynchronizer', 'collectionSynchronizer', 'router', 
     		 'app', 'appAuth', 'apiAdapter'],
     css: ['lib/jquery.mobile-1.3.2.min.css', 'lib/jquery.mobile.theme-1.3.2.min.css', {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.2.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
-    html: ['../templates.jsp']
+    html: ['../templates.jsp'],
+    lol: []
   },
   post: {
-    js: ['views/BasicView', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
-         'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/MasonryListView', 'views/PhotogridListView', 'views/CommentListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 'views/RightMenuPanel', 'views/MapView', 'views/PublishButton', 
-         'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/swipeview', 'views/ChatPage', 'views/VideoButton', 'views/ToggleButton1', 'views/ChatButton', 'chrome', 'firefox'],
+    js: ['views/BasicView', 'views/BasicPageView', 'views/MessageBar', 'tourGuide', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
+         'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/MasonryListView', 'views/PhotogridListView', 'views/CommentListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 
+         'views/RightMenuPanel', 'views/MapView', 'views/PublishButton', 'views/SocialNetworkPage', 'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/swipeview', 'views/ChatPage', 'views/VideoButton', 'views/ToggleButton1', 'views/ChatButton', 'views/CallInProgressHeader', 'chrome', 'firefox', 'lib/l20n'],
     css: ['../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css']
   },
   extras: {
     js: ['lib/leaflet', 'lib/leaflet.markercluster', 'maps', 'lib/codemirror', 'lib/codemirrorXMLMode', 'lib/codemirrorHTMLMode', 'lib/codemirrorJSMode', 'lib/codemirrorCSSMode', 'views/CameraPopup', 'lib/whammy',
-         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'lib/simplewebrtc', 'fileSystem', 'lib/d3', 'd3widgets'],
+         'lib/recorder', 'lib/recorderWorker', 'lib/socket.io', 'lib/simplewebrtc', 'fileSystem', 'lib/jquery.draggable', 'lib/d3', 'd3widgets'],
     css: ['../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css', '../styles/codemirror.css']
   },
   appcache: {

@@ -6,9 +6,9 @@ define('views/ChatPage', [
   'events',
   'cache',
   'vocManager',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/Header'
-], function(G, _, U, Events, C, Voc, BasicView, Header) {
+], function(G, _, U, Events, C, Voc, BasicPageView, Header) {
   // To avoid shortest-path interpolation.
   var BTN_ACTIVE_CLASS = 'ui-btn-active',
       SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889',
@@ -58,7 +58,7 @@ define('views/ChatPage', [
     return '{0}:{1}'.format(toDoubleDigit(hours), toDoubleDigit(date.getMinutes()) + ampm);
   };
 
-  return BasicView.extend({
+  return BasicPageView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
@@ -314,7 +314,10 @@ define('views/ChatPage', [
       if (!this.textOnly) {
         this.on('video:on', this.videoFadeIn, this);
         this.on('video:on', this.enableTakeSnapshot, this);
-        this.on('newRTCCall', this.videoFadeIn, this);
+        Events.on('newRTCCall', function() {
+          if (this.isActive())
+            this.videoFadeIn();
+        }, this);
       }
       
       Events.on('hangUp', this.endChat, this);
@@ -331,9 +334,9 @@ define('views/ChatPage', [
       'click #chatReqLocBtn'              : 'requestLocation',
       'click #chatShareLocBtn'            : 'shareLocation',
       'click #chatCaptureBtn'             : 'takeSnapshot',
-      'resize'                            : 'resize',
-      'orientationchange'                 : 'resize',
-      'pagehide'                          : 'pagehide' 
+      'resize'                             : 'resize',
+      'orientationchange'                  : 'resize',
+      'pagehide'                           : 'pagehide' 
     },
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);
@@ -454,8 +457,15 @@ define('views/ChatPage', [
       }
 
       if (this.isWaitingRoom && this.isClient) {
-        Events.trigger('headerMessage', {
-          info: 'Calling...'
+        var headerId = 'calling' + G.nextId();
+        Events.trigger('messageBar', 'info', {
+          message: 'Calling...',
+          persist: true,
+          id: headerId
+        });
+        
+        Events.once('pageChange', function() {
+          Events.trigger('messageBar.info.clear', headerId);
         });
       }
 
@@ -528,10 +538,13 @@ define('views/ChatPage', [
     },
 
     getStats: function() {
-      var max = Math.min(document.width / 3, document.height / 3, 300),
-          w = document.width || max,
-          h = document.height || max,
-          dim = Math.min(w, h, max);
+//      var max = Math.min(document.width / 3, document.height / 3, 300),
+//          w = document.width || max,
+//          h = document.height || max,
+//          dim = Math.min(w, h, max);
+      var docW = document.width || 1000,
+          docH = document.height || 1000,
+          dim = Math.min(docW / 3, docH / 3, 300);
       
       return {
         width: dim,
@@ -586,7 +599,7 @@ define('views/ChatPage', [
         }
       }
       
-      U.require(['views/ControlPanel']).done(function(ControlPanel) {
+      U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
         var $bl = self.$("div#inChatBacklinks");
         $bl.drags();
         self.addChild('backlinks', new ControlPanel({
@@ -666,7 +679,7 @@ define('views/ChatPage', [
 
     paintConcentricStats: function(divId, options) {
       var self = this, args = arguments;
-      U.require(['lib/d3', 'd3widgets'], function(_d3_, widgets) {
+      U.require(['lib/d3', 'd3widgets', 'jqueryDraggable'], function(_d3_, widgets) {
         D3Widgets = widgets;
         self._paintConcentricStats(divId, options);
       });      

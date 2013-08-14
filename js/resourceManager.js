@@ -56,8 +56,8 @@ define('resourceManager', [
   var ResourceManager = RM = {
     TAG: 'Storage', 
     init: _.once(function() {
-      MODULE_STORE = G.getModuleStoreInfo();
-      MODEL_STORE = G.getModelStoreInfo();
+      MODULE_STORE = G.getModulesStoreInfo();
+      MODEL_STORE = G.getModelsStoreInfo();
       REQUIRED_STORES = G.getBaseObjectStoresInfo();
       Synchronizer.init();
       ResourceSynchronizer.init();
@@ -91,9 +91,10 @@ define('resourceManager', [
     },
 
     openDB: function() {
-      _.each(REQUIRED_STORES, function(info) {
+      for (var storeName in REQUIRED_STORES) {
+        var info = REQUIRED_STORES[storeName];
         IDB.createObjectStore(info.name, info.options, info.indices);
-      });
+      }
       
       return IDB.start();
     },
@@ -113,6 +114,7 @@ define('resourceManager', [
       
       for (var i = 0; i < mk.length; i++) {
         var type = mk[i],
+            options,
             indices;
 
         if (type.startsWith('http')) {
@@ -126,8 +128,16 @@ define('resourceManager', [
           
           indices = U.toObject(U.getIndexNames(vocModel) || []);
         }
+        else {
+          for (var storeName in REQUIRED_STORES) {
+            if (storeName == type) {
+              options = REQUIRED_STORES[storeName].options;
+              break;
+            }
+          }
+        }
         
-        IDB.createObjectStore(type, null, indices);
+        IDB.createObjectStore(type, options, indices);
       }
 
       return IDB.start();
@@ -296,9 +306,11 @@ define('resourceManager', [
   };
   
   Events.on('updatedResources', function(resources) {
-    G.whenNotRendering(function() {
-      RM.addItems(resources);
-    });
+    if (resources.length) {
+      G.whenNotRendering(function() {
+        RM.addItems(resources);
+      });
+    }
   });
 
   Events.on('modelsChanged', function(changedTypes) {

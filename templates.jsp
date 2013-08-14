@@ -12,7 +12,11 @@
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" role="main">
-    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}" data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= obj.placeholder || 'Search...' }}" data-filter-theme="{{= G.theme.list }}"></ul>
+    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+    {{ if (this.collection.models.length > 5) { }}
+     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'Search...') }}"
+   {{ } }}
+   ></ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">
@@ -20,7 +24,7 @@
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="{{= translate('submit') }}" />
+      <input type="submit" id="mvSubmit" value="{{= loc('Submit') }}" />
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
@@ -33,14 +37,14 @@
     </form>  
   </div>
   
-  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
+  <!-- div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a -->
      <!-- "Next" button removed after endless page introduction>
      {{ if (this.collection.length > this.collection.perPage) { }}
        <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">Next</a>
      {{ }                                                       }}
      -->
-  </div>
+  <!-- /div -->
 </script>  
  
 <script type="text/template" id="resource">
@@ -90,7 +94,7 @@
     <div id="localMedia"></div>
     <div id="remoteMedia"></div>
   </div>    
-  <div id="headerMessageBar" style="opacity:0.7"></div>
+  <!--div id="headerMessageBar" style="opacity:0.7"></div-->
   <!--div id="localVideoMonitor" style="z-index:100;width:100%;height:100%;left:0;top:0;position:fixed;">
   </div-->
   <div id="ringtoneHolder" style="visibility: hidden; display: none;">
@@ -215,6 +219,24 @@
   </table>
 </script>
 
+<script type="text/template" id="socialNetworkPageTemplate">
+<!-- View where the user can connect various social networks -->  
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="headerDiv"></div>
+  <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
+</script>  
+
+<script type="text/template" id="socialNetButtonTemplate">
+  <div class="{{= obj['class'] || '' }}" style="text-align:center;">
+    <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
+    <a href="#" data-role="button">
+      <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
+      <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
+    </a>
+  </div>
+</script>
+
 <script type="text/template" id="genericOptionsDialogTemplate">
   <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
     <ul data-role="listview" data-inset="false" data-theme="d"> 
@@ -256,11 +278,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= typeof cancel === 'string' ? cancel : 'Cancel' }}</a>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'Cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= typeof ok === 'string' ? ok : 'Ok' }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'Ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -493,9 +515,9 @@
     <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
-    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+    {{ if (typeof obj.width != 'undefined') { }}  
       style="
-        width:{{= width }}px; height:{{= height }}px;
+        height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
@@ -634,7 +656,7 @@
     
     <!-- {{ if (!obj.homePage) { }} -->   
     <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
-    {{ if (typeof width != 'undefined'  &&  width.length) { }}  
+    {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
@@ -642,7 +664,7 @@
     {{ } }}
     /> 
     <!-- {{ } }} -->
-    <div class="ui-btn-text" style="min-height:38px;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+    <div class="gradientEllipsis" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -654,6 +676,7 @@
       <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
     {{ }               }}
       {{= title }}
+      {{= obj.image || title.length < 20 ? '' : '<div class="dimmer">' }}
     </div>
     
     {{ if (obj.icon  &&  !obj.homePage) { }}
@@ -700,7 +723,15 @@
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" />
+      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      {{ if (obj.width) { }}  
+      style="max-height:none;max-width:none;
+        height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      
+      />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -712,7 +743,9 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.footer) : '<li>' }}
+<li data-propName="{{= shortName }}"
+{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
+>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
@@ -758,8 +791,10 @@
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
-   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="right: -25px;top: 35%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}
+   <a data-role="button" data-shadow="false" data-propName="{{= shortName }}" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' :  ''  }}
+
+
    </a>
  {{ } }}
 </script>
@@ -774,16 +809,18 @@
    </a>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
-   <a data-role="button" data-shadow="false" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-role="button" data-shadow="false" data-propName="{{= shortName }}" data-ajax="false" class="ui-li-has-count" style="text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="right: -10px;top: -70%;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
+     <span style="font-size: 18px;">{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-{{= obj.inline ? '<li data-theme="{0}">'.format(G.theme.activeButton) : '<li>' }}
+<li data-propName="{{= shortName }}"
+  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
+>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp"></a>
@@ -843,7 +880,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign">Create</a>
+  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
+  <!-- a target="#" data-icon="plus-sign" class="hint--bottom hint--always" data-hint="Add item">Create</a -->
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -886,16 +924,16 @@
     
     {{ _.forEach(nets, function(net) { }} 
 
-    <a data-role="button" href="{{= net.url }}" {{= net.socialNet == 'Facebook' ? ' target="_top"' : '' }}>
+    <a data-role="button" href="{{= net.url }}" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
         <span class="big_symbol 
-      {{ if(net.socialNet == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.socialNet == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.socialNet == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.socialNet == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.socialNet == "Live") { }} ui-icon-live-sign {{ } }}
-        "/ >
+      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
+      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
+        ">
        </span>
-     {{= net.socialNet }}
+     {{= net.name }}
     </a>
 
     {{ }); }}
@@ -977,9 +1015,9 @@
   <div class="ui-grid-d mygrid">
     <div class="ui-block-a" id="backToCall"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#0f2">Back to call</button></div>
     <div class="ui-block-b"></div>
-    <div class="ui-block-c" id="sendToCall"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
+    <div class="ui-block-c" id="sendToCall" style="text-align:center"><button data-icon="arrow-up" data-iconpos="notext" data-inline="true" data-mini="true">Send to call</button></div>
     <div class="ui-block-d"></div>
-    <div class="ui-block-e" id="hangUp"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
+    <div class="ui-block-e" id="hangUp" style="text-align:right"><button data-icon="phone" data-iconpos="notext" data-inline="true" data-mini="true" style="background:#f02">Hang up</button></div>
   </div>
 </script>
 
@@ -1047,8 +1085,20 @@
         </div>
       </div>
     </div>
-    <div id="headerErrorBar">
-    </div>
+    <!--div id="headerErrorBar">
+    </div-->
+  </div>
+</script>
+
+<script type="text/template" id="messageBarTemplate">
+  <div class="headerMessageBar {{= obj['class'] || '' }}">
+    <h3 id="{{= obj.id || 'messageBar' + G.nextId() }}">
+      {{ if (obj.icon) { }}
+        <i class="{{= 'ui-icon-' + icon}}"></i>
+      {{ }               }}
+      
+      {{= message }}      
+    </h3>
   </div>
 </script>
 
@@ -1261,42 +1311,41 @@
 </script -->
 
 
-<script type="text/template" id="errorListTemplate">
+<script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<!--
-  <ul id="errList" data-split-theme="{{= G.theme.error || 'c' }}" data-role="listview" data-split-icon="delete" data-inset="true">
-  {{  _.each(errors, function(err) {  }}
-     <li>
-       <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
-       <a href="#" class="closeparent" data-position-to="window">Dismiss error</a>
-     </li>
-  {{  });                           }}
-  </ul>
--->
-<div id="errList" data-theme="{{= G.theme.error || 'c' }}">
-{{  _.each(errors, function(err) {  }}
-     <div style="display:block">
-{{     if (err.link) {            }}
-         <a href="{{= err.link }}">{{= '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}</a>
-{{     }                          }}
-{{     if (!err.link) {           }}
-{{=      '<i class="ui-icon-{0}"></i>  '.format(err.icon || 'ban-circle') + err.msg }}
-{{     }                          }}
-       <i class="ui-icon-delete closeparent" style="float:right; width:20px; height:20px; color: white"></i>
+<div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
+{{  _.each(messages, function(msg) {  }}
+     <div style="display:block" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+  {{ if (msg.link) {            }}
+       <a href="{{= msg.link }}">
+  {{ }                        }}
+  {{ if (msg.icon) {    }}
+       <i class="ui-icon-{{= msg.icon }}"></i>
+  {{ }                  }}
+  
+    {{= msg.message }}
+    
+  {{ if (msg.link) {            }}
+       </a>
+  {{ }                        }}
+  
+  {{ if (!msg.link && msg.icon) {    }}
+       <i class="ui-icon-{{= msg.icon }}"></i>
+  {{ }                               }}
+       <i class="ui-icon-delete closeparent"></i>
      </div>
 {{  });                           }}
 </div>
 
 </script>
 
-
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
 <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
-<div id="headerMessageBar"></div>
+<!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView" style="padding:10px;">
   <div id="resourceImage"></div>
@@ -1448,7 +1497,7 @@
   </a>
   
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
-    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= prop.range.endsWith('model/portal/Video') ? 'facetime-video' : prop.range.endsWith('model/portal/Audio') ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
+    <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= isVideo ? 'facetime-video' : isAudio ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
     {{ if (!G.canWebcam) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}

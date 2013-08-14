@@ -2,44 +2,45 @@
 var __started = new Date();
 
 $.extend({
-  RESOLVED_PROMISE: $.Deferred().resolve().promise(), 
+  RESOLVED_PROMISE: $.Deferred().resolve().promise(),
+  _whenAllCounter: 0,
   whenAll: function() {
-    var dfd = $.Deferred(),
-        len = arguments.length;
+    var args = [].slice.call(arguments),
+        len = args.length;
     
     if (!len)
       return $.RESOLVED_PROMISE;
     
-    var results = [],
-        counter = 0,
-        state = "resolved",
-        resolveOrReject = function(idx) {
-          if (this.state() === "rejected"){
-            state = "rejected";
-          }
-          
-          counter++;
-          switch (arguments.length) {
-            case 0:
-            case 1:            
-              results[this._idx] = arguments[0] || null;
-              break;
-            default:
-              results[this._idx] = [].slice.call(arguments);
-              break;
-          }
-
-          if (counter === len) {
-            dfd[state === "rejected"? "reject": "resolve"].apply(dfd, results);   
-          }  
-        };
+    return $.Deferred(function(dfd) {      
+      var results = new Array(len),
+          counter = 0,
+          state = "resolved",
+          resolveOrReject = function() {
+            if (this.state() === "rejected"){
+              state = "rejected";
+            }
+            
+            var idx = args.indexOf(this);
+            counter++;
+            switch (arguments.length) {
+              case 0:
+              case 1:            
+                results[idx] = arguments[0] || null;
+                break;
+              default:
+                results[idx] = [].slice.call(arguments);
+                break;
+            }
   
-    $.each(arguments, function(idx, item) {
-      item._idx = idx;
-      item.always(resolveOrReject.bind(item)); 
-    });
-  
-    return dfd.promise();    
+            if (counter === len) {
+              dfd[state === "rejected"? "reject": "resolve"].apply(dfd, results);   
+            }            
+          };
+    
+      $.each(args, function(idx, item) {
+        item.always(resolveOrReject.bind(item)); 
+      });
+    }).promise();
   }
 });
 
@@ -334,7 +335,7 @@ define('globals', function() {
     options = options || {};
     var storage = options.storage || 'localStorage',
         store = options.store || 'modules',
-        storeInfo = store === 'modules' ? G.getModuleStoreInfo() : G.getModelStoreInfo(),
+        storeInfo = store === 'modules' ? G.getModulesStoreInfo() : G.getModelsStoreInfo(),
         keyPath = storeInfo.options.keyPath;        
     
     if (storage === 'localStorage') {
@@ -374,6 +375,8 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
+    G.tourGuideEnabled      = true;
+    G.DEBUG                 = !G.minify;
     G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
     G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
     G.currentAppRegExp      = new RegExp(regex);
@@ -932,13 +935,23 @@ define('globals', function() {
         color: '#88FFFF',
         bg: '#000'
       },
+      taskQueue: {
+        on: false,
+        color: '#88FFFF',
+        bg: '#000'
+      },
+      visibility: {
+        on: false,
+        color: '#FFFFFF',
+        bg: '#000'
+      },
       app: {
         on: true,
         color: '#88FFFF',
         bg: '#000'
       },
       db: {
-        on: true,
+        on: false,
         color: '#FFFFFF',
         bg: '#000'
       },
@@ -986,6 +999,7 @@ define('globals', function() {
       leafletMarkerCluster: 'lib/leaflet.markercluster',
       jqueryImagesLoaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry',
+      jqueryDraggable: 'lib/jquery.draggable',
       jqueryAnyStretch: 'lib/jquery.anystretch'
     },
     shim: {
@@ -1422,13 +1436,10 @@ define('globals', function() {
     },
     
     log: function(tag, type) {
-      if (G.minify || !TRACE.ON || !console || !console.log || !type)
+      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
       
       var types = typeof type == 'string' ? [type] : type;
-//      if (types.indexOf('error') != -1)
-//        debugger;
-      
       for (var i = 0; i < types.length; i++) {
         var type = types[i],
             typeTrace = TRACE.types[type] || TRACE.DEFAULT;
@@ -1565,7 +1576,11 @@ define('globals', function() {
 
       head.appendChild(script);
       head.removeChild(script);
-    }    
+    },
+    support: {
+      pushState: false //!!(window.history && history.pushState)
+    },
+    language: navigator.language.split('-')[0]
   });
 
   setupLocalStorage();

@@ -61,6 +61,9 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
    * @param val value or a combination of operator and value, e.g. ">=7"
    */
   function buildSubQuery(name, val, vocModel, indexNames) {
+    if (!_.contains(indexNames, name))
+      return null;
+    
     var clause = parseAPIClause(name, val),
         Index = getIDB().queryByIndex;
     
@@ -208,9 +211,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     
     if (orderBy && orderBy.length) {
       if (query) {  
-        var distanceProp = prepPropNameForDB(positionProps.distance);
-        latProp = prepPropNameForDB(latProp);
-        lonProp = prepPropNameForDB(lonProp);
+        var distanceProp = positionProps.distance;
         for (var i = 0; i < orderBy.length; i++) {
           var oProp = orderBy[i].shortName;
           if (oProp === distanceProp) {
@@ -223,7 +224,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
             });
           }
           else {
-            query = query.sort(prepPropNameForDB(oProp), !asc);
+            query = query.sort(oProp, !asc);
           }
         }
       }

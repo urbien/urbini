@@ -8,15 +8,21 @@ define('utils', [
   'events',
   'jqueryMobile'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
-  var ArrayProto = Array.prototype, slice = ArrayProto.slice,
+  var asArray = function(stuff) { return [].slice.call(stuff) },
+      slice = [].slice,
+      concat = [].concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      xhrHistory = [];
+      xhrHistory = [],
+      doc = document,
+      compiledTemplates = {},
+      HAS_PUSH_STATE = G.support.pushState,
+      FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
   function log() {
-    var args = [].slice.call(arguments);
-    args.unshift(U.TAG);
+    var args = slice.call(arguments);
+    args.unshift('Utils');
     G.log.apply(G, args);
   };
 
@@ -32,7 +38,7 @@ define('utils', [
     return path.split(separator).reduce(index, obj);
   }
 
-  ArrayProto.remove = function() {
+  Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
       what = a[--L];
@@ -44,7 +50,7 @@ define('utils', [
     return this;
   };
 
-  ArrayProto.last = ArrayProto.peek = function() {
+  Array.prototype.last = Array.prototype.peek = function() {
     return this.length ? this[this.length - 1] : null;
   };
 
@@ -160,7 +166,6 @@ define('utils', [
   };
   
   var U = {
-    TAG: 'Utils',
     /**
      * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
      */
@@ -290,17 +295,18 @@ define('utils', [
                   try {
                     error = JSON.parse(xhr.responseText);
                   } catch (err) {
-                  }
-                  
-                  if (error)
-                    error.code = _.isUndefined(error.code) ? code : error.code;
-                  else
-                    error = {code: code};
+                    log('error', 'failed to parse error responseText:', xhr.responseText);
+                  } 
                 }
+                
+                if (error)
+                  error.code = _.isUndefined(error.code) ? code : error.code;
+                else
+                  error = {code: code};
               }
               
               if (error) {
-                debugger;
+//                debugger;
                 defer.reject(xhr, error, opts);
               }
               else {
@@ -429,7 +435,7 @@ define('utils', [
       
       hash = hash.split('?')[0];
 //      if (!hash)
-//        G.log(U.TAG, 'error', 'match undefined 0');
+//        log('error', 'match undefined 0');
       
       if (hash.startsWith('templates'))
         return G.commonTypes.Jst;
@@ -612,7 +618,7 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      var cloneOf = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1)),
+      var cloneOf = concat.apply([], slice.call(arguments, 1)),
           results = {},
           meta = model.properties;
       
@@ -842,7 +848,7 @@ define('utils', [
     isA: function(model, interfaceNames, op) {
       var OR = op === 'OR';
       interfaceNames = typeof interfaceNames === 'string' ? [interfaceNames] : interfaceNames;
-      var intersection = _.intersection(model.interfaces, interfaceNames);
+      var intersection = _.intersection(_.map(model.interfaces, U.getClassName), interfaceNames);
       if (OR && intersection.length || !OR && intersection.length === interfaceNames.length)
         return true;
       else
@@ -855,6 +861,72 @@ define('utils', [
 //      
 //      var m = U.getModel(superCl);
 //      return m ? U.isA(m, leftOver) : impl;
+    },
+    
+    $or: function() {
+      if (arguments.length == 1)
+        return U.getQueryString(arguments[0], '||');
+      
+      return _.map(slice.call(arguments), function(arg) {
+        return U.$or(arg);
+      }).join('||');
+    },
+    
+    $and: function() {
+      if (arguments.length == 1)
+        return $.param(arguments[0]);
+      
+      return _.map(slice.call(arguments), function(arg) {
+        return U.$and(arg);
+      }).join('&');      
+    },
+    
+    getSocialNetFontIcon: function(net) {
+      var icon;
+      if (net == 'Google')
+        icon = 'google-plus';
+      else
+        icon = net.toLowerCase();
+      
+      return icon + '-sign';
+    },
+    
+    buildSocialNetOAuthUrl: function(net, action, returnUri) {
+      returnUri = returnUri || window.location.href;
+      if (action === 'Disconnect') {
+        return G.serverName + '/social/socialsignup?' + U.getQueryString({
+          actionType: action,
+          returnUri: returnUri,
+          socialNet: net.socialNet
+        }, {sort: true})
+      };
+      
+      var state = U.getQueryString({
+        socialNet: net.socialNet, 
+        returnUri: returnUri,
+        actionType: action
+      }, {sort: true}); // sorted alphabetically
+    
+      var params;
+      if (net.oAuthVersion == 1) {
+        params = {
+          episode: 1, 
+          socialNet: net.socialNet,
+          actionType: action
+        };
+      }
+      else {
+        params = {
+          scope: net.settings,
+          display: 'touch', // 'page', 
+          state: state, 
+          redirect_uri: G.serverName + '/social/socialsignup', 
+          response_type: 'code', 
+          client_id: net.appId || net.appKey
+        };
+      }
+      
+      return net.authEndpointMobile + '?' + U.getQueryString(params, {sort: true}); // sorted alphabetically
     },
     
     getPackagePath: function(type) {
@@ -975,6 +1047,7 @@ define('utils', [
       
       return i == 0 ? null : rows;
     },
+
     
     isMasonry: function(vocModel) {
       var meta = vocModel.properties;
@@ -1351,6 +1424,11 @@ define('utils', [
             dn += ' ';
           
           if (U.isResourceProp(prop)) {
+            if (resource) {
+            var rdn = resource[shortName + '.displayName'];
+            if (rdn)
+              dn += rdn;
+            }
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
             if (resource) {
             var rdn = resource[shortName + '.displayName'];
@@ -1804,7 +1882,7 @@ define('utils', [
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000)
             val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
-          else
+          else 
             val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
@@ -1838,7 +1916,7 @@ define('utils', [
     },
     
     makePageUrl: function() {
-      return G.pageRoot + '#' + U.makeMobileUrl.apply(this, arguments);
+      return G.pageRoot + FRAGMENT_SEPARATOR + U.makeMobileUrl.apply(this, arguments);
     },
     
     getAppPathFromTitle: function(title) {
@@ -1879,16 +1957,16 @@ define('utils', [
       }
         
       var url = '';
-      switch (action) {
-        case 'list':
-          break;
-        default: 
-          url += action + '/';
-          break;
-      }
+//      switch (action) {
+//        case 'list':
+//          break;
+//        default: 
+//          url += action + '/';
+//          break;
+//      }
       
 //      var encOptions = {delimiter: '&amp;'};
-      url += encodeURIComponent(typeOrUri);
+      url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
       if (_.size(params))
         url += '?' + U.getQueryString(params); //, encOptions);
       
@@ -2325,10 +2403,14 @@ define('utils', [
     },
     
     getHash: function(decode) {
-      var match = (window || this).location.href.match(/#(.*)$/),
-          hash = match ? match[1] : '';
-          
-      return decode ? decodeURIComponent(hash) : hash;
+      if (HAS_PUSH_STATE)
+        return window.location.href.slice(G.appUrl.length + 1);
+      else {
+        var match = (window || this).location.href.match(/#(.*)$/),
+            hash = match ? match[1] : '';
+            
+        return decode ? decodeURIComponent(hash) : hash;
+      }  
     },
     
 //    flattenModelJson: function(m, vocModel, preserve) {
@@ -2540,7 +2622,7 @@ define('utils', [
       case '[object Object]':
         return _.pick.apply(null, arguments);
       case '[object Array]':
-        var keys = ArrayProto.concat.apply(ArrayProto, slice.call(arguments, 1));
+        var keys = concat.apply([], slice.call(arguments, 1));
         var arrCopy = [];
         for (var i = 0; i < obj.length; i++) {
           var item = obj[i], copy = {};
@@ -2917,9 +2999,16 @@ define('utils', [
     },
 
     
-    _reservedTemplateKeywords: ['U', 'G', '$', 'translate'],
+    _reservedTemplateKeywords: ['U', 'G', '$', 'loc'],
     template: function(templateName, type, context) {
-      var template;
+      var template,
+          typeKey = type || '',
+          subCache = compiledTemplates[templateName] = compiledTemplates[templateName] || {},
+          templateFn = subCache[typeKey];
+      
+      if (templateFn)
+        return context ? templateFn.bind(context) : templateFn;
+      
       if (typeof templateName === 'string') {
         template = Templates.get(templateName, type);
         if (!template)
@@ -2930,21 +3019,27 @@ define('utils', [
       else
         template = templateName;
       
-      context = context || this;
-      return function(json) {
+      templateFn = function(json) {
         if (_.any(U._reservedTemplatedKeywords, U.partial(_.has, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
-          
+        
         json = json || {};
         json.U = U;
         json.G = G;
         json.$ = $;
         var l10n = document.l10n;
         if (l10n)
-          json.translate = l10n.get.bind(l10n);
+          json.loc = l10n.get.bind(l10n);
         
-        return template.call(context, json);
+        return template.call(this, json);
       };
+      
+      subCache[typeKey] = templateFn;
+      setTimeout(function() {
+        delete subCache[typeKey];
+      }, 2000);
+      
+      return templateFn;
     },
     
     getOrderByProps: function(collection) {
@@ -3184,7 +3279,7 @@ define('utils', [
         cancel: true
       }));
       
-      ($m.activePage || $(document.body)).append(dialogHtml);
+      ($m.activePage || $(doc.body)).append(dialogHtml);
       var $dialog = $('#' + id);
       $dialog.trigger('create');
       $dialog.popup().popup("open");
@@ -3246,7 +3341,7 @@ define('utils', [
       });
 
       
-      var $dialog = ($m.activePage || $(document.body)).append(dialogHtml).find('#' + id);
+      var $dialog = ($m.activePage || $(doc.body)).append(dialogHtml).find('#' + id);
       _.each(options, function(option) {
         if (option.action) {
           $dialog.find('#' + option.id).click(option.action);
@@ -3335,8 +3430,8 @@ define('utils', [
       'public': 'chat',
       'lobby': 'chatLobby'
     },
-    isChatPage: function() {
-      return /^chat/.test(U.getHash());
+    isChatPage: function(hash) {
+      return /^chat/.test(hash || U.getHash());
     },
     isPrivateChat: function() {
       return U.getHash().startsWith('chatPrivate');
@@ -3474,30 +3569,58 @@ define('utils', [
       return vib;
     })(),
     
+    isMetaParameter: function(param) {
+      return /^[$-]+/.test(param);
+    },
+    
     parseHash: function(hash) {
       hash = hash || U.getHash();
       var params = U.getHashParams(hash),
           qIdx = hash.indexOf("?"),
           route = U.getRoute(hash),
+          subRoute,
           hashParts = hash.split('?'),
-          uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]),
           type = U.getModelType(hash),
           query = hashParts[1] || '',
-          info;
+          uri,
+          info,
+          subInfo;
 
-      if (route === 'templates') {
-        var subHashInfo = U.parseHash(uri);
-        uri = subHashInfo.uri;
-        type = subHashInfo.type;
+      if (!route)
+        route = hash ? 'list' : 'home';
+      
+      if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+        var uriParams = {};
+        for (var param in params) {
+          if (U.isMetaParameter(param)) {
+            uriParams[param] = params[param];
+            delete params[param];
+          }
+        }
+        
+        uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
       }
+      else {
+        uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+      }
+        
+      if (window.router.isProxyRoute(route)) {
+        subInfo = U.parseHash(uri);
+//        uri = subHashInfo.uri;
+//        type = subHashInfo.type;
+//        subRoute = subHashInfo.route;
+      }
+      
       
       info = {
         action: U.getRouteAction(route),
         route: route,
+        sub: subInfo,
         uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
         type: type,
         query: query,
-        params: params
+        params: params,
+        fragment: hash
       };
       
       info.equals = function(otherInfo) {
@@ -3517,7 +3640,7 @@ define('utils', [
     partialWith: function(fn, context) {
       var args = [].slice.call(arguments, 2);
       return function() {
-        return fn.apply(context, args.concat(arguments));
+        return fn.apply(context, args.concat([].slice.call(arguments)));
       };
     },
 
@@ -3572,7 +3695,45 @@ define('utils', [
       });
     },
     
-    HTML: HTML
+    HTML: HTML,
+    
+    isInViewport: function(element) {
+      var rect = element.getBoundingClientRect(),
+          documentElement = doc.documentElement;
+
+      return  rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
+              rect.right <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+    },
+    
+    isAtLeastPartiallyInViewport: function(element) {
+      if (element.offsetWidth === 0 || element.offsetHeight === 0) 
+        return false;
+      
+      var height = doc.documentElement.clientHeight,
+          rects = element.getClientRects();
+        
+      for (var i = 0, l = rects.length; i < l; i++) {
+        var r = rects[i],
+            in_viewport = r.top > 0 ? r.top <= height : (r.bottom > 0 && r.bottom <= height);
+            
+        if (in_viewport) 
+          return true;
+      }
+        
+      return false;
+    },
+    
+    negate: function(fn, context) {
+      return function() {
+        return !fn.apply(context || this, arguments);
+      }
+    },
+    
+    getBacklinkCount: function(res, name) {
+      return res.get(name + 'Count') || res.get(name).count;
+    }
   };
 
   for (var p in U.systemProps) {

@@ -5,18 +5,17 @@ define('views/ListPage', [
   'utils',
   'error',
   'vocManager',
-  'views/BasicView',
+  'views/BasicPageView',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicView, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
   var MapView;
-  return BasicView.extend({
+  return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'pageshow', 'pageChanged', 'setMode', 'orientationchange');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange');
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on('pageChange', this.pageChanged);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
@@ -63,62 +62,63 @@ define('views/ListPage', [
       }      
 
       var showAddButton;
-      if (!isChooser  ||  this.vocModel['skipAccessControl']) {
-        showAddButton = type.endsWith('/App')                      || 
-                        U.isAnAppClass(type)                       ||
-                        vocModel.properties['autocreated']         ||
-                        vocModel.skipAccessControl                 ||
-                        U.isUserInRole(U.getUserRole(), 'siteOwner');
-        if (!showAddButton) {
-          var p = U.getContainerProperty(vocModel);
-          if (p && U.getParamMap[p])
-            showAddButton = true;
-        }
-      }
-//                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
-      if (showAddButton) { 
-        if (U.isA(this.vocModel, "Reference"))
-          showAddButton = false;
-      }
-      else if (isOwner  &&  !isChooser) {
-        Voc.getModels("model/social/App").done(function() {
-          var m = U.getModel("App");
-          var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
-          if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
-            showAddButton = true;
-        });
-      }
-      var idx;
-      if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
-        var s = hash.substring(idx + 1).split('&');
-        if (s && s.length > 0) {
-          for (var i=0; i<s.length; i++) {
-            var p = s[i].split('=');
-            var prop = vocModel.properties[p[0]];
-            if (!prop  ||  !prop.containerMember) 
-              continue;
-            var type = U.getLongUri1(prop.range);
-            var cM = U.getModel(type);
-            if (!cM) {
-              var rType = U.getTypeUri(decodeURIComponent(p[1]));
-              if (rType)
-                cM = U.getModel(rType);
-              if (!cM)
-                continue;
-            }
-            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-            var bl = [];
-            for (var p in blProps) {
-              var b = blProps[p];
-              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
-                bl.push(b);
-            }
-            if (bl.length > 0)
+      if (!this.vocModel.adapter) {
+        if (!isChooser  ||  this.vocModel['skipAccessControl']) {
+          showAddButton = type.endsWith('/App')                      || 
+                          U.isAnAppClass(type)                       ||
+                          vocModel.properties['autocreated']         ||
+                          vocModel.skipAccessControl                 ||
+                          U.isUserInRole(U.getUserRole(), 'siteOwner');
+          if (!showAddButton) {
+            var p = U.getContainerProperty(vocModel);
+            if (p && U.getParamMap[p])
               showAddButton = true;
           }
         }
+  //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
+        if (showAddButton) { 
+          if (U.isA(this.vocModel, "Reference"))
+            showAddButton = false;
+        }
+        else if (isOwner  &&  !isChooser) {
+          Voc.getModels("model/social/App").done(function() {
+            var m = U.getModel("App");
+            var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+              showAddButton = true;
+          });
+        }
+        var idx;
+        if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
+          var s = hash.substring(idx + 1).split('&');
+          if (s && s.length > 0) {
+            for (var i=0; i<s.length; i++) {
+              var p = s[i].split('=');
+              var prop = vocModel.properties[p[0]];
+              if (!prop  ||  !prop.containerMember) 
+                continue;
+              var type = U.getLongUri1(prop.range);
+              var cM = U.getModel(type);
+              if (!cM) {
+                var rType = U.getTypeUri(decodeURIComponent(p[1]));
+                if (rType)
+                  cM = U.getModel(rType);
+                if (!cM)
+                  continue;
+              }
+              var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+              var bl = [];
+              for (var p in blProps) {
+                var b = blProps[p];
+                if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
+                  bl.push(b);
+              }
+              if (bl.length > 0)
+                showAddButton = true;
+            }
+          }
+        }
       }
-
       this.headerButtons = {
         back: true,
         add: showAddButton,
@@ -182,25 +182,14 @@ define('views/ListPage', [
         this.listView.setMode(mode);
     },
     events: {
-      'click': 'click',
-      'click #nextPage': 'getNextPage',
-      'click #homeBtn': 'home',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft',
-      'pageshow': 'pageshow',
-      'submit': 'submit',
-      'orientationchange': 'orientationchange',
-      'resize': 'orientationchange'
+      'click'            : 'click',
+      'click #nextPage'  : 'getNextPage',
+      'click #homeBtn'   : 'home',
+      'submit'            : 'submit',
+      'orientationchange' : 'orientationchange',
+      'resize'            : 'orientationchange'
     },
-    swipeleft: function(e) {
-      // open backlinks
-    },
-    swiperight: function(e) {
-//      // open menu
-//      var menuPanel = new MenuPanel({viewId: this.cid, model: this.model});
-//      menuPanel.render();
-////      G.Router.navigate('menu/' + U.encode(window.location.hash.slice(1)), {trigger: true, replace: false});
-    },
+
     orientationchange: function(e) {
 //      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
 //      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
@@ -215,7 +204,7 @@ define('views/ListPage', [
 //      if (p && p.mode == G.LISTMODES.CHOOSER) {
       Events.stopEvent(e);
       var checked = this.$('input:checked');
-      var editList = this.$('input:[data-formel]');
+      var editList = this.$('input[data-formel]');
       if (checked.length) {
         Events.trigger('chooser:' + U.getQueryParams().$multiValue, {model: this.model, checked: checked});
         return;
@@ -250,18 +239,6 @@ define('views/ListPage', [
       */
 //      this.redirect({trigger: true, replace: true, removeFromView: true});
     }, 
-    pageshow: function(e) {
-      G.log(this.TAG, 'events', 'pageshow');
-/*
-*      if (this.isMasonry)
-*        $('#nabs_grid', this.$el).masonry();
-*/
-    },
-    pageChanged: function(view) {
-//      G.log(this.TAG, 'events', 'pageChanged');
-//      this.visible = (this == view || this.listView == view);
-//      this.listView && (this.listView.visible = this.visible);
-    },
     home: function() {
       var here = window.location.href;
       window.location.href = here.slice(0, here.indexOf('#'));

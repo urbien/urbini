@@ -27,7 +27,7 @@ define('views/MasonryListView', [
     },
     
     masonry: function() {
-      return this.$el[MASONRY_FN];
+      return this.$el[MASONRY_FN].apply(this.$el, arguments);
     },
     
     getListItems: function() {
@@ -52,10 +52,14 @@ define('views/MasonryListView', [
     postRender: function(info) {
       var self = this;
       if (this.rendered) {
-        this.$el.trigger('create');
-        if (info.appended.length) {
-          this.$el.imagesLoaded(function() {            
-            self.masonry('appended', $(info.appended));
+        if (info.appended.length || info.updated.length) {
+          this.$el.imagesLoaded(function() {
+            if (info.appended.length) {
+              self.masonry('appended', $(info.appended));
+            if (info.updated.length)
+              self.masonry('reload');
+            
+            self.trigger('refreshed');
           });
         }
       }

@@ -23,15 +23,14 @@ define('views/CameraPopup', [
   return BasicView.extend({
     template: 'cameraPopupTemplate',
     tagName: 'li',
-    id: '#addBtn',
     events: {
 //      'click #camVideo'         : 'stop',
 //      'click canvas'            : 'start',
       'click #cameraSubmitBtn'  : 'submit',
       'click #cameraShootBtn'   : 'startOrStop',
       'click #cameraCancelBtn'  : 'destroy',
-      'resize'                  : 'onresize',
-      'orientationchange'       : 'onorientationchange'
+      'resize'                   : 'onresize',
+      'orientationchange'        : 'onorientationchange'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');

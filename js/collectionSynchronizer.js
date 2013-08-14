@@ -27,6 +27,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       filter: U.getQueryParams(this.data)
     });
   };
+
+//  CollectionSynchronizer.prototype._fetchFromServer = function() {
+//    if (!this.data.isUpdate())
+//  };
   
   CollectionSynchronizer.prototype._preProcess = function() {
     var result = Synchronizer.prototype._preProcess.call(this),
@@ -67,14 +71,21 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       
       return;
     }
-    else if (isStale && this.info.start < this.data.length) {
-      this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
-      return; 
+    else {
+      if (this.data.isOutOfResources()) {
+        this._error(null, {code: 204, details: 'End of list'}, this.options);
+        return;
+      }
+      
+      if (isStale && this.info.start < this.data.length) {
+        this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
+        return; 
+      }
     }
     
     var adapter = this.data.vocModel.adapter;
     if (adapter && adapter.supportsPaging && !adapter.supportsPaging()) {
-      this._error(null, {code: 204, details: 'End of list'}, options);
+      this._error(null, {code: 204, details: 'End of list'}, this.options);
       return;
     }
     
@@ -92,17 +103,20 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
           }
         };
       
-    this._success(resp, 'success', null); // add to / update collection
-    if (this._isForceFetch())
-      return this._fetchFromServer();
+    try {
+      if (this._isForceFetch())
+        return this._fetchFromServer();
+        
+      numAfter = this.data.length;
+      if (!this._isUpdate() && numAfter === numBefore) // db results are useless
+        return this._delayedFetch();
       
-    numAfter = this.data.length;
-    if (!this._isUpdate() && numAfter === numBefore) // db results are useless
-      return this._delayedFetch();
-    
-    lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
-    if (this._isStale(lastFetchedTS, this._getNow()))
-      return this._delayedFetch();
+      lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
+      if (this._isStale(lastFetchedTS, this._getNow()))
+        return this._delayedFetch();
+    } finally {    
+      this._success(resp, 'success', null); // add to / update collection
+    }
   };
 
   CollectionSynchronizer.prototype._getItems = function(options) {

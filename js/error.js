@@ -7,7 +7,7 @@ define('error', [
 
   function log() {
     var args = [].slice.call(arguments);
-    args.unshift("Errors");
+    args.unshift("Errors", "error");
     G.log.apply(G, args);
   };
   
@@ -110,6 +110,9 @@ define('error', [
   for (var m in Errors.msgs) {
     Errors[m] = errDialogFunction(Errors.msgs[m]);
   }
-  
+
+  if (G.DEBUG)
+    G.Errors = Errors;  
+
   return Errors;
 });

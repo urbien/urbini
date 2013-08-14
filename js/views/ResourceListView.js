@@ -9,19 +9,20 @@ define('views/ResourceListView', [
   'collections/ResourceList',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
+  var $wnd = $(window);
   var RLV = BasicView.extend({
-    displayPerPage: 4, // for client-side paging
-    page: null,
-    changedViews: [],
+    displayPerPage: 10, // for client-side paging
+    page: 0,
+//    changedViews: [],
 //    skipScrollEvent: false,
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render','swipe', 'getNextPage', 'refresh', 'changed', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
 //      this.superInitialize(options);
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
-      $(window).on('scroll', this.onScroll);
+//      $wnd.on('scroll', this.onScroll);
 //      Events.on('pageChange', this.onAppend);
 //      this.$el.on('create', this.onAppend);
 //      this.collection.on('reset', this.render, this);
@@ -47,18 +48,16 @@ define('views/ResourceListView', [
 //      // END HACK
       
       var vocModel = this.vocModel;
-      this.imageProperty = U.getImageProperty(this.collection);
+//      this.imageProperty = U.getImageProperty(this.collection);
       this.mvProp = this.hashParams.$multiValue;
       this.isMultiValueChooser = !!this.mvProp;
       if (this.mvProp) {
         this.mvVals = [];
-        if (this.mvProp) {
-          var pr = '$' + this.mvProp;
-          var s = params[pr];
-          s = s.split(',');
-          for (var i = 0; i < s.length; i++)
-            this.mvVals.push(s[i].trim());
-        }
+        var pr = '$' + this.mvProp;
+        var s = this.hashParams[pr];
+        s = s.split(',');
+        for (var i = 0; i < s.length; i++)
+          this.mvVals.push(s[i].trim());
       }
 
       this.isEdit = this.hashParams['$editList'];
@@ -81,9 +80,13 @@ define('views/ResourceListView', [
     },
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
-        throw new Error('this view doesn\'t have a mode ' + mode);
+        throw 'this view doesn\'t have a mode ' + mode;
       
       this.mode = mode;
+    },
+  
+    events: {
+      'scroll': 'onScroll'
     },
     
     getListItems: function() {
@@ -99,7 +102,7 @@ define('views/ResourceListView', [
           liView;
           
       if (this.isEdit) {
-        liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: params['$editCols'], edit: true}, commonParams)));
+        liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams)));
       }
       else if (this.isMultiValueChooser) {
 //        var params = hash ? U.getParamMap(hash) : {};
@@ -168,7 +171,7 @@ define('views/ResourceListView', [
 //        if (litemplate)
 //          isMasonry = false;
 //      }
-//      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
+//      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('model/portal/Comment'));
 //      var params = U.getParamMap(window.location.hash);
 //      var isEdit = !isModification  &&  !isMasonry  &&  (params['$editList']); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty));
 
@@ -228,17 +231,22 @@ define('views/ResourceListView', [
         appended: []
       };
     
+      var updated = [];
+      this.imageProperty = U.getImageProperty(this.collection);
       this.preRender(info);
       for (; i < num; i++) {
         var res = resources[i],        
-            uri = res.getUri();
+            uri = res.getUri(),
+            liView;
         
         if (canceled && res.get(canceled))
           continue;
         
         info.index = i;        
-        if (i >= lis.length || _.contains(modifiedUris, uri)) {
-          var liView = this.renderItem(res, info);
+        
+        info.updated = _.contains(modifiedUris, uri);
+        if (i >= lis.length || info.updated) {
+          liView = this.renderItem(res, info);
           
 //          var viewName = 'liView' + i;
 //          if (this.isPhotogrid) {
@@ -280,14 +288,21 @@ define('views/ResourceListView', [
 //              table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
 //          }
 //          else {
-          info.appended.push(liView.el);
-          this.postRenderItem(liView, info);
 //          }
         }
         else if (!nextPage)
           frag.appendChild(lis[i]);
+        
+        var el = liView ? liView.el : lis[i];
+        if (info.updated)
+          updated.push(el);
+        else
+          info.appended.push(el);
+
+        liView && this.postRenderItem(liView, info);
       }
-            
+         
+      info.updated = updated;
 
 //      if (isChooser) {
 //        var params = U.getParamMap(window.location.href, '&');
@@ -348,7 +363,6 @@ define('views/ResourceListView', [
       
 //      if (renderDfd)
 //        renderDfd.resolve();
-      this.trigger('refreshed');
       return this;
       
 //      else {
@@ -368,6 +382,8 @@ define('views/ResourceListView', [
         this.$el.trigger('create');
         if (!this.isMultiValueChooser)// && this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
+        
+        this.trigger('refreshed');
       }
     },
     
@@ -394,8 +410,8 @@ define('views/ResourceListView', [
           rl = this.filteredCollection,
           before = rl.models.length,
           displayedBefore = this.getListItems().length,
-          requested = (this.page + 1) * this.displayPerPage;
-      
+          requested = (this.page + 2) * this.displayPerPage; // page starts at 0, 'requested' is the number of items that will be displayed after the next page is loaded 
+            
 //      if (this._requested == requested)
 //        debugger;
 //      
@@ -409,10 +425,7 @@ define('views/ResourceListView', [
 
       this._pagingPromise = $.Deferred(function(defer) {
         this._paging = true;
-        if (!self.rendered)
-          return defer.reject();
-        
-        if (!before)
+        if (!self.rendered || !before || requested <= displayedBefore)
           return defer.reject();
         
         self.page++;
@@ -437,7 +450,7 @@ define('views/ResourceListView', [
       }).promise();
       
       this._pagingPromise.done(function() {
-        self.checkIfNeedMore(displayedBefore);
+        self.once('refreshed', U.partialWith(self.checkIfNeedMore, self, displayedBefore));
       }).always(function() {
         self._paging = false;
         self.hideLoadingIndicator();
@@ -446,28 +459,22 @@ define('views/ResourceListView', [
       return this._pagingPromise;
     },
     
-    checkIfNeedMore: function(before) {
+    checkIfNeedMore: function(displayedBefore) {
       var self = this;
-      clearTimeout(self._pagingTimeout);
-      this._pagingTimeout = setTimeout(function() {          
+//      clearTimeout(self._pagingTimeout);
+//      this._pagingTimeout = setTimeout(function() {          
         if (!self.scrolledToNextPage()) // we've got our buffer back
           return;
-        else if (self.getListItems().length > before) // we loaded some, but we need more
+        else if (self.getListItems().length > displayedBefore) // we loaded some, but we need more
           return self.getNextPage();
         else
-          self.checkIfNeedMore(before); // the items we loaded haven't been added to the DOM yet 
-      }, 200);
+          self.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
+//      }, 100);
     },
-    
-//    tap: Events.defaultTapHandler,
-//    click: Events.defaultClickHandler,
-    swipe: function(e) {
-      G.log(this.TAG, "info", "swipe");
-    },
-    
-    changed: function(view) {
-      this.changedViews.push(view);
-    },
+        
+//    changed: function(view) {
+//      this.changedViews.push(view);
+//    },
     
     render: function(e) {
       if (!this.rendered) {
@@ -515,7 +522,7 @@ define('views/ResourceListView', [
       var self = this,
           collection = this.collection,
           filtered = this.filteredCollection;
-      
+
       function onFilter(e, data) {
         var $ul = $(this),
             $input = $(data.input),
@@ -561,7 +568,7 @@ define('views/ResourceListView', [
     },
     
     // endless page function
-    onScroll: function() {
+    onScroll: function(e) {
       if (!this.isActive())
         return;
       
@@ -575,12 +582,10 @@ define('views/ResourceListView', [
 //      }
 
       if (this.scrolledToNextPage())
-        this.getNextPage();
+        this.getNextPage();      
     },
     
     scrolledToNextPage: function() {
-      var $wnd = $(window);        
-
       if (this.prevScrollPos > $wnd.scrollTop()) {
         this.prevScrollPos = $wnd.scrollTop();
         return;

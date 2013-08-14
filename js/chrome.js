@@ -152,11 +152,11 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
             return defer.resolve();
           
           chrome.webstore.install(G.chromeManifestPath, defer.resolve, defer.reject);
+        }
       }).promise();
     }
   };
   
-  window.addEventListener('message', onMessageFromApp);
   setPaths(chrome);
   window.addEventListener('message', onMessageFromApp);
   Events.on('messageToApp', sendMessageToApp);

@@ -26,14 +26,14 @@ define('views/MenuPanel', [
     },
     tabs: {},
     events: {
-      'click #edit': 'edit',
+      'click #edit'      : 'edit',
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
-      'click #logout': 'logout',
-      'click #home123': 'home',
-      'click #urbien123': 'home',
-      'click': 'click'
+      'click #logout'    : 'logout',
+      'click #home123'   : 'home',
+      'click #urbien123' : 'home',
+      'click'            : 'click'
     },
     edit: function(e) {
       Events.stopEvent(e);
@@ -42,6 +42,7 @@ define('views/MenuPanel', [
     },
     logout: function(e) {
       Events.stopEvent(e);
+      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
       return;
     },
@@ -52,10 +53,12 @@ define('views/MenuPanel', [
       while (t.tagName.toLowerCase() != 'li') 
         t = t.parentNode;
       
-      if (t.id == 'home123')
+      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
+      if (t.id == 'home123') 
         window.location.href = here.slice(0, here.indexOf('#'));
-      else
+      else 
         window.location.href = G.serverName + '/app/UrbienApp';
+      
       return this;
     },
     click: function(e) {
@@ -71,7 +74,18 @@ define('views/MenuPanel', [
         return;
       
       text = U.removeHTML(text).trim();
-      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+      var attr;
+      if ($(t).attr('href'))
+        attr = 'href';
+      else if ($(t).attr('link'))
+        attr = 'link';
+      else
+        attr = 'data-href';
+      
+      var href = $(t).attr(attr); //$(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+      G.log(this.TAG, "Recording step for tour: selector = '" + attr + "'; value = '" + href + "'");
+      
+      
       var idx = href.lastIndexOf('#');
       href = idx == -1 ? href : href.slice(idx + 1);
           
@@ -85,6 +99,13 @@ define('views/MenuPanel', [
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;
 
+      var hash = window.location.hash;
+      if (hash  &&  href == hash.substring(1)) {
+        var menu = this.$el.closest('[data-role="panel"]');
+//        menu.hide('slow');
+        menu.panel('close');
+        return;
+      }
       this.router.navigate(href, {trigger: true});
 //      var link = $(t).attr('link');
 //      if (link) {
@@ -198,11 +219,17 @@ define('views/MenuPanel', [
         // Apps I created
 //        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
-        if (user.newAlertsCount) {
-//          pageUrl = encodeURIComponent('model/workflow/Alert') + '?sender=_me&markedAsRead=false';
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', markedAsRead: false}) }));
+//        if (user.newAlertsCount) {
+          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: 'Notifications', newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
+//        }
+        /*
+        if (user.alertsCount) {
+          var loc = window.location.href;
+          loc += (loc.indexOf('?') == -1 ? '?' : '&') + '$clearAlerts=y' + "&-info=" + encodeURIComponent("Notifications were successfully deleted");
+          U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: lo }));
+//        U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', $clear: 'true', $returnUri: window.location.href}) }));
         }
-        
+        */
         U.addToFrag(frag, this.menuItemTemplate({title: "Logout", id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
       }
 

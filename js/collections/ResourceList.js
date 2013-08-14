@@ -32,7 +32,7 @@ define('collections/ResourceList', [
           vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -83,24 +83,28 @@ define('collections/ResourceList', [
 //        debugger;
 //      });
 
-      Events.on('newResource:' + this.type, function(resource, options) {
-        // we are adding this resource to this collection at the moment
-        self.filterAndAddResources([resource], options);
-      });
-      
-      Events.on('newResources:' + this.type, function(resources, options) {
-        // we are adding this resource to this collection at the moment
-        self.filterAndAddResources(resources, options);
-      });
-      
-      Events.on('newResourceList:' + this.type, function(list) {
-        if (list === self)
-          return;
-
-        self.filterAndAddResources(list.models);        
-      });
+      if (!this['final']) {
+        Events.on('newResource:' + this.type, function(resource, options) {
+          // we are adding this resource to this collection at the moment
+          self.filterAndAddResources([resource], options);
+        });
+        
+        Events.on('newResources:' + this.type, function(resources, options) {
+          // we are adding this resource to this collection at the moment
+          self.filterAndAddResources(resources, options);
+        });
+        
+        Events.on('newResourceList:' + this.type, function(list) {
+          if (list === self)
+            return;
+  
+          self.filterAndAddResources(list.models);        
+        });
+      }
       
       this.monitorQueryChanges();
+      this.enablePaging();
+      this.on('endOfList', this.disablePaging);
       G.log(this.TAG, "info", "init " + this.shortName + " resourceList");      
     },
 
@@ -155,18 +159,23 @@ define('collections/ResourceList', [
       if (!options.partOfUpdate)
         this.trigger('updated', [resource]);
     },
-    add: function(models, options) {
+    add: function(resources, options) {
+      if (this['final'] && this.models.length)
+        throw "This list is locked, it cannot be changed";
+      
       options = options || {};
-      var multiAdd = _.isArray(models);
-      models = multiAdd ? models : [models];
-      if (!models.length)
+      var self = this,
+          multiAdd = _.isArray(resources);
+      
+      resources = multiAdd ? resources : [resources];
+      if (!resources.length)
         return;
       
-      models = _.map(models, function(m) {
-        var resource = m instanceof Backbone.Model ? m : new this.vocModel(m, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
-        
-        // just in case we're already subscribed, unsubscribe
-//        resource.off('replaced', this.replace);
+      resources = _.map(resources, function(resource) {
+        return resource instanceof Backbone.Model ? resource : new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event        
+      }.bind(this));
+
+      _.each(resources, function(resource) {
         var uri = resource.getUri();
         if (U.isTempUri(uri)) {
           resource.once('uriChanged', function(oldUri) {
@@ -176,24 +185,23 @@ define('collections/ResourceList', [
           }.bind(this));
         }
         
-        resource.off('change', this.onResourceChange);
-        
-//        resource.on('replaced', this.replace);
-        resource.on('change', this.onResourceChange);
-        return resource;
-      }.bind(this));
+        resource.off('change', self.onResourceChange);
+        resource.on('change', self.onResourceChange);
+      });
       
 //      this.adding = true;
       try {
-        return Backbone.Collection.prototype.add.call(this, models, options);
+        return Backbone.Collection.prototype.add.call(this, resources, options);
       } finally {
 //        this.adding = false;
         if (multiAdd && !this.resetting) {
-          this.trigger('added', models);
+          this.trigger('added', resources);
         }
         
-        if (options.announce !== false)
-          Events.trigger('newResources', models);
+        if (options.announce !== false) {
+          Events.trigger('newResources', resources);
+          Events.trigger('newResources:' + this.type, resources);
+        }
       }
     },
 //    replace: function(resource, oldUri) {
@@ -239,7 +247,7 @@ define('collections/ResourceList', [
     getUrl: function() {
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.getCollectionUrl)
-        return adapter.getCollectionUrl.call(this);
+        return adapter.getCollectionUrl.call(this, _.clone(this.params));
       
       var url = this.baseUrl + (this.params ? "?$minify=y&$mobile=y&" + $.param(this.params) : '');
       if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
@@ -316,7 +324,30 @@ define('collections/ResourceList', [
       
       return response;
     },
+    
+    set: function(resources, options) {
+      options = _.defaults(options || {}, {partOfUpdate: true});
+      return Backbone.Collection.prototype.set.call(this, resources, options);
+    },
+
+    disablePaging: function() {
+      this._outOfData = true;
+      setTimeout(this.enablePaging, 3 * 60000);
+    },
+
+    enablePaging: function() {
+      this._outOfData = false;
+    },
+    
+    isOutOfResources: function() {
+      return this._outOfData;
+    },
+    
     reset: function(models, options) {
+      if (this['final'] && this.models.length)
+        throw "This list is locked, it cannot be changed";
+      
+      this.enablePaging();
       var needsToBeStored = !U.isModel(models[0]);
       
       this.resetting = true;
@@ -329,6 +360,7 @@ define('collections/ResourceList', [
       if (needsToBeStored)
         Events.trigger('updatedResources', this.models);
     },
+    
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
@@ -336,12 +368,18 @@ define('collections/ResourceList', [
         this._lastFetchedOn = null;
       }
     },
+    
     fetch: function(options) {
       options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = this.vocModel.adapter;
-      
+
+      if (this['final']) {
+        error(this, {status: 204, details: "This list is locked"}, options);
+        return;      
+      }
+
       this.params = this.params || {};
       if (this.offset)
         this.params.$offset = this.offset;
@@ -432,7 +470,7 @@ define('collections/ResourceList', [
     update: function(resources, options) {
       if (this.lastFetchOrigin === 'db') {
         var numBefore = this.models.length;
-        Backbone.Collection.prototype.set.call(this, resources, options);
+        this.set(resources, options);
         return;
       }
 
@@ -462,7 +500,10 @@ define('collections/ResourceList', [
         
         if (!newLastModified || newLastModified > ts) {
           if (saved) {
-            saved.set(r, {partOfUpdate: true}); // to avoid updating collection (and thus views) 20 times
+            saved.set(r, {
+              partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
+            }); 
+            
             updated.push(saved);
           }
           else {
