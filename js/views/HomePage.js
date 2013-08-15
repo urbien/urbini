@@ -66,6 +66,7 @@ define('views/HomePage', [
     },
     
     render: function(options) {
+      this.$el.trigger('pagebeforeshow');
       var item = $('#homePage');
       item.css('display', 'block');
       if (!item || item.length == 0) { 
@@ -98,6 +99,7 @@ define('views/HomePage', [
       }
 
 //      this.finish();
+      this.$el.trigger('pageshow');
       return this;
     },
     
