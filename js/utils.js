@@ -511,6 +511,14 @@ define('utils', [
 //      return false;
 //    },
     
+    isCurrentUserGuest: function() {
+      return G.currentUser.guest;
+    },
+
+    getCurrentUserUri: function() {
+      return G.currentUser._uri;
+    },
+
     isCreatable: function(type, userRole) {
       if (G.currentUser.guest)
         return false;
@@ -846,6 +854,9 @@ define('utils', [
     },
     
     isA: function(model, interfaceNames, op) {
+      if (!model)
+        return false;
+      
       var OR = op === 'OR';
       interfaceNames = typeof interfaceNames === 'string' ? [interfaceNames] : interfaceNames;
       var intersection = _.intersection(_.map(model.interfaces, U.getClassName), interfaceNames);

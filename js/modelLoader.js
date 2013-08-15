@@ -344,7 +344,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     m = Resource.extend({}, m);
     if (m.interfaces) {
       m.interfaces = _.map(m.interfaces, function(i) {
-        return U.getLongUri1(i);
+        if (i.indexOf('/') == -1)
+          return 'http://www.hudsonfog.com/voc/system/fog/' + i;
+        else
+          return U.getLongUri1(i);
       });
     }
     

@@ -285,11 +285,21 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (tourId == currentTourId) {
         var stepNum = getStepNum(_hashInfo) || _step.get('number') + 1;
         if (stepNum && _steps.length >= stepNum) {
-          setTourStep(getTourStep(_steps, stepNum));
-          return RESOLVED_PROMISE;
+          var next = getTourStep(_steps, stepNum);
+          if (hashInfoCompliesWithTourStep(_hashInfo, next)) {
+            setTourStep(next);
+            return RESOLVED_PROMISE;
+          }
+          
+          // maybe check all previous steps
+          var prev = stepNum - 1 && getTourStep(_steps, stepNum - 1);
+          if (prev && hashInfo.compliesWithTourStep(_hashInfo, prev)) {
+            setTourStep(prev);
+            return RESOLVED_PROMISE;            
+          }
         }
-        else
-          return guessTour();
+        
+        return guessTour();
       }
       
       var tourUri = U.buildUri({

@@ -67,7 +67,7 @@ define('views/Header', [
         buttons.publish = true;
       }
       
-      if (this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass)) {
+      if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass)) {
         buttons.publish = true;
       }
       var btnOptions = {

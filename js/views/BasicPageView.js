@@ -6,8 +6,9 @@ define('views/BasicPageView', [
   'views/BasicView',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, $m) {
-  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'];
-  
+  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'],
+      pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'];
+
   function removeTooltip($el) {
 //    if (elm[0].tagName == 'DIV')
 //      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
@@ -47,7 +48,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'pageshow', 'pagebeforeshow', 'swiperight', 'swipeleft', 'scroll');            
+      _.bindAll(this, 'pageevent', 'swiperight', 'swipeleft', 'scroll', 'onpageshow', 'onpagehide');            
       $(window).on('scroll', this.onScroll.bind(this));
       
 //    if (navigator.mozApps) {
@@ -69,8 +70,11 @@ define('views/BasicPageView', [
 //    }
     
       Events.on('tourStep', function(step) {
-        if (self.isActive())
-          self.runTourStep(step);
+        if (self.isActive()) {
+          self.onpageshow(function() {
+            self.runTourStep(step);
+          });
+        }
       });
       
       Events.on('messageBar', function(type, data) {
@@ -106,14 +110,10 @@ define('views/BasicPageView', [
       });
       
       this.on('active', function(active) {
-        if (active) {
+        if (active)
           self._checkMessageBar();
-        }
-        else {
+        else
           self._clearMessageBar();
-          self._pageshowFired = false;
-          self._pagebeforeshowFired = false;
-        }
       });
     },
     
@@ -121,8 +121,9 @@ define('views/BasicPageView', [
       'scrollstart': 'reverseBubbleEvent',
       'scrollstop': 'reverseBubbleEvent',      
       'scroll': 'scroll',
-      'pageshow': 'pageshow',
-      'pagebeforeshow': 'pagebeforeshow',
+      'pagehide': 'pageevent',
+      'pageshow': 'pageevent',
+      'pagebeforeshow': 'pageevent',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft',
       'touchstart': 'highlightOnTouchStart',
@@ -190,21 +191,15 @@ define('views/BasicPageView', [
       this.touchStartTimer = null;
     },
     
-    pagebeforeshow: function() {
-      this._pagebeforeshowFired = true;
-      this.reverseBubbleEvent.apply(this, arguments);      
-    },
-
     _restoreScroll: function() {
       this.scrollTo(this._scrollPosition);
     },
     
-    pageshow: function() {
-      this._pageshowFired = true;
-      this._restoreScroll();
-      this.reverseBubbleEvent.apply(this, arguments);
+    pageevent: function(e) {
+      this._lastPageEvent = e.type;
+      this.reverseBubbleEvent.apply(this, arguments);      
     },
-    
+
     scroll: function() {
 //      if (this._scrollPosition && $wnd.scrollTop() == 0)
 //        debugger;
@@ -461,6 +456,16 @@ define('views/BasicPageView', [
     }
   }, {
     displayName: 'BasicPageView'
+  });
+  
+  _.each(['pageshow', 'pagehide'], function(e) {
+    PageView.prototype['on' + e] = function(fn) {
+      debugger;
+      if (this._lastPageEvent == e)
+        fn();
+      else
+        this.once(e, fn);
+    };
   });
   
   return PageView;

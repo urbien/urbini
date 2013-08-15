@@ -538,7 +538,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
         args[0] = self.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
-          return parse.call(self, results);
+          return parse.call(self, results || []);
         });
       });
       
