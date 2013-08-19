@@ -113,6 +113,12 @@ define('globals', function() {
     
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
+    var mobile = navigator.userAgent.match(/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/);
+    if (mobile) {
+      browser.mobile = true;
+      browser[mobile[1].toLowerCase()] = true;
+    }
+
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
     return browser;
@@ -366,6 +372,8 @@ define('globals', function() {
 
       return G.ResourceManager.addItems(options.store || 'modules', stuff);
     }
+    else
+      return REJECTED_PROMISE;
   };
 
   function setMiscGlobals() {
@@ -1078,7 +1086,7 @@ define('globals', function() {
 
   $.extend(G, {
     onAppStart: function(fn) {
-      return APP_START_DFD.promise().done(fn);
+      return APP_START_DFD.promise().then(fn);
     },
     getResolvedPromise: function() {
       return RESOLVED_PROMISE;
@@ -1092,8 +1100,8 @@ define('globals', function() {
     })(),
     putCached: function(urlToData, options) {
       var args = arguments;
-      G.onAppStart(function() {
-        G.whenNotRendering(function() {
+      return G.onAppStart(function() {
+        return G.whenNotRendering(function() {
           putCached.apply(null, args);
         });
       });

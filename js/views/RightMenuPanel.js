@@ -322,6 +322,15 @@ define('views/RightMenuPanel', [
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
           U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'}));
         }
+        
+        if (G.pageRoot == 'app/Aha') {
+          var pageTemplate = 'bookmarklet{0}StaticPageTemplate'.format(G.browser.mobile ? (G.browser.iphone ? 'Iphone' : 'Android') : 'Desktop'), 
+              fragment = "static/?" + $.param({
+                template: pageTemplate
+              });
+          
+          U.addToFrag(frag, this.menuItemTemplate({title: "Aha! Button", icon: 'bookmark', mobileUrl: fragment}));
+        }
       }
       else {
         var json = this.resource && res.toJSON();
