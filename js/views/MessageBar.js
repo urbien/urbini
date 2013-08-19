@@ -52,7 +52,7 @@ define('views/MessageBar', [
       _.extend(this, _.pick(options, 'persist'));
       if (!this.persist) {
         var self = this,
-            msgLength = _.reduce(message ? [message] : _.pluck(messageList, 'message'), function(total, msg) { return total + msg.length * 80 }, 0);
+            msgLength = _.reduce(_.pluck(messageList, 'message'), function(total, msg) { return total + msg.length * 80 }, 0);
         
         setTimeout(function() {
           self.$el.fadeOut(2000, self.destroy);

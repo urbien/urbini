@@ -7,7 +7,8 @@ define('views/BasicPageView', [
   'jqueryMobile'
 ], function(G, U, Events, BasicView, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'],
-      pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'];
+      pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
+      $wnd = $(window);
 
   function removeTooltip($el) {
 //    if (elm[0].tagName == 'DIV')
@@ -43,13 +44,12 @@ define('views/BasicPageView', [
     }
   };
   
-  var $wnd = $(window);
   var PageView = BasicView.extend({
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
       _.bindAll(this, 'pageevent', 'swiperight', 'swipeleft', 'scroll', 'onpageshow', 'onpagehide');            
-      $(window).on('scroll', this.onScroll.bind(this));
+      $wnd.on('scroll', this.onScroll.bind(this));
       
 //    if (navigator.mozApps) {
 //      var getSelf = navigator.mozApps.getSelf();
@@ -98,6 +98,7 @@ define('views/BasicPageView', [
       };
       
       this.onload(this._checkMessageBar.bind(this));
+      this.onload(this._checkAutoClose.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -113,7 +114,7 @@ define('views/BasicPageView', [
         if (active)
           self._checkMessageBar();
         else
-          self._clearMessageBar();
+          self._clearMessageBar();        
       });
     },
     
@@ -131,6 +132,11 @@ define('views/BasicPageView', [
       'touchend': 'unhighlightOnTouchEnd'
     },
 
+    destroy: function() {
+      $wnd.off('scroll', this.onScroll);
+      BasicView.prototype.destroy.call(this);
+    },
+    
     highlightOnTouchStart: function(e) {
       var self = this,
           touches = e.touches;
@@ -329,6 +335,7 @@ define('views/BasicPageView', [
     },
     
     createMessageBar: function(type, data) {
+      // TODO: allow an onclose handler to be attached
       if (!this.isActive())
         return;
 
@@ -353,7 +360,7 @@ define('views/BasicPageView', [
         Events.on('messageBar.' + type + '.clear', function(id) {
           if (id == data.id)
             bar.destroy();
-        });
+        });        
       });
     },
     
@@ -387,6 +394,57 @@ define('views/BasicPageView', [
         if (/^messageBar/.test(name))
           this.children[name].destroy();
       }
+    },
+
+    _checkAutoClose: function() {
+      var autoClose = this.hashParams['-autoClose'],
+          autoCloseOption = this.hashParams['-autoCloseOption'] == 'y',
+          hash = this.hash;
+      
+      if (autoClose) {
+        try {
+          var millis = parseInt(autoClose);
+        } catch (err) {
+        }
+
+        var seconds = millis / 1000;
+        Events.trigger('messageBar', 'info', {
+          message: {
+            message: 'This page will self-destruct in: <span class="countdown">{0} seconds.</span>'.format(seconds), // Close this message to stop the destruction.'.format(seconds),
+            onclose: function() {
+              // TODO: allow an onclose handler to be attached
+            }
+          },
+          persist: true
+        });
+        
+        U.countdown(this.$('.countdown')[0], seconds).done(window.close.bind(window));
+        
+        millis = millis || 5000;
+        var closeTimeout = setTimeout(function() {
+          window.close();
+        }, millis);
+        
+        Events.once('pageChange', function() {
+          clearTimeout(closeTimeout);
+        });
+        
+        hash = U.replaceParam(hash, '-autoClose', null);
+      }
+      else if (autoCloseOption) {
+        Events.trigger('messageBar', 'info', {
+          message: {
+            link: 'javascript:self.close()',
+            message: 'Click here to close this window'
+          },
+          persist: true
+        });
+        
+        hash = U.replaceParam(hash, '-autoCloseOptions', null);
+      }
+      
+      if (hash != this.hash)
+        Events.trigger('navigate', hash, {trigger: false, replace: true});
     },
 
     _checkMessageBar: function() {
@@ -460,11 +518,10 @@ define('views/BasicPageView', [
   
   _.each(['pageshow', 'pagehide'], function(e) {
     PageView.prototype['on' + e] = function(fn) {
-      debugger;
       if (this._lastPageEvent == e)
         fn();
       else
-        this.once(e, fn);
+        this.$el.one(e, fn);
     };
   });
   
