@@ -85,6 +85,234 @@
   </div>
 </script>  
 
+<script type="text/template" id="bookmarkletIphoneStaticPageTemplate">
+<style>
+  .bookmarkletPage-tableview-grouped {
+    background: #f2f2f2;
+    padding: 10px 10px 1px;
+    width: 300px;
+  }
+
+  .bookmarkletPage-section {
+    -webkit-text-size-adjust: none;
+    font-family: "Helvetica Neue", sans-serif;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 280px;
+    border: 1px solid #d9d9d9;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .bookmarkletPage a { color: #1389e5; }
+  
+  .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .bookmarkletPage-section p {
+    margin-top: 10px;
+  }
+
+  .bookmarkletPage-section li {
+    margin-top: 10px;
+  }
+</style>
+<div class="bookmarkletPage-tableview-grouped">
+<div class="bookmarkletPage-section">
+    <h1><strong>Installing the Aha! Bookmarklet for iPhone</strong></h1>
+    <p>Before you begin, be aware that it is much easier to install the iPhone bookmark in Firefox or Safari on your computer, and then synchronize your iPhone or iPod touch using iTunes.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 1: Bookmark this page.</h2>
+    <p>Tap the middle icon below, then tap <strong>Add Bookmark</strong>, then tap Save.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+  <h2>Step 2: Select the text and copy it.</h2>
+  <textarea style="width: 280px; height: 170px; margin-top: 10px;">javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, "aha=y"))</textarea>
+  <ol style="float: right; width: 280px; list-style-position: inside;">
+    <li>Tap inside.</li>
+    <li>Tap and hold for a bit, then release.</li>
+    <li>Tap <strong>Select All.</strong></li>
+    <li>Tap <strong>Copy.</strong></li>
+    <li>Tap <strong>Done</strong>.</li>
+  </ol>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 3: Edit the bookmark.</h2>
+    <p>1. Tap the Bookmarks button in the toolbar.</p>
+    <p>2. Tap <strong>Edit</strong>. Select the <strong>Aha!</strong> bookmark to edit.</p>
+    <p>3. Tap its URL, tap the <strong>x</strong> to clear it, tap-and-hold for the magnifying glass, then tap <strong>Paste</strong>.</p>
+    <p>4. Save the changes by tapping <strong>Done</strong>.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 4: Installation complete.</h2>
+    <p>Installation should be complete!</p>
+    <p>Select the <strong>Aha!</strong> bookmark from your Bookmarks list to use it.</p>
+    <p>As soon as this can be made simpler, it will be. Thank you for your patience, and thank you for using Aha!</p>
+
+</div>
+</div>
+</script>
+
+<script type="text/template" id="bookmarkletAndroidStaticPageTemplate">
+<style>
+  .bookmarkletPage-tableview-grouped {
+    background: #f2f2f2;
+    padding: 10px 10px 1px;
+    width: 300px;
+  }
+
+  .bookmarkletPage-section {
+    -webkit-text-size-adjust: none;
+    font-family: "Helvetica Neue", sans-serif;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 280px;
+    border: 1px solid #d9d9d9;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .bookmarkletPage a { color: #1389e5; }
+  
+  .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .bookmarkletPage-section p {
+    margin-top: 10px;
+  }
+
+  .bookmarkletPage-section li {
+    margin-top: 10px;
+  }
+</style>
+<div class="bookmarkletPage-tableview-grouped">
+<div class="bookmarkletPage-section">
+    <h1><strong>Installing the Aha! Bookmarklet for iPhone</strong></h1>
+    <p>Before you begin, be aware that it is much easier to install the iPhone bookmark in Firefox or Safari on your computer, and then synchronize your iPhone or iPod touch using iTunes.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 1: Bookmark this page.</h2>
+    <p>Tap the middle icon below, then tap <strong>Add Bookmark</strong>, then tap Save.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+  <h2>Step 2: Select the text and copy it.</h2>
+  <textarea style="width: 280px; height: 170px; margin-top: 10px;">javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, "aha=y"))</textarea>
+  <ol style="float: right; width: 280px; list-style-position: inside;">
+    <li>Tap inside.</li>
+    <li>Tap and hold for a bit, then release.</li>
+    <li>Tap <strong>Select All.</strong></li>
+    <li>Tap <strong>Copy.</strong></li>
+    <li>Tap <strong>Done</strong>.</li>
+  </ol>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 3: Edit the bookmark.</h2>
+    <p>1. Tap the Bookmarks button in the toolbar.</p>
+    <p>2. Tap <strong>Edit</strong>. Select the <strong>Aha!</strong> bookmark to edit.</p>
+    <p>3. Tap its URL, tap the <strong>x</strong> to clear it, tap-and-hold for the magnifying glass, then tap <strong>Paste</strong>.</p>
+    <p>4. Save the changes by tapping <strong>Done</strong>.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 4: Installation complete.</h2>
+    <p>Installation should be complete!</p>
+    <p>Select the <strong>Aha!</strong> bookmark from your Bookmarks list to use it.</p>
+    <p>As soon as this can be made simpler, it will be. Thank you for your patience, and thank you for using Aha!</p>
+
+</div>
+</div>
+</script>
+
+<script type="text/template" id="bookmarkletDesktopStaticPageTemplate">
+<style>
+  .bookmarkletPage-tableview-grouped {
+    background: #f2f2f2;
+    padding: 10px 10px 1px;
+    width: 300px;
+  }
+
+  .bookmarkletPage-section {
+    -webkit-text-size-adjust: none;
+    font-family: "Helvetica Neue", sans-serif;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 280px;
+    border: 1px solid #d9d9d9;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .bookmarkletPage a { color: #1389e5; }
+  
+  .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .bookmarkletPage-section p {
+    margin-top: 10px;
+  }
+
+  .bookmarkletPage-section li {
+    margin-top: 10px;
+  }
+</style>
+<div class="bookmarkletPage-tableview-grouped">
+<div class="bookmarkletPage-section">
+    <h1><strong>Installing the Aha! Bookmarklet for iPhone</strong></h1>
+    <p>Before you begin, be aware that it is much easier to install the iPhone bookmark in Firefox or Safari on your computer, and then synchronize your iPhone or iPod touch using iTunes.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 1: Bookmark this page.</h2>
+    <p>Tap the middle icon below, then tap <strong>Add Bookmark</strong>, then tap Save.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+  <h2>Step 2: Select the text and copy it.</h2>
+  <textarea style="width: 280px; height: 170px; margin-top: 10px;">javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, "aha=y"))</textarea>
+  <ol style="float: right; width: 280px; list-style-position: inside;">
+    <li>Tap inside.</li>
+    <li>Tap and hold for a bit, then release.</li>
+    <li>Tap <strong>Select All.</strong></li>
+    <li>Tap <strong>Copy.</strong></li>
+    <li>Tap <strong>Done</strong>.</li>
+  </ol>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 3: Edit the bookmark.</h2>
+    <p>1. Tap the Bookmarks button in the toolbar.</p>
+    <p>2. Tap <strong>Edit</strong>. Select the <strong>Aha!</strong> bookmark to edit.</p>
+    <p>3. Tap its URL, tap the <strong>x</strong> to clear it, tap-and-hold for the magnifying glass, then tap <strong>Paste</strong>.</p>
+    <p>4. Save the changes by tapping <strong>Done</strong>.</p>
+</div>
+
+<div class="bookmarkletPage-section">
+    <h2>Step 4: Installation complete.</h2>
+    <p>Installation should be complete!</p>
+    <p>Select the <strong>Aha!</strong> bookmark from your Bookmarks list to use it.</p>
+    <p>As soon as this can be made simpler, it will be. Thank you for your patience, and thank you for using Aha!</p>
+
+</div>
+</div>
+</script>
+
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}"></div> 

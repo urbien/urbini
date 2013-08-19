@@ -4,10 +4,8 @@ define('views/StaticPage', [
   'utils',
   'events',
   'views/BasicPageView',
-  'views/Header',
-  'vocManager',
-  'collections/ResourceList'
-], function(G, U, Events, BasicPageView, Header, Voc, ResourceList) {
+  'views/Header'
+], function(G, U, Events, BasicPageView, Header) {
   return BasicPageView.extend({
     initialize: function(options) {
       options = options || {};
