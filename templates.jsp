@@ -458,7 +458,7 @@
 <script type="text/template" id="socialNetButtonTemplate">
   <div class="{{= obj['class'] || '' }}" style="text-align:center;">
     <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
-    <a href="#" data-role="button">
+    <a href="#" data-role="button" data-net="{{= net }}">
       <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
       <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
     </a>
@@ -802,6 +802,9 @@
   >
    <!-- data-uri="{{= liUri }}" -->
   {{= viewCols }}
+  {{ if (U.isAssignableFrom(this.vocModel, 'model/study/QuizQuestion')  &&  obj.alreadyAnsweredByMe) { }}
+    <div style="position:relative;float:right;margin-right:10px;"><i class="ui-icon-check" style="font-size:25px;color:red;"></i></div>
+  {{ } }}
   
   {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
    <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
@@ -1387,17 +1390,35 @@
   <table width="100%">
     <tr>
     <td colspan="2">
-      <div class="btn">
+      <div class="btn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+          <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+          </a -->
+          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
+          {{ if (v_showCommentsFor.count) { }}
+            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+          {{ } }}
+          
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+          <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+          </a -->
+          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+          {{ if (typeof v_showCommentsFor != 'undefined') { }}
+             &#160;&#160;&#8226;
+          {{ } }}
+          &#160;&#160;Like 
           </a>
           {{ if (v_showVotesFor.count) { }}
+          <div style="float:right; font-size:12px;"> 
+            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+          </div>
+          {{ } }}
+<!--          {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
           {{ } }}
+-->          
         {{ } }}
         <!--
         {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -1575,7 +1596,7 @@
 <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
-<div id="resourceEditView" style="padding:10px;">
+<div id="resourceEditView">
   <div id="resourceImage"></div>
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">

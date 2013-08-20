@@ -72,11 +72,11 @@ define('views/SocialNetworkPage', [
     },
     
     events: {
-      'click button': 'click'
+      'click [data-role="button"]': 'click'
     },
     
     click: function(e) {
-      debugger;
+      Events.stopEvent(e);
       var btn = e.currentTarget,
           net = btn.dataset.net,
           url = this._netUrls[net];
@@ -85,7 +85,7 @@ define('views/SocialNetworkPage', [
         window.location.href = url;
       }
       else {
-        Events.stopEvent(e);
+        // not ready
       }
     },
     

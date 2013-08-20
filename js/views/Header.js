@@ -103,15 +103,16 @@ define('views/Header', [
     
     calcTitle: function() {      
       if (typeof this.pageTitle !== 'undefined') {
-        this.title = this.pageTitle;
+        this._title = this.title = this.pageTitle;
         return this;
       }
       
       // only use hash the first time
-      var hash = this.hash = this.hash || window.location.hash; 
-      hash = hash && hash.slice(1);
+      var hash = this.hash = this.hash || window.location.hash;
+      if (hash  &&  hash.charAt(0) == '#')
+        hash = hash.slice(1);
       var res = this.model;
-      var title;
+      var title, titleHTML;
       if (hash && G.tabs) {
         var decHash = decodeURIComponent(hash);
         var matches = _.filter(G.tabs, function(t) {
@@ -137,14 +138,17 @@ define('views/Header', [
 //              title = this.pageTitle;
             }
             else {
-              title = U.isAssignableFrom(this.vocModel, "Contact") ? title : U.makeHeaderTitle(this.vocModel['displayName'], title);
+              if (!U.isAssignableFrom(this.vocModel, "Contact"))
+                titleHTML = U.makeHeaderTitle(this.vocModel['displayName'], title);
 //              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
             }
           }
         }
       }
       
-      this.title = title;
+      this._title = title;
+      this.title = titleHTML || title;
+
       return this;
     },
     events: {
@@ -235,6 +239,8 @@ define('views/Header', [
     refreshTitle: function() {
       this.calcTitle();
       this.$('#pageTitle').html(this.title);
+//      $('title').text(this.title);
+      this.pageView.trigger('titleChanged', this._title);
     },
 
     calcSpecialButtons: function() {
@@ -367,7 +373,7 @@ define('views/Header', [
       if (this.rendered)
         this.$el.html("");
       
-      if (U.isAssignableFrom(this.vocModel, G.commonTypes.App) && !res)
+      if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length  &&  U.isAssignableFrom(this.vocModel, 'Urbien'))))
         this.categories = true;
       else if (!res) {
         var hash = window.location.hash;
@@ -445,7 +451,7 @@ define('views/Header', [
       }
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
         this.$el.find('#name').removeClass('resTitle');
-        if (this.resource) {
+        if (this.resource  &&  !this.isEdit) {
           var pt = this.$el.find('#pageTitle');
           if (pt) {
             pt.css('padding-bottom', '4px');

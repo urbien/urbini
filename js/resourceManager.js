@@ -25,7 +25,7 @@ define('resourceManager', [
       NO_DB = G.dbType == 'none',
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      REF_STORE = G.REF_STORE,
+//      REF_STORE = G.getRefStoreInfo(),
       MODULE_STORE,
       MODEL_STORE,
       REQUIRED_STORES,
@@ -197,7 +197,8 @@ define('resourceManager', [
     deleteItem: function(item) {
       debugger;
       var type = item.vocModel.type,
-          uri = item.get('_uri');
+          uri = item.get('_uri'),
+          REF_STORE = G.getRefStoreInfo();
       
       G.log(RM.TAG, 'db', 'deleting item', uri);
       IDB['delete'](type, uri);
@@ -210,6 +211,7 @@ define('resourceManager', [
       if (!IDB.hasStore(type))
         return REJECTED_PROMISE;
       
+      var REF_STORE = G.getRefStoreInfo();
       return IDB.get(type, uri).then(function(result) {
         if (result)
           return result;
@@ -273,7 +275,9 @@ define('resourceManager', [
           return search();
       }
       
-      var intermediateDfd = $.Deferred();
+      var intermediateDfd = $.Deferred(),
+          REF_STORE = G.getRefStoreInfo();
+
       IDB.queryByIndex('_tempUri').oneof(_.values(temps)).getAll(REF_STORE.name).then(intermediateDfd.resolve, intermediateDfd.reject);
       intermediateDfd.promise().done(function(results) {
         if (!results.length)
@@ -331,10 +335,12 @@ define('resourceManager', [
   });
 
   Events.on('preparingToPublish', function(app) {
-    var appUri = app.getUri();
-    var commonTypes = G.commonTypes;
-    var wClType = commonTypes.WebClass;
-    var designerPkg = G.sqlUrl + '/www.hudsonfog.com/voc/system/designer/';
+    var appUri = app.getUri(),
+        commonTypes = G.commonTypes,
+        wClType = commonTypes.WebClass,
+        designerPkg = G.sqlUrl + '/www.hudsonfog.com/voc/system/designer/',
+        REF_STORE = G.getRefStoreInfo();
+    
     function notify(badBoys) {
       if (badBoys)
         Events.trigger('cannotPublish', errors)

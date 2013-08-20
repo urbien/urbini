@@ -98,7 +98,7 @@ define('views/HomePage', [
       else {
         this.removeInstallBtn();
       }
-
+      $('title').text(G.currentApp.title);
 //      this.finish();
       this.$el.trigger('pageshow');
       return this;

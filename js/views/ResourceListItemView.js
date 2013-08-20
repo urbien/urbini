@@ -164,90 +164,142 @@ define('views/ResourceListItemView', [
         this.router.navigate(U.makeMobileUrl(action, this.resource.get('forum'), {'-info': this.resource.get('davDisplayName')}), {trigger: true, forceFetch: true});
         return;
       }
+      if (U.isAssignableFrom(this.vocModel, 'model/study/QuizQuestion')) {
+        var title = U.getParamMap(window.location.hash).$title;
+        if (!title)
+          title = U.makeHeaderTitle(this.resource.get('davDisplayName'), pModel.displayName);
+        var prm = {
+            '-info': 'Please choose the answer', 
+            $forResource: this.resource.get('_uri'), 
+            $propA: 'question',
+            $propB: 'answer',
+            quiz: this.resource.get('quiz'),
+            question: this.resource.get('_uri'),
+//            user: G.currentUser._uri,
+            $type: this.vocModel.properties['answers'].range,
+            $title: this.resource.get('davDisplayName')
+        };
+        this.router.navigate(U.makeMobileUrl('chooser', this.vocModel.properties['options'].range, prm), {trigger: true, forceFetch: true});
+        return;
+      }
+
       // Setting values to TaWith does not work if this block is lower then next if()
       var p1 = params['$propA'];
       var p2 = params['$propB'];
-      var type = params['$type'];
-      var isIntersection = type ? U.isAssignableFrom(U.getModel(params['$type']), 'Intersection') : false;
-      if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
-        if (!isIntersection  ||  (!p1  &&  !p2)) {
-          Events.stopEvent(e);
-          Events.trigger('chose', U.getQueryParams().$prop, this.model);
-//          Events.trigger('chose:' + U.getQueryParams().$prop, this.model);
-          return;
-        }
-      }
+      var self = this;
       
-      if (params  &&  type && isIntersection) {
-        Events.stopEvent(e);
-        var rParams = {};
-        rParams[p1] = params['$forResource'];
-        this.forResource = params['$forResource'];
-        rParams[p2] = this.resource.get('_uri');
-        rParams.$title = this.resource.get('davDisplayName');
-        var self = this;
-        if (U.isAssignableFrom(this.vocModel, "WebClass")) {
-          if (type.endsWith('system/designer/InterfaceImplementor')) {
-            Voc.getModels(type).done(function() {
-              var m = new (U.getModel('InterfaceImplementor'))();
-              var uri = self.resource.get('_uri');
-              var props = {interfaceClass: uri, implementor: self.forResource};
-              m.save(props, {
-                success: function() {
-                  self.router.navigate(U.makeMobileUrl('view', self.forResource), {trigger: true, forceFetch: true});        
-                }
-              });
+      var t = type ? type : this.vocModel.type;
+      var self = this;
+      return $.Deferred(function(dfd) {
+      Voc.getModels(t).done(function() {
+        var type = t;
+        var isIntersection = type ? U.isAssignableFrom(U.getModel(type), 'Intersection') : false;
+        if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
+          if (!isIntersection  &&  (!p1  &&  !p2)) {
+            Events.stopEvent(e);
+            Events.trigger('chooser:' + U.getQueryParams().$prop, self.model);
+            return;
+          }
+        }
+        var pModel = type ? U.getModel(type) : null;
+        if (params  &&  type  &&   p1  &&  p2/*isIntersection*/) {
+          Events.stopEvent(e);
+          var rParams = {};
+          var pRange = U.getModel(t).properties[p1].range;
+          if (U.isAssignableFrom(self.vocModel, pRange)) {
+            rParams[p1] = self.resource.get('_uri');
+            rParams[p2] = params['$forResource'];
+          }
+          else {
+            rParams[p1] = params['$forResource'];
+            rParams[p2] = self.resource.get('_uri');
+          }
+          self.forResource = params['$forResource'];
+          rParams.$title = self.resource.get('davDisplayName');
+          if (U.isAssignableFrom(self.vocModel, "WebClass")) {
+            if (type.endsWith('system/designer/InterfaceImplementor')) {
+  //            Voc.getModels(type).done(function() {
+                var m = new (U.getModel('InterfaceImplementor'))();
+                var uri = self.resource.get('_uri');
+                var props = {interfaceClass: uri, implementor: self.forResource};
+                m.save(props, {
+                  success: function() {
+                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), {trigger: true, forceFetch: true});        
+                  }
+                });
+  //            });
+              return;
+            }
+            rParams[p2 + '.davClassUri'] =  self.resource.get('davClassUri');
+          }
+          else if (U.isAssignableFrom(pModel, 'model/study/QuizAnswer')) {
+            var m = new pModel();
+            m.save(rParams, {
+              success: function() {
+                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), {trigger: true, forceFetch: true});        
+              }
             });
             return;
           }
-          rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
+          
+          self.router.navigate(U.makeMobileUrl('make', type, rParams), {trigger: true, forceFetch: true});
+          return;
+  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
+        return dfd.reject();        
+      });
+      }).then (
+        function success () {
+                    
+        },
+        function fail () {
+          var m = U.getModel(t); 
+          if (U.isAssignableFrom(m, "aspects/tags/Tag")) {
+            var params = U.getParamMap(window.location.href);
+            var app = params.application;
+            var appModel;
+            var tag = params['tagUses.tag.tag'];
+            var tag = params['tags'];
+            if (app) {
+              for (var p in params) {
+                if (m.properties[p])
+                  delete params[p];
+              }
+              params.$title = self.resource.get('tag');
+    //          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+    //              params['tagUses.tag.application'] = app;
+            }
+            else { //if (tag  ||  tags) {
+              app = self.hash;
+              app = decodeURIComponent(app.substring(0, idx));
+            }
+            if (app) {
+              appModel = U.getModel(app);
+              if (appModel) {
+                var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
+                if (tagProp) {
+                  params[tagProp] = '*' + self.resource.get('tag') + '*';
         
-        this.router.navigate(U.makeMobileUrl('make', type, rParams), {trigger: true, forceFetch: true});        
-//        this.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
-        return;        
-      }
-      if (U.isAssignableFrom(this.vocModel, "aspects/tags/Tag")) {
-        var params = U.getParamMap(window.location.href);
-        var app = params.application;
-        var appModel;
-        var tag = params['tagUses.tag.tag'];
-        var tag = params['tags'];
-        if (app) {
-          delete params.application;
-          params.$title = this.resource.get('tag');
-//          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
-//              params['tagUses.tag.application'] = app;
-        }
-        else { //if (tag  ||  tags) {
-          app = this.hash;
-          app = decodeURIComponent(app.substring(0, idx));
-        }
-        if (app) {
-          appModel = U.getModel(app);
-          if (appModel) {
-            var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
-            if (tagProp) {
-              params[tagProp] = '*' + this.resource.get('tag') + '*';
-    
-              this.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
-              return;
+                  self.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
+                  return;
+                }
+              }
             }
           }
+    
+          if (U.isAssignableFrom(m, "InterfaceImplementor"))
+            self.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, forceFetch: true});
+          else {
+            var pr;
+    //          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
+            self.router.navigate(U.makeMobileUrl('view', self.resource.getUri()), {trigger: true, forceFetch: true});
+    //          else {
+    //            var r = U.getParamMap(window.location.href);
+    //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
+    //          }
+          }
         }
-      }
-
-      if (U.isAssignableFrom(this.vocModel, "InterfaceImplementor"))
-        this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, forceFetch: true});
-      else {
-        var pr;
-//          if (!U.isA(this.vocModel, "Delegator")  ||  !(pr = U.getCloneOf(this.vocModel, "Reference.forResource")) || !pr.length)
-        this.router.navigate(U.makeMobileUrl('view', this.resource.getUri()), {trigger: true, forceFetch: true});
-//          else {
-//            var r = U.getParamMap(window.location.href);
-//            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
-//          }
-      }
+      );
     },
     
     render: function(options) {
@@ -430,25 +482,27 @@ define('views/ResourceListItemView', [
         }
         if (isSubmission) {
           var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
-          var submittedBy = d  &&  d.length ? json[d[0]] : null;
-          if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
-//            vCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
-            var thumb = json[d[0] + '.thumb'];
-            vCols += '<div class="submitter">';
-            if (thumb) {
-              var idx = thumb.indexOf('/Image?url=');
-              if (idx == -1)
-                vCols += '<img src="' + thumb + '" />';
-              else
-                vCols += '<img src="' + thumb.slice(idx + 11) + '" />';
+          if (d  &&  !this.hashParams[d]) {
+            var submittedBy = d  &&  d.length ? json[d[0]] : null;
+            if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
+  //            vCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
+              var thumb = json[d[0] + '.thumb'];
+              vCols += '<div class="submitter">';
+              if (thumb) {
+                var idx = thumb.indexOf('/Image?url=');
+                if (idx == -1)
+                  vCols += '<img src="' + thumb + '" />';
+                else
+                  vCols += '<img src="' + thumb.slice(idx + 11) + '" />';
+              }
+  //            vCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
+              var submitterName = json[d[0] + '.displayName'];
+              if (submitterName) {
+                vCols += '<div>&#160;&#160;' + submitterName + '</div>'
+                vCols += '</div>';
+              }
+              json['_hasSubmittedBy'] = true;
             }
-//            vCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
-            var submitterName = json[d[0] + '.displayName'];
-            if (submitterName) {
-              vCols += '<div>&#160;&#160;' + submitterName + '</div>'
-              vCols += '</div>';
-            }
-            json['_hasSubmittedBy'] = true;
           }
         }
         vCols += '</div>';

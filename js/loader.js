@@ -170,7 +170,7 @@ define('globals', function() {
   };
   
   function addModule(text) {
-  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('@ sourceURL')));
+  //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
     
     var idx = text.indexOf('//@ sourceURL');
@@ -409,7 +409,7 @@ define('globals', function() {
       if (browser.chrome)
         G.inWebview = true;
       else if (browser.firefox) {
-        G.inFirefoxOS = true;
+//        G.inFirefoxOS = true;
 //        window.top.postMessage({message: 'Hello world'}, G.serverName);
       }
     };
@@ -831,9 +831,9 @@ define('globals', function() {
           }
         }
         
-        var modules = resp.modules,
-            newModules = {};
+        var newModules = {};
         if (resp && !resp.error && resp.modules) {
+          var modules = resp.modules;
           for (var i = 0; i < modules.length; i++) {
             var m = modules[i];
 //            for (var name in m) {
@@ -1008,7 +1008,7 @@ define('globals', function() {
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
-      jqueryMobile: 'lib/jquery.mobile-1.3.2',
+      jqueryMobile: 'lib/jquery.mobile-1.3.1',
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
@@ -1133,9 +1133,8 @@ define('globals', function() {
       }
     },
     dbType: (function() {
-      if (browser.chrome)
-        return 'shim'; // testing shim
-      
+//      if (browser.chrome) // testing how things work without indexeddb
+//        return 'shim';
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
           type;

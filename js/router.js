@@ -371,7 +371,7 @@ define('router', [
       
       this.changePage(view);
     },
-    
+
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments))
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
@@ -1267,8 +1267,8 @@ define('router', [
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
-      if (!activated)
-        view.trigger('active', true);
+//      if (!activated)
+//        view.trigger('active', true);
       
       // perform transition        
       $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});

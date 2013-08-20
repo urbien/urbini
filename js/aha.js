@@ -116,10 +116,11 @@ function setClass(el, cl) {
 function overlay() {
   var css = "#ahaOverlay {opacity: 0.9; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: white; width: 100%; height: 100%; z-index: 100000002;}\n" +
             "#ahaContainer {position: absolute; z-index: 100000002; top: 0; left: 0; background-color: transparent; opacity: 1; width: 100%; height: 100%}\n" +
-            "#ahaContainer h1, #ahaContainer h2, #ahaContainer p {font-family: 'helvetica neue', arial, sans-serif;}\n" +
+            "#ahaContainer h1, #ahaContainer h2, #ahaContainer a, #ahaContainer p {font-family: 'helvetica neue', arial, sans-serif;}\n" +
 //            "#ahaHeader {padding-top: 10px; margin-bottom: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; opacity: 1; z-index: 100000002; top: 0; left: 0; width: 100%;}\n" +
 //            "#ahaHeader img {max-width: 95%;}\n" +
-            "#ahaBtn, #huhBtn {padding-top: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; background-color: transparent; opacity: 1; width: 50%; height: 90%; z-index: 100000002;}\n" + 
+            "#ahaBtn, #huhBtn {padding-top: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; background-color: transparent; opacity: 1; width: 50%; height: 90%; z-index: 100000002;}\n" +
+            "#ahaButton img, #huhButton img { max-width: 50%; }" +
 //            "#ahaCancelBtn {float:right; background-color: #f00; height: 100%}\n" + 
             "#ahaCancelBtn {text-decoration:none; float:right; position: absolute; right: 5px; top: 5px; cursor: pointer; z-index:100000005}"; //\n" +
 //            "#ahaTip, #huhTip {display: none}";
@@ -152,27 +153,7 @@ function overlay() {
   
   
 // text version
-  var overlayHTML = " <span id=\"ahaCancelBtn\" style=\"float:right\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
-  		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
-  		"        <tr height=\"10%\">\r\n" + 
-  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
-  		"                <h1>Get it?</h1>\r\n" + 
-  		"            </td>\r\n" + 
-  		"        </tr>\r\n" + 
-  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
-  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <h2><a href=\"#\" id=\"ahaButton\">Aha!</a></h2>\r\n" + 
-  		"                <p id=\"ahaTip\">(I'm ready to explain this to others)</p>\r\n" + 
-  		"            </td>\r\n" + 
-  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <h2><a href=\"#\" id=\"huhButton\">Huh?</a></h2>\r\n" + 
-  		"                <p id=\"huhTip\">(Can someone please explain it to me?)</p>\r\n" + 
-  		"            </td>\r\n" + 
-  		"        </tr>\r\n" + 
-  		"    </table>";
-
-// image version
-//  var overlayHTML = "<span id=\"ahaCancelBtn\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+//  var overlayHTML = " <span id=\"ahaCancelBtn\" style=\"float:right\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
 //  		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
 //  		"        <tr height=\"10%\">\r\n" + 
 //  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
@@ -181,15 +162,35 @@ function overlay() {
 //  		"        </tr>\r\n" + 
 //  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
 //  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-//  		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha.png\" /></a>\r\n" + 
+//  		"                <h2><a href=\"#\" id=\"ahaButton\">Aha!</a></h2>\r\n" + 
 //  		"                <p id=\"ahaTip\">(I'm ready to explain this to others)</p>\r\n" + 
 //  		"            </td>\r\n" + 
 //  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-//  		"                <a href=\"#\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh.png\" /></a>\r\n" + 
+//  		"                <h2><a href=\"#\" id=\"huhButton\">Huh?</a></h2>\r\n" + 
 //  		"                <p id=\"huhTip\">(Can someone please explain it to me?)</p>\r\n" + 
 //  		"            </td>\r\n" + 
 //  		"        </tr>\r\n" + 
 //  		"    </table>";
+
+// image version
+  var overlayHTML = "<span id=\"ahaCancelBtn\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+  		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
+  		"        <tr height=\"10%\">\r\n" + 
+  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
+  		"                <span style=\"font-size:30px\">Get it??</span>\r\n" + 
+  		"            </td>\r\n" + 
+  		"        </tr>\r\n" + 
+  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
+  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+  		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
+  		"                <br/><span id=\"ahaTip\" style=\"font-size:18px;\">(I'm ready to explain this to others)</span>\r\n" + 
+  		"            </td>\r\n" + 
+  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+  		"                <a href=\"#\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh_big.png\" /></a>\r\n" + 
+  		"                <br/><span id=\"huhTip\" style=\"font-size:18px;\">(Can someone please explain it to me?)</span>\r\n" + 
+  		"            </td>\r\n" + 
+  		"        </tr>\r\n" + 
+  		"    </table>";
   
   var overlayDiv = document.createElement("div");
   overlayDiv.setAttribute("id", "ahaOverlay");

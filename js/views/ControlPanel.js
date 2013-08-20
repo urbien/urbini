@@ -78,12 +78,35 @@ define('views/ControlPanel', [
       
       var self = this,       
           shortName = t.dataset.shortname,
-          prop = this.vocModel.properties[shortName];
+          prop = this.vocModel.properties[shortName],
+          setLinkTo = prop.setLinkTo;
 
       this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+      if (setLinkTo) {
+        shortName = setLinkTo;
+        prop = this.vocModel.properties[shortName];
+      }
+      
+      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
+        function noIntersection(prop) {
+          var params = {
+            '$backLink': prop.backLink,
+            '$title': t.dataset.title
+          };
+    
+          params[prop.backLink] = self.resource.getUri();
+          if (setLinkTo)  
+            Events.trigger('navigate', U.makeMobileUrl('list', prop.range, params), {trigger: true});
+          else {
+            params['-makeId'] = G.nextId();
+            Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params), {trigger: true});
+          }
+          self.log('add', 'user wants to add to backlink');
+        };
+
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
           self._addNoIntersection(t, prop);
           return;
@@ -126,7 +149,7 @@ define('views/ControlPanel', [
           $title: title
         };
 
-        self.router.navigate(U.makeMobileUrl('chooser', rtype, params), {trigger: true});
+        Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
 //          '$backLink': prop.backLink,

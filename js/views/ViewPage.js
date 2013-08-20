@@ -269,8 +269,23 @@ define('views/ViewPage', [
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
 
-      if (this.isPurchasable) 
-        views['div#buyGroup'] = this.buyGroup;         
+      if (this.isPurchasable) {
+        var purchasesBLProp; 
+        
+        if (res.isA("ItemListing"))
+          purchasesBLProp = U.getCloneOf(this.vocModel, "ItemListing.ordersPlaced")[0];
+        else if (res.isA("Buyable"))
+          purchasesBLProp = U.getCloneOf(this.vocModel, "Buyable.orderItems")[0];
+        
+        if (purchasesBLProp) {
+          this.isBuyGroup = true;
+          this.purchasesBLProp = purchasesBLProp;
+          views['div#buyGroup'] = this.buyGroup;
+        }
+        else
+          this.isBuyGroup = false;
+
+      }
       
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;

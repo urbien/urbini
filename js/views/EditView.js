@@ -373,7 +373,9 @@ define('views/EditView', [
               innerHtml += ', ';
             innerHtml += checked[i].name;
             input = checked[i].value;
-            $(link.parentNode).append($(input));
+            checked[i].type = 'hidden';
+            $(checked[i]).attr('data-formel', 'true');
+            $(link.parentNode).append($(checked[i]));
             if (i != 0)
               set += ',';
             set += input;

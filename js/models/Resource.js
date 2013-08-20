@@ -1134,9 +1134,10 @@ define('models/Resource', [
     
     _isPropMutable: function(prop, editablePropsInfo) {
       var p = prop && prop.shortName,
-          backlinks = editablePropsInfo.backlinks;
+          backlinks = editablePropsInfo.backlinks,
+          appProps = editablePropsInfo.appProps;
       
-      return p && prop && !_.has(backlinks, p) && U.isPropEditable(this, prop, U.getUserRole());
+      return p && prop && !prop.app && (!appProps || !appProps[p]) && !_.has(backlinks, p) && U.isPropEditable(this, prop, U.getUserRole());
     },
     
     getEditableProps: function(urlInfo) {
@@ -1159,6 +1160,7 @@ define('models/Resource', [
           userRole = U.getUserRole(),
           collected = [],
           result = {
+            appProps: U.getCurrentAppProps(meta),
             backlinks: backlinks,
             groups: propGroups,
             props: {
