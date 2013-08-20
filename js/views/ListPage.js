@@ -77,7 +77,7 @@ define('views/ListPage', [
         }
   //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
         if (showAddButton) { 
-          if (U.isA(this.vocModel, "Reference"))
+          if (U.isA(this.vocModel, "Reference")  ||  U.isAssignableFrom(this.vocModel, "Assessment"))
             showAddButton = false;
         }
         else if (isOwner  &&  !isChooser) {

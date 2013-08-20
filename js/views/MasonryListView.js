@@ -15,15 +15,24 @@ define('views/MasonryListView', [
   return ResourceListView.extend({
     type: 'masonry',
     events: {
-      'orientationchange': 'orientationchange',
-      'resize': 'orientationchange'
+      'orientationchange': 'reloadMasonry',
+      'resize': 'reloadMasonry'
+//        ,
+//      'pageshow': 'reloadMasonry'
     },
 
     initialize: function(options) {
       var self = this;
-      _.bindAll(this, 'orientationchange');
+      _.bindAll(this, 'reloadMasonry');
       this.superInitialize(options);
       this.autoFinish = false; // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
+//      Events.on('pageChange', function(prev, current) {
+//        if (self.pageView == current && self.rendered) {
+////          self.$el.imagesLoaded(function() {
+//            self.masonry('reload');
+////          });
+//        }
+//      });
     },
     
     masonry: function() {
@@ -45,8 +54,9 @@ define('views/MasonryListView', [
       return liView;
     },
     
-    orientationchange: function(e) {
-      this.masonry('reload');
+    reloadMasonry: function(e) {
+      if (this.rendered)
+        this.masonry('reload');
     },
     
     postRender: function(info) {
@@ -68,7 +78,8 @@ define('views/MasonryListView', [
           self.masonry({
             itemSelector: ITEM_SELECTOR
           });
-          
+   
+          self.$el.on('pageshow', self.reloadMasonry.bind(self));
           self.finish();
         });        
       }

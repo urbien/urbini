@@ -10,19 +10,6 @@ define('views/BasicPageView', [
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       $wnd = $(window);
 
-  function removeTooltip($el) {
-//    if (elm[0].tagName == 'DIV')
-//      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
-//    else
-//      elm.unwrap();
-    
-    var nonHintClasses = _.filter($el.attr("class").split(" "), function(item) {
-      return !item.startsWith("hint--");
-    });
-    
-    $el.attr("class", nonHintClasses.join(" "));
-  };
-
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
@@ -110,6 +97,10 @@ define('views/BasicPageView', [
           self.trigger('active', true);
       });
       
+      this.on('titleChanged', function(title) {
+        self._updateTitle(title);
+      });
+      
       this.on('active', function(active) {
         if (active) {
           if (self.rendered) {
@@ -117,9 +108,8 @@ define('views/BasicPageView', [
             self._checkAutoClose();
           }
           
-          var title = self.getPageTitle();
-          if (title)
-            document.title = title;
+          if (!self._title)
+            self._updateTitle();
         }
         else
           self._clearMessageBar();        
@@ -268,7 +258,30 @@ define('views/BasicPageView', [
       this.logVisibility();
       this.log('visibility', 'END visibility report for ' + this.TAG);
     },
-        
+    
+//    addTooltip: function(data) {
+////      if (!this._tooltipTemplate)
+////        this.makeTemplate('tooltipTemplate', '_tooltipTemplate', this.modelType);
+////      
+////      var html = this._tooltipTemplate(data),
+//      var element = data.element; //.parent('div');
+////      element.addClass('hint--always hint--{0}'.format(data.direction));
+////      element.attr('data-hint', data.tooltip);
+//      var position = element.offset();
+//      var t = position.top + element.outerHeight()/2 - 23;
+//      var l = position.left + element.outerWidth()/2 - 23;
+//      if (data.tooltip)
+//        $('#page').prepend('<div class="play hint--always hint--' + data.direction + '" style="top:' + t + 'px; left:' + l + 'px" data-hint="' + data.tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
+//      else
+//        $('#page').prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
+//      this.once('active', function(active) {
+//        if (!active) {
+//          removeTooltip(element);
+//          $('.play').remove();
+//        }
+//      });
+//    },
+    
     runTourStep: function(step) {      
       var element,
           info = step.get('infoMessage');
@@ -296,6 +309,29 @@ define('views/BasicPageView', [
       }
     },
     
+    onpageshow: function(fn) {
+      if (this._pageshowFired)
+        fn();
+      else {
+        this.once('pageshow', fn);
+      }
+    },
+        
+    removeTooltip: function($el) {
+  //    if (elm[0].tagName == 'DIV')
+  //      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
+  //    else
+  //      elm.unwrap();
+      
+      var nonHintClasses = _.filter(($el.attr("class") || '').split(" "), function(item) {
+        return !item.startsWith("hint--");
+      });
+      this.$el.off('resize', function() {
+        
+      });
+      $el.attr("class", nonHintClasses.join(" "));
+    },
+    
     addTooltip: function(el, tooltip, direction, type, style) {
       el = el instanceof $ ? el : $(el);
       var classes = ['always', 
@@ -307,14 +343,39 @@ define('views/BasicPageView', [
         return 'hint--' + cl;
       });
      
-      el.addClass(classes.join(' '), {duration: 1000});
-      el.attr('data-hint', tooltip);
+      var self = this;
+      var position = el.offset();
+      var t = position.top + el.outerHeight()/2 - 20;
+      var l = position.left + el.outerWidth()/2 - 20;
+      if (l + 40 > $(window).width()) 
+        l = $(window).width() - 40;
+      if (tooltip)
+        $('#page').prepend('<div class="play ' + classes.join(' ') + '" style="top:' + t + 'px; left:' + l + 'px" data-hint="' + tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
+      else
+        $('#page').prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
+//      el.addClass(classes.join(' '), {duration: 1000});
+//      el.attr('data-hint', tooltip);
       this.once('active', function(active) {
-        if (!active)
-          removeTooltip(el);
+        if (!active) {
+          self.removeTooltip(el);
+          $('.play').remove();
+        }
+      });
+      this.$el.on('resize', function() {
+        var position = el.offset();
+        var t = position.top + el.outerHeight()/2 - 20;
+        var l = position.left + el.outerWidth()/2 - 20;
+        if (l + 40 > $(window).width()) 
+          l = $(window).width() - 40;
+        $('.play').css('top', t + 'px');
+        $('.play').css('left', l + 'px');
       });
     },
 
+    _updateTitle: function(title) {
+      this._title = document.title = title || this.getPageTitle();
+    },
+    
     getPageTitle: function() {
       var title = this.$('#pageTitle');
       return title.length ? title.text() : this.hashParams.$title || G.currentApp.title;

@@ -32,6 +32,7 @@ define('router', [
       ""                                                       : "home",
       "home/*path"                                             : "home",
       "social/*path"                                           : "social",
+      "static/*path"                                           : "static",
 //      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
       "list/*path"                                             : "list", 
@@ -352,6 +353,17 @@ define('router', [
       this.changePage(view);
     },
     
+    'static': function() {
+      if (!this.routePrereqsFulfilled('static', arguments))
+        return;
+      
+      var view = C.getCachedView();
+      if (!view)
+        view = new Modules.StaticPage();
+      
+      this.changePage(view);
+    },
+
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments))
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
@@ -773,6 +785,9 @@ define('router', [
         break;
       case 'social':        
         views = ['SocialNetworkPage'];
+        break;
+      case 'static':        
+        views = ['StaticPage'];
         break;
       case 'view':
         views = ['ViewPage'];
@@ -1223,8 +1238,8 @@ define('router', [
       // back button: remove highlighting after active page was changed
       $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
-      if (!activated)
-        view.trigger('active', true);
+//      if (!activated)
+//        view.trigger('active', true);
       
       // perform transition        
       $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});

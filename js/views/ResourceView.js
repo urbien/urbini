@@ -47,19 +47,19 @@ define('views/ResourceView', [
       }.bind(this));
       
       if (options.isBuyGroup) {
-        this.isBuyGroup = true;
-        var purchasesBLProp, 
-            vocModel = this.vocModel;
-        
-        if (res.isA("ItemListing"))
-          purchasesBLProp = U.getCloneOf(vocModel, "ItemListing.ordersPlaced")[0];
-        else if (res.isA("Buyable"))
-          purchasesBLProp = U.getCloneOf(vocModel, "Buyable.orderItems")[0];
-        
-        if (!purchasesBLProp)
-          this.isBuyGroup = false;
-        else
-          this.purchasesBacklinkProp = vocModel.properties[purchasesBLProp];
+//        this.isBuyGroup = true;
+//        var purchasesBLProp, 
+//            vocModel = this.vocModel;
+//        
+//        if (res.isA("ItemListing"))
+//          purchasesBLProp = U.getCloneOf(vocModel, "ItemListing.ordersPlaced")[0];
+//        else if (res.isA("Buyable"))
+//          purchasesBLProp = U.getCloneOf(vocModel, "Buyable.orderItems")[0];
+//        
+//        if (!purchasesBLProp)
+//          this.isBuyGroup = false;
+//        else
+        this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
       this.autoFinish = false;
       this.ready = readyDfd.promise();      

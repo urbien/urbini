@@ -358,9 +358,12 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           consumer = consumers && consumers.where({
             provider: m.app
           }, true),
-          provider = providers && providers.where({
-            app: m.app
-          }, true);            
+          // HACK!!!!! //
+//          provider = providers && providers.where({
+//            app: m.app
+//          }, true);      
+          provider = providers && providers.models[0];      
+          // END HACK //
 
 
       if (!provider || !consumer)

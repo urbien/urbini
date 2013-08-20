@@ -295,7 +295,7 @@ define('vocManager', [
           type = resource.vocModel.type,
           actualType = U.getTypeUri(uri);
       
-      if (actualType && type != actualType) {
+      if (actualType && type != actualType && !U.isAssignableFrom(resource.vocModel, actualType)) {
         var byType = actualTypes[actualType] = actualTypes[actualType] || [];
         byType.push(resource);
       }        

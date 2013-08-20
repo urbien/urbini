@@ -369,7 +369,9 @@ define('views/EditView', [
               innerHtml += ', ';
             innerHtml += checked[i].name;
             input = checked[i].value;
-            $(link.parentNode).append($(input));
+            checked[i].type = 'hidden';
+            $(checked[i]).attr('data-formel', 'true');
+            $(link.parentNode).append($(checked[i]));
             if (i != 0)
               set += ',';
             set += input;
@@ -1373,7 +1375,9 @@ define('views/EditView', [
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getPropertiesWith(meta, "backLink");
       var displayedProps = {};
-      
+
+      var currentAppProps = U.getCurrentAppProps(meta);
+
       var reqParams = U.getParamMap(window.location.href);
       var editCols = reqParams['$editCols'];
       var mkResourceCols = this.vocModel['mkResourceCols'];
@@ -1417,8 +1421,10 @@ define('views/EditView', [
             if (editProps  &&  $.inArray(p, editProps) == -1)
               continue;
 
-            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))))
-              continue;
+            if (meta[p]) {
+              if (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)) || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
+                continue;
+            }
             this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
             groupNameDisplayed = true;
           }
@@ -1430,9 +1436,10 @@ define('views/EditView', [
             p = p.trim();
             if (typeof init[p] !== 'undefined')
               continue;
-            if (meta[p]  &&  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))))
-              continue;
-            
+            if (meta[p]) {
+              if  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)) || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
+                continue;
+            }
             _.extend(info, {name: p, prop: reqd[p]});
             this.addProp(info);
             displayedProps[p] = true;
@@ -1440,7 +1447,7 @@ define('views/EditView', [
         }
       }
       for (var p in reqParams) {
-        if (!meta[p]  || displayedProps[p])
+        if (!meta[p]  || displayedProps[p] || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
           continue;
         _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
         

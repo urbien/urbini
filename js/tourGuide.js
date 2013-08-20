@@ -86,7 +86,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         isProfile = stepType == 'profile' && (hashInfo.uri == 'profile' || hashInfo.uri == G.currentUser._uri),
         typeMatches = isProfile || hashInfo.type == stepType || isSubType(hashInfo.type, stepType),
         paramsMatch = true;
-    
+        
     for (var param in hashInfoModelParams) {
       if (_.has(stepModelParams, param) && stepModelParams[param] !== hashInfoModelParams[param]) {
         paramsMatch = false;
@@ -97,18 +97,6 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     return routeMatches && typeMatches && paramsMatch;
   };
   
-//  Backbone.history.loadUrl = function(fragmentOverride) {
-//    var fragment = this.fragment = this.getFragment(fragmentOverride);
-//    // validate against next tour step if on a tour
-//    if (tourManager.getCurrentStep()) {
-//      fragment = adjustFragmentForTour(fragment);
-//      if (fragment !== this.fragment) {
-//        this._updateHash(this.location, fragment, true);
-//      }
-//    }
-//      
-//    return backboneLoadUrl.call(this, this.fragment);
-//  };  
 
   
   ///////////// END BACKBONE HACKERY ///////////////
@@ -167,6 +155,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         
         Events.trigger('tourEnd', _tour);
       }
+      
     });
 
     function reset() {
@@ -292,10 +281,12 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           }
           
           // maybe check all previous steps
-          var prev = stepNum - 1 && getTourStep(_steps, stepNum - 1);
-          if (prev && hashInfo.compliesWithTourStep(_hashInfo, prev)) {
-            setTourStep(prev);
-            return RESOLVED_PROMISE;            
+          while (stepNum--) {
+            var prev = getTourStep(_steps, stepNum);
+            if (prev && hashInfoCompliesWithTourStep(_hashInfo, prev)) {
+              setTourStep(prev);
+              return RESOLVED_PROMISE;            
+            }
           }
         }
         
@@ -415,7 +406,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return REJECTED_PROMISE;
       
       var myTours = tourManager.getMyTours();
-      if (myTours.length) {
+      if (myTours && myTours.length) {
         tours = _.filter(tours, function(tour) {
           return !myTours.where({
             tour: tour.getUri(),

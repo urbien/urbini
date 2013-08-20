@@ -78,7 +78,8 @@ define('views/ChatPage', [
         viewId: this.cid,
         parentView: this,
         buttons: this.headerButtons,
-        model: res
+        model: res,
+        isChat: true
       };
       
       var pageTitle = options.title;
@@ -538,10 +539,6 @@ define('views/ChatPage', [
     },
 
     getStats: function() {
-//      var max = Math.min(document.width / 3, document.height / 3, 300),
-//          w = document.width || max,
-//          h = document.height || max,
-//          dim = Math.min(w, h, max);
       var docW = document.width || 1000,
           docH = document.height || 1000,
           dim = Math.min(docW / 3, docH / 3, 300);

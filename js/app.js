@@ -693,6 +693,10 @@ define('app', [
         return;
       }
 
+      var existingPopup = $('#login_popup');
+      if (existingPopup.length && existingPopup.is(':visible'))
+        return;
+      
       var returnUri = options.returnUri || window.location.href;
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
       if (returnUri.startsWith(signupUrl)) {
@@ -705,7 +709,7 @@ define('app', [
 //        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
         return {
           name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl(net, 'Login')
+          url: U.buildSocialNetOAuthUrl(net, 'Login', returnUri)
         };
       });
       
@@ -715,7 +719,7 @@ define('app', [
         };
       }
         
-      $('#login_popup').remove();
+      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
@@ -727,6 +731,7 @@ define('app', [
       
       $popup.trigger('create');
       $popup.popup().popup("open");
+      $popup.parent().css('z-index', 1000000);
       return false; // prevents login button highlighting
     });
     
