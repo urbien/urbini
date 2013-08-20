@@ -39,12 +39,13 @@ define('views/HomePage', [
         });
       }
     },
-
+    
     pagehide: function(e) {
-      $('#bg').hide();
-    },    
+      this.$el.hide();
+    },
+    
     pagebeforeshow: function(e) {
-      $('#bg').show();
+      this.$el.show();
     },
     
     click: function(e) {

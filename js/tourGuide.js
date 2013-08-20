@@ -22,7 +22,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         step = tourManager.getCurrentStep(),
         steps = tourManager.getCurrentSteps(),
         next = getStepByNumber(steps, step.get(SEQ_PROP) + 1),
-        hashInfo = U.parseHash(fragment);
+        hashInfo = U.getUrlInfo(fragment);
     
     if (next) {
       if (hashInfoCompliesWithTourStep(hashInfo, next)) {
@@ -293,7 +293,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           
           // maybe check all previous steps
           var prev = stepNum - 1 && getTourStep(_steps, stepNum - 1);
-          if (prev && hashInfo.compliesWithTourStep(_hashInfo, prev)) {
+          if (prev && hashInfoCompliesWithTourStep(_hashInfo, prev)) {
             setTourStep(prev);
             return RESOLVED_PROMISE;            
           }
@@ -415,7 +415,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return REJECTED_PROMISE;
       
       var myTours = tourManager.getMyTours();
-      if (myTours.length) {
+      if (myTours && myTours.length) {
         tours = _.filter(tours, function(tour) {
           return !myTours.where({
             tour: tour.getUri(),

@@ -2,13 +2,13 @@
   pre: {
     js: ['jqm-config', 'lib/underscore', 'lib/backbone', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'cache', 'utils', 'error', 'events', 'models/Resource', 
     		 'collections/ResourceList', 'lib/jquery.anystretch', 'views/HomePage', 'vocManager', 'modelLoader', 'plugManager', 'resourceManager', 'indexedDB', 'idbQueryBuilder', 'synchronizer', 'resourceSynchronizer', 'collectionSynchronizer', 'router', 
-    		 'app', 'appAuth', 'apiAdapter', 'redirecter'],
+    		 'app', 'appAuth', 'apiAdapter', 'redirecter', 'views/BasicView', 'views/BasicPageView'],
     css: ['lib/jquery.mobile-1.3.2.min.css', 'lib/jquery.mobile.theme-1.3.2.min.css', {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.2.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
     html: ['../templates.jsp'],
     lol: []
   },
   post: {
-    js: ['views/BasicView', 'views/BasicPageView', 'views/MessageBar', 'tourGuide', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
+    js: ['views/MessageBar', 'tourGuide', 'views/ResourceView', 'views/ControlPanel', 'views/Header', 'views/BackButton', 'views/AddButton', 'views/RightMenuButton', 'views/MenuButton', 'views/LoginButton', 'views/ToggleButton', 'views/ResourceImageView', 'views/MapItButton', 
          'views/EditPage', 'views/EditView', 'views/ResourceListItemView', 'views/ResourceListView', 'views/MasonryListView', 'views/PhotogridListView', 'views/CommentListView', 'views/ResourceMasonryItemView', 'views/CommentListItemView', 'views/ListPage', 'views/PhotogridView', 'views/ViewPage', 'views/MenuPanel', 
          'views/RightMenuPanel', 'views/MapView', 'views/PublishButton', 'lib/mobiscroll-datetime-min', 'mobiscroll-duration', 'lib/swipeview', 'views/ChatPage', 'views/VideoButton', 'views/ToggleButton1', 'views/ChatButton', 'views/CallInProgressHeader', 'chrome', 'firefox', 'lib/l20n'],
     css: ['../styles/mobiscroll.datetime.min.css', '../styles/jqm-grid-listview.css']

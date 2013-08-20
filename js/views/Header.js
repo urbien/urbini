@@ -101,7 +101,7 @@ define('views/Header', [
       }.bind(this));
     },
     
-    calcTitle: function() {
+    calcTitle: function() {      
       if (typeof this.pageTitle !== 'undefined') {
         this.title = this.pageTitle;
         return this;

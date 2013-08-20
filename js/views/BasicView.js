@@ -201,9 +201,14 @@ define('views/BasicView', [
     },
     
     destroy: function() {
+      if (this._destroyed)
+        return;
+      
+      this._destroyed = true;
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
-      this.remove();
+      if (this.$el)
+        this.remove();
     },
     
     _getLoadingDeferreds: function() {
@@ -493,10 +498,14 @@ define('views/BasicView', [
     getOrientation: function() {
       return ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';
     },
+
+    navigate: function(fragment, options) {
+      Events.trigger('navigate', fragment, options);
+    },
     
     log: function() {
       if (G.DEBUG) {
-        var args = [].slice.call(arguments);
+        var args = U.slice.call(arguments);
         args.unshift(this.TAG);
         G.log.apply(G, args);
       }

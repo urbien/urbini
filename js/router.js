@@ -11,12 +11,13 @@ define('router', [
   'views/HomePage',
   'templates',
   'jqueryMobile',
-  'appAuth'
+  'appAuth',
+  'redirecter'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};
   
@@ -32,6 +33,7 @@ define('router', [
       ""                                                       : "home",
       "home/*path"                                             : "home",
       "social/*path"                                           : "social",
+      "static/*path"                                           : "static",
 //      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
       "list/*path"                                             : "list", 
@@ -228,6 +230,13 @@ define('router', [
 //        Events.trigger('back');
 //        return;
 //      }
+      if (_.has(arguments[0], 'toFragment')) {
+        // hash info object
+        var hashInfo = arguments[0];
+        fragment = hashInfo.toFragment();
+        options = hashInfo.options;
+      }
+      
       
       options = options || {};
       var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
@@ -348,6 +357,17 @@ define('router', [
       var view = C.getCachedView();
       if (!view)
         view = new Modules.SocialNetworkPage();
+      
+      this.changePage(view);
+    },
+    
+    'static': function() {
+      if (!this.routePrereqsFulfilled('static', arguments))
+        return;
+      
+      var view = C.getCachedView();
+      if (!view)
+        view = new Modules.StaticPage();
       
       this.changePage(view);
     },
@@ -696,8 +716,24 @@ define('router', [
         // all good, continue making ur mkresource
       }
       else {
-        var model = U.getModel(type);
-        mPage = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
+        var model = U.getModel(type),
+            modelParams = U.getQueryParams(hashInfo.params, model),
+            resource = new model(U.filterInequalities(modelParams));
+         
+        if (!resource.getUri() && Redirecter.fastForwardMkResource(resource))
+          return;
+        
+//        if (!_.size(U.getPropertiesForEdit(resource))) {
+//          resource.save();
+//          return;
+//        }
+        
+        mPage = new EditPage({
+          model: resource, 
+          action: 'make', 
+          makeId: makeId, 
+          source: this.previousHash
+        });
       }
       
       this.currentModel = mPage.resource;
@@ -744,7 +780,7 @@ define('router', [
       G.previousHashInfo = G.currentHashInfo;
       G.currentHash = U.getHash();
       if (G.currentHash !== G.previousHash)
-        G.currentHashInfo = U.parseHash();
+        G.currentHashInfo = U.getUrlInfo(G.currentHash);
       
       return G.currentHashInfo;
     },
@@ -773,6 +809,9 @@ define('router', [
         break;
       case 'social':        
         views = ['SocialNetworkPage'];
+        break;
+      case 'static':        
+        views = ['StaticPage'];
         break;
       case 'view':
         views = ['ViewPage'];
@@ -803,8 +842,10 @@ define('router', [
           sub = hashInfo;
       
       while (sub) {
-        if (sub.type)
+        if (sub.type) {
+          sub.type = G.classMap[sub.type] || sub.type;
           types.push(sub.type);
+        }
         
         sub = sub.sub;
       }
@@ -835,9 +876,12 @@ define('router', [
     },
     
     login: function(path) {
-      var self = this;
+      var self = this,
+          hashInfo = U.getCurrentUrlInfo(),
+          params = hashInfo.params;
+      
       this._requestLogin({
-        returnUri: U.getHashParams().$returnUri || G.appUrl,
+        returnUri: params && params.$returnUri || G.appUrl,
         onDismiss: function() {
           self.goHome();
         }
@@ -1376,9 +1420,9 @@ define('router', [
     isResourceRoute: function(route) {
       return !this.isListRoute(route);
     },
-    isProxyRoute: function(route) {
-      return _.contains(['templates'/*, 'tour'*/], route);
-    },
+//    isProxyRoute: function(route) {
+//      return _.contains(['templates'/*, 'tour'*/], route);
+//    },
     isWriteRoute: function(route) {
       return _.contains(['make', 'edit'], route);
     }

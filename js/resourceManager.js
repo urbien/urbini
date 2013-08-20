@@ -60,6 +60,7 @@ define('resourceManager', [
       MODEL_STORE = G.getModelsStoreInfo();
       REQUIRED_STORES = G.getBaseObjectStoresInfo();
       Synchronizer.init();
+      CollectionSynchronizer.init();
       ResourceSynchronizer.init();
     }),
   

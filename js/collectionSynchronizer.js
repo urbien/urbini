@@ -1,5 +1,6 @@
 define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronizer', 'idbQueryBuilder', 'indexedDB'], function(G, _, U, Synchronizer, QueryBuilder, IndexedDBModule) {
   var NO_DB = G.dbType === 'none',
+      REF_STORE,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise();
 
@@ -93,6 +94,9 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
   };
   
   CollectionSynchronizer.prototype._onDBSuccess = function(results) {
+    if (!results || !results.length)
+      return this._fetchFromServer(100);
+          
     var numBefore = this.data.length,
         numAfter,
         lastFetchedTS,
@@ -130,8 +134,6 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         data = options.data,
         props = data.vocModel.properties,
         temps = {},
-        dfd = $.Deferred(),
-        promise = dfd.promise(),
         query;
     
     if (!IDB.hasStore(type))
@@ -168,11 +170,9 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         return search();
     }
     
-    var intermediateDfd = $.Deferred();
-    IDB.queryByIndex('_tempUri').oneof(_.values(temps)).getAll(REF_STORE.name).then(intermediateDfd.resolve, intermediateDfd.reject);
-    intermediateDfd.promise().done(function(results) {
+    return IDB.queryByIndex('_tempUri').oneof(_.values(temps)).getAll(REF_STORE.name).then(function(results) {
       if (!results.length)
-        return dfd.reject();
+        return REJECTED_PROMISE;
       
       var tempUriToRef = {};
       for (var i = 0; i < results.length; i++) {
@@ -190,15 +190,18 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         }
       }
       
-      self.getItems(options).then(dfd.resolve, dfd.reject);
-    }).fail(dfd.reject);
-    
-    return promise;
+      return self._getItems(options);
+    });
   };
   
   CollectionSynchronizer.prototype._getKey = function() {
     return this.data.vocModel.type;
   };
-
+  
+  CollectionSynchronizer.init = function() {
+    REF_STORE = G.getRefStoreInfo();
+    delete CollectionSynchronizer.init;
+  };
+  
   return CollectionSynchronizer;
 });

@@ -19,6 +19,7 @@ define('views/EditPage', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       this.constructor.__super__.initialize.apply(this, arguments);
+      
   //    this.resource.on('change', this.render, this);
       this.makeTemplate('resourceEdit', 'template', this.vocModel.type);
       this.editOptions = _.extend({action: 'edit'}, _.pick(options, editParams));
@@ -64,6 +65,18 @@ define('views/EditPage', [
       if (this.editParams)
         this.editView.set(this.editParams);
     },
+    
+//    shortcut: function() {
+//      U.hasUnsetEditableProperties(this.resource);
+//      var meta = this.resource.vocModel.properties,
+//          atts = this.resource.attributes,
+//          numUnset = 0;
+//      
+//      for (var props in meta) {
+//        if (meta[])
+//      }
+//    },
+    
     set: function(params) {
       _.extend(this, params);
       if (this.editView)

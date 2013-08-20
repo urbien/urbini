@@ -172,10 +172,12 @@ define('views/ResourceListItemView', [
       if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
         if (!isIntersection  ||  (!p1  &&  !p2)) {
           Events.stopEvent(e);
-          Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
+          Events.trigger('chose', U.getQueryParams().$prop, this.model);
+//          Events.trigger('chose:' + U.getQueryParams().$prop, this.model);
           return;
         }
       }
+      
       if (params  &&  type && isIntersection) {
         Events.stopEvent(e);
         var rParams = {};

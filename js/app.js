@@ -306,7 +306,7 @@ define('app', [
     reset();
     Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
-      promise.done(U.partial(run, fn, context));
+      return promise.then(U.partial(run, fn, context));
     };
   };
   
@@ -400,8 +400,13 @@ define('app', [
     }).promise();
   };
   
+  function setupUser() {
+    G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+  };
+  
   function doPreStartTasks() {
 //    setupHashMonitor();
+    setupUser();
     setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
@@ -476,6 +481,12 @@ define('app', [
         if (/\.[a-zA-Z]+$/.test(key))
           G.localStorage.del(key);
       }        
+    });
+    
+    Events.on('viewDestroyed', function(view) {
+      setTimeout(function() {
+        U.wipe(view);
+      }, 0);
     });
   };
   
@@ -705,7 +716,7 @@ define('app', [
 //        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
         return {
           name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl(net, 'Login')
+          url: U.buildSocialNetOAuthUrl(net, 'Login', returnUri)
         };
       });
       

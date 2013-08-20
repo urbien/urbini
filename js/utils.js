@@ -8,9 +8,10 @@ define('utils', [
   'events',
   'jqueryMobile'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
-  var asArray = function(stuff) { return [].slice.call(stuff) },
-      slice = [].slice,
-      concat = [].concat,
+  var ArrayProto = Array.prototype,
+      slice = ArrayProto.slice,
+      asArray = function(stuff) { return slice.call(stuff) },
+      concat = ArrayProto.concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
@@ -379,7 +380,7 @@ define('utils', [
     },
     
     getUserRole: function() {
-      return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      return G.currentUser.role;
     },
     
     isUserInRole: function(userRole, ar, res) {
@@ -519,6 +520,10 @@ define('utils', [
       return G.currentUser._uri;
     },
 
+    getCurrentUrlInfo: function() {
+      return G.currentHashInfo;
+    },
+
     isCreatable: function(type, userRole) {
       if (G.currentUser.guest)
         return false;
@@ -553,43 +558,34 @@ define('utils', [
     },
     
     isPropEditable: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
         return false;
-      var hash = window.location.hash;
-      if (prop.avoidDisplayingInEdit  &&  hash.indexOf("#edit") != -1)
+      var hashInfo = U.getCurrentUrlInfo();
+      if (prop.avoidDisplayingInEdit  &&  hashInfo.route == "edit" || (res.get(prop.shortName) && prop.immutable))
         return false;
-      if (prop.avoidDisplayingOnCreate  &&  hash.indexOf("#make") != -1)
+      if (prop.avoidDisplayingOnCreate  &&  hashInfo.route == "make")
         return false;
-
-      var isMkResource = res.isNew();
-      var isAdmin = U.isUserInRole("admin");
-      var cantEdit = false;
-      _.each(['allowRoles', 'allowRolesToEdit'], function(p) {        
-        var roles = prop[p];
-        if (roles  &&  roles.indexOf('self') == -1  &&  !isAdmin)
-          return false;
-      });
-      
-      if (cantEdit)
-        return false;
-
-      var resExists = res  &&  !!res.getUri();
-      if (resExists) { 
-        if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
-          return false;
-      }
-      else {
-        if (prop.avoidDisplayingOnCreate)
-          return false;
-      }
 
       userRole = userRole || U.getUserRole();
-      if (userRole == 'admin')
+      if (userRole == 'admin' || userRole == 'siteOwner')
         return true;
       
+      var allowedToRole = !_.any(['allowRoles', 'allowRolesToEdit'], function(p) {        
+        var roles = prop[p];
+        if (roles  &&  roles.indexOf('self') == -1)
+          return true;
+      });
+      
+      if (!allowedToRole)
+        return false;
+      
+      var isMkResource = !res.getUri();
+      if (!isMkResource && prop.primary)
+        return false;
+
       var ar = prop.allowRolesToEdit;
       return ar ? U.isUserInRole(userRole, ar, res) : true;
-    },
+    },   
     
     isResourceProp: function(prop) {
       return prop && !prop.backLink && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
@@ -900,6 +896,46 @@ define('utils', [
         icon = net.toLowerCase();
       
       return icon + '-sign';
+    },
+    
+    countdown: function(element, seconds) {
+      var minutes = parseInt(seconds / 60),
+          dfd = $.Deferred(),
+          promise = dfd.promise();
+      
+      seconds = seconds % 60;
+      var interval = setInterval(function() {
+        if (seconds == 0) {
+          if (minutes == 0) {
+            element.innerHTML = "0 seconds";
+            clearInterval(interval);
+            dfd.resolve();
+            return;
+          } else {
+            minutes--;
+            seconds = 60;
+          }
+        }
+        
+        if(minutes > 0) {
+          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
+        } else {
+          var minute_text = '';
+        }
+        
+        var second_text = seconds > 1 ? 'seconds' : 'second';
+        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
+        seconds--;
+      }, 1000);
+      
+      
+      promise.cancel = function() {
+        clearInterval(interval);
+        dfd.reject();
+        el.innerHTML = '';
+      };
+      
+      return promise;
     },
     
     buildSocialNetOAuthUrl: function(net, action, returnUri) {
@@ -2705,7 +2741,10 @@ define('utils', [
 //      var y = aCoords[1] - bCoords[1];
 //      return Math.sqrt(x*x + y*y);
     },
+    
     slice: slice,
+    concat: concat,
+    asArray: asArray,
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -2966,7 +3005,9 @@ define('utils', [
       if (U.isResourceProp(prop) && bound === '_me') {
         if (G.currentUser.guest) {
           Events.trigger('req-login'); // exit search?
-          return function() {return true};
+          return function() {
+            return false;
+          };
         }
         else
           bound = G.currentUser._uri;
@@ -3523,7 +3564,7 @@ define('utils', [
      */
     rpc: function(method) {
       log('app', method);
-      var args = [].slice.call(arguments, 1),
+      var args = slice.call(arguments, 1),
           msg = {
               type: 'rpc:' + method
           };
@@ -3581,75 +3622,33 @@ define('utils', [
     isMetaParameter: function(param) {
       return /^[$-]+/.test(param);
     },
-    
-    parseHash: function(hash) {
-      hash = hash || U.getHash();
-      var params = U.getHashParams(hash),
-          qIdx = hash.indexOf("?"),
-          route = U.getRoute(hash),
-          subRoute,
-          hashParts = hash.split('?'),
-          type = U.getModelType(hash),
-          query = hashParts[1] || '',
-          uri,
-          info,
-          subInfo;
 
-      if (!route)
-        route = hash ? 'list' : 'home';
-      
-      if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
-        var uriParams = {};
-        for (var param in params) {
-          if (U.isMetaParameter(param)) {
-            uriParams[param] = params[param];
-            delete params[param];
-          }
-        }
-        
-        uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+    isModelParameter: function(param) {
+      return !U.isMetaParameter(param);
+    },
+
+    getUrlInfo: function(hash) {
+      return new UrlInfo(hash);
+    },
+
+    wipe: function(obj) {
+      for (var p in obj) {
+        if (obj.hasOwnProperty(p))
+          delete obj[p];
       }
-      else {
-        uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
-      }
-        
-      if (window.router.isProxyRoute(route)) {
-        subInfo = U.parseHash(uri);
-//        uri = subHashInfo.uri;
-//        type = subHashInfo.type;
-//        subRoute = subHashInfo.route;
-      }
-      
-      
-      info = {
-        action: U.getRouteAction(route),
-        route: route,
-        sub: subInfo,
-        uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
-        type: type,
-        query: query,
-        params: params,
-        fragment: hash
-      };
-      
-      info.equals = function(otherInfo) {
-        return _.isEqual(_.omit(otherInfo, 'equals'), _.omit(info, 'equals'));
-      };
-      
-      return info;
     },
     
     partial: function(fn) {
-      var args = [].slice.call(arguments, 1);
+      var args = slice.call(arguments, 1);
       return function() {
-        return fn.apply(null, args.concat([].slice.call(arguments)));
+        return fn.apply(null, args.concat(slice.call(arguments)));
       };
     },
 
     partialWith: function(fn, context) {
-      var args = [].slice.call(arguments, 2);
+      var args = slice.call(arguments, 2);
       return function() {
-        return fn.apply(context, args.concat([].slice.call(arguments)));
+        return fn.apply(context, args.concat(slice.call(arguments)));
       };
     },
 
@@ -3745,6 +3744,95 @@ define('utils', [
     }
   };
 
+  var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment'],
+      urlInfoSpecial = ['params', 'sub'],
+      allUrlInfoProps = _.union(urlInfoProps, urlInfoSpecial);
+  
+  function UrlInfo(hash) {
+    if (typeof hash == 'string')
+      this.initWithHash(hash);
+    else {
+      if (typeof hash === 'object')
+        _.extend(this, hash || {});
+    }
+    
+    var self = this;
+    this.equals = function(urlInfo) {
+      return this.toFragment() == urlInfo.toFragment();
+    };
+    
+    this.toFragment = function() {
+      if (this.fragment)
+        return this.fragment;
+      
+      var base;
+      if (this.route)
+        base = this.route + '/' + encodeURIComponent(this.uri);
+      else
+        base = this.uri;
+      
+      if (!this.params)
+        return base;
+      
+      return base + (base.indexOf("?") == -1 ? '?' : '&') + $.param(this.params || {});        
+    };
+    
+    _.each(allUrlInfoProps, function(prop) {
+      var cProp = prop.capitalizeFirst();
+      self['get' + cProp] = function() {
+        return self[prop];
+      };
+      
+      self['set' + cProp] = function(val) {
+        self[prop] = val;
+        return self;
+      };
+    });
+  };
+  
+  UrlInfo.prototype.initWithHash = function(hash) {
+    var params = U.getHashParams(hash),
+        qIdx = hash.indexOf("?"),
+        route = U.getRoute(hash),
+        subRoute,
+        hashParts = hash.split('?'),
+        type = U.getModelType(hash),
+        query = hashParts[1] || '',
+        uri,
+        info,
+        subInfo;
+
+    if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+      var uriParams = {};
+      for (var param in params) {
+        if (U.isMetaParameter(param)) {
+          uriParams[param] = params[param];
+          delete params[param];
+        }
+      }
+      
+      uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+    }
+    else {
+      uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+    }
+
+    if (!route)
+      route = hash ? 'list' : 'home';
+    
+    if (route == 'templates') // template is a proxy route, it has another url as part of its url
+      subInfo = new UrlInfo(uri);
+    
+    this.action = U.getRouteAction(route);
+    this.route = route;
+    this.sub = subInfo;
+    this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    this.type = type;
+    this.query = query;
+    this.params = params;
+    this.fragment = hash;
+  };
+  
   for (var p in U.systemProps) {
     var prop = U.systemProps[p];
     prop.shortName = p;

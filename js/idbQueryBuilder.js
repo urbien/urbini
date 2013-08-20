@@ -108,8 +108,10 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     val = clause.value;
     var prop = props[name];
     if (prop && U.isResourceProp(prop) && val === '_me') {
-      if (G.currentUser.guest)
+      if (G.currentUser.guest) {
         Events.trigger('req-login');
+        return null;
+      }
       else
         val = G.currentUser._uri;
     }

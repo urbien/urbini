@@ -274,7 +274,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 //              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
       }
       
-      return loadModels(mightBeStale.models, true);
+      return loadModels(_.values(mightBeStale.models), true);
     }
     
     var mz = data.models || [],
@@ -334,6 +334,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 
   function loadModels(models, preventOverwrite) {
     var models = models || MODEL_CACHE;
+    models.sort(function(a, b) {
+      return a.enumeration ? -1 : 1;
+    });
+    
     _.each(models, function(model) {
       if (!preventOverwrite || !U.getModel(model.type))
         loadModel(model);
@@ -518,9 +522,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           data = JSON.parse(data);
         } catch (err) {
           debugger;
-          return null;
         }
       }
+      
+      if (!data || typeof data !== 'object')
+        return G.getRejectedPromise();
       
       return data;
     });    
@@ -541,11 +547,20 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       });
     }
     
+    var tempData = U.filterObj(modelJson, U.isMetaParameter);
+    _.each(_.keys(tempData), function(prop) {
+      delete modelJson[prop];
+    });
+    
     data[getModelStorageURL(type)] = modelJson;
     G.putCached(data, {
       storage: storageType,
       store: MODEL_STORE.name
+    }).always(function() {
+      _.extend(modelJson, tempData);
     });
+    
+    
     
 //    setTimeout(function() {
 //      var type = modelJson.type;

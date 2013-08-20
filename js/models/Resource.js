@@ -37,7 +37,7 @@ define('models/Resource', [
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'onsyncedChanges', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -50,7 +50,7 @@ define('models/Resource', [
 //        this._load();
       
       if (this.isNew())
-        this.setDefaults(options.query);
+        this.setDefaults();
       
       if (atts) {
         this.parse(atts);
@@ -162,10 +162,12 @@ define('models/Resource', [
         return val;
     },
     
-    setDefaults: function(query) {
+    setDefaults: function() {
       var vocModel = this.vocModel,
-          query = U.getQueryParams(query), // will default to current url's query if query is undefined
-          defaults = U.filterInequalities(U.getQueryParams(query, vocModel));
+          defaults = {};
+//          ,
+//          query = U.getQueryParams(query), // will default to current url's query if query is undefined
+//          defaults = U.filterInequalities(U.getQueryParams(query, vocModel));
 
       if (this.isA('Submission')) {
         var currentUser = G.currentUser;
@@ -205,52 +207,52 @@ define('models/Resource', [
         var resA = C.getResource(defaults[aProp]);
         var resB = C.getResource(defaults[bProp]);
         if (resA != null  &&  resB != null) {
-          
-        var mA = resA.vocModel;
-        var mB = resB.vocModel;
-        var rA = mA.adapter ? mA.adapter : null;
-        var rB = mB.adapter ? mB.adapter : null;
-        if (rA  ||  rB) {
-          var m = rA ? mA : mB;
-          if (U.isA(m, 'ImageResource')) {
-            var res = rA ? resA : resB;
-              
-            var thumb = U.getCloneOf(m, "ImageResource.smallImage")[0];
-            if (thumb) {
-              var img = res.get(thumb);
-              if (img) {
-                var p = rA ? U.getCloneOf(vocModel, "Intersection.aThumb")[0] : U.getCloneOf(vocModel, "Intersection.bThumb")[0];
-                defaults[p] = img;
+          var mA = resA.vocModel;
+          var mB = resB.vocModel;
+          var rA = mA.adapter ? mA.adapter : null;
+          var rB = mB.adapter ? mB.adapter : null;
+          if (rA  ||  rB) {
+            var m = rA ? mA : mB;
+            if (U.isA(m, 'ImageResource')) {
+              var res = rA ? resA : resB;
+                
+              var thumb = U.getCloneOf(m, "ImageResource.smallImage")[0];
+              if (thumb) {
+                var img = res.get(thumb);
+                if (img) {
+                  var p = rA ? U.getCloneOf(vocModel, "Intersection.aThumb")[0] : U.getCloneOf(vocModel, "Intersection.bThumb")[0];
+                  defaults[p] = img;
+                }
               }
-            }
-            var featured = U.getCloneOf(m, "ImageResource.mediumImage")[0];
-            if (featured) {
-              var img = res.get(featured);
-              if (img) {
-                var p = rA ? U.getCloneOf(vocModel, "Intersection.aFeatured")[0] : U.getCloneOf(vocModel, "Intersection.bFeatured")[0];
-                defaults[p] = img;
+              var featured = U.getCloneOf(m, "ImageResource.mediumImage")[0];
+              if (featured) {
+                var img = res.get(featured);
+                if (img) {
+                  var p = rA ? U.getCloneOf(vocModel, "Intersection.aFeatured")[0] : U.getCloneOf(vocModel, "Intersection.bFeatured")[0];
+                  defaults[p] = img;
+                }
               }
-            }
-            var oW = U.getCloneOf(m, "ImageResource.originalWidth")[0];
-            if (oW) {
-              var img = res.get(oW);
-              if (img) {
-                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalWidth")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalWidth")[0];
-                defaults[p] = img;
+              var oW = U.getCloneOf(m, "ImageResource.originalWidth")[0];
+              if (oW) {
+                var img = res.get(oW);
+                if (img) {
+                  var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalWidth")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalWidth")[0];
+                  defaults[p] = img;
+                }
               }
-            }
-            var oH = U.getCloneOf(m, "ImageResource.originalHeight")[0];
-            if (oH) {
-              var img = res.get(oH);
-              if (img) {
-                var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalHeight")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalHeight")[0];
-                defaults[p] = img;
+              var oH = U.getCloneOf(m, "ImageResource.originalHeight")[0];
+              if (oH) {
+                var img = res.get(oH);
+                if (img) {
+                  var p = rA ? U.getCloneOf(vocModel, "Intersection.aOriginalHeight")[0] : U.getCloneOf(vocModel, "Intersection.bOriginalHeight")[0];
+                  defaults[p] = img;
+                }
               }
             }
           }
         }
       }
-      }
+      
       this.set(defaults, {silent: true});
     },
     
@@ -262,60 +264,10 @@ define('models/Resource', [
       if (!resUri)
         return;
       
-      var self = this;
-      
-      // the reason we need this little nasty instead of using model.set from elsewhere 
-      // is because that elsewhere is in the land of syncing the db with the server and 
-      // has no idea which resource the data it just got belongs to. Another option would
-      // be to have a central cache of resources by uri (like in G.Router), and look up 
-      // the resource there and use model.set
-      Events.on('synced:' + resUri, this.onsyncedChanges);
       Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
-    onsyncedChanges: function(data, newModel) {
-      if (!data) {
-        this.trigger('sync');
-        return;
-      }
-
-      var uri = this.getUri();
-      var oldUri = data._oldUri;
-      if (oldUri) {
-//        var oldType = U.getTypeUri(oldUri);
-//        var newType = U.getTypeUri(uri);
-//        if (oldType != newType) {
-//          debugger;
-//          // change vocModel
-//        }
-        
-        this.trigger('uriChanged', oldUri);
-        Events.off('synced:' + oldUri, this.onsyncedChanges);
-        Events.on('synced:' + uri, this.onsyncedChanges);
-        Events.off('updateBacklinkCounts:' + oldUri, this.updateCounts);
-        Events.on('updateBacklinkCounts:' + uri, this.updateCounts);
-      }
-      
-      if (newModel)
-        this.setModel(newModel);
-      
-//      this.id = oldUri; // HACK for remove from collection to work correctly;
-//      var col = this.collection;
-//      if (oldUri && col)
-//        col.remove(this);
-      
-      this.set(data);
-      
-//      this.id = uri;
-//      if (oldUri && this.collection)
-//        this.collection.add(this);
-      
-      try {
-        this.url = this.getUrl();
-      } catch (err) {}
-      
-      this.trigger('sync');
-    },
+    
     cancel: function(options) {
       options = options || {};
       var props = this.vocModel.properties;
@@ -548,7 +500,8 @@ define('models/Resource', [
     },
     
     set: function(key, val, options) {
-      if (!this.subscribedToUpdates && this.getUri())
+      var uri = this.getUri();
+      if (!this.subscribedToUpdates && uri)
         this.subscribeToUpdates();
       
       if (key == null)
@@ -580,10 +533,15 @@ define('models/Resource', [
       }
       
       var displayNameChanged = false;
+//      var uriChanged;
+      
       for (var shortName in props) {
         var val = props[shortName];
         if (!val)
           continue;
+        
+//        if (shortName == '_uri' && val !== uri)
+//          uriChanged = true;
         
         var prop = meta[shortName];
         if (!prop)
@@ -609,6 +567,14 @@ define('models/Resource', [
             if (res) {
               props[sndName] = U.getDisplayName(res);
             }
+            
+            if (U.isTempUri(val)) {
+              Events.once('synced:' + val, function(data) {
+                self.set(shortName, data._uri);
+                if (self.getUri())
+                  self.save();
+              });
+            }
           }
         }
       }
@@ -631,6 +597,7 @@ define('models/Resource', [
       
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
+//        this._resetEditableProps();
         if (options.userEdit) {
           _.extend(this.unsavedChanges, props);
 //          options.silent = options.silent !== false;
@@ -831,7 +798,8 @@ define('models/Resource', [
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (prop && (prop.containerMember || prop.notifyContainer)) {
+        if (U.isResourceProp(prop)) {
+//        if (prop && (prop.containerMember || prop.notifyContainer)) { // let's just notify all, it's cheap
           var val = props[p];
           if (!val) // might have gotten unset
             continue;
@@ -942,26 +910,37 @@ define('models/Resource', [
     },
 
     _save: function(data, options) {
-      var vocModel = this.vocModel,
+      var self = this,
+          uri = this.getUri(),
+          vocModel = this.vocModel,
           isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall),
           isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
-          isNew = this.isNew(),
-          saved = Backbone.Model.prototype.save.call(this, data, options);
+          success = options.success,
+          isNew = this.isNew();
       
       if (isAppInstall)
         Events.trigger('appInstall', this);
       else if (isTemplate)
         Events.trigger('templateUpdate:' + this.get('templateName'), this);
       
-      this.triggerPlugs(options);
-      this.notifyContainers();
       if (isNew)
         this.checkIfLoaded();
       
-      Events.trigger('cacheResource', this);
-      this.trigger('saved', this, options);
+//      Events.trigger('cacheResource', this);
       this.unsavedChanges = {};
-      return saved;
+      options.success = function() {
+        success && success.apply(self, arguments);        
+        self.trigger('saved', self, options);
+        if (uri)
+          Events.trigger('savedEdit', self, options);
+        else
+          Events.trigger('savedMake', self, options);
+        
+        self.triggerPlugs(options);
+        self.notifyContainers();      
+      };
+      
+      return Backbone.Model.prototype.save.call(this, data, options);
     },
     
     _sync: function(data, options) {
@@ -971,6 +950,7 @@ define('models/Resource', [
           isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
           isApp = U.isAssignableFrom(vocModel, commonTypes.App),
           isNew = this.isNew(),
+          tempUri = isNew && this.getUri(),
           success = options.success, 
           error = options.error;
 
@@ -1020,12 +1000,12 @@ define('models/Resource', [
           // completed sync with db
         }
         
-        this.trigger('saved', self, options);
         this.triggerPlugs(options);
         if (!options.fromDB)
           this.notifyContainers();
         
         this.trigger('syncedWithServer');
+        Events.trigger('synced:' + (tempUri || this.getUri()), this);
       }.bind(this);
       
       options.error = function(originalModel, err, opts) {
@@ -1046,7 +1026,7 @@ define('models/Resource', [
     },
     
     save: function(attrs, options) {
-      options = _.extend({patch: true, silent: false}, options || {});
+      options = _.defaults(options || {}, {patch: true, silent: false});
       attrs = attrs || {};
       var isNew = this.isNew(),
           data,
@@ -1121,6 +1101,168 @@ define('models/Resource', [
       
 //      return U.flattenModelJson(filtered, vocModel, preserve);
       return filtered;
+    },
+    
+    _getPropertiesForEdit: function(urlInfo) {
+      var isMake = !this.getUri(),
+          model = this.vocModel,
+          params = urlInfo ? urlInfo.getParams() : {},
+          editProps = params['$editCols'] && params['$editCols'].replace(/\s/g, '').split(','),
+          mkResourceCols = isMake && model['mkResourceCols'];
+          
+      if (!editProps) {
+        propsForEdit = model.propertiesForEdit;
+        if (isEdit)
+          editProps = propsForEdit && propsForEdit.replace(/\s/g, '').split(',');
+        else {
+          if (mkResourceCols)
+            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+          else if (model.type.endsWith(G.commonTypes.WebProperty))
+            editProps = ['label', 'propertyType'];
+          else if (model.type.endsWith('system/designer/Connection'))
+            editProps = ['fromApp', 'connectionType', 'effect'];
+        }  
+      }
+      
+      return editProps;
+    },
+
+//    _resetEditableProps: function() {
+//      U.wipe(this._editableProps);
+//      delete this._editablePropsUrlInfo;
+//    },
+    
+    _isPropMutable: function(prop, editablePropsInfo) {
+      var p = prop && prop.shortName,
+          backlinks = editablePropsInfo.backlinks;
+      
+      return p && prop && !_.has(backlinks, p) && U.isPropEditable(this, prop, U.getUserRole());
+    },
+    
+    getEditableProps: function(urlInfo) {
+//      if (this._editableProps && _.size(this._editableProps))
+//        return this._editableProps;
+      
+      var isEdit = !!this.getUri();
+      
+      urlInfo = urlInfo || U.getUrlInfo(U.makeMobileUrl(isEdit ? 'edit' : 'make', this.getUri(), this.attributes));
+      var self = this,
+          model = this.vocModel,
+          meta = model.properties,
+          isMake = !isEdit,
+          propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"),
+          backlinks = this.vocModel._backlinks = U.getPropertiesWith(meta, "backLink"),
+          reqParams = urlInfo.getParams(),
+//          currentAtts = U.filterObj(isMake ? res.attributes : res.changed, U.isModelParameter),
+          editProps = reqParams['$editCols'] && reqParams['$editCols'].replace(/\s/g, '').split(','),
+          mkResourceCols = isMake && this.vocModel['mkResourceCols'],
+          userRole = U.getUserRole(),
+          collected = [],
+          result = {
+            backlinks: backlinks,
+            groups: propGroups,
+            props: {
+              grouped: [],
+              ungrouped: []
+            }
+          },
+          ungrouped = result.props.ungrouped;
+      
+      if (!editProps) {
+        propsForEdit = model.propertiesForEdit;
+        if (isEdit)
+          editProps = propsForEdit && propsForEdit.replace(/\s/g, '').split(',');
+        else {
+          if (mkResourceCols)
+            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+          else if (model.type.endsWith(G.commonTypes.WebProperty))
+            editProps = ['label', 'propertyType'];
+          else if (model.type.endsWith('system/designer/Connection'))
+            editProps = ['fromApp', 'connectionType', 'effect'];
+        }  
+      }
+
+      if (editProps || !propGroups.length)
+        propGroups = result.groups = null;
+      else {
+        propGroups.sort(function(a, b) {
+          return a.shortName === 'general' ? -1 : a.index - b.index;
+        });
+      }
+      
+      if (propGroups) {
+        for (var i = 0; i < propGroups.length; i++) {
+          var grProp = propGroups[i],
+              props = grProp.propertyGroupList.split(","), // TODO: send it as an array from the server
+              grouped = result.props.grouped,
+              group = {
+                shortName: grProp.shortName,
+                prop: grProp,
+                props: []
+              },
+              grProps = group.props = [];
+          
+          for (var j = 0; j < props.length; j++) {
+            var p = props[j],
+                prop = meta[p];
+            
+            if (this._isPropMutable(prop, result)) {
+              grProps.push(p);
+              collected.push(p);
+            }
+          }
+          
+          if (grProps.length)
+            grouped.push(group);
+        }
+        
+        var reqd = U.getPropertiesWith(meta, [{
+            name: "required", 
+            value: true
+          }, {
+            name: "readOnly", 
+            values: [undefined, false]
+          }]);
+        
+        for (var p in reqd) {
+          if (_.contains(collected, p))
+            continue;
+          
+          var prop = meta[p];
+          if (this._isPropMutable(prop, result)) {
+            ungrouped.push(p);
+            collected.push(p);
+          }
+        }
+      }
+      
+      for (var p in reqParams) {
+        if (_.contains(collected, p))
+          continue;
+        
+        var prop = meta[p];
+        if (this._isPropMutable(prop, result)) {
+          ungrouped.push(p);
+          collected.push(p);
+        }
+      }
+      
+      if (!propGroups) {
+        for (var p in meta) {
+          if (_.contains(collected, p))
+            continue;
+          
+          var prop = meta[p];
+          if (this._isPropMutable(prop, result) && (!editProps || _.contains(editProps, p))) {
+            ungrouped.push(p);
+            collected.push(p);            
+          }
+        }        
+      }      
+      
+//      this._editablePropsUrlInfo = urlInfo;
+//      this._editableProps = result;
+      return result;
     }
 //    ,
 //    getMiniVersion: function() {
@@ -1161,6 +1303,14 @@ define('models/Resource', [
       _shortUri: {range: "Resource"}
     }
   });
+  
+//  function EditableProps(res) {
+//  };
+//
+//  var props = ['groups', 'backlinks', 'props'];
+//  EditableProps.prototype.refresh = function() {
+//    
+//  };
   
   return Resource;
 });

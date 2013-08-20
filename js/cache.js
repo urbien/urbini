@@ -46,15 +46,30 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         resources[uri] = resource;
     };
     
-    function cacheList(list) {
-      var qs = list.query; // || $.param(list.params);
-//      if (qs) // taken care of in ResourceList
-//        qs = U.getQueryString(U.getQueryParams(qs, list.vocModel), true);
-        
-      var typeUri = list.vocModel.type;
-      return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
+    function uncacheResource(uri) {
+      if (uri.getUri)
+        uri = uri.getUri();
+      
+      if (uri)
+        delete resources[uri];
     };
     
+    function cacheList(list) {
+      var qs = list.query, // || $.param(list.params);
+          typeUri = list.vocModel.type;
+      
+      return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
+    };
+
+    function uncacheList(list) {
+      var qs = list.query, // || $.param(list.params);
+          typeUri = list.vocModel.type;
+      
+      var subCache = lists[typeUri];
+      if (subCache)
+        delete subCache[qs || typeUri];
+    };
+
     /**
      * search a collection map for a collection with a given model
      * @return if filter function is passed in, return all resources that matched across all collections, otherwise return {collection: collection, resource: resource}, 
@@ -167,7 +182,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 
     return {
       cacheResource: cacheResource,
+      uncacheResource: uncacheResource,
       cacheList: cacheList,
+      uncacheList: uncacheList,
       getResource: getResource,
       getList: getList
     };
@@ -433,6 +450,14 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   });
 
   Events.on('newModel', cacheModel);
+  
+  Events.on('savedMake', function(resource) {
+    resourceCache.cacheResource(resource, true);
+    var tempUri = resource.getUri();
+    resource.on('syncedWithServer', function() {
+      resourceCache.uncacheResource(tempUri);
+    });
+  });
 //  Events.on('newPlugs', C.cachePlugs);
   return Cache;
 });

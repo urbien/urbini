@@ -120,12 +120,13 @@ define('views/SocialNetworkPage', [
         
         if (accesses) {
           var action,
-              connected = accesses.where({
-                socialNet: net.socialNet,
-                connected: true
+              access = accesses.where({
+                socialNet: net.socialNet
               }, true),
-            
+              connected = access && access.connected;
+           
           action = connected ? 'Disconnect' : 'Connect';
+          btnInfo.exists = !access;
           btnInfo.connected = connected;
           btnInfo.href = self._netUrls[net.socialNet] = U.buildSocialNetOAuthUrl(net, action); // sorted alphabetically
           btnInfo.linkText = action;

@@ -30,7 +30,7 @@ define('views/ViewPage', [
         menu: true,
         rightMenu: !G.currentUser.guest,
         login: G.currentUser.guest,
-        chat: res.isA("CollaborationPoint")
+        chat: res.isA("ChatRoom")
       };
 
       var params = U.getParamMap(window.location.hash);

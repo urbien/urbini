@@ -142,7 +142,11 @@ define('views/CameraPopup', [
       this.setstate('recording');
       if (this.isVideo) {
         this.ctx = this.canvas.getContext('2d');
-        this.frames = [];
+        if (this.frames)
+          this.frames.length = 0;
+        else
+          this.frames = [];
+        
         this.rafId = requestAnimationFrame(this.drawVideoFrame_);
       }
       
