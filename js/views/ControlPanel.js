@@ -61,7 +61,11 @@ define('views/ControlPanel', [
       
       var shortName = t.dataset.shortname;
       this.prop = this.vocModel.properties[shortName];
-
+      this.setLinkTo = this.prop.setLinkTo;
+      if (this.setLinkTo) {
+        var shortName = this.setLinkTo;
+        this.prop = this.vocModel.properties[shortName];
+      }
       G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       var self = this;       
@@ -71,13 +75,16 @@ define('views/ControlPanel', [
         function noIntersection(prop) {
           var params = {
             '$backLink': prop.backLink,
-            '-makeId': G.nextId(),
             '$title': t.dataset.title
           };
     
           params[prop.backLink] = self.resource.getUri();
-          
-          self.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+          if (self.setLinkTo)  
+            self.router.navigate(U.makeMobileUrl('list', prop.range, params), {trigger: true});
+          else {
+            params['-makeId'] = G.nextId();
+            self.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+          }
           G.log(self.TAG, 'add', 'user wants to add to backlink');
         };
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
