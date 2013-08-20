@@ -97,8 +97,8 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-      this.onload(this._checkMessageBar.bind(this));
-      this.onload(this._checkAutoClose.bind(this));
+//      this.onload(this._checkMessageBar.bind(this));
+//      this.onload(this._checkAutoClose.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -111,8 +111,10 @@ define('views/BasicPageView', [
       });
       
       this.on('active', function(active) {
-        if (active)
+        if (active) {
           self._checkMessageBar();
+          self._checkAutoClose();
+        }
         else
           self._clearMessageBar();        
       });
