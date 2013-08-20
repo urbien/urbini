@@ -319,6 +319,7 @@ function showImageChooser() {
 //              for (k = 0; k < openGraphImages.length; k++) {
 //                d.push(e(openGraphImages[k]));
 //              }
+              
               c = document.getElementsByTagName("embed");
               for (k = 0; k < c.length; k++) {
                   l = /^http:\/\/www\.youtube\.com\/v\/([a-zA-Z0-9\-_]+)/;
@@ -346,7 +347,18 @@ function showImageChooser() {
             callAha();
             return null;
           }
-            
+
+          var noImg = new Image;
+          noImg.src = serverUrl + '/images/no_image.gif';
+          m.push({
+            w: 300,
+            h: 300,
+            src: noImg.src,
+            alt: 'No good image here',
+            im2: new Image,
+            img: noImg
+          });
+          
           i = function () {
               o.parentNode.removeChild(o);
               n.parentNode.removeChild(n);
@@ -460,6 +472,7 @@ function showImageChooser() {
                   }
               })(m[h])
           }
+
           if (isIE()) {
               i = document.getElementsByTagName("object");
               for (h = 0; h < i.length; h++) {
