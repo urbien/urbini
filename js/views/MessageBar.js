@@ -54,6 +54,9 @@ define('views/MessageBar', [
         var self = this,
             msgLength = _.reduce(_.pluck(messageList, 'message'), function(total, msg) { return total + msg.length * 80 }, 0);
         
+        if (msgLength < 3000)
+          msgLength = 3000;
+        
         setTimeout(function() {
           self.$el.fadeOut(2000, self.destroy);
         }, msgLength);        
