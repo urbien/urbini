@@ -11,7 +11,10 @@ var scripts = document.getElementsByTagName('script'),
     overlayDiv,
     setImage = true,
     description,
-    found = [];
+    found = [],
+    $ = function() {
+      return document.querySelector.apply(document, arguments);
+    };
 
 function isIE() {
   return /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)
@@ -28,7 +31,7 @@ function addParam(name, val) {
 }
 
 function collectInfo() {
-  for (var c = document.getElementsByTagName("meta"), k = 0; k < c.length; k++) {
+  for (var c = $("meta"), k = 0; k < c.length; k++) {
     var p = c[k].getAttribute('property'),
         hasOGUrl = false;
     
@@ -92,8 +95,14 @@ function y(a) {
 }
 
 function removeOverlay() {
-  overlayDiv.parentNode && overlayDiv.parentNode.removeChild(overlayDiv);  
-  containerDiv.parentNode && containerDiv.parentNode.removeChild(containerDiv);  
+  var overlay = $('#ahaOverlay');
+  if (overlay && overlay.parentNode)
+    overlay.parentNode.removeChild(overlay);
+  
+  var container = $('#ahaContainer');
+  if (container && container.parentNode)
+    container.parentNode.removeChild(container);  
+  
   return false;
 };
 
@@ -106,19 +115,21 @@ function setClass(el, cl) {
 
 function overlay() {
   var css = "#ahaOverlay {opacity: 0.9; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: white; width: 100%; height: 100%; z-index: 100000002;}\n" +
-            "#ahaContainer {font-family: 'helvetica neue', arial, sans-serif; position: absolute; z-index: 100000002; top: 0; left: 0; background-color: transparent; opacity: 1; width: 100%; height: 100%}\n" +
-            "#ahaHeader {padding-top: 10px; margin-bottom: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; opacity: 1; z-index: 100000002; top: 0; left: 0; width: 100%;}\n" +
-            "#ahaHeader img {max-width: 95%;}\n" +
+            "#ahaContainer {position: absolute; z-index: 100000002; top: 0; left: 0; background-color: transparent; opacity: 1; width: 100%; height: 100%}\n" +
+            "#ahaContainer h1, #ahaContainer h2, #ahaContainer p {font-family: 'helvetica neue', arial, sans-serif;}\n" +
+//            "#ahaHeader {padding-top: 10px; margin-bottom: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; opacity: 1; z-index: 100000002; top: 0; left: 0; width: 100%;}\n" +
+//            "#ahaHeader img {max-width: 95%;}\n" +
             "#ahaBtn, #huhBtn {padding-top: 30px; text-align:center; font-family: 'helvetica neue', arial, sans-serif; background-color: transparent; opacity: 1; width: 50%; height: 90%; z-index: 100000002;}\n" + 
 //            "#ahaCancelBtn {float:right; background-color: #f00; height: 100%}\n" + 
-            "#ahaCancelBtn {text-decoration:none; float:right; position: absolute; right: 5px; top: 5px;}\n" + 
-            "#ahaBtn {float:left}\n" + 
-            "#huhBtn {float:right}\n" + 
+            "#ahaCancelBtn {text-decoration:none; float:right; position: absolute; right: 5px; top: 5px; cursor: pointer; z-index:100000005}"; //\n" +
+//            "#ahaTip, #huhTip {display: none}";
+//            "#ahaBtn {float:left}\n" + 
+//            "#huhBtn {float:right}\n" + 
 //            "#ahaBtn a, #huhBtn a {margin: 0 auto;}\n" + 
-            "#ahaBtn img, #huhBtn img {max-width: 50%;}\n" +
-            "#ahaBtn img:hover, #huhBtn img:hover {color: #fff; text-decoration: none; text-shadow: 0 -1px #46A0E6;}\n" + 
-            "#ahaBtn img:hover {color: #fff; text-decoration: none; background-color: #00ff00; border-color: #1389e5;}\n" + 
-            "#huhBtn img:hover {color: #fff; text-decoration: none; background-color: #ff0000; border-color: #1389e5; text-shadow: 0 -1px #46A0E6;}"; 
+//            "#ahaBtn img, #huhBtn img {max-width: 50%;}\n" +
+//            "#ahaBtn img:hover, #huhBtn img:hover {color: #fff; text-decoration: none; text-shadow: 0 -1px #46A0E6;}\n" + 
+//            "#ahaBtn img:hover {color: #fff; text-decoration: none; background-color: #00ff00; border-color: #1389e5;}\n" + 
+//            "#huhBtn img:hover {color: #fff; text-decoration: none; background-color: #ff0000; border-color: #1389e5; text-shadow: 0 -1px #46A0E6;}"; 
   
   var f;
   if (isIE()) {
@@ -126,7 +137,7 @@ function overlay() {
     f.type = "text/css";
     f.media = "screen";
     f.styleSheet.cssText = css;
-    document.getElementsByTagName("head")[0].appendChild(f)
+    $("head")[0].appendChild(f)
   } 
   else {
     if (navigator.userAgent.lastIndexOf("Safari/") > 0 && parseInt(navigator.userAgent.substr(navigator.userAgent.lastIndexOf("Safari/") + 7, 7)) < 533) {
@@ -138,85 +149,112 @@ function overlay() {
     }
     document.body.appendChild(f)
   }
+  
+  
+// text version
+  var overlayHTML = " <span id=\"ahaCancelBtn\" style=\"float:right\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+  		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
+  		"        <tr height=\"10%\">\r\n" + 
+  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
+  		"                <h1>Get it??</h1>\r\n" + 
+  		"            </td>\r\n" + 
+  		"        </tr>\r\n" + 
+  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
+  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+  		"                <h2><a href=\"#\" id=\"ahaButton\">Aha!</a></h2>\r\n" + 
+  		"                <p id=\"ahaTip\">(I'm ready to explain this to others)</p>\r\n" + 
+  		"            </td>\r\n" + 
+  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+  		"                <h2><a href=\"#\" id=\"huhButton\">Huh?</a></h2>\r\n" + 
+  		"                <p id=\"huhTip\">(Can someone please explain it to me?)</p>\r\n" + 
+  		"            </td>\r\n" + 
+  		"        </tr>\r\n" + 
+  		"    </table>";
 
-  overlayDiv = document.createElement("div");
+// image version
+//  var overlayHTML = "<span id=\"ahaCancelBtn\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+//  		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
+//  		"        <tr height=\"10%\">\r\n" + 
+//  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
+//  		"                <h1>Get it??</h1>\r\n" + 
+//  		"            </td>\r\n" + 
+//  		"        </tr>\r\n" + 
+//  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
+//  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+//  		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha.png\" /></a>\r\n" + 
+//  		"                <p id=\"ahaTip\">(I'm ready to explain this to others)</p>\r\n" + 
+//  		"            </td>\r\n" + 
+//  		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
+//  		"                <a href=\"#\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh.png\" /></a>\r\n" + 
+//  		"                <p id=\"huhTip\">(Can someone please explain it to me?)</p>\r\n" + 
+//  		"            </td>\r\n" + 
+//  		"        </tr>\r\n" + 
+//  		"    </table>";
+  
+  var overlayDiv = document.createElement("div");
   overlayDiv.setAttribute("id", "ahaOverlay");
+  overlayDiv.innerHTML = overlayHTML;
+  
   document.body.appendChild(overlayDiv);
-  
   document.keydown = removeOverlay;
+  
+  var ahaBtn = $('#ahaButton'),
+      huhBtn = $('#huhButton');
+  
+  ahaBtn.onclick = function() {
+    onchoose(true);
+  };
+  
+  huhButton.onclick = function() {
+    onchoose(false);
+  };
 
-  // Container div
-  containerDiv = document.createElement("div");
-  containerDiv.setAttribute("id", "ahaContainer");
+  $('#ahaCancelBtn').onclick = function() {
+    removeOverlay();
+  };
   
-  // Header with cancel button
-  var header = document.createElement("div");
-  header.setAttribute("id", "ahaHeader");
-  var logo = new Image;
-  logo.src = serverUrl + "/images/aha/howDoYouFeel.png";
-//  logo.width = "180";
-//  header.appendChild(logo);
-//  var headerTitle = document.createElement("p");
-////  headerTitle.setAttribute("style", "font-size:3em");
-//  headerTitle.appendChild(document.createTextNode("How do you feel?"));
+  var ahaTip = $('#ahaTip'),
+      huhTip = $('#huhTip');
   
-  
-  var cancel = document.createElement("a");
-  cancel.href = "#";
-  cancel.setAttribute("id", "ahaCancelBtn");
-  cancel.onclick = removeOverlay;
-  
-  var x = new Image;
-  x.src = serverUrl + "/images/x.png";
-  cancel.appendChild(x);
-  
-  header.appendChild(cancel);
-//  header.appendChild(headerTitle);
-  header.appendChild(logo);
-  containerDiv.appendChild(header);
-  document.body.appendChild(containerDiv);
-  
-  var buttons = {
-    'Huh?': {
-      img: {
-        src: serverUrl + '/images/aha/huh.png'
-      }
-    },
-    'Aha!' : {
-      img: {
-        src: serverUrl + '/images/aha/aha.png'
-      }
+//  if (isIE()) {
+//    ahaBtn.attachEvent("onmouseover", function () {
+//      ahaTip.style.display = "block";
+//    });
+//    ahaBtn.attachEvent("onmouseout", function () {
+//      ahaTip.style.display = "none"
+//    });
+//    
+//    huhBtn.attachEvent("onmouseover", function () {
+//      huhTip.style.display = "block";
+//    });
+//    huhBtn.attachEvent("onmouseout", function () {
+//      huhTip.style.display = "none"
+//    });   
+//  } else {
+//    ahaBtn.addEventListener("mouseover", function () {
+//      ahaTip.style.display = "block"
+//    }, false);
+//    ahaBtn.addEventListener("mouseout", function () {
+//      ahaTip.style.display = "none"
+//    }, false);
+//    huhBtn.addEventListener("mouseover", function () {
+//      huhTip.style.display = "block"
+//    }, false);
+//    huhBtn.addEventListener("mouseout", function () {
+//      huhTip.style.display = "none"
+//    }, false);
+//  }
+
+
+  function onchoose(aha) {
+    buildAhaUrl += '&aha=' + (aha ? 'y' : 'n');
+    if (setImage)
+      showImageChooser();
+    else {
+      removeOverlay();
+      callAha();
     }
-  }
-  
-  // create the Huh? and Aha! buttons
-  for (var name in buttons) {
-    (function(name, btnInfo) {      
-      var cleanName = name.replace(/[!\?]/, '').toLowerCase();
-      var btnDiv = document.createElement("div");
-      btnDiv.setAttribute("id", cleanName + "Btn");      
-      var link = document.createElement("a");
-      link.setAttribute("href", "#");
-      link.onclick = function () {
-        buildAhaUrl += '&aha=' + (name == 'Huh?' ? 'n' : 'y');
-        if (setImage)
-          showImageChooser();
-        else {
-          removeOverlay();
-          callAha();
-        }
-
-        return false;
-      };
-      
-      var img = new Image;
-      img.src = btnInfo.img.src;
-      
-      link.appendChild(img);
-      btnDiv.appendChild(link);
-      containerDiv.appendChild(btnDiv);
-    })(name, buttons[name]);
-  }
+  };
   
   scroll(0, 0);
 }
