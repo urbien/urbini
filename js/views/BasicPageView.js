@@ -114,6 +114,9 @@ define('views/BasicPageView', [
         if (active) {
           self._checkMessageBar();
           self._checkAutoClose();
+          var title = self.getPageTitle();
+          if (title)
+            document.title = title;
         }
         else
           self._clearMessageBar();        
@@ -311,7 +314,7 @@ define('views/BasicPageView', [
 
     getPageTitle: function() {
       var title = this.$('#pageTitle');
-      return title.length ? title.text() : null;
+      return title.length ? title.text() : this.hashParams.$title || G.currentApp.title;
     },
     
     isActive: function() {
