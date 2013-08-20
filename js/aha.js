@@ -173,10 +173,10 @@ function overlay() {
 //  		"    </table>";
 
 // image version
-  var overlayHTML = "<span id=\"ahaCancelBtn\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+  var overlayHTML = "<span id=\"ahaCancelBtn\" style=\"color:white;font-size:20px; font-weight:bold;\">X<!--img src=\"http://urbien.com/images/x.png\" /--></span>\r\n" + 
   		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
   		"        <tr height=\"10%\">\r\n" + 
-  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
+  		"            <td colspan=\"4\" style=\"background-color: #1d1dc5; color: #eee; opacity: 0.8;text-align:center\">\r\n" + 
   		"                <span style=\"font-size:30px\">Get it??</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
