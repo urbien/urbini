@@ -541,6 +541,18 @@ define('utils', [
       return true;
     },
     
+    isCurrentUserGuest: function() {
+      return G.currentUser.guest;
+    },
+
+    getCurrentUserUri: function() {
+      return G.currentUser._uri;
+    },
+
+    getCurrentUrlInfo: function() {
+      return G.currentHashInfo;
+    },
+    
     mimicResource: function(json) {
       return {
         get: function(prop) {
@@ -902,6 +914,46 @@ define('utils', [
       return icon + '-sign';
     },
     
+    countdown: function(element, seconds) {
+      var minutes = parseInt(seconds / 60),
+          dfd = $.Deferred(),
+          promise = dfd.promise();
+      
+      seconds = seconds % 60;
+      var interval = setInterval(function() {
+        if (seconds == 0) {
+          if (minutes == 0) {
+            element.innerHTML = "0 seconds";
+            clearInterval(interval);
+            dfd.resolve();
+            return;
+          } else {
+            minutes--;
+            seconds = 60;
+          }
+        }
+        
+        if(minutes > 0) {
+          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
+        } else {
+          var minute_text = '';
+        }
+        
+        var second_text = seconds > 1 ? 'seconds' : 'second';
+        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
+        seconds--;
+      }, 1000);
+      
+      
+      promise.cancel = function() {
+        clearInterval(interval);
+        dfd.reject();
+        el.innerHTML = '';
+      };
+      
+      return promise;
+    },
+
     buildSocialNetOAuthUrl: function(net, action, returnUri) {
       returnUri = returnUri || window.location.href;
       if (action === 'Disconnect') {
@@ -1435,16 +1487,11 @@ define('utils', [
             dn += ' ';
           
           if (U.isResourceProp(prop)) {
-            if (resource) {
-            var rdn = resource[shortName + '.displayName'];
-            if (rdn)
-              dn += rdn;
-            }
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
             if (resource) {
-            var rdn = resource[shortName + '.displayName'];
-            if (rdn)
-              dn += rdn;
+              var rdn = resource[shortName + '.displayName'];
+              if (rdn)
+                dn += rdn;
             }
           }
           else {
@@ -1818,7 +1865,7 @@ define('utils', [
     
     getValueDisplayName: function(res, propName) {
       var prop = res.vocModel.properties[propName];
-      return prop && (U.isResourceProp(prop) ? res.get(propName + '.displayName') : res.get(propName));
+      return prop && ((U.isResourceProp(prop) || prop.multiValue) ? res.get(propName + '.displayName') : res.get(propName));
     },
     
     makeOrGroup: function() {
@@ -1893,7 +1940,9 @@ define('utils', [
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000)
             val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
-          else 
+          else if (prop.facet  &&  prop.facet == 'href')
+            val = "<a href='" + val + "'>" + U.getDisplayName(res, vocModel) + "</a>";
+          else
             val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
@@ -1931,7 +1980,7 @@ define('utils', [
     },
     
     getAppPathFromTitle: function(title) {
-      return title.replace(/-/g, '_').replace(/[^a-z_1-9eA-Z]/g, '');
+      return title ? title.replace(/-/g, '_').replace(/[^a-z_1-9eA-Z]/g, '') : null;
     },
     
     /**
