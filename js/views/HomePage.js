@@ -41,10 +41,10 @@ define('views/HomePage', [
     },
 
     pagehide: function(e) {
-      $('#bg').hide();
+      this.$el.hide();
     },    
     pagebeforeshow: function(e) {
-      $('#bg').show();
+      this.$el.show();
     },
     
     click: function(e) {
@@ -97,7 +97,7 @@ define('views/HomePage', [
       else {
         this.removeInstallBtn();
       }
-
+      $('title').text(G.currentApp.title);
 //      this.finish();
       this.$el.trigger('pageshow');
       return this;
