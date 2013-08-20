@@ -351,10 +351,11 @@ define('views/BasicPageView', [
         return;
       
       var self = this,
-          name = 'messageBar' + type.capitalizeFirst(),
-          cached = this.getChildView(name);
+          name = 'messageBar' + type.capitalizeFirst();
+//          ,
+//          cached = this.getChildView(name);
       
-      cached && cached.destroy();
+//      cached && cached.destroy();
       U.require('views/MessageBar').done(function(MessageBar) {
         var bar = self.addChild(name, new MessageBar({
           model: self.model,
