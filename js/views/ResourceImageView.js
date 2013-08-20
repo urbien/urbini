@@ -252,10 +252,12 @@ define('views/ResourceImageView', [
           ratio = maxW / oWidth;
           w = maxW;
 //        }
+        h = oHeight * ratio;
         oHeight = oHeight * ratio;
       }
       else if (oWidth  &&  oWidth != 0) {
         w = oWidth;
+        h = oHeight;
       }
       /*
       if (oHeight  &&  oHeight > maxH) {
@@ -265,7 +267,7 @@ define('views/ResourceImageView', [
       */
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
-      var iTemplate = w ? "<img src='" + image +"' width='" + w + "' />"
+      var iTemplate = w ? "<img src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
                         : "<img src='" + image +"' />";
       var li;
 /*
