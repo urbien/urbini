@@ -97,8 +97,8 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-//      this.onload(this._checkMessageBar.bind(this));
-//      this.onload(this._checkAutoClose.bind(this));
+      this.onload(this._checkMessageBar.bind(this));
+      this.onload(this._checkAutoClose.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -112,8 +112,11 @@ define('views/BasicPageView', [
       
       this.on('active', function(active) {
         if (active) {
-          self._checkMessageBar();
-          self._checkAutoClose();
+          if (self.rendered) {
+            self._checkMessageBar();
+            self._checkAutoClose();
+          }
+          
           var title = self.getPageTitle();
           if (title)
             document.title = title;
