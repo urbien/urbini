@@ -151,7 +151,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           status: 'completed',
           user: G.currentUser._uri,
           tour: _tour.getUri()
-        });
+        }, {redirect: false});
         
         Events.trigger('tourEnd', _tour);
       }
