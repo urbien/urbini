@@ -1192,6 +1192,10 @@ define('models/Resource', [
         });
       }
       
+      function alreadyHave(p) {
+        return _.contains(collected, p) || (reqParams[p] && (!editProps || !_.has(editProps, p)));
+      }
+      
       if (propGroups) {
         for (var i = 0; i < propGroups.length; i++) {
           var grProp = propGroups[i],
@@ -1227,7 +1231,7 @@ define('models/Resource', [
           }]);
         
         for (var p in reqd) {
-          if (_.contains(collected, p))
+          if (alreadyHave(p))
             continue;
           
           var prop = meta[p];
@@ -1238,20 +1242,20 @@ define('models/Resource', [
         }
       }
       
-      for (var p in reqParams) {
-        if (_.contains(collected, p))
-          continue;
-        
-        var prop = meta[p];
-        if (this._isPropMutable(prop, result)) {
-          ungrouped.push(p);
-          collected.push(p);
-        }
-      }
+//      for (var p in reqParams) {
+//        if (_.contains(collected, p))
+//          continue;
+//        
+//        var prop = meta[p];
+//        if (this._isPropMutable(prop, result)) {
+//          ungrouped.push(p);
+//          collected.push(p);
+//        }
+//      }
       
       if (!propGroups) {
         for (var p in meta) {
-          if (_.contains(collected, p))
+          if (alreadyHave(p))
             continue;
           
           var prop = meta[p];
