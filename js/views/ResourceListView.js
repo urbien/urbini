@@ -237,7 +237,7 @@ define('views/ResourceListView', [
       for (; i < num; i++) {
         var res = resources[i],        
             uri = res.getUri(),
-            liView;
+            liView = null;
         
         if (canceled && res.get(canceled))
           continue;
@@ -290,8 +290,8 @@ define('views/ResourceListView', [
 //          else {
 //          }
         }
-        else if (!nextPage)
-          frag.appendChild(lis[i]);
+//        else if (!nextPage)
+//          frag.appendChild(lis[i]);
         
         var el = liView ? liView.el : lis[i];
         if (info.updated)
@@ -299,7 +299,7 @@ define('views/ResourceListView', [
         else
           info.appended.push(el);
 
-        liView && this.postRenderItem(liView, info);
+        this.postRenderItem(el, info);
       }
          
       info.updated = updated;
@@ -387,12 +387,12 @@ define('views/ResourceListView', [
       }
     },
     
-    postRenderItem: function(liView, info) {
+    postRenderItem: function(el, info) {
       if (!info.isFirstPage) {
-        this.$el.append(liView.el);
+        this.$el.append(el);
       }
       else {
-        info.frag.appendChild(liView.el);
+        info.frag.appendChild(el);
       }
     },
     

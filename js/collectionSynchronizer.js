@@ -99,13 +99,13 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
           
     var numBefore = this.data.length,
         numAfter,
-        lastFetchedTS,
-        resp = {
-          data: results, 
-          metadata: {
-            offset: this.options.start
-          }
-        };
+        lastFetchedTS;
+//        resp = {
+//          data: results, 
+//          metadata: {
+//            offset: this.options.start
+//          }
+//        };
       
     try {
       if (this._isForceFetch())
@@ -119,7 +119,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       if (this._isStale(lastFetchedTS, this._getNow()))
         return this._delayedFetch();
     } finally {    
-      this._success(resp, 'success', null); // add to / update collection
+      this._success(results, 'success', null); // add to / update collection
     }
   };
 

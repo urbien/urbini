@@ -420,6 +420,8 @@ define('collections/ResourceList', [
       
       options.success = function(resp, status, xhr) {
         if (self.lastFetchOrigin === 'db') {
+          if (resp.data)
+            debugger;
           self.update(resp, options);
           success(resp, status, xhr);
           return;
@@ -438,6 +440,9 @@ define('collections/ResourceList', [
         
         switch (code) {
           case 200:
+            if (!resp.data)
+              debugger;
+            
             break;
           case 204:
             self.trigger('endOfList');
