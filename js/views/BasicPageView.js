@@ -474,6 +474,11 @@ define('views/BasicPageView', [
           hash = this.hash;
       
       if (autoClose) {
+        if (autoClose === 'y') {
+          window.close();
+          return;
+        }
+        
         try {
           var millis = parseInt(autoClose);
         } catch (err) {
