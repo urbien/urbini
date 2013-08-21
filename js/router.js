@@ -437,6 +437,7 @@ define('router', [
 //        key = U.getQueryString(U.getQueryParams(key, model), true);
 
       var params = U.getHashParams();
+//      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       if (list && !list._lastFetchedOn)
         list = null;

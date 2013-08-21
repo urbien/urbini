@@ -253,10 +253,12 @@ define('views/BasicPageView', [
     },
     
     onScroll: function() {
-      this.$el.triggerHandler('scroll');
-      this.log('visibility', 'START visibility report for ' + this.TAG);
-      this.logVisibility();
-      this.log('visibility', 'END visibility report for ' + this.TAG);
+      if (this.$el) {
+        this.$el.triggerHandler('scroll');
+        this.log('visibility', 'START visibility report for ' + this.TAG);
+        this.logVisibility();
+        this.log('visibility', 'END visibility report for ' + this.TAG);
+      }
     },
     
 //    addTooltip: function(data) {

@@ -1485,7 +1485,7 @@ define('utils', [
           if (U.isResourceProp(prop)) {
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
             if (resource) {
-              var rdn = resource[shortName + '.displayName'];
+              var rdn = U.getValue(resource, shortName + '.displayName');
               if (rdn)
                 dn += rdn;
             }
@@ -1729,7 +1729,7 @@ define('utils', [
       return C.getResourceList(model, query);
     },
 
-    getModel: function() {
+    getModel: function(type) {
       var arg0 = arguments[0];
       var argType = Object.prototype.toString.call(arg0);
       switch (argType) {
@@ -1745,7 +1745,7 @@ define('utils', [
         }
         
         return null;
-//            throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
+  //          throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
       case '[object Object]':
         return arg0.vocModel; //U.isCollection(arg0) ? arg0.model : arg0.constructor;
       default:
@@ -2097,7 +2097,7 @@ define('utils', [
         }
       }
       
-      if (!prop.skipLabelInEdit)
+//      if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       
       val.shortName = prop.shortName;
@@ -2241,8 +2241,12 @@ define('utils', [
 //    },
     
     pushUniq: function(arr, obj) {
-      if (!_.contains(arr, obj))
-        arr.push(obj);
+      var items = concat.apply([], slice.call(arguments, 1));
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (!_.contains(arr, item))
+          arr.push(item);
+      }
     },
     
     encode: function(str) {

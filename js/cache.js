@@ -10,7 +10,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       viewCache = ViewCache(),
       // codemirror editors
       codemirrors = {},
-      MAX_VIEWS_TO_CACHE = 6;
+      MAX_VIEWS_TO_CACHE = 6,
+      AP = Array.prototype;
 
 //  function CacheEntry(obj, permanent) {
 //    this.permanent = permanent;
@@ -95,7 +96,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           var resource;
           var col = collectionsByQuery[query];
           if (filter) { 
-            matches = _.union(matches, col.filter(filter));
+            pushUniq(matches, col.filter(filter));
             continue;
           }
           else {
@@ -286,13 +287,15 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         
         if (res) {
           col = res.collection;
-          if (col)
-            cols = _.union(cols, [col]);
+          if (col) {
+            if (cols.indexOf(col) == -1)
+              cols.push(col);
+          }
           
-          cols = _.union(cols, view.resource.getInlineLists());
+          pushUniq(cols, view.resource.getInlineLists());
         }
         else if (col) {
-          cols = _.union(cols, [col]);
+          pushUniq(cols, col);
         }
       });
       
@@ -349,6 +352,19 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     return res;
   };
   
+//  function getModel(type) {
+//    return typeToModel[type] || shortNameToModel[type];
+//  };
+  
+  function pushUniq(arr, obj) {
+    var items = AP.concat.apply(AP, AP.slice.call(arguments, 1));
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      if (!_.contains(arr, item))
+        arr.push(item);
+    }
+  };
+  
   var Cache = {
     TAG: 'Cache',
     // Models
@@ -384,7 +400,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           list = resourceCache.getList(model, query);
       
       return list || _.find(viewCache.getLists(), function(list) {
-        return list.type === type && list.query == query;
+        return list.type === type && (list._query == query || list.query == query); // either with special params or without (like $prop, $forResource, $blahBlah, -hello)
       });
     },
     

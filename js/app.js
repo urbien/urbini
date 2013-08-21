@@ -483,11 +483,11 @@ define('app', [
       }        
     });
     
-    Events.on('viewDestroyed', function(view) {
-      setTimeout(function() {
-        U.wipe(view);
-      }, 0);
-    });
+//    Events.on('viewDestroyed', function(view) {
+//      setTimeout(function() {
+//        U.wipe(view);
+//      }, 0);
+//    });
   };
   
   function setupMisc() {
