@@ -1,7 +1,7 @@
 (function() {
 var scripts = document.getElementsByTagName('script'),
     ahaScriptSrc = scripts[scripts.length - 1].src,
-    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')),
+    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')).replace(/^https:\/\//, 'http://'),
     currentHref = window.location.href,
     enc = encodeURIComponent,
 //    keyword = isAha ? 'Aha!' : 'Huh?',
@@ -180,7 +180,8 @@ function overlay() {
   		"                <span style=\"font-size:30px\">Get it??</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
-  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
+      "        <tr height=\"5%\" style=\"text-align:center\"></tr>" + 
+  		"        <tr height=\"85%\" style=\"text-align:center\">\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
   		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"ahaTip\" style=\"font-size:18px;\">(I'm ready to explain this to others)</span>\r\n" + 
@@ -204,14 +205,17 @@ function overlay() {
   
   ahaBtn.onclick = function() {
     onchoose(true);
+    return false;
   };
   
   huhButton.onclick = function() {
     onchoose(false);
+    return false;
   };
 
   $('#ahaCancelBtn').onclick = function() {
     removeOverlay();
+    return false;
   };
   
   var ahaTip = $('#ahaTip'),
