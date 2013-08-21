@@ -6,21 +6,10 @@ define('views/BasicView', [
   'templates',
   'events'
 ], function(G, _Backbone, U, Templates, Events) {
-  var basicOptions = ['source', 'parentView', 'returnUri'];
+  var basicOptions = ['source', 'parentView', 'returnUri'],
+      AP = Array.prototype;
+  
   var BasicView = Backbone.View.extend({
-    superInitialize: function() {
-      var superCl = this.constructor.__super__,
-          superInit = superCl.initialize;
-      
-      if (superInit == this.initialize) {
-        superCl = superCl.constructor.__super__;
-        if (superCl)
-          superInit = superCl.initialize;
-      }
-      
-      if (superInit)
-        superInit.apply(this, arguments);
-    },
     initialize: function(options) {
 //      this._initOptions = options;
       _.bindAll(this, 'reverseBubbleEvent');
@@ -50,9 +39,7 @@ define('views/BasicView', [
       
       this.TAG = this.TAG || this.constructor.displayName;
       options = options || {};
-      this._hashInfo = G.currentHashInfo;
-      this.hash = U.getHash();
-      this.hashParams = this._hashInfo && this._hashInfo.params || {};
+      this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
       this._loadingDfd.promise().done(function() {
         if (!this.rendered)
@@ -126,6 +113,9 @@ define('views/BasicView', [
           child.trigger('active', active);
         }); // keep this
         
+        if (active)
+          this._updateHashInfo();
+        
         if (active && (this.__renderArgs || this.__refreshArgs)) {
           var method, args;
           if (this.rendered) {
@@ -181,6 +171,12 @@ define('views/BasicView', [
 
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
+    },
+    
+    _updateHashInfo: function() {
+      this._hashInfo = G.currentHashInfo;
+      this.hash = U.getHash();
+      this.hashParams = this._hashInfo && this._hashInfo.params || {};
     },
     
     refresh: function() {

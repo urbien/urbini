@@ -266,6 +266,9 @@ define('router', [
       if (options.transition)
         this.nextTransition = options.transition;
       
+      if (options.trigger == false)
+        this.updateHashInfo();
+      
       return Backbone.Router.prototype.navigate.call(this, fragment, options);
 //      _.extend(this, this.defaultOptions);
 //      return ret;

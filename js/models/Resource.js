@@ -786,7 +786,7 @@ define('models/Resource', [
 //        }
         
         // TODO: fix this hack, or move this to some place where we handle resources by type
-        var plugModel = U.getModel('Handler');
+        var plugModel = C.getModel('Handler');
         if (plugModel && this.vocModel.type === plugModel.type)
           Events.trigger("newPlug", this.toJSON());
       }

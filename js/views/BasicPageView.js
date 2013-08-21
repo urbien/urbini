@@ -6,7 +6,7 @@ define('views/BasicPageView', [
   'views/BasicView',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, $m) {
-  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'],
+  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       $wnd = $(window);
 
@@ -35,7 +35,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'pageevent', 'swiperight', 'swipeleft', 'scroll', 'onpageshow', 'onpagehide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll'); //, 'onpageshow', 'onpagehide');            
       $wnd.on('scroll', this.onScroll.bind(this));
       
 //    if (navigator.mozApps) {
@@ -65,7 +65,7 @@ define('views/BasicPageView', [
       });
       
       Events.on('messageBar', function(type, data) {
-        self.createMessageBar(type, data);
+        self.createMessageBar.apply(self, arguments);
       });
       
       var refresh = this.refresh;
@@ -84,8 +84,6 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-      this.onload(this._checkMessageBar.bind(this));
-      this.onload(this._checkAutoClose.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -107,6 +105,10 @@ define('views/BasicPageView', [
             self._checkMessageBar();
             self._checkAutoClose();
           }
+          else {
+            self.onload(self._checkMessageBar.bind(self));
+            self.onload(self._checkAutoClose.bind(self));            
+          }
           
           if (!self._title)
             self._updateTitle();
@@ -120,9 +122,9 @@ define('views/BasicPageView', [
       'scrollstart': 'reverseBubbleEvent',
       'scrollstop': 'reverseBubbleEvent',      
       'scroll': 'scroll',
-      'pagehide': 'pageevent',
-      'pageshow': 'pageevent',
-      'pagebeforeshow': 'pageevent',
+      'pagehide': 'onpageevent',
+      'pageshow': 'onpageevent',
+      'pagebeforeshow': 'onpageevent',
       'swiperight': 'swiperight',
       'swipeleft': 'swipeleft',
       'touchstart': 'highlightOnTouchStart',
@@ -199,7 +201,7 @@ define('views/BasicPageView', [
       this.scrollTo(this._scrollPosition);
     },
     
-    pageevent: function(e) {
+    onpageevent: function(e) {
       this._lastPageEvent = e.type;
       this.reverseBubbleEvent.apply(this, arguments);      
     },
@@ -311,14 +313,6 @@ define('views/BasicPageView', [
       }
     },
     
-    onpageshow: function(fn) {
-      if (this._pageshowFired)
-        fn();
-      else {
-        this.once('pageshow', fn);
-      }
-    },
-        
     removeTooltip: function($el) {
   //    if (elm[0].tagName == 'DIV')
   //      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
@@ -416,18 +410,27 @@ define('views/BasicPageView', [
       var self = this,
           name = 'messageBar' + type.capitalizeFirst();
 //          ,
+//          events = data.events = data.events || {},
+//          onremove = events.remove;
+//          ,
 //          cached = this.getChildView(name);
       
 //      cached && cached.destroy();
+      
       U.require('views/MessageBar').done(function(MessageBar) {
         var bar = self.addChild(name, new MessageBar({
           model: self.model,
           type: type
         }));
         
+        bar.on('messageBarRemoved', function(e) {
+          self.trigger.apply(self, ['messageBarRemoved'].concat(U.concat.call(arguments)));
+        });
+        
         bar.render(data);
         bar.$el.css({opacity: 0});
         self.$el.prepend(bar.$el);
+        self.trigger('messageBarsAdded', bar);
         bar.$el.animate({opacity: 1}, 500);
         Events.on('messageBar.' + type + '.clear', function(id) {
           if (id == data.id)
@@ -469,7 +472,8 @@ define('views/BasicPageView', [
     },
 
     _checkAutoClose: function() {
-      var autoClose = this.hashParams['-autoClose'],
+      var self = this,
+          autoClose = this.hashParams['-autoClose'],
           autoCloseOption = this.hashParams['-autoCloseOption'] == 'y',
           hash = this.hash;
       
@@ -484,27 +488,28 @@ define('views/BasicPageView', [
         } catch (err) {
         }
 
+        millis = millis || 5000;
         var seconds = millis / 1000;
-        Events.trigger('messageBar', 'info', {
+        Events.trigger('messageBar', 'countdown', {
           message: {
-            message: 'This page will self-destruct in: <span class="countdown">{0} seconds.</span>'.format(seconds), // Close this message to stop the destruction.'.format(seconds),
-            onclose: function() {
-              // TODO: allow an onclose handler to be attached
-            }
+            message: 'This page will self-destruct in: <div style="display:inline" class="countdown">{0}</div> seconds.'.format(seconds) // Close this message to stop the destruction.'.format(seconds),
+//            events: {
+//              remove: function() {
+//                debugger;
+//              }
+//            }
           },
           persist: true
         });
         
-        U.countdown(this.$('.countdown')[0], seconds).done(window.close.bind(window));
-        
-        millis = millis || 5000;
-        var closeTimeout = setTimeout(function() {
-          window.close();
-        }, millis);
-        
-        Events.once('pageChange', function() {
-          clearTimeout(closeTimeout);
-        });
+        var countdownSpan = this.$('.countdown'),
+            cleanup = function() {
+              window.close();
+              self._clearMessageBar(); // we can't always close the window
+            };
+            
+        var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
+        this.$el.one('pagehide', countdownPromise.cancel);
         
         hash = U.replaceParam(hash, '-autoClose', null);
       }

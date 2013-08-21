@@ -1433,7 +1433,7 @@
 
 <div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
 {{  _.each(messages, function(msg) {  }}
-     <div style="display:block" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+     <div style="display:block" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
        <a href="{{= msg.link }}">
   {{ }                        }}

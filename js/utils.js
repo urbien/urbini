@@ -910,7 +910,7 @@ define('utils', [
       return icon + '-sign';
     },
     
-    countdown: function(element, seconds) {
+    countdown: function(seconds) {
       var minutes = parseInt(seconds / 60),
           dfd = $.Deferred(),
           promise = dfd.promise();
@@ -919,7 +919,7 @@ define('utils', [
       var interval = setInterval(function() {
         if (seconds == 0) {
           if (minutes == 0) {
-            element.innerHTML = "0 seconds";
+//            element.innerHTML = "0 seconds";
             clearInterval(interval);
             dfd.resolve();
             return;
@@ -929,22 +929,24 @@ define('utils', [
           }
         }
         
-        if(minutes > 0) {
-          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
-        } else {
-          var minute_text = '';
-        }
-        
-        var second_text = seconds > 1 ? 'seconds' : 'second';
-        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
+//        if (minutes > 0) {
+//          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
+//        } else {
+//          var minute_text = '';
+//        }
+//        
+//        var second_text = seconds > 1 ? 'seconds' : 'second';
+//        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
         seconds--;
+        dfd.notify(seconds);
       }, 1000);
       
       
       promise.cancel = function() {
+        debugger;
         clearInterval(interval);
         dfd.reject();
-        el.innerHTML = '';
+//        el.innerHTML = '';
       };
       
       return promise;
@@ -3879,11 +3881,11 @@ define('utils', [
   };
   // wf/.... attachment url
   patterns[/^wf\//] =  function(uri, matches, vocModel) {
-    return G.serverName + '/' + uri;
+    return G.serverNameHttp + '/' + uri;
   };
   // sql/...?...
   patterns[/^sql\/.*/] = function(uri, matches, vocModel) {
-    return G.serverName + '/' + uri;
+    return G.serverNameHttp + '/' + uri;
   };
   // http://.../voc/... with query string or without
   patterns[/^http:\/\/([^\?]+)\??(.*)/] = function(uri, matches, vocModel) {

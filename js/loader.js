@@ -385,6 +385,7 @@ define('globals', function() {
         defaultVocPath = G.defaultVocPath;
     
     G.tourGuideEnabled      = true;
+    G.serverNameHttp        = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
     G.DEBUG                 = !G.minify;
     G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
     G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
@@ -1316,7 +1317,7 @@ define('globals', function() {
     },
     classMap: G.classMap || {},
     appUrl: G.serverName + '/' + G.pageRoot,
-    sqlUrl: G.serverName + '/' + G.sqlUri,
+    sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
     modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
     commonTypes: {
