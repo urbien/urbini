@@ -174,7 +174,7 @@
 
 <script type="text/template" id="bookmarkletDesktopStaticPageTemplate">
   <div style="text-align:center">
-    <h1>Drag the button below to your browser's bookmark bar</h1>
+    <h1>Drag the button below to your browser's bookmarks bar</h1>
     <ul class="nav">
       <li><a onclick="javascript:alert('Drag me to your bookmarks bar!'); return false;" href="javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, 'aha=y'))" style="font-size:30px">Aha!</a></li>
     </ul>
