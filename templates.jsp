@@ -1507,7 +1507,7 @@
   <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
   
-  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
   <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img style="float:right;max-height:40px;" src="' + _thumb + '" />' : '' }}--></label>
 </script>
 

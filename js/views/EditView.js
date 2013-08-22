@@ -336,7 +336,7 @@ define('views/EditView', [
       });
     },
 
-    onChose: function(e, prop) {
+    onChoose: function(e, prop) {
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
       var self = this, 
@@ -355,95 +355,60 @@ define('views/EditView', [
         G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
-        if (isMultiValue) {
-//          var innerHtml = '';
-//          var set = '';
-//          var input;
-//          for (var i=0; i<checked.length; i++) {
-//  //          var val = $('label[for="' + checked[i].id + '"]')[0].value;
-//            var style = checked[i].style;
-//            if (style  &&  style.display  == 'none')
-//              continue;
-//            if (i != 0)
-//              innerHtml += ', ';
-//            innerHtml += checked[i].name;
-//            input = checked[i].value;
-//            checked[i].type = 'hidden';
-//            $(checked[i]).attr('data-formel', 'true');
-//            $(link.parentNode).append($(checked[i]));
-//            if (i != 0)
-//              set += ',';
-//            set += input;
-//          }
-////          input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '"' + ' value="' + innerHtml + '" style="display:none" />';
-////          set += input;
-////          $(link.parentNode).append($(input));
-//          var html = link.innerHTML;
-//          var idx = html.indexOf('</label>');
-//          var idx1 = html.indexOf('<br>');
-//          link.innerHTML = idx1 == -1 ? html.substring(0, idx + 8) + ' ' + innerHtml : html.substring(0, idx + 8) + ' ' + innerHtml;
-////          $(link).attr("data-formel", "true");
-//          props[prop] = innerHtml; //set;
-//          props[prop + '.displayName'] = innerHtml;
-////          this.resource.set(props, {skipValidation: true, skipRefresh: true});
-          this.setValues(props, {skipValidation: true, skipRefresh: false});
-          this.setResourceInputValue(link, set);
-        }        
-        else {
-          if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
-    //        Events.trigger('buy', this.model);
-            var price = chosenRes.get('price');
-            if (price  &&  price.value) { 
-              Events.stopEvent(e);
-              var $popup = $('#buy_popup');
-              var dn = U.getDisplayName(chosenRes);
-              var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-              var href = chosenRes.getUri();          
-              var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
-              if ($popup.length == 0) {
-                $($(document).find($('.ui-page-active'))[0]).append(html);
-                
-      //          $('body').append(html);
-                $popup = $('#buy_popup');
-              }
-              else {
-                $('#buyMsg').html(msg);
-                $('#buyLink').attr('href', href);
-                $('#tryLink').attr('href', href);
-                $('#buyName').html(dn);
-              }
-              $popup.trigger('create');
-              $popup.popup().popup("open");
-              return;
+        if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+  //        Events.trigger('buy', this.model);
+          var price = chosenRes.get('price');
+          if (price  &&  price.value) { 
+            Events.stopEvent(e);
+            var $popup = $('#buy_popup');
+            var dn = U.getDisplayName(chosenRes);
+            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+            var href = chosenRes.getUri();          
+            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+            if ($popup.length == 0) {
+              $($(document).find($('.ui-page-active'))[0]).append(html);
+              
+    //          $('body').append(html);
+              $popup = $('#buy_popup');
             }
+            else {
+              $('#buyMsg').html(msg);
+              $('#buyLink').attr('href', href);
+              $('#tryLink').attr('href', href);
+              $('#buyName').html(dn);
+            }
+            $popup.trigger('create');
+            $popup.popup().popup("open");
+            return;
           }
-          var uri = chosenRes.getUri();
-          props[prop] = uri;
-          var resName = U.getDisplayName(chosenRes);
-          if (resName)
-            props[prop + '.displayName'] = resName;
-          if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
-            props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
-          this.setValues(props, {skipValidation: true, skipRefresh: false});
-          var pr = vocModel.properties[prop];
-          var dn = pr.displayName;
-          if (!dn)
-            dn = prop.charAt(0).toUpperCase() + prop.slice(1);
-          var name = chosenRes.get('davDisplayName');
-          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
-          this.setResourceInputValue(link, uri);
-          if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
-            if (G.currentApp) {
-              var cUri = G.currentApp._uri;
-              if (cUri.indexOf('http') == -1) {
-                cUri = U.getLongUri1(cUri);
-                G.currentApp._uri = cUri;
-              }
-              if (this.resource.getUri() == cUri) {
-                var themeSwatch = chosenRes.get('swatch');
-                if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
-                  G.theme.swatch = themeSwatch;
-              }
+        }
+        
+        var uri = chosenRes.getUri();
+        props[prop] = uri;
+        var resName = U.getDisplayName(chosenRes);
+        if (resName)
+          props[prop + '.displayName'] = resName;
+        if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
+          props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
+        this.setValues(props, {skipValidation: true, skipRefresh: false});
+        var pr = vocModel.properties[prop];
+        var dn = pr.displayName;
+        if (!dn)
+          dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+        var name = chosenRes.get('davDisplayName');
+        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        this.setResourceInputValue(link, uri);
+        if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
+          if (G.currentApp) {
+            var cUri = G.currentApp._uri;
+            if (cUri.indexOf('http') == -1) {
+              cUri = U.getLongUri1(cUri);
+              G.currentApp._uri = cUri;
+            }
+            if (this.resource.getUri() == cUri) {
+              var themeSwatch = chosenRes.get('swatch');
+              if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+                G.theme.swatch = themeSwatch;
             }
           }
         }
@@ -455,7 +420,7 @@ define('views/EditView', [
       // set text
     },
     
-    onChoseMulti: function (e, prop)  {
+    onChooseMulti: function (e, prop)  {
       var link = e.target,
           self = this;
       
@@ -479,8 +444,8 @@ define('views/EditView', [
 //      Events.on('chose:' + prop, this.onChoose(e, prop), this);
       Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
       Events.off('choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.on('chose:' + prop, this.onChose(e, prop), this);
-      Events.on('choseMulti:' + prop, this.onChoseMulti(e, prop), this);
+      Events.on('chose:' + prop, this.onChoose(e, prop), this);
+      Events.on('choseMulti:' + prop, this.onChooseMulti(e, prop), this);
       Events.trigger('loadChooser', this.resource, this.vocModel.properties[prop], e);
       
 //      var self = this;

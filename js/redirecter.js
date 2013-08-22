@@ -18,6 +18,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   _.extend(Redirecter.prototype, {    
     _forType: {}, // for redirecting after edit/mkresource
     _chooserForType: {}, // for redirecting to chooser/
+    _chooserForInterface: {}, // for redirecting to chooser/
     _forAction: {},
     log: function() {
       var args = U.slice.call(arguments);
@@ -420,7 +421,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   Redirecter.prototype.redirectToChooser = function(res, prop, e, options) {
     options = options || {};
     var rParams,
-        isMake = !res.get('_uri'),
+        uri = res.get('_uri'),
         vocModel = res.vocModel,
         redirected;
 
@@ -448,6 +449,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       
       if (!prop.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
         params.$prop = p;
+        if (uri)
+          params.$forResource = uri;
+        
         Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(prop.range), params), options);
         return;
       }
@@ -460,12 +464,20 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     
     redirected = _.any(_.keys(this._chooserForType), function(type) {
       if (U.isAssignableFrom(vocModel, type))
-        return self._forType[type](res, options) !== false;
+        return self._chooserForType[type](res, options) !== false;
     });
 
     if (redirected)
       return;
-    
+
+//    redirected = _.any(_.keys(this._chooserForInterface), function(iFace) {
+//      if (U.is(vocModel, iFace))
+//        return self._chooserForType[iFace](res, options) !== false;
+//    });
+//
+//    if (redirected)
+//      return;
+
     if (prop.range != 'Class') {
       var range = U.getLongUri1(prop.range);
       var prModel = C.getModel(range);
@@ -544,7 +556,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     
     Events.trigger('navigate', U.makeMobileUrl('chooser', typeUri, params), options);
   };
-  
+
+  Redirecter.prototype._chooserForInterface['Intersection'] = function(res, prop, e, options) {
+    // TODO: fill this out
+  };
+
   Redirecter.prototype._chooserForType[G.commonTypes.WebProperty] = function(res, prop, e, options) {
     var domain = U.getLongUri1(res.get('domain')),
         title = U.getQueryParams(window.location.hash)['$title'],
@@ -645,12 +661,16 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Events.on('choseMulti', function(propName, list, checked) {
-    var res = redirecter.getCurrentChooserBaseResource(),
-        ffwd = redirecter.isChooserFastForwarded(),
+    var res = redirecter.getCurrentChooserBaseResource();
+//    if (!res)
+//      res = new 
+    
+    var ffwd = redirecter.isChooserFastForwarded(),
         editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
         merged = getEditableProps(editableProps),
         props = {};
     
+    debugger;
     props[propName] = _.pluck(checked, 'value').join(',');
     props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
     if (merged && merged.length == 1) {
