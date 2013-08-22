@@ -174,7 +174,7 @@ define('views/BasicView', [
     },
     
     _updateHashInfo: function() {
-      this._hashInfo = G.currentHashInfo;
+      this._hashInfo = U.getCurrentUrlInfo();
       this.hash = U.getHash();
       this.hashParams = this._hashInfo && this._hashInfo.params || {};
     },

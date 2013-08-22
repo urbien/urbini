@@ -384,18 +384,22 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
-    G.tourGuideEnabled      = true;
-    G.serverNameHttp        = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
-    G.DEBUG                 = !G.minify;
-    G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
-    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
-    G.currentAppRegExp      = new RegExp(regex);
-    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);    
-    G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
-    G.apiUrl                = G.serverName + '/api/v1/';
-    G.timeOffset            = G.localTime - G.serverTime;
-    G.firefoxManifestPath   = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp';
-    G.chromeManifestPath    = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json';
+    G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
+    $.extend(G, {
+      appUrl: G.serverName + '/' + G.pageRoot,
+      sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
+      modelsUrl: G.serverName + '/backboneModel',
+      storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+      apiUrl: G.serverName + '/api/v1/',
+      timeOffset: G.localTime - G.serverTime,
+      firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
+      chromeManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json',
+      domainRegExp: new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3)),
+      appModelRegExp: new RegExp('model:(metadata:)?' + devVoc),
+      currentAppRegExp: new RegExp(regex),
+      currentAppModelRegExp: new RegExp('model:(metadata:)?' + regex)    
+    });
+    
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }
@@ -1090,7 +1094,6 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-
   $.extend(G, {
     onAppStart: function(fn) {
       return APP_START_DFD.promise().then(fn);
@@ -1316,9 +1319,6 @@ define('globals', function() {
       DEFAULT: 'LIST'
     },
     classMap: G.classMap || {},
-    appUrl: G.serverName + '/' + G.pageRoot,
-    sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
-    modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
     commonTypes: {
       App: 'model/social/App',
@@ -1615,7 +1615,9 @@ define('globals', function() {
     support: {
       pushState: false //!!(window.history && history.pushState)
     },
-    language: params['-lang'] || navigator.language.split('-')[0]
+    language: params['-lang'] || navigator.language.split('-')[0],
+    tourGuideEnabled: true,
+    DEBUG: !G.minify
   });
 
   setupLocalStorage();

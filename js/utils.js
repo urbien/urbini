@@ -702,7 +702,7 @@ define('utils', [
       return uri;
 //      throw new Error("couldn't parse uri: " + uri);
     },
-    
+
 //    getLongUri: function(uri, hint) {
 //      var type, pk, snm;
 //      if (hint) {

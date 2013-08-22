@@ -516,6 +516,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         vocModel = res.vocModel,
         type = vocModel.type,
         prName = prop.displayName,
+        lookupFrom = prop.lookupFrom,
+        uri = res.get('_uri'),
         p = prop.shortName;
     
     if (!prName)
@@ -523,9 +525,16 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 
     params.$type = type;
     params.$multiValue = p;
-    if (!res.get('_uri')) // is an edit operation
+    if (uri) { // is a 'make' operation
+      if (lookupFrom) {
+        var bl = vocModel.properties[lookupFrom];
+        if (bl)
+          params[bl.backLink] = uri;
+      }
+      
       params.$forResource = uri;
-    
+    }
+  
     params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
     var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
     mvList = mvList.slice(U.getPropDisplayName(prop).length + 1);
@@ -549,11 +558,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     var rParams = {
-        $prop: prop.shortName,
-        $type:  vocModel.type,
-        $title: title,
-        $forResource: domain
-      };
+      $prop: prop.shortName,
+      $type:  vocModel.type,
+      $title: title,
+      $forResource: domain
+    };
 
     if (vocModel.type.endsWith('BacklinkProperty')) {
       var parentFolder = G.currentApp._uri; //U.getLongUri1(res.get('parentFolder'));
@@ -636,7 +645,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Events.on('choseMulti', function(propName, list, checked) {
-    debugger;
     var res = redirecter.getCurrentChooserBaseResource(),
         ffwd = redirecter.isChooserFastForwarded(),
         editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
@@ -654,11 +662,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         Events.trigger('navigate', U.makeMobileUrl(res.get('_uri') ? 'edit' : 'make', res.vocModel.type, U.filterObj(res.attributes, U.isModelParameter)));
       }
       else {
-        Events.trigger('chose:' + propName, {
-          list: list,
-          resource: res,
-          values: props
-        }); // let EditView handle it
+        Events.trigger('choseMulti:' + propName, res, props); // let EditView handle it
       }
     }    
   });
