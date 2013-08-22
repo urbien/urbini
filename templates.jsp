@@ -1225,6 +1225,7 @@
   {{ if (obj.votes) { }} 
     <span>{{= votes.count ? votes.count : '' }}</span>
   {{ } }}
+  <a href="#" style="float:right" id="reply">Reply</a>
 </td>
 </script>
 
