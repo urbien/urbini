@@ -32,7 +32,7 @@ function addParam(name, val) {
 
 function collectInfo() {
   for (var c = document.getElementsByTagName("meta"), k = 0; k < c.length; k++) {
-    var p = c[k].getAttribute('property'),
+    var p = c[k].getAttribute('property') || c[k].getAttribute('name'),
         hasOGUrl = false;
     
     if (/^og:/.test(p)) {
