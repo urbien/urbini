@@ -156,6 +156,8 @@ define('views/ResourceImageView', [
           this.video.onload = this.resizeVideo;
         }
       }
+      else
+        return false;
       
       return this;
     },
