@@ -172,9 +172,12 @@ define('views/ResourceImageView', [
 
       var self = this;
       if (this.isVideo) {
-        return this.renderVideo();
+        if (this.renderVideo())
+          return this;
       }
-      else if (this.isAudio) {
+        
+      // fallback to audio
+      if (this.isAudio) {
         var audio = this.isAudioResource ? res.get('AudioResource.audio') : res.get('_uri');
         if (audio) {
           this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
@@ -189,8 +192,11 @@ define('views/ResourceImageView', [
           // no audio, no player, fall back to imageresource
         }
       }
-//      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
-//      var json = res.toJSON();
+
+      if (!this.isImage)
+        return this;
+      
+      // fallback to image
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
       if (props.length == 0)
         props = U.getCloneOf(this.vocModel, 'ImageResource.originalImage');
