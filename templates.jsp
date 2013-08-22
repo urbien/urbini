@@ -1189,7 +1189,7 @@
   </div>
 </script>
 
-<script type="text/template" id="messageBarTemplate">
+<!--script type="text/template" id="messageBarTemplate">
   <div class="headerMessageBar {{= obj['class'] || '' }}">
     <h3 id="{{= obj.id || 'messageBar' + G.nextId() }}">
       {{ if (obj.icon) { }}
@@ -1199,7 +1199,7 @@
       {{= message }}      
     </h3>
   </div>
-</script>
+</script-->
 
 <script type="text/template" id="headerErrorBar">
   <div style="{{= obj.style || '' }}">
@@ -1433,7 +1433,7 @@
 
 <div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
 {{  _.each(messages, function(msg) {  }}
-     <div style="display:block" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+     <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
        <a href="{{= msg.link }}">
   {{ }                        }}
@@ -1450,7 +1450,7 @@
   {{ if (!msg.link && msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
-       <i class="ui-icon-delete closeparent"></i>
+       <i class="ui-icon-delete closeparent" style="position:absolute;top:5px;right:0px"></i>
      </div>
 {{  });                           }}
 </div>
