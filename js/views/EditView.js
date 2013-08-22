@@ -1385,7 +1385,9 @@ define('views/EditView', [
         
       if (!editProps) {
         propsForEdit = vocModel.propertiesForEdit;
-        editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
+        if (propsForEdit)
+          propsForEdit = propsForEdit.replace(/\s/g, '').split(',');
+        editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit : null;
         if (!editProps  &&  this.action == 'make') {
           var mkResourceCols = this.vocModel['mkResourceCols'];
           if (mkResourceCols)
@@ -1396,6 +1398,8 @@ define('views/EditView', [
           else if (vocModel.type.endsWith('Connection')) {
             editProps = ['fromApp', 'connectionType', 'effect'];
           }
+          else if (U.isAssignableFrom(vocModel, 'Comment'))
+            editProps = propsForEdit;
         }  
       }
       
