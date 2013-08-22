@@ -19,7 +19,9 @@ define('views/CommentListItemView', [
       return this;
     },
     events: {
-      'click .like': 'like'
+      'click .like': 'like',
+      'click #reply': 'reply'
+        
     },
     like: function(e) {
       var likeModel = U.getModel('Vote');
@@ -48,6 +50,19 @@ define('views/CommentListItemView', [
           G.log(self.TAG, 'error', 'couldn\'t create like');
         }
       });      
+    },
+    reply: function(e) {
+      Events.stopEvent(e);
+      var prop = this.vocModel.properties['replies'];
+      var params = {
+        '$backLink': prop.backLink,
+        '$title': e.target.dataset.title,
+        '-makeId': G.nextId(),
+        'forum': this.resource.get('forum')
+      };
+
+      params[prop.backLink] = this.resource.getUri();
+      this.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
     },
 
 //    tap: Events.defaultTapHandler,
