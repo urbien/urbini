@@ -13,8 +13,9 @@ define('views/MessageBar', [
       options = options || {};
       _.extend(this, options);
       
+      
       this.makeTemplate('messageListTemplate', 'messageListTemplate', this.modelType);
-      this.makeTemplate('messageBarTemplate', 'messageTemplate', this.modelType);
+//      this.makeTemplate('messageBarTemplate', 'messageTemplate', this.modelType);
     },
     
     events: {
