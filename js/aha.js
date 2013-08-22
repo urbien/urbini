@@ -1,7 +1,7 @@
 (function() {
 var scripts = document.getElementsByTagName('script'),
     ahaScriptSrc = scripts[scripts.length - 1].src,
-    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')),
+    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')).replace(/^https:\/\//, 'http://'),
     currentHref = window.location.href,
     enc = encodeURIComponent,
 //    keyword = isAha ? 'Aha!' : 'Huh?',
@@ -204,14 +204,17 @@ function overlay() {
   
   ahaBtn.onclick = function() {
     onchoose(true);
+    return false;
   };
   
   huhButton.onclick = function() {
     onchoose(false);
+    return false;
   };
 
   $('#ahaCancelBtn').onclick = function() {
     removeOverlay();
+    return false;
   };
   
   var ahaTip = $('#ahaTip'),
