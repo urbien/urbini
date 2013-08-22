@@ -927,7 +927,6 @@ define('models/Resource', [
         this.checkIfLoaded();
       
 //      Events.trigger('cacheResource', this);
-      this.unsavedChanges = {};
       options.success = function() {
         success && success.apply(self, arguments);        
         self.trigger('saved', self, options);
@@ -940,7 +939,9 @@ define('models/Resource', [
         self.notifyContainers();      
       };
       
-      return Backbone.Model.prototype.save.call(this, data, options);
+      var result = Backbone.Model.prototype.save.call(this, data, options);
+      this.unsavedChanges = {};
+      return result;
     },
     
     _sync: function(data, options) {
@@ -1181,6 +1182,8 @@ define('models/Resource', [
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
             editProps = ['fromApp', 'connectionType', 'effect'];
+          else if (U.isAssignableFrom(vocModel, 'Comment'))
+            editProps = propsForEdit;
         }  
       }
 

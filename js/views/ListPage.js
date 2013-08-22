@@ -206,7 +206,7 @@ define('views/ListPage', [
       var checked = this.$('input:checked');
       var editList = this.$('input[data-formel]');
       if (checked.length) {
-        Events.trigger('chooser:' + U.getQueryParams().$multiValue, {model: this.model, checked: checked});
+        Events.trigger('choseMulti', this.hashParams.$multiValue, this.model, checked);
         return;
       }
       Errors.errDialog({msg: 'Choose first and then submit', delay: 100});

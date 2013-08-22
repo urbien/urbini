@@ -196,8 +196,9 @@ define('views/ResourceListItemView', [
         var isIntersection = type ? U.isAssignableFrom(U.getModel(type), 'Intersection') : false;
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
+            debugger;
             Events.stopEvent(e);
-            Events.trigger('chooser:' + U.getQueryParams().$prop, self.model);
+            Events.trigger('chose', self.hashParams.$prop, self.model);
             return;
           }
         }

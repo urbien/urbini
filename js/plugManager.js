@@ -207,7 +207,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     var viaInstall = !!models.appInstall;
     var params = {plugsOnly: true};
     if (viaInstall)
-      params = $.param(_.extend(params, models));
+      _.extend(params, models);
     else
       _.extend(params, {models: JSON.stringify(models)});
     
