@@ -16,7 +16,7 @@ define('resourceSynchronizer', [
       REF_STORE,
       REF_STORE_PROPS;
   
-  Backbone.defaultSync = Backbone.sync;
+  var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
 //    return vocModel && !U.isA(vocModel, "Buyable");
 //  };
@@ -70,7 +70,7 @@ define('resourceSynchronizer', [
         return;
       }
       else
-        return Backbone.defaultSync.call(this, this.method, this.data, this.options);
+        return backboneDefaultSync.call(this, this.method, this.data, this.options);
     }
 
     return this._saveItem().then(this._success, this._error);

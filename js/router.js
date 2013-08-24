@@ -928,13 +928,12 @@ define('router', [
           viewPageCl = Modules.ViewPage;
       }
 
-      if (uri == 'profile') {
+      if (hashInfo.special == 'profile') {
         if (G.currentUser.guest) {
           this._requestLogin();
           return;
         }
         else {
-          uri = G.currentUser._uri;
           this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: false, replace: true});
           hashInfo = this.updateHashInfo();
         }
