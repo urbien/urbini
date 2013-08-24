@@ -85,7 +85,7 @@
   </div>
 </script>  
 
-<script type="text/template" id="bookmarkletIphoneStaticPageTemplate">
+<script type="text/template" id="bookmarkletIphonePage">
 <style>
   .bookmarkletPage-tableview-grouped {
     background: #f2f2f2;
@@ -161,7 +161,7 @@
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletAndroidStaticPageTemplate">
+<script type="text/template" id="bookmarkletAndroidPage">
 <div style="margin: 0px 10px 0px 10px;">
   <div>
     <h1><strong>Using the Aha! Bookmarklet on Android</strong></h1>
@@ -172,13 +172,25 @@
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletDesktopStaticPageTemplate">
+<script type="text/template" id="bookmarkletDesktopPage">
   <div style="text-align:center">
     <h1>Drag the button below to your browser's bookmarks bar</h1>
     <ul class="nav">
       <li><a onclick="javascript:alert('Drag me to your bookmarks bar!'); return false;" href="javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, 'aha=y'))" style="font-size:30px">Aha!</a></li>
     </ul>
   </div>
+</script>
+
+<script type="text/template" id="bookmarkletIOSChromePage">
+</script>
+
+<script type="text/template" id="bookmarkletChromeOSPage">
+</script>
+
+<script type="text/template" id="bookmarkletAndroidFirefoxPage">
+</script>
+
+<script type="text/template" id="bookmarkletFxOSPage">
 </script>
 
 <script type="text/template" id="chatPageTemplate">
