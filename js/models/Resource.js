@@ -372,7 +372,7 @@ define('models/Resource', [
       }
       
       resp = this.preParse.call(this, resp);
-      if (resp) {
+      if (resp && !options.overwriteUserChanges) {
         var meta = this.vocModel.properties;
         var unsaved = this.getUnsavedChanges();
         // don't overwrite changes the user has made but hasn't saved yet
@@ -1009,20 +1009,43 @@ define('models/Resource', [
         Events.trigger('synced:' + (tempUri || this.getUri()), this);
       }.bind(this);
       
-      options.error = function(originalModel, err, opts) {
-        var code = err.code || err.status;
-        if (code === 409 && err.error) {
-          var conflict = err.error.conflict;
-          if (conflict) { // conflict is the json for the conflicting resource
-            // TODO: handle this case
-            debugger;
-//            return;
+      options.error = function(originalModel, xhr, opts) {
+        var code = xhr.code || xhr.status,
+            respText = xhr.responseText,
+            errorObj;
+        
+        if (respText) {
+          try {
+            errorObj = JSON.parse(respText).error;
+          } catch (err) {
           }
         }
         
-        error && error.apply(this, arguments);
+        errorObj = errorObj || {};
+        if (code === 409) {
+          var conflict = errorObj.conflict;
+          if (!isNew) {
+            this.lastFetchOrigin = 'server';
+            this.set(this.parse(conflict, {overwriteUserChanges: true}));
+            Events.trigger('messageBar', 'error', {
+              message: errorObj.details || 'Uh oh. It appears that someone (maybe you) has made edits that take precedence over yours. Please re-edit and re-submit.',
+              persist: true
+            });
+          }
+          else {
+//            Events.trigger('navigate', new this.vocModel(conflict));
+            Events.trigger('cacheResource', new this.vocModel(conflict));
+            Events.trigger('messageBar', 'error', {
+              message: errorObj.details || "Uh oh. It appears you're trying to make something that already exists. Is <a href='{0}'>this</a> what you're trying to make?".format(U.makePageUrl('view', conflict._uri)),
+              persist: true
+            });
+          }
+        }
+        
+        if (error)
+          error.apply(this, arguments);
       }.bind(this);
-      
+
       return Backbone.Model.prototype.save.call(this, data, options);
     },
     
@@ -1101,6 +1124,7 @@ define('models/Resource', [
       }); 
       
 //      return U.flattenModelJson(filtered, vocModel, preserve);
+      filtered.davGetLastModified = this.get('davGetLastModified');
       return filtered;
     },
     
@@ -1272,6 +1296,10 @@ define('models/Resource', [
 //      this._editablePropsUrlInfo = urlInfo;
 //      this._editableProps = result;
       return result;
+    },
+    
+    isFetching: function() {
+      return !this._fetchPromise || this._fetchPromise.state() !== 'pending';
     }
 //    ,
 //    getMiniVersion: function() {
