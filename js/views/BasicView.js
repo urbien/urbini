@@ -490,6 +490,10 @@ define('views/BasicView', [
                                                                                  isPartiallyVisible ? 'partially ' : 'in'));
       });
     },
+  
+    getPreviousHash: function() {
+      return this.getPageView().source;
+    },
     
     getOrientation: function() {
       return ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';

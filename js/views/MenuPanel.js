@@ -142,14 +142,17 @@ define('views/MenuPanel', [
         } 
       }
       if (G.tabs) {
+        var tabs = _.clone(tabs);
 //        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
 //        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
-        _.each(G.tabs, function(t) {
+        _.each(tabs, function(t) {
 //          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
           t.pageUrl = t.hash;
-          U.addToFrag(frag, self.menuItemTemplate(t));
+          U.addToFrag(frag, self.menuItemTemplate(t))
 //          self.tabs[t.title] = t.mobileUrl;
         });
+        
+        tabs = null;
       }
       
       var params = {lastPublished: '!null'};
