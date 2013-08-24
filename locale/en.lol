@@ -82,3 +82,4 @@
 <delete "Delete">
 <actions "Actions">
 <wouldYouLikeToChatInPrivate "Would you like to chat in private?">
+<login "Login">

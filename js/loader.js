@@ -113,7 +113,8 @@ define('globals', function() {
     
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    var mobile = navigator.userAgent.match(/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/);
+    browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
+    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/);
     if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
@@ -414,7 +415,7 @@ define('globals', function() {
       if (browser.chrome)
         G.inWebview = true;
       else if (browser.firefox) {
-//        G.inFirefoxOS = true;
+        G.inFirefoxOS = true;
 //        window.top.postMessage({message: 'Hello world'}, G.serverName);
       }
     };
@@ -426,18 +427,6 @@ define('globals', function() {
         return;
       }
     }
-    
-//    if (query && query.length) {
-//      var params = query.split('&');
-//      for (var i = 0; i < params.length; i++) {
-//        var keyVal = params[i].split('=');
-//        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
-//          setParent();          
-//          G.localStorage.put(param, 'y');
-//          break;
-//        }
-//      }
-//    }
     
     if (params[param] == 'y') {
       setParent();          
