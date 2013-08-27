@@ -1197,8 +1197,10 @@ define('models/Resource', [
       
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
+        if (propsForEdit)
+          propsForEdit = propsForEdit.replace(/\s/g, '').split(',');
         if (isEdit)
-          editProps = propsForEdit && propsForEdit.replace(/\s/g, '').split(',');
+          editProps = propsForEdit;
         else {
           if (mkResourceCols)
             editProps = mkResourceCols.replace(/\s/g, '').split(',');
