@@ -5,13 +5,14 @@ var scripts = document.getElementsByTagName('script'),
     currentHref = window.location.href,
     enc = encodeURIComponent,
 //    keyword = isAha ? 'Aha!' : 'Huh?',
-    buildAhaUrl = serverUrl + '/aha?',
+    saveAhaUrl = serverUrl + '/aha?',
     onAhaMsg = "You have been registered as a bona fide expert on this...whatever it is. You are now a superhero on call in the endless battle against the evil powers of ignorance and bliss. Welcome aboard!",
     containerDiv,
     overlayDiv,
     setImage = true,
     description,
-    found = [],
+    ogTags = [],
+    images = [],
     $ = function() {
       return document.querySelector.apply(document, arguments);
     };
@@ -23,11 +24,11 @@ function isSafari() {
   return /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
 }
 function isIOS() {
-  return navigator.userAgent.match(/iPad/i) != null || navigator.userAgent.match(/iPhone/i) != null || navigator.userAgent.match(/iPod/i) != null || navigator.userAgent.match(/iPod/i) != null
+  return navigator.userAgent.match(/iPad|iPhone|iPod|iPod/i) != null
 }
 
 function addParam(name, val) {
-  buildAhaUrl += enc(name) + '=' + enc(val) + '&';
+  saveAhaUrl += enc(name) + '=' + enc(val) + '&';
 }
 
 function collectInfo() {
@@ -36,8 +37,23 @@ function collectInfo() {
         hasOGUrl = false;
     
     if (/^og:/.test(p)) {
-      found.push(p);
-      addParam(p, c[k].getAttribute('content'));
+      ogTags.push(p);
+      var value = c[k].getAttribute('content');
+      if (p == 'og:image') {
+        setImage = true;
+        images.push(value);
+        var img = new Image;
+        img.src = value;
+        img.onload = function() {
+          if (this.width < 200 || this.height < 200) {
+            images.splice(images.indexOf(value), 1);
+            if (!images.length)
+              setImage = true;
+          }
+        };
+      }
+      else
+        addParam(p, value);
     }
     else {
       if (p == 'keywords' || p === 'author')
@@ -45,21 +61,18 @@ function collectInfo() {
     }
   }
   
-  var ogUrlIdx = found.indexOf('og:url');
+  var ogUrlIdx = ogTags.indexOf('og:url');
   if (ogUrlIdx == -1)
     addParam('og:url', currentHref);
   else
-    currentHref = found[ogUrlIdx];
+    currentHref = ogTags[ogUrlIdx];
     
-  if (found.indexOf('og:title') == -1)
+  if (ogTags.indexOf('og:title') == -1)
     addParam('og:title', document.title);
-  if (found.indexOf('og:type') == -1)
+  if (ogTags.indexOf('og:type') == -1)
     addParam('og:type', 'website');
   
-  if (found.indexOf('og:image') != -1)
-    setImage = false;
-  
-  var descIdx = found.indexOf('og:description');
+  var descIdx = ogTags.indexOf('og:description');
   if (descIdx == -1) {
     var a = window,
         b = document,
@@ -69,21 +82,23 @@ function collectInfo() {
       addParam('og:description', description);
   }
   else
-    description = found[descIdx];
+    description = ogTags[descIdx];
 }
 
-function callAha(url) {
-  url = url || buildAhaUrl;
+function callAha() {
+  if (images.length)
+    saveAhaUrl += '&og:image=' + enc(images[0]);
+    
   removeOverlay();
   if (isIOS()) {
-    setTimeout(function () {
-      window.location = url;
-    }, 25);
+//    setTimeout(function () {
+//      window.location = saveAhaUrl;
+//    }, 25);
     
-    window.location = url;
+    window.location = saveAhaUrl;
   } 
   else 
-    window.open(url, 'Aha' + +new Date());
+    window.open(saveAhaUrl, 'Aha' + +new Date());
 //    window.open(url, 'Aha' + (new Date).getTime(), "status=no,resizable=no,scrollbars=yes,personalbar=no,directories=no,location=no,toolbar=no,menubar=no,width=750,height=450,left=0,top=0");
 }
 
@@ -252,7 +267,7 @@ function overlay() {
 
 
   function onchoose(aha) {
-    buildAhaUrl += '&aha=' + (aha ? 'y' : 'n');
+    saveAhaUrl += '&aha=' + (aha ? 'y' : 'n');
     if (setImage)
       showImageChooser();
     else {
@@ -264,9 +279,9 @@ function overlay() {
   scroll(0, 0);
 }
 
+overlay();
 collectInfo();  
 checkDuplicate(); // check for duplicate online resource
-overlay();
 
 function checkDuplicate() {
 //  var xmlhttp = new XMLHttpRequest();
@@ -309,8 +324,8 @@ function showImageChooser() {
       if (location.href.match(i) || location.href.match(f))
         callAha();
       else {
-        var w = buildAhaUrl,
-            x = buildAhaUrl,
+        var w = saveAhaUrl,
+            x = saveAhaUrl,
             q = null;
         
         if (description && description.length > 0) 
@@ -467,7 +482,7 @@ function showImageChooser() {
                   b = document.createElement("a");
                   b.setAttribute("href", "#");
                   b.onclick = function () {
-                      buildAhaUrl += '&og:image=' + enc(a.src);
+                      images.push(a.src);
                       callAha();
                       o.parentNode.removeChild(o);
                       n.parentNode.removeChild(n);
@@ -539,7 +554,7 @@ function showImageChooser() {
 })();
 
 //function getHelp() {
-//  window.open(buildAhaUrl);
+//  window.open(saveAhaUrl);
 //}
 
 //if (isAha)
@@ -547,4 +562,4 @@ function showImageChooser() {
 //else
 //  getHelp();
 //overlay();
-//window.open(buildAhaUrl);
+//window.open(saveAhaUrl);

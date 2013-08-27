@@ -224,7 +224,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       
       myTours.fetch({
         success: function() {
-          if (!myTours._fetchPromise || myTours._fetchPromise.state() !== 'pending')
+          if (!myTours.isFetching())
             defer.resolve(myTours)
         },
         error: defer.reject
@@ -364,7 +364,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       return $.Deferred(function(defer){        
         tours.fetch({
           success: function(resp) {
-            if (!tours._fetchPromise || tours._fetchPromise.state() !== 'pending')
+            if (!tours.isFetching())
               chooseTour(tours.models).then(defer.resolve, defer.reject);
           },
           error: function() {

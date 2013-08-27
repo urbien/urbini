@@ -310,11 +310,84 @@ define('app', [
     };
   };
   
+  function hashToResourceOrList(hash) {
+    var hashInfo = U.getUrlInfo(hash),
+        type = hashInfo.getType(),
+        uri = hashInfo.getUri();
+      
+    if (!type)
+      return G.getRejectedPromise();
+      
+    return Voc.getModels(type, {wait: true}).then(function(model) {
+      var data;
+      switch (hashInfo.route) {
+        case "chooser": 
+        case "list":
+          data = new ResourceList(null, {
+            model: model, 
+            params: hashInfo.getParams()
+          });
+          
+          break;
+        case "view":
+        case "edit":
+        case "chat": 
+        case "chatPrivate": 
+        case "chatLobby":
+          if (uri) {
+            data = new model({
+              _uri: uri
+            });
+          }
+          
+          break;          
+      }
+      
+      return data ? data : G.getRejectedPromise();
+    });
+  };
+  
+  function prefetchResources() {
+    var tabs = G.tabs,
+        promises;
+    
+    if (!G.currentUser.guest)
+      tabs = tabs.concat({hash: 'view/profile'});
+      
+    promises = _.map(tabs, function(tab) {
+      var promise = hashToResourceOrList(tab.hash);
+      if (promise.state() == 'rejected')
+        return G.getRejectedPromise();
+      
+      return promise.then(function(data) {
+        var fetchDfd = $.Deferred(),
+            isList = U.isCollection(data);
+        
+        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List', data));
+        data.fetch({
+          success: function() {
+            if (!data.isFetching())
+              fetchDfd.resolve();
+          },
+          error: function() {
+            fetchDfd.reject();
+          }
+        });
+        
+        return fetchDfd.promise();
+      });
+    });
+    
+    if (Voc.isDelayingModelsFetch())
+      Voc.getModels(null, {go: true});    
+  };
+  
   function doPostStartTasks() {
-    Voc.getModels();    
+    Voc.getModels();
     initGrabs();
     setupPushNotifications();
     ResourceManager.sync();
+    prefetchResources();
   //    if (G.inWebview) {
   //      App.replaceGetUserMedia();
   //      Events.on('messageToApp', function(msg) {
@@ -711,13 +784,11 @@ define('app', [
       var returnUri = options.returnUri || window.location.href;
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
       if (returnUri.startsWith(signupUrl)) {
-        debugger;
         G.log(App.TAG, 'error', 'avoiding redirect loop and scrapping returnUri -- 1');
         returnUri = G.pageRoot;
       }
       
       var nets = _.map(G.socialNets, function(net) {
-//        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
         return {
           name: net.socialNet,
           url: U.buildSocialNetOAuthUrl(net, 'Login', returnUri)

@@ -537,7 +537,11 @@ define('collections/ResourceList', [
         this.trigger('endOfList');
       
       return this;
-    }    
+    },
+    
+    isFetching: function() {
+      return this._fetchPromise && this._fetchPromise.state() == 'pending';
+    }
   }, {
     displayName: 'ResourceList'
   });

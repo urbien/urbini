@@ -82,3 +82,4 @@
 <delete "删除">
 <actions "Actions">
 <wouldYouLikeToChatInPrivate "想跟我私下聊天吗？">
+<login 登录>

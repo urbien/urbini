@@ -810,6 +810,17 @@ define('views/EditView', [
       });
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
+      if (!_.size(atts)) {
+        debugger;
+        var prevHash = this.getPreviousHash();
+        if (prevHash && !prevHash.startsWith('chooser/'))
+          Events.trigger('back');
+        else
+          Events.trigger('navigate', this.resource.getUri());
+        
+        return;
+      }
+      
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});

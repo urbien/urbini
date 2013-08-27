@@ -14,22 +14,22 @@ define('views/BasicPageView', [
     return !!$(element).parents('[draggable=true]').length;
   };
   
-  function isTouchWithinBounds(touch1, touch2, bound) {
-    if (!touch1 || !touch2)
-      return false;
-    
-    bound = bound || 10;
-    return _.all(['pageX', 'pageY'], function(p) {        
-      return Math.abs(touch1[p] - touch2[p]) < bound;
-    });
-  };
-  
-  function cloneTouch(touch) {
-    return {
-      pageX: touch.pageX,
-      pageY: touch.pageY
-    }
-  };
+//  function isTouchWithinBounds(touch1, touch2, bound) {
+//    if (!touch1 || !touch2)
+//      return false;
+//    
+//    bound = bound || 10;
+//    return _.all(['pageX', 'pageY'], function(p) {        
+//      return Math.abs(touch1[p] - touch2[p]) < bound;
+//    });
+//  };
+//  
+//  function cloneTouch(touch) {
+//    return {
+//      pageX: touch.pageX,
+//      pageY: touch.pageY
+//    }
+//  };
   
   var PageView = BasicView.extend({
     initialize: function(options) {
@@ -126,10 +126,11 @@ define('views/BasicPageView', [
       'pageshow': 'onpageevent',
       'pagebeforeshow': 'onpageevent',
       'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft',
-      'touchstart': 'highlightOnTouchStart',
-      'touchmove': 'unhighlightOnTouchMove',
-      'touchend': 'unhighlightOnTouchEnd'
+      'swipeleft': 'swipeleft'
+//        ,
+//      'touchstart': 'highlightOnTouchStart',
+//      'touchmove': 'unhighlightOnTouchMove',
+//      'touchend': 'unhighlightOnTouchEnd'
     },
 
     destroy: function() {
@@ -137,65 +138,65 @@ define('views/BasicPageView', [
       BasicView.prototype.destroy.call(this);
     },
     
-    highlightOnTouchStart: function(e) {
-      var self = this,
-          touches = e.touches;
-      
-      if (_.isUndefined(touches))
-        return;
-      
-      // Mobile safari doesn't let you copy touch objects, so copy it manually
-      this._firstTouch = cloneTouch(touches[0]);
-      this.touchStartTimer = setTimeout(function() {
-        self.highlight(e.target, e);
-      }, 100);
-    },
-
-    unhighlightOnTouchMove: function(e) {
-      if (_.isUndefined(this._firstTouch))
-        return;
-      
-      var touches = e.touches;
-      if (_.isUndefined(touches))
-        return;
-      
-      // Mobile safari doesn't let you copy touch objects, so copy it manually
-      var tMove = cloneTouch(touches[0]);
-      
-      // remove this class only if you're a certain distance away from the initial touch
-      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
-        this.clearTouchStartTimer();
-        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
-      }
-    },
-
-    unhighlightOnTouchEnd: function(e) {
-      // removing active class needs to be on timer because adding is also on a timer
-      // if this is not done, sometimes the active class removal is called before...
-      var self = this;
-      setTimeout(function() {
-        self.unhighlight(e.target, e);
-      }, 100);
-    },
-    
-    /**
-     * Stub. Override this
-     */
-    highlight: function(target, e) {
-//      throw "highlight needs to be implemented by all subclasses";
-    },
-
-    /**
-     * Stub. Override this
-     */
-    unhighlight: function(target, e) {
-//      throw "unhighlight needs to be implemented by all subclasses";
-    },
-
-    clearTouchStartTimer: function() {
-      clearTimeout(this.touchStartTimer);
-      this.touchStartTimer = null;
-    },
+//    highlightOnTouchStart: function(e) {
+//      var self = this,
+//          touches = e.touches;
+//      
+//      if (_.isUndefined(touches))
+//        return;
+//      
+//      // Mobile safari doesn't let you copy touch objects, so copy it manually
+//      this._firstTouch = cloneTouch(touches[0]);
+//      this.touchStartTimer = setTimeout(function() {
+//        self.highlight(e.target, e);
+//      }, 100);
+//    },
+//
+//    unhighlightOnTouchMove: function(e) {
+//      if (_.isUndefined(this._firstTouch))
+//        return;
+//      
+//      var touches = e.touches;
+//      if (_.isUndefined(touches))
+//        return;
+//      
+//      // Mobile safari doesn't let you copy touch objects, so copy it manually
+//      var tMove = cloneTouch(touches[0]);
+//      
+//      // remove this class only if you're a certain distance away from the initial touch
+//      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
+//        this.clearTouchStartTimer();
+//        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
+//      }
+//    },
+//
+//    unhighlightOnTouchEnd: function(e) {
+//      // removing active class needs to be on timer because adding is also on a timer
+//      // if this is not done, sometimes the active class removal is called before...
+//      var self = this;
+//      setTimeout(function() {
+//        self.unhighlight(e.target, e);
+//      }, 100);
+//    },
+//    
+//    /**
+//     * Stub. Override this
+//     */
+//    highlight: function(target, e) {
+////      throw "highlight needs to be implemented by all subclasses";
+//    },
+//
+//    /**
+//     * Stub. Override this
+//     */
+//    unhighlight: function(target, e) {
+////      throw "unhighlight needs to be implemented by all subclasses";
+//    },
+//
+//    clearTouchStartTimer: function() {
+//      clearTimeout(this.touchStartTimer);
+//      this.touchStartTimer = null;
+//    },
     
     _restoreScroll: function() {
       this.scrollTo(this._scrollPosition);
@@ -219,21 +220,21 @@ define('views/BasicPageView', [
     },
     
     swipeleft: function(e) {
-      if (isInsideDraggableElement(e.target))
-        return;
+//      if (isInsideDraggableElement(e.target))
+//        return;
       
       this.log('events', 'swipeleft');
-      Events.trigger('forward');
-      return false;
+//      Events.trigger('forward');
+//      return false;
     },
     
     swiperight: function(e) {
-      if (isInsideDraggableElement(e.target))
-        return;
+//      if (isInsideDraggableElement(e.target))
+//        return;
       
       this.log('events', 'swiperight');
-      Events.trigger('back');
-      return false;
+//      Events.trigger('back');
+//      return false;
     },
 
     scrollTo: function(position) {
@@ -404,6 +405,12 @@ define('views/BasicPageView', [
       if (!this.isActive())
         return;
 
+      if (typeof data == 'string') {
+        data = {
+          message: data
+        }
+      }
+      
       if (data.resource && data.resource !== this.resource)
         return;
       

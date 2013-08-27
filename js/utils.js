@@ -166,6 +166,15 @@ define('utils', [
     }
   };
   
+  function simplifyPosition(position) {
+    var coords = position.coords;
+    return {
+      latitude: coords.latitude, 
+      longitude: coords.longitude,
+      timestamp: position.timestamp
+    };
+  };
+  
   var U = {
     /**
      * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
@@ -952,10 +961,11 @@ define('utils', [
       return promise;
     },
 
+    _socialSignupHome: G.serverName + '/social/socialsignup', ///m/' + G.currentApp.appPath,
     buildSocialNetOAuthUrl: function(net, action, returnUri) {
       returnUri = returnUri || window.location.href;
       if (action === 'Disconnect') {
-        return G.serverName + '/social/socialsignup?' + U.getQueryString({
+        return U._socialSignupHome + '?' + U.getQueryString({
           actionType: action,
           returnUri: returnUri,
           socialNet: net.socialNet
@@ -965,12 +975,14 @@ define('utils', [
       var state = U.getQueryString({
         socialNet: net.socialNet, 
         returnUri: returnUri,
-        actionType: action
+        actionType: action,
+        appPath: G.currentApp.appPath
       }, {sort: true}); // sorted alphabetically
     
       var params;
       if (net.oAuthVersion == 1) {
         params = {
+          appPath: G.currentApp.appPath,
           episode: 1, 
           socialNet: net.socialNet,
           actionType: action
@@ -981,7 +993,7 @@ define('utils', [
           scope: net.settings,
           display: 'touch', // 'page', 
           state: state, 
-          redirect_uri: G.serverName + '/social/socialsignup', 
+          redirect_uri: U._socialSignupHome, 
           response_type: 'code', 
           client_id: net.appId || net.appKey
         };
@@ -3549,27 +3561,35 @@ define('utils', [
       
       return modelLatLon;
     },
-    
-    getCurrentLocation: function() {
-      return $.Deferred(function(defer) {
-        setTimeout(defer.reject, 5000);
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var coords = position.coords;
-          position = {
-            latitude: coords.latitude, 
-            longitude: coords.longitude,
-            timestamp: position.timestamp
-          };
-// position has several params like (accuracy, time) that are causing the error like "property 'accuracy' was not found in Urbien1"            
-//          position = U.filterObj(position, function(key, val) {
-//            return val != null  &&  (key == 'latitude' || key == 'longitude');
-//          });
-          
-          Events.trigger('location', position);
-          defer.resolve(position);
-        }, defer.reject);
-      }).promise();
+
+    getCurrentLocation: function(options, watch) {
+      var dfd = $.Deferred(),
+          promise = dfd.promise();
+      
+      var watchId = navigator.geolocation[watch ? 'watchPosition' : 'getCurrentPosition'](function(position) {
+        position = simplifyPosition(position);
+        Events.trigger('location', position);
+        if (watch)
+          dfd.notify(position);
+        else
+          dfd.resolve(position);
+      }, dfd.reject, _.defaults(options || {}, {
+        enableHighAccuracy: false,
+        maximumAge: 2000,
+        timeout: 5000
+      }));
+      
+      if (watch) {
+        _.extend(promise, {
+          cancel: function() {
+            navigator.geolocation.clearWatch(watchId);
+          }
+        });
+      }
+      
+      return promise;
     },
+    
     randomString: function() {
       return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
     },
@@ -3759,7 +3779,7 @@ define('utils', [
     }
   };
 
-  var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment'],
+  var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment', 'special'],
       urlInfoSpecial = ['params', 'sub'],
       allUrlInfoProps = _.union(urlInfoProps, urlInfoSpecial);
   
@@ -3830,6 +3850,11 @@ define('utils', [
     }
     else {
       uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+    }
+
+    if (uri == 'profile') {
+      this.special = 'profile';
+      uri = G.currentUser._uri; // null if guest
     }
 
     if (!route)
