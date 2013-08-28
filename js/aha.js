@@ -32,9 +32,13 @@ function addParam(name, val) {
 }
 
 function collectInfo() {
+  var infoTags = ['keywords', 'author', 'news_keywords', 'abstract'];
   for (var c = document.getElementsByTagName("meta"), k = 0; k < c.length; k++) {
     var p = c[k].getAttribute('property') || c[k].getAttribute('name'),
         hasOGUrl = false;
+    
+    if (!p)
+      continue;
     
     if (/^og:/.test(p)) {
       ogTags.push(p);
@@ -56,19 +60,19 @@ function collectInfo() {
         addParam(p, value);
     }
     else {
-      if (p == 'keywords' || p === 'author')
+      if (infoTags.indexOf(p) != -1)
         addParam(p, c[k].getAttribute('content'));
     }
   }
   
   var ogUrlIdx = ogTags.indexOf('og:url');
   if (ogUrlIdx == -1)
-    addParam('og:url', currentHref);
+    addParam('url', currentHref);
   else
     currentHref = ogTags[ogUrlIdx];
     
   if (ogTags.indexOf('og:title') == -1)
-    addParam('og:title', document.title);
+    addParam('title', document.title);
   if (ogTags.indexOf('og:type') == -1)
     addParam('og:type', 'website');
   
@@ -198,11 +202,11 @@ function overlay() {
       "        <tr height=\"5%\" style=\"text-align:center\"></tr>" + 
   		"        <tr height=\"85%\" style=\"text-align:center\">\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
+  		"                <a href=\"javascript:void(0);\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"ahaTip\" style=\"font-size:18px;\">(I'm ready to explain this to others)</span>\r\n" + 
   		"            </td>\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <a href=\"#\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh_big.png\" /></a>\r\n" + 
+  		"                <a href=\"javascript:void(0);\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"huhTip\" style=\"font-size:18px;\">(Can someone please explain it to me?)</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
