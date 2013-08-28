@@ -106,6 +106,9 @@ define('templates', [
      */
     get: function(name, type) {
       var templates = this.templates[name];
+      if (!templates)
+        return null;
+      
       return type ? templates[type] : templates['default'];
     },
     
