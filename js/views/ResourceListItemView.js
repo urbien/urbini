@@ -261,12 +261,13 @@ define('views/ResourceListItemView', [
             var appModel;
             var tag = params['tagUses.tag.tag'];
             var tag = params['tags'];
+            var tt = self.resource.get('tag') || U.getDisplayName(self.resource);
             if (app) {
               for (var p in params) {
                 if (m.properties[p])
                   delete params[p];
               }
-              params.$title = self.resource.get('tag');
+              params.$title = tt;
     //          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
     //              params['tagUses.tag.application'] = app;
             }
@@ -279,7 +280,7 @@ define('views/ResourceListItemView', [
               if (appModel) {
                 var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
                 if (tagProp) {
-                  params[tagProp] = '*' + self.resource.get('tag') + '*';
+                  params[tagProp] = '*' + tt + '*';
         
                   self.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
                   return;
