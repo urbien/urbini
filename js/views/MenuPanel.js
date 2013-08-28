@@ -142,7 +142,7 @@ define('views/MenuPanel', [
         } 
       }
       if (G.tabs) {
-        var tabs = _.clone(tabs);
+        var tabs = _.clone(G.tabs);
 //        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
 //        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
         _.each(tabs, function(t) {
