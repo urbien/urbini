@@ -46,7 +46,7 @@ define('views/ViewPage', [
         viewId: this.cid
       }, commonParams)));
 
-      if (!isAbout) {
+      if (!this.isAbout) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
@@ -84,7 +84,7 @@ define('views/ViewPage', [
 //      }
       
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
-      if (!isAbout) {
+      if (!this.isAbout) {
         this.addChild('cpMain', new ControlPanel(_.extend({isMainGroup: true}, commonParams)));
         this.addChild('cp', new ControlPanel(_.extend({isMainGroup: false}, commonParams)));
       }  
@@ -264,11 +264,15 @@ define('views/ViewPage', [
       var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
       var views = {};
       views[viewTag] = this.view;
+
+      var isApp = this.isApp = U.isAssignableFrom(res, G.commonTypes.App);
+      var isAbout = this.isAbout = (isApp  &&  !!this.hashParams['$about']  &&  !!res.get('description')) || !!this.hashParams['$fs'];
+      if (!isAbout) {
       if (this.cp)
         views['ul#cpView'] = this.cp;
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
-
+ 
       if (this.isPurchasable) {
         var purchasesBLProp; 
         
@@ -286,7 +290,7 @@ define('views/ViewPage', [
           this.isBuyGroup = false;
 
       }
-      
+      }     
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
       
