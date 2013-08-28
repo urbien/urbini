@@ -1613,7 +1613,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 55px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px;"/>
+      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px; position:relative;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >
