@@ -127,9 +127,8 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     _setup: function() {      
       Events.on('messageFromApp:push', onpush);
       Events.on('messageToApp', sendMessageToApp);
-      var installedApps = G.currentUser.installedApps,
-          currentApp = G.currentApp,
-          channelId = G.pushChannelId,
+//      var currentApp = G.currentApp,
+      var channelId = G.pushChannelId,
           appInstall = G.currentAppInstall,      
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
             model: U.getModel(G.commonTypes.PushEndpoint),
