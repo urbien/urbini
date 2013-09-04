@@ -392,7 +392,7 @@ define('resourceManager', [
   });
 
   function getTypeToInfoMap(infos) {
-    var isBLs = !!U.getFirstPropertyValue(infos).list,
+    var isBLs = !!U.getFirstValue(infos).list,
         isResources = !isBLs;
     
     function getTypeUri(info) {
@@ -400,7 +400,7 @@ define('resourceManager', [
       if (isBLs)
         range = info.prop && info.prop.range;
       else
-        range = info.resource._uri ? U.getTypeUri(info.resource._uri) : info.property.range;
+        range = info.resource._uri ? U.getTypeUri(info.resource._uri) : info.prop.range;
       
       return U.getTypeUri(range); 
     };
@@ -436,7 +436,7 @@ define('resourceManager', [
 
         _.each(resInfos, function(resInfo) {
           var newRes = new model(resInfo.resource); // let it get cached
-          if (resInfo.property)
+          if (resInfo.prop)
             update[propName] = newRes.getUri();
         });
       }
@@ -464,7 +464,7 @@ define('resourceManager', [
           else
             currentlySetting.push(propName);
           
-          var rl = new ResourceList(backLinkData, {
+          var rl = new ResourceList(info.list, {
             model: model, 
             params: U.getListParams(baseResource, prop), 
             parse: true
