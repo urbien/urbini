@@ -3,7 +3,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
   var usingShim = G.dbType == 'shim';
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
+	var IDBCursor = window.IDBCursor || window.webkitIDBCursor || {};
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
 	

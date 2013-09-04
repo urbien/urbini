@@ -1441,7 +1441,7 @@ define('l20n/parser', function(require, exports, module) {
         getWS();
 //        if (_source.charCodeAt(_index) !== 125 ||
 //            _source.charCodeAt(_index + 1) !== 125) {
-        if (_source.slice(index, _index, _index + 2) !== END_DELIMITER) {
+        if (_source.slice(_index, _index + END_DELIMITER.length) !== END_DELIMITER) {
           throw error('Expected "' + END_DELIMITER + '"');
         }
         
