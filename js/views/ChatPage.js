@@ -112,7 +112,7 @@ define('views/ChatPage', [
           if (!mainGroup  ||  !mainGroup.length)
             return headerDfd.resolve();
             
-          var mainGroupArr = mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",");
+          var mainGroupArr = mainGroup[0]['propertyGroupList'].splitAndTrim(',');
           mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index < b.index});
           var mainBacklinks = [];
           for (var i=0; i<mainGroupArr.length; i++) {
@@ -156,7 +156,7 @@ define('views/ChatPage', [
               dfd.resolve();
             }
             else {
-              var mainGroupArr = mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",");
+              var mainGroupArr = mainGroup[0]['propertyGroupList'].splitAndTrim(',');
               mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index < b.index});
               var mainBacklinks = [];
               for (var i=0; i<mainGroupArr.length; i++) {

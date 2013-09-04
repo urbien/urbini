@@ -19,11 +19,6 @@ define('views/EditView', [
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
   
-//  function willShow(res, prop, role) {
-//    var p = prop.shortName;
-//    return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
-//  };
-  
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     initialize: function(options) {
@@ -50,9 +45,9 @@ define('views/EditView', [
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
       this.isEdit = this.action === 'edit';
+      this.saveOnEdit = options.saveOnEdit;
       
       this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
-      var self = this;
       /*
       var modelsDfd = $.Deferred(function(defer) {
         if (self.isForInterfaceImplementor) {
@@ -69,6 +64,7 @@ define('views/EditView', [
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
 
+      var self = this;
       var codemirrorDfd = $.Deferred(function(defer) {
         if (self.isCode) {
           U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
@@ -80,19 +76,16 @@ define('views/EditView', [
       });
       
       this.ready = $.when(codemirrorDfd.promise());
-      Events.on('pageChange', function(from, to) {
-        // don't autosave new resources, they have to hit submit on this one...or is that weird
-        if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
-          return;
-        
-        if (!this._submitted)
-          this.$form.submit();
-//        if (this.isActive())
-//          this.redirect();
-//        var unsaved = this.resource.getUnsavedChanges();
-//        if (_.size(unsaved))
-//          this.resource.save();
-      }.bind(this));
+      if (this.saveOnEdit) {
+        Events.on('pageChange', function(from, to) {
+          // don't autosave new resources, they have to hit submit on those...or is that weird?
+          if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
+            return;
+          
+          if (!this._submitted)
+            this.submit(null, {fromPageChange: true});
+        }.bind(this));
+      }
 
       this.on('active', function(active) {
         if (active) {
@@ -722,8 +715,8 @@ define('views/EditView', [
       return true;
     },
     
-    submit: function(e) {
-      Events.stopEvent(e);
+    submit: function(e, options) {
+      e && Events.stopEvent(e);
       if (this._submitted) {
         if (!this.isActive())
           return;
@@ -811,7 +804,9 @@ define('views/EditView', [
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
       if (!_.size(atts)) {
-        debugger;
+        if (options && options.fromPageChange)
+          return;
+        
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back');
@@ -836,9 +831,10 @@ define('views/EditView', [
         this.resource.clear();
         this.resource.set(this.originalResource);
       }
-        
+       
+      Events.trigger('cancel' + this.action.capitalizeFirst(), this.resource);
       this._canceled = this._submitted = true;
-      Events.trigger('back');
+//      Events.trigger('back');
     },
     
     onSaveError: function(resource, xhr, options) {
@@ -857,13 +853,8 @@ define('views/EditView', [
         return;
       }
       
-      var json = {};
-      try {
-        json = JSON.parse(xhr.responseText);
-      } catch (err) {
-      }
-      
-      var msg = json.error.details;
+      var error = U.getJSON(xhr.responseText);
+      var msg = error && error.details;
       // TODO: undo this hack
       if (msg && msg.startsWith("You don't have enough funds")) {
         Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
@@ -898,6 +889,7 @@ define('views/EditView', [
           Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
           break;
         default:
+          debugger;
           Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
 //          debugger;
           break;
