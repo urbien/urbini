@@ -1,10 +1,10 @@
-define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceList'], function(G, Events, U, C, ResourceList) {
+define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceList', 'vocManager'], function(G, Events, U, C, ResourceList, Voc) {
   var gManifestName = "/manifest.webapp",
       connectedDfd = $.Deferred(),
       connectedPromise = connectedDfd.promise(),
       inIFrame = G.inFirefoxOS;
 
-  if (G.appWindow)
+  if (G.appWindow || (G.hasFFApps && !G.inFirefoxOS))
     connectedDfd.resolve();
 
   function log() {
@@ -137,25 +137,19 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     }
   };
   
-  function setup() {
-//    console.log("creating notification");
-//    firefox.mozNotification.createNotification("Hello Mark", "This is for your eyes only", "icon_128.png", {
-//      onclose: function() {
-//        console.log("closed notification");
-//      },
-//      onclick: function() {
-//        console.log("clicked notification");
-//      }
-//    });
+  function setupPush() {
+    Voc.getModels(G.commonTypes.PushEndpoint).then(_setupPush);
+  }
 
+  function _setupPush(pushEndpointModel) {
     Events.on('messageFromApp:push', onpush);
-    var installedApps = G.currentUser.installedApps,
-        currentApp = G.currentApp,
-        channelId = G.pushChannelId,
-        appInstall = G.currentAppInstall,
-        channels = G.currentApp.pushChannels,
-        endpointList = new ResourceList(G.currentUser.pushEndpoints, {
-          model: U.getModel(G.commonTypes.PushEndpoint),
+//    var installedApps = G.currentUser.installedApps,
+//        currentApp = G.currentApp,
+//        channelId = G.pushChannelId,
+      var appInstall = G.currentAppInstall,
+          channels = G.currentApp.pushChannels,
+          endpointList = new ResourceList(G.currentUser.pushEndpoints, {
+          model: pushEndpointModel,
           query: $.param({
             appInstall: appInstall,
             browser: G.browser.name.capitalizeFirst()
@@ -187,14 +181,35 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     firefox.setMessageHandler('push-register', function(e) {
       debugger;
       if (!G.currentUser.guest)
-        firefox._setup();
+        setupPush();
+    });
+  }
+
+  function setupWebActivity() {
+//    console.log("creating notification");
+//    firefox.mozNotification.createNotification("Hello Mark", "This is for your eyes only", "icon_128.png", {
+//      onclose: function() {
+//        console.log("closed notification");
+//      },
+//      onclick: function() {
+//        console.log("clicked notification");
+//      }
+//    });
+
+    firefox.setMessageHandler('activity', function(aReq) {
+      debugger;
     });
   };
   
+  function setup() {
+    setupPush();
+    setupWebActivity();
+  }
+  
   var firefox = {
-    _setup: function() {
-      connectedPromise.done(setup);
-    },
+//    _setup: function() {
+//      connectedPromise.done(setup);
+//    },
     mozNotification: {
       /**
        * example: create('This is the title', 'These are the details', '/icon_128.png', {
@@ -252,27 +267,23 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     },
     install: function() {
       return $.Deferred(function(defer) {
-        var getSelf = navigator.mozApps.getSelf();
-        getSelf.onsuccess = function(e) {
-          if (e.result)
-            return defer.resolve(e.result);
-          
-          var req = navigator.mozApps.install(G.firefoxManifestPath, null);
-          req.onerror = function(e) {
-            debugger;
-            console.log("Error installing app : " + req.error.name);
-            defer.reject(e.error);
-          };
-          
-          req.onsuccess = function(e) {
-            debugger;
-            var app = req.result;
-            console.log("Success installing app : " + app.manifest.name + " " + app.installState);
-            defer.resolve(app);
-          };
+        var req = navigator.mozApps.install(G.firefoxManifestPath, null);
+        req.onerror = function(e) {
+          debugger;
+          console.log("Error installing app : " + req.error.name);
+          defer.reject(e.error);
         };
         
-        getSelf.onerror = defer.reject.bind(defer);
+        req.onsuccess = function(e) {
+          debugger;
+          var app = req.result;
+          console.log("Success installing app : " + app.manifest.name + " " + app.installState);
+          defer.resolve(app);
+        };
+        
+        defer.promise().done(function(app) {
+          Events.trigger('firefoxAppInstalled', app);
+        });
       }).promise();
     }
   };
@@ -281,6 +292,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
   setPaths(firefox);
   window.addEventListener('message', onMessageFromApp);
   Events.on('messageToApp', sendMessageToApp);
+  connectedPromise.done(setup);
   
   return firefox;
 });
