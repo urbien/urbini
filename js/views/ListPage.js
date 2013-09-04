@@ -278,11 +278,6 @@ define('views/ListPage', [
       props[p[0]] = uri;
       newRes.save(props, {
         success: function(resource, response, options) {
-          if (response.error) {
-            onSaveError(resource, response, options);
-            return;
-          }
-          
           res.lastFetchOrigin = null;
           self.redirect(res, {trigger: true, replace: true, forceFetch: true});
         }

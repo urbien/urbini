@@ -214,7 +214,7 @@ define('views/ControlPanel', [
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
-      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
+      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].splitAndTrim(',') : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
