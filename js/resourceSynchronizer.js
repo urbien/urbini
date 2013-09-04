@@ -146,7 +146,9 @@ define('resourceSynchronizer', [
     itemRef._dirty = 1;
     itemRef._problematic = 0;
     return put(REF_STORE.name, itemRef).then(function() {
-      return Synchronizer.addItems(type, [item]).then(syncWithServer, function() {
+      return Synchronizer.addItems(type, [item]).then(function() {
+        syncWithServer();
+      }, function() {
         debugger;
       });
     }, function() {
@@ -236,7 +238,10 @@ define('resourceSynchronizer', [
       return;
 
     if (!G.online) {
-      Events.once('online', syncWithServer);
+      Events.once('online', function() {
+        syncWithServer();
+      });
+      
       return;
     }
       
@@ -463,15 +468,9 @@ define('resourceSynchronizer', [
 //          else if (code == 304)
 //            return;
         
-        var problem = xhr.responseText;
-        if (problem) {
-          try {
-            problem = JSON.parse(problem);
-            ref._error = problem.error;
-          } catch (err) {
-            problem = null;
-          }
-        }
+        var problem = U.getJSON(xhr.responseText);
+        if (problem)
+          ref._error = problem;
         
         ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem creating this resource' : 'There was a problem with your edit')};
         var isMkResource = !ref._tempUri;

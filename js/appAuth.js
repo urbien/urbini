@@ -14,19 +14,19 @@ define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocMana
       if (state.guest)
         return state;
       
-      if (type) {
-        if (!U.isAnAppClass(type)) {
-          state.allowed = state.installed = true;
-          return state;
-        }
-      } 
+//      if (type) {
+//        if (!U.isAnAppClass(type)) {
+//          state.allowed = state.installed = true;
+//          return state;
+//        }
+//      } 
 
       appPath = G.currentApp.appPath.toLowerCase();      
       var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
       var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
       if (appInfo) {
         state.installed = true;
-        state.allowed = appInfo.allowed;
+        state.allowed = appInfo.allow;
       }
 
       return state;      
@@ -64,7 +64,7 @@ define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocMana
               $returnUri: window.location.href,
               application: appUri
           },
-          installedAppUris = _.pluck(user.installedApps, '_uri'),
+          installedAppUris = _.pluck(user.installedApps, 'application'),
           followsList, 
           fetchFollows;
       
@@ -92,105 +92,43 @@ define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocMana
         
         var followsNames = _.pluck(followsList, 'davDisplayName'),
             followsCSV = followsNames.join(', '),
-            appName = U.getDisplayName(app),
-            title = self._getInstallTitle(appName),
             redirectOptions = {
-              $returnUri: U.getHash(), 
-              $title: title, 
+              $returnUri: U.getHash() || 'home/',
+              $title: G.localize('allowApp', { appName: U.getDisplayName(app) }),
+              '-gluedInfo': G.localize('doYouGrantAppAccessToProfileAndFriends'),
               allow: true,
               appPlugs: followsCSV
             };
         
-        if (typeModel) {
-          var terms = self._getInstallTerms(typeModel.displayName, appName, followsNames);
-          if (terms) {
-            redirectOptions['-info'] = terms;
-          }
-        }
+//        if (typeModel) {
+//          var terms = self._getInstallTerms(typeModel.displayName, appName, followsNames);
+//          if (terms) {
+//            redirectOptions['-info'] = terms;
+//          }
+//        }
 
         Events.trigger('navigate', U.makeMobileUrl('make', 'model/social/AppInstall', _.extend(installOptions, redirectOptions)), {trigger: true, replace: true}); // check all appPlugs by default
       }).fail(function() {
         debugger;
         Errors.getXHRErrorHandler().apply(this, arguments);
       });
-    },
-    
-//    isAppConfigured: function(app) {
-//      var appPath = U.getValue(app, 'appPath');
-//      var userAccType = 'http://urbien.com/voc/dev/{0}/UserAccount'.format(appPath);
-//      var type = U.getModelType();
-//      if (type === userAccType)
-//        return true;
-//      
-//      var accountModel = U.getModel(userAccType);
-//      if (!accountModel)
-//        return true;
-//      
-//      if (!_.size(_.omit(accountModel.properties, 'davDisplayName', 'davGetLastModified', '_uri', '_shortUri', 'id', 'app', 'user')))
-//        return true;
-//      
-////      var existing = C.getResource(function(res) {
-////        return res.vocModel == accountModel;
-////      });
-////      
-////      if (existing && existing.length)
-////        return true;
-//
-//      debugger;
-//      var userAccounts = new ResourceList(null, {model: accountModel, params: {
-//        user: G.currentUser._uri,
-//        app: U.getValue(app, '_uri')
-//      }});
-//      
-//      var redirectOptions = {
-//        $returnUri: window.location.href, 
-//        '-info': 'Configure your app below', 
-//        $title: appPath + ' config'          
-//      };
-//
-//      var self = this;
-//      var error = function(uAccs, xhr, options) {
-////      switch (xhr.status) {
-////      case 404:
-//        debugger;
-//        self.navigate(U.makeMobileUrl('make', accountModel.type, redirectOptions), {trigger: true});            
-////      }
-//      };
-//      
-//      var success = function(resp, status, options) {
-//        var acc = userAccounts.models && userAccounts.models[0];
-//        if (acc)
-//          self.navigate(U.makeMobileUrl('edit', userAccounts.models[0], redirectOptions), {trigger: true});
-//        else
-//          error(userAccounts, status, options);
-//      }
-//      
-//      userAccounts.fetch({
-//        success: _.once(success),
-//        error: _.once(error)
-//      });
-//
-//      return false;
-//    },
-    
-    _getInstallTitle: function(appName, edit) {
-      if (edit)
-        return 'Allow app {0}'.format(appName);
-      else
-        return 'Install app {0}'.format(appName);
-    },
-
-    _getInstallTerms: function(className, appName, appPlugs, edit) {
-      if (edit)
-        return 'Edit your inter-app connections here';
-      else {
-        var msg = 'Do you allow app {0} to be added to your profile'.format(appName);
-        if (appPlugs.length)
-          return '{0} and connect to app{1}? You can always disconnect apps on their app pages and/or remove them from profile.'.format(className, (appPlugs.length === 1 ? ' ' : 's ') + appPlugs.join(', '));
-        else
-          return '{0}?'.format(msg);
-      }
     }
+    
+//    _getInstallTitle: function(appName/*, edit*/) {
+//      return 'Allow app {0}'.format(appName);
+//    },
+//
+//    _getInstallTerms: function(className, appName, appPlugs/*, edit*/) {
+////      if (edit)
+////        return 'Edit your inter-app connections here';
+////      else {
+//        var msg = 'Do you allow app {0} to be added to your profile'.format(appName);
+//        if (appPlugs.length)
+//          return '{0} and connect to app{1}? You can always disconnect apps on their app pages and/or remove them from profile.'.format(className, (appPlugs.length === 1 ? ' ' : 's ') + appPlugs.join(', '));
+//        else
+//          return '{0}?'.format(msg);
+////      }
+//    }
   };
   
   return AppAuth;
