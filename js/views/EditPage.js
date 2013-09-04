@@ -31,7 +31,9 @@ define('views/EditPage', [
   //    json.viewId = this.cid;
       var settings = {viewId: this.cid}
       if (U.isAssignableFrom(res, "AppInstall")) {
-        settings.submit = 'Allow';
+        settings.submit = this.loc('allow');
+        settings.cancel = this.loc('deny');
+        this.editOptions.saveOnBack = false;
 //        settings.noCancel = true;
       }
       

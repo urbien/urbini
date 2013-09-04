@@ -213,7 +213,7 @@ define('views/MenuPanel', [
 //            return uri.slice(uri.indexOf('=') + 1);
 //          }).join(',');
           
-          var $in = '_uri,' + _.pluck(_.toArray(installed), '_uri').join(',');
+          var $in = '_uri,' + _.pluck(_.toArray(installed), 'application').join(',');
           
           // Apps I installed
           U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
