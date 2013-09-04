@@ -83,6 +83,12 @@ define('utils', [
       return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
   };
+
+  String.prototype.splitAndTrim = function(delimiter) {
+    return _.map(this.split(delimiter), function(str) {
+      return str.replace(/\s/g, '');
+    });
+  };
   
   String.prototype.uncamelize = function(capitalFirst) {
     var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
@@ -215,43 +221,6 @@ define('utils', [
         var data = opts.data;
         var blobProps = U.getBlobValueProps(data);
         if (data && Blob && _.size(blobProps)) {
-//          opts.url = G.serverName + '/mkresource.html';
-//          useWorker = false; // HACK: till we figure out how to do file upload in web worker
-//          var fd = new FormData();
-//          if (opts.resource) {
-//            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-//            fd.append('type', opts.resource.vocModel.type);
-//          }
-//          
-//          if (data._uri) {
-//            fd.append('_uri', data._uri);
-//            fd.append('uri', data._uri);
-//          }
-//          
-//          fd.append('enctype', "multipart/form-data");
-//          fd.append('-$action', 'upload');
-//          var blobbed = false;
-//          for (var prop in data) {
-//            var val = data[prop];
-//            if (val instanceof Blob) {
-//              if (!blobbed) {
-//                blobbed = true;
-//                _.extend(opts, {
-//                  processData: false,
-//                  contentType: false
-//                });
-//                
-//                delete opts.dataType;
-//                delete opts.emulateJSON;
-//                delete opts.emulateHTTP;
-//              }
-//              
-//              fd.append(prop, val, prop);
-//            }
-//            else
-//              fd.append(prop, val);
-//          }
-//          
           if (useWorker) {
             var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
             if (!attachmentsUrlProp) {
@@ -289,26 +258,35 @@ define('utils', [
             worker = arguments[0];
             worker.onmessage = function(event) {
               var xhr = event.data,
+                  resp = xhr.data,
                   code = xhr.status,
-                  data = event.data,
-                  error = data && data.error;
+                  headers = xhr.responseHeaders,
+                  error;
+              
+              if (headers.length) {
+                var h = headers.splitAndTrim(/\n/);
+                headers = {};
+                _.each(h, function(pair) {
+                  if (pair) {
+                    var cIdx = pair.indexOf(':');
+                    headers[pair.slice(0, cIdx)] = pair.slice(cIdx + 1);
+                  }
+                });
+              }
+              else
+                headers = {};
+              
+              xhr.getResponseHeader = function(name) {
+                return headers[name];
+              };
+              
 //              if (code === 304) {
 //  //              debugger;
 //                defer.reject(xhr, "unmodified", "unmodified");
 //              }
               
               if (code > 399 && code < 600) {
-                var text = xhr.responseText,
-                    error;
-                
-                if (text && text.length) {
-                  try {
-                    error = JSON.parse(xhr.responseText);
-                  } catch (err) {
-                    log('error', 'failed to parse error responseText:', xhr.responseText);
-                  } 
-                }
-                
+                error = resp;
                 if (error)
                   error.code = _.isUndefined(error.code) ? code : error.code;
                 else
@@ -316,29 +294,30 @@ define('utils', [
               }
               
               if (error) {
-//                debugger;
+                xhr.responseJson = error;
                 defer.reject(xhr, error, opts);
               }
-              else {
-                defer.resolve(xhr.data, xhr.status, xhr);
-              }
+              else
+                defer.resolve(resp, code, xhr);
             };
             
             worker.onerror = function(err) {
-//              debugger;
-              defer.reject({}, "error", err);
+              defer.reject({}, err, opts);
             };
             
-            worker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
+            var msgOpts = _.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']);
+            worker.postMessage(msgOpts); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
         }
         else {
           log('xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if ((data && data.error) || jqXHR.status > 399) {
+            var error;
+            if (jqXHR.status > 399) {
+              debugger;
               defer.reject(
                 jqXHR, 
-                data && data.error || {code: jqXHR.status}, 
+                (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
                 opts
               );
             }
@@ -347,24 +326,26 @@ define('utils', [
           }, 
           function(jqXHR, textStatus, err) {
 //            debugger;
-            var text = jqXHR.responseText,
-                error;
-            
-            if (text && text.length) {
-              try {
-                error = JSON.parse(text).error;
-              } catch (err) {
-              }
-            }
-            
             defer.reject(
               jqXHR, 
-              error || {code: jqXHR.status, details: err}, 
+              (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
               opts
             );
           });
         }
       }).promise();
+    },
+    
+    getJSON: function(strOrJson) {
+      if (typeof strOrJson == 'string') {
+        try {
+          strOrJson = JSON.parse(strOrJson);
+        } catch (err) {
+          return;
+        }
+      }
+      
+      return strOrJson;
     },
     
     isPropVisible: function(res, prop, userRole) {
@@ -471,7 +452,7 @@ define('utils', [
         type = hash;
 
       if (type === 'profile')
-        return G.currentUser.guest ? null : U.getTypeUri(G.currentUser._uri);
+        return G.currentUser.guest ? G.commonTypes.Urbien : U.getTypeUri(G.currentUser._uri);
             
       return U.getTypeUri(type);
     },
@@ -555,18 +536,6 @@ define('utils', [
       return true;
     },
     
-    isCurrentUserGuest: function() {
-      return G.currentUser.guest;
-    },
-
-    getCurrentUserUri: function() {
-      return G.currentUser._uri;
-    },
-
-    getCurrentUrlInfo: function() {
-      return G.currentHashInfo;
-    },
-    
     mimicResource: function(json) {
       return {
         get: function(prop) {
@@ -581,10 +550,12 @@ define('utils', [
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
         return false;
-      var hashInfo = U.getCurrentUrlInfo();
-      if (prop.avoidDisplayingInEdit  &&  hashInfo.route == "edit" || (res.get(prop.shortName) && prop.immutable))
+      var hashInfo = U.getCurrentUrlInfo(),
+          isEdit = !!res.get('_uri');
+      
+      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
         return false;
-      if (prop.avoidDisplayingOnCreate  &&  hashInfo.route == "make")
+      if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
 
       userRole = userRole || U.getUserRole();
@@ -593,19 +564,17 @@ define('utils', [
       
       var allowedToRole = !_.any(['allowRoles', 'allowRolesToEdit'], function(p) {        
         var roles = prop[p];
-        if (roles  &&  roles.indexOf('self') == -1)
+        if (roles && !U.isUserInRole(userRole, roles, res))
           return true;
       });
       
       if (!allowedToRole)
         return false;
       
-      var isMkResource = !res.getUri();
-      if (!isMkResource && prop.primary)
+      if (isEdit && prop.primary)
         return false;
 
-      var ar = prop.allowRolesToEdit;
-      return ar ? U.isUserInRole(userRole, ar, res) : true;
+      return true;
     },   
     
     isResourceProp: function(prop) {
@@ -962,31 +931,36 @@ define('utils', [
     },
 
     _socialSignupHome: G.serverName + '/social/socialsignup', ///m/' + G.currentApp.appPath,
-    buildSocialNetOAuthUrl: function(net, action, returnUri) {
-      returnUri = returnUri || window.location.href;
+    buildSocialNetOAuthUrl: function(options) {
+      options = options || {};
+      var net = options.net, 
+          action = options.action, 
+          returnUri = options.returnUri,
+          returnUriHash = options.returnUriHash,
+          params = {
+            actionType: action,
+//            returnUri: returnUri,
+//            returnUriHash: returnUriHash,
+            socialNet: net.socialNet,
+            appPath: G.currentApp.appPath
+          },
+          state;
+
+      if (returnUriHash)
+        params.returnUriHash = returnUriHash;
+      else if (returnUri) {
+        returnUri = !returnUriHash && (returnUri || window.location.href);
+        params.returnUri = returnUri;
+      }
+      
+      state = U.getQueryString(params, {sort: true}); // sorted alphabetically
       if (action === 'Disconnect') {
-        return U._socialSignupHome + '?' + U.getQueryString({
-          actionType: action,
-          returnUri: returnUri,
-          socialNet: net.socialNet
-        }, {sort: true})
+        return U._socialSignupHome + '?' + state;
       };
       
-      var state = U.getQueryString({
-        socialNet: net.socialNet, 
-        returnUri: returnUri,
-        actionType: action,
-        appPath: G.currentApp.appPath
-      }, {sort: true}); // sorted alphabetically
-    
       var params;
       if (net.oAuthVersion == 1) {
-        params = {
-          appPath: G.currentApp.appPath,
-          episode: 1, 
-          socialNet: net.socialNet,
-          actionType: action
-        };
+        params.episode = 1;
       }
       else {
         params = {
@@ -1308,6 +1282,11 @@ define('utils', [
       var meta = model.properties;
       var whereParams = U.whereParams;
       for (var p in params) {
+//        var pStart = p;
+//        if (/\./.test(p))
+//          pStart = p.slice(0, p.indexOf('.')); // might be a composite prop like tagUses.(http://www.hudsonfog.com/voc/model/aha/OnlineResource)taggable.ahasCount=>0
+//        
+//        if (meta[pStart] || whereParams[pStart])
         if (meta[p] || whereParams[p])
           filtered[p] = params[p];
       }
@@ -2769,6 +2748,9 @@ define('utils', [
 //      return Math.sqrt(x*x + y*y);
     },
     
+    asArray: function(stuff) {
+      return U.slice.call(stuff);
+    },
     slice: slice,
     concat: concat,
     asArray: asArray,
@@ -3776,6 +3758,10 @@ define('utils', [
     
     getBacklinkCount: function(res, name) {
       return res.get(name + 'Count') || res.get(name).count;
+    },
+    
+    createDataUrl: function(type, content) {
+      return "data:{0};base64,{1}".format(type, window.btoa(content));
     }
   };
 
@@ -3866,7 +3852,9 @@ define('utils', [
     this.action = U.getRouteAction(route);
     this.route = route;
     this.sub = subInfo;
-    this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    if (uri)
+      this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    
     this.type = type;
     this.query = query;
     this.params = params;

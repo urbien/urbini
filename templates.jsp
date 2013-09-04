@@ -340,7 +340,8 @@
     <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
     <a href="#" data-role="button" data-net="{{= net }}">
       <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
-      <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
+      <!--i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i-->
+      <i class="ui-icon-circle" style="font-size: 20px; float:right; color: {{= obj.connected === undefined ? '#FF0000' : obj.connected ? '#00FF00' : '#FFFF00' }}"></i>
     </a>
   </div>
 </script>
@@ -1486,8 +1487,8 @@
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">Uncheck All</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
@@ -1496,8 +1497,8 @@
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
