@@ -32,6 +32,7 @@ define('router', [
     routes:{
       ""                                                       : "home",
       "home/*path"                                             : "home",
+//      "install/*path"                                          : "install",
       "social/*path"                                           : "social",
       "static/*path"                                           : "static",
 //      "tour/*path"                                             : "tour",
@@ -97,7 +98,7 @@ define('router', [
           window.view = current;
       });
       
-      Events.on('back', _.debounce(function() {
+      Events.on('back', _.debounce(function(ifNoHistory) {
 //        var now = +new Date();
 //        if (self.lastBackClick && now - self.lastBackClick < 100)
 //          debugger;
@@ -105,7 +106,20 @@ define('router', [
 //        self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
-        window.history.back();
+        var href = window.location.href, i = 10;
+        while (i-- > 0) {
+          window.history.back();
+          if (window.location.href != href)
+            break;
+        }
+        
+        if (window.location.href == href) {
+          // there's nowhere to go back to
+          if (ifNoHistory)
+            ifNoHistory();
+            
+          return;
+        }
         
 //        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
 //        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);        
@@ -355,6 +369,10 @@ define('router', [
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
     },
+    
+//    install: function() {
+//      
+//    },
     
     social: function() {
       if (!this.routePrereqsFulfilled('social', arguments))
@@ -670,23 +688,23 @@ define('router', [
       });
     },
     
-    loadViews: function(views, caller, args) {
-      views = $.isArray(views) ? views : [views];
-      var self = this;
-      var unloaded = _.filter(views, function(v) {return !self[v]});
-      if (unloaded.length) {
-        var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        U.require(unloadedMods, function() {
-          var a = U.slice.call(arguments);
-          for (var i = 0; i < a.length; i++) {              
-            Modules[unloaded[i]] = a[i];
-          }
-          
-          caller.apply(self, args);
-        });
-      }
-    },
-
+//    loadViews: function(views, caller, args) {
+//      views = $.isArray(views) ? views : [views];
+//      var self = this;
+//      var unloaded = _.filter(views, function(v) {return !self[v]});
+//      if (unloaded.length) {
+//        var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
+//        U.require(unloadedMods, function() {
+//          var a = U.slice.call(arguments);
+//          for (var i = 0; i < a.length; i++) {              
+//            Modules[unloaded[i]] = a[i];
+//          }
+//          
+//          caller.apply(self, args);
+//        });
+//      }
+//    },
+//
 //    _backOrHome: function() {
 //      if (this.urlsStack.length)
 //        Events.trigger('back');
@@ -727,7 +745,7 @@ define('router', [
             modelParams = U.getQueryParams(hashInfo.params, model),
             resource = new model(U.filterInequalities(modelParams));
          
-        if (!resource.getUri() && Redirecter.fastForwardMkResource(resource))
+        if (!resource.getUri() && Redirecter.fastForwardMake(resource))
           return;
         
 //        if (!_.size(U.getPropertiesForEdit(resource))) {
@@ -801,13 +819,34 @@ define('router', [
       this.updateHashInfo();
       var self = this,
           views,
+          missingTypes,
+          prereqs,
           installationState,
           isWriteRoute,
-          hashInfo = G.currentHashInfo;
+          hashInfo = G.currentHashInfo,
+          type = hashInfo.type;
       
       if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
         return false;
+      }
+      
+      // the user is attempting to install the app, or at least pretending well
+      isWriteRoute = this.isWriteRoute(route);
+      if (!type || !type.endsWith(G.commonTypes.AppInstall)) {
+        if (G.currentApp.forceInstall || isWriteRoute) {
+          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
+          if (!installationState.allowed) {
+            if (G.currentUser.guest) {
+              this._requestLogin();
+              return false;
+            }
+  
+            Voc.getModels(hashInfo.type);
+            AppAuth.requestInstall(G.currentApp);
+            return false;
+          }
+        }
       }
 
       switch (route) {
@@ -834,61 +873,63 @@ define('router', [
         break;
       }
       
+      prereqs = [];
       if (views) {
         var missing = _.filter(views, function(view) {
           return !Modules[view];
         });
         
         if (missing.length) {
-          this.loadViews(missing, this[route], args);
-          return false;
+//          this.loadViews(missing, this[route], args);
+//          return false;
+          var unloadedMods = _.map(missing, function(v) {return 'views/' + v}),
+              viewsPromise = U.require(unloadedMods, function() {
+                for (var i = 0, l = arguments.length; i < l; i++) {              
+                  Modules[missing[i]] = arguments[i];
+                }
+              });
+          
+          prereqs.push(viewsPromise);
         }
       }
  
-      var types = [],
-          sub = hashInfo;
-      
+      missingTypes = [];    
+      var sub = hashInfo;
       while (sub) {
         if (sub.type) {
           sub.type = G.classMap[sub.type] || sub.type;
-          types.push(sub.type);
+          if (!U.getModel(sub.type) && missingTypes.indexOf(sub.type) == -1)
+            missingTypes.push(sub.type);
         }
         
         sub = sub.sub;
       }
       
-      types = _.uniq(types);
-      if (!this.areModelsLoaded(types, this[route], args))
+      if (missingTypes.length)
+        prereqs.push(Voc.getModels(missingTypes));
+      
+      if (!_.all(prereqs, function(p) { return p.state() == 'resolved' })) {
+        $.whenAll.apply($, prereqs).then(function() {
+          self[route].apply(self, args);
+        });
+        
         return false;
-      
-      // the user is attempting to install the app, or at least pretending well
-      isWriteRoute = this.isWriteRoute();
-      if (isWriteRoute && hashInfo.type.endsWith(G.commonTypes.AppInstall))
-        return true;
-      
-      if (G.currentApp.forceInstall || isWriteRoute) {
-        installationState = AppAuth.getAppInstallationState(hashInfo.type);
-        if (!installationState.allowed) {
-          Voc.getModels(hashInfo.type).then(function() {
-            AppAuth.requestInstall(G.currentApp);
-          }, function() {
-            debugger;
-          });
-          
-          return false;
-        }
       }
       
       return true;
     },
     
     login: function(path) {
+      if (!this.routePrereqsFulfilled('login', arguments))
+        return;
+      
       var self = this,
           hashInfo = U.getCurrentUrlInfo(),
           params = hashInfo.params;
       
       this._requestLogin({
         returnUri: params && params.$returnUri || G.appUrl,
+        returnUriHash: params && params.$returnUriHash,
         onDismiss: function() {
           self.goHome();
         }
@@ -1125,33 +1166,33 @@ define('router', [
 //      
 //      console.log("painting map");
 //    },
-
-    isModelLoaded: function(type, method, args) {
-      return this.areModelsLoaded([type], method, args);
-    },
-
-    areModelsLoaded: function(types, method, args) {
-      var self = this,
-          missing = _.filter(types, U.negate(U.getModel));
-      
-      if (!missing.length)
-        return true;
-      
-      var fetchModels = Voc.getModels(missing, {sync: true});
-      method = typeof method == 'function' ? method : self[method];
-//      Voc.loadStoredModels({models: [type]});
-      if (fetchModels.state() === 'resolved')
-        return true;
-      
-      fetchModels.done(function() {
-        method.apply(self, args);
-      }).fail(function() {
-//          debugger;
-        Errors.getBackboneErrorHandler().apply(this, arguments);
-      });
-        
-      return false;
-    },
+//
+//    isModelLoaded: function(type, method, args) {
+//      return this.areModelsLoaded([type], method, args);
+//    },
+//
+//    areModelsLoaded: function(types, method, args) {
+//      var self = this,
+//          missing = _.filter(types, U.negate(U.getModel));
+//      
+//      if (!missing.length)
+//        return true;
+//      
+//      var fetchModels = Voc.getModels(missing, {sync: true});
+//      method = typeof method == 'function' ? method : self[method];
+////      Voc.loadStoredModels({models: [type]});
+//      if (fetchModels.state() === 'resolved')
+//        return true;
+//      
+//      fetchModels.done(function() {
+//        method.apply(self, args);
+//      }).fail(function() {
+////          debugger;
+//        Errors.getBackboneErrorHandler().apply(this, arguments);
+//      });
+//        
+//      return false;
+//    },
 
     checkErr: function() {
 //      var q = U.getQueryParams();
