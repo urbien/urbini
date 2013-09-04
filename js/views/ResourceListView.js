@@ -380,7 +380,7 @@ define('views/ResourceListView', [
     postRender: function(info) {
       if (this.rendered) {
         this.$el.trigger('create');
-        if (!this.isMultiValueChooser)// && this.$el.hasClass('ui-listview'))
+        if (!this.isMultiValueChooser && this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
         
         this.trigger('refreshed');
