@@ -396,21 +396,22 @@ define('models/Resource', [
       
       return resp;
     },
+    
     preParse: function (resp) {
       var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
-      if (!resp || resp.error)
+      if (!resp)
         return null;
 
-      if (!resp.data) {
+//      if (!resp.data) {
 //        this.loaded = true;
-        return resp;
-      }
+//        return resp;
+//      }
         
       var uri = resp._uri || resp.uri;
-      if (!uri) {      
-        resp = resp.data[0];
-        uri = resp._uri || resp.uri;
-      }
+//      if (!uri) {      
+//        resp = resp.data[0];
+//        uri = resp._uri || resp.uri;
+//      }
 
       resp._shortUri = U.getShortUri(uri, this.vocModel);
       var primaryKeys = U.getPrimaryKeys(this.vocModel);
@@ -467,8 +468,8 @@ define('models/Resource', [
           
           if (list.length) {
 //            Events.trigger('newBackLink', this, prop, list);
-            backlinks[p] = {
-              property: prop,
+            backLinks[p] = {
+              prop: prop,
               list: list
             };
           }
@@ -980,9 +981,6 @@ define('models/Resource', [
       });
       
       options.success = function(resource, response, opts) {
-        if (response && response.error)
-          return;
-
         if (!options.fromDB)
           this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
@@ -991,6 +989,13 @@ define('models/Resource', [
         else if (isTemplate)
           Events.trigger('templateUpdate:' + this.get('templateName'), this);
         
+        if (!opts.fromDB) { // was a direct sync, didn't go through _save first 
+          if (isNew)
+            Events.trigger('savedMake', this, opts);
+          else
+            Events.trigger('savedEdit', this, opts);
+        }
+
         success && success.apply(this, arguments);
         // trigger this first because "success" may want to redirect to mkresource for some app-related model
         
@@ -1011,24 +1016,15 @@ define('models/Resource', [
       
       options.error = function(originalModel, xhr, opts) {
         var code = xhr.code || xhr.status,
-            respText = xhr.responseText,
-            errorObj;
+            errorObj = xhr.responseJson;
         
-        if (respText) {
-          try {
-            errorObj = JSON.parse(respText).error;
-          } catch (err) {
-          }
-        }
-        
-        errorObj = errorObj || {};
         if (code === 409) {
           var conflict = errorObj.conflict;
           if (!isNew) {
             this.lastFetchOrigin = 'server';
             this.set(this.parse(conflict, {overwriteUserChanges: true}));
             Events.trigger('messageBar', 'error', {
-              message: errorObj.details || 'Uh oh. It appears that someone (maybe you) has made edits that take precedence over yours. Please re-edit and re-submit.',
+              message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
               persist: true
             });
           }
@@ -1036,7 +1032,7 @@ define('models/Resource', [
 //            Events.trigger('navigate', new this.vocModel(conflict));
             Events.trigger('cacheResource', new this.vocModel(conflict));
             Events.trigger('messageBar', 'error', {
-              message: errorObj.details || "Uh oh. It appears you're trying to make something that already exists. Is <a href='{0}'>this</a> what you're trying to make?".format(U.makePageUrl('view', conflict._uri)),
+              message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
               persist: true
             });
           }
@@ -1132,16 +1128,16 @@ define('models/Resource', [
       var isMake = !this.getUri(),
           model = this.vocModel,
           params = urlInfo ? urlInfo.getParams() : {},
-          editProps = params['$editCols'] && params['$editCols'].replace(/\s/g, '').split(','),
+          editProps = params['$editCols'] && params['$editCols'].splitAndTrim(','),
           mkResourceCols = isMake && model['mkResourceCols'];
           
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
         if (isEdit)
-          editProps = propsForEdit && propsForEdit.replace(/\s/g, '').split(',');
+          editProps = propsForEdit && propsForEdit.splitAndTrim(',');
         else {
           if (mkResourceCols)
-            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+            editProps = mkResourceCols.splitAndTrim(',');
           else if (model.type.endsWith(G.commonTypes.WebProperty))
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
@@ -1180,7 +1176,7 @@ define('models/Resource', [
           backlinks = this.vocModel._backlinks = U.getPropertiesWith(meta, "backLink"),
           reqParams = urlInfo.getParams(),
 //          currentAtts = U.filterObj(isMake ? res.attributes : res.changed, U.isModelParameter),
-          editProps = reqParams['$editCols'] && reqParams['$editCols'].replace(/\s/g, '').split(','),
+          editProps = reqParams['$editCols'] && reqParams['$editCols'].splitAndTrim(','),
           mkResourceCols = isMake && this.vocModel['mkResourceCols'],
           userRole = U.getUserRole(),
           collected = [],
@@ -1198,12 +1194,12 @@ define('models/Resource', [
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
         if (propsForEdit)
-          propsForEdit = propsForEdit.replace(/\s/g, '').split(',');
+          propsForEdit = propsForEdit.splitAndTrim(',');
         if (isEdit)
           editProps = propsForEdit;
         else {
           if (mkResourceCols)
-            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+            editProps = mkResourceCols.splitAndTrim(',');
           else if (model.type.endsWith(G.commonTypes.WebProperty))
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
@@ -1228,7 +1224,7 @@ define('models/Resource', [
       if (propGroups) {
         for (var i = 0; i < propGroups.length; i++) {
           var grProp = propGroups[i],
-              props = grProp.propertyGroupList.split(","), // TODO: send it as an array from the server
+              props = grProp.propertyGroupList.splitAndTrim(","), // TODO: send it as an array from the server
               grouped = result.props.grouped,
               group = {
                 shortName: grProp.shortName,

@@ -224,6 +224,21 @@ define('app', [
     });
   };
   
+  function setupPackagedApp() {
+    if (navigator.mozApps) {
+      var dfd = $.Deferred(),
+          promise = G.firefoxAppInstalled = dfd.promise(),
+          check = navigator.mozApps.checkInstalled(G.firefoxManifestPath);
+      
+      check.onsuccess = function() {
+        if (check.result)
+          Events.trigger('firefoxAppInstalled', check.result);
+      };
+      
+      Events.on('firefoxAppInstalled', dfd.resolve.bind(dfd));
+    }
+  };
+  
   function setupPushNotifications() {
     if (G.currentUser.guest)
       return;
@@ -479,6 +494,7 @@ define('app', [
   
   function doPreStartTasks() {
 //    setupHashMonitor();
+    setupPackagedApp();
     setupUser();
     setupAvailibilityMonitor();
     setupCleaner();
@@ -498,6 +514,8 @@ define('app', [
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
+//    if (G.browser.mobile)
+//      G.removeHoverStyles();
     ModelLoader.loadEnums();
     
     return $.whenAll.apply($, [modelsViewsTemplatesAndDB, localized]);
@@ -778,10 +796,15 @@ define('app', [
       }
 
       var existingPopup = $('#login_popup');
-      if (existingPopup.length && existingPopup.is(':visible'))
-        return;
+      if (existingPopup.length) {
+//        existingPopup.popup().popup('open').parent().css({'z-index': 10000000});
+//        return;
+        existingPopup.remove();
+      }
       
-      var returnUri = options.returnUri || window.location.href;
+      var returnUri = options.returnUri || window.location.href,
+          returnUriHash = options.returnUriHash;
+      
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
       if (returnUri.startsWith(signupUrl)) {
         G.log(App.TAG, 'error', 'avoiding redirect loop and scrapping returnUri -- 1');
@@ -791,7 +814,12 @@ define('app', [
       var nets = _.map(G.socialNets, function(net) {
         return {
           name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl(net, 'Login', returnUri)
+          url: U.buildSocialNetOAuthUrl({
+            net: net,
+            action: 'Login', 
+            returnUri: returnUri,
+            returnUriHash: returnUriHash
+          })
         };
       });
       
@@ -801,7 +829,7 @@ define('app', [
         };
       }
         
-      existingPopup.remove();
+//      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');

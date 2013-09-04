@@ -20,12 +20,22 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
   };
 
   CollectionSynchronizer.prototype._queryDB = function() {
+    var filter = U.getQueryParams(this.data),
+        meta = this.data.vocModel.properties;
+    
+    if (_.any(_.keys(filter), function(param) {
+      return /\./.test(param);
+    })) {
+      debugger;
+      return G.getRejectedPromise();
+    }
+    
     return this._getItems({
       key: this._getKey(),
       data: this.data,
       from: this.options.from,
       limit: this.options.limit || this.data.perPage,
-      filter: U.getQueryParams(this.data)
+      filter: filter
     });
   };
 
@@ -99,7 +109,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
           
     var numBefore = this.data.length,
         numAfter,
-        lastFetchedTS;
+        lastFetchedTS,
+        pagination = {
+          offset: this.options.start
+        };
 //        resp = {
 //          data: results, 
 //          metadata: {
@@ -119,7 +132,12 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       if (this._isStale(lastFetchedTS, this._getNow()))
         return this._delayedFetch();
     } finally {    
-      this._success(results, 'success', null); // add to / update collection
+      this._success(results, 'success', {
+        getResponseHeader: function(p) {
+          if (p == 'X-Pagination')
+            return pagination;
+        }
+      }); // add to / update collection
     }
   };
 
