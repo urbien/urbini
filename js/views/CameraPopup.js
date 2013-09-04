@@ -6,20 +6,13 @@ define('views/CameraPopup', [
   'events',
   'views/BasicView'
 ], function(G, _, U, Events, BasicView) {
-  var recIndex = 0;
-  var Whammy, Recorder;
-  var URL = window.URL || window.webkitURL;
+  var recIndex = 0,
+      Whammy, 
+      Recorder,
+      URL = window.URL || window.webkitURL,
+      AudioContext = /*window.AudioContext ||*/ window.webkitAudioContext, // firefox doesn't have audioContext.createMediaStreamSource
+      $wnd = $(window);
 
-  var requestAnimationFrame = window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame ||
-      window.msRequestAnimationFrame || window.oRequestAnimationFrame;
-
-  var cancelAnimationFrame = window.cancelAnimationFrame ||
-      window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame ||
-      window.msCancelAnimationFrame || window.oCancelAnimationFrame;
-  
-  var AudioContext = /*window.AudioContext ||*/ window.webkitAudioContext; // firefox doesn't have audioContext.createMediaStreamSource
-  
   return BasicView.extend({
     template: 'cameraPopupTemplate',
     tagName: 'li',
@@ -43,6 +36,11 @@ define('views/CameraPopup', [
       _.each(['Video', 'Audio', 'Image'], function(type) {
         self['is' + type] = prop.range.endsWith('model/portal/' + type);
       });
+      
+      if (this.isVideo) {
+        this.videoWidth = 320;
+        this.videoHeight = 240;
+      }
       
       this.hasAudio = !!AudioContext && (this.isVideo || this.isAudio);
       this.hasVideo = this.isVideo || this.isImage;
@@ -137,7 +135,6 @@ define('views/CameraPopup', [
 //    },
     record: function(e) {
       Events.stopEvent(e);
-//      this.setDimensions();
       this.startTime = +new Date();
       this.setstate('recording');
       if (this.isVideo) {
@@ -208,12 +205,12 @@ define('views/CameraPopup', [
   
         this.$canvas      = this.$('#canvas');
         this.canvas       = this.$canvas[0];
+        this.canvas.width = this.videoWidth;
+        this.canvas.height = this.videoHeight;
       }
       
       this.$shootBtn    = this.$('#cameraShootBtn');
       this.$submitBtn   = this.$('#cameraSubmitBtn');
-      this.width        = this.innerWidth(); //width - this.padding();
-      this.height       = 0;
       this.rafId        = null;
       this.frames       = null;
       this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
@@ -228,18 +225,19 @@ define('views/CameraPopup', [
         this.recIndex = 0;
       }
       
+      var videoConstraints = this.isVideo ? {
+        mandatory: {
+          minWidth: this.videoWidth,
+          minHeight: this.videoHeight,
+          maxWidth: this.videoWidth,
+          maxHeight: this.videoHeight
+        }
+      } : this.hasVideo ? true : false;
+      
       this.setstate('previewing');
       navigator.getMedia(
         {
-          video: this.hasVideo ? {
-            "mandatory": {
-              "minWidth": 320,
-              "minHeight": 240,
-              "maxWidth": 320,
-              "maxHeight": 240
-            }
-          } : false,
-//          video: this.hasVideo,
+          video: videoConstraints,
           audio: this.hasAudio
         }
         ,
@@ -269,21 +267,6 @@ define('views/CameraPopup', [
       var video = this.video, 
           $video = $(video);
       
-//      var checkSize = function(e) {
-////        console.debug('video event', e.type, video.videoWidth, ' ', e.target.videoWidth);
-//        if (video.videoWidth) {
-//          this.$shootBtn.removeClass('ui-disabled');
-//          this.setDimensions();
-//          _.each(G.media_events, function(e) {
-//            $video.off(e, checkSize);
-//          });
-//        }
-//      }.bind(this);
-//          
-//      _.each(G.media_events, function(e) {
-//        $video.one(e, checkSize);
-//      });
-                  
       this.finish();
       return this;
     },
@@ -306,7 +289,7 @@ define('views/CameraPopup', [
       }
       
       this.$shootBtn.removeClass('ui-disabled');
-      this.setDimensions();
+      this.adjustPopup();
     },
     
     startAudio: function(stream) {
@@ -314,7 +297,7 @@ define('views/CameraPopup', [
         return;
       
       if (G.browser.chrome)
-        stream = new window.webkitMediaStream(stream.getAudioTracks());
+        stream = new window.MediaStream(stream.getAudioTracks());
         
       this.inputPoint = this.audioContext.createGainNode();
 
@@ -326,45 +309,12 @@ define('views/CameraPopup', [
       this.$shootBtn.removeClass('ui-disabled');
     },
 
-    setDimensions: function() {
-//      if (!this.video.videoWidth)
-//        return;
-//        
-      var $window = $(window),
-          wWidth = $window.width(),
-          wHeight = $window.height();
-//          vWidth = this.video.videoWidth,
-//          vHeight = this.video.videoHeight;
-//      
-//      this.$canvas.attr('width', vWidth);
-//      this.$canvas.attr('height', vHeight);
-//      var $popup = this.$el.parent();
-//      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2));
-//      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
-      var vWidth, vHeight; 
-      if (!this.video.videoWidth) {
-        vWidth = this.getPageView().innerWidth() - this.padding();
-        vHeight = Math.round(vWidth * 3 / 4);
-      }
-      else {
-        vWidth = this.video.videoWidth;
-        vHeight = this.video.videoHeight;
-      }
+    adjustPopup: function() {
+      var vWidth = this.video.videoWidth,
+          vHeight = this.video.videoHeight,
+          wWidth = $wnd.width(),
+          wHeight = $wnd.height();
       
-//      if (vWidth % 2 == 1)
-//        vWidth = this.video.videoWidth = vWidth + 1;
-//      if (vHeight % 2 == 1)
-//        vHeight = this.video.videoHeight = vHeight + 1;
-      
-      this.videoWidth = vWidth;
-      this.videoHeight = vHeight;
-      this.height = Math.round(vHeight / (vWidth / this.width));
-//      this.$canvas.attr('width', this.width % 2 ? this.width - 1 : this.width);
-//      this.$canvas.attr('height', this.height % 2 ? this.height - 1: this.height);
-      this.$canvas.attr('width', 320);//this.width);
-      this.$canvas.attr('height', 240);//this.height);
-//      this.$canvas.attr('width', vWidth);
-//      this.$canvas.attr('height', vHeight);
       var $popup = this.$el.parent();
       var offset = $(document).scrollTop();
       $popup.css('top', Math.round(wHeight / 2 - vHeight / 2) + offset);
@@ -372,16 +322,19 @@ define('views/CameraPopup', [
     },
     
     onresize: function(e) {
-      this.setDimensions();
+      this.adjustPopup();
     },
     onorientationchange: function(e) {
-      this.setDimensions();
+      this.adjustPopup();
     },
     takepicture: function() {
 //      this.canvas.width = this.width;
 //      this.canvas.height = this.finalheight;
-      if (!this.isVideo)
-        this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.width, this.height);
+      if (!this.isVideo) {
+        this.canvas.width = this.video.videoWidth;
+        this.canvas.height = this.video.videoHeight;
+        this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight);
+      }
 //      var img = new Image();
 //      img.src = 'mozfest.png';
 //      console.log(img);
