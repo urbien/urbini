@@ -10,6 +10,17 @@
     "16": "/icon_16.png",
     "128": "/icon_128.png"
   },
+  "activities": {
+	"view": {
+		"filters": {
+			"type": "url",
+			"url": {
+				"required": true, 
+				"regexp":"/^https?:/"
+			}
+		}
+	}
+  },
   "installs_allowed_from": [
     "*"
   ],
