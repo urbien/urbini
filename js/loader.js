@@ -208,7 +208,7 @@ define('globals', function() {
     case 'chrome':
       return G.inWebview;
     case 'firefox':
-      return G.inFirefoxOS;
+      return G.hasFFApps;
     default:
       return true;
     }
@@ -394,6 +394,7 @@ define('globals', function() {
       apiUrl: G.serverName + '/api/v1/',
       timeOffset: G.localTime - G.serverTime,
       firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
+//      firefoxManifestPath: G.serverName + '/FirefoxApp/NursMe/manifest.webapp',
       chromeManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json',
       domainRegExp: new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3)),
       appModelRegExp: new RegExp('model:(metadata:)?' + devVoc),
@@ -403,9 +404,58 @@ define('globals', function() {
     
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
-    }
+    }  
   };
-
+  
+  function adjustForVendor() {
+    // requestAnimationFrame polyfill by Erik Möller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
+    window.MediaStream = window.webkitMediaStream || window.MediaStream;
+    (function( window ) {
+      'use strict';
+     
+      var lastTime = 0;
+      var prefixes = 'webkit moz ms o'.split(' ');
+      // get unprefixed rAF and cAF, if present
+      var requestAnimationFrame = window.requestAnimationFrame;
+      var cancelAnimationFrame = window.cancelAnimationFrame;
+      // loop through vendor prefixes and get prefixed rAF and cAF
+      var prefix;
+      for( var i = 0; i < prefixes.length; i++ ) {
+        if ( requestAnimationFrame && cancelAnimationFrame ) {
+          break;
+        }
+        prefix = prefixes[i];
+        requestAnimationFrame = requestAnimationFrame || window[ prefix + 'RequestAnimationFrame' ];
+        cancelAnimationFrame  = cancelAnimationFrame  || window[ prefix + 'CancelAnimationFrame' ] ||
+                                  window[ prefix + 'CancelRequestAnimationFrame' ];
+      }
+     
+      // fallback to setTimeout and clearTimeout if either request/cancel is not supported
+      if ( !requestAnimationFrame || !cancelAnimationFrame ) {
+        G.hasRequestAnimationFrame = false;
+        requestAnimationFrame = function( callback, element ) {
+          var currTime = new Date().getTime();
+          var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+          var id = window.setTimeout( function() {
+            callback( currTime + timeToCall );
+          }, timeToCall );
+          lastTime = currTime + timeToCall;
+          return id;
+        };
+     
+        cancelAnimationFrame = function( id ) {
+          window.clearTimeout( id );
+        };
+      }
+      else
+        G.hasRequestAnimationFrame = true;
+     
+      // put in global namespace
+      window.requestAnimationFrame = requestAnimationFrame;
+      window.cancelAnimationFrame = cancelAnimationFrame;     
+    })( window );
+  }
+  
   function testIfInsidePackagedApp() {
     // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
     if (!browser.chrome && !browser.firefox)
@@ -643,6 +693,7 @@ define('globals', function() {
       }
       
       return require('__domReady__').then(function() {
+//        var essential = ['jqmConfig', 'events', 'lib/animationQueue', 'app'];
         var essential = ['jqmConfig', 'events', 'app'];
         if (G.modules['js/lib/l20n.js'])
           essential.push('lib/l20n');
@@ -650,7 +701,9 @@ define('globals', function() {
         essential = essential.concat(css)
         return require(essential);
       });
+//    }).then(function(jqmConfig, Events, AnimationQueue, App) {
     }).then(function(jqmConfig, Events, App) {
+//      G.animationQueue = AnimationQueue;
       Events.on('appStart', APP_START_DFD.resolve);
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
@@ -1084,6 +1137,9 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
+    emptyFn: function() {},
+    falseFn: function() { return false; },
+    trueFn: function() { return true; },
     onAppStart: function(fn) {
       return APP_START_DFD.promise().then(fn);
     },
@@ -1093,10 +1149,10 @@ define('globals', function() {
     getRejectedPromise: function() {
       return REJECTED_PROMISE;
     },
-    serverName: (function() {     
-      var s = $('base')[0].href;
-      return s.match("/$") ? s.slice(0, s.length - 1) : s;
-    })(),
+//    serverName: (function() { // defined in boot.js     
+//      var s = $('base')[0].href;
+//      return s.match("/$") ? s.slice(0, s.length - 1) : s;
+//    })(),
     putCached: function(urlToData, options) {
       var args = arguments;
       return G.onAppStart(function() {
@@ -1504,6 +1560,44 @@ define('globals', function() {
       $head.append(style);
     },
     
+//    removeHoverStyles: function() {
+//      function hasHover(selector) {
+//        return /:hover|-hover-/.test(selector);
+//      };
+//      
+//      function addCSSRule(sheet, selector, rules, index) {
+//        if (sheet.insertRule) {
+//          sheet.insertRule(selector + "{" + rules + "}", index);
+//        }
+//        else {
+//          sheet.addRule(selector, rules, index);
+//        }
+//      };
+//      
+//      $.each(document.styleSheets, function(i, sheet) {
+//        $.each(sheet.rules, function(i, rule) {
+//          var selector = rule.selectorText,
+//              css = rule.cssText;
+//          
+//          if (hasHover(selector)) {
+//            while (/,/.test(selector) && hasHover(selector)) {
+//              selector = selector.replace(/(,?)[^,]+(:hover|-hover-)[^,]*(,?)/g, "$1$3").replace(/,+/g, ',');
+//            }
+//
+//            if (selector.startsWith(','))
+//              selector = selector.slice(1);
+//            if (selector.endsWith(','))
+//              selector = selector.slice(0, selector.length - 1);
+//
+//            sheet.deleteRule(i);
+//            if (selector && selector != rule.selectorText) {
+//              addCSSRule(sheet, selector, css, i);
+//            }
+//          } 
+//        });
+//      });
+//    },
+    
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1606,12 +1700,21 @@ define('globals', function() {
     },
     language: params['-lang'] || navigator.language.split('-')[0],
     tourGuideEnabled: true,
-    DEBUG: !G.minify
+    DEBUG: !G.minify,
+    Errors: {      
+      Login: {
+        code: 401,
+        name: 'User is not logged in',
+        message: 'Please log in'
+      }
+    }
+
   });
 
   setupLocalStorage();
   saveBootInfo();
   setMiscGlobals();
+  adjustForVendor();
   testIfInsidePackagedApp();
   Bundler.prepAppCacheBundle();
   determineMinificationMode();

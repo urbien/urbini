@@ -111,8 +111,5 @@ define('error', [
     Errors[m] = errDialogFunction(Errors.msgs[m]);
   }
 
-  if (G.DEBUG)
-    G.Errors = Errors;  
-
   return Errors;
 });

@@ -9,8 +9,14 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 //      backboneLoadUrl = Backbone.history.loadUrl,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
+      currentView,
       tourManager;
 
+  Events.on('pageChange', function(from, to) {
+    currentView = to;
+    tourManager.getTour();
+  });
+  
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("tourGuide", "tour");
@@ -217,10 +223,16 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       params.$in = 'tour,' + _.map(tours, function(t) { return t.getUri(); }).join(',');
     
     return $.Deferred(function(defer) {
-      var myTours = new ResourceList(null, {
-        model: MY_TOUR_MODEL,
-        params: params
-      });
+      var myTours = C.getResourceList(MY_TOUR_MODEL, $.param(params));
+      
+      if (!myTours) {
+        myTours = new ResourceList(null, {
+          model: MY_TOUR_MODEL,
+          params: params
+        });
+        
+        Events.trigger('cacheList', myTours);
+      }
       
       myTours.fetch({
         success: function() {
@@ -353,13 +365,23 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         })
       }
       
-      var tours = new ResourceList(null, {
+      var params = {
+          $and: U.$and.apply(null, ands)
+        },
+        tours = C.getResourceList(TOUR_MODEL, $.param(params)),
+        tour;
+      
+      if (!tours) {
+        tours = new ResourceList(null, {
           model: TOUR_MODEL,
-          params: {
-            $and: U.$and.apply(null, ands)
-          }
-        }),
-        tour; 
+          params: params 
+        });
+        
+        Events.trigger('cacheList', tours);
+        currentView.once('destroyed', function() {
+          Events.trigger('uncacheList', tours);
+        });
+      }
       
       return $.Deferred(function(defer){        
         tours.fetch({
@@ -523,8 +545,13 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           },
           steps = C.getResourceList(STEP_MODEL, $.param(stepParams));
       
-      if (!steps)
+      if (!steps) {
         steps = new ResourceList(null, {model: STEP_MODEL, params: stepParams});
+        Events.trigger('cacheList', steps);
+        currentView.once('destroyed', function() {
+          Events.trigger('uncacheList', steps);
+        });
+      }
       
       if (steps.length)
         return defer.resolve(steps);

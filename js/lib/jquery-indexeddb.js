@@ -46,7 +46,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
   function finishedTransaction(idbTransaction) {
     var idx = pendingTransactions.indexOf(idbTransaction);
     if (idx >= 0)
-      pendingTransactions.splice(idx, 1);
+      Array.removeFromTo(pendingTransactions, idx, idx + 1);
     
     if (!pendingTransactions.length)
       pendingTransDfd.resolve();

@@ -473,7 +473,7 @@ define('resourceManager', [
           if (inline)
             baseResource.setInlineList(prop.shortName, rl);
           
-          currentlySetting.remove(propName);
+          currentlySetting = U.copyArray(currentlySetting, propName);
         });
       }
     });    

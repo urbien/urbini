@@ -338,10 +338,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
             return oldPlug._uri == uri;
           });
           
-          _.each(matches, function(match) {              
-            current.remove(match);
-          });
-          
+          current = U.copyArray(current, matches);
           current.push(tPlug);
         });
       }

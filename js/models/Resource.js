@@ -831,7 +831,12 @@ define('models/Resource', [
           continue;
         
         if (blProp.where) {
-          var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          try {
+            var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          } catch (err) {
+            log('error', err); // for example, the where clause might assume a logged in user
+          }
+          
           if (!testFunction || !testFunction(res))
             continue;
         }
@@ -839,7 +844,12 @@ define('models/Resource', [
         if (blProp.whereOr) {
           debugger;
           var where = {$or: blProp.whereOr};
-          var testFunction = U.buildValueTester($.param(where), blVocModel);
+          try {
+            var testFunction = U.buildValueTester($.param(where), blVocModel);
+          } catch (err) {
+            log('error', err); // for example, the where clause might assume a logged in user
+          }
+          
           if (!testFunction || !testFunction(res))
             continue;
         }

@@ -369,7 +369,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
             return m.type == model.type;
           });
       
-      MODEL_CACHE.remove(collisions);
+      collisions = U.copyArray(MODEL_CACHE, collisions);
       MODEL_CACHE.push(model);
     }
     
