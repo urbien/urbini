@@ -39,21 +39,53 @@ define('utils', [
     return path.split(separator).reduce(index, obj);
   }
 
-  Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-      what = a[--L];
-      while ((ax = this.indexOf(what)) !== -1) {
-        this.splice(ax, 1);
+  _.extend(Array, {
+    remove: function(array /* items */) {
+      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
+      
+      for (var i in items) {
+        var item = items[i],
+            idx = array.indexOf(item);
+        
+        if (idx != -1)
+          array.splice(idx, 1);
       }
-    }
-    
-    return this;
-  };
+      
+      return array;
+    },
 
-  Array.prototype.last = Array.prototype.peek = function() {
-    return this.length ? this[this.length - 1] : null;
-  };
+    // courtesy of John Resig
+    removeFromTo: function(array, from, to) {
+      var rest = array.slice((to || from) + 1 || array.length);
+      array.length = from < 0 ? array.length + from : from;
+      return array.push.apply(array, rest);
+    },
+
+    last: function(array) {
+      return U.peek(array);
+    },
+
+    peek: function(array) {
+      return array[array.length - 1];
+    }    
+  });
+  
+  
+//  Array.prototype.remove = function() {
+//    var what, a = arguments, L = a.length, ax;
+//    while (L && this.length) {
+//      what = a[--L];
+//      while ((ax = this.indexOf(what)) !== -1) {
+//        this.splice(ax, 1);
+//      }
+//    }
+//    
+//    return this;
+//  };
+//
+//  Array.prototype.last = Array.prototype.peek = function() {
+//    return this.length ? this[this.length - 1] : null;
+//  };
 
   String.prototype.format = function() {
     var args = arguments;
@@ -197,6 +229,18 @@ define('utils', [
       return promise;
     },    
     
+//    ajax: function(options) {
+//      var dfd = $.Deferred(), 
+//          promise = dfd.promise();
+//      
+//      G.whenNotRendering(function() {
+//        G.animationQueue.queueTask(function() {
+//          U._ajax(options).then(dfd.resolve, dfd.reject);            
+//        });
+//      });
+//      
+//      return promise;
+//    },
     /**
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
@@ -612,7 +656,7 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      var cloneOf = concat.apply([], slice.call(arguments, 1)),
+      var cloneOf = concat.apply(ArrayProto, slice.call(arguments, 1)),
           results = {},
           meta = model.properties;
       
@@ -2754,6 +2798,19 @@ define('utils', [
     slice: slice,
     concat: concat,
     asArray: asArray,
+    copyArray: function(arr /* skip */) {
+      var copy = [],
+          skip = concat.apply(ArrayProto, slice.call(arguments, 1));
+      
+      for (var i in arr) {
+        var val = arr[i];
+        if (skip.indexOf(val) == -1)
+          copy.push(val);
+      }
+      
+      return copy;
+    },
+
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -3013,10 +3070,11 @@ define('utils', [
         
       if (U.isResourceProp(prop) && bound === '_me') {
         if (G.currentUser.guest) {
-          Events.trigger('req-login'); // exit search?
-          return function() {
-            return false;
-          };
+//          Events.trigger('req-login'); // exit search?
+//          return function() {
+//            return false;
+//          };
+          throw G.Errors.Login;
         }
         else
           bound = G.currentUser._uri;
@@ -3650,7 +3708,7 @@ define('utils', [
 
     wipe: function(obj) {
       for (var p in obj) {
-        if (obj.hasOwnProperty(p))
+        if (_.has(obj, p))
           delete obj[p];
       }
     },
@@ -3762,7 +3820,27 @@ define('utils', [
     
     createDataUrl: function(type, content) {
       return "data:{0};base64,{1}".format(type, window.btoa(content));
-    }
+    },
+    
+    imageToDataURL: function(img) {
+      // Create an empty canvas element
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Copy the image contents to the canvas
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      // Get the data-URL formatted image
+      // Firefox supports PNG and JPEG. You could check img.src to
+      // guess the original format, but be aware the using "image/jpg"
+      // will re-encode the image.
+//      var dataURL = canvas.toDataURL("image/png");
+
+      return canvas.toDataURL("image/png");
+//      return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    }    
   };
 
   var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment', 'special'],

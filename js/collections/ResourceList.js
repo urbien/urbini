@@ -73,7 +73,14 @@ define('collections/ResourceList', [
         }
       }
       
-      this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+      try {
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this._unbreak();
+      } catch (err) {
+        this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
+        this._break();
+      }
+      
       if (options.cache !== false)
         this.announceNewList();
       
@@ -348,17 +355,36 @@ define('collections/ResourceList', [
       if (needsToBeStored)
         Events.trigger('updatedResources', this.models);
     },
+
+    isBroken: function() {
+      return this._broken;
+    },
     
+    _break: function() {
+      this._broken = true;
+    },
+
+    _unbreak: function() {
+      this._broken = false;
+    },
+
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        try {
+          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+          this._unbreak();
+        } catch (err) {
+          this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
+          this._break();
+        }
+        
         this._lastFetchedOn = null;
       }
     },
     
     fetch: function(options) {
-      if (!this._outOfData)
+      if (this.offset && !this._outOfData)
         log("info", "fetching next page");
       
       options = _.extend({update: true, remove: false, parse: true}, options);

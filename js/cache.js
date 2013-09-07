@@ -258,7 +258,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         });
       
         while (overCapacity()) {
-          var entry = cache.peek(),
+          var entry = Array.peek(cache),
               view = entry.getView();
           
           if (view.destroy) { // some views, like homePage, are indestructible :)
@@ -319,7 +319,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       getResources: getResources,
       getLists: getLists,
       remove: function(entry) {
-        cache.remove(entry);
+        var idx = cache.indexOf(entry);
+        if (idx != -1)
+          Array.removeFromTo(cache, idx, idx + 1);
       }
     };
   };
@@ -457,12 +459,20 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //  });
 //  
 //  Events.on('newResource', cacheResource);
-  Events.on('cacheList', function (list, permanent) {
-    resourceCache.cacheList(list, true);
+  Events.on('cacheList', function (list) {
+    resourceCache.cacheList(list);
   });
   
-  Events.on('cacheResource', function (resource, permanent) {
-    resourceCache.cacheResource(resource, true);
+  Events.on('cacheResource', function (resource) {
+    resourceCache.cacheResource(resource);
+  });
+
+  Events.on('uncacheList', function (list) {
+    resourceCache.uncacheList(list);
+  });
+  
+  Events.on('cacheResource', function (resource) {
+    resourceCache.uncacheResource(resource);
   });
 
   Events.on('newModel', cacheModel);

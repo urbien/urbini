@@ -343,6 +343,9 @@ define('app', [
             params: hashInfo.getParams()
           });
           
+          if (data.isBroken()) // for example, the user needs to be logged in for this list to be fetchable
+            data = null;
+          
           break;
         case "view":
         case "edit":

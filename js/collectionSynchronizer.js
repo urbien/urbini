@@ -78,7 +78,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       if (this._isForceFetch() || isStale)
         this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
       else if (this.data.length)
-        this._success(null, 'success', {status: 304}); // the data is fresh, let's get out of here
+        this._success(null, 'success', {
+          status: 304,
+          getResponseHeader: G.emptyFn
+        }); // the data is fresh, let's get out of here
       
       return;
     }
