@@ -178,6 +178,10 @@ define('views/ControlPanel', [
       }
       
       this.render();
+      G.animationQueue.queueTask(this._refreshListview, this);
+    },
+    
+    _refreshListview: function() {      
       if (!this.$el.hasClass('ui-listview'))
         this.$el.trigger('create');
       else {
@@ -185,6 +189,7 @@ define('views/ControlPanel', [
         this.$el.listview('refresh');
       }
     },
+    
     render: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;

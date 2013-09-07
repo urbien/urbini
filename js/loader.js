@@ -693,17 +693,15 @@ define('globals', function() {
       }
       
       return require('__domReady__').then(function() {
-//        var essential = ['jqmConfig', 'events', 'lib/animationQueue', 'app'];
-        var essential = ['jqmConfig', 'events', 'app'];
+        var essential = ['jqmConfig', 'events', 'lib/animationQueue', 'app'];
         if (G.modules['js/lib/l20n.js'])
           essential.push('lib/l20n');
         
         essential = essential.concat(css)
         return require(essential);
       });
-//    }).then(function(jqmConfig, Events, AnimationQueue, App) {
-    }).then(function(jqmConfig, Events, App) {
-//      G.animationQueue = AnimationQueue;
+    }).then(function(jqmConfig, Events, AnimationQueue, App) {
+      G.animationQueue = AnimationQueue;
       Events.on('appStart', APP_START_DFD.resolve);
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");

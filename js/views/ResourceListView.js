@@ -19,36 +19,17 @@ define('views/ResourceListView', [
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
       _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
-//      this.superInitialize(options);
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
-//      $wnd.on('scroll', this.onScroll);
-//      Events.on('pageChange', this.onAppend);
-//      this.$el.on('create', this.onAppend);
-//      this.collection.on('reset', this.render, this);
-//      this.collection.on('add', this.onadd, this);
-//      this.collection.on('refresh', this.refresh);
-//      this.collection.on('add', this.add, this);
-//      this.options = _.pick(options, 'checked', 'props') || {};
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       var type = this.modelType;
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       var commonTypes = G.commonTypes;
-//      this.isPhotogrid = _.contains([commonTypes.Handler, commonTypes.FriendApp], type);
       this.isPhotogrid = this.type == 'photogrid'; //this.parentView.isPhotogrid;
       if (this.isPhotogrid)
         this.displayPerPage = 5;
 
-//      // HACK
-//      Events.on('pageChange', function(previousView, currentView) {
-//        if (this.isActive())
-//          this.alignBricks();
-////          this.forceReloadMasonry();
-//      }.bind(this));
-//      // END HACK
-      
       var vocModel = this.vocModel;
-//      this.imageProperty = U.getImageProperty(this.collection);
       this.mvProp = this.hashParams.$multiValue;
       this.isMultiValueChooser = !!this.mvProp;
       if (this.mvProp) {
@@ -61,15 +42,8 @@ define('views/ResourceListView', [
       }
 
       this.isEdit = this.hashParams['$editList'];
-//      this.isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
-//      this.isMasonry = !this.isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Coupon', '/Goal', '/Movie', '/ThirtyDayTrial', '/SolarBond'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
-//      this.isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       return this;
     },
-    
-//    onAppend: function() {
-//      this.resumeScrollEventProcessing();
-//    },
     
     onadd: function(resources, options) {
       if (options && options.refresh) {
@@ -102,14 +76,14 @@ define('views/ResourceListView', [
           liView;
           
       if (this.isEdit) {
-        liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams)));
+        liView = new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams));
       }
       else if (this.isMultiValueChooser) {
 //        var params = hash ? U.getParamMap(hash) : {};
 //        var mvProp = params.$multiValue;
         var isListed =  _.contains(this.mvVals, res.get('davDisplayName'));
   //      var isChecked = defaultUnchecked === isListed;
-        liView = this.addChild('multiValue item' + G.nextId(), new ResourceListItemView({
+        liView = new ResourceListItemView({
           mv: true, 
           tagName: 'div', 
           className: "ui-controlgroup-controls", 
@@ -117,16 +91,17 @@ define('views/ResourceListView', [
           checked: isListed,
           resource: res,
           parentView: this
-        }));
+        });
       }
       else {
         var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
         if (this.imageProperty != null)
-          liView = this.addChild(viewName, new ResourceListItemView(_.extend({ imageProperty: this.imageProperty, parentView: this, swatch: swatch}, commonParams)))
+          liView = new ResourceListItemView(_.extend({ imageProperty: this.imageProperty, parentView: this, swatch: swatch}, commonParams));
         else
-          liView = this.addChild(viewName, new ResourceListItemView(_.extend({swatch: swatch}, commonParams)));
+          liView = new ResourceListItemView(_.extend({swatch: swatch}, commonParams));
       }
       
+      this.addChild(liView.cid, liView);
       liView.render({force: true});
       return liView;
     },
@@ -150,57 +125,10 @@ define('views/ResourceListView', [
       
       var rl = this.filteredCollection;
       var resources = rl.models;
-//      var vocModel = this.vocModel;
-//      var type = vocModel.type;
-//      var isModification = this.isModification;
-//      var meta = vocModel.properties;
       var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled')[0];
-//      canceled = canceled.length ? canceled[0] : null;
-      
-//      var viewMode = vocModel.viewMode;
-//      var isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-//      var isChooser = this.isChooser; //window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-//      var isMasonry = this.isMasonry; //this.isMasonry = !isChooser  && !this.isPhotogrid &&  (_.any(['/Tournament', '/Theme', '/App', '/Coupon', '/Goal', '/Movie', '/ThirtyDayTrial'], function(end) {return type.endsWith(end)}) || U.isA(this.vocModel, "VideoResource")); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      
-//      var isMasonry = !isList  &&  U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
-//      if (!isMasonry  &&  !isModification  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
-//        isMasonry = true;
-//      if (isMasonry) {
-//        var key = this.vocModel.shortName + '-list-item';
-//        var litemplate = U.getTypeTemplate('list-item', rl);
-//        if (litemplate)
-//          isMasonry = false;
-//      }
-//      var isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('model/portal/Comment'));
-//      var params = U.getParamMap(window.location.hash);
-//      var isEdit = !isModification  &&  !isMasonry  &&  (params['$editList']); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty));
-
-//      if (!isComment  &&  !isMasonry  &&  !isList) {
-//        if (U.isA(vocModel, 'Intersection')) {
-//          var href = window.location.href;
-//          var qidx = href.indexOf('?');
-//          var a = U.getCloneOf(meta, 'Intersection.a')[0];
-//          var aprop;
-//          if (qidx == -1) {
-//            aprop = models[0].get(a);
-//            isMasonry = (U.getCloneOf(meta, 'Intersection.aThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.aFeatured')[0]) != null;
-//          }
-//          else {
-//            var b = U.getCloneOf(meta, 'Intersection.b')[0];
-//            var p = href.substring(qidx + 1).split('=')[0];
-//            var delegateTo = (p == a) ? b : a;
-//            isMasonry = (U.getCloneOf(meta, 'Intersection.bThumb')[0]  ||  U.getCloneOf(meta, 'Intersection.bFeatured')[0]) != null;
-//          }
-//        }
-//      }
-      var hash = window.location.hash;
-//      var params = hash ? U.getParamMap(hash) : {};
-//      var mvProp = params.$multiValue;
-//      var isMultiValueChooser = !!this.mvProp;
-      
+      var hash = window.location.hash;      
       var lis = this.getListItems(); //isModification || isMasonry ? this.$('.nab') : this.isPhotogrid ? this.$('tr') : this.$('li');
       var curNum = lis.length;
-//      var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
       var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
 
       var i = 0;
@@ -225,109 +153,66 @@ define('views/ResourceListView', [
         
 //      var renderDfd = this.isPhotogrid ? $.Deferred() : null;
       var info = {
-        isFirstPage: !nextPage,
-        frag: frag,
-        total: num,
-        appended: []
-      };
-    
-      var updated = [];
+          isFirstPage: !nextPage,
+          frag: frag,
+          total: num,
+          appended: []
+        },
+        updated = [];
+      
       this.imageProperty = U.getImageProperty(this.collection);
       this.preRender(info);
-      for (; i < num; i++) {
-        var res = resources[i],        
-            uri = res.getUri(),
-            liView = null;
-        
-        if (canceled && res.get(canceled))
-          continue;
-        
-        info.index = i;        
-        
-        info.updated = _.contains(modifiedUris, uri);
-        if (i >= lis.length || info.updated) {
-          liView = this.renderItem(res, info);
+
+      G.animationQueue.queueTask(function() {        
+        for (; i < num; i++) {
+          var res = resources[i],        
+              uri = res.getUri(),
+              liView = null;
           
-//          var viewName = 'liView' + i;
-//          if (this.isPhotogrid) {
-//            liView = this.addChild(viewName, new PhotogridView(_.extend({tagName: 'div', linkToIntersection: true}, commonParams)));
-//          }
-//          else if (isMultiValueChooser) {
-//            var isListed =  _.contains(mvVals, res.get('davDisplayName'));
-////            var isChecked = defaultUnchecked === isListed;
-//            liView = this.addChild(viewName, new ResourceListItemView(_.extend({mv: true, tagName: 'div', className: "ui-controlgroup-controls", mvProp: mvProp, checked: isListed}, commonParams)));
-//          }
-//          else if (isMasonry  ||  isModification) 
-////            liView = new ResourceMasonryItemView({model:res, className: 'pin', tagName: 'li', parentView: this});
-////          else if (isModification)
-//            liView = this.addChild(viewName, new ResourceMasonryItemView(_.extend({className: 'nab nabBoard'}, commonParams)));
-//          else if (isComment)
-//            liView = this.addChild(viewName, new CommentListItemView(commonParams));
-//          else if (isEdit) 
-//            liView = this.addChild(viewName, new ResourceListItemView(_.extend({editCols: params['$editCols'], edit: true}, commonParams)));
-//          else {
-//            var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-//            if (this.imageProperty != null)
-//              liView = this.addChild(viewName, new ResourceListItemView(_.extend({ imageProperty: imageProperty, parentView: this, swatch: swatch}, commonParams)))
-//            else
-//              liView = this.addChild(viewName, new ResourceListItemView(_.extend({swatch: swatch}, commonParams)));
-//          }
-
-//          var rendered = liView.render({force: true});
-          if (!liView.rendered)
+          if (canceled && res.get(canceled))
             continue;
-
-//          var liEl = liView.el;
-//          if (liEl && this.isPhotogrid) {
-//            var row = $("<tr></tr>")[0];
-//            var cell = $("<td></td>")[0];
-//            cell.appendChild(liEl);
-//            row.appendChild(cell);
-//            table.appendChild(row);
-//            if (i < num - 1)
-//              table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
-//          }
-//          else {
-//          }
+          
+          info.index = i;        
+          
+          info.updated = _.contains(modifiedUris, uri);
+          if (i >= lis.length || info.updated)
+            liView = this.renderItem(res, info);          
+  
+          G.animationQueue.queueTask(function(liView, lis, i) {          
+            var el;
+            if (liView) {
+              el = liView.el;
+              var detachedLi = lis[i],
+                  viewId = detachedLi && detachedLi.dataset.viewId,
+                  child = viewId && this.getChildViews()[viewId];
+              
+              if (child) {
+                debugger;
+                child.destroy();
+              }
+            }
+            else
+              el = lis[i];
+            
+            if (info.updated)
+              updated.push(el);
+            else
+              info.appended.push(el);
+            
+            this.postRenderItem(el, info);
+          }, this, [liView, lis, i]);
         }
-//        else if (!nextPage)
-//          frag.appendChild(lis[i]);
         
-        var el = liView ? liView.el : lis[i];
-        if (info.updated)
-          updated.push(el);
-        else
-          info.appended.push(el);
+        G.animationQueue.queueTask(function() {
+          info.updated = updated;
+          if (!nextPage)
+            this.html(frag);
+          
+          this.postRender(info);
+        }, this);
+      }, this);
 
-        this.postRenderItem(el, info);
-      }
-         
-      info.updated = updated;
-
-//      if (isChooser) {
-//        var params = U.getParamMap(window.location.href, '&');
-//        var prop = params['$prop'];
-//        var forResource = params['forResource'];
-//        if (prop  &&  forResource) {
-//          var type = U.getTypeUri(forResource);      
-//          var cModel = U.getModel(type);
-//          /*
-//          if (U.isCloneOf(cModel.properties[prop], "ImageResource.originalImage", cModel)) { 
-//            var rules = ' data-formEl="true"';
-//            var location = this.hashParams['$location'];
-//            var returnUri = this.hashParams['$returnUri'];
-//            U.addToFrag(frag, this.fileUploadTemplate({name: prop, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
-////            frag.appendChild(this.fileUploadTemplate({name: prop, rules: rules, forResource: forResource}));
-//          }
-//          */
-//        }
-//      }
-      
-      delete info.index;
-      if (!nextPage)
-        this.$el.html(frag);
-      
-      this.postRender(info);  
+        
 //      if (!isComment)
 //        this.$el.prevObject.find('#comments').css('display', 'none');
 //
@@ -402,6 +287,9 @@ define('views/ResourceListView', [
 //    },
     
     getNextPage: function() {
+      if (!this.rendered)
+        return;
+      
 //      console.debug(printStackTrace());
       if (this._pagingPromise && this._pagingPromise.state() === 'pending')
         return this._pagingPromise;
@@ -461,21 +349,16 @@ define('views/ResourceListView', [
     
     checkIfNeedMore: function(displayedBefore) {
       var self = this;
-//      clearTimeout(self._pagingTimeout);
-//      this._pagingTimeout = setTimeout(function() {          
+      G.animationQueue.queueTask(function() {        
         if (!self.scrolledToNextPage()) // we've got our buffer back
           return;
         else if (self.getListItems().length > displayedBefore) // we loaded some, but we need more
           return self.getNextPage();
         else
           self.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
-//      }, 100);
+      });
     },
         
-//    changed: function(view) {
-//      this.changedViews.push(view);
-//    },
-    
     render: function(e) {
       if (!this.rendered) {
         this.numDisplayed = 0;

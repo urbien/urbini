@@ -616,7 +616,7 @@
 <script type="text/template" id="listItemTemplate">
   <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
     <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
@@ -661,8 +661,7 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
     {{ if (isJst) { }}
@@ -693,7 +692,7 @@
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
+  {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
@@ -710,64 +709,13 @@
   </div>
 </script>
 
-<script type="text/template" id="listItemTemplateNoImage1">
-  <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var action = action ? action : 'view'; }}
-  {{ var detached = this.resource.detached; }}
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
-  {{ if (!obj.v_submitToTournament) { }}  
-    {{ if (isJst) { }}
-      <div class="ui-btn-text" style="padding: .7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
-    {{ } }}
-    {{ if (!isJst) { }}
-      <div class="ui-btn-text" style="min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
-    {{ } }}
-  {{ } }}
-  {{ if (obj.v_submitToTournament) { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
-  {{ } }}
-  
-  {{= viewCols }}
-  </div>
-  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
-   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
-     {{= price.currency + price.value }}
-     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
-   </div>
-  {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
-    <span class="ui-li-count">{{= distance + ' mi' }}</span>
-  {{ } }}
-  <!--
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
-  {{ } }}
-  -->  
-  
-  {{ if (obj.comment) { }}
-    <p style="padding-left: 15px;">{{= comment }}</p>
-  {{ } }}
-  </div>
-</script>
-
-  <!-- one item on the left-side slide-out menu panel -->
-<!--script type="text/template" id="menuItemTemplate">
-  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= obj.image ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
-      {{= title }}
-    </a>
-  </li>
-</script -->
-
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
   <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px; margin-bottom:-10px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
+    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -830,7 +778,7 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-icon="false">
+<li data-icon="false" data-viewid="{{= viewId }}">
   <i class="icon-home"></i>
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
@@ -1242,10 +1190,10 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img border="0" src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1316,7 +1264,7 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
   <!--
     {{ if (typeof creatorThumb != 'undefined') { }}
        <div style="padding: 5px; float:left;">
@@ -1335,7 +1283,7 @@
    -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img  src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img  src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
          {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
         ></img>
       </a>

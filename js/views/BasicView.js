@@ -9,6 +9,12 @@ define('views/BasicView', [
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype;
   
+  function disableHover($el) {
+    $el.bind('mouseover', function() {
+      return false;
+    });
+  }
+  
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
@@ -45,6 +51,9 @@ define('views/BasicView', [
         if (!this.rendered)
           this.rendered = true;
       }.bind(this));
+      
+//      this._refreshQueue = [];
+//      this._renderQueue = [];
       
       this._templates = [];
       this._templateMap = {};
@@ -83,10 +92,22 @@ define('views/BasicView', [
          }
         
         G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
-        refresh && refresh.apply(this, arguments);
+        if (_.size(this.children))
+          refresh.apply(this, arguments);
+        else
+          G.animationQueue.queueTask(refresh, this, arguments);
       };
       
       var render = this.render;
+      function doRender() {
+        render.apply(this, arguments);
+        if (this.autoFinish !== false)
+          this.finish();
+
+        if (G.browser.mobile)
+          disableHover(this.$el);
+      }
+
       this.render = function(rOptions) {
         if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
          // to avoid rendering views 10 times in the background. Render when it's about to be visible
@@ -98,9 +119,12 @@ define('views/BasicView', [
 //            debugger;
           
           G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
-          render.apply(this, arguments);
-          if (this.autoFinish !== false)
-            this.finish();
+          
+          if (_.size(this.children))
+            doRender.apply(this, arguments);
+          else
+            G.animationQueue.queueTask(doRender, this, U.asArray(arguments));
+          
           return this;
         }
       }.bind(this);
@@ -109,9 +133,9 @@ define('views/BasicView', [
       this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
-        _.each(this.children, function(child) {
-          child.trigger('active', active);
-        }); // keep this
+//        _.each(this.children, function(child) {
+//          child.trigger('active', active);
+//        }); // keep this
         
         if (active)
           this._updateHashInfo();
@@ -178,6 +202,17 @@ define('views/BasicView', [
       this.hash = U.getHash();
       this.hashParams = this._hashInfo && this._hashInfo.params || {};
     },
+
+    getBaseTemplateData: function() {
+      var data = {
+        viewId: this.cid
+      };
+      
+      if (this.resource)
+        data._uri = this.resource.get('_uri');
+      
+      return data;
+    },
     
     refresh: function() {
       // override this
@@ -201,6 +236,7 @@ define('views/BasicView', [
         return;
       
       this._destroyed = true;
+      this.trigger('destroyed');
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
       if (this.$el)
@@ -227,6 +263,31 @@ define('views/BasicView', [
       this._loadingDfd.resolve();
     },
     
+//    _queueRefresh: function(args) {
+//      this._refreshQueue.push(args);
+//    },
+//    
+//    _processRefreshQueue: function() {
+//      if (this._refreshPromise != null && this.refreshPromise.state() == 'pending')
+//        return;
+//      
+//      var args = this._refreshQueue.pop();
+//      if (!args)
+//        return;
+//      
+//      this._refreshDeferred = $.Deferred();
+//      this._refreshPromise = this._refreshDeferred.promise();
+//      this._refreshPromise.done(this._processRefreshQueue.bind(self));      
+//    },
+//    
+//    finishRefresh: function() {
+//      this._refreshDeferred.resolve();
+//    },
+//
+//    finishRender: function() {
+//      this._renderDeferred.resolve();
+//    },
+
     getTemplate: function(templateName, type) {
       return Templates.get(templateName, type);
     },
@@ -247,6 +308,11 @@ define('views/BasicView', [
         
       U.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
+      this._monitorTemplate(templateName);
+      return template;
+    },  
+    
+    _monitorTemplate: function(templateName) {
       var event = 'templateUpdate:' + templateName;
       this.stopListening(Events, event);
       this.listenTo(Events, event, function(template) {
@@ -261,9 +327,7 @@ define('views/BasicView', [
         this[this.rendered ? 'render' : 'refresh']();
         this.restyle();
       }.bind(this));
-
-      return template;
-    },  
+    },
     
     atBottom: function() {
       var $w = $(window);
@@ -284,7 +348,7 @@ define('views/BasicView', [
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
       
-      Events.on('viewDestroyed:' + view.cid, function(view) {
+      Events.once('viewDestroyed:' + view.cid, function(view) {
         if (self.children)
           delete self.children[name];
       });
@@ -294,6 +358,16 @@ define('views/BasicView', [
     
     getChildViews: function() {
       return this.children;
+    },
+
+    empty: function() {
+      U.wipe(this.children);
+      this.$el.empty();
+    },
+
+    html: function(html) {
+      U.wipe(this.children);
+      this.$el.html(html);
     },
     
     getDescendants: function() {
