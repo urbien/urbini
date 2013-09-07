@@ -131,7 +131,7 @@ define('views/SocialNetworkPage', [
               }, true),
               connected = access && access.get('connected');
            
-          btnInfo.exists = !access;
+          btnInfo.exists = !!access;
           btnInfo.connected = connected;
           btnInfo.linkText = connected ? 'Disconnect' : 'Connect';
         }
