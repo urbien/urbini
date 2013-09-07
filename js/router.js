@@ -12,7 +12,8 @@ define('router', [
   'templates',
   'jqueryMobile',
   'appAuth',
-  'redirecter'
+  'redirecter',
+  'transitions'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
@@ -93,11 +94,11 @@ define('router', [
 
       Events.on('pageChange', function(prev, current) {
         self.backClicked = self.firstPage = false;
-        self.checkTour();
         if (G.DEBUG)
           window.view = current;
       });
-      
+
+      Events.once('pageChange', this.loadTourGuide);
       Events.on('back', _.debounce(function(ifNoHistory) {
 //        var now = +new Date();
 //        if (self.lastBackClick && now - self.lastBackClick < 100)
@@ -344,7 +345,11 @@ define('router', [
         }
         
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+        this.$changePage(this.currentView.$el, {
+          changeHash: false, 
+          transition: 'slide', 
+          reverse: true
+        });
       }
       else {
         this.currentUrl = window.location.href;
@@ -353,7 +358,7 @@ define('router', [
         // no need to call change page when home page is displayed for the very first time
 //        if (this.urlsStack.length)
         if (!this.firstPage)
-          $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+          this.$changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
 
 //      if (this.backClicked) {
@@ -476,7 +481,13 @@ define('router', [
         cachedView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
-        list.fetch({page: page, forceFetch: forceFetch});
+        G.whenNotRendering(function() {  
+          list.fetch({
+            page: page, 
+            forceFetch: forceFetch
+          });
+        });
+        
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
@@ -1034,7 +1045,10 @@ define('router', [
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        res.fetch({forceFetch: forceFetch});
+        G.whenNotRendering(function() {
+          res.fetch({forceFetch: forceFetch});
+        });
+        
         if (wasTemp && !isTemp)
           this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
         
@@ -1247,6 +1261,198 @@ define('router', [
         Events.trigger('headerMessage', data);
       }
     },
+    
+    $changePage: function(toPage, options) {
+      G.animationQueue.queueTask($m.changePage, $m, U.asArray(arguments));
+    },
+
+//    $changePage1: function(toPage, options) {
+////      G.animationQueue.queueTask($m.changePage, $m, U.asArray(arguments));
+//      G.animationQueue.queueTask(function() {
+//        var path = $m.path,
+//            urlHistory = $m.navigate.history,
+//            documentUrl = path.documentUrl,
+//            fromPage = $m.activePage,
+//            mpc = $m.pageContainer,
+//            settings = _.extend({
+//              pageContainer: mpc,
+//              fromPage: fromPage
+//            }, $m.changePage.defaults, options),
+//            pbcEvent = new $.Event( "pagebeforechange" ),
+//            triggerData = { 
+//              toPage: toPage, 
+//              options: settings, 
+//              absUrl: toPage.data('absUrl')
+//            };
+//
+//        mpc.trigger(pbcEvent, triggerData);
+//        if (pbcEvent.isDefaultPrevented())
+//          return;
+//
+//        if (toPage[0] === $m.firstPage[0] && !settings.dataUrl)
+//          settings.dataUrl = documentUrl.hrefNoHash;
+//        
+//        var url = ( settings.dataUrl && path.convertUrlToDataUrl( settings.dataUrl ) ) || toPage.jqmData( "url" ),
+//            // The pageUrl var is usually the same as url, except when url is obscured as a dialog url. pageUrl always contains the file path
+//            pageUrl = url,
+//            fileUrl = path.getFilePath( url ),
+//            active = urlHistory.getActive(),
+//            activeIsInitialPage = urlHistory.activeIndex === 0,
+//            historyDir = 0,
+//            pageTitle = document.title;
+//
+//
+//          // By default, we prevent changePage requests when the fromPage and toPage
+//          // are the same element, but folks that generate content manually/dynamically
+//          // and reuse pages want to be able to transition to the same page. To allow
+//          // this, they will need to change the default value of allowSamePageTransition
+//          // to true, *OR*, pass it in as an option when they manually call changePage().
+//          // It should be noted that our default transition animations assume that the
+//          // formPage and toPage are different elements, so they may behave unexpectedly.
+//          // It is up to the developer that turns on the allowSamePageTransitiona option
+//          // to either turn off transition animations, or make sure that an appropriate
+//          // animation transition is used.
+//          if ( fromPage && fromPage[0] === toPage[0] && !settings.allowSamePageTransition ) {
+//            isPageTransitioning = false;
+//            mpc.trigger( "pagechange", triggerData );
+//
+//            // Even if there is no page change to be done, we should keep the urlHistory in sync with the hash changes
+//            if ( settings.fromHashChange ) {
+//              urlHistory.direct({ url: url });
+//            }
+//
+//            return;
+//          }
+//
+//          // We need to make sure the page we are given has already been enhanced.
+//          toPage.page();
+//
+//          // If the changePage request was sent from a hashChange event, check to see if the
+//          // page is already within the urlHistory stack. If so, we'll assume the user hit
+//          // the forward/back button and will try to match the transition accordingly.
+//          if ( settings.fromHashChange ) {
+//            historyDir = options.direction === "back" ? -1 : 1;
+//          }
+//
+//          // Kill the keyboard.
+//          // XXX_jblas: We need to stop crawling the entire document to kill focus. Instead,
+//          //            we should be tracking focus with a delegate() handler so we already have
+//          //            the element in hand at this point.
+//          // Wrap this in a try/catch block since IE9 throw "Unspecified error" if document.activeElement
+//          // is undefined when we are in an IFrame.
+//          try {
+//            if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
+//              $( document.activeElement ).blur();
+//            } else {
+//              $( "input:focus, textarea:focus, select:focus" ).blur();
+//            }
+//          } catch( e ) {}
+//
+//          // if title element wasn't found, try the page div data attr too
+//          // If this is a deep-link or a reload ( active === undefined ) then just use pageTitle
+//          var newPageTitle = ( !active )? pageTitle : toPage.jqmData( "title" ) || toPage.children( ":jqmData(role='header')" ).find( ".ui-title" ).text();
+//          if ( !!newPageTitle && pageTitle === document.title ) {
+//            pageTitle = newPageTitle;
+//          }
+//          
+//          if ( !toPage.jqmData( "title" ) ) {
+//            toPage.jqmData( "title", pageTitle );
+//          }
+//
+//          // Set the location hash.
+//          if ( url && !settings.fromHashChange ) {
+//            debugger;
+//            var params;
+//
+//            // rebuilding the hash here since we loose it earlier on
+//            // TODO preserve the originally passed in path
+//            if( !path.isPath( url ) && url.indexOf( "#" ) < 0 ) {
+//              url = "#" + url;
+//            }
+//
+//            // TODO the property names here are just silly
+//            params = {
+//              transition: settings.transition,
+//              title: pageTitle,
+//              pageUrl: pageUrl,
+//              role: settings.role
+//            };
+//
+//            if ( settings.changeHash !== false && $.mobile.hashListeningEnabled ) {
+//              $.mobile.navigate( url, params, true);
+//            } else if ( toPage[ 0 ] !== $.mobile.firstPage[ 0 ] ) {
+//              $.mobile.navigate.history.add( url, params );
+//            }
+//          }
+//
+//          //set page title
+//          document.title = pageTitle;
+//
+//          //set "toPage" as activePage
+//          $m.activePage = toPage;
+//
+//          // If we're navigating back in the URL history, set reverse accordingly.
+//          settings.reverse = settings.reverse || historyDir < 0;
+//
+//          if ( fromPage ) {
+//            //trigger before show/hide events
+//            fromPage.data( "mobile-page" )._trigger( "beforehide", null, { nextPage: toPage } );
+//          }
+//
+//          toPage.data( "mobile-page" )._trigger( "beforeshow", null, { prevPage: fromPage || $( "" ) } );
+//
+//          //clear page loader
+//          $m.hidePageLoadingMsg();
+//          
+//        if (fromPage) {
+//          var direction = settings.reverse ? 'right' : 'left',
+//              toPreClass = " ui-page-pre-in",
+//              toScroll = $m.urlHistory.getActive().lastScroll || $m.defaultHomeScroll;
+//              
+//          toPage.css( "z-index", -10 ).addClass($m.activePageClass + toPreClass);
+//          window.transition.css(fromPage[0], toPage[0], direction, 'ease-in-out', 600).done(function() {
+//
+//            // Send focus to page as it is now display: block
+//            $m.focusPage( toPage );
+//
+//            // Set to page height
+//            toPage.height($m.getScreenHeight() + toScroll);
+//
+//            window.scrollTo(0, toScroll);
+//
+//            // Restores visibility of the new page: added together with $to.css( "z-index", -10 );
+//            toPage.css( "z-index", "" );
+//
+//            toPage
+//              .removeClass( toPreClass )
+//              .addClass( name + " in" + reverseClass );
+//
+//            if ( none ) {
+//              doneIn();
+//            }
+//
+//            //trigger show/hide events
+//            if ( fromPage ) {
+//              fromPage.data( "mobile-page" )._trigger( "hide", null, { nextPage: toPage } );
+//            }
+//
+//            //trigger pageshow, define prevPage as either fromPage or empty jQuery obj
+//            toPage.data( "mobile-page" )._trigger( "show", null, { prevPage: fromPage || $( "" ) } );
+//                        
+////            removeActiveLinkClass();
+//
+//            //if there's a duplicateCachedPage, remove it from the DOM now that it's hidden
+//            if ( settings.duplicateCachedPage ) {
+//              settings.duplicateCachedPage.remove();
+//            }
+//
+////            releasePageTransitionLock();
+//            mpc.trigger( "pagechange", triggerData);
+//          });
+//        }
+//      }, this);
+//    },
+    
     changePage: function(view) {
       try {
         this.changePage1(view);
@@ -1300,27 +1506,32 @@ define('router', [
 //        view.trigger('active', true);
         activated = true;
         view.render();
-        view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+        view.onload(function() {          
+          view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+        });
       }
 
       if (this.firstPage)
         transition = 'none';
       
-      this.checkBackClick();
       // HACK //
 //      isReverse = false;
       // END HACK //
 
       // back button: remove highlighting after active page was changed
-      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
 //      if (!activated)
 //        view.trigger('active', true);
       
-      // perform transition        
-      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
-      this.nextTransition = null;
-      Events.trigger('pageChange', prev, view);
+      this.checkBackClick();
+      // perform transition
+      view.onload(function() {
+        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+        this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+        this.nextTransition = null;
+        Events.trigger('pageChange', prev, view);
+      }.bind(this));
+      
       return view;
     },
     
@@ -1355,14 +1566,9 @@ define('router', [
       this.urlsStack.push(here);
     },
     
-    checkTour: function() {
-      if (G.tourGuideEnabled) {
-        G.whenNotRendering(function() {          
-          U.require('tourGuide').done(function(TourGuide) {
-            TourGuide.getTour();
-          });
-        });
-      }
+    loadTourGuide: function() {
+      if (G.tourGuideEnabled)
+        U.require('tourGuide');
     }
 //    ,
 //    

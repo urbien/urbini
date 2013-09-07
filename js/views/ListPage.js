@@ -28,16 +28,14 @@ define('views/ListPage', [
         parentView: this
       };
       
-      var hash = window.location.hash;
-      var json = this.json = rl.toJSON();      
-      json.viewId = this.cid;
+      var hash = window.location.hash;      
       var vocModel = this.vocModel;
       var type = vocModel.type;
       this.makeTemplate(this.template, 'template', type);
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
-      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
       /*
@@ -293,8 +291,11 @@ define('views/ListPage', [
     },
 
     renderHelper: function() {
-      var json = this.json;
-      this.$el.html(this.template(json));
+      this.$el.html(this.template({
+        viewId: this.cid,
+        isMasonry: this.isMasonry
+      }));
+      
       var views = {
         '#headerDiv': this.header
       };

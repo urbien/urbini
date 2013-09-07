@@ -81,7 +81,7 @@ define('views/RightMenuPanel', [
       var grabbed = G.currentUser.grabbed;
       var item = U.isTempUri(uri) ? grabbed.where({_oldUri: uri})[0] : grabbed.get(uri);
       item && item.cancel();
-      grabbed.remove(item);
+      grabbed.splice(grabbed.indexOf(item), 1);
       
       this.refresh();
     },
