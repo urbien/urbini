@@ -79,13 +79,18 @@ define('views/SocialNetworkPage', [
       Events.stopEvent(e);
       var btn = e.currentTarget,
           net = btn.dataset.net,
-          url = this._netUrls[net];
+          access = this.socialAccesses.where({
+            socialNet: net
+          }, true);
       
-      if (url) {
-        window.location.href = url;
+      if (access) {
+        Events.trigger('navigate', U.makeMobileUrl('edit', access.getUri()));      
       }
       else {
-        // not ready
+        window.location.href = U.buildSocialNetOAuthUrl({
+          net: net,
+          action: 'Connect'
+        });
       }
     },
     
@@ -120,15 +125,15 @@ define('views/SocialNetworkPage', [
         
         if (accesses) {
           var action,
-              connected = accesses.where({
+              access = accesses.where({
                 socialNet: net.socialNet,
                 connected: true
               }, true),
-            
-          action = connected ? 'Disconnect' : 'Connect';
+              connected = access && access.get('connected');
+           
+          btnInfo.exists = !access;
           btnInfo.connected = connected;
-          btnInfo.href = self._netUrls[net.socialNet] = U.buildSocialNetOAuthUrl(net, action); // sorted alphabetically
-          btnInfo.linkText = action;
+          btnInfo.linkText = connected ? 'Disconnect' : 'Connect';
         }
         
         btns.push(btnInfo);

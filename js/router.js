@@ -11,12 +11,14 @@ define('router', [
   'views/HomePage',
   'templates',
   'jqueryMobile',
-  'appAuth'
+  'appAuth',
+  'redirecter',
+  'transitions'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};
   
@@ -31,6 +33,7 @@ define('router', [
     routes:{
       ""                                                       : "home",
       "home/*path"                                             : "home",
+//      "install/*path"                                          : "install",
       "social/*path"                                           : "social",
       "static/*path"                                           : "static",
 //      "tour/*path"                                             : "tour",
@@ -91,12 +94,12 @@ define('router', [
 
       Events.on('pageChange', function(prev, current) {
         self.backClicked = self.firstPage = false;
-        self.checkTour();
         if (G.DEBUG)
           window.view = current;
       });
-      
-      Events.on('back', _.debounce(function() {
+
+      Events.once('pageChange', this.loadTourGuide);
+      Events.on('back', _.debounce(function(ifNoHistory) {
 //        var now = +new Date();
 //        if (self.lastBackClick && now - self.lastBackClick < 100)
 //          debugger;
@@ -104,7 +107,20 @@ define('router', [
 //        self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
-        window.history.back();
+        var href = window.location.href, i = 10;
+        while (i-- > 0) {
+          window.history.back();
+          if (window.location.href != href)
+            break;
+        }
+        
+        if (window.location.href == href) {
+          // there's nowhere to go back to
+          if (ifNoHistory)
+            ifNoHistory();
+            
+          return;
+        }
         
 //        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
 //        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);        
@@ -229,6 +245,13 @@ define('router', [
 //        Events.trigger('back');
 //        return;
 //      }
+      if (_.has(arguments[0], 'toFragment')) {
+        // hash info object
+        var hashInfo = arguments[0];
+        fragment = hashInfo.toFragment();
+        options = hashInfo.options;
+      }
+      
       
       options = options || {};
       var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
@@ -258,7 +281,13 @@ define('router', [
       if (options.transition)
         this.nextTransition = options.transition;
       
-      return Backbone.Router.prototype.navigate.call(this, fragment, options);
+      try {
+        Backbone.Router.prototype.navigate.call(this, fragment, options);
+      } finally {
+        if (options.trigger == false)
+          this.updateHashInfo();
+      }
+      
 //      _.extend(this, this.defaultOptions);
 //      return ret;
     },
@@ -316,7 +345,11 @@ define('router', [
         }
         
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+        this.$changePage(this.currentView.$el, {
+          changeHash: false, 
+          transition: 'slide', 
+          reverse: true
+        });
       }
       else {
         this.currentUrl = window.location.href;
@@ -325,7 +358,7 @@ define('router', [
         // no need to call change page when home page is displayed for the very first time
 //        if (this.urlsStack.length)
         if (!this.firstPage)
-          $m.changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+          this.$changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
       }
 
 //      if (this.backClicked) {
@@ -341,6 +374,10 @@ define('router', [
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
     },
+    
+//    install: function() {
+//      
+//    },
     
     social: function() {
       if (!this.routePrereqsFulfilled('social', arguments))
@@ -429,6 +466,7 @@ define('router', [
 //        key = U.getQueryString(U.getQueryParams(key, model), true);
 
       var params = U.getHashParams();
+//      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       if (list && !list._lastFetchedOn)
         list = null;
@@ -443,7 +481,13 @@ define('router', [
         cachedView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
-        list.fetch({page: page, forceFetch: forceFetch});
+        G.whenNotRendering(function() {  
+          list.fetch({
+            page: page, 
+            forceFetch: forceFetch
+          });
+        });
+        
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
@@ -655,23 +699,23 @@ define('router', [
       });
     },
     
-    loadViews: function(views, caller, args) {
-      views = $.isArray(views) ? views : [views];
-      var self = this;
-      var unloaded = _.filter(views, function(v) {return !self[v]});
-      if (unloaded.length) {
-        var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
-        U.require(unloadedMods, function() {
-          var a = U.slice.call(arguments);
-          for (var i = 0; i < a.length; i++) {              
-            Modules[unloaded[i]] = a[i];
-          }
-          
-          caller.apply(self, args);
-        });
-      }
-    },
-
+//    loadViews: function(views, caller, args) {
+//      views = $.isArray(views) ? views : [views];
+//      var self = this;
+//      var unloaded = _.filter(views, function(v) {return !self[v]});
+//      if (unloaded.length) {
+//        var unloadedMods = _.map(unloaded, function(v) {return 'views/' + v});
+//        U.require(unloadedMods, function() {
+//          var a = U.slice.call(arguments);
+//          for (var i = 0; i < a.length; i++) {              
+//            Modules[unloaded[i]] = a[i];
+//          }
+//          
+//          caller.apply(self, args);
+//        });
+//      }
+//    },
+//
 //    _backOrHome: function() {
 //      if (this.urlsStack.length)
 //        Events.trigger('back');
@@ -708,8 +752,24 @@ define('router', [
         // all good, continue making ur mkresource
       }
       else {
-        var model = U.getModel(type);
-        mPage = new EditPage({model: new model(), action: 'make', makeId: makeId, source: this.previousHash});
+        var model = U.getModel(type),
+            modelParams = U.getQueryParams(hashInfo.params, model),
+            resource = new model(U.filterInequalities(modelParams));
+         
+        if (!resource.getUri() && Redirecter.fastForwardMake(resource))
+          return;
+        
+//        if (!_.size(U.getPropertiesForEdit(resource))) {
+//          resource.save();
+//          return;
+//        }
+        
+        mPage = new EditPage({
+          model: resource, 
+          action: 'make', 
+          makeId: makeId, 
+          source: this.previousHash
+        });
       }
       
       this.currentModel = mPage.resource;
@@ -756,7 +816,7 @@ define('router', [
       G.previousHashInfo = G.currentHashInfo;
       G.currentHash = U.getHash();
       if (G.currentHash !== G.previousHash)
-        G.currentHashInfo = U.parseHash();
+        G.currentHashInfo = U.getUrlInfo(G.currentHash);
       
       return G.currentHashInfo;
     },
@@ -770,13 +830,34 @@ define('router', [
       this.updateHashInfo();
       var self = this,
           views,
+          missingTypes,
+          prereqs,
           installationState,
           isWriteRoute,
-          hashInfo = G.currentHashInfo;
+          hashInfo = G.currentHashInfo,
+          type = hashInfo.type;
       
       if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
         return false;
+      }
+      
+      // the user is attempting to install the app, or at least pretending well
+      isWriteRoute = this.isWriteRoute(route);
+      if (!type || !type.endsWith(G.commonTypes.AppInstall)) {
+        if (G.currentApp.forceInstall || isWriteRoute) {
+          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
+          if (!installationState.allowed) {
+            if (G.currentUser.guest) {
+              this._requestLogin();
+              return false;
+            }
+  
+            Voc.getModels(hashInfo.type);
+            AppAuth.requestInstall(G.currentApp);
+            return false;
+          }
+        }
       }
 
       switch (route) {
@@ -803,56 +884,63 @@ define('router', [
         break;
       }
       
+      prereqs = [];
       if (views) {
         var missing = _.filter(views, function(view) {
           return !Modules[view];
         });
         
         if (missing.length) {
-          this.loadViews(missing, this[route], args);
-          return false;
+//          this.loadViews(missing, this[route], args);
+//          return false;
+          var unloadedMods = _.map(missing, function(v) {return 'views/' + v}),
+              viewsPromise = U.require(unloadedMods, function() {
+                for (var i = 0, l = arguments.length; i < l; i++) {              
+                  Modules[missing[i]] = arguments[i];
+                }
+              });
+          
+          prereqs.push(viewsPromise);
         }
       }
  
-      var types = [],
-          sub = hashInfo;
-      
+      missingTypes = [];    
+      var sub = hashInfo;
       while (sub) {
-        if (sub.type)
-          types.push(sub.type);
+        if (sub.type) {
+          sub.type = G.classMap[sub.type] || sub.type;
+          if (!U.getModel(sub.type) && missingTypes.indexOf(sub.type) == -1)
+            missingTypes.push(sub.type);
+        }
         
         sub = sub.sub;
       }
       
-      types = _.uniq(types);
-      if (!this.areModelsLoaded(types, this[route], args))
+      if (missingTypes.length)
+        prereqs.push(Voc.getModels(missingTypes));
+      
+      if (!_.all(prereqs, function(p) { return p.state() == 'resolved' })) {
+        $.whenAll.apply($, prereqs).then(function() {
+          self[route].apply(self, args);
+        });
+        
         return false;
-      
-      // the user is attempting to install the app, or at least pretending well
-      isWriteRoute = this.isWriteRoute();
-      if (isWriteRoute && hashInfo.type.endsWith(G.commonTypes.AppInstall))
-        return true;
-      
-      if (G.currentApp.forceInstall || isWriteRoute) {
-        installationState = AppAuth.getAppInstallationState(hashInfo.type);
-        if (!installationState.allowed) {
-          Voc.getModels(hashInfo.type).then(function() {
-            AppAuth.requestInstall(G.currentApp);
-          }, function() {
-            debugger;
-          });
-          
-          return false;
-        }
       }
       
       return true;
     },
     
     login: function(path) {
-      var self = this;
+      if (!this.routePrereqsFulfilled('login', arguments))
+        return;
+      
+      var self = this,
+          hashInfo = U.getCurrentUrlInfo(),
+          params = hashInfo.params;
+      
       this._requestLogin({
-        returnUri: U.getHashParams().$returnUri || G.appUrl,
+        returnUri: params && params.$returnUri || G.appUrl,
+        returnUriHash: params && params.$returnUriHash,
         onDismiss: function() {
           self.goHome();
         }
@@ -892,13 +980,12 @@ define('router', [
           viewPageCl = Modules.ViewPage;
       }
 
-      if (uri == 'profile') {
+      if (hashInfo.special == 'profile') {
         if (G.currentUser.guest) {
           this._requestLogin();
           return;
         }
         else {
-          uri = G.currentUser._uri;
           this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: false, replace: true});
           hashInfo = this.updateHashInfo();
         }
@@ -958,7 +1045,10 @@ define('router', [
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        res.fetch({forceFetch: forceFetch});
+        G.whenNotRendering(function() {
+          res.fetch({forceFetch: forceFetch});
+        });
+        
         if (wasTemp && !isTemp)
           this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
         
@@ -1090,33 +1180,33 @@ define('router', [
 //      
 //      console.log("painting map");
 //    },
-
-    isModelLoaded: function(type, method, args) {
-      return this.areModelsLoaded([type], method, args);
-    },
-
-    areModelsLoaded: function(types, method, args) {
-      var self = this,
-          missing = _.filter(types, U.negate(U.getModel));
-      
-      if (!missing.length)
-        return true;
-      
-      var fetchModels = Voc.getModels(missing, {sync: true});
-      method = typeof method == 'function' ? method : self[method];
-//      Voc.loadStoredModels({models: [type]});
-      if (fetchModels.state() === 'resolved')
-        return true;
-      
-      fetchModels.done(function() {
-        method.apply(self, args);
-      }).fail(function() {
-//          debugger;
-        Errors.getBackboneErrorHandler().apply(this, arguments);
-      });
-        
-      return false;
-    },
+//
+//    isModelLoaded: function(type, method, args) {
+//      return this.areModelsLoaded([type], method, args);
+//    },
+//
+//    areModelsLoaded: function(types, method, args) {
+//      var self = this,
+//          missing = _.filter(types, U.negate(U.getModel));
+//      
+//      if (!missing.length)
+//        return true;
+//      
+//      var fetchModels = Voc.getModels(missing, {sync: true});
+//      method = typeof method == 'function' ? method : self[method];
+////      Voc.loadStoredModels({models: [type]});
+//      if (fetchModels.state() === 'resolved')
+//        return true;
+//      
+//      fetchModels.done(function() {
+//        method.apply(self, args);
+//      }).fail(function() {
+////          debugger;
+//        Errors.getBackboneErrorHandler().apply(this, arguments);
+//      });
+//        
+//      return false;
+//    },
 
     checkErr: function() {
 //      var q = U.getQueryParams();
@@ -1171,6 +1261,198 @@ define('router', [
         Events.trigger('headerMessage', data);
       }
     },
+    
+    $changePage: function(toPage, options) {
+      G.animationQueue.queueTask($m.changePage, $m, U.asArray(arguments));
+    },
+
+//    $changePage1: function(toPage, options) {
+////      G.animationQueue.queueTask($m.changePage, $m, U.asArray(arguments));
+//      G.animationQueue.queueTask(function() {
+//        var path = $m.path,
+//            urlHistory = $m.navigate.history,
+//            documentUrl = path.documentUrl,
+//            fromPage = $m.activePage,
+//            mpc = $m.pageContainer,
+//            settings = _.extend({
+//              pageContainer: mpc,
+//              fromPage: fromPage
+//            }, $m.changePage.defaults, options),
+//            pbcEvent = new $.Event( "pagebeforechange" ),
+//            triggerData = { 
+//              toPage: toPage, 
+//              options: settings, 
+//              absUrl: toPage.data('absUrl')
+//            };
+//
+//        mpc.trigger(pbcEvent, triggerData);
+//        if (pbcEvent.isDefaultPrevented())
+//          return;
+//
+//        if (toPage[0] === $m.firstPage[0] && !settings.dataUrl)
+//          settings.dataUrl = documentUrl.hrefNoHash;
+//        
+//        var url = ( settings.dataUrl && path.convertUrlToDataUrl( settings.dataUrl ) ) || toPage.jqmData( "url" ),
+//            // The pageUrl var is usually the same as url, except when url is obscured as a dialog url. pageUrl always contains the file path
+//            pageUrl = url,
+//            fileUrl = path.getFilePath( url ),
+//            active = urlHistory.getActive(),
+//            activeIsInitialPage = urlHistory.activeIndex === 0,
+//            historyDir = 0,
+//            pageTitle = document.title;
+//
+//
+//          // By default, we prevent changePage requests when the fromPage and toPage
+//          // are the same element, but folks that generate content manually/dynamically
+//          // and reuse pages want to be able to transition to the same page. To allow
+//          // this, they will need to change the default value of allowSamePageTransition
+//          // to true, *OR*, pass it in as an option when they manually call changePage().
+//          // It should be noted that our default transition animations assume that the
+//          // formPage and toPage are different elements, so they may behave unexpectedly.
+//          // It is up to the developer that turns on the allowSamePageTransitiona option
+//          // to either turn off transition animations, or make sure that an appropriate
+//          // animation transition is used.
+//          if ( fromPage && fromPage[0] === toPage[0] && !settings.allowSamePageTransition ) {
+//            isPageTransitioning = false;
+//            mpc.trigger( "pagechange", triggerData );
+//
+//            // Even if there is no page change to be done, we should keep the urlHistory in sync with the hash changes
+//            if ( settings.fromHashChange ) {
+//              urlHistory.direct({ url: url });
+//            }
+//
+//            return;
+//          }
+//
+//          // We need to make sure the page we are given has already been enhanced.
+//          toPage.page();
+//
+//          // If the changePage request was sent from a hashChange event, check to see if the
+//          // page is already within the urlHistory stack. If so, we'll assume the user hit
+//          // the forward/back button and will try to match the transition accordingly.
+//          if ( settings.fromHashChange ) {
+//            historyDir = options.direction === "back" ? -1 : 1;
+//          }
+//
+//          // Kill the keyboard.
+//          // XXX_jblas: We need to stop crawling the entire document to kill focus. Instead,
+//          //            we should be tracking focus with a delegate() handler so we already have
+//          //            the element in hand at this point.
+//          // Wrap this in a try/catch block since IE9 throw "Unspecified error" if document.activeElement
+//          // is undefined when we are in an IFrame.
+//          try {
+//            if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
+//              $( document.activeElement ).blur();
+//            } else {
+//              $( "input:focus, textarea:focus, select:focus" ).blur();
+//            }
+//          } catch( e ) {}
+//
+//          // if title element wasn't found, try the page div data attr too
+//          // If this is a deep-link or a reload ( active === undefined ) then just use pageTitle
+//          var newPageTitle = ( !active )? pageTitle : toPage.jqmData( "title" ) || toPage.children( ":jqmData(role='header')" ).find( ".ui-title" ).text();
+//          if ( !!newPageTitle && pageTitle === document.title ) {
+//            pageTitle = newPageTitle;
+//          }
+//          
+//          if ( !toPage.jqmData( "title" ) ) {
+//            toPage.jqmData( "title", pageTitle );
+//          }
+//
+//          // Set the location hash.
+//          if ( url && !settings.fromHashChange ) {
+//            debugger;
+//            var params;
+//
+//            // rebuilding the hash here since we loose it earlier on
+//            // TODO preserve the originally passed in path
+//            if( !path.isPath( url ) && url.indexOf( "#" ) < 0 ) {
+//              url = "#" + url;
+//            }
+//
+//            // TODO the property names here are just silly
+//            params = {
+//              transition: settings.transition,
+//              title: pageTitle,
+//              pageUrl: pageUrl,
+//              role: settings.role
+//            };
+//
+//            if ( settings.changeHash !== false && $.mobile.hashListeningEnabled ) {
+//              $.mobile.navigate( url, params, true);
+//            } else if ( toPage[ 0 ] !== $.mobile.firstPage[ 0 ] ) {
+//              $.mobile.navigate.history.add( url, params );
+//            }
+//          }
+//
+//          //set page title
+//          document.title = pageTitle;
+//
+//          //set "toPage" as activePage
+//          $m.activePage = toPage;
+//
+//          // If we're navigating back in the URL history, set reverse accordingly.
+//          settings.reverse = settings.reverse || historyDir < 0;
+//
+//          if ( fromPage ) {
+//            //trigger before show/hide events
+//            fromPage.data( "mobile-page" )._trigger( "beforehide", null, { nextPage: toPage } );
+//          }
+//
+//          toPage.data( "mobile-page" )._trigger( "beforeshow", null, { prevPage: fromPage || $( "" ) } );
+//
+//          //clear page loader
+//          $m.hidePageLoadingMsg();
+//          
+//        if (fromPage) {
+//          var direction = settings.reverse ? 'right' : 'left',
+//              toPreClass = " ui-page-pre-in",
+//              toScroll = $m.urlHistory.getActive().lastScroll || $m.defaultHomeScroll;
+//              
+//          toPage.css( "z-index", -10 ).addClass($m.activePageClass + toPreClass);
+//          window.transition.css(fromPage[0], toPage[0], direction, 'ease-in-out', 600).done(function() {
+//
+//            // Send focus to page as it is now display: block
+//            $m.focusPage( toPage );
+//
+//            // Set to page height
+//            toPage.height($m.getScreenHeight() + toScroll);
+//
+//            window.scrollTo(0, toScroll);
+//
+//            // Restores visibility of the new page: added together with $to.css( "z-index", -10 );
+//            toPage.css( "z-index", "" );
+//
+//            toPage
+//              .removeClass( toPreClass )
+//              .addClass( name + " in" + reverseClass );
+//
+//            if ( none ) {
+//              doneIn();
+//            }
+//
+//            //trigger show/hide events
+//            if ( fromPage ) {
+//              fromPage.data( "mobile-page" )._trigger( "hide", null, { nextPage: toPage } );
+//            }
+//
+//            //trigger pageshow, define prevPage as either fromPage or empty jQuery obj
+//            toPage.data( "mobile-page" )._trigger( "show", null, { prevPage: fromPage || $( "" ) } );
+//                        
+////            removeActiveLinkClass();
+//
+//            //if there's a duplicateCachedPage, remove it from the DOM now that it's hidden
+//            if ( settings.duplicateCachedPage ) {
+//              settings.duplicateCachedPage.remove();
+//            }
+//
+////            releasePageTransitionLock();
+//            mpc.trigger( "pagechange", triggerData);
+//          });
+//        }
+//      }, this);
+//    },
+    
     changePage: function(view) {
       try {
         this.changePage1(view);
@@ -1224,27 +1506,32 @@ define('router', [
 //        view.trigger('active', true);
         activated = true;
         view.render();
-        view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+        view.onload(function() {          
+          view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+        });
       }
 
       if (this.firstPage)
         transition = 'none';
       
-      this.checkBackClick();
       // HACK //
 //      isReverse = false;
       // END HACK //
 
       // back button: remove highlighting after active page was changed
-      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
       
 //      if (!activated)
 //        view.trigger('active', true);
       
-      // perform transition        
-      $m.changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
-      this.nextTransition = null;
-      Events.trigger('pageChange', prev, view);
+      this.checkBackClick();
+      // perform transition
+      view.onload(function() {
+        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+        this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+        this.nextTransition = null;
+        Events.trigger('pageChange', prev, view);
+      }.bind(this));
+      
       return view;
     },
     
@@ -1279,14 +1566,9 @@ define('router', [
       this.urlsStack.push(here);
     },
     
-    checkTour: function() {
-      if (G.tourGuideEnabled) {
-        G.whenNotRendering(function() {          
-          U.require('tourGuide').done(function(TourGuide) {
-            TourGuide.getTour();
-          });
-        });
-      }
+    loadTourGuide: function() {
+      if (G.tourGuideEnabled)
+        U.require('tourGuide');
     }
 //    ,
 //    
@@ -1391,9 +1673,9 @@ define('router', [
     isResourceRoute: function(route) {
       return !this.isListRoute(route);
     },
-    isProxyRoute: function(route) {
-      return _.contains(['templates'/*, 'tour'*/], route);
-    },
+//    isProxyRoute: function(route) {
+//      return _.contains(['templates'/*, 'tour'*/], route);
+//    },
     isWriteRoute: function(route) {
       return _.contains(['make', 'edit'], route);
     }

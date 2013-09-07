@@ -80,8 +80,9 @@ define('views/CameraPopup', [
       this.video && this.video.pause();
       this.audio && this.audio.pause();
       this.stream && this.stream.stop(); // turn off webcam
-      this.$el && this.$el.empty() && this.$el.remove();
-      this.remove();
+      BasicView.prototype.destroy.call(this);
+//      this.$el && this.$el.empty() && this.$el.remove();
+//      this.remove();
     },
     submit: function(e) {
       Events.stopEvent(e);
