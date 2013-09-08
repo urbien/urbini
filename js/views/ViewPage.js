@@ -42,9 +42,11 @@ define('views/ViewPage', [
         isAbout: isAbout
       }
         
-      this.addChild('header', new Header(_.extend({
+      this.header = new Header(_.extend({
         viewId: this.cid
-      }, commonParams)));
+      }, commonParams));
+      
+      this.addChild(this.header);
 
       if (!isAbout) {
         var viewType, viewDiv;
@@ -67,7 +69,8 @@ define('views/ViewPage', [
       this.ready = this.readyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
-          self.addChild('imageView', new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams)));
+          self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams));
+          self.addChild(self.imageView);
           self.readyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
         });
@@ -85,15 +88,20 @@ define('views/ViewPage', [
       
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
-        this.addChild('cpMain', new ControlPanel(_.extend({isMainGroup: true}, commonParams)));
-        this.addChild('cp', new ControlPanel(_.extend({isMainGroup: false}, commonParams)));
+        this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
+        this.addChild(this.cpMain);
+        this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
+        this.addChild(this.cp);
       }  
       
       this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
-      if (this.isPurchasable) 
-        this.addChild('buyGroup', new ResourceView(_.extend({isBuyGroup: true}, commonParams)));
+      if (this.isPurchasable) { 
+        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
+        this.addChild(this.buyGroup);
+      }
         
-      this.addChild('view', new ResourceView(commonParams));
+      this.resourceView = new ResourceView(commonParams);
+      this.addChild(this.resourceView);
       this.photogridDfd = $.Deferred();
       this.photogridPromise = this.photogridDfd.promise();
       var commonTypes = G.commonTypes;
@@ -150,7 +158,8 @@ define('views/ViewPage', [
               self.friends.fetch({
                 success: function() {
                   if (self.friends.size()) {
-                    self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
+                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
+                    self.addChild(self.photogrid);
                     self.photogridDfd.resolve();
     //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
     //                header.insertBefore(self.photogrid.el);
@@ -191,7 +200,8 @@ define('views/ViewPage', [
 //              self.friends.fetch({
 //                success: function() {
 //                  if (self.friends.size()) {
-//                    self.addChild('photogrid', new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true}));
+//                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
+//                    self.addChild(self.photogrid);
 //                    self.photogridDfd.resolve();
 //    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
 //    //                header.insertBefore(self.photogrid.el);
@@ -263,7 +273,7 @@ define('views/ViewPage', [
 
       var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
       var views = {};
-      views[viewTag] = this.view;
+      views[viewTag] = this.resourceView;
       if (this.cp)
         views['ul#cpView'] = this.cp;
       if (this.cpMain)

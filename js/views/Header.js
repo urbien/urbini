@@ -94,7 +94,7 @@ define('views/Header', [
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
-          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(btn + 'BtnView', new model(btnOptions));
+          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(new model(btnOptions));
         }
         
         this.readyDfd.resolve();

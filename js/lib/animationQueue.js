@@ -168,8 +168,9 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
     },
 
     queueTask: function(fn, scope, args) {
-        this.taskQueue.push(arguments);
-        this.processTaskQueue();
+      fn.apply(scope, args || []);
+//        this.taskQueue.push(arguments);
+//        this.processTaskQueue();
     },
 
     dequeueTask: function(fn, scope, args) {

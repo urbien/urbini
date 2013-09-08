@@ -44,7 +44,7 @@ define('views/MasonryListView', [
     },
     
     renderItem: function(res, info) {
-      var liView = this.addChild('masonryItem' + G.nextId(), new ResourceMasonryItemView({
+      var liView = this.addChild(new ResourceMasonryItemView({
         className: 'nab nabBoard',
         parentView: this,
         resource: res

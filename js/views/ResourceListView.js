@@ -96,12 +96,12 @@ define('views/ResourceListView', [
       else {
         var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
         if (this.imageProperty != null)
-          liView = new ResourceListItemView(_.extend({ imageProperty: this.imageProperty, parentView: this, swatch: swatch}, commonParams));
+          liView = new ResourceListItemView(_.extend({ imageProperty: this.imageProperty, parentView: this, swatch: swatch}, commonParams))
         else
           liView = new ResourceListItemView(_.extend({swatch: swatch}, commonParams));
       }
       
-      this.addChild(liView.cid, liView);
+      this.addChild(liView);
       liView.render({force: true});
       return liView;
     },

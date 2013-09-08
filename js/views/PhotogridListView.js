@@ -27,7 +27,7 @@ define('views/PhotogridListView', [
     },
     
     renderItem: function(res, info) {
-      var liView = this.addChild('photogrid item' + G.nextId(), new PhotogridView({
+      var liView = this.addChild(new PhotogridView({
         tagName: 'div', 
         linkToIntersection: true,
         resource: res,

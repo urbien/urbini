@@ -106,8 +106,8 @@ define('views/BasicView', [
         return this;
       }.bind(this);
 
-      this._activeDfd = $.Deferred();
-      this._inactiveDfd = $.Deferred();
+//      this._activeDfd = $.Deferred();
+//      this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
         _.each(this.children, function(child) {
@@ -117,26 +117,32 @@ define('views/BasicView', [
         if (active) {
           this._updateHashInfo();
           this._processQueue();
-          this._activeDfd.resolve();
-          this._inactiveDfd = $.Deferred();
+//          this._activeDfd.resolve();
+//          this._inactiveDfd = $.Deferred();
         }
-        else {
-          this._inactiveDfd.resolve();
-          this._activeDfd = $.Deferred();
-        }
+//        else {
+//          this._inactiveDfd.resolve();
+//          this._activeDfd = $.Deferred();
+//        }
       }.bind(this));
       
       var self = this;
       _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
-          var event = listener.slice(2);
+          var event = listener.slice(2),
+              _event = '_' + event;
+          
           window.addEventListener(event, function() {
-            self.onActive(function() {
-              self['_' + event](event);
-            });
+            if (self.isActive())
+              self[_event](event);
+            else {
+              self.once('active', function() {
+                self[_event](event);
+              });
+            }
           }, false);
           
-          self['_' + event] = _.debounce(function(e) {
+          self[_event] = _.debounce(function(e) {
             G.log(self.TAG, 'events', e);
             self.$el.trigger(e);
           }, 100);          
@@ -301,22 +307,30 @@ define('views/BasicView', [
       return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
     },
     
-    onInactive: function(callback) {
-      this._inactiveDfd.done(callback);
-    },
-
-    onActive: function(callback) {
-      this._activeDfd.done(callback);
-    },
+//    onInactive: function(callback) {
+//      this._inactiveDfd.done(callback);
+//    },
+//
+//    onActive: function(callback) {
+//      this._activeDfd.done(callback);
+//    },
     
     addChild: function(view) {
-      this.children = this.children || {};
-      this[name] = this.children[view.cid] = view;
+      var self = this;
+      if (!this.children)
+        this.children = {};
+      
+      this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-      view.on('destroyed', function() {        
+      view.once('destroyed', function(view) {
         if (self.children)
           delete self.children[view.cid];
+        
+        for (var prop in self) {
+          if (self[prop] === view)
+            self[prop] = null;
+        }
       });
       
       return view;
@@ -327,12 +341,12 @@ define('views/BasicView', [
     },
 
     empty: function() {
-      U.wipe(this.children);
+//      U.wipe(this.children);
       this.$el.empty();
     },
 
     html: function(html) {
-      U.wipe(this.children);
+//      U.wipe(this.children);
       this.$el.html(html);
     },
     
@@ -399,7 +413,7 @@ define('views/BasicView', [
 //      }
 //      
 //      return false;
-      return this.active; // || (this.pageView && this.pageView.isActive());
+      return this.active || (this.pageView && this.pageView.isActive());
     },
   
     isChildOf: function(view) {

@@ -54,7 +54,8 @@ define('views/ListPage', [
         this.mapReady = this.mapReadyDfd.promise();
         U.require('views/MapView', function(MV) {
           MapView = MV;
-          this.addChild('mapView', new MapView(commonParams));
+          this.mapView = new MapView(commonParams);
+          this.addChild(this.mapView);
           this.mapReadyDfd.resolve();
         }.bind(this));
       }      
@@ -127,10 +128,12 @@ define('views/ListPage', [
         login: G.currentUser.guest
       };
 
-      this.addChild('header', new Header(_.extend({
+      this.header = new Header(_.extend({
         buttons: this.headerButtons,
         viewId: this.cid
-      }, commonParams)));
+      }, commonParams));
+      
+      this.addChild(this.header);
       
       
       var models = rl.models;
@@ -158,7 +161,8 @@ define('views/ListPage', [
       
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.addChild('listView', new listViewCl(_.extend({mode: self.mode}, commonParams, self.options)));
+        self.listView = new listViewCl(_.extend({mode: self.mode}, commonParams, self.options));
+        self.addChild(self.listView);
         readyDfd.resolve();
       });
       

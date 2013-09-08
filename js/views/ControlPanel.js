@@ -178,7 +178,9 @@ define('views/ControlPanel', [
       }
       
       this.render();
-      G.animationQueue.queueTask(this._refreshListview, this);
+      this._queueTask(function() {
+        G.animationQueue.queueTask(this._refreshListview, this);
+      }, this);
     },
     
     _refreshListview: function() {      

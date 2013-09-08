@@ -664,14 +664,14 @@
   <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
-    {{ if (isJst) { }}
+    {{ if (obj.isJst) { }}
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
-    {{ if (!isJst  &&  obj._hasSubmittedBy) { }}
+    {{ if (!obj.isJst  &&  obj._hasSubmittedBy) { }}
       style="min-height:59px;"
     {{ } }}
     <!--
-    {{ if (!isJst  &&  !obj._hasSubmittedBy) { }}
+    {{ if (!obj.isJst  &&  !obj._hasSubmittedBy) { }}
       style="min-height:39px;"
     {{ } }}
     -->

@@ -35,10 +35,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (params && params.$returnUri)
       Events.trigger('navigate', params.$returnUri, {replace: true});
     else {
-      Events.trigger('back', function() {
-        Events.trigger('navigate', function ifNoHistory() {
-          U.makeMobileUrl('view', res.getUri());
-        });
+      Events.trigger('back', function ifNoHistory() {
+        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
       });
       
       Events.trigger('messageBar', 'info', {
@@ -70,10 +68,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       );
     }
     else
-      Events.trigger('back',  function() {
-        Events.trigger('navigate', function ifNoHistory() {
-          U.makeMobileUrl('view', res.getUri());
-        });
+      Events.trigger('back',  function ifNoHistory() {
+        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
       });
   };
 
@@ -237,10 +233,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Redirecter.prototype._default = function(res, options) {
-    Events.trigger('back', function() {
-      Events.trigger('navigate', function ifNoHistory() {
-        U.makeMobileUrl('view', res.getUri());
-      });
+    Events.trigger('back', function ifNoHistory() {
+      Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
     });
     
     Events.trigger('messageBar', 'info', {

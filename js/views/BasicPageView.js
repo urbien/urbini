@@ -442,7 +442,7 @@ define('views/BasicPageView', [
           bar.$el.animate({opacity: 1}, 500);
         });
         
-        Events.once(destroyEventId, function() {
+        Events.once('messageBar.{0}.clear.{1}'.format(type, data.id), function() {
           if (id == data.id)
             bar.destroy();
         });        
@@ -469,7 +469,7 @@ define('views/BasicPageView', [
         G.animationQueue.queueTask(function() {          
           self.$el.prepend(header.$el);
         });
-
+        
         Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },

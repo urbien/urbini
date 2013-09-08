@@ -86,7 +86,8 @@ define('views/ChatPage', [
       if (pageTitle)
         headerOptions.pageTitle = pageTitle;
 
-      this.addChild('header', new Header(headerOptions));
+      this.header = new Header(headerOptions);
+      this.addChild(this.header);
 
 /*
   
@@ -97,7 +98,8 @@ define('views/ChatPage', [
           self = this;
           
       headerPromise.done(function() {
-        self.addChild('header', new Header(headerOptions));
+        self.header = new Header(headerOptions);
+        self.addChild(self.header);
       });
       
       if (G.currentUser.guest)
@@ -141,7 +143,8 @@ define('views/ChatPage', [
       }
       
       if (G.currentUser.guest) 
-        this.addChild('header', new Header(headerOptions));
+        this.header = new Header(headerOptions);
+        this.addChild(this.header);
       else {
         var self = this;
         var dfd = $.Deferred(function(dfd) {
@@ -152,7 +155,8 @@ define('views/ChatPage', [
             var meta = Urbien1.properties;
             var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
             if (!mainGroup  ||  !mainGroup.length) {
-              self.addChild('header', new Header(headerOptions));
+              self.header = new Header(headerOptions);
+              self.addChild(self.header);
               dfd.resolve();
             }
             else {
@@ -166,7 +170,8 @@ define('views/ChatPage', [
                   mainBacklinks.push(p);
               }  
               if (!mainBacklinks.length) { 
-                self.addChild('header', new Header(headerOptions));
+                self.header = new Header(headerOptions);
+                self.addChild(self.header);
                 dfd.resolve();
               }
               else {
@@ -175,7 +180,8 @@ define('views/ChatPage', [
                 self.user.fetch({sync: true, forceFetch: false, 
                   success: function() {
                     ///////////
-                    self.addChild('header', new Header(headerOptions));
+                    self.header = new Header(headerOptions);
+                    self.addChild(self.header);
                     userDfd.resolve();
                   },
                   fail: function() {
@@ -466,7 +472,7 @@ define('views/ChatPage', [
         });
         
         Events.once('pageChange', function() {
-          Events.trigger('messageBar.info.clear', headerId);
+          Events.trigger('messageBar.info.clear.' + headerId);
         });
       }
 
@@ -599,15 +605,16 @@ define('views/ChatPage', [
       U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
         var $bl = self.$("div#inChatBacklinks");
         $bl.drags();
-        self.addChild('backlinks', new ControlPanel({
+        self.backlinks = new ControlPanel({
           isMainGroup: true,
           dontStyle: true,
           model: self.user ? self.user: self.resource,
           parentView: self
 //          ,
 //          el: $bl[0]
-        }));
+        });
         
+        self.addChild(self.backlinks);
         self.assign('div#inChatBacklinks', self.backlinks);
         $bl.find('[data-role="button"]').button();
 //        self.backlinks.render();
@@ -1481,8 +1488,9 @@ define('views/ChatPage', [
         this.localStream && this.localStream.stop();
       }
       
-      if (!this.isActive())
-        this.onActive(this.startChat.bind(this));
+      if (!this.isActive()) {
+        this.once('active', this.startChat.bind(this));
+      }
     },
   
     takeSnapshot: function() {

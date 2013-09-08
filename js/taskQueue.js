@@ -56,7 +56,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
     
-    window.taskQueue = this;
+//    window.taskQueue = this;
     
     var tq = this,
         queue = this.queue = new PriorityQueue(),

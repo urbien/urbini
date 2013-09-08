@@ -47,23 +47,27 @@ define('views/EditPage', [
         login: G.currentUser.guest
       };
     
-      this.addChild('header', new Header({
+      this.header = new Header({
         model: res, 
-//        pageTitle: this.pageTitle || res.get('davDisplayName'), 
+  //      pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
         parentView: this,
         isEdit: true
-      }));
+      });
+      
+      this.addChild(this.header);
       
       var reqParams = U.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
       this.isVideo = res.isA('VideoResource');
       if (!editCols && !this.isVideo) {
-        this.addChild('imageView', new ResourceImageView({model: res, parentView: this}));
+        this.imageView = new ResourceImageView({model: res, parentView: this});
+        this.addChild(this.imageView);
       }
       
-      this.addChild('editView', new EditView(_.extend({model: res, parentView: this}, this.editOptions)));
+      this.editView = new EditView(_.extend({model: res, parentView: this}, this.editOptions));
+      this.addChild(this.editView);
       if (this.editParams)
         this.editView.set(this.editParams);
     },
@@ -144,7 +148,8 @@ define('views/EditPage', [
 //              if (inlineList.size() && !res._settingInlineList) && !currentlyInlined[name]) {
 //                res.setInlineList(name, inlineList);
 //              }
-            self.addChild('commentsView', new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]}));
+            self.commentsView = new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]});
+            self.addChild(self.commentsView);
             self.assign('#comments', self.commentsView);
               
 //              _.each(['updated', 'added', 'reset'], function(event) {

@@ -19,11 +19,13 @@ define('views/StaticPage', [
           login: G.currentUser.guest
         };
         
-        this.addChild('header', new Header({
+        this.header = new Header({
           viewId: this.cid,
           parentView: this,
           model: this.model
-        }));
+        });
+        
+        this.addChild(this.header);
       }
 
       this.makeTemplate(options.template || U.getCurrentUrlInfo().params.template, 'template');
