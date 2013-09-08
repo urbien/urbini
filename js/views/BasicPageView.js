@@ -425,7 +425,7 @@ define('views/BasicPageView', [
 //      cached && cached.destroy();
       
       U.require('views/MessageBar').done(function(MessageBar) {
-        var bar = self.addChild(name, new MessageBar({
+        var bar = self.addChild(new MessageBar({
           model: self.model,
           type: type
         }));
@@ -435,11 +435,14 @@ define('views/BasicPageView', [
         });
         
         bar.render(data);
-        bar.$el.css({opacity: 0});
-        self.$el.prepend(bar.$el);
-        self.trigger('messageBarsAdded', bar);
-        bar.$el.animate({opacity: 1}, 500);
-        Events.on('messageBar.' + type + '.clear', function(id) {
+        G.animationQueue.queueTask(function() {          
+          bar.$el.css({opacity: 0});
+          self.$el.prepend(bar.$el);
+          self.trigger('messageBarsAdded', bar);
+          bar.$el.animate({opacity: 1}, 500);
+        });
+        
+        Events.once(destroyEventId, function() {
           if (id == data.id)
             bar.destroy();
         });        
@@ -457,17 +460,17 @@ define('views/BasicPageView', [
       cached && cached.destroy();
      
       U.require('views/CallInProgressHeader').done(function(CIPHeader) {        
-        var header = self.addChild(name, new CIPHeader({
+        var header = self.addChild(new CIPHeader({
           model: self.model,
           call: call
-        })).render();
+        }));
         
         header.render();
-        self.$el.prepend(header.$el);
-
-        Events.on('endRTCCall', function() {
-          header.destroy();
+        G.animationQueue.queueTask(function() {          
+          self.$el.prepend(header.$el);
         });
+
+        Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },
 

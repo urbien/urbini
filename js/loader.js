@@ -3,7 +3,6 @@ var __started = new Date();
 
 $.extend({
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
-  _whenAllCounter: 0,
   whenAll: function() {
     var args = [].slice.call(arguments),
         len = args.length;
@@ -42,41 +41,36 @@ $.extend({
       });
     }).promise();
   }
+//,
+//  
+//  LazyDeferred: (function() {
+//    var dfd = $.Deferred();
+//    
+//    function LazyDeferred(init) {
+//      if (!(this instanceof LazyDeferred))
+//        return new LazyDeferred(init);
+//      
+//      this._started = false;
+//      this.start = function() {
+//        this._started = true;
+//        init.call(dfd, dfd);
+//        return this.promise();
+//      };
+//      
+//      this.isRunning = function() {
+//        return this._started;
+//      };
+//    };
+//      
+//    for (var fn in dfd) {
+//      if (typeof dfd[fn] == 'function') {
+//        LazyDeferred.prototype[fn] = dfd[fn].bind(dfd);
+//      }
+//    }
+//    
+//    return LazyDeferred;
+//  })()
 });
-
-//// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
-//// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
-//$.extend({
-//  whenAll: function() {
-//    var dfd = $.Deferred(),
-//        len = arguments.length,
-//        counter = 0,
-//        state = "resolved",
-//        resolveOrReject = function() {
-//            if(this.state() === "rejected"){
-//                state = "rejected";
-//            }
-//            counter++;
-//  
-//            if(counter === len) {
-//                dfd[state === "rejected"? "reject": "resolve"]();   
-//            }
-//  
-//        };
-//  
-//  
-//     $.each(arguments, function(idx, item) {
-//         item.always(resolveOrReject); 
-//     });
-//  
-//    return dfd.promise();    
-//  }
-//});
-
-//'use strict';
-
-// Use of jQuery.browser is frowned upon.
-// More details: http://docs.jquery.com/Utilities/jQuery.browser
 
 define('globals', function() {
   /**
@@ -701,7 +695,7 @@ define('globals', function() {
         return require(essential);
       });
     }).then(function(jqmConfig, Events, AnimationQueue, App) {
-      G.animationQueue = AnimationQueue;
+      G.animationQueue = new AnimationQueue();
       Events.on('appStart', APP_START_DFD.resolve);
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");

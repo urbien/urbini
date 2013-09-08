@@ -52,9 +52,7 @@ define('views/BasicView', [
           this.rendered = true;
       }.bind(this));
       
-//      this._refreshQueue = [];
-//      this._renderQueue = [];
-      
+      this._taskQueue = [];      
       this._templates = [];
       this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
@@ -85,17 +83,10 @@ define('views/BasicView', [
         if (!force && !this.rendered)
           return this;
         
-        if (!force && !this.isPanel && !this.isActive()) {
-          // to avoid rendering views 10 times in the background. Render when it's about to be visible
-           this.__refreshArgs = arguments; 
-           return false;
-         }
-        
+//        var delay = !force && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
         G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
-        if (_.size(this.children))
-          refresh.apply(this, arguments);
-        else
-          G.animationQueue.queueTask(refresh, this, arguments);
+        this._queueTask(refresh, this, arguments);
+        return this;
       };
       
       var render = this.render;
@@ -109,55 +100,23 @@ define('views/BasicView', [
       }
 
       this.render = function(rOptions) {
-        if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
-         // to avoid rendering views 10 times in the background. Render when it's about to be visible
-          this.__renderArgs = arguments; 
-          return false;
-        }
-        else {
-//          if (!this.TAG)
-//            debugger;
-          
-          G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
-          
-          if (_.size(this.children))
-            doRender.apply(this, arguments);
-          else
-            G.animationQueue.queueTask(doRender, this, U.asArray(arguments));
-          
-          return this;
-        }
+//        var delay = (!rOptions || !rOptions.force) && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
+        G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
+        this._queueTask(doRender, this, arguments); //, !delay);
+        return this;
       }.bind(this);
 
       this._activeDfd = $.Deferred();
       this._inactiveDfd = $.Deferred();
       this.on('active', function(active) {
         this.active = active; // keep this
-//        _.each(this.children, function(child) {
-//          child.trigger('active', active);
-//        }); // keep this
-        
-        if (active)
-          this._updateHashInfo();
-        
-        if (active && (this.__renderArgs || this.__refreshArgs)) {
-          var method, args;
-          if (this.rendered) {
-            method = refresh;
-            args = this.__refreshArgs;
-            this.__refreshArgs = null;
-          }
-          else {
-            method = render;
-            args = this.__renderArgs;
-            this.__renderArgs = null;
-          }
-          
-          method.apply(this, args);
-          this.finish();
-        }
+        _.each(this.children, function(child) {
+          child.trigger('active', active);
+        }); // keep this
         
         if (active) {
+          this._updateHashInfo();
+          this._processQueue();
           this._activeDfd.resolve();
           this._inactiveDfd = $.Deferred();
         }
@@ -166,7 +125,6 @@ define('views/BasicView', [
           this._activeDfd = $.Deferred();
         }
       }.bind(this));
-////////// comment end
       
       var self = this;
       _.each(['onorientationchange', 'onresize'], function(listener) {
@@ -216,13 +174,7 @@ define('views/BasicView', [
     
     refresh: function() {
       // override this
-//      this.render();
-//      this.restyle();
     },
-    
-//    forceRerender: function() {
-//      this.render(this._renderArguments);
-//    },
     
     refreshOrRender: function() {
       if (this.rendered)
@@ -263,31 +215,46 @@ define('views/BasicView', [
       this._loadingDfd.resolve();
     },
     
-//    _queueRefresh: function(args) {
-//      this._refreshQueue.push(args);
-//    },
-//    
-//    _processRefreshQueue: function() {
-//      if (this._refreshPromise != null && this.refreshPromise.state() == 'pending')
-//        return;
-//      
-//      var args = this._refreshQueue.pop();
-//      if (!args)
-//        return;
-//      
-//      this._refreshDeferred = $.Deferred();
-//      this._refreshPromise = this._refreshDeferred.promise();
-//      this._refreshPromise.done(this._processRefreshQueue.bind(self));      
-//    },
-//    
-//    finishRefresh: function() {
-//      this._refreshDeferred.resolve();
-//    },
-//
-//    finishRender: function() {
-//      this._renderDeferred.resolve();
-//    },
+    _queueTask: function(fn, scope, args) {
+      var self = this,
+          lazyDfd = $.Deferred();
+      
+      this._taskQueue.push(lazyDfd);
+      lazyDfd.start = function() {
+        this._started = true;
+        self.log('info', 'running {0} task'.format(self.TAG));
+        var promise = fn.apply(scope, args || []);
+        if (U.isPromise(promise))
+          promise.then(lazyDfd.resolve, lazyDfd.reject);
+        else
+          lazyDfd.resolve();
+      };
+      
+      lazyDfd.promise().always(function() {
+        self._dequeueTask(lazyDfd);
+        self._processQueue();
+      });
+      
+      this._processQueue();
+    },
 
+    _dequeueTask: function(task) {
+      Array.remove(this._taskQueue, task);
+    },
+
+    _processQueue: function() {
+      if (!this.isActive())
+        return;
+      
+      var next = this._taskQueue[0];
+      if (next) {
+        if (!next._started)
+          next.start();
+        else
+          this.log('info', 'postponing {0} {1} task'.format(this.TAG, this.cid));
+      }
+    },
+    
     getTemplate: function(templateName, type) {
       return Templates.get(templateName, type);
     },
@@ -342,17 +309,16 @@ define('views/BasicView', [
       this._activeDfd.done(callback);
     },
     
-    addChild: function(name, view) {
+    addChild: function(view) {
       this.children = this.children || {};
-      this[name] = this.children[name] = view;
+      this[name] = this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-      
-      Events.once('viewDestroyed:' + view.cid, function(view) {
+      view.on('destroyed', function() {        
         if (self.children)
-          delete self.children[name];
+          delete self.children[view.cid];
       });
-
+      
       return view;
     },
     
@@ -433,7 +399,7 @@ define('views/BasicView', [
 //      }
 //      
 //      return false;
-      return this.active || (this.pageView && this.pageView.isActive());
+      return this.active; // || (this.pageView && this.pageView.isActive());
     },
   
     isChildOf: function(view) {

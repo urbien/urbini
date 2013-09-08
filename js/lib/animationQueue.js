@@ -1,6 +1,6 @@
 define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
   
-  function initQueue() {
+  function Q(starterFn, stopperFn) {
     this.queue = [];
     this.taskQueue = [];
     this.runningQueue = [];
@@ -12,9 +12,11 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
     this.whenIdle = this.whenIdle.bind(this);
     this.processIdleQueueItem = this.processIdleQueueItem.bind(this);
     this.processTaskQueueItem = this.processTaskQueueItem.bind(this);
+    this._go = starterFn || requestAnimationFrame;
+    this._stop = stopperFn || cancelAnimationFrame;
   };
-
-  var Q = {
+  
+  Q.prototype = {
     /**
      *
      * @param fn
@@ -86,15 +88,15 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
     //</debug>
 
     doStart: function() {
-        this.animationFrameId = requestAnimationFrame(this.run);
+        this.animationFrameId = this._go(this.run);
     },
 
     doIterate: function() {
-        this.animationFrameId = requestAnimationFrame(this.run);
+        this.animationFrameId = this._stop(this.run);
     },
 
     doStop: function() {
-        cancelAnimationFrame(this.animationFrameId);
+        this.stopper(this.animationFrameId);
     },
 
     /**
@@ -363,7 +365,6 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
 //    }
   };
   
-  initQueue.call(Q);
   return Q;
   
 //  function() {

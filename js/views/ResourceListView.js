@@ -153,12 +153,13 @@ define('views/ResourceListView', [
         
 //      var renderDfd = this.isPhotogrid ? $.Deferred() : null;
       var info = {
-          isFirstPage: !nextPage,
-          frag: frag,
-          total: num,
-          appended: []
-        },
-        updated = [];
+            isFirstPage: !nextPage,
+            frag: frag,
+            total: num,
+            appended: []
+          },
+          renderDfd = $.Deferred(),
+          updated = [];
       
       this.imageProperty = U.getImageProperty(this.collection);
       this.preRender(info);
@@ -209,6 +210,7 @@ define('views/ResourceListView', [
             this.html(frag);
           
           this.postRender(info);
+          renderDfd.resolve();
         }, this);
       }, this);
 
@@ -248,7 +250,7 @@ define('views/ResourceListView', [
       
 //      if (renderDfd)
 //        renderDfd.resolve();
-      return this;
+      return renderDfd.promise();
       
 //      else {
 //        //Element has not been initiliazed
