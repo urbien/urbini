@@ -45,32 +45,51 @@ define('views/ControlPanel', [
 //      if (prop)
 //        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
 //    },
-    add: function(e) {
-      var t = e.target;
-      while (t && t.tagName != 'A') {
-        t = t.parentNode;
-      }
+    _addNoIntersection: function(target, prop) {
+      var params = {
+        '$backLink': prop.backLink,
+        '-makeId': G.nextId(),
+        '$title': target.dataset.title
+      };
+
+      params[prop.backLink] = this.resource.getUri();
       
-      if (!t)
+      this.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+      this.log('add', 'user wants to add to backlink');
+    },
+    
+    add: function(e) {
+//      var t = e.target;
+//      while (t && t.tagName != 'A') {
+//        t = t.parentNode;
+//      }
+//      
+//      if (!t)
+//        return;
+//      
+//      Events.stopEvent(e);
+      var t = e.currentTarget;
+      if (t.tagName != 'A')
         return;
       
-//      Events.stopEvent(e);
       e.preventDefault();
       if ($(t).parents('.__dragged__').length)
         return;
       
-      var shortName = t.dataset.shortname;
-      this.prop = this.vocModel.properties[shortName];
-      this.setLinkTo = this.prop.setLinkTo;
-      if (this.setLinkTo) {
-        var shortName = this.setLinkTo;
-        this.prop = this.vocModel.properties[shortName];
+      var self = this,       
+          shortName = t.dataset.shortname,
+          prop = this.vocModel.properties[shortName],
+          setLinkTo = prop.setLinkTo;
+
+      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+      if (setLinkTo) {
+        shortName = setLinkTo;
+        prop = this.vocModel.properties[shortName];
       }
+      
       G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
-      var self = this;       
-      Voc.getModels(this.prop.range).done(function() {
-        var prop = self.prop;
+      Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
         function noIntersection(prop) {
           var params = {
@@ -79,45 +98,58 @@ define('views/ControlPanel', [
           };
     
           params[prop.backLink] = self.resource.getUri();
-          if (self.setLinkTo)  
-            self.router.navigate(U.makeMobileUrl('list', prop.range, params), {trigger: true});
+          if (setLinkTo)  
+            Events.trigger('navigate', U.makeMobileUrl('list', prop.range, params), {trigger: true});
           else {
             params['-makeId'] = G.nextId();
-            self.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+            Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params), {trigger: true});
           }
-          G.log(self.TAG, 'add', 'user wants to add to backlink');
+          self.log('add', 'user wants to add to backlink');
         };
+
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
-          noIntersection(prop);
+          self._addNoIntersection(t, prop);
           return;
         }
+        
         var a = U.getCloneOf(pModel, 'Intersection.a')[0];
         var b = U.getCloneOf(pModel, 'Intersection.b')[0];
         if (!a  &&  !b) {
-          noIntersection(prop);
+          self._addNoIntersection(t, prop);
           return;
         }
-        var meta = pModel.properties;
-        var title = U.getParamMap(window.location.hash).$title;
+        
+        var meta = pModel.properties,
+            title = U.getParamMap(window.location.hash).$title,
+            propA = meta[a],
+            propB = meta[b],
+            aUri = a == prop.backLink ? self.resource.get('_uri') : null,
+            bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
+        
         if (!title)
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
-        var aUri = a == prop.backLink ? self.resource.get('_uri') :null;
-        var bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
+        
         if (!aUri  &&  !bUri) {
-          noIntersection(prop);
+          self._addNoIntersection(t, prop);
           return;
         }
+        
+        if (!aUri && propA.readOnly || !bUri && propB.readOnly) {
+          self._addNoIntersection(t, prop);
+          return;
+        }
+        
         var uri = aUri == null ? bUri : aUri;
-        var rtype = aUri == null ? meta[a].range : meta[b].range;
+        var rtype = aUri == null ? propA.range : propB.range;
         var params = {
-            $forResource: uri,
-            $propA: a,
-            $propB: b,
-            $type:  pModel.type, 
-            $title: title
-          };
+          $forResource: uri,
+          $propA: a,
+          $propB: b,
+          $type:  pModel.type, 
+          $title: title
+        };
 
-        self.router.navigate(U.makeMobileUrl('chooser', rtype, params), {trigger: true});
+        Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
 //          '$backLink': prop.backLink,
@@ -146,6 +178,10 @@ define('views/ControlPanel', [
       }
       
       this.render();
+      G.animationQueue.queueTask(this._refreshListview, this);
+    },
+    
+    _refreshListview: function() {      
       if (!this.$el.hasClass('ui-listview'))
         this.$el.trigger('create');
       else {
@@ -153,6 +189,7 @@ define('views/ControlPanel', [
         this.$el.listview('refresh');
       }
     },
+    
     render: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
@@ -182,7 +219,7 @@ define('views/ControlPanel', [
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
-      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
+      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].splitAndTrim(',') : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});

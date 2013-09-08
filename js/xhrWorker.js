@@ -1,4 +1,6 @@
-var canBlob = typeof Blob !== 'undefined';
+var canBlob = typeof Blob !== 'undefined',
+    originUrl = 'http://mark.obval.com/urbien';
+
 function sendXhr(options) {
   var url = options.url;
   
@@ -59,7 +61,8 @@ onmessage = function(event) {
   var text = xhr.responseText;
   var resp = {
     status: status,
-    responseText: text
+    responseText: text,
+    responseHeaders: xhr.getAllResponseHeaders()
   };
   
   if (text && dataType && dataType.toUpperCase() == 'JSON') {
@@ -67,15 +70,19 @@ onmessage = function(event) {
       resp.data = JSON.parse(text);
       resp.responseText = null;
     } catch (err) {
-      resp.error = {code: status, type: 'other', details: "Couldn't parse response text"};
+      resp.data = {code: 400, type: 'other', details: "Couldn't parse response text"};
     }
   }
   
-  if (status > 399 && status < 600)
-    postMessage(resp);    
-  else {
-    postMessage(resp);
-  }
+//  if (status > 399 && status < 600)
+//    postMessage(resp, originUrl, [resp]);  //TODO: when we figure out transferrable objects, add parameter
+//  else
+//    postMessage(resp, originUrl, [resp]);  //TODO: when we figure out transferrable objects, add parameter
+//  
+//  if (status > 399 && status < 600)
+//    postMessage(resp);  //TODO: when we figure out transferrable objects, add parameter
+//  else
+    postMessage(resp);  //TODO: when we figure out transferrable objects, add parameter
 }
 
 function toFormData(data) {

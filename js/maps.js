@@ -9,7 +9,7 @@
 //      });
 //    }
 //    else {
-      define('maps', ['leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(L) {
+      define('maps', ['utils', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css'], function(U, L) {
         // Export global even in AMD case in case this script is loaded with
         // others that may still expect a global Mapper.
         return (root.Mapper = factory(root, L));
@@ -959,16 +959,21 @@
         this.serverName = baseUri;
       }
   
-      function fetchedLayer(e, div, hotspot, content, url) {
+      var path = query.split("?"),
+          ajaxParams = {
+            url: this.serverName + "api/v1/" + path[0]
+          };
+      
+      if (path.length > 1)
+        ajaxParams.data = U.getQueryParams(path[1]);
+      
+      U.ajax(ajaxParams).done(function(data, status, xhr) {
+        var content = xhr.responseText;
         if (!content)
           return;
         
-        content = eval("(" + content + ")");
-        if (content.error || !content.data)
-          return;
-  
-        var data = content.data;
-        if (data.length == 0)
+        var data = eval("(" + content + ")");
+        if (!data.length)
           return;
         
         var geoJson = {};
@@ -986,11 +991,10 @@
         if (self.userAskedFor)
           self.userAskedFor[name] = null;
         
-        self.toggleLayerControl(true);
-      }
-      
-      var path = query.split("?");
-      postRequest(null, this.serverName + "api/v1/" + path[0], path.length > 1 ? path[1] : null, null, null, fetchedLayer);
+        self.toggleLayerControl(true);        
+      }).fail(function() {
+        console.debug('failed to get layer data for map');
+      });
     };
   
     this.setMinMaxDensity = function(name, minMax) {

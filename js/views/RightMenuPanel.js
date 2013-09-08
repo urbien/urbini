@@ -366,12 +366,36 @@ define('views/RightMenuPanel', [
       }
       
       if (G.pageRoot == 'app/Aha') {
-        var pageTemplate = 'bookmarklet{0}StaticPageTemplate'.format(G.browser.mobile ? (G.browser.iphone ? 'Iphone' : 'Android') : 'Desktop'), 
-            fragment = "static/?" + $.param({
-              template: pageTemplate
-            });
+        var browser = G.browser,
+            os = G.inWebview ? 'ChromeOS' : 
+                  G.inFirefoxOS ? 'FxOS' : 
+                    browser.ios ? 'IOS' :
+                      browser.android ? 'Android' : 'Desktop',
+                      
+            browserName = browser.chrome ? 'Chrome' : 
+                            browser.firefox ? 'Firefox' : 
+                              browser.safari ? 'Safari' : '',
         
-        U.addToFrag(frag, this.menuItemTemplate({title: "Aha! Button", icon: 'bookmark', mobileUrl: fragment}));
+            pageTemplate = 'bookmarklet{0}{1}Page'.format(os, browserName);
+                    
+        if (!U.getTemplate(pageTemplate)) {
+          pageTemplate = 'bookmarklet{0}Page'.format(os);
+          if (!U.getTemplate(pageTemplate)) {
+            pageTemplate = 'bookmarklet{0}Page'.format(browserName);
+            if (!U.getTemplate(pageTemplate)) {
+              pageTemplate = null;
+              this.log("error", "no template found for Aha bookmarklet page for OS: {0} and browser {1}".format(os, browserName));
+            }
+          }
+        }
+        
+        if (pageTemplate) {
+          var fragment = "static/?" + $.param({
+            template: pageTemplate
+          });
+          
+          U.addToFrag(frag, this.menuItemTemplate({title: "Aha! Button", icon: 'bookmark', mobileUrl: fragment}));
+        }
       }
 
       var ul = this.$('#rightMenuItems');
@@ -616,8 +640,8 @@ define('views/RightMenuPanel', [
     subscribe: function(e) {
       Events.stopEvent(e);
       var self = this;
-      Voc.getModels("model/portal/MySubscription").done(function() {
-        var m = U.getModel("model/portal/MySubscription");
+      Voc.getModels("model/portal/MySubscription").done(function(m) {
+//        var m = U.getModel("model/portal/MySubscription");
         var res = new m();
         var props = {forum: self.resource.getUri(), owner: G.currentUser._uri};
         res.save(props, {
@@ -631,7 +655,10 @@ define('views/RightMenuPanel', [
             self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
           },
           error: function(resource, xhr, options) {
-            var code = xhr ? xhr.code || xhr.status : 0;
+            debugger;
+            var code = xhr ? xhr.code || xhr.status : 0,
+                error = U.getJSON(xhr.responseText);
+            
             switch (code) {
             case 401:
               Events.trigger('req-login');
@@ -653,7 +680,8 @@ define('views/RightMenuPanel', [
 //              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
               break;
             default:
-              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+              debugger;
+              Errors.errDialog({msg: msg || error && error.details, delay: 100});
 //              debugger;
               break;
             }

@@ -370,6 +370,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   background-color:#b3cafa;
 }
 
+.headerMessageBar.countdownMessageBar {
+  background-color:#F7BD1B;
+}
+
 .ui-icon-delete.closeparent {
   float:right; 
   width:20px; 

@@ -5,14 +5,79 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       MODEL_STORE,
       IDB,
       preferredStorage,
-      MODEL_PROMISES = {};
+      MODEL_PROMISES = {},
+      modelRequestCollector;
 
 //  window.MODEL_PROMISES = MODEL_PROMISES;
   G.REQUIRED_OBJECT_STORES = G.REQUIRED_OBJECT_STORES || [];
 
+  function normalizeModels(models, options) {
+    if (!models) {
+      // if no models specified, get the base app models
+      models = _.keys(G.modelsMetadata);
+      var currentModel = U.getModelType();
+      if (currentModel && !_.contains(models, currentModel))
+        models.push(currentModel);
+    }
+    else {
+      switch (U.getObjectType(models)) {
+      case '[object String]':
+        models = [U.getLongUri1(models)];
+        break;
+      case '[object Array]':
+        models = _.map(models, U.getLongUri1);
+        break;
+//      case '[object Object]':
+//        break;
+      default:
+        throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
+      }
+    }
+    
+    return models;
+  };
+      
+  function ModelRequestCollector() {
+    var dfd, promise, collected = [];
+    this.reset = function() {
+      collected.length = 0;
+      dfd = $.Deferred();
+      promise = dfd.promise();
+    };
+
+    this.appendRequest = function(models, options) {
+      delete options.wait;
+      _.each(models, function(model) {
+        U.pushUniq(collected, model);
+      });
+      
+      return promise.then(function() {
+        var resultDfd = $.Deferred();
+        return resultDfd.resolve.apply(resultDfd, _.map(models, U.getModel));
+      });
+    };
+    
+    this.execute = function(options) {
+      delete options.go;
+      _getModels(collected, options);
+      return makeModelsPromise(collected).done(dfd.resolve).fail(dfd.reject).always(this.reset);
+    };
+    
+    this.getModels = function(models, options) {
+      _getModels(models, options);
+      return makeModelsPromise(models);
+    };
+    
+    this.length = function() {
+      return collected.length;
+    };
+    
+    this.reset();
+  };
+
   function ModelsPromise(models, options) {
-    getModels(models, options);
-    return makeModelsPromise(models);
+    models = normalizeModels(models, options);
+    return getModels(models, options);
   };
   
   function makeModelsPromise(types) {
@@ -21,7 +86,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
         overallPromise;
 
     _.each(types, function(type) {      
-      var promise = modelToPromiseObj[type] = MODEL_PROMISES[type].promise;
+      var promise = modelToPromiseObj[type] = getModelPromise(type) || makeModelPromise(type);
       promises.push(promise);
     });
     
@@ -154,37 +219,18 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   
   function fetchModels(models, options) {
     var promise = $.Deferred(function(defer) {
-      var numModels = _.size(models);
-      if (!numModels)
+      if (!_.size(models))
         return defer.resolve();
 
-      if (!G.online) {
-        defer.rejectWith(this, [null, {type: 'offline'}, options]);
-        return;
-      }
+      if (!G.online)
+        return defer.rejectWith(this, [null, {type: 'offline'}, options]);
 
-//      var currentType = U.getModelType(),
-//          urgent = /*options.sync && */ numModels > 1 && currentType && !U.getModel(currentType);
-//          
-//      if (urgent) {
-//        fetchModels(currentType, options).done(function(data) {
-//          defer.resolve(data);
-//          models = U.filterObj(models, function(type, model) {
-//            return type !== urgent;
-//          });
-//            
-//          fetchModels(models, options);
-//        }).fail(defer.reject);
-//      }
-      
-      var modelsCsv = JSON.stringify(models);
-      var ajaxSettings = _.extend({
-        url: G.modelsUrl, 
-        data: {models: modelsCsv}, 
-        type: 'POST'
-//          , 
-//        timeout: 10000
-      }, _.pick(options, 'sync'));
+      var modelsCsv = JSON.stringify(models),
+          ajaxSettings = _.extend({
+            url: G.modelsUrl, 
+            data: {models: modelsCsv}, 
+            type: 'POST'
+          }, _.pick(options, 'sync'));
       
       U.ajax(ajaxSettings).done(function(data, status, xhr) {
         if (xhr.status === 304)
@@ -210,6 +256,17 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   };
   
   function getModels(models, options) {
+    options = options || {};
+    if (options.wait)
+      return modelRequestCollector.appendRequest(models, options);
+    else if (options.go)
+      return modelRequestCollector.execute(options);
+    else
+      return modelRequestCollector.getModels(models, options);
+  }
+
+
+  function _getModels(models, options) {
     options = options || {};
     var promises = [],
         filtered,
@@ -274,7 +331,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 //              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
       }
       
-      return loadModels(mightBeStale.models, true);
+      return loadModels(_.values(mightBeStale.models), true);
     }
     
     var mz = data.models || [],
@@ -312,7 +369,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
             return m.type == model.type;
           });
       
-      MODEL_CACHE.remove(collisions);
+      collisions = U.copyArray(MODEL_CACHE, collisions);
       MODEL_CACHE.push(model);
     }
     
@@ -334,6 +391,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 
   function loadModels(models, preventOverwrite) {
     var models = models || MODEL_CACHE;
+    models.sort(function(a, b) {
+      return a.enumeration ? -1 : 1;
+    });
+    
     _.each(models, function(model) {
       if (!preventOverwrite || !U.getModel(model.type))
         loadModel(model);
@@ -521,9 +582,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           data = JSON.parse(data);
         } catch (err) {
           debugger;
-          return null;
         }
       }
+      
+      if (!data || typeof data !== 'object')
+        return G.getRejectedPromise();
       
       return data;
     });    
@@ -544,11 +607,20 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       });
     }
     
+    var tempData = U.filterObj(modelJson, U.isMetaParameter);
+    _.each(_.keys(tempData), function(prop) {
+      delete modelJson[prop];
+    });
+    
     data[getModelStorageURL(type)] = modelJson;
     G.putCached(data, {
       storage: storageType,
       store: MODEL_STORE.name
+    }).always(function() {
+      _.extend(modelJson, tempData);
     });
+    
+    
     
 //    setTimeout(function() {
 //      var type = modelJson.type;
@@ -561,6 +633,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 //    }, 100);
   };
 
+  modelRequestCollector = new ModelRequestCollector();
   var ModelLoader = {
     init: _.once(function(storageType) {
       preferredStorage = storageType || 'indexedDB';
@@ -572,6 +645,9 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     },
     getModelStoragePrefix: function() {
       return MODEL_PREFIX;
+    },
+    isDelayingFetch: function() {
+      return !!modelRequestCollector.length();
     },
     storeModels: storeModels
   };

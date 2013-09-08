@@ -5,6 +5,12 @@ define('collections/ResourceList', [
   'error', 
   'events'
 ], function(G, U, Errors, Events) {
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("ResourceList");
+    G.log.apply(G, args);
+  };
+  
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
@@ -67,7 +73,14 @@ define('collections/ResourceList', [
         }
       }
       
-      this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+      try {
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this._unbreak();
+      } catch (err) {
+        this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
+        this._break();
+      }
+      
       if (options.cache !== false)
         this.announceNewList();
       
@@ -105,7 +118,7 @@ define('collections/ResourceList', [
       this.monitorQueryChanges();
       this.enablePaging();
       this.on('endOfList', this.disablePaging);
-      G.log(this.TAG, "info", "init " + this.shortName + " resourceList");      
+      log("info", "init " + this.shortName + " resourceList");      
     },
 
     filterAndAddResources: function(resources) {
@@ -214,7 +227,6 @@ define('collections/ResourceList', [
 //      this.trigger('replaced', resource, oldUri);
 //    },
     getNextPage: function(options) {
-      G.log(this.TAG, "info", "fetching next page");
       this.setOffset(this.offset + this.perPage);
       this.setOffset(Math.min(this.offset, this.models.length));
       this.pager(options);
@@ -302,26 +314,9 @@ define('collections/ResourceList', [
       if (adapter && adapter.parseCollection)
         return adapter.parseCollection.call(this, response);
       
-      if (!response || response.error)
+      if (!response)
         return [];
 
-      var metadata = response.metadata;
-      if (response.data) {
-        this.setOffset(response.metadata.offset);
-        if (this.offset)
-          G.log(this.TAG, "info", "received page, offset = " + this.offset);
-        
-        this.page = Math.floor(this.offset / this.perPage);
-        response = response.data;
-      }
-      
-      var editMojo = metadata && metadata.edit;
-      if (editMojo) {
-        _.each(response, function(m) {
-          m.edit = editMojo;
-        });
-      }
-      
       return response;
     },
     
@@ -360,16 +355,38 @@ define('collections/ResourceList', [
       if (needsToBeStored)
         Events.trigger('updatedResources', this.models);
     },
+
+    isBroken: function() {
+      return this._broken;
+    },
     
+    _break: function() {
+      this._broken = true;
+    },
+
+    _unbreak: function() {
+      this._broken = false;
+    },
+
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        try {
+          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+          this._unbreak();
+        } catch (err) {
+          this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
+          this._break();
+        }
+        
         this._lastFetchedOn = null;
       }
     },
     
     fetch: function(options) {
+      if (this.offset && !this._outOfData)
+        log("info", "fetching next page");
+      
       options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
@@ -413,6 +430,33 @@ define('collections/ResourceList', [
       }
       
       var success = options.success || function(resp, status, xhr) {
+        var pagination = xhr.getResponseHeader("X-Pagination"),
+            mojo = xhr.getResponseHeader("X-Mojo");
+        
+        if (pagination) {
+          try {
+            pagination = JSON.parse(pagination);
+            this.setOffset(pagination.offset);
+            if (this.offset)
+              log("info", "received page, offset = " + this.offset);
+            
+            this.page = Math.floor(this.offset / this.perPage);
+          } catch (err) {
+          }
+        }
+        
+        if (mojo) {
+          try {
+            mojo = JSON.parse(mojo);
+            if (mojo.edit) {
+              _.each(resp, function(m) {
+                m.edit = editMojo;
+              });
+            }
+          } catch (err) {
+          }
+        }
+        
         self.update(resp, options);        
       };
       
@@ -430,12 +474,15 @@ define('collections/ResourceList', [
         
         function err() {
           debugger;
-          G.log(self.TAG, 'error', code, options.url);
+          log('error', code, options.url);
           error(self, resp || {code: code}, options);            
         }
         
         switch (code) {
           case 200:
+            if (!resp)
+              debugger;
+            
             break;
           case 204:
             self.trigger('endOfList');
@@ -453,11 +500,6 @@ define('collections/ResourceList', [
           default:
             err();
             return;
-        }
-        
-        if (resp && resp.error) {
-          err();
-          return;
         }
         
         self.update(resp, options);
@@ -514,13 +556,27 @@ define('collections/ResourceList', [
           saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
       
-      this.add(added);
-      updated.length && this.trigger('updated', updated);
       
-      // not everyone who cares about resources being updated has access to the collection
-      Events.trigger('updatedResources', _.union(updated, added)); 
+      
+      if (added.length + updated.length) {
+        if (added.length)
+          this.add(added);
+        
+        if (updated.length)
+          this.trigger('updated', updated);
+        
+        // not everyone who cares about resources being updated has access to the collection
+        Events.trigger('updatedResources', _.union(updated, added));
+      }
+      else if (this.params.$offset)
+        this.trigger('endOfList');
+      
       return this;
-    }    
+    },
+    
+    isFetching: function() {
+      return this._fetchPromise && this._fetchPromise.state() == 'pending';
+    }
   }, {
     displayName: 'ResourceList'
   });

@@ -1,17 +1,18 @@
 (function() {
 var scripts = document.getElementsByTagName('script'),
     ahaScriptSrc = scripts[scripts.length - 1].src,
-    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')),
+    serverUrl = ahaScriptSrc.slice(0, ahaScriptSrc.indexOf('/js/')).replace(/^https:\/\//, 'http://'),
     currentHref = window.location.href,
     enc = encodeURIComponent,
 //    keyword = isAha ? 'Aha!' : 'Huh?',
-    buildAhaUrl = serverUrl + '/aha?',
+    saveAhaUrl = serverUrl + '/aha?',
     onAhaMsg = "You have been registered as a bona fide expert on this...whatever it is. You are now a superhero on call in the endless battle against the evil powers of ignorance and bliss. Welcome aboard!",
     containerDiv,
     overlayDiv,
     setImage = true,
     description,
-    found = [],
+    ogTags = [],
+    images = [],
     $ = function() {
       return document.querySelector.apply(document, arguments);
     };
@@ -23,43 +24,59 @@ function isSafari() {
   return /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
 }
 function isIOS() {
-  return navigator.userAgent.match(/iPad/i) != null || navigator.userAgent.match(/iPhone/i) != null || navigator.userAgent.match(/iPod/i) != null || navigator.userAgent.match(/iPod/i) != null
+  return navigator.userAgent.match(/iPad|iPhone|iPod|iPod/i) != null
 }
 
 function addParam(name, val) {
-  buildAhaUrl += enc(name) + '=' + enc(val) + '&';
+  saveAhaUrl += enc(name) + '=' + enc(val) + '&';
 }
 
 function collectInfo() {
+  var infoTags = ['keywords', 'author', 'news_keywords', 'abstract'];
   for (var c = document.getElementsByTagName("meta"), k = 0; k < c.length; k++) {
-    var p = c[k].getAttribute('property'),
+    var p = c[k].getAttribute('property') || c[k].getAttribute('name'),
         hasOGUrl = false;
     
+    if (!p)
+      continue;
+    
     if (/^og:/.test(p)) {
-      found.push(p);
-      addParam(p, c[k].getAttribute('content'));
+      ogTags.push(p);
+      var value = c[k].getAttribute('content');
+      if (p == 'og:image') {
+        setImage = true;
+        images.push(value);
+        var img = new Image;
+        img.src = value;
+        img.onload = function() {
+          if (this.width < 200 || this.height < 200) {
+            images.splice(images.indexOf(value), 1);
+            if (!images.length)
+              setImage = true;
+          }
+        };
+      }
+      else
+        addParam(p, value);
     }
     else {
-      if (p == 'keywords' || p === 'author')
+      if (infoTags.indexOf(p) != -1)
         addParam(p, c[k].getAttribute('content'));
     }
   }
   
-  var ogUrlIdx = found.indexOf('og:url');
+  var ogUrlIdx = ogTags.indexOf('og:url');
   if (ogUrlIdx == -1)
-    addParam('og:url', currentHref);
+    addParam('url', currentHref);
   else
-    currentHref = found[ogUrlIdx];
+    currentHref = ogTags[ogUrlIdx];
     
-  if (found.indexOf('og:title') == -1)
-    addParam('og:title', document.title);
-  if (found.indexOf('og:type') == -1)
+  if (ogTags.indexOf('og:title') == -1)
+    addParam('title', document.title);
+  if (ogTags.indexOf('og:type') == -1)
     addParam('og:type', 'website');
   
-  if (found.indexOf('og:image') != -1)
-    setImage = false;
-  
-  var descIdx = found.indexOf('og:description');
+  var descIdx = ogTags.indexOf('og:description');
   if (descIdx == -1) {
     var a = window,
         b = document,
@@ -69,21 +86,23 @@ function collectInfo() {
       addParam('og:description', description);
   }
   else
-    description = found[descIdx];
+    description = ogTags[descIdx];
 }
 
-function callAha(url) {
-  url = url || buildAhaUrl;
+function callAha() {
+  if (images.length)
+    saveAhaUrl += '&og:image=' + enc(images[0]);
+    
   removeOverlay();
   if (isIOS()) {
-    setTimeout(function () {
-      window.location = url;
-    }, 25);
+//    setTimeout(function () {
+//      window.location = saveAhaUrl;
+//    }, 25);
     
-    window.location = url;
+    window.location = saveAhaUrl;
   } 
   else 
-    window.open(url, 'Aha' + +new Date());
+    window.open(saveAhaUrl, 'Aha' + +new Date());
 //    window.open(url, 'Aha' + (new Date).getTime(), "status=no,resizable=no,scrollbars=yes,personalbar=no,directories=no,location=no,toolbar=no,menubar=no,width=750,height=450,left=0,top=0");
 }
 
@@ -173,20 +192,21 @@ function overlay() {
 //  		"    </table>";
 
 // image version
-  var overlayHTML = "<span id=\"ahaCancelBtn\"><img src=\"http://urbien.com/images/x.png\" /></span>\r\n" + 
+  var overlayHTML = "<span id=\"ahaCancelBtn\" style=\"color:white;font-size:20px; font-weight:bold;\">X<!--img src=\"http://urbien.com/images/x.png\" /--></span>\r\n" + 
   		"    <table id=\"ahaContainer\" cols=\"4\">\r\n" + 
   		"        <tr height=\"10%\">\r\n" + 
-  		"            <td colspan=\"4\" style=\"text-align:center\">\r\n" + 
+  		"            <td colspan=\"4\" style=\"background-color: #1d1dc5; color: #eee; opacity: 0.8;text-align:center\">\r\n" + 
   		"                <span style=\"font-size:30px\">Get it??</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
-  		"        <tr height=\"90%\" style=\"text-align:center\">\r\n" + 
+      "        <tr height=\"5%\" style=\"text-align:center\"></tr>" + 
+  		"        <tr height=\"85%\" style=\"text-align:center\">\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <a href=\"#\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
+  		"                <a href=\"javascript:void(0);\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"ahaTip\" style=\"font-size:18px;\">(I'm ready to explain this to others)</span>\r\n" + 
   		"            </td>\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
-  		"                <a href=\"#\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh_big.png\" /></a>\r\n" + 
+  		"                <a href=\"javascript:void(0);\" id=\"huhButton\"><img alt=\"Huh?\" src=\"http://urbien.com/images/aha/huh_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"huhTip\" style=\"font-size:18px;\">(Can someone please explain it to me?)</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
@@ -204,14 +224,17 @@ function overlay() {
   
   ahaBtn.onclick = function() {
     onchoose(true);
+    return false;
   };
   
   huhButton.onclick = function() {
     onchoose(false);
+    return false;
   };
 
   $('#ahaCancelBtn').onclick = function() {
     removeOverlay();
+    return false;
   };
   
   var ahaTip = $('#ahaTip'),
@@ -248,7 +271,7 @@ function overlay() {
 
 
   function onchoose(aha) {
-    buildAhaUrl += '&aha=' + (aha ? 'y' : 'n');
+    saveAhaUrl += '&aha=' + (aha ? 'y' : 'n');
     if (setImage)
       showImageChooser();
     else {
@@ -260,9 +283,9 @@ function overlay() {
   scroll(0, 0);
 }
 
+overlay();
 collectInfo();  
 checkDuplicate(); // check for duplicate online resource
-overlay();
 
 function checkDuplicate() {
 //  var xmlhttp = new XMLHttpRequest();
@@ -305,8 +328,8 @@ function showImageChooser() {
       if (location.href.match(i) || location.href.match(f))
         callAha();
       else {
-        var w = buildAhaUrl,
-            x = buildAhaUrl,
+        var w = saveAhaUrl,
+            x = saveAhaUrl,
             q = null;
         
         if (description && description.length > 0) 
@@ -463,7 +486,7 @@ function showImageChooser() {
                   b = document.createElement("a");
                   b.setAttribute("href", "#");
                   b.onclick = function () {
-                      buildAhaUrl += '&og:image=' + enc(a.src);
+                      images.push(a.src);
                       callAha();
                       o.parentNode.removeChild(o);
                       n.parentNode.removeChild(n);
@@ -535,7 +558,7 @@ function showImageChooser() {
 })();
 
 //function getHelp() {
-//  window.open(buildAhaUrl);
+//  window.open(saveAhaUrl);
 //}
 
 //if (isAha)
@@ -543,4 +566,4 @@ function showImageChooser() {
 //else
 //  getHelp();
 //overlay();
-//window.open(buildAhaUrl);
+//window.open(saveAhaUrl);

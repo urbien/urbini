@@ -13,8 +13,9 @@ define('views/MessageBar', [
       options = options || {};
       _.extend(this, options);
       
+      
       this.makeTemplate('messageListTemplate', 'messageListTemplate', this.modelType);
-      this.makeTemplate('messageBarTemplate', 'messageTemplate', this.modelType);
+//      this.makeTemplate('messageBarTemplate', 'messageTemplate', this.modelType);
     },
     
     events: {
@@ -66,10 +67,36 @@ define('views/MessageBar', [
     },
 
     renderList: function(messages) {
+      var self = this;
+      
+      messages = _.map(messages, function(msg) {
+        return _.has(msg, 'id') ? msg : _.extend({id: 'messageBarComponent' + G.nextId()}, msg);
+      });
+      
       this.$el.html(this.messageListTemplate({
         'class': this.type + 'MessageBar',
         messages: messages
       }));
+      
+      this.$('.headerMessageBar').each(function() {
+        var id = this.id,
+            events = _.find(messages, function(msg) { return msg.id == id }).events;
+        
+        if (events) {
+          var $this = $(this),
+              onremove = events.remove;
+          
+          events.remove = function(e) {
+            self.trigger('messageBarRemoved', e);
+            if (onremove)
+              onremove.apply(this, arguments);
+          };
+
+          for (var event in events) {
+            $this.on(event, events[event]);
+          }
+        }
+      });
     }
 //    ,
 //    _updateInfoErrorBar: function(options) {

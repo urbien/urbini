@@ -10,7 +10,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       viewCache = ViewCache(),
       // codemirror editors
       codemirrors = {},
-      MAX_VIEWS_TO_CACHE = 6;
+      MAX_VIEWS_TO_CACHE = 6,
+      AP = Array.prototype;
 
 //  function CacheEntry(obj, permanent) {
 //    this.permanent = permanent;
@@ -46,15 +47,30 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         resources[uri] = resource;
     };
     
-    function cacheList(list) {
-      var qs = list.query; // || $.param(list.params);
-//      if (qs) // taken care of in ResourceList
-//        qs = U.getQueryString(U.getQueryParams(qs, list.vocModel), true);
-        
-      var typeUri = list.vocModel.type;
-      return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
+    function uncacheResource(uri) {
+      if (uri.getUri)
+        uri = uri.getUri();
+      
+      if (uri)
+        delete resources[uri];
     };
     
+    function cacheList(list) {
+      var qs = list.query, // || $.param(list.params);
+          typeUri = list.vocModel.type;
+      
+      return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
+    };
+
+    function uncacheList(list) {
+      var qs = list.query, // || $.param(list.params);
+          typeUri = list.vocModel.type;
+      
+      var subCache = lists[typeUri];
+      if (subCache)
+        delete subCache[qs || typeUri];
+    };
+
     /**
      * search a collection map for a collection with a given model
      * @return if filter function is passed in, return all resources that matched across all collections, otherwise return {collection: collection, resource: resource}, 
@@ -80,7 +96,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           var resource;
           var col = collectionsByQuery[query];
           if (filter) { 
-            matches = _.union(matches, col.filter(filter));
+            pushUniq(matches, col.filter(filter));
             continue;
           }
           else {
@@ -167,7 +183,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 
     return {
       cacheResource: cacheResource,
+      uncacheResource: uncacheResource,
       cacheList: cacheList,
+      uncacheList: uncacheList,
       getResource: getResource,
       getList: getList
     };
@@ -240,7 +258,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         });
       
         while (overCapacity()) {
-          var entry = cache.peek(),
+          var entry = Array.peek(cache),
               view = entry.getView();
           
           if (view.destroy) { // some views, like homePage, are indestructible :)
@@ -269,13 +287,15 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         
         if (res) {
           col = res.collection;
-          if (col)
-            cols = _.union(cols, [col]);
+          if (col) {
+            if (cols.indexOf(col) == -1)
+              cols.push(col);
+          }
           
-          cols = _.union(cols, view.resource.getInlineLists());
+          pushUniq(cols, view.resource.getInlineLists());
         }
         else if (col) {
-          cols = _.union(cols, [col]);
+          pushUniq(cols, col);
         }
       });
       
@@ -299,7 +319,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       getResources: getResources,
       getLists: getLists,
       remove: function(entry) {
-        cache.remove(entry);
+        var idx = cache.indexOf(entry);
+        if (idx != -1)
+          Array.removeFromTo(cache, idx, idx + 1);
       }
     };
   };
@@ -330,6 +352,19 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         });
     
     return res;
+  };
+  
+//  function getModel(type) {
+//    return typeToModel[type] || shortNameToModel[type];
+//  };
+  
+  function pushUniq(arr, obj) {
+    var items = AP.concat.apply(AP, AP.slice.call(arguments, 1));
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      if (!_.contains(arr, item))
+        arr.push(item);
+    }
   };
   
   var Cache = {
@@ -367,7 +402,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           list = resourceCache.getList(model, query);
       
       return list || _.find(viewCache.getLists(), function(list) {
-        return list.type === type && list.query == query;
+        return list.type === type && (list._query == query || list.query == query); // either with special params or without (like $prop, $forResource, $blahBlah, -hello)
       });
     },
     
@@ -424,15 +459,31 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //  });
 //  
 //  Events.on('newResource', cacheResource);
-  Events.on('cacheList', function (list, permanent) {
-    resourceCache.cacheList(list, true);
+  Events.on('cacheList', function (list) {
+    resourceCache.cacheList(list);
   });
   
-  Events.on('cacheResource', function (resource, permanent) {
-    resourceCache.cacheResource(resource, true);
+  Events.on('cacheResource', function (resource) {
+    resourceCache.cacheResource(resource);
+  });
+
+  Events.on('uncacheList', function (list) {
+    resourceCache.uncacheList(list);
+  });
+  
+  Events.on('cacheResource', function (resource) {
+    resourceCache.uncacheResource(resource);
   });
 
   Events.on('newModel', cacheModel);
+  
+  Events.on('savedMake', function(resource) {
+    resourceCache.cacheResource(resource, true);
+    var tempUri = resource.getUri();
+    resource.on('syncedWithServer', function() {
+      resourceCache.uncacheResource(tempUri);
+    });
+  });
 //  Events.on('newPlugs', C.cachePlugs);
   return Cache;
 });

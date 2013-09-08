@@ -8,9 +8,10 @@ define('utils', [
   'events',
   'jqueryMobile'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
-  var asArray = function(stuff) { return [].slice.call(stuff) },
-      slice = [].slice,
-      concat = [].concat,
+  var ArrayProto = Array.prototype,
+      slice = ArrayProto.slice,
+      asArray = function(stuff) { return slice.call(stuff) },
+      concat = ArrayProto.concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
@@ -38,21 +39,53 @@ define('utils', [
     return path.split(separator).reduce(index, obj);
   }
 
-  Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-      what = a[--L];
-      while ((ax = this.indexOf(what)) !== -1) {
-        this.splice(ax, 1);
+  _.extend(Array, {
+    remove: function(array /* items */) {
+      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
+      
+      for (var i in items) {
+        var item = items[i],
+            idx = array.indexOf(item);
+        
+        if (idx != -1)
+          array.splice(idx, 1);
       }
-    }
-    
-    return this;
-  };
+      
+      return array;
+    },
 
-  Array.prototype.last = Array.prototype.peek = function() {
-    return this.length ? this[this.length - 1] : null;
-  };
+    // courtesy of John Resig
+    removeFromTo: function(array, from, to) {
+      var rest = array.slice((to || from) + 1 || array.length);
+      array.length = from < 0 ? array.length + from : from;
+      return array.push.apply(array, rest);
+    },
+
+    last: function(array) {
+      return U.peek(array);
+    },
+
+    peek: function(array) {
+      return array[array.length - 1];
+    }    
+  });
+  
+  
+//  Array.prototype.remove = function() {
+//    var what, a = arguments, L = a.length, ax;
+//    while (L && this.length) {
+//      what = a[--L];
+//      while ((ax = this.indexOf(what)) !== -1) {
+//        this.splice(ax, 1);
+//      }
+//    }
+//    
+//    return this;
+//  };
+//
+//  Array.prototype.last = Array.prototype.peek = function() {
+//    return this.length ? this[this.length - 1] : null;
+//  };
 
   String.prototype.format = function() {
     var args = arguments;
@@ -81,6 +114,12 @@ define('utils', [
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
       return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
     }).replace(/\s+/g, '');
+  };
+
+  String.prototype.splitAndTrim = function(delimiter) {
+    return _.map(this.split(delimiter), function(str) {
+      return str.replace(/\s/g, '');
+    });
   };
   
   String.prototype.uncamelize = function(capitalFirst) {
@@ -165,6 +204,15 @@ define('utils', [
     }
   };
   
+  function simplifyPosition(position) {
+    var coords = position.coords;
+    return {
+      latitude: coords.latitude, 
+      longitude: coords.longitude,
+      timestamp: position.timestamp
+    };
+  };
+  
   var U = {
     /**
      * if the modules are in pre-defined bundles, wait till they're loaded, otherwise request the modules directly (in bulk)
@@ -181,6 +229,18 @@ define('utils', [
       return promise;
     },    
     
+//    ajax: function(options) {
+//      var dfd = $.Deferred(), 
+//          promise = dfd.promise();
+//      
+//      G.whenNotRendering(function() {
+//        G.animationQueue.queueTask(function() {
+//          U._ajax(options).then(dfd.resolve, dfd.reject);            
+//        });
+//      });
+//      
+//      return promise;
+//    },
     /**
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
@@ -205,43 +265,6 @@ define('utils', [
         var data = opts.data;
         var blobProps = U.getBlobValueProps(data);
         if (data && Blob && _.size(blobProps)) {
-//          opts.url = G.serverName + '/mkresource.html';
-//          useWorker = false; // HACK: till we figure out how to do file upload in web worker
-//          var fd = new FormData();
-//          if (opts.resource) {
-//            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-//            fd.append('type', opts.resource.vocModel.type);
-//          }
-//          
-//          if (data._uri) {
-//            fd.append('_uri', data._uri);
-//            fd.append('uri', data._uri);
-//          }
-//          
-//          fd.append('enctype', "multipart/form-data");
-//          fd.append('-$action', 'upload');
-//          var blobbed = false;
-//          for (var prop in data) {
-//            var val = data[prop];
-//            if (val instanceof Blob) {
-//              if (!blobbed) {
-//                blobbed = true;
-//                _.extend(opts, {
-//                  processData: false,
-//                  contentType: false
-//                });
-//                
-//                delete opts.dataType;
-//                delete opts.emulateJSON;
-//                delete opts.emulateHTTP;
-//              }
-//              
-//              fd.append(prop, val, prop);
-//            }
-//            else
-//              fd.append(prop, val);
-//          }
-//          
           if (useWorker) {
             var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
             if (!attachmentsUrlProp) {
@@ -279,26 +302,35 @@ define('utils', [
             worker = arguments[0];
             worker.onmessage = function(event) {
               var xhr = event.data,
+                  resp = xhr.data,
                   code = xhr.status,
-                  data = event.data,
-                  error = data && data.error;
+                  headers = xhr.responseHeaders,
+                  error;
+              
+              if (headers.length) {
+                var h = headers.splitAndTrim(/\n/);
+                headers = {};
+                _.each(h, function(pair) {
+                  if (pair) {
+                    var cIdx = pair.indexOf(':');
+                    headers[pair.slice(0, cIdx)] = pair.slice(cIdx + 1);
+                  }
+                });
+              }
+              else
+                headers = {};
+              
+              xhr.getResponseHeader = function(name) {
+                return headers[name];
+              };
+              
 //              if (code === 304) {
 //  //              debugger;
 //                defer.reject(xhr, "unmodified", "unmodified");
 //              }
               
               if (code > 399 && code < 600) {
-                var text = xhr.responseText,
-                    error;
-                
-                if (text && text.length) {
-                  try {
-                    error = JSON.parse(xhr.responseText);
-                  } catch (err) {
-                    log('error', 'failed to parse error responseText:', xhr.responseText);
-                  } 
-                }
-                
+                error = resp;
                 if (error)
                   error.code = _.isUndefined(error.code) ? code : error.code;
                 else
@@ -306,29 +338,30 @@ define('utils', [
               }
               
               if (error) {
-//                debugger;
+                xhr.responseJson = error;
                 defer.reject(xhr, error, opts);
               }
-              else {
-                defer.resolve(xhr.data, xhr.status, xhr);
-              }
+              else
+                defer.resolve(resp, code, xhr);
             };
             
             worker.onerror = function(err) {
-//              debugger;
-              defer.reject({}, "error", err);
+              defer.reject({}, err, opts);
             };
             
-            worker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
+            var msgOpts = _.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']);
+            worker.postMessage(msgOpts); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
         }
         else {
           log('xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if ((data && data.error) || jqXHR.status > 399) {
+            var error;
+            if (jqXHR.status > 399) {
+              debugger;
               defer.reject(
                 jqXHR, 
-                data && data.error || {code: jqXHR.status}, 
+                (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
                 opts
               );
             }
@@ -337,24 +370,26 @@ define('utils', [
           }, 
           function(jqXHR, textStatus, err) {
 //            debugger;
-            var text = jqXHR.responseText,
-                error;
-            
-            if (text && text.length) {
-              try {
-                error = JSON.parse(text).error;
-              } catch (err) {
-              }
-            }
-            
             defer.reject(
               jqXHR, 
-              error || {code: jqXHR.status, details: err}, 
+              (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
               opts
             );
           });
         }
       }).promise();
+    },
+    
+    getJSON: function(strOrJson) {
+      if (typeof strOrJson == 'string') {
+        try {
+          strOrJson = JSON.parse(strOrJson);
+        } catch (err) {
+          return;
+        }
+      }
+      
+      return strOrJson;
     },
     
     isPropVisible: function(res, prop, userRole) {
@@ -379,7 +414,7 @@ define('utils', [
     },
     
     getUserRole: function() {
-      return G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+      return G.currentUser.role;
     },
     
     isUserInRole: function(userRole, ar, res) {
@@ -461,7 +496,7 @@ define('utils', [
         type = hash;
 
       if (type === 'profile')
-        return G.currentUser.guest ? null : U.getTypeUri(G.currentUser._uri);
+        return G.currentUser.guest ? G.commonTypes.Urbien : U.getTypeUri(G.currentUser._uri);
             
       return U.getTypeUri(type);
     },
@@ -519,6 +554,10 @@ define('utils', [
       return G.currentUser._uri;
     },
 
+    getCurrentUrlInfo: function() {
+      return G.currentHashInfo;
+    },
+
     isCreatable: function(type, userRole) {
       if (G.currentUser.guest)
         return false;
@@ -541,18 +580,6 @@ define('utils', [
       return true;
     },
     
-    isCurrentUserGuest: function() {
-      return G.currentUser.guest;
-    },
-
-    getCurrentUserUri: function() {
-      return G.currentUser._uri;
-    },
-
-    getCurrentUrlInfo: function() {
-      return G.currentHashInfo;
-    },
-    
     mimicResource: function(json) {
       return {
         get: function(prop) {
@@ -565,43 +592,34 @@ define('utils', [
     },
     
     isPropEditable: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement)
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
         return false;
-      var hash = window.location.hash;
-      if (prop.avoidDisplayingInEdit  &&  hash.indexOf("#edit") != -1)
-        return false;
-      if (prop.avoidDisplayingOnCreate  &&  hash.indexOf("#make") != -1)
-        return false;
-
-      var isMkResource = res.isNew();
-      var isAdmin = U.isUserInRole("admin");
-      var cantEdit = false;
-      _.each(['allowRoles', 'allowRolesToEdit'], function(p) {        
-        var roles = prop[p];
-        if (roles  &&  roles.indexOf('self') == -1  &&  !isAdmin)
-          return false;
-      });
+      var hashInfo = U.getCurrentUrlInfo(),
+          isEdit = !!res.get('_uri');
       
-      if (cantEdit)
+      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
         return false;
-
-      var resExists = res  &&  !!res.getUri();
-      if (resExists) { 
-        if (prop.primary || prop.avoidDisplayingInEdit) // || prop.immutable)
-          return false;
-      }
-      else {
-        if (prop.avoidDisplayingOnCreate)
-          return false;
-      }
+      if (prop.avoidDisplayingOnCreate  &&  !isEdit)
+        return false;
 
       userRole = userRole || U.getUserRole();
-      if (userRole == 'admin')
+      if (userRole == 'admin' || userRole == 'siteOwner')
         return true;
       
-      var ar = prop.allowRolesToEdit;
-      return ar ? U.isUserInRole(userRole, ar, res) : true;
-    },
+      var allowedToRole = !_.any(['allowRoles', 'allowRolesToEdit'], function(p) {        
+        var roles = prop[p];
+        if (roles && !U.isUserInRole(userRole, roles, res))
+          return true;
+      });
+      
+      if (!allowedToRole)
+        return false;
+      
+      if (isEdit && prop.primary)
+        return false;
+
+      return true;
+    },   
     
     isResourceProp: function(prop) {
       return prop && !prop.backLink && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
@@ -638,7 +656,7 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      var cloneOf = concat.apply([], slice.call(arguments, 1)),
+      var cloneOf = concat.apply(ArrayProto, slice.call(arguments, 1)),
           results = {},
           meta = model.properties;
       
@@ -706,7 +724,7 @@ define('utils', [
       return uri;
 //      throw new Error("couldn't parse uri: " + uri);
     },
-    
+
 //    getLongUri: function(uri, hint) {
 //      var type, pk, snm;
 //      if (hint) {
@@ -914,7 +932,7 @@ define('utils', [
       return icon + '-sign';
     },
     
-    countdown: function(element, seconds) {
+    countdown: function(seconds) {
       var minutes = parseInt(seconds / 60),
           dfd = $.Deferred(),
           promise = dfd.promise();
@@ -923,7 +941,7 @@ define('utils', [
       var interval = setInterval(function() {
         if (seconds == 0) {
           if (minutes == 0) {
-            element.innerHTML = "0 seconds";
+//            element.innerHTML = "0 seconds";
             clearInterval(interval);
             dfd.resolve();
             return;
@@ -933,57 +951,67 @@ define('utils', [
           }
         }
         
-        if(minutes > 0) {
-          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
-        } else {
-          var minute_text = '';
-        }
-        
-        var second_text = seconds > 1 ? 'seconds' : 'second';
-        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
+//        if (minutes > 0) {
+//          var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
+//        } else {
+//          var minute_text = '';
+//        }
+//        
+//        var second_text = seconds > 1 ? 'seconds' : 'second';
+//        element.innerHTML = minute_text + ' ' + seconds + ' ' + second_text;
         seconds--;
+        dfd.notify(seconds);
       }, 1000);
       
       
       promise.cancel = function() {
+        debugger;
         clearInterval(interval);
         dfd.reject();
-        el.innerHTML = '';
+//        el.innerHTML = '';
       };
       
       return promise;
     },
 
-    buildSocialNetOAuthUrl: function(net, action, returnUri) {
-      returnUri = returnUri || window.location.href;
+    _socialSignupHome: G.serverName + '/social/socialsignup', ///m/' + G.currentApp.appPath,
+    buildSocialNetOAuthUrl: function(options) {
+      options = options || {};
+      var net = options.net, 
+          action = options.action, 
+          returnUri = options.returnUri,
+          returnUriHash = options.returnUriHash,
+          params = {
+            actionType: action,
+//            returnUri: returnUri,
+//            returnUriHash: returnUriHash,
+            socialNet: net.socialNet,
+            appPath: G.currentApp.appPath
+          },
+          state;
+
+      if (returnUriHash)
+        params.returnUriHash = returnUriHash;
+      else if (returnUri) {
+        returnUri = !returnUriHash && (returnUri || window.location.href);
+        params.returnUri = returnUri;
+      }
+      
+      state = U.getQueryString(params, {sort: true}); // sorted alphabetically
       if (action === 'Disconnect') {
-        return G.serverName + '/social/socialsignup?' + U.getQueryString({
-          actionType: action,
-          returnUri: returnUri,
-          socialNet: net.socialNet
-        }, {sort: true})
+        return U._socialSignupHome + '?' + state;
       };
       
-      var state = U.getQueryString({
-        socialNet: net.socialNet, 
-        returnUri: returnUri,
-        actionType: action
-      }, {sort: true}); // sorted alphabetically
-    
       var params;
       if (net.oAuthVersion == 1) {
-        params = {
-          episode: 1, 
-          socialNet: net.socialNet,
-          actionType: action
-        };
+        params.episode = 1;
       }
       else {
         params = {
           scope: net.settings,
           display: 'touch', // 'page', 
           state: state, 
-          redirect_uri: G.serverName + '/social/socialsignup', 
+          redirect_uri: U._socialSignupHome, 
           response_type: 'code', 
           client_id: net.appId || net.appKey
         };
@@ -1298,6 +1326,11 @@ define('utils', [
       var meta = model.properties;
       var whereParams = U.whereParams;
       for (var p in params) {
+//        var pStart = p;
+//        if (/\./.test(p))
+//          pStart = p.slice(0, p.indexOf('.')); // might be a composite prop like tagUses.(http://www.hudsonfog.com/voc/model/aha/OnlineResource)taggable.ahasCount=>0
+//        
+//        if (meta[pStart] || whereParams[pStart])
         if (meta[p] || whereParams[p])
           filtered[p] = params[p];
       }
@@ -1489,7 +1522,7 @@ define('utils', [
           if (U.isResourceProp(prop)) {
             // get displayName somehow, maybe we need to move cached resources to G, instead of Router
             if (resource) {
-              var rdn = resource[shortName + '.displayName'];
+              var rdn = U.getValue(resource, shortName + '.displayName');
               if (rdn)
                 dn += rdn;
             }
@@ -1733,7 +1766,7 @@ define('utils', [
       return C.getResourceList(model, query);
     },
 
-    getModel: function() {
+    getModel: function(type) {
       var arg0 = arguments[0];
       var argType = Object.prototype.toString.call(arg0);
       switch (argType) {
@@ -1749,7 +1782,7 @@ define('utils', [
         }
         
         return null;
-//            throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
+  //          throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");            
       case '[object Object]':
         return arg0.vocModel; //U.isCollection(arg0) ? arg0.model : arg0.constructor;
       default:
@@ -2101,7 +2134,7 @@ define('utils', [
         }
       }
       
-      if (!prop.skipLabelInEdit)
+//      if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       
       val.shortName = prop.shortName;
@@ -2245,8 +2278,12 @@ define('utils', [
 //    },
     
     pushUniq: function(arr, obj) {
-      if (!_.contains(arr, obj))
-        arr.push(obj);
+      var items = concat.apply([], slice.call(arguments, 1));
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (!_.contains(arr, item))
+          arr.push(item);
+      }
     },
     
     encode: function(str) {
@@ -2754,7 +2791,26 @@ define('utils', [
 //      var y = aCoords[1] - bCoords[1];
 //      return Math.sqrt(x*x + y*y);
     },
+    
+    asArray: function(stuff) {
+      return U.slice.call(stuff);
+    },
     slice: slice,
+    concat: concat,
+    asArray: asArray,
+    copyArray: function(arr /* skip */) {
+      var copy = [],
+          skip = concat.apply(ArrayProto, slice.call(arguments, 1));
+      
+      for (var i in arr) {
+        var val = arr[i];
+        if (skip.indexOf(val) == -1)
+          copy.push(val);
+      }
+      
+      return copy;
+    },
+
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -3014,8 +3070,11 @@ define('utils', [
         
       if (U.isResourceProp(prop) && bound === '_me') {
         if (G.currentUser.guest) {
-          Events.trigger('req-login'); // exit search?
-          return function() {return true};
+//          Events.trigger('req-login'); // exit search?
+//          return function() {
+//            return false;
+//          };
+          throw G.Errors.Login;
         }
         else
           bound = G.currentUser._uri;
@@ -3542,27 +3601,35 @@ define('utils', [
       
       return modelLatLon;
     },
-    
-    getCurrentLocation: function() {
-      return $.Deferred(function(defer) {
-        setTimeout(defer.reject, 5000);
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var coords = position.coords;
-          position = {
-            latitude: coords.latitude, 
-            longitude: coords.longitude,
-            timestamp: position.timestamp
-          };
-// position has several params like (accuracy, time) that are causing the error like "property 'accuracy' was not found in Urbien1"            
-//          position = U.filterObj(position, function(key, val) {
-//            return val != null  &&  (key == 'latitude' || key == 'longitude');
-//          });
-          
-          Events.trigger('location', position);
-          defer.resolve(position);
-        }, defer.reject);
-      }).promise();
+
+    getCurrentLocation: function(options, watch) {
+      var dfd = $.Deferred(),
+          promise = dfd.promise();
+      
+      var watchId = navigator.geolocation[watch ? 'watchPosition' : 'getCurrentPosition'](function(position) {
+        position = simplifyPosition(position);
+        Events.trigger('location', position);
+        if (watch)
+          dfd.notify(position);
+        else
+          dfd.resolve(position);
+      }, dfd.reject, _.defaults(options || {}, {
+        enableHighAccuracy: false,
+        maximumAge: 2000,
+        timeout: 5000
+      }));
+      
+      if (watch) {
+        _.extend(promise, {
+          cancel: function() {
+            navigator.geolocation.clearWatch(watchId);
+          }
+        });
+      }
+      
+      return promise;
     },
+    
     randomString: function() {
       return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
     },
@@ -3572,7 +3639,7 @@ define('utils', [
      */
     rpc: function(method) {
       log('app', method);
-      var args = [].slice.call(arguments, 1),
+      var args = slice.call(arguments, 1),
           msg = {
               type: 'rpc:' + method
           };
@@ -3630,75 +3697,33 @@ define('utils', [
     isMetaParameter: function(param) {
       return /^[$-]+/.test(param);
     },
-    
-    parseHash: function(hash) {
-      hash = hash || U.getHash();
-      var params = U.getHashParams(hash),
-          qIdx = hash.indexOf("?"),
-          route = U.getRoute(hash),
-          subRoute,
-          hashParts = hash.split('?'),
-          type = U.getModelType(hash),
-          query = hashParts[1] || '',
-          uri,
-          info,
-          subInfo;
 
-      if (!route)
-        route = hash ? 'list' : 'home';
-      
-      if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
-        var uriParams = {};
-        for (var param in params) {
-          if (U.isMetaParameter(param)) {
-            uriParams[param] = params[param];
-            delete params[param];
-          }
-        }
-        
-        uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+    isModelParameter: function(param) {
+      return !U.isMetaParameter(param);
+    },
+
+    getUrlInfo: function(hash) {
+      return new UrlInfo(hash);
+    },
+
+    wipe: function(obj) {
+      for (var p in obj) {
+        if (_.has(obj, p))
+          delete obj[p];
       }
-      else {
-        uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
-      }
-        
-      if (window.router.isProxyRoute(route)) {
-        subInfo = U.parseHash(uri);
-//        uri = subHashInfo.uri;
-//        type = subHashInfo.type;
-//        subRoute = subHashInfo.route;
-      }
-      
-      
-      info = {
-        action: U.getRouteAction(route),
-        route: route,
-        sub: subInfo,
-        uri: uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri),
-        type: type,
-        query: query,
-        params: params,
-        fragment: hash
-      };
-      
-      info.equals = function(otherInfo) {
-        return _.isEqual(_.omit(otherInfo, 'equals'), _.omit(info, 'equals'));
-      };
-      
-      return info;
     },
     
     partial: function(fn) {
-      var args = [].slice.call(arguments, 1);
+      var args = slice.call(arguments, 1);
       return function() {
-        return fn.apply(null, args.concat([].slice.call(arguments)));
+        return fn.apply(null, args.concat(slice.call(arguments)));
       };
     },
 
     partialWith: function(fn, context) {
-      var args = [].slice.call(arguments, 2);
+      var args = slice.call(arguments, 2);
       return function() {
-        return fn.apply(context, args.concat([].slice.call(arguments)));
+        return fn.apply(context, args.concat(slice.call(arguments)));
       };
     },
 
@@ -3791,9 +3816,129 @@ define('utils', [
     
     getBacklinkCount: function(res, name) {
       return res.get(name + 'Count') || res.get(name).count;
-    }
+    },
+    
+    createDataUrl: function(type, content) {
+      return "data:{0};base64,{1}".format(type, window.btoa(content));
+    },
+    
+    imageToDataURL: function(img) {
+      // Create an empty canvas element
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Copy the image contents to the canvas
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      // Get the data-URL formatted image
+      // Firefox supports PNG and JPEG. You could check img.src to
+      // guess the original format, but be aware the using "image/jpg"
+      // will re-encode the image.
+//      var dataURL = canvas.toDataURL("image/png");
+
+      return canvas.toDataURL("image/png");
+//      return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    }    
   };
 
+  var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment', 'special'],
+      urlInfoSpecial = ['params', 'sub'],
+      allUrlInfoProps = _.union(urlInfoProps, urlInfoSpecial);
+  
+  function UrlInfo(hash) {
+    if (typeof hash == 'string')
+      this.initWithHash(hash);
+    else {
+      if (typeof hash === 'object')
+        _.extend(this, hash || {});
+    }
+    
+    var self = this;
+    this.equals = function(urlInfo) {
+      return this.toFragment() == urlInfo.toFragment();
+    };
+    
+    this.toFragment = function() {
+      if (this.fragment)
+        return this.fragment;
+      
+      var base;
+      if (this.route)
+        base = this.route + '/' + encodeURIComponent(this.uri);
+      else
+        base = this.uri;
+      
+      if (!this.params)
+        return base;
+      
+      return base + (base.indexOf("?") == -1 ? '?' : '&') + $.param(this.params || {});        
+    };
+    
+    _.each(allUrlInfoProps, function(prop) {
+      var cProp = prop.capitalizeFirst();
+      self['get' + cProp] = function() {
+        return self[prop];
+      };
+      
+      self['set' + cProp] = function(val) {
+        self[prop] = val;
+        return self;
+      };
+    });
+  };
+  
+  UrlInfo.prototype.initWithHash = function(hash) {
+    var params = U.getHashParams(hash),
+        qIdx = hash.indexOf("?"),
+        route = U.getRoute(hash),
+        subRoute,
+        hashParts = hash.split('?'),
+        type = U.getModelType(hash),
+        query = hashParts[1] || '',
+        uri,
+        info,
+        subInfo;
+
+    if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+      var uriParams = {};
+      for (var param in params) {
+        if (U.isMetaParameter(param)) {
+          uriParams[param] = params[param];
+          delete params[param];
+        }
+      }
+      
+      uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+    }
+    else {
+      uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+    }
+
+    if (uri == 'profile') {
+      this.special = 'profile';
+      uri = G.currentUser._uri; // null if guest
+    }
+
+    if (!route)
+      route = hash ? 'list' : 'home';
+    
+    if (route == 'templates') // template is a proxy route, it has another url as part of its url
+      subInfo = new UrlInfo(uri);
+    
+    this.action = U.getRouteAction(route);
+    this.route = route;
+    this.sub = subInfo;
+    if (uri)
+      this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    
+    this.type = type;
+    this.query = query;
+    this.params = params;
+    this.fragment = hash;
+  };
+  
   for (var p in U.systemProps) {
     var prop = U.systemProps[p];
     prop.shortName = p;
@@ -3827,11 +3972,11 @@ define('utils', [
   };
   // wf/.... attachment url
   patterns[/^wf\//] =  function(uri, matches, vocModel) {
-    return G.serverName + '/' + uri;
+    return G.serverNameHttp + '/' + uri;
   };
   // sql/...?...
   patterns[/^sql\/.*/] = function(uri, matches, vocModel) {
-    return G.serverName + '/' + uri;
+    return G.serverNameHttp + '/' + uri;
   };
   // http://.../voc/... with query string or without
   patterns[/^http:\/\/([^\?]+)\??(.*)/] = function(uri, matches, vocModel) {

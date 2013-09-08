@@ -224,6 +224,21 @@ define('app', [
     });
   };
   
+  function setupPackagedApp() {
+    if (navigator.mozApps) {
+      var dfd = $.Deferred(),
+          promise = G.firefoxAppInstalled = dfd.promise(),
+          check = navigator.mozApps.checkInstalled(G.firefoxManifestPath);
+      
+      check.onsuccess = function() {
+        if (check.result)
+          Events.trigger('firefoxAppInstalled', check.result);
+      };
+      
+      Events.on('firefoxAppInstalled', dfd.resolve.bind(dfd));
+    }
+  };
+  
   function setupPushNotifications() {
     if (G.currentUser.guest)
       return;
@@ -306,15 +321,91 @@ define('app', [
     reset();
     Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
-      promise.done(U.partial(run, fn, context));
+      return promise.then(U.partial(run, fn, context));
     };
   };
   
+  function hashToResourceOrList(hash) {
+    var hashInfo = U.getUrlInfo(hash),
+        type = hashInfo.getType(),
+        uri = hashInfo.getUri();
+      
+    if (!type)
+      return G.getRejectedPromise();
+      
+    return Voc.getModels(type, {wait: true}).then(function(model) {
+      var data;
+      switch (hashInfo.route) {
+        case "chooser": 
+        case "list":
+          data = new ResourceList(null, {
+            model: model, 
+            params: hashInfo.getParams()
+          });
+          
+          if (data.isBroken()) // for example, the user needs to be logged in for this list to be fetchable
+            data = null;
+          
+          break;
+        case "view":
+        case "edit":
+        case "chat": 
+        case "chatPrivate": 
+        case "chatLobby":
+          if (uri) {
+            data = new model({
+              _uri: uri
+            });
+          }
+          
+          break;          
+      }
+      
+      return data ? data : G.getRejectedPromise();
+    });
+  };
+  
+  function prefetchResources() {
+    var tabs = G.tabs,
+        promises;
+    
+    if (!G.currentUser.guest)
+      tabs = tabs.concat({hash: 'view/profile'});
+      
+    promises = _.map(tabs, function(tab) {
+      var promise = hashToResourceOrList(tab.hash);
+      if (promise.state() == 'rejected')
+        return G.getRejectedPromise();
+      
+      return promise.then(function(data) {
+        var fetchDfd = $.Deferred(),
+            isList = U.isCollection(data);
+        
+        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List', data));
+        data.fetch({
+          success: function() {
+            if (!data.isFetching())
+              fetchDfd.resolve();
+          },
+          error: function() {
+            fetchDfd.reject();
+          }
+        });
+        
+        return fetchDfd.promise();
+      });
+    });
+    
+    if (Voc.isDelayingModelsFetch())
+      Voc.getModels(null, {go: true});    
+  };
+  
   function doPostStartTasks() {
-    Voc.getModels();    
+    Voc.getModels();
     initGrabs();
     setupPushNotifications();
     ResourceManager.sync();
+    prefetchResources();
   //    if (G.inWebview) {
   //      App.replaceGetUserMedia();
   //      Events.on('messageToApp', function(msg) {
@@ -400,8 +491,14 @@ define('app', [
     }).promise();
   };
   
+  function setupUser() {
+    G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
+  };
+  
   function doPreStartTasks() {
 //    setupHashMonitor();
+    setupPackagedApp();
+    setupUser();
     setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
@@ -420,6 +517,8 @@ define('app', [
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
+//    if (G.browser.mobile)
+//      G.removeHoverStyles();
     ModelLoader.loadEnums();
     
     return $.whenAll.apply($, [modelsViewsTemplatesAndDB, localized]);
@@ -477,6 +576,12 @@ define('app', [
           G.localStorage.del(key);
       }        
     });
+    
+//    Events.on('viewDestroyed', function(view) {
+//      setTimeout(function() {
+//        U.wipe(view);
+//      }, 0);
+//    });
   };
   
   function setupMisc() {
@@ -694,22 +799,30 @@ define('app', [
       }
 
       var existingPopup = $('#login_popup');
-      if (existingPopup.length && existingPopup.is(':visible'))
-        return;
+      if (existingPopup.length) {
+//        existingPopup.popup().popup('open').parent().css({'z-index': 10000000});
+//        return;
+        existingPopup.remove();
+      }
       
-      var returnUri = options.returnUri || window.location.href;
+      var returnUri = options.returnUri || window.location.href,
+          returnUriHash = options.returnUriHash;
+      
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
       if (returnUri.startsWith(signupUrl)) {
-        debugger;
         G.log(App.TAG, 'error', 'avoiding redirect loop and scrapping returnUri -- 1');
         returnUri = G.pageRoot;
       }
       
       var nets = _.map(G.socialNets, function(net) {
-//        net.icon = net.icon || G.serverName + '/icons/' + net.socialNet.toLowerCase() + '-mid.png';
         return {
           name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl(net, 'Login', returnUri)
+          url: U.buildSocialNetOAuthUrl({
+            net: net,
+            action: 'Login', 
+            returnUri: returnUri,
+            returnUriHash: returnUriHash
+          })
         };
       });
       
@@ -719,7 +832,7 @@ define('app', [
         };
       }
         
-      existingPopup.remove();
+//      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');

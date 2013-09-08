@@ -15,59 +15,13 @@ define('vocManager', [
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
 
-  G.classUsage = _.map(G.classUsage, U.getTypeUri);
-  function ModelRequestCollector() {
-    var dfd, promise, collected;
-    this.reset = function() {
-      dfd = $.Deferred();
-      promise = dfd.promise();
-      collected = [];
-    };
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("VocManager");
+    G.log.apply(G, args);
+  };
 
-    this.appendRequest = function(models, options) {
-      delete options.wait;
-      _.union(collected, normalizeModels(models, options));
-      return promise;
-    };
-    
-    this.execute = function(options) {
-      delete options.go;
-      return ModelLoader.getModels(collected, options).always(this.reset);
-    };
-    
-    this.getModels = function(models, options) {
-      return ModelLoader.getModels(normalizeModels(models, options), options);
-    };
-    
-    this.reset();
-  };
-  
-  function normalizeModels(models, options) {
-    if (!models) {
-      // if no models specified, get the base app models
-      models = _.keys(G.modelsMetadata);
-      var currentModel = U.getModelType();
-      if (currentModel && !_.contains(models, currentModel))
-        models.push(currentModel);
-    }
-    else {
-      switch (U.getObjectType(models)) {
-      case '[object String]':
-        models = [U.getLongUri1(models)];
-        break;
-      case '[object Array]':
-        models = _.map(models, U.getLongUri1);
-        break;
-//      case '[object Object]':
-//        break;
-      default:
-        throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
-      }
-    }
-    
-    return models;
-  };
-      
+  G.classUsage = _.map(G.classUsage, U.getTypeUri);  
   function fetchLinkedAndReferredModels(list) {
     var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
     if (!resources.length)
@@ -77,25 +31,26 @@ define('vocManager', [
     var linkedModels = Voc.detectLinkedModels(resources[0]);
     var referredModels = Voc.detectReferredModels(list);
     var models = _.union(linkedModels || [], referredModels || []);
-    if (_.size(models))
+    if (_.size(models)) {
+      log('ajax', 'fetching linked/referred models for {0}'.format(U.isCollection(list) ? 'list: ' + list.query : 
+                                                                    resources.length > 1 ? 'resources' : 'resource: ' + resources[0].getUri()));
       Voc.getModels(models, {sync: false});
+    }
   };
   
   var Voc = {
-    modelReqCollector: new ModelRequestCollector(),
-//    models: [],
-    getModels: function(models, options) {
-      options = options || {};
-      if (options.wait)
-        return this.modelReqCollector.appendRequest(models, options);
-      else if (options.go)
-        this.modelReqCollector.execute(options);
-      else
-        return this.modelReqCollector.getModels(models, options);
+    isDelayingModelsFetch: function() {
+      return ModelLoader.isDelayingFetch();
     },
+    
+    getModels: function(models, options) {
+      return ModelLoader.getModels(models, options);
+    },
+    
     storeModels: function(models, storageType) {
       ModelLoader.storeModels(models, storageType);
     },
+    
     detectLinkedModels: function(res) {
       var isResource = U.isModel(res);
       var model = isResource ? res.vocModel : res;
@@ -217,17 +172,18 @@ define('vocManager', [
     if (!appInstall.get('allow'))
       return;
    
-    var user = G.currentUser;
-    var installed = user.installedApps = user.installedApps || {};
-    var app = C.getResource(appInstall.get('application'));
-    var jApp = app ? app.toJSON() : {};
-    jApp.install = appInstall.getUri();
-    jApp.allowed = true;
-    var appPath = app ? app.get('appPath') : U.getAppPathFromTitle(appInstall.get('application.displayName'));
-    installed[appPath] = jApp;
-    
-    if (!U.isTempResource(appInstall)) {
-      PlugManager.fetchPlugs({appInstall: appInstall.getUri()});
+    var uri = appInstall.get('_uri'),
+        user = G.currentUser,
+        installed = user.installedApps = user.installedApps || {},
+        jApp = {
+          application: appInstall.get('application'),
+          install: uri,
+          allow: true
+        };
+        
+    installed[G.currentApp.appPath] = jApp;
+    if (uri && !U.isTempUri(uri)) {
+      PlugManager.fetchPlugs({appInstall: uri});
     }
   });
   
@@ -318,7 +274,6 @@ define('vocManager', [
     _.each(['updated', 'added', 'reset'], function(event) {
       Voc.stopListening(list, event);
       Voc.listenTo(list, event, function(resources) {
-        G.log(Voc.TAG, 'ajax', 'fetching linked/referred models for list:', list.query);
         Voc.fetchLinkedAndReferredModels(resources || list.models);
       });
     });

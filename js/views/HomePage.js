@@ -33,18 +33,21 @@ define('views/HomePage', [
     
     installApp: function(e) {
       Events.stopEvent(e);
-      if (G.inFirefoxOS) {
+      if (G.hasFFApps) {
         U.require('firefox').done(function(Firefox) {
           Firefox.install();
         });
       }
     },
-
+    
     pagehide: function(e) {
       this.$el.hide();
-    },    
+      BasicPageView.prototype.onpageevent.apply(this, arguments);
+    },
+    
     pagebeforeshow: function(e) {
       this.$el.show();
+      BasicPageView.prototype.onpageevent.apply(this, arguments);
     },
     
     click: function(e) {
@@ -66,6 +69,8 @@ define('views/HomePage', [
     },
     
     render: function(options) {
+      var self = this;
+      
       this.$el.trigger('pagebeforeshow');
       var item = $('#homePage');
       item.css('display', 'block');
@@ -85,18 +90,13 @@ define('views/HomePage', [
       this.first = false;
 
       if (navigator.mozApps) {
-        var self = this;
-        var appSelf = navigator.mozApps.getSelf();
-        appSelf.onsuccess = function() {
-          if (appSelf.result) {
-            G.log(self.TAG, "events", "App installed!");
-            self.removeInstallBtn();
-          }
-        };
+        G.firefoxAppInstalled.done(function() {
+          self.removeInstallBtn();
+        });
       }
-      else {
+      else 
         this.removeInstallBtn();
-      }
+      
       $('title').text(G.currentApp.title);
 //      this.finish();
       this.$el.trigger('pageshow');

@@ -3,7 +3,6 @@ var __started = new Date();
 
 $.extend({
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
-  _whenAllCounter: 0,
   whenAll: function() {
     var args = [].slice.call(arguments),
         len = args.length;
@@ -42,41 +41,36 @@ $.extend({
       });
     }).promise();
   }
+//,
+//  
+//  LazyDeferred: (function() {
+//    var dfd = $.Deferred();
+//    
+//    function LazyDeferred(init) {
+//      if (!(this instanceof LazyDeferred))
+//        return new LazyDeferred(init);
+//      
+//      this._started = false;
+//      this.start = function() {
+//        this._started = true;
+//        init.call(dfd, dfd);
+//        return this.promise();
+//      };
+//      
+//      this.isRunning = function() {
+//        return this._started;
+//      };
+//    };
+//      
+//    for (var fn in dfd) {
+//      if (typeof dfd[fn] == 'function') {
+//        LazyDeferred.prototype[fn] = dfd[fn].bind(dfd);
+//      }
+//    }
+//    
+//    return LazyDeferred;
+//  })()
 });
-
-//// http://stackoverflow.com/questions/13493084/jquery-deferred-always-called-at-the-first-reject
-//// use this when you want to wait till all the deferreds passed in are resolved or rejected (the built in $.when will fail out as soon as one of the child deferreds is rejected)
-//$.extend({
-//  whenAll: function() {
-//    var dfd = $.Deferred(),
-//        len = arguments.length,
-//        counter = 0,
-//        state = "resolved",
-//        resolveOrReject = function() {
-//            if(this.state() === "rejected"){
-//                state = "rejected";
-//            }
-//            counter++;
-//  
-//            if(counter === len) {
-//                dfd[state === "rejected"? "reject": "resolve"]();   
-//            }
-//  
-//        };
-//  
-//  
-//     $.each(arguments, function(idx, item) {
-//         item.always(resolveOrReject); 
-//     });
-//  
-//    return dfd.promise();    
-//  }
-//});
-
-//'use strict';
-
-// Use of jQuery.browser is frowned upon.
-// More details: http://docs.jquery.com/Utilities/jQuery.browser
 
 define('globals', function() {
   /**
@@ -113,7 +107,8 @@ define('globals', function() {
     
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    var mobile = navigator.userAgent.match(/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/);
+    browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
+    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/);
     if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
@@ -207,7 +202,7 @@ define('globals', function() {
     case 'chrome':
       return G.inWebview;
     case 'firefox':
-      return G.inFirefoxOS;
+      return G.hasFFApps;
     default:
       return true;
     }
@@ -384,22 +379,77 @@ define('globals', function() {
         commonTypes = G.commonTypes, 
         defaultVocPath = G.defaultVocPath;
     
-    G.tourGuideEnabled      = true;
-    G.DEBUG                 = !G.minify;
-    G.domainRegExp          = new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3));
-    G.appModelRegExp        = new RegExp('model:(metadata:)?' + devVoc);
-    G.currentAppRegExp      = new RegExp(regex);
-    G.currentAppModelRegExp = new RegExp('model:(metadata:)?' + regex);    
-    G.storeFilesInFileSystem = G.hasBlobs && G.hasFileSystem && G.browser.chrome;
-    G.apiUrl                = G.serverName + '/api/v1/';
-    G.timeOffset            = G.localTime - G.serverTime;
-    G.firefoxManifestPath   = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp';
-    G.chromeManifestPath    = G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json';
+    G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
+    $.extend(G, {
+      appUrl: G.serverName + '/' + G.pageRoot,
+      sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
+      modelsUrl: G.serverName + '/backboneModel',
+      storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+      apiUrl: G.serverName + '/api/v1/',
+      timeOffset: G.localTime - G.serverTime,
+      firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
+//      firefoxManifestPath: G.serverName + '/FirefoxApp/NursMe/manifest.webapp',
+      chromeManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/chromeManifest.json',
+      domainRegExp: new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3)),
+      appModelRegExp: new RegExp('model:(metadata:)?' + devVoc),
+      currentAppRegExp: new RegExp(regex),
+      currentAppModelRegExp: new RegExp('model:(metadata:)?' + regex)    
+    });
+    
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
-    }
+    }  
   };
-
+  
+  function adjustForVendor() {
+    // requestAnimationFrame polyfill by Erik Möller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
+    window.MediaStream = window.webkitMediaStream || window.MediaStream;
+    (function( window ) {
+      'use strict';
+     
+      var lastTime = 0;
+      var prefixes = 'webkit moz ms o'.split(' ');
+      // get unprefixed rAF and cAF, if present
+      var requestAnimationFrame = window.requestAnimationFrame;
+      var cancelAnimationFrame = window.cancelAnimationFrame;
+      // loop through vendor prefixes and get prefixed rAF and cAF
+      var prefix;
+      for( var i = 0; i < prefixes.length; i++ ) {
+        if ( requestAnimationFrame && cancelAnimationFrame ) {
+          break;
+        }
+        prefix = prefixes[i];
+        requestAnimationFrame = requestAnimationFrame || window[ prefix + 'RequestAnimationFrame' ];
+        cancelAnimationFrame  = cancelAnimationFrame  || window[ prefix + 'CancelAnimationFrame' ] ||
+                                  window[ prefix + 'CancelRequestAnimationFrame' ];
+      }
+     
+      // fallback to setTimeout and clearTimeout if either request/cancel is not supported
+      if ( !requestAnimationFrame || !cancelAnimationFrame ) {
+        G.hasRequestAnimationFrame = false;
+        requestAnimationFrame = function( callback, element ) {
+          var currTime = new Date().getTime();
+          var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+          var id = window.setTimeout( function() {
+            callback( currTime + timeToCall );
+          }, timeToCall );
+          lastTime = currTime + timeToCall;
+          return id;
+        };
+     
+        cancelAnimationFrame = function( id ) {
+          window.clearTimeout( id );
+        };
+      }
+      else
+        G.hasRequestAnimationFrame = true;
+     
+      // put in global namespace
+      window.requestAnimationFrame = requestAnimationFrame;
+      window.cancelAnimationFrame = cancelAnimationFrame;     
+    })( window );
+  }
+  
   function testIfInsidePackagedApp() {
     // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
     if (!browser.chrome && !browser.firefox)
@@ -409,7 +459,7 @@ define('globals', function() {
       if (browser.chrome)
         G.inWebview = true;
       else if (browser.firefox) {
-//        G.inFirefoxOS = true;
+        G.inFirefoxOS = true;
 //        window.top.postMessage({message: 'Hello world'}, G.serverName);
       }
     };
@@ -421,18 +471,6 @@ define('globals', function() {
         return;
       }
     }
-    
-//    if (query && query.length) {
-//      var params = query.split('&');
-//      for (var i = 0; i < params.length; i++) {
-//        var keyVal = params[i].split('=');
-//        if (decodeURIComponent(keyVal[0]).toLowerCase() == param && decodeURIComponent(keyVal[1]) == 'y') {
-//          setParent();          
-//          G.localStorage.put(param, 'y');
-//          break;
-//        }
-//      }
-//    }
     
     if (params[param] == 'y') {
       setParent();          
@@ -649,14 +687,15 @@ define('globals', function() {
       }
       
       return require('__domReady__').then(function() {
-        var essential = ['jqmConfig', 'events', 'app'];
+        var essential = ['jqmConfig', 'events', 'lib/animationQueue', 'app'];
         if (G.modules['js/lib/l20n.js'])
           essential.push('lib/l20n');
         
         essential = essential.concat(css)
         return require(essential);
       });
-    }).then(function(jqmConfig, Events, App) {
+    }).then(function(jqmConfig, Events, AnimationQueue, App) {
+      G.animationQueue = new AnimationQueue();
       Events.on('appStart', APP_START_DFD.resolve);
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
@@ -1089,8 +1128,10 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-
   $.extend(G, {
+    emptyFn: function() {},
+    falseFn: function() { return false; },
+    trueFn: function() { return true; },
     onAppStart: function(fn) {
       return APP_START_DFD.promise().then(fn);
     },
@@ -1100,10 +1141,10 @@ define('globals', function() {
     getRejectedPromise: function() {
       return REJECTED_PROMISE;
     },
-    serverName: (function() {     
-      var s = $('base')[0].href;
-      return s.match("/$") ? s.slice(0, s.length - 1) : s;
-    })(),
+//    serverName: (function() { // defined in boot.js     
+//      var s = $('base')[0].href;
+//      return s.match("/$") ? s.slice(0, s.length - 1) : s;
+//    })(),
     putCached: function(urlToData, options) {
       var args = arguments;
       return G.onAppStart(function() {
@@ -1315,9 +1356,6 @@ define('globals', function() {
       DEFAULT: 'LIST'
     },
     classMap: G.classMap || {},
-    appUrl: G.serverName + '/' + G.pageRoot,
-    sqlUrl: G.serverName + '/' + G.sqlUri,
-    modelsUrl: G.serverName + '/backboneModel',  
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
     commonTypes: {
       App: 'model/social/App',
@@ -1514,6 +1552,44 @@ define('globals', function() {
       $head.append(style);
     },
     
+//    removeHoverStyles: function() {
+//      function hasHover(selector) {
+//        return /:hover|-hover-/.test(selector);
+//      };
+//      
+//      function addCSSRule(sheet, selector, rules, index) {
+//        if (sheet.insertRule) {
+//          sheet.insertRule(selector + "{" + rules + "}", index);
+//        }
+//        else {
+//          sheet.addRule(selector, rules, index);
+//        }
+//      };
+//      
+//      $.each(document.styleSheets, function(i, sheet) {
+//        $.each(sheet.rules, function(i, rule) {
+//          var selector = rule.selectorText,
+//              css = rule.cssText;
+//          
+//          if (hasHover(selector)) {
+//            while (/,/.test(selector) && hasHover(selector)) {
+//              selector = selector.replace(/(,?)[^,]+(:hover|-hover-)[^,]*(,?)/g, "$1$3").replace(/,+/g, ',');
+//            }
+//
+//            if (selector.startsWith(','))
+//              selector = selector.slice(1);
+//            if (selector.endsWith(','))
+//              selector = selector.slice(0, selector.length - 1);
+//
+//            sheet.deleteRule(i);
+//            if (selector && selector != rule.selectorText) {
+//              addCSSRule(sheet, selector, css, i);
+//            }
+//          } 
+//        });
+//      });
+//    },
+    
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1614,12 +1690,23 @@ define('globals', function() {
     support: {
       pushState: false //!!(window.history && history.pushState)
     },
-    language: params['-lang'] || navigator.language.split('-')[0]
+    language: params['-lang'] || navigator.language.split('-')[0],
+    tourGuideEnabled: true,
+    DEBUG: !G.minify,
+    Errors: {      
+      Login: {
+        code: 401,
+        name: 'User is not logged in',
+        message: 'Please log in'
+      }
+    }
+
   });
 
   setupLocalStorage();
   saveBootInfo();
   setMiscGlobals();
+  adjustForVendor();
   testIfInsidePackagedApp();
   Bundler.prepAppCacheBundle();
   determineMinificationMode();

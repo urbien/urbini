@@ -15,7 +15,7 @@ define('events', [
     getEventName: function(event) {
       switch(event) {
       case 'click':
-        return 'click'; // or click?
+        return 'click'; // or vclick?
       default:
         return event;
       }

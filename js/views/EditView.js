@@ -14,10 +14,9 @@ define('views/EditView', [
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
       
-  
-  function willShow(res, prop, role) {
-    var p = prop.shortName;
-    return !prop.formula  &&  !U.isSystemProp(p)  &&  U.isPropEditable(res, prop, role);
+  function isHidden(prop, currentAtts, reqParams) {
+    var p = prop.shortName; 
+    return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
   
   var scrollerTypes = ['date', 'duration'];
@@ -31,7 +30,7 @@ define('views/EditView', [
       });
     
       _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
-                      'onSelected', 'setValues', 'redirect', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
+                      'onSelected', 'setValues', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -46,9 +45,9 @@ define('views/EditView', [
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
       this.isEdit = this.action === 'edit';
+      this.saveOnEdit = options.saveOnEdit;
       
       this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
-      var self = this;
       /*
       var modelsDfd = $.Deferred(function(defer) {
         if (self.isForInterfaceImplementor) {
@@ -65,6 +64,7 @@ define('views/EditView', [
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length;
 
+      var self = this;
       var codemirrorDfd = $.Deferred(function(defer) {
         if (self.isCode) {
           U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
@@ -76,19 +76,16 @@ define('views/EditView', [
       });
       
       this.ready = $.when(codemirrorDfd.promise());
-      Events.on('pageChange', function(from, to) {
-        // don't autosave new resources, they have to hit submit on this one...or is that weird
-        if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
-          return;
-        
-        if (!this._submitted)
-          this.$form.submit();
-        if (this.isActive())
-          this.redirect();
-//        var unsaved = this.resource.getUnsavedChanges();
-//        if (_.size(unsaved))
-//          this.resource.save();
-      }.bind(this));
+      if (this.saveOnEdit) {
+        Events.on('pageChange', function(from, to) {
+          // don't autosave new resources, they have to hit submit on those...or is that weird?
+          if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
+            return;
+          
+          if (!this._submitted)
+            this.submit(null, {fromPageChange: true});
+        }.bind(this));
+      }
 
       this.on('active', function(active) {
         if (active) {
@@ -343,117 +340,88 @@ define('views/EditView', [
         var chosenRes;
         var checked;
         var isBuy = options.buy;
-        var isMultiValue = !isBuy  &&  options.model != null;
         if (isBuy)
-          chosenRes =  options.model;
-        else if (isMultiValue) {
-          chosenRes =  options.model;
-          checked = options.checked;
-        }
+          chosenRes =  options.resource;
         else
           chosenRes = options;
         
         G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
-        if (isMultiValue) {
-          var innerHtml = '';
-          var set = '';
-          var input;
-          for (var i=0; i<checked.length; i++) {
-  //          var val = $('label[for="' + checked[i].id + '"]')[0].value;
-            var style = checked[i].style;
-            if (style  &&  style.display  == 'none')
-              continue;
-            if (i != 0)
-              innerHtml += ', ';
-            innerHtml += checked[i].name;
-            input = checked[i].value;
-            checked[i].type = 'hidden';
-            $(checked[i]).attr('data-formel', 'true');
-            $(link.parentNode).append($(checked[i]));
-            if (i != 0)
-              set += ',';
-            set += input;
+        if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+  //        Events.trigger('buy', this.model);
+          var price = chosenRes.get('price');
+          if (price  &&  price.value) { 
+            Events.stopEvent(e);
+            var $popup = $('#buy_popup');
+            var dn = U.getDisplayName(chosenRes);
+            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+            var href = chosenRes.getUri();          
+            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+            if ($popup.length == 0) {
+              $($(document).find($('.ui-page-active'))[0]).append(html);
+              
+    //          $('body').append(html);
+              $popup = $('#buy_popup');
+            }
+            else {
+              $('#buyMsg').html(msg);
+              $('#buyLink').attr('href', href);
+              $('#tryLink').attr('href', href);
+              $('#buyName').html(dn);
+            }
+            $popup.trigger('create');
+            $popup.popup().popup("open");
+            return;
           }
-//          input = '<input type="checkbox" checked="checked" data-formel="true" name="' + prop + '"' + ' value="' + innerHtml + '" style="display:none" />';
-//          set += input;
-//          $(link.parentNode).append($(input));
-          var html = link.innerHTML;
-          var idx = html.indexOf('</label>');
-          var idx1 = html.indexOf('<br>');
-          link.innerHTML = idx1 == -1 ? html.substring(0, idx + 8) + ' ' + innerHtml : html.substring(0, idx + 8) + ' ' + innerHtml;
-//          $(link).attr("data-formel", "true");
-          props[prop] = innerHtml; //set;
-          props[prop + '.displayName'] = innerHtml;
-          this.resource.set(props, {skipValidation: true, skipRefresh: true});
-          this.setValues(props, {skipValidation: true, skipRefresh: false});
-          this.setResourceInputValue(link, set);
         }
         
-        else {
-          if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
-    //        Events.trigger('buy', this.model);
-            var price = chosenRes.get('price');
-            if (price  &&  price.value) { 
-              Events.stopEvent(e);
-              var $popup = $('#buy_popup');
-              var dn = U.getDisplayName(chosenRes);
-              var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-              var href = chosenRes.getUri();          
-              var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
-              if ($popup.length == 0) {
-                $($(document).find($('.ui-page-active'))[0]).append(html);
-                
-      //          $('body').append(html);
-                $popup = $('#buy_popup');
-              }
-              else {
-                $('#buyMsg').html(msg);
-                $('#buyLink').attr('href', href);
-                $('#tryLink').attr('href', href);
-                $('#buyName').html(dn);
-              }
-              $popup.trigger('create');
-              $popup.popup().popup("open");
-              return;
+        var uri = chosenRes.getUri();
+        props[prop] = uri;
+        var resName = U.getDisplayName(chosenRes);
+        if (resName)
+          props[prop + '.displayName'] = resName;
+        if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
+          props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
+        this.setValues(props, {skipValidation: true, skipRefresh: false});
+        var pr = vocModel.properties[prop];
+        var dn = pr.displayName;
+        if (!dn)
+          dn = prop.charAt(0).toUpperCase() + prop.slice(1);
+        var name = chosenRes.get('davDisplayName');
+        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        this.setResourceInputValue(link, uri);
+        if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
+          if (G.currentApp) {
+            var cUri = G.currentApp._uri;
+            if (cUri.indexOf('http') == -1) {
+              cUri = U.getLongUri1(cUri);
+              G.currentApp._uri = cUri;
             }
-          }
-          var uri = chosenRes.getUri();
-          props[prop] = uri;
-          var resName = U.getDisplayName(chosenRes);
-          if (resName)
-            props[prop + '.displayName'] = resName;
-          if (U.isAssignableFrom(chosenRes.vocModel, 'WebClass'))
-            props[prop + '.davClassUri'] = chosenRes.get('davClassUri');
-          this.setValues(props, {skipValidation: true, skipRefresh: false});
-          var pr = vocModel.properties[prop];
-          var dn = pr.displayName;
-          if (!dn)
-            dn = prop.charAt(0).toUpperCase() + prop.slice(1);
-          var name = chosenRes.get('davDisplayName');
-          link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
-          this.setResourceInputValue(link, uri);
-          if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
-            if (G.currentApp) {
-              var cUri = G.currentApp._uri;
-              if (cUri.indexOf('http') == -1) {
-                cUri = U.getLongUri1(cUri);
-                G.currentApp._uri = cUri;
-              }
-              if (this.resource.getUri() == cUri) {
-                var themeSwatch = chosenRes.get('swatch');
-                if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
-                  G.theme.swatch = themeSwatch;
-              }
+            if (this.resource.getUri() == cUri) {
+              var themeSwatch = chosenRes.get('swatch');
+              if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+                G.theme.swatch = themeSwatch;
             }
           }
         }
-        Events.trigger('back');
+        
+//        Events.trigger('back');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
       // set text
+    },
+    
+    onChooseMulti: function (e, prop)  {
+      var link = e.target,
+          self = this;
+      
+      return function(res, atts) {
+        self.setValues(atts, {skipValidation: true, skipRefresh: false});
+        self.setResourceInputValue(link, atts[prop + '.displayName']);
+        Events.trigger('back');
+      };
     },
 
     chooser: function(e) {
@@ -464,138 +432,146 @@ define('views/EditView', [
       if (!prop) {
         prop = e.currentTarget.parentElement.name;
       }
+
+//      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+//      Events.on('chose:' + prop, this.onChoose(e, prop), this);
+      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      Events.off('choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      Events.on('chose:' + prop, this.onChoose(e, prop), this);
+      Events.on('choseMulti:' + prop, this.onChooseMulti(e, prop), this);
+      Events.trigger('loadChooser', this.resource, this.vocModel.properties[prop], e);
       
-      var self = this;
-      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
-      var pr = vocModel.properties[prop];
-      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.on('chooser:' + prop, this.onChoose(e, prop), this);
-      var params = {};
-      if (pr.where) {
-        params = U.getQueryParams(pr.where);
-        for (var p in params) {
-          var val = params[p];
-          if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
-            if (val === '$this')
-              params[p] = res.getUri();
-            else {
-              val = res.get(val.slice(6));
-              if (val)
-                params[p] = val;
-              else
-                delete params[p];
-            }
-          }
-        }
-        
-        if (!pr.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
-          params.$prop = prop;
-          return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
-        }
-      }
-      
-      if (pr.multiValue) {
-        var prName = pr.displayName;
-        if (!prName)
-          prName = pr.shortName;
-//        var url = U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), {$multiValue: prop, $type: type, $forResource: uri});
-        params.$type = type;
-        params.$multiValue = prop;
-        if (this.action == 'make') {
-//          if (U.isAssignableFrom(vocModel, 'AppInstall')) {
-//            params.$checked = 'y'; // check all by default
+//      var self = this;
+//      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
+//      var pr = vocModel.properties[prop];
+//      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+//      Events.on('chooser:' + prop, this.onChoose(e, prop), this);
+//      var params = {};
+//      if (pr.where) {
+//        params = U.getQueryParams(pr.where);
+//        for (var p in params) {
+//          var val = params[p];
+//          if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
+//            if (val === '$this')
+//              params[p] = res.getUri();
+//            else {
+//              val = res.get(val.slice(6));
+//              if (val)
+//                params[p] = val;
+//              else
+//                delete params[p];
+//            }
 //          }
-        }
-        else
-          params.$forResource = uri;
-        
-        params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-        var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
-        mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
-        params['$' + prop] = mvList;
-        var typeUri = U.getTypeUri(pr.lookupFromType);
-        typeUri = G.classMap[typeUri] ? G.classMap[typeUri] : typeUri;
-        
-        this.router.navigate(U.makeMobileUrl('chooser', typeUri, params), {trigger: true});
-        return;
-      }
-      if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
-        var title = U.getQueryParams(window.location.hash)['$title'];
-        var t;
-        if (!title)
-          t = vocModel.displayName;
-        else {
-          var idx = title.indexOf('</span>');
-          t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + vocModel.displayName;
-        }
-        var domain = U.getLongUri1(res.get('domain'));
-        var rParams = {
-            $prop: pr.shortName,
-            $type:  vocModel.type,
-            $title: t,
-            $forResource: domain
-          };
-
-        if (vocModel.type.endsWith('BacklinkProperty')) {
-          var pf = G.currentApp._uri; //U.getLongUri1(res.get('parentFolder'));
-          if (G.currentUser.guest) 
-            _.extend(rParams, {parentFolder: pf});
-          else {
-            var params = {parentFolder: pf, creator: '_me'};
-            _.extend(rParams, {$or: U.getQueryString(params, {delimiter: '||'})});
-          }
-        }
-//          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
-//          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
-
-//          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
-        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
-        return;
-      }
-      if (this.isForInterfaceImplementor) { 
-        var rParams = {
-            $prop: pr.shortName,
-            $type:  this.vocModel.type,
-            $title: 'Add-ons',
-            $forResource: this.resource.get('implementor')
-          };
-        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
-        return;
-      }
-
-      if (pr.range != 'Class') {
-        var range = U.getLongUri1(pr.range);
-        var prModel = U.getModel(range);
-        var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
-        if (!isImage  &&  !prModel) {
-          var idx = range.indexOf('model/portal/Image');
-          isImage = idx != -1  &&  idx == range.length - 'model/portal/Image'.length;
-        }
-        if (isImage) {
-          var prName = pr.displayName;
-          if (!prName)
-            prName = pr.shortName;
-          var rParams = { forResource: res.getUri(), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
-          this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
-          return;
-        }
-      }
-      var rParams = {
-          $prop: pr.shortName,
-          $type: vocModel.type
-        };
-      if (this.reqParams) {
-        for (var p in this.reqParams) {
-          var prop = vocModel.properties[p];
-          if (prop  &&  prop.containerMember) {
-            rParams['$forResource'] = this.reqParams[p];
-            break;
-          }
-        }
-      }
-      
-      
-      this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+//        }
+//        
+//        if (!pr.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
+//          params.$prop = prop;
+//          return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
+//        }
+//      }
+//      
+//      if (pr.multiValue) {
+//        var prName = pr.displayName;
+//        if (!prName)
+//          prName = pr.shortName;
+////        var url = U.makeMobileUrl('chooser', U.getTypeUri(pr.lookupFrom), {$multiValue: prop, $type: type, $forResource: uri});
+//        params.$type = type;
+//        params.$multiValue = prop;
+//        if (this.action == 'make') {
+////          if (U.isAssignableFrom(vocModel, 'AppInstall')) {
+////            params.$checked = 'y'; // check all by default
+////          }
+//        }
+//        else
+//          params.$forResource = uri;
+//        
+//        params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
+//        var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
+//        mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
+//        params['$' + prop] = mvList;
+//        var typeUri = U.getTypeUri(pr.lookupFromType);
+//        typeUri = G.classMap[typeUri] ? G.classMap[typeUri] : typeUri;
+//        
+//        this.router.navigate(U.makeMobileUrl('chooser', typeUri, params), {trigger: true});
+//        return;
+//      }
+//      if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
+//        var title = U.getQueryParams(window.location.hash)['$title'];
+//        var t;
+//        if (!title)
+//          t = vocModel.displayName;
+//        else {
+//          var idx = title.indexOf('</span>');
+//          t =  title.substring(0, idx + 7) + "&nbsp;&nbsp;" + vocModel.displayName;
+//        }
+//        var domain = U.getLongUri1(res.get('domain'));
+//        var rParams = {
+//            $prop: pr.shortName,
+//            $type:  vocModel.type,
+//            $title: t,
+//            $forResource: domain
+//          };
+//
+//        if (vocModel.type.endsWith('BacklinkProperty')) {
+//          var pf = G.currentApp._uri; //U.getLongUri1(res.get('parentFolder'));
+//          if (G.currentUser.guest) 
+//            _.extend(rParams, {parentFolder: pf});
+//          else {
+//            var params = {parentFolder: pf, creator: '_me'};
+//            _.extend(rParams, {$or: U.getQueryString(params, {delimiter: '||'})});
+//          }
+//        }
+////          var params = '&$prop=' + pr.shortName + '&$type=' + encodeURIComponent(this.vocModel.type) + '&$title=' + encodeURIComponent(t);
+////          params += '&$forResource=' + encodeURIComponent(this.model.get('domain'));
+//
+////          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + params, {trigger: true});
+//        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+//        return;
+//      }
+//      if (this.isForInterfaceImplementor) { 
+//        var rParams = {
+//            $prop: pr.shortName,
+//            $type:  this.vocModel.type,
+//            $title: 'Add-ons',
+//            $forResource: this.resource.get('implementor')
+//          };
+//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+//        return;
+//      }
+//
+//      if (pr.range != 'Class') {
+//        var range = U.getLongUri1(pr.range);
+//        var prModel = U.getModel(range);
+//        var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
+//        if (!isImage  &&  !prModel) {
+//          var idx = range.indexOf('model/portal/Image');
+//          isImage = idx != -1  &&  idx == range.length - 'model/portal/Image'.length;
+//        }
+//        if (isImage) {
+//          var prName = pr.displayName;
+//          if (!prName)
+//            prName = pr.shortName;
+//          var rParams = { forResource: res.getUri(), $prop: pr.shortName, $location: res.get('attachmentsUrl'), $title: U.makeHeaderTitle(vocModel.displayName, prName) };
+//          this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
+//          return;
+//        }
+//      }
+//      var rParams = {
+//          $prop: pr.shortName,
+//          $type: vocModel.type
+//        };
+//      if (this.reqParams) {
+//        for (var p in this.reqParams) {
+//          var prop = vocModel.properties[p];
+//          if (prop  &&  prop.containerMember) {
+//            rParams['$forResource'] = this.reqParams[p];
+//            break;
+//          }
+//        }
+//      }
+//      
+//      
+//      this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        var w = pr.where;
 //        var wOr =  pr.whereOr;
 //        if (!w  &&  !wOr)
@@ -682,186 +658,13 @@ define('views/EditView', [
       }
     },
     
-    redirect: function(options) {
-      if (!this.isActive()) // already redirected
-        return;
-        
-      var params = U.getQueryParams();
-      var options = _.extend({replace: true, trigger: true}, options || {});
-
-      if (params.$returnUri) 
-        return this.router.navigate(params.$returnUri, _.extend({forceFetch: true}, options));
-        
-      var res = this.resource,
-          uri = res.getUri(),
-          vocModel = this.vocModel,
-          webPropType = G.commonTypes.WebProperty,
-          self = this;
-
-      if (this.action === 'edit') {
-        Events.trigger('back');
-        return;
-      }  
-      
-      if (this.isForInterfaceImplementor) {
-        var iClName = U.getValueDisplayName(res, 'interfaceClass');
-        var title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties';
-        return this.router.navigate(U.makeMobileUrl('list', webPropType, {
-          domain: res.get('implementor'), 
-          $title: title
-        }), _.extend({forceFetch: true}, options));
-      }
-      else if (U.isAssignableFrom(vocModel, webPropType)) {
-        var propType = res.get('propertyType');
-        switch (propType) {
-          case 'Link':
-          case 'Collection':
-            return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
-          default: 
-            return this.router.navigate(U.makeMobileUrl('view', res.get('domain')), _.extend({forceFetch: true}, options));
-        }        
-      }
-      else if (G.commonTypes.Connection  &&  U.isAssignableFrom(vocModel, G.commonTypes.Connection)) {
-        return this.router.navigate(U.makeMobileUrl('edit', res), _.extend({forceFetch: true}, options));
-      }
-      else if (U.isAssignableFrom(vocModel, G.commonTypes.App) && G.online) {
-        var isFork = res.get('forkedFrom');
-        var preMsg = isFork ? 'Forking in progress, hold on to your hair.' : 'Setting up your app, hold on to your knickers.';
-        var postMsg = isFork ? 'Forking complete, gently release your hair' : 'App setup complete';
-        $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, preMsg, false);
-        res.on('syncError', function(error) {
-          $m.hidePageLoadingMsg();          
-        });
-        
-        res.once('syncedWithServer', function() { // when app is created, the returned resource JSON is not up to date with models count, etc., so need to fetch again
-          $m.hidePageLoadingMsg();
-          $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, postMsg, false);
-          setTimeout($m.hidePageLoadingMsg, 3000);
-          res.fetch({forceFetch: true});
-        });
-      }
-      
-      if (res.isA('Redirectable')) {
-        var redirect = U.getCloneOf(vocModel, 'Redirectable.redirectUrl');
-//        if (!redirect.length)
-//          redirect = U.getCloneOf(vocModel, 'ElectronicTransaction.redirectUrl');  // TODO: undo hack
-        if (redirect.length) {
-          redirect = res.get(redirect);
-          if (redirect) {
-            window.location.href = redirect;
-            return;
-          }
-        }
-      }
-      
-      var redirectAction = vocModel.onCreateRedirectToAction, 
-          redirectParams = {},
-          action = '',
-          redirectPath = '',
-          redirectTo = vocModel.onCreateRedirectTo;
-      if (vocModel.onCreateRedirectToMessage) {
-        if (redirectTo.indexOf('?') == -1)
-          redirectTo += '?';
-        else
-          redirectTo += '&';
-        redirectTo += '-info=' + encodeURIComponent(vocModel.onCreateRedirectToMessage);
-      }
-      // check if we came here by backlink
-      if (!redirectTo && params.$backLink) 
-        redirectTo = U.getContainerProperty(vocModel);
- 
-      if (!redirectAction) {
-        Events.trigger('back');
-        return;
-      }
-      
-      switch (redirectAction) {
-        case 'LIST':
-          if (redirectTo) { 
-            var dotIdx = redirectTo.indexOf('.');
-            if (dotIdx != -1) {
-              var pName = redirectTo.slice(0, dotIdx),
-                  prop = vocModel.properties[pName],
-                  range = U.getLongUri1(prop.range),
-                  rangeCl = U.getModel(range);
-              
-              if (rangeCl) {
-                redirectParams[pName] = res.get(pName);
-                var bl = redirectTo.slice(dotIdx + 1);
-                var blProp = rangeCl.properties[bl];
-                if (blProp)
-                  redirectPath = blProp.range;
-                else {
-                  G.log(this.TAG, 'error', 'couldn\'t create redirect', redirectTo);
-                  self.router.navigate(U.makeMobileUrl('view', uri), options);
-                  return;
-                }
-              }
-              else {
-                var args = arguments;
-                Voc.getModels(range).done(function() {
-                  self.redirect.apply(self, args);
-                }).fail(function() {
-                  self.router.navigate(U.makeMobileUrl('view', uri), options);
-                })
-                
-                return;
-              }
-            }
-            
-            redirectPath = redirectPath || U.getTypeUri(vocModel.properties[redirectTo]._uri);
-          }
-          else  
-            redirectPath = vocModel.type;
-          
-          options.forceFetch = true;
-          break;
-        case 'PROPFIND':
-        case 'PROPPATCH':
-          if (!redirectTo || redirectTo.indexOf('-$this') === 0) {
-            redirectPath = uri;
-          }
-          else {
-            var prop = vocModel.properties[redirectTo];
-            if (prop.backLink) {
-              redirectPath = uri;
-//              redirectPath = 'make/'; //TODO: make this work for uploading images
-            }
-            else {
-              var target = res.get(redirectTo);
-              if (target) {
-                target = target.value || target;
-                redirectPath = target;
-              }
-              else
-                redirectPath = uri;
-            }
-          }
-          
-          action = redirectAction === 'PROPFIND' ? 'view' : 'edit';
-          break;
-        case 'SOURCE':
-          redirectPath = this.source;
-          if (_.isUndefined(redirectPath)) {
-            redirectPath = uri;
-            action = 'view';
-          }
-          
-          options.forceFetch = true;
-          break;
-        default:
-          G.log(this.TAG, 'error', 'unsupported onCreateRedirectToAction', redirectAction);
-          redirectPath = vocModel.type;
-          options.forceFetch = true;
-          break;
-      }
-      
-      var redirectMsg = vocModel.onCreateRedirectToMessage;
-      if (redirectMsg)
-        redirectParams['-info'] = redirectMsg;
-      
-      this.router.navigate(U.makeMobileUrl(action, redirectPath, redirectParams), options);
-    },
+//    redirect: function(options) {
+//      if (!this.isActive()) // already redirected
+//        return;
+//      
+//      Events.trigger('redirectAfterWriteOp', this.resource, options);
+////      redirectAfterWriteOp(this.resource, options);
+//    },
     
     getAtt: function(att) {
 //      var edits = res.getUnsavedChanges();
@@ -912,8 +715,8 @@ define('views/EditView', [
       return true;
     },
     
-    submit: function(e) {
-      Events.stopEvent(e);
+    submit: function(e, options) {
+      e && Events.stopEvent(e);
       if (this._submitted) {
         if (!this.isActive())
           return;
@@ -933,7 +736,7 @@ define('views/EditView', [
       
       if (!this.isEdit && uri) {
 //        this.incrementBLCount();
-        this.redirect({forceFetch: true});
+//        this.redirect({forceFetch: true});
         return;
       }
       
@@ -1000,6 +803,19 @@ define('views/EditView', [
       });
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
+      if (!_.size(atts)) {
+        if (options && options.fromPageChange)
+          return;
+        
+        var prevHash = this.getPreviousHash();
+        if (prevHash && !prevHash.startsWith('chooser/'))
+          Events.trigger('back');
+        else
+          Events.trigger('navigate', this.resource.getUri());
+        
+        return;
+      }
+      
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
@@ -1015,9 +831,10 @@ define('views/EditView', [
         this.resource.clear();
         this.resource.set(this.originalResource);
       }
-        
+       
+      Events.trigger('cancel' + this.action.capitalizeFirst(), this.resource);
       this._canceled = this._submitted = true;
-      Events.trigger('back');
+//      Events.trigger('back');
     },
     
     onSaveError: function(resource, xhr, options) {
@@ -1036,13 +853,8 @@ define('views/EditView', [
         return;
       }
       
-      var json = {};
-      try {
-        json = JSON.parse(xhr.responseText);
-      } catch (err) {
-      }
-      
-      var msg = json.error.details;
+      var error = U.getJSON(xhr.responseText);
+      var msg = error && error.details;
       // TODO: undo this hack
       if (msg && msg.startsWith("You don't have enough funds")) {
         Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
@@ -1077,6 +889,7 @@ define('views/EditView', [
           Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
           break;
         default:
+          debugger;
           Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
 //          debugger;
           break;
@@ -1089,7 +902,7 @@ define('views/EditView', [
 //      var props = atts;
       if (this.isEdit && !_.size(props)) {
 //        debugger; // user didn't modify anything?
-        this.redirect();
+//        this.redirect();
         return;
       }
             
@@ -1107,7 +920,7 @@ define('views/EditView', [
           self.getInputs().attr('disabled', false);
           res.lastFetchOrigin = null;
           self.disable('Changes submitted');
-          self.redirect();
+//          self.redirect();
           if (sync)
             G.hideSpinner('saving-resource');
         }, 
@@ -1269,46 +1082,70 @@ define('views/EditView', [
       
       return set;
     },
-    addProp: function(info) {
-      var p = info.name;
-      if (!/^[a-zA-Z]/.test(p) || info.displayedProps[p])
-        return;
-      
-      var prop = info.prop;
-      if (!prop) {
-//        delete json[p];
-        return;
-      }
-      if (info.params[p]  &&  prop.containerMember && (this.action == 'edit' || this.reqParams[p])) {
-        if (prop.required) {
-          var rules = ' data-formEl="true"';
-          var longUri = U.getLongUri1(info.params[p]);
-          U.addToFrag(info.frag, this.hiddenPropTemplate({value: longUri, shortName: p, id: info.formId, rules: rules }));
-        }
-        
-        return;
-      }
-      
-      if (_.has(info.backlinks, p))
-        return;
-      if (U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel)) {
-        if (window.location.hash.startsWith('#make/')  || prop.avoidDisplayingInEdit)
-          return;
-      }
-      _.extend(prop, {shortName: p});
-      var res = this.resource;
-      if (!willShow(res, prop, info.userRole))
-        return;
-      
-      info.displayedProps[p] = true;
-      var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
-      if (!info.groupNameDisplayed  &&  info.propertyGroupName) {
-        U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
-        info.groupNameDisplayed = true;
-      }
 
-      U.addToFrag(info.frag, this.editRowTemplate(pInfo));
+    addProp: function(info) {
+      var prop = info.prop,
+          p = prop.shortName;
+      
+      if (isHidden(prop, info.params, info.reqParams)) {
+        var rules = ' data-formEl="true"',
+            longUri = U.getLongUri1(info.params[p]);
+        
+        U.addToFrag(info.frag, this.hiddenPropTemplate({
+          value: longUri, 
+          shortName: p, 
+          id: info.formId, 
+          rules: rules 
+        }));        
+      }
+      else {
+        var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
+        U.addToFrag(info.frag, this.editRowTemplate(pInfo));
+      }
+      
+      info.displayedProps.push(p);
     },
+    
+//    addProp: function(info) {
+//      var p = info.name;
+//      if (!/^[a-zA-Z]/.test(p) || info.displayedProps[p])
+//        return;
+//      
+//      var prop = info.prop;
+//      if (!prop) {
+////        delete json[p];
+//        return;
+//      }
+//      if (info.params[p]  &&  prop.containerMember && (this.action == 'edit' || this.reqParams[p])) {
+//        if (prop.required) {
+//          var rules = ' data-formEl="true"';
+//          var longUri = U.getLongUri1(info.params[p]);
+//          U.addToFrag(info.frag, this.hiddenPropTemplate({value: longUri, shortName: p, id: info.formId, rules: rules }));
+//        }
+//        
+//        return;
+//      }
+//      
+//      if (_.has(info.backlinks, p))
+//        return;
+//      if (U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel)) {
+//        if (window.location.hash.startsWith('#make/')  || prop.avoidDisplayingInEdit)
+//          return;
+//      }
+//      _.extend(prop, {shortName: p});
+//      var res = this.resource;
+//      if (!willShow(res, prop, info.userRole))
+//        return;
+//      
+//      info.displayedProps[p] = true;
+//      var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
+//      if (!info.groupNameDisplayed  &&  info.propertyGroupName) {
+//        U.addToFrag(info.frag, this.propGroupsDividerTemplate({value: info.propertyGroupName}));
+//        info.groupNameDisplayed = true;
+//      }
+//
+//      U.addToFrag(info.frag, this.editRowTemplate(pInfo));
+//    },
     getResourceInputValue: function(input) {
       input = input instanceof $ ? input : $(input);
       return input.data('uri');
@@ -1367,115 +1204,95 @@ define('views/EditView', [
       if (!this.originalResource)
         this.originalResource = res.toJSON();
       
-      var type = res.type;
+      var type = res.type,
+          reqParams = this.hashParams,
+          frag = document.createDocumentFragment(),
+          displayedProps = [],//    
+          params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, U.isModelParameter),
+          formId = G.nextId(),
+          userRole = U.getUserRole(),
+          editableProps = res.getEditableProps(this._hashInfo),
+          props = editableProps.props,
+          grouped = props.grouped,
+          ungrouped = props.ungrouped,
+          state = {
+            values: res.attributes, 
+            userRole: userRole, 
+            frag: frag, 
+            displayedProps: displayedProps, 
+            params: params, 
+            backlinks: editableProps.backlinks, 
+            formId: formId
+          };
       
-      var json = res.toJSON();
-      var frag = document.createDocumentFragment();
-      var propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
-      propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
-      var backlinks = U.getPropertiesWith(meta, "backLink");
-      var displayedProps = {};
+      if (grouped.length) {
+        var reqd = U.getPropertiesWith(meta, [{
+            name: "required", 
+            value: true
+          }, {
+            name: "readOnly", 
+            values: [undefined, false]
+          }]),
+          
+          init = this.originalResource;      
 
-      var currentAppProps = U.getCurrentAppProps(meta);
+        for (var i = 0; i < grouped.length; i++) {
+          var groupInfo = grouped[i],
+              p = groupInfo.shortName,
+              prop = groupInfo.prop,
+              props = groupInfo.props;
 
-      var reqParams = U.getParamMap(window.location.href);
-      var editCols = reqParams['$editCols'];
-      var mkResourceCols = this.vocModel['mkResourceCols'];
-      var editProps = editCols ? editCols.replace(/\s/g, '').split(',') : null;
-        
-      if (!editProps) {
-        propsForEdit = vocModel.propertiesForEdit;
-        editProps = propsForEdit  &&  this.action === 'edit' ? propsForEdit.replace(/\s/g, '').split(',') : null;
-        if (!editProps  &&  this.action == 'make') {
-          var mkResourceCols = this.vocModel['mkResourceCols'];
-          if (mkResourceCols)
-            editProps = mkResourceCols.replace(/\s/g, '').split(',');
-          else if (vocModel.type.endsWith('WebProperty')) {
-            editProps = ['label', 'propertyType'];
-          }
-          else if (vocModel.type.endsWith('Connection')) {
-            editProps = ['fromApp', 'connectionType', 'effect'];
-          }
-        }  
-      }
-      
-      var params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, function(name, val) {return /^[a-zA-Z]/.test(name)}); // starts with a letter
-      var formId = G.nextId();
-      var idx = 0;
-      var groupNameDisplayed;
-      var maxChars = 30;
-      var userRole = U.getUserRole();
-      var info = {values: json, userRole: userRole, frag: frag, displayedProps: displayedProps, params: params, backlinks: backlinks, formId: formId};
-      if (propGroups.length  &&  !editCols) {
-        propGroups.sort(function(a, b) {
-          return a.shortName === 'general' ? -1 : 1;
-        });
-        
-        for (var i = 0; i < propGroups.length; i++) {
-          var grMeta = propGroups[i];
-          var pgName = U.getPropDisplayName(grMeta);
-          var props = grMeta.propertyGroupList.split(",");
-          groupNameDisplayed = false;
+          var pInfo = U.makeEditProp(res, prop, undefined, formId);
+          U.addToFrag(frag, this.propGroupsDividerTemplate({
+            value: U.getPropDisplayName(prop)
+          }));
+          
           for (var j = 0; j < props.length; j++) {
-            var p = props[j].trim();
-            if (editProps  &&  $.inArray(p, editProps) == -1)
-              continue;
-
-            if (meta[p]) {
-              if (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)) || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
-                continue;
-            }
-            this.addProp(_.extend(info, {name: p, prop: meta[p], propertyGroupName: pgName, groupNameDisplayed: groupNameDisplayed}));
-            groupNameDisplayed = true;
+            var p = props[j]; 
+            this.addProp(_.extend(state, {
+              name: p, 
+              prop: meta[p] 
+            }));
           }
         }
-        if (!editProps) {
-          var reqd = U.getPropertiesWith(meta, [{name: "required", value: true}, {name: "readOnly", values: [undefined, false]}]);
-          var init = this.originalResource; //_.extend({}, this.originalResource); //, res.getUnsavedChanges());
-          for (var p in reqd) {
-            p = p.trim();
-            if (typeof init[p] !== 'undefined')
-              continue;
-            if (meta[p]) {
-              if  (meta[p].readOnly  ||  (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)) || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
-                continue;
-            }
-            _.extend(info, {name: p, prop: reqd[p]});
-            this.addProp(info);
-            displayedProps[p] = true;
-          }        
-        }
-      }
-      for (var p in reqParams) {
-        if (!meta[p]  || displayedProps[p] || (meta[p].app  &&  (!currentAppProps || !currentAppProps[p])))
-          continue;
-        _.extend(info, {name: p, prop: meta[p], val: reqParams[p]});
         
-        var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
-        U.addToFrag(info.frag, h);
-//        this.addProp(info);
-        displayedProps[p] = true;
+        for (var p in reqd) {
+          if (_.isUndefined(init[p]) && !_.contains(displayedProps, p)) {
+            this.addProp(_.extend(state, {
+              name: p, 
+              prop: reqd[p]
+            }));
+          }
+        }        
       }
+      
+      for (var p in reqParams) {
+        var prop = meta[p];
+        if (prop  &&  !_.contains(displayedProps, p)) {
+//          _.extend(state, {
+//            name: p, 
+//            prop: meta[p], 
+//            val: reqParams[p]
+//          });
+          var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
+          U.addToFrag(state.frag, h);
+          displayedProps.push(p);
+        }        
+//        this.addProp(state);
+      }
+        
+        
       var returnUri = reqParams['$returnUri']; 
       if (returnUri) {
         var h =  '<input data-formEl="true" type="hidden" name="$returnUri" value="' + returnUri + '"/>';
-        U.addToFrag(info.frag, h);
+        U.addToFrag(state.frag, h);
       }
-      if (!propGroups.length || editProps) {
-        for (var p in meta) {
-          p = p.trim();
-          if (displayedProps[p])
-            continue;
-          if (editProps  &&  $.inArray(p, editProps) == -1)
-            continue;
-          if (meta[p].readOnly || (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p)))
-            continue;
-          if (this.action != 'make'  &&  meta[p].immutable  &&  this.getAtt(p))
-            continue;
-          _.extend(info, {name: p, prop: meta[p]});
-          this.addProp(info);
-          displayedProps[p] = true;
-        }        
+      
+      if (!grouped.length || reqParams['$editCols']) {
+        _.each(ungrouped, function(p) {          
+          _.extend(state, {name: p, prop: meta[p]});
+          self.addProp(state);
+        });
       }        
       
       (this.$ul = this.$('#fieldsList')).html(frag);
@@ -1780,5 +1597,5 @@ define('views/EditView', [
     }
   }, {
     displayName: 'EditView'
-  });
+  });  
 });

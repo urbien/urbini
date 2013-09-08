@@ -6,7 +6,7 @@ define('views/BasicPageView', [
   'views/BasicView',
   'jqueryMobile'
 ], function(G, U, Events, BasicView, $m) {
-  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip'],
+  var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       $wnd = $(window);
 
@@ -14,28 +14,28 @@ define('views/BasicPageView', [
     return !!$(element).parents('[draggable=true]').length;
   };
   
-  function isTouchWithinBounds(touch1, touch2, bound) {
-    if (!touch1 || !touch2)
-      return false;
-    
-    bound = bound || 10;
-    return _.all(['pageX', 'pageY'], function(p) {        
-      return Math.abs(touch1[p] - touch2[p]) < bound;
-    });
-  };
-  
-  function cloneTouch(touch) {
-    return {
-      pageX: touch.pageX,
-      pageY: touch.pageY
-    }
-  };
+//  function isTouchWithinBounds(touch1, touch2, bound) {
+//    if (!touch1 || !touch2)
+//      return false;
+//    
+//    bound = bound || 10;
+//    return _.all(['pageX', 'pageY'], function(p) {        
+//      return Math.abs(touch1[p] - touch2[p]) < bound;
+//    });
+//  };
+//  
+//  function cloneTouch(touch) {
+//    return {
+//      pageX: touch.pageX,
+//      pageY: touch.pageY
+//    }
+//  };
   
   var PageView = BasicView.extend({
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'pageevent', 'swiperight', 'swipeleft', 'scroll', 'onpageshow', 'onpagehide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll'); //, 'onpageshow', 'onpagehide');            
       $wnd.on('scroll', this.onScroll.bind(this));
       
 //    if (navigator.mozApps) {
@@ -65,7 +65,7 @@ define('views/BasicPageView', [
       });
       
       Events.on('messageBar', function(type, data) {
-        self.createMessageBar(type, data);
+        self.createMessageBar.apply(self, arguments);
       });
       
       var refresh = this.refresh;
@@ -84,8 +84,6 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-      this.onload(this._checkMessageBar.bind(this));
-      this.onload(this._checkAutoClose.bind(this));
       Events.on('newRTCCall', function(call) {
         self.createCallInProgressHeader(call);
       });
@@ -107,6 +105,10 @@ define('views/BasicPageView', [
             self._checkMessageBar();
             self._checkAutoClose();
           }
+          else {
+            self.onload(self._checkMessageBar.bind(self));
+            self.onload(self._checkAutoClose.bind(self));            
+          }
           
           if (!self._title)
             self._updateTitle();
@@ -120,14 +122,15 @@ define('views/BasicPageView', [
       'scrollstart': 'reverseBubbleEvent',
       'scrollstop': 'reverseBubbleEvent',      
       'scroll': 'scroll',
-      'pagehide': 'pageevent',
-      'pageshow': 'pageevent',
-      'pagebeforeshow': 'pageevent',
+      'pagehide': 'onpageevent',
+      'pageshow': 'onpageevent',
+      'pagebeforeshow': 'onpageevent',
       'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft',
-      'touchstart': 'highlightOnTouchStart',
-      'touchmove': 'unhighlightOnTouchMove',
-      'touchend': 'unhighlightOnTouchEnd'
+      'swipeleft': 'swipeleft'
+//        ,
+//      'touchstart': 'highlightOnTouchStart',
+//      'touchmove': 'unhighlightOnTouchMove',
+//      'touchend': 'unhighlightOnTouchEnd'
     },
 
     destroy: function() {
@@ -135,71 +138,71 @@ define('views/BasicPageView', [
       BasicView.prototype.destroy.call(this);
     },
     
-    highlightOnTouchStart: function(e) {
-      var self = this,
-          touches = e.touches;
-      
-      if (_.isUndefined(touches))
-        return;
-      
-      // Mobile safari doesn't let you copy touch objects, so copy it manually
-      this._firstTouch = cloneTouch(touches[0]);
-      this.touchStartTimer = setTimeout(function() {
-        self.highlight(e.target, e);
-      }, 100);
-    },
-
-    unhighlightOnTouchMove: function(e) {
-      if (_.isUndefined(this._firstTouch))
-        return;
-      
-      var touches = e.touches;
-      if (_.isUndefined(touches))
-        return;
-      
-      // Mobile safari doesn't let you copy touch objects, so copy it manually
-      var tMove = cloneTouch(touches[0]);
-      
-      // remove this class only if you're a certain distance away from the initial touch
-      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
-        this.clearTouchStartTimer();
-        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
-      }
-    },
-
-    unhighlightOnTouchEnd: function(e) {
-      // removing active class needs to be on timer because adding is also on a timer
-      // if this is not done, sometimes the active class removal is called before...
-      var self = this;
-      setTimeout(function() {
-        self.unhighlight(e.target, e);
-      }, 100);
-    },
-    
-    /**
-     * Stub. Override this
-     */
-    highlight: function(target, e) {
-//      throw "highlight needs to be implemented by all subclasses";
-    },
-
-    /**
-     * Stub. Override this
-     */
-    unhighlight: function(target, e) {
-//      throw "unhighlight needs to be implemented by all subclasses";
-    },
-
-    clearTouchStartTimer: function() {
-      clearTimeout(this.touchStartTimer);
-      this.touchStartTimer = null;
-    },
+//    highlightOnTouchStart: function(e) {
+//      var self = this,
+//          touches = e.touches;
+//      
+//      if (_.isUndefined(touches))
+//        return;
+//      
+//      // Mobile safari doesn't let you copy touch objects, so copy it manually
+//      this._firstTouch = cloneTouch(touches[0]);
+//      this.touchStartTimer = setTimeout(function() {
+//        self.highlight(e.target, e);
+//      }, 100);
+//    },
+//
+//    unhighlightOnTouchMove: function(e) {
+//      if (_.isUndefined(this._firstTouch))
+//        return;
+//      
+//      var touches = e.touches;
+//      if (_.isUndefined(touches))
+//        return;
+//      
+//      // Mobile safari doesn't let you copy touch objects, so copy it manually
+//      var tMove = cloneTouch(touches[0]);
+//      
+//      // remove this class only if you're a certain distance away from the initial touch
+//      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
+//        this.clearTouchStartTimer();
+//        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
+//      }
+//    },
+//
+//    unhighlightOnTouchEnd: function(e) {
+//      // removing active class needs to be on timer because adding is also on a timer
+//      // if this is not done, sometimes the active class removal is called before...
+//      var self = this;
+//      setTimeout(function() {
+//        self.unhighlight(e.target, e);
+//      }, 100);
+//    },
+//    
+//    /**
+//     * Stub. Override this
+//     */
+//    highlight: function(target, e) {
+////      throw "highlight needs to be implemented by all subclasses";
+//    },
+//
+//    /**
+//     * Stub. Override this
+//     */
+//    unhighlight: function(target, e) {
+////      throw "unhighlight needs to be implemented by all subclasses";
+//    },
+//
+//    clearTouchStartTimer: function() {
+//      clearTimeout(this.touchStartTimer);
+//      this.touchStartTimer = null;
+//    },
     
     _restoreScroll: function() {
       this.scrollTo(this._scrollPosition);
     },
     
-    pageevent: function(e) {
+    onpageevent: function(e) {
       this._lastPageEvent = e.type;
       this.reverseBubbleEvent.apply(this, arguments);      
     },
@@ -217,21 +220,21 @@ define('views/BasicPageView', [
     },
     
     swipeleft: function(e) {
-      if (isInsideDraggableElement(e.target))
-        return;
+//      if (isInsideDraggableElement(e.target))
+//        return;
       
       this.log('events', 'swipeleft');
-      Events.trigger('forward');
-      return false;
+//      Events.trigger('forward');
+//      return false;
     },
     
     swiperight: function(e) {
-      if (isInsideDraggableElement(e.target))
-        return;
+//      if (isInsideDraggableElement(e.target))
+//        return;
       
       this.log('events', 'swiperight');
-      Events.trigger('back');
-      return false;
+//      Events.trigger('back');
+//      return false;
     },
 
     scrollTo: function(position) {
@@ -253,10 +256,12 @@ define('views/BasicPageView', [
     },
     
     onScroll: function() {
-      this.$el.triggerHandler('scroll');
-      this.log('visibility', 'START visibility report for ' + this.TAG);
-      this.logVisibility();
-      this.log('visibility', 'END visibility report for ' + this.TAG);
+      if (this.$el) {
+        this.$el.triggerHandler('scroll');
+        this.log('visibility', 'START visibility report for ' + this.TAG);
+        this.logVisibility();
+        this.log('visibility', 'END visibility report for ' + this.TAG);
+      }
     },
     
 //    addTooltip: function(data) {
@@ -309,14 +314,6 @@ define('views/BasicPageView', [
       }
     },
     
-    onpageshow: function(fn) {
-      if (this._pageshowFired)
-        fn();
-      else {
-        this.once('pageshow', fn);
-      }
-    },
-        
     removeTooltip: function($el) {
   //    if (elm[0].tagName == 'DIV')
   //      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
@@ -408,26 +405,44 @@ define('views/BasicPageView', [
       if (!this.isActive())
         return;
 
+      if (typeof data == 'string') {
+        data = {
+          message: data
+        }
+      }
+      
       if (data.resource && data.resource !== this.resource)
         return;
       
       var self = this,
           name = 'messageBar' + type.capitalizeFirst();
 //          ,
+//          events = data.events = data.events || {},
+//          onremove = events.remove;
+//          ,
 //          cached = this.getChildView(name);
       
 //      cached && cached.destroy();
+      
       U.require('views/MessageBar').done(function(MessageBar) {
-        var bar = self.addChild(name, new MessageBar({
+        var bar = self.addChild(new MessageBar({
           model: self.model,
           type: type
         }));
         
+        bar.on('messageBarRemoved', function(e) {
+          self.trigger.apply(self, ['messageBarRemoved'].concat(U.concat.call(arguments)));
+        });
+        
         bar.render(data);
-        bar.$el.css({opacity: 0});
-        self.$el.prepend(bar.$el);
-        bar.$el.animate({opacity: 1}, 500);
-        Events.on('messageBar.' + type + '.clear', function(id) {
+        G.animationQueue.queueTask(function() {          
+          bar.$el.css({opacity: 0});
+          self.$el.prepend(bar.$el);
+          self.trigger('messageBarsAdded', bar);
+          bar.$el.animate({opacity: 1}, 500);
+        });
+        
+        Events.once(destroyEventId, function() {
           if (id == data.id)
             bar.destroy();
         });        
@@ -445,17 +460,17 @@ define('views/BasicPageView', [
       cached && cached.destroy();
      
       U.require('views/CallInProgressHeader').done(function(CIPHeader) {        
-        var header = self.addChild(name, new CIPHeader({
+        var header = self.addChild(new CIPHeader({
           model: self.model,
           call: call
-        })).render();
+        }));
         
         header.render();
-        self.$el.prepend(header.$el);
-
-        Events.on('endRTCCall', function() {
-          header.destroy();
+        G.animationQueue.queueTask(function() {          
+          self.$el.prepend(header.$el);
         });
+
+        Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },
 
@@ -467,37 +482,44 @@ define('views/BasicPageView', [
     },
 
     _checkAutoClose: function() {
-      var autoClose = this.hashParams['-autoClose'],
+      var self = this,
+          autoClose = this.hashParams['-autoClose'],
           autoCloseOption = this.hashParams['-autoCloseOption'] == 'y',
           hash = this.hash;
       
       if (autoClose) {
+        if (autoClose === 'y') {
+          window.close();
+          return;
+        }
+        
         try {
           var millis = parseInt(autoClose);
         } catch (err) {
         }
 
+        millis = millis || 5000;
         var seconds = millis / 1000;
-        Events.trigger('messageBar', 'info', {
+        Events.trigger('messageBar', 'countdown', {
           message: {
-            message: 'This page will self-destruct in: <span class="countdown">{0} seconds.</span>'.format(seconds), // Close this message to stop the destruction.'.format(seconds),
-            onclose: function() {
-              // TODO: allow an onclose handler to be attached
-            }
+            message: 'This page will self-destruct in: <div style="display:inline" class="countdown">{0}</div> seconds.'.format(seconds) // Close this message to stop the destruction.'.format(seconds),
+//            events: {
+//              remove: function() {
+//                debugger;
+//              }
+//            }
           },
           persist: true
         });
         
-        U.countdown(this.$('.countdown')[0], seconds).done(window.close.bind(window));
-        
-        millis = millis || 5000;
-        var closeTimeout = setTimeout(function() {
-          window.close();
-        }, millis);
-        
-        Events.once('pageChange', function() {
-          clearTimeout(closeTimeout);
-        });
+        var countdownSpan = this.$('.countdown'),
+            cleanup = function() {
+              window.close();
+              self._clearMessageBar(); // we can't always close the window
+            };
+            
+        var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
+        this.$el.one('pagehide', countdownPromise.cancel);
         
         hash = U.replaceParam(hash, '-autoClose', null);
       }

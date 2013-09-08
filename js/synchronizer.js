@@ -181,9 +181,6 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       return this._fetchFromServer();
     
     this._queryDB().then(function(results) {
-      if (!results || _.isArray(results) && !results.length)
-        return self._fetchFromServer(100);
-            
       self.options.sync = false;
       self.data.lastFetchOrigin = 'db';
       log('db', "got resources from db: " + self.info.vocModel.type);

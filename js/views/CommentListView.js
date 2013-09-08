@@ -22,7 +22,7 @@ define('views/CommentListView', [
     postRender: function() {
       if (this.rendered) {
         this.$el.trigger('create');
-//        if (this.$el.hasClass('ui-listview'))
+        if (this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
       }
       else

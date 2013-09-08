@@ -24,7 +24,7 @@ define('views/MasonryListView', [
     initialize: function(options) {
       var self = this;
       _.bindAll(this, 'reloadMasonry');
-      this.superInitialize(options);
+      ResourceListView.prototype.initialize.apply(this, arguments);
       this.autoFinish = false; // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
 //      Events.on('pageChange', function(prev, current) {
 //        if (self.pageView == current && self.rendered) {
@@ -55,8 +55,11 @@ define('views/MasonryListView', [
     },
     
     reloadMasonry: function(e) {
-      if (this.rendered)
-        this.masonry('reload');
+      if (this.rendered) {
+        G.animationQueue.queueTask(function() {
+          this.masonry('reload');
+        }, this);
+      }
     },
     
     postRender: function(info) {
@@ -64,24 +67,28 @@ define('views/MasonryListView', [
       if (this.rendered) {
         if (info.appended.length || info.updated.length) {
           this.$el.imagesLoaded(function() {
-            if (info.appended.length)
-              self.masonry('appended', $(info.appended));
-            if (info.updated.length)
-              self.masonry('reload');
-            
-            self.trigger('refreshed');
+            G.animationQueue.queueTask(function() {
+              if (info.appended.length)
+                self.masonry('appended', $(info.appended));
+              if (info.updated.length)
+                self.masonry('reload');
+              
+              self.trigger('refreshed');
+            });
           });
         }
       }
       else {
-        this.$el.imagesLoaded(function() {          
-          self.masonry({
-            itemSelector: ITEM_SELECTOR
+        this.$el.imagesLoaded(function() {
+          G.animationQueue.queueTask(function() {
+            self.masonry({
+              itemSelector: ITEM_SELECTOR
+            });
+     
+            self.$el.on('pageshow', self.reloadMasonry.bind(self));
+            self.finish();
           });
-   
-          self.$el.on('pageshow', self.reloadMasonry.bind(self));
-          self.finish();
-        });        
+        });
       }
     }
   }, {

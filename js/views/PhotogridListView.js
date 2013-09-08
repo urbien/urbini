@@ -38,10 +38,10 @@ define('views/PhotogridListView', [
       return liView;
     },
     
-    postRenderItem: function(liView, info) {
+    postRenderItem: function(el, info) {
       var row = $("<tr></tr>")[0];
       var cell = $("<td></td>")[0];
-      cell.appendChild(liView.el);
+      cell.appendChild(el);
       row.appendChild(cell);
       this.table.appendChild(row);
       if (info.index < info.total - 1)

@@ -85,7 +85,7 @@
   </div>
 </script>  
 
-<script type="text/template" id="bookmarkletIphoneStaticPageTemplate">
+<script type="text/template" id="bookmarkletIphonePage">
 <style>
   .bookmarkletPage-tableview-grouped {
     background: #f2f2f2;
@@ -161,156 +161,36 @@
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletAndroidStaticPageTemplate">
-<style>
-  .bookmarkletPage-tableview-grouped {
-    background: #f2f2f2;
-    padding: 10px 10px 1px;
-    width: 300px;
-  }
-
-  .bookmarkletPage-section {
-    -webkit-text-size-adjust: none;
-    font-family: "Helvetica Neue", sans-serif;
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px;
-    width: 280px;
-    border: 1px solid #d9d9d9;
-    margin-bottom: 10px;
-    overflow: hidden;
-  }
-
-  .bookmarkletPage a { color: #1389e5; }
-  
-  .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
-    font-size: 16px;
-    font-weight: bold;
-  }
-
-  .bookmarkletPage-section p {
-    margin-top: 10px;
-  }
-
-  .bookmarkletPage-section li {
-    margin-top: 10px;
-  }
-</style>
-<div class="bookmarkletPage-tableview-grouped">
-<div class="bookmarkletPage-section">
-    <h1><strong>Installing the Aha! Bookmarklet for iPhone</strong></h1>
-    <p>Before you begin, be aware that it is much easier to install the iPhone bookmark in Firefox or Safari on your computer, and then synchronize your iPhone or iPod touch using iTunes.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 1: Bookmark this page.</h2>
-    <p>Tap the middle icon below, then tap <strong>Add Bookmark</strong>, then tap Save.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-  <h2>Step 2: Select the text and copy it.</h2>
-  <textarea style="width: 280px; height: 170px; margin-top: 10px;">javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, "aha=y"))</textarea>
-  <ol style="float: right; width: 280px; list-style-position: inside;">
-    <li>Tap inside.</li>
-    <li>Tap and hold for a bit, then release.</li>
-    <li>Tap <strong>Select All.</strong></li>
-    <li>Tap <strong>Copy.</strong></li>
-    <li>Tap <strong>Done</strong>.</li>
-  </ol>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 3: Edit the bookmark.</h2>
-    <p>1. Tap the Bookmarks button in the toolbar.</p>
-    <p>2. Tap <strong>Edit</strong>. Select the <strong>Aha!</strong> bookmark to edit.</p>
-    <p>3. Tap its URL, tap the <strong>x</strong> to clear it, tap-and-hold for the magnifying glass, then tap <strong>Paste</strong>.</p>
-    <p>4. Save the changes by tapping <strong>Done</strong>.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 4: Installation complete.</h2>
-    <p>Installation should be complete!</p>
-    <p>Select the <strong>Aha!</strong> bookmark from your Bookmarks list to use it.</p>
-    <p>As soon as this can be made simpler, it will be. Thank you for your patience, and thank you for using Aha!</p>
-
-</div>
+<script type="text/template" id="bookmarkletAndroidPage">
+<div style="margin: 0px 10px 0px 10px;">
+  <div>
+    <h1><strong>Using the Aha! Bookmarklet on Android</strong></h1>
+    <p class="red" style="font-weight:bold">First, make sure to install the Aha! bookmark on your desktop Chrome.</p>
+    <p>Then when you browse a page you'd like to Aha! or Huh?, tap the address bar and type in <strong>aha</strong>. See the image below for reference. Now click the starred bookmark that says <strong>Aha!</strong></p>
+    <p><img src="{{= G.serverName + '/images/aha/Android bookmark.png' }}" style="max-width:100%" />
+  </div>
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletDesktopStaticPageTemplate">
-<style>
-  .bookmarkletPage-tableview-grouped {
-    background: #f2f2f2;
-    padding: 10px 10px 1px;
-    width: 300px;
-  }
+<script type="text/template" id="bookmarkletDesktopPage">
+  <div style="text-align:center">
+    <h1>Drag the button below to your browser's bookmarks bar</h1>
+    <ul class="nav">
+      <li><a onclick="javascript:alert('Drag me to your bookmarks bar!'); return false;" href="javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, 'aha=y'))" style="font-size:30px">Aha!</a></li>
+    </ul>
+  </div>
+</script>
 
-  .bookmarkletPage-section {
-    -webkit-text-size-adjust: none;
-    font-family: "Helvetica Neue", sans-serif;
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px;
-    width: 280px;
-    border: 1px solid #d9d9d9;
-    margin-bottom: 10px;
-    overflow: hidden;
-  }
+<script type="text/template" id="bookmarkletIOSChromePage">
+</script>
 
-  .bookmarkletPage a { color: #1389e5; }
-  
-  .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
-    font-size: 16px;
-    font-weight: bold;
-  }
+<script type="text/template" id="bookmarkletChromeOSPage">
+</script>
 
-  .bookmarkletPage-section p {
-    margin-top: 10px;
-  }
+<script type="text/template" id="bookmarkletAndroidFirefoxPage">
+</script>
 
-  .bookmarkletPage-section li {
-    margin-top: 10px;
-  }
-</style>
-<div class="bookmarkletPage-tableview-grouped">
-<div class="bookmarkletPage-section">
-    <h1><strong>Installing the Aha! Bookmarklet for iPhone</strong></h1>
-    <p>Before you begin, be aware that it is much easier to install the iPhone bookmark in Firefox or Safari on your computer, and then synchronize your iPhone or iPod touch using iTunes.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 1: Bookmark this page.</h2>
-    <p>Tap the middle icon below, then tap <strong>Add Bookmark</strong>, then tap Save.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-  <h2>Step 2: Select the text and copy it.</h2>
-  <textarea style="width: 280px; height: 170px; margin-top: 10px;">javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, "aha=y"))</textarea>
-  <ol style="float: right; width: 280px; list-style-position: inside;">
-    <li>Tap inside.</li>
-    <li>Tap and hold for a bit, then release.</li>
-    <li>Tap <strong>Select All.</strong></li>
-    <li>Tap <strong>Copy.</strong></li>
-    <li>Tap <strong>Done</strong>.</li>
-  </ol>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 3: Edit the bookmark.</h2>
-    <p>1. Tap the Bookmarks button in the toolbar.</p>
-    <p>2. Tap <strong>Edit</strong>. Select the <strong>Aha!</strong> bookmark to edit.</p>
-    <p>3. Tap its URL, tap the <strong>x</strong> to clear it, tap-and-hold for the magnifying glass, then tap <strong>Paste</strong>.</p>
-    <p>4. Save the changes by tapping <strong>Done</strong>.</p>
-</div>
-
-<div class="bookmarkletPage-section">
-    <h2>Step 4: Installation complete.</h2>
-    <p>Installation should be complete!</p>
-    <p>Select the <strong>Aha!</strong> bookmark from your Bookmarks list to use it.</p>
-    <p>As soon as this can be made simpler, it will be. Thank you for your patience, and thank you for using Aha!</p>
-
-</div>
-</div>
+<script type="text/template" id="bookmarkletFxOSPage">
 </script>
 
 <script type="text/template" id="chatPageTemplate">
@@ -460,7 +340,8 @@
     <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
     <a href="#" data-role="button" data-net="{{= net }}">
       <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
-      <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
+      <!--i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i-->
+      <i class="ui-icon-circle" style="font-size: 20px; float:right; color: {{= obj.connected === undefined ? '#FF0000' : obj.connected ? '#00FF00' : '#FFFF00' }}"></i>
     </a>
   </div>
 </script>
@@ -735,7 +616,7 @@
 <script type="text/template" id="listItemTemplate">
   <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
     <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
@@ -780,8 +661,7 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
     {{ if (isJst) { }}
@@ -812,7 +692,7 @@
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
+  {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
@@ -829,64 +709,13 @@
   </div>
 </script>
 
-<script type="text/template" id="listItemTemplateNoImage1">
-  <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var action = action ? action : 'view'; }}
-  {{ var detached = this.resource.detached; }}
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
-  {{ if (!obj.v_submitToTournament) { }}  
-    {{ if (isJst) { }}
-      <div class="ui-btn-text" style="padding: .7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
-    {{ } }}
-    {{ if (!isJst) { }}
-      <div class="ui-btn-text" style="min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
-    {{ } }}
-  {{ } }}
-  {{ if (obj.v_submitToTournament) { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
-  {{ } }}
-  
-  {{= viewCols }}
-  </div>
-  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
-   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
-     {{= price.currency + price.value }}
-     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
-   </div>
-  {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
-    <span class="ui-li-count">{{= distance + ' mi' }}</span>
-  {{ } }}
-  <!--
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
-  {{ } }}
-  -->  
-  
-  {{ if (obj.comment) { }}
-    <p style="padding-left: 15px;">{{= comment }}</p>
-  {{ } }}
-  </div>
-</script>
-
-  <!-- one item on the left-side slide-out menu panel -->
-<!--script type="text/template" id="menuItemTemplate">
-  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= obj.image ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
-      {{= title }}
-    </a>
-  </li>
-</script -->
-
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
   <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px; margin-bottom:-10px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
+    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -949,7 +778,7 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-icon="false">
+<li data-icon="false" data-viewid="{{= viewId }}">
   <i class="icon-home"></i>
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
@@ -1321,7 +1150,7 @@
   </div>
 </script>
 
-<script type="text/template" id="messageBarTemplate">
+<!--script type="text/template" id="messageBarTemplate">
   <div class="headerMessageBar {{= obj['class'] || '' }}">
     <h3 id="{{= obj.id || 'messageBar' + G.nextId() }}">
       {{ if (obj.icon) { }}
@@ -1331,7 +1160,7 @@
       {{= message }}      
     </h3>
   </div>
-</script>
+</script-->
 
 <script type="text/template" id="headerErrorBar">
   <div style="{{= obj.style || '' }}">
@@ -1361,10 +1190,10 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img border="0" src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1435,7 +1264,7 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
   <!--
     {{ if (typeof creatorThumb != 'undefined') { }}
        <div style="padding: 5px; float:left;">
@@ -1454,7 +1283,7 @@
    -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img  src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img  src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
          {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
         ></img>
       </a>
@@ -1565,7 +1394,7 @@
 
 <div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
 {{  _.each(messages, function(msg) {  }}
-     <div style="display:block" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+     <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
        <a href="{{= msg.link }}">
   {{ }                        }}
@@ -1582,7 +1411,7 @@
   {{ if (!msg.link && msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
-       <i class="ui-icon-delete closeparent"></i>
+       <i class="ui-icon-delete closeparent" style="position:absolute;top:5px;right:0px"></i>
      </div>
 {{  });                           }}
 </div>
@@ -1606,8 +1435,8 @@
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">Uncheck All</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
@@ -1616,8 +1445,8 @@
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
@@ -1639,7 +1468,7 @@
   <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
   
-  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} />
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
   <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img style="float:right;max-height:40px;" src="' + _thumb + '" />' : '' }}--></label>
 </script>
 
@@ -1733,7 +1562,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 55px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px;"/>
+      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px; position:relative;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >
