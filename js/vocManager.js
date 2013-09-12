@@ -93,7 +93,7 @@ define('vocManager', [
     },
     
     fetchLinkedAndReferredModels: function(listOrRes) {
-      G.whenNotRendering(U.partial(fetchLinkedAndReferredModels, listOrRes));
+      G.whenNotRendering(_.partial(fetchLinkedAndReferredModels, listOrRes));
     },
 
     detectReferredModels: function(list) {      

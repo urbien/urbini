@@ -120,7 +120,7 @@ define('views/ControlPanel', [
         }
         
         var meta = pModel.properties,
-            title = U.getParamMap(window.location.hash).$title,
+            title = _.getParamMap(window.location.hash).$title,
             propA = meta[a],
             propB = meta[b],
             aUri = a == prop.backLink ? self.resource.get('_uri') : null,
@@ -237,7 +237,7 @@ define('views/ControlPanel', [
           var ranges = [];
           var inlineLists = {};
           _.each(displayInline, function(prop, name) {
-            U.pushUniq(ranges, U.getTypeUri(prop.range));
+            _.pushUniq(ranges, U.getTypeUri(prop.range));
           });
           
           Voc.getModels(ranges).done(function() {

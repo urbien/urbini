@@ -41,7 +41,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // going back a step, that's fine, not everyone's a genius
       }
       else {
-        var params = U.getParamMap(step.get('urlQuery')) || {};
+        var params = _.getParamMap(step.get('urlQuery')) || {};
         params[TOUR_PARAM] = getTourId(tour);
         params[TOUR_STEP_PARAM] = step.get('number');
         var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
@@ -81,9 +81,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   };
   
   function hashInfoCompliesWithTourStep(hashInfo, step) {
-    var isModelParam = U.negate(U.isMetaParameter),
+    var isModelParam = _.negate(U.isMetaParameter),
         hashInfoModelParams = U.filterObj(hashInfo.params, isModelParam),
-        stepParams = U.getParamMap(step.get('urlQuery')),
+        stepParams = _.getParamMap(step.get('urlQuery')),
         stepModelParams = U.filterObj(stepParams, isModelParam),
         stepType = step.get('typeUri'),
         stepRoute = step.get('route'),
@@ -239,7 +239,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           if (!myTours.isFetching())
             defer.resolve(myTours)
         },
-        error: defer.reject
+        error: defer.reject,
+        ajaxQueue: 'tours'
       });
     }).promise();
   };
@@ -391,7 +392,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           },
           error: function() {
             defer.reject();
-          }
+          },
+          ajaxQueue: 'tours'
         });
       }).promise();
     };
@@ -533,7 +535,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         success: function() {
           defer.resolve(tourRes);
         },
-        error: defer.reject
+        error: defer.reject,
+        ajaxQueue: 'tours'
       })
     }).promise();
   };
@@ -560,7 +563,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           success: function() {
             defer.resolve(steps);
           },
-          error: defer.reject
+          error: defer.reject,
+          ajaxQueue: 'tours'
         });
         
         return;

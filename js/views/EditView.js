@@ -40,7 +40,7 @@ define('views/EditView', [
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
       this.makeTemplate('interfacePropTemplate', 'interfacePropTemplate', type);
-      this.reqParams = U.getParamMap(window.location.href);
+      this.reqParams = _.getParamMap(window.location.href);
       
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
@@ -1455,7 +1455,7 @@ define('views/EditView', [
       });
       
 //      if (_.size(displayedProps) === 1) {
-//        var prop = meta[U.getFirstProperty(displayedProps)];
+//        var prop = meta[_.getFirstProperty(displayedProps)];
 //        if (Templates.getPropTemplate(prop, true) === 'resourcePET') {
 //          this.$('a[name="' + prop.shortName + '"]').trigger('click');
 //        }

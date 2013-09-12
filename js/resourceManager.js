@@ -105,7 +105,7 @@ define('resourceManager', [
         return REJECTED_PROMISE;
       
       if (!IDB.isOpen())
-        return IDB.onOpen().then(U.partialWith(this.upgrade, this, mk, del));
+        return IDB.onOpen().then(_.partial(this.upgrade.bind(this), mk, del));
       
       mk = mk || [];
       del = del || [];
@@ -392,7 +392,7 @@ define('resourceManager', [
   });
 
   function getTypeToInfoMap(infos) {
-    var isBLs = !!U.getFirstValue(infos).list,
+    var isBLs = !!_.getFirstValue(infos).list,
         isResources = !isBLs;
     
     function getTypeUri(info) {

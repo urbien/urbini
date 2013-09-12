@@ -125,7 +125,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
       return U.rpc(path, createCallbackEvent(success || function() {}), createCallbackEvent(error || function() {}));
     }
     else {
-      var req = U.leaf(obj, path, '.');
+      var req = _.leaf(obj, path, '.');
       if (req) {
         if (success)
           req.onsuccess = success;

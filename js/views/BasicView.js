@@ -78,7 +78,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', '_showImages', 'destroy');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', '_showImages', '_loadImage', 'destroy');
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -305,7 +305,7 @@ define('views/BasicView', [
         this._started = true;
         self.log('info', 'running {0} task'.format(self.TAG));
         var promise = fn.apply(scope, args || []);
-        if (U.isPromise(promise))
+        if (_.isPromise(promise))
           promise.then(lazyDfd.resolve, lazyDfd.reject);
         else
           lazyDfd.resolve();
@@ -330,10 +330,11 @@ define('views/BasicView', [
       var next = this._taskQueue[0];
       if (next) {
         if (!next._started) {
-          G.q({
-            name: this.TAG + ':task:' + this.cid,
-            task: next.start.bind(next)
-          });
+//          G.q({
+//            name: this.TAG + ':task:' + this.cid,
+//            task: next.start.bind(next)
+          next.start();
+//          });
         }
         else
           this.log('info', 'postponing {0} {1} task'.format(this.TAG, this.cid));
@@ -358,7 +359,7 @@ define('views/BasicView', [
           return template;
       }
         
-      U.pushUniq(this._templates, templateName);
+      _.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       this._monitorTemplate(templateName);
       return template;
@@ -726,7 +727,7 @@ define('views/BasicView', [
       }
       else {
         // should be here in a bit
-        setTimeout(U.partialWith(this._loadImage, this, img), 100);
+        setTimeout(_.partial(this._loadImage, img), 100);
         return false;
       }
     },

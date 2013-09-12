@@ -18,7 +18,7 @@ define('views/ResourceListView', [
     prevScrollPos: 0,
     loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
     initialize: function (options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode', 'checkIfNeedMore'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
       this.mode = options.mode || G.LISTMODES.DEFAULT;
@@ -79,7 +79,7 @@ define('views/ResourceListView', [
         liView = new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams));
       }
       else if (this.isMultiValueChooser) {
-//        var params = hash ? U.getParamMap(hash) : {};
+//        var params = hash ? _.getParamMap(hash) : {};
 //        var mvProp = params.$multiValue;
         var isListed =  _.contains(this.mvVals, res.get('davDisplayName'));
   //      var isChecked = defaultUnchecked === isListed;
@@ -158,24 +158,19 @@ define('views/ResourceListView', [
             total: num,
             appended: []
           },
-          renderDfd = $.Deferred(),
-          updated = [],
-          multitask = {
-            name: 'render list items',
-            id: G.nextId('renderListItems')
-          };
+          updated = [];
       
       this.imageProperty = U.getImageProperty(this.collection);
       this.preRender(info);
 
-      function doOne(i) {          
+      for (; i < num; i++) {
         var res = resources[i],        
             uri = res.getUri(),
             liView,
             el;
         
         if (canceled && res.get(canceled))
-          return;
+          continue;
         
         
         info.index = i;        
@@ -204,78 +199,12 @@ define('views/ResourceListView', [
         this.postRenderItem(el, info);
       };
       
-      G.q(_.extend(multitask, {
-        task: function() {
-          for (; i < num; i++) {
-            G.q({
-              name: 'render one list item',
-              context: this,
-              args: [i],
-              parent: multitask.id,
-              task: doOne
-            });
-          }
-          
-          G.q({
-            name: 'post render list items',
-            context: this,
-            parent: multitask.id,
-            task: function() {
-              info.updated = updated;
-              if (!nextPage)
-                this.html(frag);
-              
-              this.postRender(info);
-              renderDfd.resolve();
-            }
-          });
-        }.bind(this)
-      }));
-
-        
-//      if (!isComment)
-//        this.$el.prevObject.find('#comments').css('display', 'none');
-//
-//      this.$el.html(frag);
-//      this.renderMany(this.model.models.slice(0, lis.length));
-//      var self = this;
+      info.updated = updated;
+      if (!nextPage)
+        this.html(frag);
       
-//      this.restyle();
-      
-//      this.$el.trigger('create');
-//      if (this.$el.hasClass('ui-listview'))
-//        this.$el.trigger('refresh');
-
-//      if (this.isPhotogrid) {
-//        var dim = 0;
-//        var grids = $('.gridblock');
-//        for (var i = 0; i < grids.length; i++) {
-//          var div = $(grids[i]);
-//          var img = div.find('img');
-//          if (img) {
-//            dim = Math.max(img.height(), img.width());
-//            break;
-//          }
-//        }
-//        
-//        if (dim) {
-//          for (var i = 0; i < grids.length; i++) {          
-//            var div = $(grids[i]);
-//            div.css('height', dim + 20);
-//          }
-//        }
-//      }
-      
-//      if (renderDfd)
-//        renderDfd.resolve();
-      return renderDfd.promise();
-      
-//      else {
-//        //Element has not been initiliazed
-//        this.$el.listview().listview('refresh');
-//        this.initializedListView = true;
-//      }
-
+      this.postRender(info);
+      return this;
     },
 
     preRender: function(info) {
@@ -358,7 +287,7 @@ define('views/ResourceListView', [
       }).promise();
       
       this._pagingPromise.done(function() {
-        self.once('refreshed', U.partialWith(self.checkIfNeedMore, self, displayedBefore));
+        self.once('refreshed', _.partial(self.checkIfNeedMore, displayedBefore));
       }).always(function() {
         self._paging = false;
         self.hideLoadingIndicator();
@@ -368,15 +297,12 @@ define('views/ResourceListView', [
     },
     
     checkIfNeedMore: function(displayedBefore) {
-      var self = this;
-      G.animationQueue.queueTask(function() {        
-        if (!self.scrolledToNextPage()) // we've got our buffer back
-          return;
-        else if (self.getListItems().length > displayedBefore) // we loaded some, but we need more
-          return self.getNextPage();
-        else
-          self.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
-      });
+      if (!this.scrolledToNextPage()) // we've got our buffer back
+        return;
+      else if (this.getListItems().length > displayedBefore) // we loaded some, but we need more
+        return this.getNextPage();
+      else
+        this.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
     },
         
     render: function(e) {

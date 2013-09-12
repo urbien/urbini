@@ -149,7 +149,7 @@ define('views/ResourceView', [
       var res = this.resource;
       var vocModel = this.vocModel;
 
-      var params = U.getParamMap(window.location.hash);
+      var params = _.getParamMap(window.location.hash);
       var isApp = U.isAssignableFrom(res, G.commonTypes.App);
       var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
 //      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');

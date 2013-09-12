@@ -538,7 +538,7 @@ define('router', [
         
       var previousView = this.currentView;
       if (!previousView) {
-        tName = U.decode(tName.split('?')[0]); // url is of a form make%2f...?modelName=..., we just want the unencoded "make/..."        
+        tName = _.decode(tName.split('?')[0]); // url is of a form make%2f...?modelName=..., we just want the unencoded "make/..."        
         this.navigate(tName, {trigger: true, postChangePageRedirect: U.getHash()});
         return;
       }
@@ -551,7 +551,7 @@ define('router', [
         if (templates.length) {
           _.each(templates, function(t) {
             var typeTemplates = templateToTypes[t] = templateToTypes[t] || [];
-            U.pushUniq(typeTemplates, type);
+            _.pushUniq(typeTemplates, type);
           });
         }
       });
@@ -614,7 +614,7 @@ define('router', [
 //        if (qIdx >= 0) // these parameters are meant for the "views" route, not for the previous view 
 //          tName = tName.slice(0, qIdx);
 //        
-//        this.navigate(U.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
+//        this.navigate(_.decode(tName), {trigger: true, postChangePageRedirect: U.getHash()});
 //        return;
 //      }
 //
@@ -627,7 +627,7 @@ define('router', [
 //        if (views.length) {
 //          _.each(views, function(v) {
 //            var typeViews = viewToTypes[v] = viewToTypes[v] || [];
-//            U.pushUniq(typeViews, type);
+//            _.pushUniq(typeViews, type);
 //          });
 //        }
 //      });
@@ -1125,8 +1125,8 @@ define('router', [
 ////        if (sub.type)
 ////          self[route].apply(self, hashInfo.sub.hash);
 ////        else
-////          self.navigate(U.makeMobileUrl('tour', U.makeMobileUri(step.get('action'), step.get('typeUri'), U.getParamMap(step.get('urlQuery') || ''))), {replace: true});
-//        self[action].apply(self, U.makeMobileUrl(action, step.get('typeUri'), U.getParamMap(step.get('urlQuery') || '')));
+////          self.navigate(U.makeMobileUrl('tour', U.makeMobileUri(step.get('action'), step.get('typeUri'), _.getParamMap(step.get('urlQuery') || ''))), {replace: true});
+//        self[action].apply(self, U.makeMobileUrl(action, step.get('typeUri'), _.getParamMap(step.get('urlQuery') || '')));
 //      }
 //      
 //      $.whenAll(
@@ -1187,7 +1187,7 @@ define('router', [
 //
 //    areModelsLoaded: function(types, method, args) {
 //      var self = this,
-//          missing = _.filter(types, U.negate(U.getModel));
+//          missing = _.filter(types, _.negate(U.getModel));
 //      
 //      if (!missing.length)
 //        return true;
@@ -1263,11 +1263,7 @@ define('router', [
     },
     
     $changePage: function(toPage, options) {
-      G.animationQueue.queueTask({
-        context: $m,
-        args: arguments,
-        task: $m.changePage
-      });
+      $m.changePage(toPage, options);
     },
 
 //    $changePage: function(toPage, options) {

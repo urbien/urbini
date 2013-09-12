@@ -232,7 +232,7 @@ define('views/ResourceImageView', [
       if (image.indexOf('Image/') == 0)
         image = decodeURIComponent(image.slice(6));
   //          var iTemplate = this.makeTemplate('imagePT');
-  //          li += '<div><a href="#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
+  //          li += '<div><a href="#view/' + _.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
 //      var maxH = $(window).height() - 50;

@@ -88,7 +88,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     if (this._isSyncRequest() || !G.hasWebWorkers)
       intermediatePromise = this._defaultSync();
     else {
-      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
+      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}, options.ajaxQueue || 'fetchResources').always(function() {
         self.data.lastFetchOrigin = 'server';
       });
     }

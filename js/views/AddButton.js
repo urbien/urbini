@@ -26,7 +26,7 @@ define('views/AddButton', [
       var colParams = U.getQueryParams(this.collection);
       colParams = colParams ? _.clone(colParams) : {};
       colParams['-makeId'] = G.nextId();
-      var params = U.getParamMap(window.location.href);
+      var params = _.getParamMap(window.location.href);
       if (params['$type']) {
         var forClass = U.isA(this.vocModel, "Referenceable") ? U.getCloneOf(this.vocModel, 'Referenceable.forClass') : (U.isA(this.vocModel, "Reference") ? U.getCloneOf(this.vocModel, 'Reference.forClass') : null);
         if (forClass  &&  forClass.length)
@@ -46,7 +46,7 @@ define('views/AddButton', [
         return this;
       }
           
-      var title = U.getParamMap(window.location.hash)['$title'];
+      var title = _.getParamMap(window.location.hash)['$title'];
       if (aUri) {
         var params = {
           $forResource: aUri,

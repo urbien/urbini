@@ -103,7 +103,7 @@ define('views/RightMenuPanel', [
       var grabType = G.commonTypes.Grab;
       Voc.getModels(grabType).done(function() {
         var grabModel = U.getModel(grabType);
-        var grab = new grabModel(grabParams ? U.getParamMap(grabParams) : {});
+        var grab = new grabModel(grabParams ? _.getParamMap(grabParams) : {});
         grab.save(null, {
           success: function() {
             var grabbed = G.currentUser.grabbed;

@@ -1,12 +1,13 @@
 //'use strict';
 define('views/BasicPageView', [
   'globals',
+  'underscore',
   'utils',
   'events',
   'views/BasicView',
   'jqueryMobile',
   'jqueryImagesLoaded'
-], function(G, U, Events, BasicView, $m) {
+], function(G, _, U, Events, BasicView, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       $wnd = $(window);
@@ -395,7 +396,7 @@ define('views/BasicPageView', [
 //          type = this.modelType;
 //      
 //      _.each(MESSAGE_BAR_TYPES, function(type) {
-//        Events.on('header.' + type, U.partialWith(self.createMessageBar, self, type));
+//        Events.on('header.' + type, _.partial(self.createMessageBar.bind(self), type));
 //      });
 //    },
     
@@ -438,12 +439,10 @@ define('views/BasicPageView', [
         });
         
         bar.render(data);
-        G.q(function() {          
-          bar.$el.css({opacity: 0});
-          self.$el.prepend(bar.$el);
-          self.trigger('messageBarsAdded', bar);
-          bar.$el.animate({opacity: 1}, 500);
-        });
+        bar.$el.css({opacity: 0});
+        self.$el.prepend(bar.$el);
+        self.trigger('messageBarsAdded', bar);
+        bar.$el.animate({opacity: 1}, 500);
         
         Events.once('messageBar.{0}.clear.{1}'.format(type, data.id), function() {
           if (id == data.id)
@@ -469,10 +468,7 @@ define('views/BasicPageView', [
         }));
         
         header.render();
-        G.animationQueue.queueTask(function() {          
-          self.$el.prepend(header.$el);
-        });
-        
+        self.$el.prepend(header.$el);        
         Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },
@@ -524,7 +520,7 @@ define('views/BasicPageView', [
         var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
         this.$el.one('pagehide', countdownPromise.cancel);
         
-        hash = U.replaceParam(hash, '-autoClose', null);
+        hash = _.replaceParam(hash, '-autoClose', null);
       }
       else if (autoCloseOption) {
         Events.trigger('messageBar', 'info', {
@@ -535,7 +531,7 @@ define('views/BasicPageView', [
           persist: true
         });
         
-        hash = U.replaceParam(hash, '-autoCloseOptions', null);
+        hash = _.replaceParam(hash, '-autoCloseOptions', null);
       }
       
       if (hash != this.hash)
@@ -575,7 +571,7 @@ define('views/BasicPageView', [
         };
         
         if (!glued)
-          hash = U.replaceParam(hash, regularParam, null);
+          hash = _.replaceParam(hash, regularParam, null);
       });      
 
       for (event in events) {

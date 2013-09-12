@@ -254,13 +254,13 @@ define('resourceSynchronizer', [
       return;
     
 
-    var retry = U.partial(setTimeout, syncWithServer, 2000);
+    var retry = _.partial(setTimeout, syncWithServer, 2000);
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
       if (!results.length)
         return;
       
       for (var i = 0; i < results.length; i++) {
-        U.pushUniq(types, U.getTypeUri(results[i]._uri));
+        _.pushUniq(types, U.getTypeUri(results[i]._uri));
       }
       
       Voc.getModels(types, {sync: false}).done(function() {
@@ -509,7 +509,7 @@ define('resourceSynchronizer', [
     if (!canceled || !canceled.length || !res.get(canceled[0]))
       return;
     
-    res.on('delete', U.partial(deleteItem, res));
+    res.on('delete', _.partial(deleteItem, res));
     res['delete']();
   };    
   

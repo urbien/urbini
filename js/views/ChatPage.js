@@ -223,7 +223,7 @@ define('views/ChatPage', [
       };
 
       if (options.config)
-        U.deepExtend(this.config, options.config);
+        _.deepExtend(this.config, options.config);
 
       var vConfig = this.config.video,
           aConfig = this.config.audio;
@@ -1309,7 +1309,7 @@ define('views/ChatPage', [
           });
         }
         else if (list) {
-          var type = U.getTypeUri(U.decode(list.hash));
+          var type = U.getTypeUri(_.decode(list.hash));
           Voc.getModels(type).done(function() {
             new ResourceList(null, {
               model: U.getModel(type),
@@ -1649,7 +1649,7 @@ define('views/ChatPage', [
     
     makeCall: function() {
       var self = this,
-          nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+          nurseInfo = this.userIdToInfo[_.getFirstProperty(this.userIdToInfo)];
       
       if (!nurseInfo)
         return;
@@ -1666,7 +1666,7 @@ define('views/ChatPage', [
     },
     
     endCall: function() {
-      var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      var nurseInfo = this.userIdToInfo[_.getFirstProperty(this.userIdToInfo)];
       if (!nurseInfo || !this.call)
         return;
   

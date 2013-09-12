@@ -967,7 +967,7 @@
       if (path.length > 1)
         ajaxParams.data = U.getQueryParams(path[1]);
       
-      U.ajax(ajaxParams).done(function(data, status, xhr) {
+      U.ajax(ajaxParams, 'maps').done(function(data, status, xhr) {
         var content = xhr.responseText;
         if (!content)
           return;

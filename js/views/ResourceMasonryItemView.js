@@ -221,7 +221,7 @@ define('views/ResourceMasonryItemView', [
         gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
       if (m.isA('Submission')) { 
         var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy')[0];
@@ -253,7 +253,7 @@ define('views/ResourceMasonryItemView', [
       }
       
       if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
-        var params = U.getParamMap(window.location.hash);
+        var params = _.getParamMap(window.location.hash);
         if ((params  &&  params.$myApps)  ||  (atts.lastPublished  &&  atts.lastModifiedWebClass  && atts.lastPublished >= atts.lastModifiedWebClass) || (!atts.lastPublished  &&  atts.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + atts.appPath;
           tmpl_data.tryApp = uri;
@@ -275,7 +275,7 @@ define('views/ResourceMasonryItemView', [
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -326,13 +326,13 @@ define('views/ResourceMasonryItemView', [
       var dn = atts[resourceDisplayName];
       tmpl_data['davDisplayName'] = dn;
 
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
+      var resourceUri = G.pageRoot + '#view/' + _.encode(rUri);
       var resourceLink;
 //      var i = 0;
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var forResourceModel = U.getModel(U.getTypeUri(forResourceUri));
       var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
@@ -340,7 +340,7 @@ define('views/ResourceMasonryItemView', [
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -349,13 +349,13 @@ define('views/ResourceMasonryItemView', [
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -413,12 +413,12 @@ define('views/ResourceMasonryItemView', [
       tmpl_data['rUri'] = rUri;  
       tmpl_data['davDisplayName'] = dn;
 
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
+      var resourceUri = G.pageRoot + '#view/' + _.encode(rUri);
         
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
       var forResourceModel = type ? U.getModel(type) : null;
@@ -432,7 +432,7 @@ define('views/ResourceMasonryItemView', [
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];          
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -441,13 +441,13 @@ define('views/ResourceMasonryItemView', [
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -500,7 +500,7 @@ define('views/ResourceMasonryItemView', [
 
       var renabFor = atts.v_showRenabFor;
       if (typeof renabFor != 'undefined'  &&  atts[renabFor]) 
-        tmpl_data.v_showRenabFor = U.encode(res.get(renabFor) + '&m_p=nabs&b_p=forResource');
+        tmpl_data.v_showRenabFor = _.encode(res.get(renabFor) + '&m_p=nabs&b_p=forResource');
       
       // set size of images included in the items to be able
       // to start masonry code before images downloading

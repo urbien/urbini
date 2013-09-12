@@ -200,7 +200,7 @@ define('views/Header', [
       Events.stopEvent(e);
       var self = this;
       Voc.getModels("aspects/tags/Tag").done(function() {
-//        var options = U.getParamMap(self.locationHref);
+//        var options = _.getParamMap(self.locationHref);
 //        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, _.extend({application: self.vocModel.type, $title: "Categories"}, options));
         var uri = U.makeMobileUrl('list', U.getModel("Tag").type, {application: self.vocModel.type, $title: "Categories"}); //, $orderBy: "tagUsesCount", $asc: "-1"});
         self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true});
@@ -233,8 +233,6 @@ define('views/Header', [
         this.renderHelper.apply(this, args);
         this.finish();
       }.bind(this));
-      
-      return this.ready;
     },
 
     refreshTitle: function() {
@@ -308,7 +306,7 @@ define('views/Header', [
       }
       else if (pBtn) {
         this.$('div#publishBtn').hide();
-        var options = U.copyArray(SPECIAL_BUTTONS, 'publish');
+        var options = _.filter(SPECIAL_BUTTONS, _.partial(_['!='], 'publish'));
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
@@ -417,7 +415,6 @@ define('views/Header', [
       var btns = this.buttonViews;
       var numBtns = _.size(btns);
       var isMapItToggleable = !!this.collection;
-      var rendered = [];
       var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'video', 'chat', 'login'];
       if (numBtns < 6)
         btnNames.push('rightMenu');
@@ -436,59 +433,48 @@ define('views/Header', [
           
           btnOptions.toggleable = isMapItToggleable;
         }
-        
-        btn.render(_.extend({force: true}, btnOptions));
-        rendered.push(btn);
-      }.bind(this));
+         
+        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);        
+      }.bind(this));      
       
-      G.q({
-        context: this,
-        task: function() {
-          for (var i in rendered) {
-            frag.appendChild(rendered[i].el);
+      var $ul = this.$('#headerUl');
+      $ul.html(frag);
+      
+//      this.renderError();
+      this.renderSpecialButtons();
+      
+      this.$el.trigger('create');
+      if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
+        this.$el.find('#headerButtons').attr('class', 'hidden');
+//        
+      }
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+        this.$el.find('#name').removeClass('resTitle');
+        if (this.resource  &&  !this.isEdit) {
+          var pt = this.$el.find('#pageTitle');
+          if (pt) {
+            pt.css('padding-bottom', '4px');
+            pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
           }
-                
-          var $ul = this.$('#headerUl');
-          $ul.html(frag);
-          
-  //        this.renderError();
-          this.renderSpecialButtons();
-          
-          this.$el.trigger('create');
-          if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
-            this.$el.find('#headerButtons').attr('class', 'hidden');
-  //          
-          }
-          if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-            this.$el.find('#name').removeClass('resTitle');
-            if (this.resource  &&  !this.isEdit) {
-              var pt = this.$el.find('#pageTitle');
-              if (pt) {
-                pt.css('padding-bottom', '4px');
-                pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
-              }
-            }
-            /* this.$el.find('#pageTitle').css('margin-bottom', '0px'); */
-          }
-          if (this.noButtons) 
-            this.$el.find('h4').css('margin-top', '10px');
-          else
-            this.$el.find('h4').css('margin-top', '4px');
-          // HACK
-          // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
-          var header = this.$('.ui-header');
-          var barClass = 'ui-bar-{0}'.format(G.theme.header);
-          if (!header.hasClass(barClass))
-            header.addClass(barClass);
-          
-          // END HACK
-          
-  //        this.refreshCallInProgressHeader();
-          this.restyleNavbar();
-          this.finish();        
         }
-      });
+        /* this.$el.find('#pageTitle').css('margin-bottom', '0px'); */
+      }
+      if (this.noButtons) 
+        this.$el.find('h4').css('margin-top', '10px');
+      else
+        this.$el.find('h4').css('margin-top', '4px');
+      // HACK
+      // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
+      var header = this.$('.ui-header');
+      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      if (!header.hasClass(barClass))
+        header.addClass(barClass);
       
+      // END HACK
+      
+//      this.refreshCallInProgressHeader();
+      this.restyleNavbar();
+      this.finish();      
       return this;
     }
   },

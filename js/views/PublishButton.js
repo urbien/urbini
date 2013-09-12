@@ -163,7 +163,7 @@ define('views/PublishButton', [
         return;
       }
       
-      var params = U.getParamMap(window.location.hash);
+      var params = _.getParamMap(window.location.hash);
       var props = {tournament: params['-tournament'], entry: res.getUri()};
       var self = this;
       resource.save(props, {
@@ -190,7 +190,7 @@ define('views/PublishButton', [
         _.each(btns, function(btnName) {
           var bOptions = {};
           if (options.enterTournament) {
-            var params = U.getParamMap(window.location.href);
+            var params = _.getParamMap(window.location.href);
             bOptions.name = params['-tournamentName'];
           }
           

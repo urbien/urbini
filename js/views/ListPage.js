@@ -70,7 +70,7 @@ define('views/ListPage', [
                           U.isUserInRole(U.getUserRole(), 'siteOwner');
           if (!showAddButton) {
             var p = U.getContainerProperty(vocModel);
-            if (p && U.getParamMap[p])
+            if (p && _.getParamMap[p])
               showAddButton = true;
           }
         }
@@ -142,7 +142,7 @@ define('views/ListPage', [
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var params = hash ? U.getParamMap(hash) : null;
+      var params = hash ? _.getParamMap(hash) : null;
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));

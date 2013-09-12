@@ -165,7 +165,7 @@ define('views/ResourceListItemView', [
         return;
       }
       if (U.isAssignableFrom(this.vocModel, 'model/study/QuizQuestion')) {
-        var title = U.getParamMap(window.location.hash).$title;
+        var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(this.resource.get('davDisplayName'), pModel.displayName);
         var prm = {
@@ -256,7 +256,7 @@ define('views/ResourceListItemView', [
         function fail () {
           var m = U.getModel(t); 
           if (U.isAssignableFrom(m, "aspects/tags/Tag")) {
-            var params = U.getParamMap(window.location.href);
+            var params = _.getParamMap(window.location.href);
             var app = params.application;
             var appModel;
             var tag = params['tagUses.tag.tag'];
@@ -291,7 +291,7 @@ define('views/ResourceListItemView', [
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
           Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri())); //, {trigger: true, forceFetch: true});
     //          else {
-    //            var r = U.getParamMap(window.location.href);
+    //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
     //          }
         }
@@ -515,7 +515,7 @@ define('views/ResourceListItemView', [
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
           var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showCommentsFor = { uri: U.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (this.resource.isA('Votable')) {
@@ -525,7 +525,7 @@ define('views/ResourceListItemView', [
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
           var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showVotesFor = { uri: U.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       json.viewCols = viewCols;
@@ -737,7 +737,7 @@ define('views/ResourceListItemView', [
       json['image'] = img;
       json['davDisplayName'] = dn;
 
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
+      var resourceUri = G.pageRoot + '#view/' + _.encode(rUri);
         
       var viewCols = this.getViewCols(json);
       if (!viewCols)
@@ -761,7 +761,7 @@ define('views/ResourceListItemView', [
 //        if (comments.length > 0) {
 //          var pMeta = meta[comments[0]];
 //          
-//          json.v_showCommentsFor = U.encode(U.getLongUri1(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//          json.v_showCommentsFor = _.encode(U.getLongUri1(rUri, Voc) + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
 //        }
 //      }
 //      if (U.isA(c, 'Votable')) {
@@ -770,13 +770,13 @@ define('views/ResourceListItemView', [
 //          votes = U.getCloneOf(meta, 'Votable.likes');
 //        if (votes.length > 0) {
 //          var pMeta = meta[votes[0]];
-//          json.v_showVotesFor = U.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//          json.v_showVotesFor = _.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
 //        }
 //      }  
 //      var nabs = U.getCloneOf(meta, 'ImageResource.nabs');
 //      if (nabs.length > 0) {
 //        var pMeta = meta[nabs[0]];
-//        var uri = U.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+//        var uri = _.encode(U.getLongUri1(rUri, Voc) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
 //        json.v_showRenabFor = uri;
 //      }
       

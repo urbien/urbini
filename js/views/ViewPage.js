@@ -33,7 +33,7 @@ define('views/ViewPage', [
         chat: res.isA("ChatRoom")
       };
 
-      var params = U.getParamMap(window.location.hash);
+      var params = _.getParamMap(window.location.hash);
       var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
       var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
       var commonParams = {
@@ -244,7 +244,7 @@ define('views/ViewPage', [
     edit: function(e) {
       Events.stopEvent(e);
 //      e.preventDefault();
-      this.router.navigate('edit/' + U.encode(this.resource.getUri()), {trigger: true});
+      this.router.navigate('edit/' + _.encode(this.resource.getUri()), {trigger: true});
       return this;
     },
 

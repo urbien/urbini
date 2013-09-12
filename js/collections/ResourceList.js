@@ -402,7 +402,7 @@ define('collections/ResourceList', [
         this.params.$offset = this.offset;
       
       this.rUri = options.rUri;
-      var urlParams = this.rUri ? U.getParamMap(this.rUri) : {};
+      var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
       var limit;
       if (urlParams) {
         limit = urlParams.$limit;

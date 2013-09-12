@@ -876,7 +876,7 @@ define('resourceManagerOld', [
             var types = [];
             for (var i = 0; i < results.length; i++) {
               var r = results[i];
-              U.pushUniq(types, U.getTypeUri(r._uri));
+              _.pushUniq(types, U.getTypeUri(r._uri));
             }
             
             Voc.getModels(types, {sync: false}).done(function() {

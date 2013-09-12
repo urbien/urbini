@@ -843,7 +843,7 @@ define('globals', function() {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
           options = options || {
-            async: false
+            async: true
           },
           source = options.source = options.source || 'localStorage',
           useWorker = G.hasWebWorkers && options.async,
@@ -1050,7 +1050,8 @@ define('globals', function() {
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.3.2',
-      underscore: 'lib/underscore',
+      _underscore: 'lib/underscore',
+      underscore: 'underscoreMixins',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
       jqueryIndexedDB: 'lib/jquery-indexeddb',
@@ -1627,7 +1628,7 @@ define('globals', function() {
       return $.Deferred(function(dfd) {
         if (!G.workers[taskType]) {
           var xw = G.files.xhrWorker;
-          G.workers[taskType] = new Worker('{0}/js/{1}.js'.format(G.serverName, xw.fullName || xw.name));
+          G.workers[taskType] = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
         }
         
         var w = G.workers[taskType];

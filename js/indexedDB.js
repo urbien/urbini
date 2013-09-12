@@ -248,7 +248,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 //    var originalTaskFn = taskFn;
 //    taskFn = function(defer) {
 //      var promise = originalTaskFn.apply(this, arguments);
-//      if (promise !== defer.promise() && U.isPromise(promise))
+//      if (promise !== defer.promise() && _.isPromise(promise))
 //        promise.then(defer.resolve, defer.reject);
 //    };
     
@@ -436,7 +436,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     
     if (!this.isOpen())
-      return this.onOpen(U.partialWith(this.wipe, this, filter, doDeleteStores));
+      return this.onOpen(_.partial(this.wipe.bind(this), filter, doDeleteStores));
     
     if (this._wasEmpty)
       return RESOLVED_PROMISE;
@@ -483,7 +483,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
         alreadyQueued = this.taskQueue.getQueued(name);
     
-    return alreadyQueued || this._queueTask(name, U.partialWith(restart, this, version), true);
+    return alreadyQueued || this._queueTask(name, _.partial(restart.bind(this), version), true);
   };
 
   function get(storeName, primaryKey) {
@@ -511,7 +511,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.get = function(storeName, uri) {
-    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), U.partialWith(get, this, storeName, uri));    
+    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), _.partial(get.bind(this), storeName, uri));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
@@ -658,7 +658,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @returns a JQuery Promise object
    */
   IDB.prototype.search = function(storeName, options) {
-    return this._queueTask('search for items in object store {0}'.format(storeName), U.partialWith(search, this, storeName, options));
+    return this._queueTask('search for items in object store {0}'.format(storeName), _.partial(search.bind(this), storeName, options));
   };
 
   function put(storeName, items) {
@@ -689,7 +689,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (items.length)
       this._wasEmpty = false;
     
-    return this._queueTask('saving items to object store {0}'.format(storeName), U.partialWith(put, this, storeName, items));
+    return this._queueTask('saving items to object store {0}'.format(storeName), _.partial(put.bind(this), storeName, items));
   };
 
   function del(storeName, primaryKeys) {
@@ -706,7 +706,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   IDB.prototype['delete'] = function(storeName, primaryKeys) {
     primaryKeys = _.isArray(primaryKeys) ? primaryKeys : [primaryKeys];
-    return this._queueTask('deleting items from object store {0}'.format(storeName), U.partialWith(del, this, storeName, primaryKeys));
+    return this._queueTask('deleting items from object store {0}'.format(storeName), _.partial(del.bind(this), storeName, primaryKeys));
   };  
 
   function wrap($idbObj, idbOp, args) {

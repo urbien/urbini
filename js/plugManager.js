@@ -211,7 +211,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     else
       _.extend(params, {models: JSON.stringify(models)});
     
-    U.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
+    U.ajax({type: 'POST', url: G.modelsUrl, data: params}, 'fetchPlugs').done(function(data, status, xhr) {
       G.checkVersion(data);
       if (data && data.plugs)
         setupPlugs(data.plugs);

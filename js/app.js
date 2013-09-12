@@ -1,6 +1,7 @@
 //'use strict';
 define('app', [
  'globals',
+ 'underscore',
  'backbone',
  'templates', 
  'utils', 
@@ -12,7 +13,7 @@ define('app', [
  'resourceManager',
  'router',
  'collections/ResourceList'
- ], function(G, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
+ ], function(G, _, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -79,7 +80,7 @@ define('app', [
       }
       else {
         Errors.offline();
-        Events.on('online', U.partial(loadCurrentModel, dfd));
+        Events.on('online', _.partial(loadCurrentModel, dfd));
       }
     }); 
     
@@ -321,7 +322,7 @@ define('app', [
     reset();
     Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
-      return promise.then(U.partial(run, fn, context));
+      return promise.then(_.partial(run, fn, context));
     };
   };
   
@@ -477,17 +478,13 @@ define('app', [
         return ctx.get.apply(ctx, arguments);
       };
       
-      ctx.ready(function() {
-        defer.resolve();
-        console.log("context is ready");
-      });
-      
+      ctx.ready(defer.resolve.bind(defer));
       ctx.addEventListener('error', function(err) {
         if (err instanceof L20n.Compiler.Error) {
           // do something
+          debugger;
         }
       });
-      
     }).promise();
   };
   

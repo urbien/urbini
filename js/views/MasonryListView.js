@@ -55,11 +55,8 @@ define('views/MasonryListView', [
     },
     
     reloadMasonry: function(e) {
-      if (this.rendered) {
-        G.animationQueue.queueTask(function() {
-          this.masonry('reload');
-        }, this);
-      }
+      if (this.rendered)
+        this.masonry('reload');
     },
     
     postRender: function(info) {
@@ -67,27 +64,23 @@ define('views/MasonryListView', [
       if (this.rendered) {
         if (info.appended.length || info.updated.length) {
           this.$el.imagesLoaded(function() {
-            G.animationQueue.queueTask(function() {
-              if (info.appended.length)
-                self.masonry('appended', $(info.appended));
-              if (info.updated.length)
-                self.masonry('reload');
-              
-              self.trigger('refreshed');
-            });
+            if (info.appended.length)
+              self.masonry('appended', $(info.appended));
+            if (info.updated.length)
+              self.masonry('reload');
+            
+            self.trigger('refreshed');
           });
         }
       }
       else {
         this.$el.imagesLoaded(function() {
-          G.animationQueue.queueTask(function() {
-            self.masonry({
-              itemSelector: ITEM_SELECTOR
-            });
-     
-            self.$el.on('pageshow', self.reloadMasonry.bind(self));
-            self.finish();
+          self.masonry({
+            itemSelector: ITEM_SELECTOR
           });
+   
+          self.$el.on('pageshow', self.reloadMasonry.bind(self));
+          self.finish();
         });
       }
     }

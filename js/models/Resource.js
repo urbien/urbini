@@ -1,11 +1,12 @@
 //'use strict';
 define('models/Resource', [
   'globals',
+  'underscore',
   'utils',
   'error',
   'events',
   'cache'
-], function(G, U, Errors, Events, C) {
+], function(G, _, U, Errors, Events, C) {
   var commonTypes = G.commonTypes,
       APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
@@ -23,7 +24,7 @@ define('models/Resource', [
   };
 
   function log() {
-    var args = [].slice.call(arguments);
+    var args = _.toArray(arguments);
     args.unshift("Resource");
     G.log.apply(G, args);
   };
@@ -305,7 +306,7 @@ define('models/Resource', [
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
       if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
-        return retUri + "&_uri=" + U.encode(uri);
+        return retUri + "&_uri=" + _.encode(uri);
       var action = this.get('action');
       if (action != 'make') 
         return retUri;
@@ -662,9 +663,9 @@ define('models/Resource', [
       if (facet) {
         facet = facet.slice(facet.lastIndexOf('/') + 1);
         if (facet.endsWith('emailAddress'))
-          return U.validateEmail(value) || 'Please enter a valid email';
+          return _.validateEmail(value) || 'Please enter a valid email';
         else if (facet.toLowerCase().endsWith('phone'))
-          return U.validatePhone(value) || 'Please enter a valid phone number';
+          return _.validatePhone(value) || 'Please enter a valid phone number';
         else { 
           var val = U.getTypedValue(this, name, value);
           if (val == null || val !== val) { // test for NaN
@@ -684,7 +685,7 @@ define('models/Resource', [
       var cloneOf = prop.cloneOf;
       if (cloneOf) {
         if (/^Address1?\.postalCode1?$/.test(cloneOf))
-          return U.validateZip(value) || 'Please enter a valid Postal Code';
+          return _.validateZip(value) || 'Please enter a valid Postal Code';
       }
       
       return true;

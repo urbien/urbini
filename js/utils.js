@@ -2,16 +2,14 @@
 define('utils', [
   'globals',
   'underscore',
-  'underscoreMixins',
   'backbone',
   'templates',
   'cache',
   'events',
   'jqueryMobile'
-], function(G, _, __, Backbone, Templates, C, Events, $m) {
+], function(G, _, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,
-      asArray = function(stuff) { return slice.call(stuff) },
       concat = ArrayProto.concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
@@ -32,13 +30,6 @@ define('utils', [
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
   }
   
-  function index(obj, i) {
-    return obj[i];
-  };
-
-  function _leaf(obj, path, separator) {
-    return path.split(separator).reduce(index, obj);
-  }
   
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
@@ -55,61 +46,6 @@ define('utils', [
 //  Array.prototype.last = Array.prototype.peek = function() {
 //    return this.length ? this[this.length - 1] : null;
 //  };
-
-  String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-      ;
-    });
-  };
-  
-  String.prototype.repeat = function(num) {
-    return new Array(num + 1).join(this);
-  };
-
-  String.prototype.trim = function(){
-    return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
-  };
-  
-  String.prototype.startsWith = function(str) {
-//    return (this.match("^"+str)==str);
-    return this.slice(0, str.length) === str;
-  };
-  
-  String.prototype.camelize = function(capitalFirst) {
-    return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
-      return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
-    }).replace(/\s+/g, '');
-  };
-
-  String.prototype.splitAndTrim = function(delimiter) {
-    return _.map(this.split(delimiter), function(str) {
-      return str.replace(/\s/g, '');
-    });
-  };
-  
-  String.prototype.uncamelize = function(capitalFirst) {
-    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
-    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
-  };
-
-  String.prototype.capitalizeFirst = function() {
-    return this.slice(0, 1).toUpperCase() + this.slice(1);
-  };
-  
-  String.prototype.splitCamelCase = function(capitalFirst) {
-      // insert a space before all caps
-    var split = this.replace(/([A-Z])/g, ' $1');
-      // uppercase the first character
-    return capitalFirst ? split.replace(/^./, function(str){ return str.toUpperCase(); }) : split;
-  };
-
-  String.prototype.endsWith = function(str) {
-    return this.slice(this.length - str.length) === str;
-  };
 
   var HTML = {
     tag: function(name, content, attributes) {
@@ -220,7 +156,7 @@ define('utils', [
           G.recycleXhrWorker(worker);
       });
 
-      G.getXhrWorker().done(function(_worker) {
+      G.getXhrWorker('imageLoader').done(function(_worker) {
         worker = _worker;
         worker.onmessage = function(e) {
           dfd.resolve(e.data);
@@ -252,7 +188,7 @@ define('utils', [
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
      */
-    ajax: function(options) {
+    ajax: function(options, taskName) {
       var hasWebWorkers = G.hasWebWorkers,
           opts = _.clone(options),
           useWorker = hasWebWorkers && !opts.sync,
@@ -305,7 +241,7 @@ define('utils', [
         if (opts.error) defer.fail(opts.error);        
         if (useWorker) {
           log('xhr', 'webworker', opts.url);
-          G.getXhrWorker().done(function() {
+          G.getXhrWorker(taskName).done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
               var xhr = event.data,
@@ -697,7 +633,7 @@ define('utils', [
       }
       
       var size = _.size(results);
-      return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
+      return size === 1 ? results[_.getFirstProperty(results)] : size === 0 ? [] : results;
     },
     
     isCloneOf: function(prop, iPropName, vocModel) {
@@ -789,7 +725,7 @@ define('utils', [
 ////        
 ////        var primaryKeys = U.getPrimaryKeys(model);
 //        if (!primaryKeys  ||  primaryKeys.length == 0)
-//          longUri += "id=" + U.encode(uri.slice(sIdx + 1));
+//          longUri += "id=" + _.encode(uri.slice(sIdx + 1));
 //        else {
 //          var vals = uri.slice(sIdx + 1).split('/');
 //          if (vals.length != primaryKeys.length)
@@ -813,19 +749,6 @@ define('utils', [
 //          return G.defaultVocPath + uri;
 //      }
 //    },
-
-    phoneRegex: /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/,
-    validatePhone: function(phone) {
-      return U.phoneRegex.test(phone);
-    },
-    
-    validateZip: function(zip) {
-      return /^\d{5}|\d{5}-\d{4}$/.test(zip);
-    },
-    
-    validateEmail: function(email) { 
-      return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test( email );
-    },
     
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
@@ -1207,66 +1130,9 @@ define('utils', [
       return staticProps;
     },
     
-//    wrap: function(object, method, wrapper) {
-//      var fn = object[method];
-//      return object[method] = function() {
-//        return wrapper.apply(this, [ fn.bind(this) ].concat(slice.call(arguments)));
-//      };
-//    },
-    
-    /**
-     * Array that stores only unique elements
-     */
-//    UArray: function() {
-//    //  this.handlers = {};
-//    //  this.on = function(method, handler) {
-//    //    this.handlers[method] = this.handlers[method] || [];
-//    //    this.handlers[method].push(handler);
-//    //  };
-//    //  this.removeHandler = function(method, handler) {
-//    //    return this.handlers[method] && this.handlers[method].remove(handler);
-//    //  };
-//    //  this.handler = function(method) { 
-//    //    if (this.handlers[method] && this.handlers[method].length) {
-//    //      _.each(this.handlers[method], function(m) {m()});
-//    //    }
-//    //  };
-//    },
-//    
-//    union: function(o1) {
-//      var type1 = U.getObjectType(o1);
-//      var args = slice.call(arguments, 1);
-//      for (var i = 0; i < args.length; i++) {
-//        var o2 = args[i];
-//        var type2 = U.getObjectType(o2);
-//          
-//        var c = type1.indexOf('Array') == -1 && !(o1 instanceof U.UArray) ? [c] : o1.slice();    
-//        if (type2.indexOf('Array') == -1 && !(o2 instanceof U.UArray))
-//          return c.push(o2);
-//        
-//        var self = this;
-//        _.each(o2, function(i) {c.push(i);});
-//      }
-//      return c;
-//    },   
-
-    endsWith: function(string, pattern) {
-      var d = string.length - pattern.length;
-      return d >= 0 && string.indexOf(pattern, d) === d;
-    },
-    
-    //U.toQueryString: function(params) {
-    //  var qStr = '';
-    //  _.forEach(params, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
-    //    qStr += key + '=' + U.encode(val) + '&';
-    //  });
-    //  
-    //  return qStr.slice(0, qStr.length - 1);
-    //};
-    
     replaceParam: function(url, name, value, sort) {
       if (!url)
-        return name + '=' + U.encode(value);
+        return name + '=' + _.encode(value);
       
       if (_.isObject(name)) {
         var newUrl = url,
@@ -1296,7 +1162,7 @@ define('utils', [
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
-    
+   
     /**
      * @return if getQueryParams(url), return map of query params, 
      *         if getQueryParams(url, model), return map of query params that are model properties
@@ -1307,7 +1173,7 @@ define('utils', [
       var args = arguments, model, collection, params, url;
       model = collection = params = url = args.length && args[0];
       if (!url || typeof url === 'string') {
-        params = U.getParamMap(url || window.location.href);
+        params = _.getParamMap(url || window.location.href);
         return args.length > 1 ? U.getQueryParams.apply(U, [params].concat(slice.call(args, 1))) : params;
       }
 
@@ -1336,13 +1202,14 @@ define('utils', [
       var meta = model.properties;
       var whereParams = U.whereParams;
       for (var p in params) {
-//        var pStart = p;
-//        if (/\./.test(p))
-//          pStart = p.slice(0, p.indexOf('.')); // might be a composite prop like tagUses.(http://www.hudsonfog.com/voc/model/aha/OnlineResource)taggable.ahasCount=>0
-//        
-//        if (meta[pStart] || whereParams[pStart])
-        if (meta[p] || whereParams[p])
+        var pStart = p;
+        if (/\./.test(p))
+          pStart = p.slice(0, p.indexOf('.')); // might be a composite prop like tagUses.(http://www.hudsonfog.com/voc/model/aha/OnlineResource)taggable.ahasCount=>0
+        
+        if (meta[pStart] || whereParams[pStart]) {
+//        if (meta[p] || whereParams[p])
           filtered[p] = params[p];
+        }
       }
   
       return filtered;
@@ -1378,24 +1245,7 @@ define('utils', [
       if (chopIdx == -1)
         return {};
         
-      return hash ? U.getParamMap(hash.slice(chopIdx + 1)) : {};
-    },
-    
-    getParamMap: function(str, delimiter) {
-      var map = {};
-      if (!str)
-        return map;
-      var qIdx = str.indexOf('?');
-      if (qIdx != -1)
-        str = str.slice(qIdx + 1);
-        
-      _.each(str.split(delimiter || "&"), function(nv) {
-        nv = nv.split("=");
-        if (nv.length == 2)
-          map[U.decode(nv[0])] = U.decode(nv[1]);
-      });
-      
-      return map;
+      return hash ? _.getParamMap(hash.slice(chopIdx + 1)) : {};
     },
     
 //    getPropertiesWith: function(list, annotation) {
@@ -1470,8 +1320,8 @@ define('utils', [
     },
     
     areQueriesEqual: function(q1, q2) {
-      var p1 = U.getParamMap(q1);
-      var p2 = U.getParamMap(q2);
+      var p1 = _.getParamMap(q1);
+      var p2 = _.getParamMap(q2);
       return _.isEqual(p1, p2);
     },
     
@@ -1591,7 +1441,7 @@ define('utils', [
       var qs = '';
       keys.sort();
       for (i = 0; i < keys.length; i++) {
-        keys[i] = keys[i] + '=' + U.encode(paramMap[keys[i]]);
+        keys[i] = keys[i] + '=' + _.encode(paramMap[keys[i]]);
       }
       
       return keys.join(options.delimiter || '&');
@@ -1850,17 +1700,6 @@ define('utils', [
       return null;
     },
     
-    deepExtend: function(obj) {
-      _.each(slice.call(arguments, 1), function(source) {
-        for (var prop in source) {
-          if (obj[prop])
-            U.deepExtend(obj[prop], source[prop]);
-          else
-            obj[prop] = source[prop] || obj[prop];
-        }
-      });
-    },
-    
 //    _index: function(obj,i) {
 //      return obj[i]
 //    },
@@ -1876,32 +1715,6 @@ define('utils', [
 //      return path.split(separator || '.').reduce(index, obj);
 //    },
     
-    leaf: function(obj, path, separator) {
-      if (typeof obj == 'undefined' || !obj)
-        return undefined;
-
-      separator = separator || '.'; 
-      var lastSep = path.lastIndexOf(separator),
-          parent,
-          child;
-      
-      if (lastSep == -1)
-        return obj;
-      else {
-        try {
-          parent = _leaf(obj, path.slice(0, lastSep), separator);
-          child = parent[path.slice(lastSep + separator.length)];
-        } catch (err) {
-          return undefined;
-        }        
-      }
-      
-      if (typeof child == 'function')
-        return child.bind(parent);
-      else
-        return child;
-    },
-
     getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
@@ -2222,7 +2035,7 @@ define('utils', [
 //     * build view/list/etc. hash for model, defaults to homePage if model is null
 //     */
 //    buildHash: function(model) {
-//      return model instanceof Backbone.Model ? 'view/' + U.encode(model.getUri()) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
+//      return model instanceof Backbone.Model ? 'view/' + _.encode(model.getUri()) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
 //    
 //    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
@@ -2230,7 +2043,7 @@ define('utils', [
 //    getMobileUrl: function(url) {
 //      var orgParams = U.getQueryParams(url);
 //      if (url.startsWith('v.html'))
-//        return 'view/' + U.encode(U.getLongUri1(orgParams.uri));
+//        return 'view/' + _.encode(U.getLongUri1(orgParams.uri));
 //      
 //      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
 //      var type = orgParams.type;
@@ -2286,23 +2099,6 @@ define('utils', [
 //      
 //      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
 //    },
-    
-    pushUniq: function(arr, obj) {
-      var items = concat.apply([], slice.call(arguments, 1));
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        if (!_.contains(arr, item))
-          arr.push(item);
-      }
-    },
-    
-    encode: function(str) {
-      return encodeURIComponent(str);
-    },
-    
-    decode: function(str) {
-      return decodeURIComponent(str).replace(/\+/g, ' ');
-    },
     
     primitiveTypes: {
 //      uri: 'system/primitiveTypes',
@@ -2391,14 +2187,6 @@ define('utils', [
         return !!val;
     },
     
-    isArray: function(obj) {
-      return U.getObjectType(obj) === '[object Array]';
-    },
-
-    isObject: function(obj) {
-      return U.getObjectType(obj) === '[object Object]';
-    },
-    
     /**
      * like _.filter, but func takes in both key and value 
      * @return obj with keys and values such that for each [key, val] pair, func(key, val) is truthy;
@@ -2406,19 +2194,21 @@ define('utils', [
     filterObj: function(obj, func) {
       var filtered = {};
       for (var key in obj) {
-        var val = obj[key];
-        if (func(key, val))
-          filtered[key] = val;
+        if (_.has(obj, key)) {
+          var val = obj[key];
+          if (func(key, val))
+            filtered[key] = val;
+        }
       }
       
       return filtered;
     },
     
-    copyFrom: function(from, to, props) {
-      _.each(props || from, function(p) {
-        to[p] = from[p];
-      });
-    },
+//    copyFrom: function(from, to, props) {
+//      _.each(props || from, function(p) {
+//        to[p] = from[p];
+//      });
+//    },
     
     /**
      * @return obj with keys and values remapped by func. 
@@ -2436,18 +2226,6 @@ define('utils', [
       return mapped;
     },
     
-    getFirstProperty: function(obj) {
-      for (var name in obj) {
-        return name;
-      }
-    },
-
-    getFirstValue: function(obj) {
-      for (var name in obj) {
-        return obj[name];
-      }
-    },
-
     // https://gist.github.com/boo1ean/3878870
     plural: [
        [/(quiz)$/i,               "$1zes"  ],
@@ -2803,7 +2581,6 @@ define('utils', [
     },
     
     concat: concat,
-    asArray: asArray,
     copyArray: function(arr /* skip */) {
       var copy = [],
           skip = concat.apply(ArrayProto, slice.call(arguments, 1));
@@ -2903,7 +2680,7 @@ define('utils', [
 //        });
 //        
 //        if (_.size(whereParam)) {
-//          whereParam = U.getFirstProperty(whereParam);
+//          whereParam = _.getFirstProperty(whereParam);
 //          var subClause = val.split('=');
 //          if (subClause.length == 2 && subClause[0] === whereParam) {
 //            debugger;
@@ -3145,7 +2922,7 @@ define('utils', [
         template = templateName;
       
       templateFn = function(json) {
-        if (_.any(U._reservedTemplatedKeywords, U.partial(_.has, json)))
+        if (_.any(U._reservedTemplatedKeywords, _.partial(_.has, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
         
         json = json || {};
@@ -3488,7 +3265,7 @@ define('utils', [
     },
     getPath: function(uri) {
       var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
-      var params = U.getParamMap(uri);
+      var params = _.getParamMap(uri);
       for (var param in params) {
         path += '/' + encodeURIComponent(params[param]);
       }
@@ -3542,7 +3319,7 @@ define('utils', [
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
     },
     getExternalFileUrl: function(uri) {
-      var params = U.getParamMap(uri);
+      var params = _.getParamMap(uri);
       if (params.url)
         return G.serverName + '/' + params.url;
       else
@@ -3571,24 +3348,6 @@ define('utils', [
     },
     getRouteAction: function(route) {
       return route ? (route.startsWith('chat') ? 'chat' : route) : 'list';
-    },
-    deepExtend: function(obj, source) {
-      for (var p in source) {
-        if (_.has(source, p) && !_.has(obj, p)) {
-          obj[p] = source[p];
-          continue;
-        }
-          
-        var val = source[p], 
-            org = obj[p];
-        
-        if (_.isObject(val) && _.isObject(org))
-          U.deepExtend(org, val);
-        else
-          obj[p] = val;          
-      }
-      
-      return obj;
     },
 
     toModelLatLon: function(coords, model) {
@@ -3634,10 +3393,6 @@ define('utils', [
       }
       
       return promise;
-    },
-    
-    randomString: function() {
-      return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
     },
     
     /**
@@ -3712,17 +3467,6 @@ define('utils', [
       return new UrlInfo(hash);
     },
 
-    wipe: function(obj) {
-      for (var p in obj) {
-        if (_.has(obj, p))
-          delete obj[p];
-      }
-    },
-    
-    partial: _.partial,
-
-    partialWith: _.partialWith,
-
     getPropFn: function(obj, prop, clone) {
       return function() {
         var val = obj[prop];
@@ -3748,21 +3492,6 @@ define('utils', [
       }).concat('_uri');
       
       return cols;
-    },
-
-    isPromise: _.isPromise,
-
-    
-    /** 
-     * From http://eloquentjavascript.net/chapter6.html
-     */
-    op: {
-      "+": function(a, b){return a + b;},
-      "==": function(a, b){return a == b;},
-      "===": function(a, b){return a === b;},
-      "!": function(a){return !a;},
-      "!==": function(a, b){return a !== b;}
-      /* and so on */  
     },
 
     isMasonryModel: function(vocModel) {
@@ -3800,12 +3529,6 @@ define('utils', [
       }
         
       return false;
-    },
-    
-    negate: function(fn, context) {
-      return function() {
-        return !fn.apply(context || this, arguments);
-      }
     },
     
     getBacklinkCount: function(res, name) {

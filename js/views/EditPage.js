@@ -58,7 +58,7 @@ define('views/EditPage', [
       
       this.addChild(this.header);
       
-      var reqParams = U.getParamMap(window.location.href);
+      var reqParams = _.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
       this.isVideo = res.isA('VideoResource');
       if (!editCols && !this.isVideo) {
@@ -136,7 +136,7 @@ define('views/EditPage', [
       ranges.push(this.vocModel.type);
       var inlineLists = {};
       Voc.getModels(ranges).done(function() {
-        var params = U.getParamMap(window.location.href);
+        var params = _.getParamMap(window.location.href);
         var type = self.vocModel.type;
         var listModel = U.getModel(type);
         var inlineList = C.getResourceList(self.vocModel, U.getQueryString(params, true));
