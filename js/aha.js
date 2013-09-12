@@ -217,7 +217,7 @@ function overlay() {
   overlayDiv.innerHTML = overlayHTML;
   
   document.body.appendChild(overlayDiv);
-  document.keydown = removeOverlay;
+  document.onkeydown = removeOverlay;
   
   var ahaBtn = $('#ahaButton'),
       huhBtn = $('#huhButton');
