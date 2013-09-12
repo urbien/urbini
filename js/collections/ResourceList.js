@@ -165,7 +165,7 @@ define('collections/ResourceList', [
     },
     
     clone: function() {
-      return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
       options = options || {};

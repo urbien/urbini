@@ -1,9 +1,8 @@
 //'use strict';
 define('events', [
-  'globals', 
   'underscore',
   'backbone'
-], function(G, _, Backbone) {
+], function(_, Backbone) {
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',
@@ -21,9 +20,6 @@ define('events', [
       }
     }
   }, Backbone.Events);
-  
-  if (G.DEBUG)
-    G.Events = Events;
-  
+    
   return Events;
 });

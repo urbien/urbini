@@ -22,7 +22,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     _chooserForInterface: {}, // for redirecting to chooser/
     _forAction: {},
     log: function() {
-      var args = U.slice.call(arguments);
+      var args = _.toArray(arguments);
       args.unshift("Redirecter", "redirect");
       G.log.apply(G, args);
     }

@@ -2,12 +2,13 @@
 define('utils', [
   'globals',
   'underscore',
+  'underscoreMixins',
   'backbone',
   'templates',
   'cache',
   'events',
   'jqueryMobile'
-], function(G, _, Backbone, Templates, C, Events, $m) {
+], function(G, _, __, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,
       asArray = function(stuff) { return slice.call(stuff) },
@@ -38,38 +39,6 @@ define('utils', [
   function _leaf(obj, path, separator) {
     return path.split(separator).reduce(index, obj);
   }
-
-  _.extend(Array, {
-    remove: function(array /* items */) {
-      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
-      
-      for (var i in items) {
-        var item = items[i],
-            idx = array.indexOf(item);
-        
-        if (idx != -1)
-          array.splice(idx, 1);
-      }
-      
-      return array;
-    },
-
-    // courtesy of John Resig
-    removeFromTo: function(array, from, to) {
-      var rest = array.slice((to || from) + 1 || array.length);
-      array.length = from < 0 ? array.length + from : from;
-      return array.push.apply(array, rest);
-    },
-
-    last: function(array) {
-      return U.peek(array);
-    },
-
-    peek: function(array) {
-      return array[array.length - 1];
-    }    
-  });
-  
   
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
@@ -147,7 +116,8 @@ define('utils', [
       return {
         name: name, 
         attributes: attributes, 
-        content: _.isArray(content) ? content : [content]
+        content: _.isArray(content) ? content : 
+                             content == null ? [] : [content]
       };
     },
     
@@ -194,13 +164,24 @@ define('utils', [
     },
   
     escape: function(text) {
+      if (typeof text !== 'string')
+        text = '' + text;
+      
       var replacements = [[/&/g, "&amp;"], [/"/g, "&quot;"],
                           [/</g, "&lt;"], [/>/g, "&gt;"]];
+      
       _.each(replacements, function(replace) {
         text = text.replace(replace[0], replace[1]);
       });
       
       return text;
+    },
+    
+    lazifyImage: function(atts) {
+      atts[G.lazyImgSrcAttr] = atts.src;
+      atts.src = G.blankImgDataUrl;
+      atts.onload = atts.onerror = '$(this).trigger(\'imageOnload\')';
+      return atts;
     }
   };
   
@@ -228,6 +209,32 @@ define('utils', [
       
       return promise;
     },    
+    
+    getImage: function(url) {
+      var dfd = $.Deferred(),
+          promise = dfd.promise(),
+          worker;
+      
+      promise.always(function() {
+        if (worker)
+          G.recycleXhrWorker(worker);
+      });
+
+      G.getXhrWorker().done(function(_worker) {
+        worker = _worker;
+        worker.onmessage = function(e) {
+          dfd.resolve(e.data);
+        };
+        
+        worker.onerror = dfd.reject.bind(dfd);
+        worker.postMessage({
+          command: 'getImage',
+          config: url
+        });
+      });
+      
+      return promise;
+    },
     
 //    ajax: function(options) {
 //      var dfd = $.Deferred(), 
@@ -350,7 +357,10 @@ define('utils', [
             };
             
             var msgOpts = _.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']);
-            worker.postMessage(msgOpts); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
+            worker.postMessage({
+              command: 'xhr',
+              config: msgOpts
+            }); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
         }
         else {
@@ -2792,10 +2802,6 @@ define('utils', [
 //      return Math.sqrt(x*x + y*y);
     },
     
-    asArray: function(stuff) {
-      return U.slice.call(stuff);
-    },
-    slice: slice,
     concat: concat,
     asArray: asArray,
     copyArray: function(arr /* skip */) {
@@ -3713,19 +3719,9 @@ define('utils', [
       }
     },
     
-    partial: function(fn) {
-      var args = slice.call(arguments, 1);
-      return function() {
-        return fn.apply(null, args.concat(slice.call(arguments)));
-      };
-    },
+    partial: _.partial,
 
-    partialWith: function(fn, context) {
-      var args = slice.call(arguments, 2);
-      return function() {
-        return fn.apply(context, args.concat(slice.call(arguments)));
-      };
-    },
+    partialWith: _.partialWith,
 
     getPropFn: function(obj, prop, clone) {
       return function() {
@@ -3754,9 +3750,7 @@ define('utils', [
       return cols;
     },
 
-    isPromise: function(obj) {
-      return obj && typeof obj.then == 'function';
-    },
+    isPromise: _.isPromise,
 
     
     /** 
@@ -3836,11 +3830,9 @@ define('utils', [
       // Firefox supports PNG and JPEG. You could check img.src to
       // guess the original format, but be aware the using "image/jpg"
       // will re-encode the image.
-//      var dataURL = canvas.toDataURL("image/png");
-
-      return canvas.toDataURL("image/png");
-//      return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-    }    
+      var dataURL = canvas.toDataURL("image/png");
+      return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    }
   };
 
   var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment', 'special'],

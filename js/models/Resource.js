@@ -77,7 +77,7 @@ define('models/Resource', [
       }
       
       this.on('saved', function() {
-        Events.trigger.apply(Events, ['saved', this].concat(U.slice.call(arguments)));
+        Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
       });
       
       this.unsavedChanges = this.isNew() ? this.toJSON() : {};
