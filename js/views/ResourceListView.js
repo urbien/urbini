@@ -159,60 +159,78 @@ define('views/ResourceListView', [
             appended: []
           },
           renderDfd = $.Deferred(),
-          updated = [];
+          updated = [],
+          multitask = {
+            name: 'render list items',
+            id: G.nextId('renderListItems')
+          };
       
       this.imageProperty = U.getImageProperty(this.collection);
       this.preRender(info);
 
-      G.animationQueue.queueTask(function() {        
-        for (; i < num; i++) {
-          var res = resources[i],        
-              uri = res.getUri(),
-              liView = null;
-          
-          if (canceled && res.get(canceled))
-            continue;
-          
-          info.index = i;        
-          
-          info.updated = _.contains(modifiedUris, uri);
-          if (i >= lis.length || info.updated)
-            liView = this.renderItem(res, info);          
-  
-          G.animationQueue.queueTask(function(liView, lis, i) {          
-            var el;
-            if (liView) {
-              el = liView.el;
-              var detachedLi = lis[i],
-                  viewId = detachedLi && detachedLi.dataset.viewId,
-                  child = viewId && this.getChildViews()[viewId];
-              
-              if (child) {
-                debugger;
-                child.destroy();
-              }
-            }
-            else
-              el = lis[i];
-            
-            if (info.updated)
-              updated.push(el);
-            else
-              info.appended.push(el);
-            
-            this.postRenderItem(el, info);
-          }, this, [liView, lis, i]);
-        }
+      function doOne(i) {          
+        var res = resources[i],        
+            uri = res.getUri(),
+            liView,
+            el;
         
-        G.animationQueue.queueTask(function() {
-          info.updated = updated;
-          if (!nextPage)
-            this.html(frag);
+        if (canceled && res.get(canceled))
+          return;
+        
+        
+        info.index = i;        
+        info.updated = _.contains(modifiedUris, uri);
+        if (i >= lis.length || info.updated)
+          liView = this.renderItem(res, info);          
+        if (liView) {
+          el = liView.el;
+          var detachedLi = lis[i],
+              viewId = detachedLi && detachedLi.dataset.viewId,
+              child = viewId && this.getChildViews()[viewId];
           
-          this.postRender(info);
-          renderDfd.resolve();
-        }, this);
-      }, this);
+          if (child) {
+            debugger;
+            child.destroy();
+          }
+        }
+        else
+          el = lis[i];
+        
+        if (info.updated)
+          updated.push(el);
+        else
+          info.appended.push(el);
+        
+        this.postRenderItem(el, info);
+      };
+      
+      G.q(_.extend(multitask, {
+        task: function() {
+          for (; i < num; i++) {
+            G.q({
+              name: 'render one list item',
+              context: this,
+              args: [i],
+              parent: multitask.id,
+              task: doOne
+            });
+          }
+          
+          G.q({
+            name: 'post render list items',
+            context: this,
+            parent: multitask.id,
+            task: function() {
+              info.updated = updated;
+              if (!nextPage)
+                this.html(frag);
+              
+              this.postRender(info);
+              renderDfd.resolve();
+            }
+          });
+        }.bind(this)
+      }));
 
         
 //      if (!isComment)
@@ -366,13 +384,13 @@ define('views/ResourceListView', [
         this.numDisplayed = 0;
         var self = this;
         var col = this.filteredCollection = this.collection.clone();
-        this.filteredCollection.on('endOfList', function() {
-          this.pageView.trigger('endOfList');
-        }.bind(this));
+        this.listenTo(this.filteredCollection, 'endOfList', function() {
+          self.pageView.trigger('endOfList');
+        });
         
-        this.filteredCollection.on('reset', function() {
-          this.pageView.trigger('newList');
-        }.bind(this));
+        this.listenTo(this.filteredCollection, 'reset', function() {
+          self.pageView.trigger('newList');
+        });
         
         _.each(['updated', 'added', 'reset'], function(event) {
           self.stopListening(col, event);

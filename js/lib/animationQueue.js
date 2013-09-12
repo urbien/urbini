@@ -96,7 +96,7 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
     },
 
     doStop: function() {
-        this.stopper(this.animationFrameId);
+        this._stop(this.animationFrameId);
     },
 
     /**
@@ -168,9 +168,9 @@ define('lib/animationQueue', ['globals', 'underscore'], function(G, _) {
     },
 
     queueTask: function(fn, scope, args) {
-      fn.apply(scope, args || []);
-//        this.taskQueue.push(arguments);
-//        this.processTaskQueue();
+//        fn.apply(scope, args || []);
+        this.taskQueue.push(arguments);
+        this.processTaskQueue();
     },
 
     dequeueTask: function(fn, scope, args) {

@@ -25,7 +25,7 @@ define('views/EditView', [
       var self = this;
       _.each(scrollerTypes, function(s) {
         self['scroll' + s.camelize(true)] = function(e) {
-          self.mobiscroll.apply(self, [e, s].concat(U.slice.call(arguments, 1)));
+          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
         }
       });
     
@@ -87,11 +87,9 @@ define('views/EditView', [
         }.bind(this));
       }
 
-      this.on('active', function(active) {
-        if (active) {
-          this._canceled = false;
-          this._submitted = false;
-        }
+      this.on('active', function() {
+        this._canceled = false;
+        this._submitted = false;
       }.bind(this));
       
       this.autoFinish = false;

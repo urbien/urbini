@@ -4,12 +4,13 @@ define('views/BasicPageView', [
   'utils',
   'events',
   'views/BasicView',
-  'jqueryMobile'
+  'jqueryMobile',
+  'jqueryImagesLoaded'
 ], function(G, U, Events, BasicView, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       $wnd = $(window);
-
+  
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
@@ -38,6 +39,8 @@ define('views/BasicPageView', [
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll'); //, 'onpageshow', 'onpagehide');            
       $wnd.on('scroll', this.onScroll.bind(this));
       
+//      this._subscribeToImageEvents();
+//      
 //    if (navigator.mozApps) {
 //      var getSelf = navigator.mozApps.getSelf();
 //      getSelf.onsuccess = function(e) {
@@ -90,31 +93,32 @@ define('views/BasicPageView', [
 
       Events.on('activeView', function(view) {
         if (view !== self)
-          self.trigger('active', false);
+          self.trigger('inactive');
         else
-          self.trigger('active', true);
+          self.trigger('active');
       });
       
       this.on('titleChanged', function(title) {
         self._updateTitle(title);
       });
       
-      this.on('active', function(active) {
-        if (active) {
-          if (self.rendered) {
-            self._checkMessageBar();
-            self._checkAutoClose();
-          }
-          else {
-            self.onload(self._checkMessageBar.bind(self));
-            self.onload(self._checkAutoClose.bind(self));            
-          }
-          
-          if (!self._title)
-            self._updateTitle();
-        }
+      this.on('inactive', function() {        
+        self._clearMessageBar();        
+      });
+      
+      function onload() {
+        self._checkMessageBar();
+        self._checkAutoClose();
+      }
+      
+      this.on('active', function() {
+        if (self.rendered)
+          onload();
         else
-          self._clearMessageBar();        
+          self.onload(onload);
+        
+        if (!self._title)
+          self._updateTitle();        
       });
     },
     
@@ -351,13 +355,12 @@ define('views/BasicPageView', [
       else
         $('#page').prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
 //      el.addClass(classes.join(' '), {duration: 1000});
-//      el.attr('data-hint', tooltip);
-      this.once('active', function(active) {
-        if (!active) {
-          self.removeTooltip(el);
-          $('.play').remove();
-        }
+//      el.attr('data-hint', tooltip);      
+      this.once('inactive', function() {
+        self.removeTooltip(el);
+        $('.play').remove();
       });
+      
       this.$el.on('resize', function() {
         var position = el.offset();
         var t = position.top + el.outerHeight()/2 - 20;
@@ -435,7 +438,7 @@ define('views/BasicPageView', [
         });
         
         bar.render(data);
-        G.animationQueue.queueTask(function() {          
+        G.q(function() {          
           bar.$el.css({opacity: 0});
           self.$el.prepend(bar.$el);
           self.trigger('messageBarsAdded', bar);

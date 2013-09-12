@@ -12,6 +12,15 @@ define('templates', [
 //    variable: 'G'
   };
   
+  var lazyImgSrcAttr = G.lazyImgSrcAttr,
+      blankImgDataUrl = G.blankImgDataUrl,
+      imageLoad = '$(this).trigger(\'imageOnload\')';
+  
+  function prepTemplate(text) {
+    return text.trim().replace('<img src=', '<img src="{0}" onload="{1}" onerror="{1}" {2}='.format(blankImgDataUrl, imageLoad, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+  };
+  
   var Templates = {
     // Hash of preloaded templates for the app
     TAG: 'Templates',
@@ -70,7 +79,7 @@ define('templates', [
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {
-          'default': elt.innerHTML.trim()
+          'default': prepTemplate(elt.innerHTML)
         };
       }.bind(this));
     },

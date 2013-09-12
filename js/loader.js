@@ -687,15 +687,14 @@ define('globals', function() {
       }
       
       return require('__domReady__').then(function() {
-        var essential = ['jqmConfig', 'events', 'lib/animationQueue', 'app'];
+        var essential = ['jqmConfig', 'events', 'app'];
         if (G.modules['js/lib/l20n.js'])
           essential.push('lib/l20n');
         
         essential = essential.concat(css)
         return require(essential);
       });
-    }).then(function(jqmConfig, Events, AnimationQueue, App) {
-      G.animationQueue = new AnimationQueue();
+    }).then(function(jqmConfig, Events, App) {
       Events.on('appStart', APP_START_DFD.resolve);
       console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
@@ -930,7 +929,10 @@ define('globals', function() {
             };
             
             worker.onerror = bundleDfd.reject;
-            worker.postMessage(getBundleReq);  
+            worker.postMessage({
+              command: 'xhr',
+              config: getBundleReq
+            });  
           });
         }
         else {      
@@ -1047,7 +1049,7 @@ define('globals', function() {
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
-      jqueryMobile: 'lib/jquery.mobile-1.3.1',
+      jqueryMobile: 'lib/jquery.mobile-1.3.2',
       underscore: 'lib/underscore',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
@@ -1081,7 +1083,7 @@ define('globals', function() {
   
   /////////////////// START SETUP ///////////////////////////////
 
-  var G = Lablz,
+  var G = window.Lablz,
       APP_START_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
@@ -1129,6 +1131,8 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
+    lazyImgSrcAttr: 'data-frz-src',
+    blankImgDataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
     emptyFn: function() {},
     falseFn: function() { return false; },
     trueFn: function() { return true; },
@@ -1441,8 +1445,8 @@ define('globals', function() {
     sqlUri: 'sql',
     modules: {},
     id: 0,
-    nextId: function() {
-      return G.id++;
+    nextId: function(prefix) {
+      return prefix ? prefix + G.id++ : G.id++;
     },
     createXhr: function () {
       //Would love to dump the ActiveX crap in here. Need IE 6 to die first.

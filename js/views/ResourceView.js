@@ -139,7 +139,7 @@ define('views/ResourceView', [
 //      if (!this.ready)
 //        return this.renderHelper.apply(this, args);
       
-      this.ready.done(function() {
+      return this.ready.then(function() {
         this.renderHelper.apply(this, args);
         this.finish();
       }.bind(this));
@@ -342,7 +342,7 @@ define('views/ResourceView', [
       
   //    var j = {"props": json};
   //    this.$el.html(html);
-      this.$el.html(frag);      
+      this.$el.html(frag);
       if (this.$el.hasClass('ui-listview')) {
         this.$el.trigger('create');      
         this.$el.listview('refresh');

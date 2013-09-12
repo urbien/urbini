@@ -49,7 +49,11 @@ define('jqmConfig', function() {
           $(this).remove();
         });
       });
-  
+
+//      $doc.bind("DOMNodeInserted", function(e) {
+//        $(e.target).trigger('appendedToDOM');
+//      });
+//
 //      $doc.bind("DOMNodeRemoved", function(e) {
 //        console.debug("Removed: " + e.target.nodeName);
 //      });

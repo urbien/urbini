@@ -307,23 +307,29 @@ define('views/ViewPage', [
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
-      if (!this.isAbout) {
-        if (G.currentUser.guest) {
-          this.$('#edit').hide();
-        }
-      }       
-     
-      if (!this.$el.parentNode) 
-        $('body').append(this.$el);
-      this.$el.attr("data-theme", G.theme.swatch);
-      if (G.theme.backgroundImage) 
-        this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
-
-      this.$('#chatbox').css("display", "none");      
+      this.onload(function() {
+        
+//      });
+//      this._queueTask(function() {        
+        if (!this.isAbout) {
+          if (G.currentUser.guest) {
+            this.$('#edit').hide();
+          }
+        }       
+        
+        if (!this.$el.parentNode) 
+          $('body').append(this.$el);
+      
+        this.$el.attr("data-theme", G.theme.swatch);
+        if (G.theme.backgroundImage) 
+          this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
+  
+        this.$('#chatbox').css("display", "none");      
+      }.bind(this));
 //      renderDfd.resolve();
 //      this.restyle();
       
-      return this;
+      return this.ready;
     }
   }, {
     displayName: 'ViewPage'

@@ -51,13 +51,20 @@ define('views/HomePage', [
     },
     
     click: function(e) {
-      var id = e.target.id;
+      var id = e.target.id,
+          self = this;
+      
       if (!id)
         return;
       if (id.startsWith('hpRightPanel')) {
         Events.stopEvent(e);
         U.require(["views/RightMenuPanel"]).done(function(MP) {
-          self.menuPanel = new MP({viewId: 'viewHome'}).render();
+          self.menuPanel = new MP({
+            viewId: 'viewHome'
+          });
+          
+          self.addChild(self.menuPanel);
+          self.menuPanel.render();
         });
       }
       if (id.startsWith('hpLeftPanel')) {

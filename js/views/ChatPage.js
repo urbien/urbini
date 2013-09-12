@@ -278,12 +278,16 @@ define('views/ChatPage', [
 //      }.bind(this));
 
       var self = this;
-      this.on('active', function(active) {
-        var method = active ? 'show' : 'hide';
-        self.$localMedia && self.$localMedia[method]();
-        self.$remoteMedia && self.$remoteMedia[method]();
+      this.on('active', function() {
+        self.$localMedia && self.$localMedia.show();
+        self.$remoteMedia && self.$remoteMedia.show();
       });
       
+      this.on('inactive', function() {
+        self.$localMedia && self.$localMedia.hide();
+        self.$remoteMedia && self.$remoteMedia.hide();
+      });
+
       Events.on('localVideoMonitor:on', function() {
         if (self.isActive()) {
           self.playRingtone();
