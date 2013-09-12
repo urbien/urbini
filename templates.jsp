@@ -301,12 +301,12 @@
       <td width="100%">
         <div class="{{= 'chat_msg ' + (obj.sender ? (obj.self ? 'msg_sent' : 'msg_recvd') : 'msg_recvd') }}">
          <!--  {{ if (obj.sender) { }}
-            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div>
+            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div>
           {{ }                 }}
           {{ if (obj.info && obj.senderIcon) { }}
          -->
           {{ if (obj.senderIcon) { }}
-            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div> 
+            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div> 
           {{ }                 }}
           
           <div class="chat_copy">
@@ -382,7 +382,7 @@
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
     {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{= obj.img ? '<img style="display:block" src="{0}" />'.format(img)                 : '' }}
+    {{= obj.img ? '<img src="{0}" style="display:block" />'.format(img)                 : '' }}
     {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
     
     <div style="display:block">
@@ -757,7 +757,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" style="float: right;" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -1193,7 +1193,7 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
+        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1205,7 +1205,7 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
+          <img src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}" border="0"></img>
         </a>
       </td>
       <td>
@@ -1283,7 +1283,7 @@
    -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img  src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
+        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
          {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
         ></img>
       </a>
@@ -1469,7 +1469,7 @@
   {{ var id = G.nextId() }}
   
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
-  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img style="float:right;max-height:40px;" src="' + _thumb + '" />' : '' }}--></label>
+  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
 </script>
 
 <script type="text/template" id="interfacePropTemplate">
@@ -1562,7 +1562,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px; position:relative;"/>
+      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img src="{{= img }}" name="{{= shortName }}" style="max-height: 50px; position:relative;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >

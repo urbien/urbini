@@ -275,8 +275,19 @@ define('views/ResourceImageView', [
       */
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
-      var iTemplate = w ? "<img src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
-                        : "<img src='" + image +"' />";
+      
+      var imgAtts = U.HTML.lazifyImage({
+        src: image
+      });
+      
+      if (w) imgAtts.width = w;
+      if (h) imgAtts.height = h;
+      
+      var imgTag = U.HTML.tag('img', null, imgAtts);
+      var iTemplate = U.HTML.toHTML(imgTag);
+      
+//      var iTemplate = w ? "<img data-frz-src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
+//                        : "<img data-frz-src='" + image +"' />";
       var li;
 /*
       if (G.canWebcam  &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('commerce/urbien/Urbien'))  &&  this.resource.get('_uri') ==  G.currentUser._uri) {

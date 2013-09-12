@@ -86,23 +86,44 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     });
   }
-  
+
+  function _convertImage(item, _item, prop, val) {
+    return $.Deferred(function(defer) {
+      var img = new Image;
+      img.src = val;
+      img.onload = function() {
+        var dataUrl = U.imageToDataURL(img);
+        prop = prop + '.dataUrl';
+        _item[prepPropName(prop)] = dataUrl;
+        defer.resolve();
+        
+        var resource = C.getResource(item._uri);
+        if (resource)
+          resource.set(prop, dataUrl, {silent: true});
+      };
+      
+      img.onerror = defer.reject.bind(defer);
+    }).promise();
+  }
+
   function _prep(item) {
     var defer = $.Deferred(),
         promise = defer.promise(),
-        saveFilePromises = [],
+        promises = [],
         _item = {};
     
     for (var prop in item) {
       var val = item[prop];
       
       if (useFileSystem && val instanceof Blob)
-        saveFilePromises.push(_saveFile(item, _item, prop, val));
+        promises.push(_saveFile(item, _item, prop, val));
+//      else if (/model/portal/Image\?/.test(val) && !item[prop + '.dataUrl'])
+//        promises.push(_convertImage(item, _item, prop, val));
       else
         _item[prepPropName(prop)] = val;
     }
 
-    $.when.apply($, saveFilePromises).then(function() {
+    $.when.apply($, promises).then(function() {
       defer.resolve(_item);
     }, function() {
       debugger;
