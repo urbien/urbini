@@ -18,7 +18,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   });
   
   function log() {
-    var args = [].slice.call(arguments);
+    var args = _.toArray(arguments);
     args.unshift("tourGuide", "tour");
     G.log.apply(G, args);
   };
@@ -121,14 +121,18 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         _initialized;
 
     function init() {
-      _initPromise = Voc.getModels(['commerce/urbien/Tour', 'commerce/urbien/TourStep', 'commerce/urbien/MyTour']).then(function(t, s, m) {
+      _initPromise = window._tourPromise = Voc.getModels(['commerce/urbien/Tour', 'commerce/urbien/TourStep', 'commerce/urbien/MyTour']).then(function(t, s, m) {
         TOUR_MODEL = t;
         STEP_MODEL = s;
         MY_TOUR_MODEL = m;
-        return getMyTours().always(function(myTours) {
+        var dfd = $.Deferred();
+        getMyTours().always(function showMustGoOn(myTours) {
           _myTours = myTours;
           _initialized = true;
+          dfd.resolve();
         });
+        
+        return dfd.promise();
       });
     };
     
@@ -168,34 +172,38 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       _tour = _steps = _step = null;
     };
     
+    function getTour() {
+      if (!_initialized) {
+        var args = arguments;
+        return _initPromise.then(getTour);
+      }
+    
+      Events.once('pageChange', function() {
+        _.each(currentSearches, function(op) {
+          if (!op.done())
+            op.cancel();
+        });
+        
+        currentSearches = [];
+      });
+      
+      var searchOp = SearchOperation({
+        tour: _tour, 
+        steps: _steps, 
+        step: _step
+      });
+      
+      currentSearches.push(searchOp);
+      searchOp.run();
+    }
+    
     init();
     return {
-      getTour: function() {
-        if (!_initialized) {
-          var args = arguments;
-          return _initPromise.then(function() {
-            return tourManager.getTour.apply(tourManager, arguments);
-          })
-        }
-      
-        Events.once('pageChange', function() {
-          _.each(currentSearches, function(op) {
-            if (!op.done())
-              op.cancel();
-          });
-          
-          currentSearches = [];
-        });
-        
-        var searchOp = SearchOperation({
-          tour: _tour, 
-          steps: _steps, 
-          step: _step
-        });
-        
-        currentSearches.push(searchOp);
-        searchOp.run();
+      init: function(view) {
+        currentView = view;
+        getTour();
       },
+      getTour: getTour,
       getCurrentTour: function() {
         return _tour;
       },
@@ -216,7 +224,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       return REJECTED_PROMISE;
     
     var params = {
-      user: G.currentUser._uri
+      user: G.currentUser._uri,
+      $select: 'tour,status'
     };
     
     if (tours)
@@ -310,10 +319,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         id: tourId
       }, TOUR_MODEL);
     
-      return $.whenAll(
-        fetchTour(tourUri, TOUR_MODEL), 
-        fetchSteps(tourUri, STEP_MODEL)
-      ).then(validateAndRunTour, function() {
+      return fetchTour(tourUri).then(validateAndRunTour, function() {
         debugger;
         delete _params[TOUR_PARAM];
         delete _params[TOUR_STEP_PARAM];
@@ -367,7 +373,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       }
       
       var params = {
-          $and: U.$and.apply(null, ands)
+          $and: U.$and.apply(null, ands),
+          $select: 'app,route,modelType'
         },
         tours = C.getResourceList(TOUR_MODEL, $.param(params)),
         tour;
@@ -390,9 +397,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
             if (!tours.isFetching())
               chooseTour(tours.models).then(defer.resolve, defer.reject);
           },
-          error: function() {
-            defer.reject();
-          },
+          error: defer.reject,
           ajaxQueue: 'tours'
         });
       }).promise();
@@ -442,7 +447,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (!tours.length)
         return REJECTED_PROMISE;
       
-      tours = tours.sort(function(a, b) {
+      tours.sort(function(a, b) {
         var result;
         _.find(_tourProps, function(p) {
           var aVal = a.get(p),
@@ -469,17 +474,30 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (!tours.length)
         return REJECTED_PROMISE;
       
-      var theChosenOne = tours[0];
-      return fetchSteps(theChosenOne.getUri(), STEP_MODEL).then(function(steps) {
+      var theChosenOne = tours[0],
+          steps = theChosenOne.getInlineList('steps'),
+          getSteps = steps ? U.resolvedPromise(steps) : fetchSteps(theChosenOne.getUri());
+      
+      return getSteps.then(function(steps) {
         return validateAndRunTour(theChosenOne, steps);
       }, function() {
         debugger;
-      }).then(function() {
-        // we're good
-      }, function() {
+      }).then(undefined, function() {
         // tour fizzled out
-        return _chooseTour(tours.slice(1));
+        tours.shift();
+        return _chooseTour(tours);
       });
+
+//      return fetchSteps(theChosenOne.getUri()).then(function(steps) {
+//        return validateAndRunTour(theChosenOne, steps);
+//      }, function() {
+//        debugger;
+//      }).then(function() {
+//        // we're good
+//      }, function() {
+//        // tour fizzled out
+//        return _chooseTour(tours.slice(1));
+//      });
     };
     
     function validateAndRunTour(tour, steps) {
@@ -537,7 +555,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         },
         error: defer.reject,
         ajaxQueue: 'tours'
-      })
+      });      
     }).promise();
   };
 
@@ -560,6 +578,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return defer.resolve(steps);
       else {
         steps.fetch({
+          params: {
+            $select: '$all'
+          },
           success: function() {
             defer.resolve(steps);
           },
@@ -570,13 +591,6 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return;
       }
     }).promise();
-//    .then(function(steps) {
-//      steps.comparator = function(a, b) {
-//        return a.get(SEQ_PROP) - b.get(SEQ_PROP);
-//      };
-//      
-//      return steps.sort();
-//    });
   };
   
   function getStepByNumber(steps, num) {
