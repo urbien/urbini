@@ -346,7 +346,7 @@ define('views/BasicView', [
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-      view.once('destroyed', function(view) {
+      view.once('destroyed', function() {
         if (self.children)
           delete self.children[view.cid];
         
@@ -613,6 +613,19 @@ define('views/BasicView', [
   
       return undefined;
     },
+    
+    findResourceByUri: function(uri) {
+      if (this.resource && this.resource.getUri() == uri)
+        return this.resource;
+      
+      for (var childId in this.children) {
+        var res = this.children[childId].findResourceByUri(uri);
+        if (res)
+          return res;
+      }
+  
+      return undefined;
+    }
   }, {
     displayName: 'BasicView',
     _instanceCounter: 0

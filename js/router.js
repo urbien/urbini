@@ -115,8 +115,9 @@ define('router', [
         
         if (window.location.href == href) {
           // there's nowhere to go back to
-          if (ifNoHistory)
-            ifNoHistory();
+          if (ifNoHistory) {
+            setTimeout(ifNoHistory, 0);
+          }
             
           return;
         }

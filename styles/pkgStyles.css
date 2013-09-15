@@ -1,0 +1,28 @@
+video {
+  width: 100%    !important;
+  height: auto   !important;
+}
+
+video.localVideo {
+  border: 5px solid #AAA;  
+}
+
+.videoChat {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  top: 50%;
+  left: 50%;
+  position:fixed;
+}
+/*
+.videoChat video {
+  border: 5px solid #AAA; 
+}
+*/
+.myVideo-overlay video {
+  max-width: 30%;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
