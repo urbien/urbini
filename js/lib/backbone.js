@@ -309,7 +309,7 @@
     // the core primitive operation of a model, updating the data and notifying
     // anyone who needs to know about the change in state. The heart of the beast.
     set: function(key, val, options) {
-      var attr, attrs, unset, changes, silent, changing, prev, current;
+      var attr, attrs, unset, changes, silent, changing, prev, current, perPropertyEvents;
       if (key == null) return this;
 
       // Handle both `"key", value` and `{key: value}` -style arguments.
@@ -326,11 +326,12 @@
       if (!this._validate(attrs, options)) return false;
 
       // Extract attributes and options.
-      unset           = options.unset;
-      silent          = options.silent;
-      changes         = [];
-      changing        = this._changing;
-      this._changing  = true;
+      unset             = options.unset;
+      silent            = options.silent;
+      perPropertyEvents = options.perPropertyEvents != false;
+      changes           = [];
+      changing          = this._changing;
+      this._changing    = true;
 
       if (!changing) {
         this._previousAttributes = _.clone(this.attributes);
@@ -354,7 +355,7 @@
       }
 
       // Trigger all relevant attribute changes.
-      if (!silent) {
+      if (!silent && perPropertyEvents) {
         if (changes.length) this._pending = true;
         for (var i = 0, l = changes.length; i < l; i++) {
           this.trigger('change:' + changes[i], this, current[changes[i]], options);
