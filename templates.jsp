@@ -382,7 +382,9 @@
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
     {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{= obj.img ? '<img src="{0}" style="display:block" />'.format(img)                 : '' }}
+    {{ if (obj.img) { }}
+      <img src="{{= img }}" style="display:block" />    
+    {{ }              }}
     {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
     
     <div style="display:block">
@@ -602,7 +604,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}"></img>
+  <img src="{{= value }}" data-for="{{= U.getImageAttribute(this.resource, prop.shortName) }}"></img>
 </script>
 
 
@@ -630,7 +632,7 @@
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
-    class="ui-li-thumb" /></i> 
+    class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
     {{= viewCols }}
   </div>
   </div>
@@ -791,7 +793,7 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
       
-      />
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}" />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -1197,7 +1199,8 @@
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
-         ></img>
+        
+         data-for="{{= U.getImageAttribute(this.resource, 'resourceMediumImage') }}" />
       </a>
     </div>
   </div>
@@ -1205,12 +1208,12 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}" border="0"></img>
+          <img src="{{= obj.v_modifiedByPhoto || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
         <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
-        <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
+        <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= obj.resourceDisplayName || this.resource.get('forResource.displayName') || '' }}</a></div>
         <br/><br/>&#160;
         <span class="commentListDate">{{= G.U.getFormattedDate(dateModified) }}</span>
       </td>
@@ -1268,7 +1271,7 @@
   <!--
     {{ if (typeof creatorThumb != 'undefined') { }}
        <div style="padding: 5px; float:left;">
-        <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+        <a href="{{= obj.creator || 'about:blank' }}">
            <img src="{{= creatorThumb }}" height="60" />
         </a>
       </div>
@@ -1285,7 +1288,7 @@
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
          {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
-        ></img>
+         data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -1356,7 +1359,10 @@
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
       <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
-          {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
+          {{ if (item.image) { }}
+            <img src="{{= item.image }}" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
+          {{ }              }}
+
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
           {{= typeof item.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
@@ -1369,25 +1375,6 @@
     {{ } }}
     </ul>
 </script>
-
-<!-- script type="text/template" id="photogridTemplate">
-    <ul data-role="listview" data-inset="true">
-    {{ #items }}
-      <li style="{{= 'float: ' + (float || 'left') }}">
-        <a href="{{= target }}">
-          {{= image ? '<img src="{0}" />'.format(image) : '' }}
-          {{= title ? '<h2>{0}</h2>'.format(title) : '' }}
-          {{= caption ? '<p>{0}</p>'.format(caption) : '' }}
-          {{= typeof superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
-        </a> 
-      </li>
-      {{ if (arrow) { }}
-         <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
-      {{ }                 }}
-    {{ /items }}
-    </ul>
-</script -->
-
 
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
@@ -1562,7 +1549,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img src="{{= img }}" name="{{= shortName }}" style="max-height: 50px; position:relative;"/>
+      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img src="{{= img }}" name="{{= shortName }}" data-for="{{= U.getImageAttribute(value, shortName) }}" style="max-height: 50px; position:relative;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >

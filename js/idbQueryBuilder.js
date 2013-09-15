@@ -23,7 +23,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     var query;
     for (var i = 0; i < orClause.length; i++) {
       var part = orClause[i],
-          pair = _.map(part.split('='), U.decode);
+          pair = _.map(part.split('='), _.decode);
       
       if (pair.length != 2)
         return null;

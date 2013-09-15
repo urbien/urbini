@@ -59,7 +59,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     });
     
     if (!G.online) {
-      return dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
+      dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
       return;
     }
 
@@ -88,7 +88,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     if (this._isSyncRequest() || !G.hasWebWorkers)
       intermediatePromise = this._defaultSync();
     else {
-      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}, options.ajaxQueue || 'fetchResources').always(function() {
+      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
         self.data.lastFetchOrigin = 'server';
       });
     }

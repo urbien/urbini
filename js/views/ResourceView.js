@@ -47,7 +47,7 @@ define('views/ResourceView', [
       }.bind(this));
       
       if (options.isBuyGroup) {
-//        this.isBuyGroup = true;
+        this.isBuyGroup = true;
 //        var purchasesBLProp, 
 //            vocModel = this.vocModel;
 //        
@@ -169,9 +169,12 @@ define('views/ResourceView', [
       var currentAppProps = U.getCurrentAppProps(meta);
       var propGroups;
       if (this.isBuyGroup) {
-        this.$el.css("float", "right");
-        this.$el.css("width", "45%");
-        this.$el.css("min-width", "130");
+        this.$el.css({
+          'float': "right",
+          width: "45%",
+          'min-width': "130"
+        });
+        
         var color = ['rgba(156, 156, 255, 0.95)', 'rgba(255, 0, 255, 0.8)', 'rgba(255, 255, 0, 0.95)', 'rgba(32, 173, 176, 0.8)', 'rgba(255, 156, 156, 0.8)', 'purple'];
         var colorIdx = 0;
 
@@ -197,6 +200,7 @@ define('views/ResourceView', [
         this.$el.trigger('create');
         return this;
       }
+      
       propGroups = U.getPropertiesWith(meta, "propertyGroupList"); // last param specifies to return array
 //      propGroups = propGroups.length ? propGroups : U.getPropertiesWith(vocModel.properties, "propertyGRoupsList", true);
       propGroups = _.sortBy(propGroups, function(pg) {

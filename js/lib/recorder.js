@@ -72,7 +72,7 @@ define('lib/recorder', ['globals', 'lib/recorderWorker'], function(G) {
   };
 
   Recorder.forceDownload = function(blob, filename){
-    var url = (window.URL || window.webkitURL).createObjectURL(blob);
+    var url = window.URL.createObjectURL(blob);
     var link = window.document.createElement('a');
     link.href = url;
     link.download = filename || 'output.wav';

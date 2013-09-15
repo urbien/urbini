@@ -37,7 +37,8 @@ define('resourceManager', [
       IDB = IndexedDBModule.getIDB(G.serverName, {
         defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
         defaultIndexOptions: {unique: false, multiEntry: false},
-        filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null
+        filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null,
+        fileTypePropertyName: G.storeFilesInFileSystem ? '_contentType' : null
       });
   
   

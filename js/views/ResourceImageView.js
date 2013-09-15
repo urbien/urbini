@@ -277,7 +277,8 @@ define('views/ResourceImageView', [
   //      w = maxW - 30;
       
       var imgAtts = U.HTML.lazifyImage({
-        src: image
+        src: image,
+        'data-for': U.getImageAttribute(res, imageProp)
       });
       
       if (w) imgAtts.width = w;

@@ -43,6 +43,8 @@ define('models/Resource', [
 //        this.urlRoot += "?" + options._query;
       
       options = options || {};
+      var self = this;
+      
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -81,10 +83,18 @@ define('models/Resource', [
         Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
       });
       
-      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+      this._resetUnsavedChanges();
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
-      this.on('load', this.announceNewResource);
+      this.on('load', this.announceNewResource);      
+      this.on('inlineResources', function(resources) {        
+        Events.trigger('inlineResources', self, resources);
+      });
+      
+      this.on('inlineBacklinks', function(backlinks) {        
+        Events.trigger('inlineBacklinks', self, backLinks);
+      });
+
 //      this.checkIfLoaded();
     },
     
@@ -402,28 +412,16 @@ define('models/Resource', [
       var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
       if (!resp)
         return null;
-
-//      if (!resp.data) {
-//        this.loaded = true;
-//        return resp;
-//      }
         
-      var uri = resp._uri || resp.uri;
-//      if (!uri) {      
-//        resp = resp.data[0];
-//        uri = resp._uri || resp.uri;
-//      }
-
-      resp._shortUri = U.getShortUri(uri, this.vocModel);
       var primaryKeys = U.getPrimaryKeys(this.vocModel);
-      resp._uri = U.getLongUri1(resp._uri, {type: this.type, primaryKeys: primaryKeys});
+      resp._uri = U.getLongUri1(resp._uri || resp.uri, this.vocModel || { type: this.type, primaryKeys: primaryKeys });
+      resp._shortUri = U.getShortUri(resp._uri, this.vocModel);
       if (lf)
         resp._lastFetchedOn = lf;
       
       if (!this.loaded)
         this.loadInlined(resp);
       
-//      this.loaded = true;
       return resp;
     },
     
@@ -477,13 +475,11 @@ define('models/Resource', [
         }
       }
       
-      if (_.size(resources)) {
-        Events.trigger('inlineResources', this, resources);
-      }
+      if (_.size(resources))
+        this.trigger('inlineResources', resources);
       
-      if (_.size(backLinks)) {
-        Events.trigger('inlineBacklinks', this, backLinks);
-      }
+      if (_.size(backLinks))
+        this.trigger('inlineBacklinks', backLinks);
     },
     
     setInlineList: function(propName, list) {
@@ -491,18 +487,33 @@ define('models/Resource', [
       this.inlineLists[propName] = list;
       this.trigger('inlineList', propName);
     },
-    
+
+    getInlineList: function(propName) {
+      return this.inlineLists ? this.inlineLists[propName] : undefined;
+    },
+
     getInlineLists: function() {
       return _.values(this.inlineLists || {});
     },
+
+    _resetUnsavedChanges: function() {
+      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+    },
     
     clear: function() {
-      this.unsavedChanges = {};
+      this._resetUnsavedChanges();
       Backbone.Model.prototype.clear.apply(this, arguments);
     },
     
     set: function(key, val, options) {
-      var uri = this.getUri();
+      var self = this,
+          uri = this.getUri(),
+          props,
+          vocModel,
+          meta,
+          displayNameChanged,
+          imageType;
+      
       if (!this.subscribedToUpdates && uri)
         this.subscribeToUpdates();
       
@@ -510,7 +521,6 @@ define('models/Resource', [
         return true;
       
       // Handle both `"key", value` and `{key: value}` -style arguments.
-      var props;
       if (_.isObject(key)) {
         props = key;
         options = val;
@@ -521,10 +531,13 @@ define('models/Resource', [
       if (!_.size(props))
         return true;
       
-      var vocModel = this.getModel();
-      var meta = vocModel.properties;
-      var self = this;
+      vocModel = this.getModel();
+      meta = vocModel.properties;
       options = options || {};
+      _.defaults(options, {
+        perPropertyEvents: false
+      });
+      
       if (!options.silent && !options.unset) {
         props = U.filterObj(props, function(name, val) {
           return willSave(self, meta, name, val);
@@ -534,11 +547,14 @@ define('models/Resource', [
           return true;
       }
       
-      var displayNameChanged = false;
 //      var uriChanged;
       
+      displayNameChanged = false;
+      imageType = G.commonTypes.Image;
       for (var shortName in props) {
-        var val = props[shortName];
+        var val = props[shortName],
+            isResourceProp;
+        
         if (!val)
           continue;
         
@@ -552,6 +568,14 @@ define('models/Resource', [
         if (!prop.backLink)
           props[shortName] = U.getFlatValue(prop, val);
         
+        isResourceProp = U.isResourceProp(prop);
+        if (isResourceProp) {
+          if (imageType.endsWith(prop.range)) {
+            delete self.attributes[shortName + '.blob'];
+            delete self.attributes[shortName + '.uri'];
+          }
+        }
+        
         if (!options.sync) {
           if (/\./.test(shortName))
             continue;
@@ -564,7 +588,7 @@ define('models/Resource', [
           if (props[sndName])
             continue;
           
-          if (U.isResourceProp(prop)) {
+          if (isResourceProp) {
             var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
@@ -600,10 +624,8 @@ define('models/Resource', [
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
 //        this._resetEditableProps();
-        if (options.userEdit) {
+        if (options.userEdit)
           _.extend(this.unsavedChanges, props);
-//          options.silent = options.silent !== false;
-        }
         
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
@@ -952,7 +974,7 @@ define('models/Resource', [
       };
       
       var result = Backbone.Model.prototype.save.call(this, data, options);
-      this.unsavedChanges = {};
+      this._resetUnsavedChanges();
       return result;
     },
     
@@ -992,8 +1014,8 @@ define('models/Resource', [
       });
       
       options.success = function(resource, response, opts) {
-        if (!options.fromDB)
-          this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+        if (!opts.fromDB)
+          this._resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
         if (isAppInstall)
           Events.trigger('appInstall', this);
@@ -1018,7 +1040,7 @@ define('models/Resource', [
         }
         
         this.triggerPlugs(options);
-        if (!options.fromDB)
+        if (!opts.fromDB)
           this.notifyContainers();
         
         this.trigger('syncedWithServer');
@@ -1077,7 +1099,7 @@ define('models/Resource', [
       }
    
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
-      if (!options.fromDB) { 
+      if (!options.fromDB && !options.silent) { 
 //        log('events', U.getDisplayName(this), 'changed');
         this.trigger('change', this, options);
       }

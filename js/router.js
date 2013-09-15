@@ -12,7 +12,7 @@ define('router', [
   'templates',
   'jqueryMobile',
   'appAuth',
-  'redirecter',
+  'redirecter'
 //  'transitions'
 //  , 
 //  'views/ListPage', 
@@ -78,7 +78,6 @@ define('router', [
     },
     initialize: function () {
 //      G._routes = _.clone(this.routes);
-//      _.bindAll(this, '_backOrHome');
       window.router = this;
       this.firstPage = true;
       this.updateHashInfo();
@@ -98,7 +97,7 @@ define('router', [
           window.view = current;
       });
 
-      Events.once('pageChange', this.loadTourGuide);
+      Events.once('pageChange', this.loadTourGuide.bind(this));
       Events.on('back', _.debounce(function(ifNoHistory) {
 //        var now = +new Date();
 //        if (self.lastBackClick && now - self.lastBackClick < 100)
@@ -493,13 +492,23 @@ define('router', [
         return this;
       }
       
-      list = this.currentModel = new ResourceList(null, {model: model, _query: query, _rType: className, rUri: oParams });    
+      list = this.currentModel = new ResourceList(null, {
+        model: model,
+        params: params,
+//        _query: query, 
+        _rType: className, 
+        rUri: oParams 
+      });
+      
       var listView = new ListPage({model: list});
       listView.setMode(mode || G.LISTMODES.LIST);
       
       list.fetch({
 //        update: true,
         sync: true,
+//        params: {
+//          $select: '$viewCols,$gridCols,$images'
+//        },
         forceFetch: forceFetch,
         rUri: oParams,
         success: _.once(function() {
@@ -1571,8 +1580,12 @@ define('router', [
     },
     
     loadTourGuide: function() {
-      if (G.tourGuideEnabled)
-        U.require('tourGuide');
+      if (G.tourGuideEnabled) {
+        var self = this;
+        U.require('tourGuide').done(function(tourGuide) {
+          tourGuide.init(self.currentView);
+        });
+      }
     }
 //    ,
 //    

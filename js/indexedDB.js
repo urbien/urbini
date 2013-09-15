@@ -18,6 +18,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       FileSystem,
       fileSystemPromise,
       filePropertyName,
+      fileTypePropertyName,
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise();
@@ -72,12 +73,14 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function _saveFile(item, _item, prop, val) {
+    var contentType = val.type;
     return FileSystem.writeFile({
       blob: val,
       filePath: getFileSystemPath(item, prop, val)
     }).done(function(fileEntry) {
       var placeholder = _item[prepPropName(prop)] = item[prop] = {};
       placeholder[filePropertyName] = fileEntry.fullPath;
+      placeholder[fileTypePropertyName] = contentType;
       
       var resource = C.getResource(item._uri);
       if (resource)
@@ -144,14 +147,14 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   function _parse(_items) {
-    var dfds,
+    var promises,
         returnObj,
         items;
         
     if (!_items)
-      return defer.resolve(_items).promise();
+      return U.resolvedPromise(_items);
     
-    dfds = [];
+    promises = [];
     returnObj = U.getObjectType(_items) === '[object Object]';
     if (returnObj)
       _items = [_items];
@@ -159,16 +162,16 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     items = _.map(_items, function(_item) {
       var item = {};
       _.each(_item, function(val, prop) {
-        var parsedPropName = parsePropName(prop);
-        var val = _item[prop];  
-        if (val  &&  val[filePropertyName]) {
-          var dfd = $.Deferred();
-          FileSystem.readAsBlob(val[filePropertyName]).done(function(blob) {
-            item[parsedPropName] = blob;
-            dfd.resolve();
-          }).fail(dfd.reject);
+        var parsedPropName = parsePropName(prop),
+            val = _item[prop],
+            method = U.isCompositeProp(parsedPropName) ? 'readAsDataURL' : 'readAsBlob';
+            
+        if (val  &&  filePropertyName  &&  val[filePropertyName]) {
+          var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {
+            item[parsedPropName] = data;
+          });
           
-          dfds.push(dfd);
+          promises.push(promise);
         }
         else
           item[parsedPropName] = val;
@@ -177,7 +180,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return item;
     });
     
-    return $.whenAll.apply($, dfds).then(function() {        
+    return $.whenAll.apply($, promises).then(function() {        
       return returnObj ? items[0] : items;
     });
   };
@@ -219,7 +222,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.name = name;
     _.extend(this, options);
     filePropertyName = this.filePropertyName;
-    useFileSystem = !!this.filePropertyName;
+    fileTypePropertyName = this.fileTypePropertyName;
+    useFileSystem = !!filePropertyName;
     this.stores = {};
     this._clearStoreMonitors();
     this.setDefaultStoreOptions(options.defaultStoreOptions || {});

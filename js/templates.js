@@ -13,11 +13,21 @@ define('templates', [
   };
   
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
-      blankImgDataUrl = G.blankImgDataUrl,
-      imageLoad = '$(this).trigger(\'imageOnload\')';
+      blankImgDataUrl = G.blankImgDataUrl;
+  
+  window.onimageload = function() {
+    $(this).trigger('imageOnload');
+    return false;
+  };
+  
+  window.onimageerror = function() {
+    $(this).trigger('imageOnerror');
+    return false;
+  };
   
   function prepTemplate(text) {
-    return text.trim().replace('<img src=', '<img src="{0}" onload="{1}" onerror="{1}" {2}='.format(blankImgDataUrl, imageLoad, lazyImgSrcAttr));
+//    return text.trim();
+    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
 //    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
   };
   

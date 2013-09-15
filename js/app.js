@@ -316,7 +316,7 @@ define('app', [
       Events.on('pageChange', dfd.resolve);
       if (oldPromise && oldPromise.state() === 'pending')
         promise.then(oldDfd.resolve);
-      
+
     }
     
     reset();

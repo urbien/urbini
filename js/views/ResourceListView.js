@@ -290,7 +290,7 @@ define('views/ResourceListView', [
         self.once('refreshed', _.partial(self.checkIfNeedMore, displayedBefore));
       }).always(function() {
         self._paging = false;
-        self.hideLoadingIndicator();
+//        self.hideLoadingIndicator();
       });
 
       return this._pagingPromise;

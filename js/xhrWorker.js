@@ -106,16 +106,20 @@ function arrayBufferDataUri(raw) {
 }
 
 var commands = {
-  getImage: function(url) {
+  getImage: function(url, format) {
     if (!/^http:/.test(url))
       url = originUrl + (/^\//.test(url) ? '' : '/') + url; 
   
     var req = new XMLHttpRequest();
     req.overrideMimeType('text/plain; charset=x-user-defined')
     req.open('GET', url, false);
-    req.responseType = 'arraybuffer';
+    req.responseType = format == 'dataUrl' ? 'arraybuffer' : 'blob';
     req.send(null);
-    postMessage(arrayBufferDataUri(req.mozResponseArrayBuffer || req.response));
+    var data = req.mozResponseArrayBuffer || req.response;
+    if (format == 'dataUrl')
+      data = data && arrayBufferDataUri(data);
+    
+    postMessage(data);
   },
   xhr: function(options) {
     var dataType = options.dataType || 'JSON';

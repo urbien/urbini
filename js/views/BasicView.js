@@ -4,71 +4,12 @@ define('views/BasicView', [
   'backbone',
   'utils',
   'templates',
-  'events',
-  'lib/lazyImages'
+  'events'
 ], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype,
-      lazyAttr = G.lazyImgSrcAttr,
-      WIN_HEIGHT,
-      // Vertical offset in px. Used for preloading images while scrolling
-      IMG_OFFSET = 200,
       $wnd = $(window);
 
-  function cleanImage(img) {
-    img.onload = null;
-    img.removeAttribute('onload');
-    // on IE < 8 we get an onerror event instead of an onload event
-    img.onerror = null;
-    img.removeAttribute('onerror');
-    img.removeAttribute(lazyAttr);
-  };
-  
-  function viewport() {
-    if (document.documentElement.clientHeight >= 0) {
-      return document.documentElement.clientHeight;
-    } else if (document.body && document.body.clientHeight >= 0) {
-      return document.body.clientHeight
-    } else if (window.innerHeight >= 0) {
-      return window.innerHeight;
-    } else {
-      return 0;
-    }
-  };
-
-  function saveViewport() {
-    WIN_HEIGHT = G.viewportHeight = viewport();
-  };
-  
-  saveViewport();
-  $wnd.on('resize', _.throttle(saveViewport));
-  
-  function getDummyImages($el) {
-    return $el.find('img[{0}]'.format(lazyAttr));
-  }
-
-  function getLoadedImages($el) {
-    return $el.find('img:not([{0}])'.format(lazyAttr));
-  }
-
-  // Override image element .getAttribute globally so that we give the real src
-  // does not works for ie < 8: http://perfectionkills.com/whats-wrong-with-extending-the-dom/
-  // Internet Explorer 7 (and below) [...] does not expose global Node, Element, HTMLElement, HTMLParagraphElement
-  window['HTMLImageElement'] && overrideGetattribute();
-  function overrideGetattribute() {
-    var original = HTMLImageElement.prototype.getAttribute;
-    HTMLImageElement.prototype.getAttribute = function(name) {
-      if(name === 'src') {
-        var realSrc = original.call(this, lazyAttr);
-        return realSrc || original.call(this, name);
-      } else {
-        // our own lazyloader will go through theses lines
-        // because we use getAttribute(lazyAttr)
-        return original.call(this, name);
-      }
-    }
-  }
-    
   function disableHover($el) {
     $el.bind('mouseover', function() {
       return false;
@@ -78,7 +19,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', '_showImages', '_loadImage', 'destroy');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy');
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -178,6 +119,9 @@ define('views/BasicView', [
       
       this.on('inactive', function() {
         self.active = false;
+        if (self.isPageView())
+          self._unsubscribeFromImageEvents();
+        
         self.triggerChildren('inactive');
       });
 
@@ -211,7 +155,6 @@ define('views/BasicView', [
         return localize.apply(ctx, arguments);
       };
 
-      this._subscribeToImageEvents();
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
@@ -652,120 +595,24 @@ define('views/BasicView', [
         G.log.apply(G, args);
       }
     },
-   
-    _subscribeToImageEvents: function() {
-      if (this._subscribedToImageEvents)
-        return;
-      
-      var self = this;
-      this.onload(function() {
-        if (!self.isChildless()) // let each view handle its own images
-          return;
 
-        self.getPageView().$el.on('scroll', self._showImages);
-      });
-      
-      this._subscribedToImageEvents = true;
-    },
+//    _fetchImage1: function(img) {
+//      img.src = img.getAttribute(lazyAttr);
+//      cleanImage(img);
+//    },
 
-    _unsubscribeFromImageEvents: function() {
-      this.$el.off('scroll', this._showImages);
-      this._subscribedToImageEvents = false;
-    },
-
-    _showImages: _.throttle(function() {
-      if (!this._imgs || !this._imgs.length)
-        this._imgs = getDummyImages(this.$el);
+    findResourceByCid: function(cid) {
+      if (this.resource && this.resource.cid == cid)
+        return this.resource;
       
-      if (!this._imgs.length)
-        return;
-      
-      var imgs = this._imgs,
-          last = imgs.length,
-          current,
-          allImagesDone = true;
-
-      for (current = 0; current < last; current++) {
-        var img = imgs[current];
-        
-        // if showIfVisible is false, it means we have some waiting images to be
-        // shown
-        if (img && !this._loadImage(img))
-          allImagesDone = false;
-        else
-          this._imgs.splice(img, 1);
+      for (var childId in this.children) {
+        var res = this.children[childId].findResourceByCid(cid);
+        if (res)
+          return res;
       }
   
-      if (allImagesDone)
-        this._unsubscribeFromImageEvents();
-
-    }, 20),
-    
-    _loadImage: function(img) {
-      this._subscribeToImageEvents();
-      
-      img = img.target || img;
-      if (!img.getAttribute(lazyAttr))
-        return true;
-      
-      var dataUrl = img.getAttribute('data-url');
-      if (dataUrl)
-        img.src = dataUrl;
-      
-      var inDoc = $.contains(document.documentElement, img),
-          inBounds = img.getBoundingClientRect().top < WIN_HEIGHT + IMG_OFFSET;
-      
-      if (inDoc && inBounds) {
-        // To avoid onload loop calls
-        // removeAttribute on IE is not enough to prevent the event to fire
-        this._fetchImage(img);
-        return true;
-      }
-      else if (inDoc) {
-        // wait till it's scrolled into the viewport
-        return false; 
-      }
-      else {
-        // should be here in a bit
-        setTimeout(_.partial(this._loadImage, img), 100);
-        return false;
-      }
+      return undefined;
     },
-    
-    _fetchImage1: function(img) {
-      img.src = img.getAttribute(lazyAttr);
-      cleanImage(img);
-    },
-    
-    _fetchImage: function(img) {
-      var url = img.getAttribute(lazyAttr);
-      cleanImage(img);
-      
-      U.getImage(url).done(function(dataUrl) {
-        img.src = dataUrl;
-        var data = img.dataset,
-            prop = img.prop,
-            res = img.resourceCid,
-            res = res && C.getResourceByCid(res);
-        
-//        var $img = $(img),
-//            propParent = $img.parents('[data-prop]'),
-//            resParent = $img.parents('[data-resource]'),
-            
-        if (res && prop) {
-          var data = parents[0].dataset,
-              prop = data.prop,
-              res = data.resource,
-              atts = {};
-          
-          atts[prop + '.dataUrl'] = dataUrl;
-          res.save(atts, {
-            dbOnly: true,
-            silent: true
-          });
-        }
-      });
-    }    
   }, {
     displayName: 'BasicView',
     _instanceCounter: 0

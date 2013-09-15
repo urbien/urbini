@@ -116,7 +116,8 @@ define('utils', [
     lazifyImage: function(atts) {
       atts[G.lazyImgSrcAttr] = atts.src;
       atts.src = G.blankImgDataUrl;
-      atts.onload = atts.onerror = '$(this).trigger(\'imageOnload\')';
+      atts.onload = 'window.onimageload.call(this)';
+      atts.onerror = 'window.onimageerror.call(this)';
       return atts;
     }
   };
@@ -146,30 +147,56 @@ define('utils', [
       return promise;
     },    
     
-    getImage: function(url) {
-      var dfd = $.Deferred(),
-          promise = dfd.promise(),
-          worker;
-      
-      promise.always(function() {
-        if (worker)
-          G.recycleXhrWorker(worker);
-      });
+    getImage: function(url, format) {
+//      var dfd = $.Deferred(),
+//          promise = dfd.promise(),
+//          worker;
+//      
+//      promise.always(function() {
+//        if (worker)
+//          G.recycleXhrWorker(worker);
+//      });
+//
+//      G.getXhrWorker().done(function(_worker) {
+//        worker = _worker;
+//        worker.onmessage = function(e) {
+//          dfd.resolve(e.data);
+//        };
+//        
+//        worker.onerror = dfd.reject.bind(dfd);
+//        worker.postMessage({
+//          command: 'getImage',
+//          config: {
+//            url: url,
+//            format: format
+//          }
+//        });
+//      });
+//      
+//      return promise;
 
-      G.getXhrWorker('imageLoader').done(function(_worker) {
-        worker = _worker;
-        worker.onmessage = function(e) {
-          dfd.resolve(e.data);
-        };
-        
-        worker.onerror = dfd.reject.bind(dfd);
-        worker.postMessage({
-          command: 'getImage',
-          config: url
-        });
-      });
+      return $.Deferred(function(defer) {        
+        if (!/^http:/.test(url))
+          url = G.serverName + (/^\//.test(url) ? '' : '/') + url; 
       
-      return promise;
+        G.sendXhr({
+          url: url,
+          responseType: 'blob',
+          success: defer.resolve.bind(defer),
+          error: defer.reject.bind(defer)
+        });
+          
+//        var req = new XMLHttpRequest();
+//        req.overrideMimeType('text/plain; charset=x-user-defined')
+//        req.open('GET', url, false);
+//        req.responseType = format == 'dataUrl' ? 'arraybuffer' : 'blob';
+//        req.send(null);
+//        var data = req.mozResponseArrayBuffer || req.response;
+//        if (format == 'dataUrl')
+//          data = data && arrayBufferDataUri(data);
+//        
+//        postMessage(data);
+      }).promise();
     },
     
 //    ajax: function(options) {
@@ -188,10 +215,10 @@ define('utils', [
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
      */
-    ajax: function(options, taskName) {
+    ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers,
           opts = _.clone(options),
-          useWorker = hasWebWorkers && !opts.sync,
+          useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
           
       opts.type = opts.method || opts.type;
@@ -241,7 +268,7 @@ define('utils', [
         if (opts.error) defer.fail(opts.error);        
         if (useWorker) {
           log('xhr', 'webworker', opts.url);
-          G.getXhrWorker(taskName).done(function() {
+          G.getXhrWorker().done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
               var xhr = event.data,
@@ -651,11 +678,15 @@ define('utils', [
         return uri;
       }
 
-      for (var pattern in U.uriPatternMap) {
-        var fn = U.uriPatternMap[pattern];
-        var match = uri.match(fn.regExp);
+      var patterns = U.uriPatternMap;
+      for (var i in patterns) {
+        var pattern = patterns[i],
+            regex = pattern.regex,
+            onMatch = pattern.onMatch,
+            match = uri.match(regex);
+        
         if (match && match.length) {
-          return fn(uri, match, vocModel);
+          return onMatch(uri, match, vocModel);
         }
       }
       
@@ -2556,10 +2587,15 @@ define('utils', [
           return null;
       }
       
-      return G.sqlUrl + '/' + model.type.slice(7) + '?' + $.param(keyVals);
+      return U.makeUri(model.type, keyVals);
     },
     makeTempUri: function(type, id) {
-      return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
+      return U.makeUri(type, {
+        __tempId__: typeof id === 'undefined' ? G.currentServerTime : id
+      })
+    },
+    makeUri: function(type, params) {
+      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
     },
     sq: function(a) {
       return a * a;
@@ -3456,13 +3492,43 @@ define('utils', [
     })(),
     
     isMetaParameter: function(param) {
-      return /^[$-]+/.test(param);
+      return /^[$-_]+/.test(param);
+    },
+
+    isNativeModelParameter: function(param) {
+      return !U.isMetaParameter(param) && !/\./.test(param);
     },
 
     isModelParameter: function(param) {
       return !U.isMetaParameter(param);
     },
 
+    isCompositeProp: function(prop) {
+      return /\./.test(prop);
+    },
+    
+    getCompositeProps: function(props) {
+      var filtered = {};
+      for (var p in props) {
+        if (U.isCompositeProp(p)) 
+          filtered[p] = props[p];
+      }
+      
+      return filtered;
+    },
+    
+    getImageAttribute: function(res, prop) {
+      return (res.cid || (res.get && res.getUri()) || res._uri || res) + '.' + prop;
+    },
+
+    parseImageAttribute: function(value) {
+      var idAndProp = value.split('.');
+      return {
+        id: idAndProp[0],
+        prop: idAndProp[1]
+      };
+    },
+    
     getUrlInfo: function(hash) {
       return new UrlInfo(hash);
     },
@@ -3555,6 +3621,71 @@ define('utils', [
       // will re-encode the image.
       var dataURL = canvas.toDataURL("image/png");
       return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    },
+    
+    resolvedPromise: function(/* what to resolve defer with */) {
+      if (!arguments.length)
+        return G.getResolvedPromise();
+      else {
+        var dfd = $.Deferred();
+        return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+      }
+    },
+    
+    rejectedPromise: function(/* what to reject defer with */) {
+      if (!arguments.length)
+        return G.getRejectedPromise();
+      else {
+        var dfd = $.Deferred();
+        return dfd.reject.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+      }
+    },
+    
+    getClonedProps: function(vocModel, iFace) {
+      var meta = vocModel.properties,
+          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g');
+          cloned = [];
+          
+      for (var name in meta) {
+        var prop = meta[name],
+            cloneOf = prop && prop.cloneOf,
+            match;
+        
+        if (!cloneOf)
+          continue;
+        
+        while (match = extractProp.exec(cloneOf)) {
+          cloned.push(match[1]);
+        }
+      }
+      
+      return _.uniq(cloned);
+    },
+    
+    parsePropsList: function(propsStr, vocModel) {
+      var props = propsStr.splitAndTrim(','),
+          actualProps = [],
+          meta = vocModel.properties;
+      
+      for (var i in props) {
+        var prop = props[i];
+        if (!/^\$/.test(prop)) {
+          actualProps.push(prop);
+          continue;
+        }
+        
+        switch (prop) {
+        case '$viewCols':
+        case '$gridCols':
+          actualProps.push.apply(actualProps, U.getColsMeta(prop.slice(1, 5)));
+          break;
+        case '$images':
+          actualProps.push.apply(actualProps, U.getClonedProps(vocModel, 'ImageResource'));
+          break;
+        }
+      }
+      
+      return actualProps;
     }
   };
 
@@ -3659,65 +3790,83 @@ define('utils', [
     prop.shortName = p;
   }
   
-  var patterns = U.uriPatternMap = {};
-  // Tree/32000
-  patterns[/^[A-Z]+([^\?]*)$/] = function(uri, matches, vocModel) {
-    if (!vocModel)
-      throw new Error("Not enough information to create long uri");
-    
-    var parts = uri.split('/');
-    var type = vocModel.type;
-    var primaryKeys = U.getPrimaryKeys(vocModel);
-    if (primaryKeys.length !== parts.length - 1)
-      throw new Error("Incorrect number of primary keys in short uri: " + uri);
-    
-    var params = {};
-    for (var i = 0; i < primaryKeys.length; i++) {
-      params[primaryKeys[i]] = parts[i+1];
+  var patterns = U.uriPatternMap = [{
+    // id=32001
+    regex: /^[^\/\\\?]+\=/,
+    onMatch: function(uri, matches, vocModel) {
+      return U.makeUri(vocModel.type, matches.input);
     }
-    
-    return G.sqlUrl + "/" + type.slice(7) + '?' + $.param(params);
-  };
-  // Tree?id=32000
-  patterns[/^[A-Z]+\?.*$/] = function(uri, matches, vocModel) {
-    if (!vocModel)
-      throw new Error("Not enough information to create long uri");
-    
-    return G.sqlUrl + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
-  };
-  // wf/.... attachment url
-  patterns[/^wf\//] =  function(uri, matches, vocModel) {
-    return G.serverNameHttp + '/' + uri;
-  };
-  // sql/...?...
-  patterns[/^sql\/.*/] = function(uri, matches, vocModel) {
-    return G.serverNameHttp + '/' + uri;
-  };
-  // http://.../voc/... with query string or without
-  patterns[/^http:\/\/([^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
-    var sqlIdx = matches[1].indexOf(G.sqlUri);
-    if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
-      if (matches[2]) // has query string
-        return G.sqlUrl + '/' + uri.slice(7);
-      else
+  }, 
+  {
+    // Tree/32000
+    regex: /^[A-Z]+([^\?]*)$/,
+    onMatch: function(uri, matches, vocModel) {
+      if (!vocModel)
+        throw new Error("Not enough information to create long uri");
+      
+      var parts = uri.split('/');
+      var type = vocModel.type;
+      var primaryKeys = U.getPrimaryKeys(vocModel);
+      if (primaryKeys.length !== parts.length - 1)
+        throw new Error("Incorrect number of primary keys in short uri: " + uri);
+      
+      var params = {};
+      for (var i = 0; i < primaryKeys.length; i++) {
+        params[primaryKeys[i]] = parts[i+1];
+      }
+      
+      return U.makeUri(type, params);
+    }
+  },
+  {
+    // Tree?id=32000
+    regex: /^[A-Z]+\?.*$/,
+    onMatch: function(uri, matches, vocModel) {
+      if (!vocModel)
+        throw new Error("Not enough information to create long uri");
+      
+      return U.makeUri(type, uri.slice(uri.indexOf("?") + 1));
+    }
+  }, 
+  {
+    // wf/.... attachment url
+    regex: /^wf\//,
+    onMatch:  function(uri, matches, vocModel) {
+      return G.serverNameHttp + '/' + uri;
+    }
+  },
+  {
+    // sql/...?...
+    regex: /^sql\/.*/,
+    onMatch: function(uri, matches, vocModel) {
+      return G.serverNameHttp + '/' + uri;
+    }
+  },
+  {
+    // http://.../voc/... with query string or without
+    regex: /^http:\/\/([^\?]+)\??(.*)/,
+    onMatch: function(uri, matches, vocModel) {
+      var sqlIdx = matches[1].indexOf(G.sqlUri);
+      if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
+        if (matches[2]) // has query string
+          return G.sqlUrl + '/' + uri.slice(7);
+        else
+          return uri;
+      }
+      else { // has sql
         return uri;
+      }
     }
-    else { // has sql
-      return uri;
+  },
+  {  // commerce/urbien/Tree?...
+    regex: /^([a-z]+[^\?]+)\??(.*)/,
+    onMatch: function(uri, matches, vocModel) {
+      if (matches[2])
+        return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+      else
+        return G.defaultVocPath + uri;
     }
-  };
-  // commerce/urbien/Tree?...
-  patterns[/^([a-z]+[^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
-    if (matches[2])
-      return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
-    else
-      return G.defaultVocPath + uri;
-  };
-  
-  for (var pattern in patterns) {
-    var fn = patterns[pattern];
-    fn.regExp = new RegExp(pattern.slice(1, pattern.length - 1));
-  }
+  }];
   
   U.invalid = {};
   (function() {

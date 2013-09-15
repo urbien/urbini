@@ -276,8 +276,7 @@ define('views/CameraPopup', [
       if (navigator.mozGetUserMedia) {
         this.video.mozSrcObject = stream;
       } else {
-        var vendorURL = window.URL || window.webkitURL;
-        this.video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+        this.video.src = window.URL ? window.URL.createObjectURL(stream) : stream;
       }
       
       this.checkVideoSize();
@@ -477,7 +476,7 @@ define('views/CameraPopup', [
       }
   
       if (!url) {
-        url = URL.createObjectURL(this.audioBlob);
+        url = window.URL.createObjectURL(this.audioBlob);
       }
       
       this.audioUrl = url;
@@ -532,7 +531,7 @@ define('views/CameraPopup', [
           this.webmBlob = Whammy.fromImageArray(this.frames, framesPerSecond);
 //        }
         
-        url = URL.createObjectURL(this.webmBlob);
+        url = window.URL.createObjectURL(this.webmBlob);
       }
 
       this.videoUrl = url;

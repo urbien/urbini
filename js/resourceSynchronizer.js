@@ -252,7 +252,6 @@ define('resourceSynchronizer', [
     
     if (version <= 1)
       return;
-    
 
     var retry = _.partial(setTimeout, syncWithServer, 2000);
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {

@@ -403,7 +403,9 @@ define('globals', function() {
   
   function adjustForVendor() {
     // requestAnimationFrame polyfill by Erik Möller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
+    window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
+    window.URL = window.URL || window.webkitURL;
     (function( window ) {
       'use strict';
      
@@ -1379,7 +1381,8 @@ define('globals', function() {
       AppInstall: 'model/social/AppInstall',
       Transaction: 'aspects/commerce/Transaction',
       PushEndpoint: 'model/social/PushEndpoint',
-      PushChannel: 'model/social/PushChannel'
+      PushChannel: 'model/social/PushChannel',
+      Image: 'model/portal/Image'
     },
 //    commonTypes: {
 //      model: {
@@ -1478,9 +1481,14 @@ define('globals', function() {
     sendXhr: function (options) {
       var url = options.url;
       var method = (options.type || 'GET').toUpperCase();      
-      var xhr = G.createXhr();      
+      var xhr = G.createXhr();
+//      if (options.raw && browser.chrome)
+//        xhr.responseType = 'blob';
       var params = options.data;
       xhr.open(method, url, true);
+      if (options.responseType)
+        xhr.responseType = options.responseType;
+      
       xhr.onreadystatechange = function (evt) {
         var status, err;
         //Do not explicitly handle errors, those should be
@@ -1493,7 +1501,7 @@ define('globals', function() {
             err.xhr = xhr;
             options.error && options.error(err);
           } else {
-            options.success && options.success(xhr.responseText);
+            options.success && options.success(options.responseType ? xhr.response : xhr.responseText);
           }
         }
       };
@@ -1609,37 +1617,50 @@ define('globals', function() {
       return stack.join(separator);
     },
 
-    workers: {},
-    workerQueues: {},
-    isWorkerAvailable: function(worker) {
-      return !worker.__lablzTaken;
-    },
-    
-    captureWorker: function(worker) {
-      worker.__lablzTaken = true;
-      return worker;
-    },
-    
-    /**
-     * get a promise of a web worker
-     */
-    getXhrWorker: function(taskType) {
-      taskType = taskType || 'main';
+//    mainWorkerName: 'main',
+    workers: [],
+//    isWorkerAvailable: function(worker) {
+//      return !worker.__lablzTaken;
+//    },
+//    
+//    captureWorker: function(worker) {
+//      worker.__lablzTaken = true;
+//      return worker;
+//    },
+//    
+//    /**
+//     * get a promise of a web worker
+//     */
+//    getXhrWorker: function(taskType) {
+//      taskType = taskType || G.mainWorkerName;
+//      return $.Deferred(function(dfd) {
+//        if (!G.workers[taskType]) {
+//          var xw = G.files.xhrWorker;
+//          G.workers[taskType] = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
+//        }
+//        
+//        var w = G.workers[taskType];
+//        w._taskType = taskType;
+//        if (G.isWorkerAvailable(w)) {
+//          dfd.resolve(G.captureWorker(w));
+//        }
+//        else {
+//          G.workerQueues[taskType] = G.workerQueues[taskType] || [];
+//          G.workerQueues[taskType].push(dfd);
+//        }
+//      }).promise();
+//    },
+    getXhrWorker: function() {
       return $.Deferred(function(dfd) {
-        if (!G.workers[taskType]) {
+        var worker;
+        if (G.workers.length)
+          worker = G.workers.shift();
+        else {
           var xw = G.files.xhrWorker;
-          G.workers[taskType] = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
+          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
         }
         
-        var w = G.workers[taskType];
-        w._taskType = taskType;
-        if (G.isWorkerAvailable(w)) {
-          dfd.resolve(G.captureWorker(w));
-        }
-        else {
-          G.workerQueues[taskType] = G.workerQueues[taskType] || [];
-          G.workerQueues[taskType].push(dfd);
-        }
+        dfd.resolve(worker);
       }).promise();
     },
     
@@ -1649,10 +1670,11 @@ define('globals', function() {
     recycleXhrWorker: function(worker) {
       worker.onerror = null;
       worker.onmessage = null;
-      worker.__lablzTaken = false;
-      var q = G.workerQueues[worker._taskType];
-      if (q && q.length)
-        q.shift().resolve(G.captureWorker(worker));
+      G.workers.push(worker);
+//      worker.__lablzTaken = false;
+//      var q = G.workerQueues[worker._taskType];
+//      if (q && q.length)
+//        q.shift().resolve(G.captureWorker(worker));
     },
     
     setCookie: function(name, value, exdays) {

@@ -437,8 +437,9 @@ define('views/ResourceListItemView', [
 
       this.addCommonBlock(viewCols, json);
 
-      if (this.imageProperty)
+      if (this.imageProperty) {
         json['image'] = atts[this.imageProperty];
+      }
       
       if (!json.liUri) {
         if (json['v_submitToTournament'])

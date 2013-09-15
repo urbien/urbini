@@ -125,7 +125,9 @@ define('views/PhotogridView', [
               image = image.slice(6);    
   
             var imageData = {
+              imageProperty: imgProp,
               image: image,
+              _uri: json[iProps[p]],
               target: U.makePageUrl('view', target),
               title: json[U.getCloneOf(vocModel, 'Intersection.{0}'.format(p))[0] + '.displayName'],
               width: json[U.getCloneOf(vocModel, 'Intersection.{0}OriginalWidth'.format(p))[0]],

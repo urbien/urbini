@@ -349,6 +349,7 @@ define('views/ControlPanel', [
                 if (imgProp) {
                   var img = iRes.get(imgProp);
                   if (img) {
+                    params.imageProperty = imgProp;
                     params.img = img;
                     var oW = U.getCloneOf(iRes.vocModel, 'ImageResource.originalWidth');
                     var oH;
@@ -374,6 +375,7 @@ define('views/ControlPanel', [
 
             var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
             params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
+            params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
             this.stopListening(iRes, 'change', this.update);
@@ -574,7 +576,7 @@ define('views/ControlPanel', [
 //      });
       
       this.$el.trigger('create');
-      if (this.rendered)
+      if (this.rendered && this.$el.hasClass('ui-listview'))
         this.$el.listview('refresh');
 
       return this;

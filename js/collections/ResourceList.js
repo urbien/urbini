@@ -38,7 +38,7 @@ define('collections/ResourceList', [
           vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -256,15 +256,21 @@ define('collections/ResourceList', [
       this.perPage = perPage;
       this.pager();
     },
-    getUrl: function() {
+    getUrl: function(params) {
+      params = params ? _.clone(params) : {};
+      _.defaults(params, {
+        $minify: 'y',
+        $mobile: 'y'
+      }, this.params);
+      
+      if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
+        params.$chooser = 'y';
+      
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.getCollectionUrl)
-        return adapter.getCollectionUrl.call(this, _.clone(this.params));
+        return adapter.getCollectionUrl.call(this, params);
       
-      var url = this.baseUrl + (this.params ? "?$minify=y&$mobile=y&" + $.param(this.params) : '');
-      if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
-        url += '&$chooser=y';
-      return url;
+      return this.baseUrl + '?' + $.param(params);
     },
     parseQuery: function(query) {
       var params, filtered = {};
@@ -309,6 +315,11 @@ define('collections/ResourceList', [
     parse: function(response) {
       if (this.lastFetchOrigin !== 'db')
         this._lastFetchedOn = G.currentServerTime();
+      
+      var vocModel = this.vocModel;
+      _.each(response, function(res) {
+        res._uri = U.getLongUri1(res._uri, vocModel);
+      });
       
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parseCollection)
@@ -386,15 +397,29 @@ define('collections/ResourceList', [
     fetch: function(options) {
       if (this.offset && !this._outOfData)
         log("info", "fetching next page");
+
+      options = options || {};
+      _.defaults(options, {
+        update: true, 
+        remove: false, 
+        parse: true
+      });
       
-      options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
-          adapter = this.vocModel.adapter;
+          adapter = this.vocModel.adapter,
+          extraParams = options.params || {};
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
         return;      
+      }
+
+      if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
+        if (!this.offset || !this.models.length)
+          extraParams.$select = '$viewCols,$gridCols,$images';
+//        else
+//          extraParams.$omit = '$viewCols,$gridCols,$images';
       }
 
       this.params = this.params || {};
@@ -417,12 +442,16 @@ define('collections/ResourceList', [
       this.params.$limit = limit;
       
       try {
-        options.url = this.getUrl();
+        options.url = this.getUrl(extraParams);
       } catch (err) {
         error(this, {status: 204, details: err.message}, options);
         return;
       }
 
+//      if (this.currentlyFetching && this.currentlyFetching.url == options.url) {
+//        
+//      }
+        
       options.error = function(xhr, resp, options) {
         self._lastFetchedOn = G.currentServerTime();
         if (error)
@@ -466,8 +495,31 @@ define('collections/ResourceList', [
           success(resp, status, xhr);
           return;
         }
-        else
+        else {
+          var select = extraParams && extraParams.$select;
+          if (select) {
+            var first = self.models[0];
+            if (first) {
+              var props = U.parsePropsList(select, self.vocModel),
+                  atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
+                  nonSelectedProps = _.difference(_.keys(atts), props),
+                  hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
+              
+              if (!hasNonSelectedProps) {
+                var newOptions = {
+                  forceFetch: true,
+                  params: _.clone(extraParams)
+                };
+                
+                newOptions.params.$omit = select;
+                delete newOptions.params.$select;
+                G.whenNotRendering(_.partial(self.fetch, newOptions), self);
+              }
+            }
+          }
+          
           self._lastFetchedOn = now;
+        }
         
         var now = G.currentServerTime(),
             code = xhr.status;
@@ -555,8 +607,6 @@ define('collections/ResourceList', [
         else
           saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
-      
-      
       
       if (added.length + updated.length) {
         if (added.length)

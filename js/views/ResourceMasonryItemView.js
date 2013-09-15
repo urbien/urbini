@@ -17,8 +17,12 @@ define('views/ResourceMasonryItemView', [
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
-      this.makeTemplate('masonry-list-item', 'template', type);
-      this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
+      this.isModification = U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
+
+      if (this.isModification)
+        this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
+      else
+        this.makeTemplate('masonry-list-item', 'template', type);
 
       if ($(window).height() > $(window).width())
         this.IMG_MAX_WIDTH = 272;
@@ -76,8 +80,7 @@ define('views/ResourceMasonryItemView', [
     },
     render: function(options) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-      if (isModification) 
+      if (this.isModification) 
         return this.renderModificationTile();
       var m = this.resource;
       var isReference = m.isA('Reference'); 
@@ -154,6 +157,7 @@ define('views/ResourceMasonryItemView', [
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       tmpl_data.resourceMediumImage = img = atts[img];
+      tmpl_data.imageProperty = img;
 
       var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
@@ -475,8 +479,8 @@ define('views/ResourceMasonryItemView', [
       
       var rUri = tmpl_data.rUri = U.makePageUrl('view', U.getLongUri1(atts[imgSrc]));
       var modBy = U.makePageUrl('view', U.getLongUri1(atts.modifiedBy));
-      
-      tmpl_data.modifiedBy = modBy;
+
+      _.extend(tmpl_data, _.pick(atts, 'modifiedBy', 'resourceDisplayName', 'resourceMediumImage', 'dateModified', 'v_modifiedByPhoto'))
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
       var img = atts.resourceMediumImage;

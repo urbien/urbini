@@ -10,8 +10,67 @@ define('views/BasicPageView', [
 ], function(G, _, U, Events, BasicView, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
+      lazyAttr = G.lazyImgSrcAttr,
+      WIN_HEIGHT,
+      // Vertical offset in px. Used for preloading images while scrolling
+      IMG_OFFSET = 200,
       $wnd = $(window);
+
+  function cleanImage(img, completely) {
+    img.onload = null;
+    img.removeAttribute('onload');
+    // on IE < 8 we get an onerror event instead of an onload event
+    img.onerror = null;
+    img.removeAttribute('onerror');
+    if (completely)
+      img.removeAttribute(lazyAttr);
+  };
   
+  function viewport() {
+    if (document.documentElement.clientHeight >= 0) {
+      return document.documentElement.clientHeight;
+    } else if (document.body && document.body.clientHeight >= 0) {
+      return document.body.clientHeight
+    } else if (window.innerHeight >= 0) {
+      return window.innerHeight;
+    } else {
+      return 0;
+    }
+  };
+
+  function saveViewport() {
+    WIN_HEIGHT = G.viewportHeight = viewport();
+  };
+  
+  saveViewport();
+  $wnd.on('resize', _.throttle(saveViewport, 20));
+  
+  function getDummyImages($el) {
+    return $el.find('img[{0}]'.format(lazyAttr));
+  }
+
+  function getLoadedImages($el) {
+    return $el.find('img:not([{0}])'.format(lazyAttr));
+  }
+
+  // Override image element .getAttribute globally so that we give the real src
+  // does not works for ie < 8: http://perfectionkills.com/whats-wrong-with-extending-the-dom/
+  // Internet Explorer 7 (and below) [...] does not expose global Node, Element, HTMLElement, HTMLParagraphElement
+  window['HTMLImageElement'] && overrideGetattribute();
+  function overrideGetattribute() {
+    var original = HTMLImageElement.prototype.getAttribute;
+    HTMLImageElement.prototype.getAttribute = function(name) {
+      if(name === 'src') {
+        var realSrc = original.call(this, lazyAttr);
+        return realSrc || original.call(this, name);
+      } else {
+        // our own lazyloader will go through theses lines
+        // because we use getAttribute(lazyAttr)
+        return original.call(this, name);
+      }
+    }
+  }
+    
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
@@ -37,8 +96,8 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll'); //, 'onpageshow', 'onpagehide');            
-      $wnd.on('scroll', this.onScroll.bind(this));
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_showImages', '_loadImage'); //, 'onpageshow', 'onpagehide');            
+      $wnd.on('scroll', _.throttle(this.onScroll.bind(this), 100));
       
 //      this._subscribeToImageEvents();
 //      
@@ -119,7 +178,9 @@ define('views/BasicPageView', [
           self.onload(onload);
         
         if (!self._title)
-          self._updateTitle();        
+          self._updateTitle();
+        
+        self._subscribeToImageEvents();
       });
     },
     
@@ -602,7 +663,160 @@ define('views/BasicPageView', [
         clearTimeout(timeoutId);
       
       $m.loading('hide');
-    }
+    },
+    
+
+    
+    _subscribeToImageEvents: function() {
+      if (this._subscribedToImageEvents)
+        return;
+      
+      var self = this;
+      this.onload(function() {
+//        if (!self.isChildless()) // let each view handle its own images
+//          return;
+
+        self.getPageView().$el.on('scroll', self._showImages);
+      });
+      
+      this._subscribedToImageEvents = true;
+    },
+
+    _unsubscribeFromImageEvents: function() {
+      this.$el.off('scroll', this._showImages);
+      this._subscribedToImageEvents = false;
+    },
+
+    _showImages: _.throttle(function() {
+//      if (true)
+//        return;
+//      
+//      if (!this._imgs || !this._imgs.length)
+//        this._imgs = getDummyImages(this.$el);
+      
+      if (!this._imgs || !this._imgs.length)
+        return;
+      
+      var imgs = this._imgs,
+          i = imgs.length - 1,
+          allImagesDone = true;
+
+      for (; i >= 0; i--) {
+        this._loadImage(imgs[i]);
+      }
+  
+      if (!this._imgs || !this._imgs.length)
+        this._unsubscribeFromImageEvents();
+
+    }, 50),
+    
+    _loadImage: function(img) {
+      var dataUrl,
+          realSrc,
+          inDoc,
+          inBounds,
+          imgInfoAtt,
+          imgInfo,
+          blob,
+          res;
+      
+      img = img.target || img;
+      if (img.src != G.blankImgDataUrl)
+        return;
+      
+      imgInfoAtt = img.getAttribute('data-for');
+      if (imgInfoAtt) {
+        imgInfo = U.parseImageAttribute(imgInfoAtt);
+        res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id); // || C.getResource(imgInfo.cid);
+        prop = imgInfo.prop;
+        if (res && prop) {
+          data = res.get(prop + '.data');
+          if (data) {
+            cleanImage(img, true);            
+            if (typeof data == 'string')
+              img.src = data;
+            else {
+              img.src = URL.createObjectURL(data);
+              URL.revokeObjectURL(img.src);
+            }
+            
+            return;
+          }
+        }
+      }      
+      
+      this._subscribeToImageEvents();
+      realSrc = img.getAttribute(lazyAttr);
+      if (!realSrc)
+        return true;
+      
+      cleanImage(img);
+      inDoc = $.contains(document.documentElement, img);
+      inBounds = img.getBoundingClientRect().top < WIN_HEIGHT + IMG_OFFSET;
+      if (inDoc && inBounds) {
+        // To avoid onload loop calls
+        // removeAttribute on IE is not enough to prevent the event to fire
+        this._fetchImage(img);
+        return true;
+      }
+      else if (inDoc) {
+        // wait till it's scrolled into the viewport
+        if (!this._imgs)
+          this._imgs = [];
+        
+        if (!_.contains(this._imgs, img))
+          this._imgs.push(img);
+        
+        return false; 
+      }
+      else {
+        // should be here in a bit
+        setTimeout(_.partial(this._loadImage, img), 100);
+        return false;
+      }
+    },
+    
+    _fetchImage: function(img) {
+      var url = img.getAttribute(lazyAttr),
+          imgInfoAtt = img.getAttribute('data-for'),
+          imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
+          res,
+          prop;
+      
+      if (imgInfoAtt) {
+        imgInfo = U.parseImageAttribute(imgInfoAtt);
+        res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
+        prop = imgInfo.prop;
+        
+        if (res && prop) {
+          img.onload = function() {
+            cleanImage(img, true);
+            U.getImage(url, 'blob').done(function(blob) {
+              if (!blob)
+                return;
+                    
+              // save to resource
+              var atts = {};
+              atts[prop + '.uri'] = res.get(prop);
+              atts[prop + '.data'] = blob;
+              res.set(atts, {
+                silent: true
+              });
+              
+              Events.trigger('updatedResources', [res]); // save the image to the db
+            });
+          };
+        }
+      }
+      
+      img.src = url;
+      img.removeAttribute(lazyAttr);
+      if (this._imgs)
+        Array.remove(this._imgs, img);
+      
+      this.log('imageLoad', 'lazy loading image: ' + url);
+    }    
+
   }, {
     displayName: 'BasicPageView'
   });
