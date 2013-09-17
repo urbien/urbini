@@ -352,7 +352,12 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           modelType: null
         })
       }
-      
+      if (G.currentUser.guest) {
+        ands.push({
+          mustBeLoggedIn: false
+        })
+      }
+        
       var tours = new ResourceList(null, {
           model: TOUR_MODEL,
           params: {
