@@ -19,7 +19,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_passThroughToEl');
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -110,40 +110,13 @@ define('views/BasicView', [
       }.bind(this);
 
       var self = this;
-      this.on('active', function() {
-        self.active = true;
-        self.triggerChildren('active');
-        self._updateHashInfo();
-        self._processQueue();
-      });
-      
-      this.on('inactive', function() {
-        self.active = false;
-        if (self.isPageView())
-          self._unsubscribeFromImageEvents();
-        
-        self.triggerChildren('inactive');
-      });
-
+      this.on('active', this._onActive);
+      this.on('inactive', this._onInactive);
       _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
-          var event = listener.slice(2),
-              _event = '_' + event;
-          
-          window.addEventListener(event, function() {
-            if (self.isActive())
-              self[_event](event);
-            else {
-              self.once('active', function() {
-                self[_event](event);
-              });
-            }
-          }, false);
-          
-          self[_event] = _.debounce(function(e) {
-            G.log(self.TAG, 'events', e);
-            self.$el.trigger(e);
-          }, 100);          
+          var event = listener.slice(2);
+          window.addEventListener(event, self._onViewportDimensionsChanged, false);
+          self['_' + event] = _.debounce(self._passThroughToEl, 100);          
         }
       });
 
@@ -157,10 +130,6 @@ define('views/BasicView', [
 
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
-    },
-    
-    events: {
-      'imageOnload': '_loadImage'
     },
     
     _updateHashInfo: function() {
@@ -383,9 +352,6 @@ define('views/BasicView', [
     },
     
     reverseBubbleEvent: function(e) {
-      if (!this.isActive())
-        return;
-      
       _.each(this.children, function(child) {
         child.$el && child.$el.triggerHandler(e.type, e); // triggerHandler will prevent the event from bubbling back up and creating an infinite loop
       });
@@ -431,6 +397,41 @@ define('views/BasicView', [
       return this.pageView && this.pageView.getPageTitle();
     },
     
+    _passThroughToEl: function(e) {
+      this.log('events', e);
+      this.$el.trigger(e);
+    },
+    
+    _onViewportDimensionsChanged: function(event) {
+      var _event = '_' + event;
+      if (this.isActive())
+        this[_event](event);
+      else {
+        this.once('active', _.partial(this[_event], this, event));
+      }
+    },
+    
+    _onActive: function() {
+      if (this.active)
+        return;
+      
+      this.active = true;
+      this.triggerChildren('active');
+      this._updateHashInfo();
+      this._processQueue();
+    },
+
+    _onInactive: function() {
+      if (!this.active)
+        return;
+      
+      this.active = false;
+      if (this.isPageView())
+        this._unsubscribeFromImageEvents();
+      
+      this.triggerChildren('inactive');      
+    },
+
     isActive: function() {
 //      if (this.active)
 //        return true;
@@ -560,6 +561,7 @@ define('views/BasicView', [
       return this.el && U.isAtLeastPartiallyInViewport(this.el);
     },
 
+    // <debug>
     logVisibility: function() {      
       var numVisible = 0,
           numPartiallyVisible = 0,
@@ -575,6 +577,7 @@ define('views/BasicView', [
                                                                                  isPartiallyVisible ? 'partially ' : 'in'));
       });
     },
+    // </debug>
   
     getPreviousHash: function() {
       return this.getPageView().source;

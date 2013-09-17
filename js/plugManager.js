@@ -123,7 +123,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     for (var action in scripts) {
       var script = scripts[action];
       if (script) {
-        script = U.removeJSComments(script).trim();
+        script = _.removeJSComments(script).trim();
         if (!script.length)
           continue;
         

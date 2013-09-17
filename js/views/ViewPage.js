@@ -255,7 +255,7 @@ define('views/ViewPage', [
       this.$el.html(this.template(json));      
       var self = this;
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('div#photogridHeader');
+        var pHeader = self.$('#photogridHeader');
         var h3 = pHeader.find('h3');
         h3[0].innerHTML = self.friends.title;
         pHeader.removeClass('hidden');

@@ -19,7 +19,7 @@ define('views/PhotogridListView', [
     },
 
     preRender: function(info) {
-      this.table = $('table#photogridList{0}'.format(this.cid))[0];
+      this.table = this.$('#photogridList{0}'.format(this.cid))[0];
       if (this.table)
         this.table.appendChild($('<tr><td colspan="2"><hr /></td></tr>')[0]);
       else

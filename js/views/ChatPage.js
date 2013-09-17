@@ -448,7 +448,7 @@ define('views/ChatPage', [
 //      }, 3000, true));
       
       this.assign({
-        'div#headerDiv' : this.header
+        '#headerDiv' : this.header
       });
 
 //      this.$ringtone          = this.$('div#ringtoneHolder');
@@ -456,8 +456,8 @@ define('views/ChatPage', [
       this.$messages          = this.$('#messages');
       this.$sendMessageBtn    = this.$('#chatSendBtn');
       this.$snapshotBtn       = this.$('#chatCaptureBtn');
-      this.$localMedia        = this.$('div#localMedia');
-      this.$remoteMedia       = this.$('div#remoteMedia');
+      this.$localMedia        = this.$('#localMedia');
+      this.$remoteMedia       = this.$('#remoteMedia');
       this.$videoChat         = this.$('#videoChat');
       this.$textChat          = this.$('#textChat');
       
@@ -607,7 +607,7 @@ define('views/ChatPage', [
       }
       
       U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
-        var $bl = self.$("div#inChatBacklinks");
+        var $bl = self.$("#inChatBacklinks");
         $bl.drags();
         self.backlinks = new ControlPanel({
           isMainGroup: true,
@@ -619,7 +619,7 @@ define('views/ChatPage', [
         });
         
         self.addChild(self.backlinks);
-        self.assign('div#inChatBacklinks', self.backlinks);
+        self.assign('#inChatBacklinks', self.backlinks);
         $bl.find('[data-role="button"]').button();
 //        self.backlinks.render();
 //        readyDfd.resolve();
@@ -642,8 +642,8 @@ define('views/ChatPage', [
       if (!this.rendered)
         return;
       
-      var $goodies = this.$('div#inChatGoodies'),
-          $video = this.$('div#remoteMedia video');
+      var $goodies = this.$('#inChatGoodies'),
+          $video = this.$('#remoteMedia video');
 //      ,
 //          $bl = $goodies.find('#inChatBacklinks'),
 //          $stats = $goodies.find('#inChatStats'),
@@ -665,7 +665,7 @@ define('views/ChatPage', [
 //      });
 
       if (!$video.length)
-        $video = this.$('div#localMedia video');
+        $video = this.$('#localMedia video');
       
       if ($video.length) {
         var vChatZ = this.$videoChat.css('z-index');
@@ -673,7 +673,7 @@ define('views/ChatPage', [
 //        var extraOffset = vChatZ < 1000 ? this.pageView.$('[data-role="header"]').height() : 0;
         var extraOffset = 0;
         var offset = $video.offset();
-        var goodiesWidth = Math.max($goodies.find('div#inChatBacklinks').width(), $goodies.find('svg').width());
+        var goodiesWidth = Math.max($goodies.find('#inChatBacklinks').width(), $goodies.find('svg').width());
         $goodies.css({top: offset.top + extraOffset, left: offset.left + $video.width() - goodiesWidth});
 //        $goodies.css({top: offset.top + extraOffset});
       }

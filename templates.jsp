@@ -1521,10 +1521,10 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
   <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
-    <{{= isInput ? 'input type="text"' : 'textarea  style="width: 100%" rows="10"' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : U.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea  style="width: 100%" rows="10"' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
 </script>
 

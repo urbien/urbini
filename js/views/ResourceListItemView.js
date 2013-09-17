@@ -384,7 +384,7 @@ define('views/ResourceListItemView', [
         json.isJst = true;
         var text = atts.templateText;
         if (text) {
-          var comments = U.getHTMLComments(text);
+          var comments = _.getHTMLComments(text);
           if (comments && comments.length)
             json.comment = comments[0].trim();
         }

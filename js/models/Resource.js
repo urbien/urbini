@@ -348,6 +348,9 @@ define('models/Resource', [
     },
     
     getUri: function() {
+      if (!_.size(this.attributes))
+        return null;
+      
       var uri = this.get('_uri');
       if (!uri && this.vocModel) {
         uri = U.buildUri(this);
@@ -428,13 +431,13 @@ define('models/Resource', [
     loadInlined: function(atts) {
       var meta = this.vocModel.properties,
           resources = {},
-          backLinks = {};
+          backLinks = {},
+          uri = this.getUri();
       
       for (var p in atts) {
         var prop = meta[p],
             backLink = prop && prop.backLink,
             val = atts[p],
-            uri = this.getUri(),
             list = null,
             res = null;
         
