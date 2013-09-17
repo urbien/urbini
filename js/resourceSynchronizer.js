@@ -193,9 +193,11 @@ define('resourceSynchronizer', [
   };
   
   ResourceSynchronizer.prototype._onDBSuccess = function(result) {
-    var isTemp = !!this.info.tempUri;    
+    var isTemp = !!this.info.tempUri,
+        dbOnly = this.options.dbOnly;
+    
     if (!result) {
-      if (isTemp) {
+      if (isTemp || dbOnly) {
         debugger;
         return;
       }
@@ -204,7 +206,7 @@ define('resourceSynchronizer', [
     }
     
     this._success(result, 'success', null); // add to / update collection
-    if (isTemp)
+    if (isTemp || dbOnly)
       return;
     
     if (this._isForceFetch())

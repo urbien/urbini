@@ -406,8 +406,9 @@ define('collections/ResourceList', [
       });
       
       var self = this,
+          vocModel = this.vocModel,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
-          adapter = this.vocModel.adapter,
+          adapter = vocModel.adapter,
           extraParams = options.params || {};
 
       if (this['final']) {
@@ -416,10 +417,13 @@ define('collections/ResourceList', [
       }
 
       if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
-        if (!this.offset || !this.models.length)
-          extraParams.$select = '$viewCols,$gridCols,$images';
-//        else
-//          extraParams.$omit = '$viewCols,$gridCols,$images';
+        if (!this.offset || !this.models.length) {
+          if (!_.has(vocModel, 'splitRequest'))
+            U.setSplitRequest(vocModel);
+          
+          if (vocModel.splitRequest)
+            extraParams.$select = U.splitRequestFirstHalf;
+        }
       }
 
       this.params = this.params || {};
@@ -465,11 +469,11 @@ define('collections/ResourceList', [
         if (pagination) {
           try {
             pagination = JSON.parse(pagination);
-            this.setOffset(pagination.offset);
-            if (this.offset)
-              log("info", "received page, offset = " + this.offset);
+            self.setOffset(pagination.offset);
+            if (self.offset)
+              log("info", "received page, offset = " + self.offset);
             
-            this.page = Math.floor(this.offset / this.perPage);
+            self.page = Math.floor(self.offset / self.perPage);
           } catch (err) {
           }
         }
@@ -508,6 +512,7 @@ define('collections/ResourceList', [
               if (!hasNonSelectedProps) {
                 var newOptions = {
                   forceFetch: true,
+                  forceMerge: true,
                   params: _.clone(extraParams)
                 };
                 
@@ -577,7 +582,8 @@ define('collections/ResourceList', [
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
       // An alternative is to override Backbone.Collection.reset() method and do some magic there.
       
-      var added = [],
+      var forceMerge = options.forceMerge,
+          added = [],
           skipped = [],
           updated = [],
           now = G.currentServerTime();
@@ -585,16 +591,16 @@ define('collections/ResourceList', [
       for (var i = 0; i < resources.length; i++) {
         var r = resources[i];
         r._lastFetchedOn = now;
-        var uri = r._uri;
-        var saved = this.get(uri);
-        var ts = saved && saved.get(tsProp) || 0;
-        var newLastModified = r[tsProp];
-//        if (typeof newLastModified === "undefined") 
-//          newR = 0;
+        var uri = r._uri,
+            saved = this.get(uri),
+            ts = saved && saved.get(tsProp) || 0,
+            newLastModified = r[tsProp],
+            newData = saved && saved.changedAttributes(r), // new prop values, including meta props like _uri, _lastFetchedOn, etc.
+            newModelProps = newData && U.filterObj(newData, U.isModelParameter);
         
-        if (!newLastModified || newLastModified > ts) {
+        if ((forceMerge && newModelProps && _.size(newModelProps)) || !newLastModified || newLastModified > ts) {
           if (saved) {
-            saved.set(r, {
+            saved.set(newData, {
               partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
             }); 
             

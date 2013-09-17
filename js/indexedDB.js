@@ -50,11 +50,11 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function getFileSystemPath(item, prop, blob) {
-    var displayName = item[prop + '.displayName'];
-    if (!displayName && blob && blob.type)
-      displayName = blob.type.split('/')[1];
+//    var displayName = item[prop + '.displayName'];
+//    if (!displayName && blob && blob.type)
+//      displayName = blob.type.split('/')[1];
       
-    return U.getPath(item._uri) + '/' + (displayName || prop);
+    return U.getPath(item._uri) + '/' + prop;
   };        
 
   function _getFileSystem(items) {
@@ -164,7 +164,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       _.each(_item, function(val, prop) {
         var parsedPropName = parsePropName(prop),
             val = _item[prop],
-            method = U.isCompositeProp(parsedPropName) ? 'readAsDataURL' : 'readAsBlob';
+            method = FileSystem && U.isCompositeProp(parsedPropName) ? 'readAsFile' : 'readAsBlob';
             
         if (val  &&  filePropertyName  &&  val[filePropertyName]) {
           var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {

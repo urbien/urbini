@@ -314,9 +314,9 @@ define('views/ListPage', [
       if (!this.$el.parentNode)  
         $('body').append(this.$el);
       if (!this.isMV)
-        $('form#mv').hide();
+        this.$('#mv').hide();
       if (!this.isEdit)
-        $('form#editRlForm').hide();
+        this.$('#editRlForm').hide();
       if (this.isPhotogrid) {
         this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');

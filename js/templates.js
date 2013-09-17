@@ -15,13 +15,21 @@ define('templates', [
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
       blankImgDataUrl = G.blankImgDataUrl;
   
-  window.onimageload = function() {
-    $(this).trigger('imageOnload');
+  window.onimageload = function onimageload() {
+    var self = this;
+    window.raf(function() {      
+      $(self).trigger('imageOnload');
+    });
+    
     return false;
   };
   
-  window.onimageerror = function() {
-    $(this).trigger('imageOnerror');
+  window.onimageerror = function onimageerror() {
+    var self = this;
+    window.raf(function() {      
+      $(self).trigger('imageOnerror');
+    });
+    
     return false;
   };
   

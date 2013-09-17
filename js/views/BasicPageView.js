@@ -14,8 +14,13 @@ define('views/BasicPageView', [
       WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
       IMG_OFFSET = 200,
+      doc = document,
       $wnd = $(window);
 
+//  function isInBounds(position, from, to) {
+//    return position.bottom >= from && position.top <= to;    
+//  }
+  
   function cleanImage(img, completely) {
     img.onload = null;
     img.removeAttribute('onload');
@@ -27,10 +32,11 @@ define('views/BasicPageView', [
   };
   
   function viewport() {
-    if (document.documentElement.clientHeight >= 0) {
-      return document.documentElement.clientHeight;
-    } else if (document.body && document.body.clientHeight >= 0) {
-      return document.body.clientHeight
+    var documentEl = doc.documentElement;
+    if (documentEl.clientHeight >= 0) {
+      return documentEl.clientHeight;
+    } else if (doc.body && doc.body.clientHeight >= 0) {
+      return doc.body.clientHeight
     } else if (window.innerHeight >= 0) {
       return window.innerHeight;
     } else {
@@ -96,8 +102,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_showImages', '_loadImage'); //, 'onpageshow', 'onpagehide');            
-      $wnd.on('scroll', _.throttle(this.onScroll.bind(this), 100));
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_showImages', '_loadImage'); //, 'onpageshow', 'onpagehide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -171,7 +176,8 @@ define('views/BasicPageView', [
         self._checkAutoClose();
       }
       
-      this.on('active', function() {
+      function onActive() {
+        $wnd.on('scroll', self._onScroll);
         if (self.rendered)
           onload();
         else
@@ -180,11 +186,20 @@ define('views/BasicPageView', [
         if (!self._title)
           self._updateTitle();
         
-        self._subscribeToImageEvents();
-      });
+        self._subscribeToImageEvents();        
+      }
+      
+      function onInactive() {
+        $wnd.off('scroll', self._onScroll);
+//        $wnd.off('scroll', self._onScroll);
+      }
+      
+      this.on('active', onActive);
+      this.on('inactive', onInactive);
     },
     
     events: {
+      'imageOnload': '_loadImage',
       'scrollstart': 'reverseBubbleEvent',
       'scrollstop': 'reverseBubbleEvent',      
       'scroll': 'scroll',
@@ -200,7 +215,7 @@ define('views/BasicPageView', [
     },
 
     destroy: function() {
-      $wnd.off('scroll', this.onScroll);
+      this.trigger('inactive');
       BasicView.prototype.destroy.call(this);
     },
     
@@ -277,9 +292,14 @@ define('views/BasicPageView', [
 //      if (this._scrollPosition && $wnd.scrollTop() == 0)
 //        debugger;
       
-      if (this._pageshowFired && this.isActive()) {
-        this._scrollPosition = $wnd.scrollTop();
-//        this.log('scroll', this._scrollPosition);
+      var newTop = $wnd.scrollTop(),
+          oldTop = this._scrollPosition || 0,
+          scrollCheckpoint = this._scrollCheckpoint || 0;
+      
+      this._scrollPosition = newTop;
+      if (Math.abs(newTop - scrollCheckpoint) > 100) {
+        this._scrollCheckpoint = newTop;
+        this._hideOffscreenImages();
       }
       
       this.reverseBubbleEvent.apply(this, arguments);
@@ -321,37 +341,19 @@ define('views/BasicPageView', [
       return true;
     },
     
-    onScroll: function() {
+    _onScroll: _.throttle(function() {
+      if (typeof this._scrollPosition == 'undefined' && !$wnd.scrollTop()) // weird fake scroll event after page load
+        return;
+      
       if (this.$el) {
         this.$el.triggerHandler('scroll');
+        // <debug>
         this.log('visibility', 'START visibility report for ' + this.TAG);
         this.logVisibility();
         this.log('visibility', 'END visibility report for ' + this.TAG);
+        // </debug>
       }
-    },
-    
-//    addTooltip: function(data) {
-////      if (!this._tooltipTemplate)
-////        this.makeTemplate('tooltipTemplate', '_tooltipTemplate', this.modelType);
-////      
-////      var html = this._tooltipTemplate(data),
-//      var element = data.element; //.parent('div');
-////      element.addClass('hint--always hint--{0}'.format(data.direction));
-////      element.attr('data-hint', data.tooltip);
-//      var position = element.offset();
-//      var t = position.top + element.outerHeight()/2 - 23;
-//      var l = position.left + element.outerWidth()/2 - 23;
-//      if (data.tooltip)
-//        $('#page').prepend('<div class="play hint--always hint--' + data.direction + '" style="top:' + t + 'px; left:' + l + 'px" data-hint="' + data.tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
-//      else
-//        $('#page').prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
-//      this.once('active', function(active) {
-//        if (!active) {
-//          removeTooltip(element);
-//          $('.play').remove();
-//        }
-//      });
-//    },
+    }, 100),
     
     runTourStep: function(step) {      
       var element,
@@ -435,7 +437,7 @@ define('views/BasicPageView', [
     },
 
     _updateTitle: function(title) {
-      this._title = document.title = title || this.getPageTitle();
+      this._title = doc.title = title || this.getPageTitle();
     },
     
     getPageTitle: function() {
@@ -687,6 +689,23 @@ define('views/BasicPageView', [
       this._subscribedToImageEvents = false;
     },
 
+    _hideOffscreenImages: function() {
+      var offscreenImgs;
+      if (this.isActive()) {
+        offscreenImgs = this.$('img:not([src="{0}"])'.format(G.blankImgDataUrl)).filter(function() {
+          return !U.isRectPartiallyInViewport(this.getBoundingClientRect(), IMG_OFFSET);
+        });
+      }
+      else 
+        offscreenImgs = this.$('img'); // TODO only images that are lazy loaded
+          
+      if (offscreenImgs.length) {
+        offscreenImgs.each(function() {
+          U.HTML.lazifyImage(this);
+        });
+      }
+    },
+    
     _showImages: _.throttle(function() {
 //      if (true)
 //        return;
@@ -697,62 +716,54 @@ define('views/BasicPageView', [
       if (!this._imgs || !this._imgs.length)
         return;
       
-      var imgs = this._imgs,
+      var documentEl = doc.documentElement,
+          imgs = this._imgs,
           i = imgs.length - 1,
-          allImagesDone = true;
-
+          allImagesDone = true,
+          imgInfos = _.map(imgs, function(img) {
+            return {
+              inBounds: U.isRectPartiallyInViewport(img.getBoundingClientRect(), IMG_OFFSET),
+              inDoc: $.contains(documentEl, img)
+            }
+          });
+      
       for (; i >= 0; i--) {
-        this._loadImage(imgs[i]);
+        this._loadImage(imgs[i], imgInfos[i]);
       }
   
       if (!this._imgs || !this._imgs.length)
         this._unsubscribeFromImageEvents();
-
     }, 50),
     
-    _loadImage: function(img) {
-      var dataUrl,
+    _loadImage: function(img, info) {
+      var documentEl = doc.documentElement,
+          dataUrl,
           realSrc,
           inDoc,
           inBounds,
-          imgInfoAtt,
-          imgInfo,
+          bounds,
           blob,
           res;
       
       img = img.target || img;
+      if (info) {
+        inDoc = info.inDoc;
+        inBounds = info.inBounds;
+      }
+      
       if (img.src != G.blankImgDataUrl)
         return;
-      
-      imgInfoAtt = img.getAttribute('data-for');
-      if (imgInfoAtt) {
-        imgInfo = U.parseImageAttribute(imgInfoAtt);
-        res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id); // || C.getResource(imgInfo.cid);
-        prop = imgInfo.prop;
-        if (res && prop) {
-          data = res.get(prop + '.data');
-          if (data) {
-            cleanImage(img, true);            
-            if (typeof data == 'string')
-              img.src = data;
-            else {
-              img.src = URL.createObjectURL(data);
-              URL.revokeObjectURL(img.src);
-            }
-            
-            return;
-          }
-        }
-      }      
       
       this._subscribeToImageEvents();
       realSrc = img.getAttribute(lazyAttr);
       if (!realSrc)
         return true;
+
+      if (!info) {
+        inDoc = $.contains(documentEl, img);
+        inBounds = U.isRectPartiallyInViewport(img.getBoundingClientRect(), IMG_OFFSET);
+      }
       
-      cleanImage(img);
-      inDoc = $.contains(document.documentElement, img);
-      inBounds = img.getBoundingClientRect().top < WIN_HEIGHT + IMG_OFFSET;
       if (inDoc && inBounds) {
         // To avoid onload loop calls
         // removeAttribute on IE is not enough to prevent the event to fire
@@ -777,36 +788,93 @@ define('views/BasicPageView', [
     },
     
     _fetchImage: function(img) {
-      var url = img.getAttribute(lazyAttr),
-          imgInfoAtt = img.getAttribute('data-for'),
+      var url,
+          imgInfoAtt,
           imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
           res,
-          prop;
+          prop,
+          imgUri,
+          data;
       
-      if (imgInfoAtt) {
-        imgInfo = U.parseImageAttribute(imgInfoAtt);
-        res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
-        prop = imgInfo.prop;
+      if (img.file || img.blob) {
+        cleanImage(img, true);
+        img.src = URL.createObjectURL(img.file || img.blob);
+        URL.revokeObjectURL(img.src);
+        return;
+      }
+      
+      url = img.getAttribute(lazyAttr);
+      imgInfoAtt = img.getAttribute('data-for');
+      if (!imgInfoAtt)
+        return;
+      
+      cleanImage(img);
+      imgInfo = U.parseImageAttribute(imgInfoAtt);
+      res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
+      prop = imgInfo.prop;
+      
+      if (res && prop && (imgUri = res.get(prop))) {
+        var dataProp = prop + '.data',
+            hasData = _.has(res.attributes, dataProp),
+            data = hasData && res.get(dataProp);
         
-        if (res && prop) {
-          img.onload = function() {
-            cleanImage(img, true);
-            U.getImage(url, 'blob').done(function(blob) {
-              if (!blob)
-                return;
-                    
-              // save to resource
-              var atts = {};
-              atts[prop + '.uri'] = res.get(prop);
-              atts[prop + '.data'] = blob;
-              res.set(atts, {
-                silent: true
+        if (data) {
+          res.unset(dataProp, { silent: true }); // don't keep the file/blob in memory
+          if (typeof data == 'string')
+            img.src = data;
+          else if (data instanceof Blob) {
+            img.blob = data; // do keep file/blob on the image
+            img.src = URL.createObjectURL(data);
+            URL.revokeObjectURL(img.src);
+          }
+          else if (data instanceof File) {
+            img.file = data; // do keep file/blob on the image
+            img.src = URL.createObjectURL(data);
+            URL.revokeObjectURL(img.src);
+          }
+          else if (data._filePath) {
+            U.require('fileSystem').done(function(FS) {
+              FS.readAsFile(data._filePath, data._contentType).done(function(file) {
+                img.file = file; // do keep file/blob on the image
+                img.src = URL.createObjectURL(file);
+                URL.revokeObjectURL(img.src);
               });
-              
-              Events.trigger('updatedResources', [res]); // save the image to the db
             });
-          };
+          }
+          
+          return;
         }
+        else if (hasData) {
+          res.fetch({
+            dbOnly: true,
+            success: function() {
+              debugger;
+              self._fetchImage(img);
+            },
+            error: function() {
+              debugger;
+            }
+          });
+          
+          return;
+        }
+        
+        img.onload = function() {
+          U.getImage(url, 'blob').done(function(blob) {
+            if (!blob)
+              return;
+                  
+            // save to resource
+            var atts = {};
+            atts[prop + '.uri'] = imgUri;
+            atts[dataProp] = blob;
+            res.set(atts, {
+              silent: true
+            });
+            
+            Events.trigger('updatedResources', [res]); // save the image to the db
+          });
+        };
       }
       
       img.src = url;

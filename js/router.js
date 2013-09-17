@@ -81,7 +81,7 @@ define('router', [
       window.router = this;
       this.firstPage = true;
       this.updateHashInfo();
-      this.homePage = new HomePage({el: $('div#homePage')});
+      this.homePage = new HomePage({el: $('#homePage')});
       var self = this;
       Events.on('home', function() {
         self.goHome();

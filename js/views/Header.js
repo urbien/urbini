@@ -311,16 +311,16 @@ define('views/Header', [
       
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
-        this.assign('div#publishBtn', pBtn);
-        this.$('div#publishBtn').show();
+        this.assign('#publishBtn', pBtn);
+        this.$('#publishBtn').show();
       }
       else if (pBtn) {
-        this.$('div#publishBtn').hide();
+        this.$('#publishBtn').hide();
         var options = _.filter(SPECIAL_BUTTONS, _.partial(_['!='], 'publish'));
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
-            this.assign('div#{0}Btn'.format(option), pBtn, _.pick(this, option));
+            this.assign('#{0}Btn'.format(option), pBtn, _.pick(this, option));
             method = 'show';
           }
           

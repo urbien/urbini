@@ -114,10 +114,27 @@ define('utils', [
     },
     
     lazifyImage: function(atts) {
-      atts[G.lazyImgSrcAttr] = atts.src;
+      var currentSrc = atts.src;
+      if (atts instanceof HTMLElement)
+        atts.setAttribute(G.lazyImgSrcAttr, currentSrc);
+      else
+        atts[G.lazyImgSrcAttr] = currentSrc;
+      
+      if (atts instanceof HTMLElement) {
+        atts.onload = function() {
+          window.onimageload.call(this);
+        };
+        
+        atts.onerror = function() {
+          window.onimageerror.call(this);
+        };
+      }
+      else {
+        atts.onload = 'window.onimageload.call(this)';
+        atts.onerror = 'window.onimageerror.call(this)';
+      }
+      
       atts.src = G.blankImgDataUrl;
-      atts.onload = 'window.onimageload.call(this)';
-      atts.onerror = 'window.onimageerror.call(this)';
       return atts;
     }
   };
@@ -221,6 +238,7 @@ define('utils', [
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
           
+      opts.crossDomain = true;
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
       opts.headers = opts.headers || {};
@@ -1047,6 +1065,21 @@ define('utils', [
       return null;
     },
     
+    splitRequestFirstHalf: '$gridCols,$images',  // change these together
+    setSplitRequest: function(vocModel) {        // change these together
+      var meta = vocModel.properties,
+          gridCols = U.getColsMeta(vocModel, 'grid'),
+          props = _.filter(_.difference(_.keys(meta), gridCols, _.keys(U.systemProps)), function(p) {
+            var prop = meta[p];
+            if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
+              return false;
+            
+            return true;
+          });
+      
+      vocModel.splitRequest = props.length > 3;
+    },
+    
     getColsMeta: function(vocModel, colsType) {
       colsType = colsType || 'grid';
       var cols = vocModel[colsType + 'Cols'];
@@ -1859,9 +1892,9 @@ define('utils', [
       
       val = val || res.get(propName) || '';        
       if (prop.code) {
-        val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? U.htmlEscape(val) : val);
+        val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? _.htmlEscape(val) : val);
 //        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName) 
-//            + '<pre>{0}</pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
+//            + '<pre>{0}</pre>'.format(prop.code === 'html' ? _.htmlEscape(val) : val);
       }
       
       var displayName = res.get(propName + '.displayName');
@@ -2598,28 +2631,28 @@ define('utils', [
 //        }
 //      }
 //    },
-    pick: function(obj) {
-      var type = U.getObjectType(obj);
-      switch (type) {
-      case '[object Object]':
-        return _.pick.apply(null, arguments);
-      case '[object Array]':
-        var keys = concat.apply([], slice.call(arguments, 1));
-        var arrCopy = [];
-        for (var i = 0; i < obj.length; i++) {
-          var item = obj[i], copy = {};
-          for (var j = 0; j < keys.length; j++) {
-            var key = keys[j];
-            if (key in item) 
-              copy[key] = item[key];
-          }
-          
-          arrCopy.push(copy);
-        }
-        
-        return arrCopy;
-      }
-    },
+//    pick: function(obj) {
+//      var type = U.getObjectType(obj);
+//      switch (type) {
+//      case '[object Object]':
+//        return _.pick.apply(null, arguments);
+//      case '[object Array]':
+//        var keys = concat.apply([], slice.call(arguments, 1));
+//        var arrCopy = [];
+//        for (var i = 0; i < obj.length; i++) {
+//          var item = obj[i], copy = {};
+//          for (var j = 0; j < keys.length; j++) {
+//            var key = keys[j];
+//            if (key in item) 
+//              copy[key] = item[key];
+//          }
+//          
+//          arrCopy.push(copy);
+//        }
+//        
+//        return arrCopy;
+//      }
+//    },
     systemProps: {davDisplayName: {range: 'string', readOnly: true}, davGetLastModified: {range: 'long', readOnly: true}},
     isSystemProp: function(p) {
       p = typeof p === 'string' ? p : p.shortName;
@@ -3018,7 +3051,7 @@ define('utils', [
         if (!template)
           return null;
         
-        template = _.template(U.removeHTMLComments(template).trim());
+        template = _.template(_.removeHTMLComments(template).trim());
       }
       else
         template = templateName;
@@ -3139,45 +3172,6 @@ define('utils', [
         if (p.startsWith(start))
           to[p] = from[p];
       }
-    },
-    
-    __htmlCommentRegex: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
-    __htmlCommentRegexGM: /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
-    __jsCommentRegex: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
-    __jsCommentRegexGM: /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/gm,
-    getHTMLComments: function(str) {
-      var matches = str.match(U.__htmlCommentRegex);
-      return matches && matches.slice(1);
-    },
-    removeHTMLComments: function(str) {
-      return str.replace(U.__htmlCommentRegexGM, '');
-    },
-
-    getJSComments: function(str) {
-      var matches = str.match(U.__jsCommentRegex);
-      return matches && matches.slice(1);
-    },
-
-    removeJSComments: function(str) {
-      return str.replace(U.__jsCommentRegexGM, '');
-    },
-
-    htmlEscape: function(str) {
-      return String(str)
-              .replace(/&/g, '&amp;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#39;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;');
-    },
-  
-    htmlUnescape: function(value){
-        return String(value)
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&amp;/g, '&');
     },
     
     getRequiredCodemirrorModes: function(vocModel) {
@@ -3634,15 +3628,25 @@ define('utils', [
     },
     
     HTML: HTML,
+
+    isRectPartiallyInViewport: function(rect, fuzz) {
+      fuzz = fuzz || 0; 
+      return rect.bottom + fuzz >= 0 && rect.left + fuzz;
+    },
+
+    isRectInViewport: function(rect, fuzz) {
+      fuzz = fuzz || 0; 
+      return rect.top + fuzz >= 0 &&
+             rect.left + fuzz >= 0 &&
+             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
+             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+    },
     
     isInViewport: function(element) {
       var rect = element.getBoundingClientRect(),
           documentElement = doc.documentElement;
 
-      return  rect.top >= 0 &&
-              rect.left >= 0 &&
-              rect.bottom <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
-              rect.right <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+      return U.isRectInViewport(rect);
     },
     
     isAtLeastPartiallyInViewport: function(element) {
@@ -3653,7 +3657,7 @@ define('utils', [
           rects = element.getClientRects();
         
       for (var i = 0, l = rects.length; i < l; i++) {
-        var r = rects[i],
+        var r = rects[i];
             in_viewport = r.top > 0 ? r.top <= height : (r.bottom > 0 && r.bottom <= height);
             
         if (in_viewport) 

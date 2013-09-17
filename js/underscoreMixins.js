@@ -1,7 +1,12 @@
 define('underscoreMixins', ['_underscore'], function(_) {
   var ArrayProto = Array.prototype,
       concat = ArrayProto.concat,
-      slice = ArrayProto.slice;
+      slice = ArrayProto.slice,
+      __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
+      __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
+      __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
+      __jsCommentRegexGM = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/gm;
+
 
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
@@ -257,8 +262,43 @@ define('underscoreMixins', ['_underscore'], function(_) {
     "==": function(a, b){return a == b;},
     "===": function(a, b){return a === b;},
     "!": function(a){return !a;},
-    "!==": function(a, b){return a !== b;}
+    "!==": function(a, b){return a !== b;},
       /* and so on */  
+    
+    getHTMLComments: function(str) {
+      var matches = str.match(__htmlCommentRegex);
+      return matches && matches.slice(1);
+    },
+    removeHTMLComments: function(str) {
+      return str.replace(__htmlCommentRegexGM, '');
+    },
+
+    getJSComments: function(str) {
+      var matches = str.match(__jsCommentRegex);
+      return matches && matches.slice(1);
+    },
+
+    removeJSComments: function(str) {
+      return str.replace(__jsCommentRegexGM, '');
+    },
+
+    htmlEscape: function(str) {
+      return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+    },
+  
+    htmlUnescape: function(value){
+        return String(value)
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&');
+    }
   });
   
   return _;

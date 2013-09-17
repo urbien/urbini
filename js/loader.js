@@ -143,10 +143,10 @@ define('globals', function() {
     sortable.sort(function(a, b) {return a[1] - b[1]})
     for (var i = 0; i < sortable.length; i++) { 
       count += sortable[i][1];
-      console.log(sortable[i][1] + ' ' + sortable[i][0]);
+      G.log(G.TAG, 'boot', sortable[i][1] + ' ' + sortable[i][0]);
     }
     
-    console.log('total: ' + count);
+    G.log(G.TAG, 'boot', 'total: ' + count);
 
     var v = ls.get('VERSION');
     v ? ls.put('OLD_VERSION', v) : ls.clean();
@@ -447,8 +447,36 @@ define('globals', function() {
         G.hasRequestAnimationFrame = true;
      
       // put in global namespace
-      window.requestAnimationFrame = requestAnimationFrame;
-      window.cancelAnimationFrame = cancelAnimationFrame;     
+      window.raf = window.requestAnimationFrame = requestAnimationFrame;
+      window.caf = window.cancelAnimationFrame = cancelAnimationFrame;
+      
+      window.viaRAF = function(fn, ctx, returnsPromise) {
+//        return function() {
+//          return fn.apply(ctx || this, arguments);
+//        };
+        
+        return function() {
+          if (!ctx)
+            ctx = this;
+          
+          var dfd, args = arguments;
+          if (returnsPromise)
+            dfd = $.Deferred();
+          
+          window.raf(function() {
+            var result = fn.apply(ctx, args);
+            if (returnsPromise)
+              result.done(dfd.resolve).fail(dfd.reject);
+            else
+              return result;
+          });
+          
+          if (returnsPromise)
+            return dfd.promise();
+        }
+      };
+      
+//      loadModule = window.viaRAF(loadModule, null, true);
     })( window );
   }
   
@@ -480,8 +508,8 @@ define('globals', function() {
     }
     
     G.hasFFApps = browser.firefox && 'mozApps' in navigator;
-    console.log('inWebview:', G.inWebview);
-    console.log('inFFIframe:', G.inFirefoxOS);
+    G.log(G.TAG, 'webview', 'inWebview:', G.inWebview);
+    G.log(G.TAG, 'ffIframe', 'inFFIframe:', G.inFirefoxOS);
   //    ALL_IN_APPCACHE = G.inFirefoxOS;
   };
   
@@ -604,17 +632,17 @@ define('globals', function() {
       nukeScripts: function() {
         var start = new Date().getTime();
         var length = localStorage.length;
-        console.log("nuking scripts, localStorage has", length, "keys", start);
+        G.log(G.TAG, 'nuke', "nuking scripts, localStorage has", length, "keys", start);
         for (var i = length - 1; i > -1; i--) {
           var key = localStorage.key(i);
           if (/\.(?:js|css|jsp)$/.test(key)) {          
             var start1 = new Date().getTime();
             G.localStorage.del(key);
-            console.log("nuked", key, new Date().getTime() - start1);
+            G.log(G.TAG, "nuke", key, new Date().getTime() - start1);
           }
         }
   
-        console.log("nuking scripts took", new Date().getTime() - start, "ms");
+        G.log(G.TAG, "nuke", "nuking scripts took", new Date().getTime() - start, "ms");
       },
       
       nukePlugs: function() {
@@ -644,7 +672,7 @@ define('globals', function() {
     G.showSpinner({name: spinner, timeout: 10000});
     APP_START_DFD.done(function() {
       G.hideSpinner(spinner);
-      console.debug("App start took: " + (new Date().getTime() - __started) + ' millis');
+      G.log(G.TAG, 'stats', "App start took: " + (new Date().getTime() - __started) + ' millis');
     });
 
     for (var type in preBundle) {
@@ -698,7 +726,7 @@ define('globals', function() {
       });
     }).then(function(jqmConfig, Events, App) {
       Events.on('appStart', APP_START_DFD.resolve);
-      console.debug("Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
+      G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
       App.initialize();
       G.startedTask('loading post-bundle');
@@ -1188,11 +1216,11 @@ define('globals', function() {
           type;
       if (using) {
         if (window.openDatabase) {
-          console.debug('using indexeddb shim');
+//          G.log(G.TAG, 'db', 'using indexeddb shim');
           type = 'shim';
         }
         else {
-          console.debug('local db is not supported');
+//          G.log(G.TAG, 'db', 'local db is not supported');
           type = 'none';
         }
       }
@@ -1203,7 +1231,7 @@ define('globals', function() {
         if (shimIdx >= 0)
           pre.splice(shimIdx, 1);
         
-        console.debug("don't need indexeddb shim");
+//        G.log(G.TAG, 'db', "don't need indexeddb shim");
         type = 'idb';
       }
       
@@ -1719,7 +1747,6 @@ define('globals', function() {
     },
     language: params['-lang'] || navigator.language.split('-')[0],
     tourGuideEnabled: true,
-    DEBUG: !G.minify,
     Errors: {      
       Login: {
         code: 401,
@@ -1729,6 +1756,9 @@ define('globals', function() {
     }
 
   });
+  
+  determineMinificationMode();
+  G.DEBUG = !G.minify;
 
   setupLocalStorage();
   saveBootInfo();
@@ -1736,7 +1766,6 @@ define('globals', function() {
   adjustForVendor();
   testIfInsidePackagedApp();
   Bundler.prepAppCacheBundle();
-  determineMinificationMode();
   require.config(requireConfig);   
   load();
   
