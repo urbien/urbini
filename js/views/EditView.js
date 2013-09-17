@@ -1240,11 +1240,13 @@ define('views/EditView', [
               prop = groupInfo.prop,
               props = groupInfo.props;
 
-          var pInfo = U.makeEditProp(res, prop, undefined, formId);
-          U.addToFrag(frag, this.propGroupsDividerTemplate({
-            value: U.getPropDisplayName(prop)
-          }));
-          
+          if (props.length > 1) {
+            var pInfo = U.makeEditProp(res, prop, undefined, formId);
+            U.addToFrag(frag, this.propGroupsDividerTemplate({
+              value: U.getPropDisplayName(prop)
+            }));
+          }
+
           for (var j = 0; j < props.length; j++) {
             var p = props[j]; 
             this.addProp(_.extend(state, {

@@ -1387,9 +1387,13 @@ define('utils', [
      */
     getDisplayName: function(resource, vocModel) {
       var dn = U.getValue(resource, 'davDisplayName');
-      if (dn)
-        return dn;
       
+      if (dn) {
+        if (dn == 'null')
+          dn = '* Not Specified *';
+
+        return dn;
+      }
       var meta;
       if (typeof vocModel === 'function') {
         meta = vocModel.properties;
@@ -1846,6 +1850,22 @@ define('utils', [
             val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
           else if (prop.facet  &&  prop.facet == 'href')
             val = "<a href='" + val + "'>" + U.getDisplayName(res, vocModel) + "</a>";
+          else if (prop.facet  &&  prop.facet == 'tags') {
+            var s = val.split(',');
+            val = '';
+            for (var i=0; i < s.length; i++) {
+              var t = s[i].trim();
+              if (i)
+                val += '<br/>';
+              
+              var params = {};
+              params ['tagUses.tag.tag'] = t;
+              params ['tagUses.tag.application'] = vocModel.type;
+              var uri = U.makeMobileUrl('list', vocModel.type, params);
+              
+              val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
+            }
+          }
           else
             val = "<span>" + val + "</span>";
         }
@@ -1993,19 +2013,20 @@ define('utils', [
             if (!cOf  ||  cOf.length == 0)
               cOf = U.getCloneOf(res.vocModel, "ImageResource.bigImage");
           }
-          if (cOf && cOf.length == 1)
+          if (cOf && cOf.length == 1) 
             val.img = res.get(cOf[0]);
         }
         
         if (!val.img)
           val.img = val.value;
+        U.clipImage(res, val, {width: 50, height: 50});        
         if (!val.displayName) {
           var ix = val.value.lastIndexOf('/');
           val.displayName = val.value.substring(ix + 1);
         }
       }
       
-//      if (!prop.skipLabelInEdit)
+      if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       
       val.shortName = prop.shortName;
@@ -2059,6 +2080,29 @@ define('utils', [
         propInfo.comment = prop.comment;
       
       return propInfo;
+    },
+    
+    clipImage: function(res, val, dimensions) {
+      var vocModel = res.vocModel;
+      var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
+      var oH;
+      if (oW)
+        oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
+      
+      var rOh = res.get(oH);
+      var rOw = res.get(oW);
+      if (oW  &&  oH  &&  rOw  &&  rOh) {
+        var dw = 80, dh = 80;
+        if (dimensions)
+          dw = dimensions.width, dh = dimensions.height;
+        var dim = U.fitToFrame(dw, dh, rOw / rOh);
+        val.width = dim.w;
+        val.height = dim.h;
+        val.top = oW > oH ? dim.y : dim.y + (rOh - rOw) / 2;
+        val.right = dim.w - dim.x;
+        val.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (rOh - rOw) / 2;
+        val.left = dim.x;
+      }
     },
     
     reduceObj: function(obj, func, memo, context) {
@@ -2333,6 +2377,28 @@ define('utils', [
         y = Math.floor((h - frmHeight) / 2);
       }
       return {x: x, y: y, w: w, h: h};
+    },
+    
+    clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim) {
+      if (!maxDim)
+        return;
+      if (maxDim  &&  (maxDim > frmWidth)) {
+        var mdW, mdH;
+        if (oWidth >= oHeight) {
+          mdW = maxDim; 
+          var r = maxDim /oWidth;
+          mdH = Math.floor(oHeight * r); 
+        }
+        else {
+          mdH = maxDim; 
+          var r = maxDim /oHeight;
+          mdW = Math.floor(oWidth * r); 
+        }
+        var dW = mdW > frmWidth ? Math.floor((mdW - frmWidth) / 2) : 0;
+        var dH = mdH > frmHeight ? Math.floor((mdH - frmHeight) / 2) : 0;    
+        
+        return {clip_top: dH, clip_right: frmWidth + dW, clip_bottom: frmHeight + dH, clip_left: dW, top: (dH ? -dH : 0), left: (dW ? -dW : 0)};
+      }
     },
     
     getHash: function(decode) {

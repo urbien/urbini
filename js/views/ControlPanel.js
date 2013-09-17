@@ -17,6 +17,7 @@ define('views/ControlPanel', [
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
+//      this.makeTemplate('comment-item', 'commentItemTemplate', type);
       this.makeTemplate('cpTemplate', 'cpTemplate', type);
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
       this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', type);
@@ -317,11 +318,15 @@ define('views/ControlPanel', [
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
               var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
               if (a == meta[name].backLink) {
-                params.name = iRes.get(b + '.displayName');
+                var n = iRes.get(b + '.displayName');
+                if (n)
+                  params.name = n;
                 params.img = iRes.get('bThumb');
               }
               else {
-                params.name = iRes.get(a + '.displayName');
+                var n = iRes.get(a + '.displayName');
+                if (n)
+                  params.name = n;
                 params.img = iRes.get('aThumb');
               }
               if (grid) {
@@ -402,7 +407,7 @@ define('views/ControlPanel', [
             var prop = meta[p];
             if (displayedProps[p] || !_.has(backlinks, p))
               continue;
-            if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
+            if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
               continue;
             if (!prop  ||  prop.mainBackLink  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
 //              delete json[p];
@@ -493,7 +498,7 @@ define('views/ControlPanel', [
           var prop = meta[p];
           if (_.has(displayedProps, p))  
             continue;
-          if (prop['app']  &&  (!currentAppProps  || !currentAppProps[p]))
+          if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
             continue;
           if (mainGroup  &&  $.inArray(p, mainGroupArr) != -1)
             continue;
@@ -558,7 +563,6 @@ define('views/ControlPanel', [
           }
         }
       }
-      
       this.$el.html(frag);
 //      if (this.hashParams.$tour) {
 //        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);

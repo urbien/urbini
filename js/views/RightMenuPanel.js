@@ -303,7 +303,7 @@ define('views/RightMenuPanel', [
         U.addToFrag(frag, this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'}));
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {
-          uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: G.currentApp.dashboard, $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
+          uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: U.getLongUri1(G.currentApp.dashboard), $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
           U.addToFrag(frag, this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'cog', homePage: 'y'}));
         }
         if (isAllowedToEdit  ||  (G.currentApp.webClasses && G.currentApp.webClasses.count)) {
@@ -376,12 +376,12 @@ define('views/RightMenuPanel', [
                             browser.firefox ? 'Firefox' : 
                               browser.safari ? 'Safari' : '',
         
-            pageTemplate = 'bookmarklet{0}{1}Page'.format(os, browserName);
+            pageTemplate = 'bookmarklet{0}{1}PageTemplate'.format(os, browserName);
                     
         if (!U.getTemplate(pageTemplate)) {
-          pageTemplate = 'bookmarklet{0}Page'.format(os);
+          pageTemplate = 'bookmarklet{0}PageTemplate'.format(os);
           if (!U.getTemplate(pageTemplate)) {
-            pageTemplate = 'bookmarklet{0}Page'.format(browserName);
+            pageTemplate = 'bookmarklet{0}PageTemplate'.format(browserName);
             if (!U.getTemplate(pageTemplate)) {
               pageTemplate = null;
               this.log("error", "no template found for Aha bookmarklet page for OS: {0} and browser {1}".format(os, browserName));
@@ -627,9 +627,19 @@ define('views/RightMenuPanel', [
       var user = G.currentUser;
       var edit = m.get('edit');
       if (!user.guest  &&  (!edit  ||  user.totalMojo > edit)) {
-        this.addActionsHeader(frag);
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'}));
+        var paintAdd;
+        var paintEdit;
+        if (!U.isAssignableFrom(this.vocModel, 'Contact')) 
+          paintAdd = true;
+        if (!U.isAssignableFrom(this.vocModel, 'Contact')  ||  m.getUri() == user._uri)
+          paintEdit = true;
+        if (paintAdd || paintEdit) {
+          this.addActionsHeader(frag);
+          if (paintAdd)
+            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'}));
+          if (paintEdit)
+            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'}));
+        }
 //        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('delete'), mobileUrl: '', id: 'delete'}));
         return true;
       }

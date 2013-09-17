@@ -34,7 +34,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       debugger;
       return G.getRejectedPromise();
     }
-    
+
     return this._getItems({
       key: this._getKey(),
       data: this.data,

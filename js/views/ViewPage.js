@@ -48,7 +48,7 @@ define('views/ViewPage', [
       
       this.addChild(this.header);
 
-      if (!isAbout) {
+      if (!this.isAbout) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
@@ -278,7 +278,7 @@ define('views/ViewPage', [
         views['ul#cpView'] = this.cp;
       if (this.cpMain)
         views['div#mainGroup'] = this.cpMain;
-
+ 
       if (this.isPurchasable) {
         var purchasesBLProp; 
         
@@ -295,8 +295,7 @@ define('views/ViewPage', [
         else
           this.isBuyGroup = false;
 
-      }
-      
+      }     
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
       

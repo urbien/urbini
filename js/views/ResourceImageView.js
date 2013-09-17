@@ -301,10 +301,14 @@ define('views/ResourceImageView', [
       padding = -padding;
       
       var mg = U.getPropertiesWith(meta, "mainGroup");
+//      if (mg == null  ||  mg.length == 0)
+//        li = '<div style="margin-top: -15px; margin-left: {0}px;"><a href="{1}">{2}</a></div>'.format(padding, U.makePageUrl(res), iTemplate);
+//      else
+//        li = '<div><a href="{0}">{1}</a></div>'.format(U.makePageUrl(res), iTemplate);
       if (mg == null  ||  mg.length == 0)
-        li = '<div style="margin-top: -15px; margin-left: {0}px;"><a href="{1}">{2}</a></div>'.format(padding, U.makePageUrl(res), iTemplate);
+        li = '<div style="margin-top: -15px; margin-left: {0}px;">{1}</div>'.format(padding, iTemplate);
       else
-        li = '<div><a href="{0}">{1}</a></div>'.format(U.makePageUrl(res), iTemplate);
+        li = '<div>{0}</div>'.format(iTemplate);
       
       U.addToFrag(frag, li);
       this.$el[this.isAudio ? 'append' : 'html'](frag);

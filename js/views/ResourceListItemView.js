@@ -261,12 +261,13 @@ define('views/ResourceListItemView', [
             var appModel;
             var tag = params['tagUses.tag.tag'];
             var tag = params['tags'];
+            var tt = self.resource.get('tag') || U.getDisplayName(self.resource);
             if (app) {
               for (var p in params) {
                 if (m.properties[p])
                   delete params[p];
               }
-              params.$title = self.resource.get('tag');
+              params.$title = tt;
     //          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
     //              params['tagUses.tag.application'] = app;
             }
@@ -278,8 +279,8 @@ define('views/ResourceListItemView', [
               appModel = U.getModel(app);
               if (appModel) {
                 var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
-                if (tagProp) {
-                  params[tagProp] = '*' + self.resource.get('tag') + '*';
+                if (tagProp  &&  tt != '* Not Specified *') {
+                  params[tagProp] = '*' + tt + '*';
         
                   Events.trigger('navigate', U.makeMobileUrl('list', app, params));//, {trigger: true, forceFetch: true});
                   return;
@@ -423,13 +424,23 @@ define('views/ResourceListItemView', [
         
         this.$el.addClass("image_fitted");
         
-        var dim = U.fitToFrame(80, 80, atts[oW] / atts[oH])
-        json.width = dim.w;
-        json.height = dim.h;
-        json.top = oW > oH ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
-        json.right = dim.w - dim.x;
-        json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
-        json.left = dim.x;
+        var maxDim = meta[this.imageProperty].maxImageDimension;
+        var clip = U.clipToFrame(80, 80, json[oW], json[oH], maxDim);
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
+        }
+        else {
+          var dim = U.fitToFrame(80, 80, json[oW] / json[oH])
+          json.width = dim.w;
+          json.height = dim.h;
+          json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
+          json.right = dim.w - dim.x;
+          json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
+          json.left = dim.x;
+        }
       }
       var params = this.hashParams;
       if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])

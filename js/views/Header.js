@@ -202,7 +202,17 @@ define('views/Header', [
       Voc.getModels("aspects/tags/Tag").done(function() {
 //        var options = _.getParamMap(self.locationHref);
 //        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, _.extend({application: self.vocModel.type, $title: "Categories"}, options));
-        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, {application: self.vocModel.type, $title: "Categories"}); //, $orderBy: "tagUsesCount", $asc: "-1"});
+        var params = {};
+        var meta = self.vocModel.properties;
+        for (var p in self.hashParams) {
+          var m = meta[p];
+          if (!m)
+            continue;
+          params['tagUses.(' + self.vocModel.type + ')taggable.' + p] = self.hashParams[p];
+        }
+        params['application'] = self.vocModel.type;
+        params.$title = 'Categories';
+        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, params); //, $orderBy: "tagUsesCount", $asc: "-1"});
         self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true});
       }).fail(function() {
         self.router.navigate(U.makeMobileUrl('list', self.vocModel.type));
@@ -372,7 +382,7 @@ define('views/Header', [
       if (this.rendered)
         this.html("");
       
-      if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length  &&  U.isAssignableFrom(this.vocModel, 'Urbien'))))
+      if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
         this.categories = true;
       else if (!res) {
         var hash = window.location.hash;
