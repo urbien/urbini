@@ -425,7 +425,7 @@ define('views/ResourceListItemView', [
         this.$el.addClass("image_fitted");
         
         var maxDim = meta[this.imageProperty].maxImageDimension;
-        var clip = U.clipToFrame(80, 80, json[oW], json[oH], maxDim);
+        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
         if (clip) {
           json.top = clip.clip_top;
           json.right = clip.clip_right;
@@ -433,12 +433,12 @@ define('views/ResourceListItemView', [
           json.left = clip.clip_left;
         }
         else {
-          var dim = U.fitToFrame(80, 80, json[oW] / json[oH])
+          var dim = U.fitToFrame(80, 80, m.get(oW) / m.get(oH))
           json.width = dim.w;
           json.height = dim.h;
-          json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
+          json.top = oW > oH ? dim.y : dim.y + (m.get(oH) - m.get(oW)) / 2;
           json.right = dim.w - dim.x;
-          json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
+          json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (m.get(oH) - m.get(oW)) / 2;
           json.left = dim.x;
         }
       }
