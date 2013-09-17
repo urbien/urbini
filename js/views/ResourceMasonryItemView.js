@@ -157,8 +157,9 @@ define('views/ResourceMasonryItemView', [
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      tmpl_data.resourceMediumImage = imgP = atts[imgP];
-      tmpl_data.imageProperty = imgP;
+      var img;
+      tmpl_data.resourceMediumImage = img = atts[imgP];
+      tmpl_data.imageProperty = img;
 
       var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
@@ -209,12 +210,12 @@ define('views/ResourceMasonryItemView', [
           if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
             var mdW, mdH;
             if (oWidth >= oHeight) {
-              mdW = maxDim; 
+              mdW = maxDim > oWidth ? oWidth : maxDim; 
               var r = maxDim /oWidth;
               mdH = Math.floor(oHeight * r); 
             }
             else {
-              mdH = maxDim; 
+              mdH = maxDim > oHeight ? oHeight : maxDim; 
               var r = maxDim /oHeight;
               mdW = Math.floor(oWidth * r); 
             }
