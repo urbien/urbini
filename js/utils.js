@@ -1456,9 +1456,13 @@ define('utils', [
      */
     getDisplayName: function(resource, vocModel) {
       var dn = U.getValue(resource, 'davDisplayName');
-      if (dn)
-        return dn;
       
+      if (dn) {
+        if (dn == 'null')
+          dn = '* Not Specified *';
+
+        return dn;
+      }
       var meta;
       if (typeof vocModel === 'function') {
         meta = vocModel.properties;
@@ -2128,7 +2132,7 @@ define('utils', [
         }
       }
       
-//      if (!prop.skipLabelInEdit)
+      if (!prop.skipLabelInEdit)
         val.name = U.getPropDisplayName(prop);
       
       val.shortName = prop.shortName;
@@ -2514,6 +2518,28 @@ define('utils', [
         y = Math.floor((h - frmHeight) / 2);
       }
       return {x: x, y: y, w: w, h: h};
+    },
+    
+    clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim) {
+      if (!maxDim)
+        return;
+      if (maxDim  &&  (maxDim > frmWidth)) {
+        var mdW, mdH;
+        if (oWidth >= oHeight) {
+          mdW = maxDim; 
+          var r = maxDim /oWidth;
+          mdH = Math.floor(oHeight * r); 
+        }
+        else {
+          mdH = maxDim; 
+          var r = maxDim /oHeight;
+          mdW = Math.floor(oWidth * r); 
+        }
+        var dW = mdW > frmWidth ? Math.floor((mdW - frmWidth) / 2) : 0;
+        var dH = mdH > frmHeight ? Math.floor((mdH - frmHeight) / 2) : 0;    
+        
+        return {clip_top: dH, clip_right: frmWidth + dW, clip_bottom: frmHeight + dH, clip_left: dW, top: (dH ? -dH : 0), left: (dW ? -dW : 0)};
+      }
     },
     
     getHash: function(decode) {
