@@ -238,6 +238,7 @@ define('utils', [
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
           
+      opts.crossDomain = true;
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
       opts.headers = opts.headers || {};
@@ -1062,6 +1063,21 @@ define('utils', [
       }
       
       return null;
+    },
+    
+    splitRequestFirstHalf: '$gridCols,$images',  // change these together
+    setSplitRequest: function(vocModel) {        // change these together
+      var meta = vocModel.properties,
+          gridCols = U.getColsMeta(vocModel, 'grid'),
+          props = _.filter(_.difference(_.keys(meta), gridCols, _.keys(U.systemProps)), function(p) {
+            var prop = meta[p];
+            if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
+              return false;
+            
+            return true;
+          });
+      
+      vocModel.splitRequest = props.length > 3;
     },
     
     getColsMeta: function(vocModel, colsType) {
@@ -3615,10 +3631,7 @@ define('utils', [
 
     isRectPartiallyInViewport: function(rect, fuzz) {
       fuzz = fuzz || 0; 
-      return rect.top + fuzz >= 0 ||
-             rect.left + fuzz >= 0 ||
-             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) || /*or $(window).height() */
-             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+      return rect.bottom + fuzz >= 0 && rect.left + fuzz;
     },
 
     isRectInViewport: function(rect, fuzz) {

@@ -406,8 +406,9 @@ define('collections/ResourceList', [
       });
       
       var self = this,
+          vocModel = this.vocModel,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
-          adapter = this.vocModel.adapter,
+          adapter = vocModel.adapter,
           extraParams = options.params || {};
 
       if (this['final']) {
@@ -416,10 +417,13 @@ define('collections/ResourceList', [
       }
 
       if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
-        if (!this.offset || !this.models.length)
-          extraParams.$select = '$gridCols,$images';
-//        else
-//          extraParams.$omit = '$viewCols,$gridCols,$images';
+        if (!this.offset || !this.models.length) {
+          if (!_.has(vocModel, 'splitRequest'))
+            U.setSplitRequest(vocModel);
+          
+          if (vocModel.splitRequest)
+            extraParams.$select = U.splitRequestFirstHalf;
+        }
       }
 
       this.params = this.params || {};

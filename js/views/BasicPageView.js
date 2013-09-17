@@ -692,7 +692,7 @@ define('views/BasicPageView', [
     _hideOffscreenImages: function() {
       var offscreenImgs;
       if (this.isActive()) {
-        offscreenImgs = this.$("img:not([src='{0}'])".format(G.blankImgDataUrl)).filter(function() {
+        offscreenImgs = this.$('img:not([src="{0}"])'.format(G.blankImgDataUrl)).filter(function() {
           return !U.isRectPartiallyInViewport(this.getBoundingClientRect(), IMG_OFFSET);
         });
       }
@@ -793,10 +793,11 @@ define('views/BasicPageView', [
           imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
           res,
           prop,
+          imgUri,
           data;
       
       if (img.file || img.blob) {
-        cleanImage(img);
+        cleanImage(img, true);
         img.src = URL.createObjectURL(img.file || img.blob);
         URL.revokeObjectURL(img.src);
         return;
@@ -812,7 +813,7 @@ define('views/BasicPageView', [
       res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
       prop = imgInfo.prop;
       
-      if (res && prop) {
+      if (res && prop && (imgUri = res.get(prop))) {
         var dataProp = prop + '.data',
             hasData = _.has(res.attributes, dataProp),
             data = hasData && res.get(dataProp);
@@ -854,6 +855,8 @@ define('views/BasicPageView', [
               debugger;
             }
           });
+          
+          return;
         }
         
         img.onload = function() {
@@ -863,7 +866,7 @@ define('views/BasicPageView', [
                   
             // save to resource
             var atts = {};
-            atts[prop + '.uri'] = res.get(prop);
+            atts[prop + '.uri'] = imgUri;
             atts[dataProp] = blob;
             res.set(atts, {
               silent: true

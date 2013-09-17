@@ -78,13 +78,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       blob: val,
       filePath: getFileSystemPath(item, prop, val)
     }).done(function(fileEntry) {
-//      var placeholder = _item[prepPropName(prop)] = item[prop] = {};
-//      placeholder[filePropertyName] = fileEntry.fullPath;
-//      placeholder[fileTypePropertyName] = contentType;
-//      
-//      var resource = C.getResource(item._uri);
-//      if (resource)
-//        resource.set(prop, placeholder, {silent: true});
+      var placeholder = _item[prepPropName(prop)] = item[prop] = {};
+      placeholder[filePropertyName] = fileEntry.fullPath;
+      placeholder[fileTypePropertyName] = contentType;
+      
+      var resource = C.getResource(item._uri);
+      if (resource)
+        resource.set(prop, placeholder, {silent: true});
     }).fail(function() {
       debugger;
     });
