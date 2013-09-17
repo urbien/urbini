@@ -50,11 +50,11 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function getFileSystemPath(item, prop, blob) {
-    var displayName = item[prop + '.displayName'];
-    if (!displayName && blob && blob.type)
-      displayName = blob.type.split('/')[1];
+//    var displayName = item[prop + '.displayName'];
+//    if (!displayName && blob && blob.type)
+//      displayName = blob.type.split('/')[1];
       
-    return U.getPath(item._uri) + '/' + (displayName || prop);
+    return U.getPath(item._uri) + '/' + prop;
   };        
 
   function _getFileSystem(items) {
@@ -78,13 +78,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       blob: val,
       filePath: getFileSystemPath(item, prop, val)
     }).done(function(fileEntry) {
-      var placeholder = _item[prepPropName(prop)] = item[prop] = {};
-      placeholder[filePropertyName] = fileEntry.fullPath;
-      placeholder[fileTypePropertyName] = contentType;
-      
-      var resource = C.getResource(item._uri);
-      if (resource)
-        resource.set(prop, placeholder, {silent: true});
+//      var placeholder = _item[prepPropName(prop)] = item[prop] = {};
+//      placeholder[filePropertyName] = fileEntry.fullPath;
+//      placeholder[fileTypePropertyName] = contentType;
+//      
+//      var resource = C.getResource(item._uri);
+//      if (resource)
+//        resource.set(prop, placeholder, {silent: true});
     }).fail(function() {
       debugger;
     });
@@ -164,7 +164,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       _.each(_item, function(val, prop) {
         var parsedPropName = parsePropName(prop),
             val = _item[prop],
-            method = U.isCompositeProp(parsedPropName) ? 'readAsDataURL' : 'readAsBlob';
+            method = FileSystem && U.isCompositeProp(parsedPropName) ? 'readAsFile' : 'readAsBlob';
             
         if (val  &&  filePropertyName  &&  val[filePropertyName]) {
           var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {

@@ -272,7 +272,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 						try {
 							//console.log("Cursor request created", idbCursor);
 							var cursorReq = typeof idbCursor === "function" ? idbCursor() : idbCursor;
-							cursorReq.onsuccess = function(e){
+							cursorReq.onsuccess = function(e) {
 								//console.log("Cursor successful");
 								if (!cursorReq.result) {
 									dfd.resolveWith(cursorReq, [null, e]);
@@ -313,7 +313,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 									//console.log("Exception when trying to advance cursor", cursorReq, e);
 									dfd.rejectWith(cursorReq, [cursorReq.result, e]);
 								}
-							};
+              };
+							
 							cursorReq.onerror = function(e){
 								//console.log("Cursor request errored out", e);
 								dfd.rejectWith(cursorReq, [cursorReq.result, e]);

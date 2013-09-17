@@ -287,7 +287,7 @@ define('utils', [
           log('xhr', 'webworker', opts.url);
           G.getXhrWorker().done(function() {
             worker = arguments[0];
-            worker.onmessage = window.viaRAF(function(event) {
+            worker.onmessage = function(event) {
               var xhr = event.data,
                   resp = xhr.data,
                   code = xhr.status,
@@ -330,7 +330,7 @@ define('utils', [
               }
               else
                 defer.resolve(resp, code, xhr);
-            });
+            };
             
             worker.onerror = function(err) {
               defer.reject({}, err, opts);
@@ -1856,9 +1856,9 @@ define('utils', [
       
       val = val || res.get(propName) || '';        
       if (prop.code) {
-        val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? U.htmlEscape(val) : val);
+        val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? _.htmlEscape(val) : val);
 //        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName) 
-//            + '<pre>{0}</pre>'.format(prop.code === 'html' ? U.htmlEscape(val) : val);
+//            + '<pre>{0}</pre>'.format(prop.code === 'html' ? _.htmlEscape(val) : val);
       }
       
       var displayName = res.get(propName + '.displayName');
@@ -3546,7 +3546,15 @@ define('utils', [
     },
     
     HTML: HTML,
-    
+
+    isRectPartiallyInViewport: function(rect, fuzz) {
+      fuzz = fuzz || 0; 
+      return rect.top + fuzz >= 0 ||
+             rect.left + fuzz >= 0 ||
+             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) || /*or $(window).height() */
+             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
+    },
+
     isRectInViewport: function(rect, fuzz) {
       fuzz = fuzz || 0; 
       return rect.top + fuzz >= 0 &&

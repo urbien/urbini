@@ -84,16 +84,23 @@ define('fileSystem', ['globals'], function(G) {
           filePath = options.filePath,
           contentType = options.contentType;
   
-      var reader = new window.FileReader();
-      var method = 'readAs' + format;
-      var blobby = method === 'readAsBlob';
-      if (!reader[method] && !blobby) {
+      var reader = new window.FileReader(),
+          method = 'readAs' + format,
+          blobby = method === 'readAsBlob',
+          raw = method === 'readAsFile';
+          
+      if (!blobby && !raw && !reader[method]) {
         defer.reject();
         throw new Error('Invalid format ' + format);
       }
   
       var filePromise = file ? $.Deferred().resolve(file).promise() : getFile(filePath);
       filePromise.then(function(file) {
+        if (raw) {
+          defer.resolve(file);
+          return;
+        }
+          
         if (blobby)
           method = 'readAsDataURL';
         
@@ -254,7 +261,7 @@ define('fileSystem', ['globals'], function(G) {
     }
   }
 
-  var formats = ['DataURL', 'Blob', 'Text', 'ArrayBuffer', 'BinaryString'];
+  var formats = ['DataURL', 'Blob', 'Text', 'ArrayBuffer', 'BinaryString', 'File'];
   $.each(formats, function(idx, format) {
     // provide convenient handles, FileSystem.readFileAsDataURL, FileSystem.readFileAsText, etc.
     FileSystem['readAs' + format] = function(filePath, contentType) {

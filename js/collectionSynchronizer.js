@@ -8,6 +8,11 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     Synchronizer.apply(this, arguments);
   };
   
+  function addEmptyResponseHeaderFn(xhr) {
+    xhr.getResponseHeader = G.emptyFn;
+    return xhr;
+  }
+  
   CollectionSynchronizer.prototype = Object.create(Synchronizer.prototype);
   CollectionSynchronizer.constructor = CollectionSynchronizer;
 
@@ -78,10 +83,9 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       if (this._isForceFetch() || isStale)
         this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
       else if (this.data.length)
-        this._success(null, 'success', {
-          status: 304,
-          getResponseHeader: G.emptyFn
-        }); // the data is fresh, let's get out of here
+        this._success(null, 'success', addEmptyResponseHeaderFn({
+          status: 304
+        })); // the data is fresh, let's get out of here
       
       return;
     }
@@ -92,7 +96,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       }
       
       if (isStale && this.info.start < this.data.length) {
-        this._success(null, 'success', {status: 304}); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
+        this._success(null, 'success', addEmptyResponseHeaderFn({status: 304})); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
         return; 
       }
     }

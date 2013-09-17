@@ -398,16 +398,16 @@ define('views/BasicView', [
     },
     
     _passThroughToEl: function(e) {
-      this.log('events', e);
+      this.log('events', e.type);
       this.$el.trigger(e);
     },
     
     _onViewportDimensionsChanged: function(event) {
-      var _event = '_' + event;
+      var _event = '_' + event.type;
       if (this.isActive())
         this[_event](event);
       else {
-        this.once('active', _.partial(this[_event], this, event));
+        this.once('active', _.partial(this[_event], this, event.type));
       }
     },
     
