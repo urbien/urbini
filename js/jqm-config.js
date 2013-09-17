@@ -41,7 +41,7 @@ define('jqmConfig', function() {
           }
         });
       };
-
+      
       var $doc = $(document);
       $doc.on('click','.closeparent', function(e) {
         e.preventDefault();
@@ -49,7 +49,15 @@ define('jqmConfig', function() {
           $(this).remove();
         });
       });
-  
+
+//      $doc.bind("DOMNodeInserted", function(e) {
+//        $(e.target).trigger('appendedToDOM');
+//      });
+//
+//      $doc.bind("DOMNodeRemoved", function(e) {
+//        console.debug("Removed: " + e.target.nodeName);
+//      });
+      
       // https://github.com/jogjayr/jQM-Button-Count-Badge
 //      $.fn.mobileBadge = function(options) {
 //        if (typeof options.count !== "number") {

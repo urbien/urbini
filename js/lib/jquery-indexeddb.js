@@ -3,7 +3,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
   var usingShim = G.dbType == 'shim';
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-	var IDBCursor = window.IDBCursor || window.webkitIDBCursor;
+	var IDBCursor = window.IDBCursor || window.webkitIDBCursor || {};
 	IDBCursor.PREV = IDBCursor.PREV || "prev";
 	IDBCursor.NEXT = IDBCursor.NEXT || "next";
 	
@@ -46,7 +46,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
   function finishedTransaction(idbTransaction) {
     var idx = pendingTransactions.indexOf(idbTransaction);
     if (idx >= 0)
-      pendingTransactions.splice(idx, 1);
+      Array.removeFromTo(pendingTransactions, idx, idx + 1);
     
     if (!pendingTransactions.length)
       pendingTransDfd.resolve();

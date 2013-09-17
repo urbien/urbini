@@ -10,7 +10,6 @@ define('utils', [
 ], function(G, _, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,
-      asArray = function(stuff) { return slice.call(stuff) },
       concat = ArrayProto.concat,
       Blob = window.Blob,
       RESOLVED_PROMISE = G.getResolvedPromise(),
@@ -31,85 +30,30 @@ define('utils', [
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
   }
   
-  function index(obj, i) {
-    return obj[i];
-  };
-
-  function _leaf(obj, path, separator) {
-    return path.split(separator).reduce(index, obj);
-  }
-
-  Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-      what = a[--L];
-      while ((ax = this.indexOf(what)) !== -1) {
-        this.splice(ax, 1);
-      }
-    }
-    
-    return this;
-  };
-
-  Array.prototype.last = Array.prototype.peek = function() {
-    return this.length ? this[this.length - 1] : null;
-  };
-
-  String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
-      return typeof args[number] != 'undefined'
-        ? args[number]
-        : match
-      ;
-    });
-  };
   
-  String.prototype.repeat = function(num) {
-    return new Array(num + 1).join(this);
-  };
-
-  String.prototype.trim = function(){
-    return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
-  };
-  
-  String.prototype.startsWith = function(str) {
-//    return (this.match("^"+str)==str);
-    return this.slice(0, str.length) === str;
-  };
-  
-  String.prototype.camelize = function(capitalFirst) {
-    return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
-      return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
-    }).replace(/\s+/g, '');
-  };
-  
-  String.prototype.uncamelize = function(capitalFirst) {
-    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
-    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
-  };
-
-  String.prototype.capitalizeFirst = function() {
-    return this.slice(0, 1).toUpperCase() + this.slice(1);
-  };
-  
-  String.prototype.splitCamelCase = function(capitalFirst) {
-      // insert a space before all caps
-    var split = this.replace(/([A-Z])/g, ' $1');
-      // uppercase the first character
-    return capitalFirst ? split.replace(/^./, function(str){ return str.toUpperCase(); }) : split;
-  };
-
-  String.prototype.endsWith = function(str) {
-    return this.slice(this.length - str.length) === str;
-  };
+//  Array.prototype.remove = function() {
+//    var what, a = arguments, L = a.length, ax;
+//    while (L && this.length) {
+//      what = a[--L];
+//      while ((ax = this.indexOf(what)) !== -1) {
+//        this.splice(ax, 1);
+//      }
+//    }
+//    
+//    return this;
+//  };
+//
+//  Array.prototype.last = Array.prototype.peek = function() {
+//    return this.length ? this[this.length - 1] : null;
+//  };
 
   var HTML = {
     tag: function(name, content, attributes) {
       return {
         name: name, 
         attributes: attributes, 
-        content: _.isArray(content) ? content : [content]
+        content: _.isArray(content) ? content : 
+                             content == null ? [] : [content]
       };
     },
     
@@ -156,13 +100,25 @@ define('utils', [
     },
   
     escape: function(text) {
+      if (typeof text !== 'string')
+        text = '' + text;
+      
       var replacements = [[/&/g, "&amp;"], [/"/g, "&quot;"],
                           [/</g, "&lt;"], [/>/g, "&gt;"]];
+      
       _.each(replacements, function(replace) {
         text = text.replace(replace[0], replace[1]);
       });
       
       return text;
+    },
+    
+    lazifyImage: function(atts) {
+      atts[G.lazyImgSrcAttr] = atts.src;
+      atts.src = G.blankImgDataUrl;
+      atts.onload = 'window.onimageload.call(this)';
+      atts.onerror = 'window.onimageerror.call(this)';
+      return atts;
     }
   };
   
@@ -191,6 +147,70 @@ define('utils', [
       return promise;
     },    
     
+    getImage: function(url, format) {
+//      var dfd = $.Deferred(),
+//          promise = dfd.promise(),
+//          worker;
+//      
+//      promise.always(function() {
+//        if (worker)
+//          G.recycleXhrWorker(worker);
+//      });
+//
+//      G.getXhrWorker().done(function(_worker) {
+//        worker = _worker;
+//        worker.onmessage = function(e) {
+//          dfd.resolve(e.data);
+//        };
+//        
+//        worker.onerror = dfd.reject.bind(dfd);
+//        worker.postMessage({
+//          command: 'getImage',
+//          config: {
+//            url: url,
+//            format: format
+//          }
+//        });
+//      });
+//      
+//      return promise;
+
+      return $.Deferred(function(defer) {        
+        if (!/^http:/.test(url))
+          url = G.serverName + (/^\//.test(url) ? '' : '/') + url; 
+      
+        G.sendXhr({
+          url: url,
+          responseType: 'blob',
+          success: defer.resolve.bind(defer),
+          error: defer.reject.bind(defer)
+        });
+          
+//        var req = new XMLHttpRequest();
+//        req.overrideMimeType('text/plain; charset=x-user-defined')
+//        req.open('GET', url, false);
+//        req.responseType = format == 'dataUrl' ? 'arraybuffer' : 'blob';
+//        req.send(null);
+//        var data = req.mozResponseArrayBuffer || req.response;
+//        if (format == 'dataUrl')
+//          data = data && arrayBufferDataUri(data);
+//        
+//        postMessage(data);
+      }).promise();
+    },
+    
+//    ajax: function(options) {
+//      var dfd = $.Deferred(), 
+//          promise = dfd.promise();
+//      
+//      G.whenNotRendering(function() {
+//        G.animationQueue.queueTask(function() {
+//          U._ajax(options).then(dfd.resolve, dfd.reject);            
+//        });
+//      });
+//      
+//      return promise;
+//    },
     /**
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
@@ -198,7 +218,7 @@ define('utils', [
     ajax: function(options) {
       var hasWebWorkers = G.hasWebWorkers,
           opts = _.clone(options),
-          useWorker = hasWebWorkers && !opts.sync,
+          useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
           
       opts.type = opts.method || opts.type;
@@ -215,43 +235,6 @@ define('utils', [
         var data = opts.data;
         var blobProps = U.getBlobValueProps(data);
         if (data && Blob && _.size(blobProps)) {
-//          opts.url = G.serverName + '/mkresource.html';
-//          useWorker = false; // HACK: till we figure out how to do file upload in web worker
-//          var fd = new FormData();
-//          if (opts.resource) {
-//            fd.append('location', G.serverName + '/wf/' + opts.resource.get("attachmentsUrl"));
-//            fd.append('type', opts.resource.vocModel.type);
-//          }
-//          
-//          if (data._uri) {
-//            fd.append('_uri', data._uri);
-//            fd.append('uri', data._uri);
-//          }
-//          
-//          fd.append('enctype', "multipart/form-data");
-//          fd.append('-$action', 'upload');
-//          var blobbed = false;
-//          for (var prop in data) {
-//            var val = data[prop];
-//            if (val instanceof Blob) {
-//              if (!blobbed) {
-//                blobbed = true;
-//                _.extend(opts, {
-//                  processData: false,
-//                  contentType: false
-//                });
-//                
-//                delete opts.dataType;
-//                delete opts.emulateJSON;
-//                delete opts.emulateHTTP;
-//              }
-//              
-//              fd.append(prop, val, prop);
-//            }
-//            else
-//              fd.append(prop, val);
-//          }
-//          
           if (useWorker) {
             var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
             if (!attachmentsUrlProp) {
@@ -289,26 +272,35 @@ define('utils', [
             worker = arguments[0];
             worker.onmessage = function(event) {
               var xhr = event.data,
+                  resp = xhr.data,
                   code = xhr.status,
-                  data = event.data,
-                  error = data && data.error;
+                  headers = xhr.responseHeaders,
+                  error;
+              
+              if (headers.length) {
+                var h = headers.splitAndTrim(/\n/);
+                headers = {};
+                _.each(h, function(pair) {
+                  if (pair) {
+                    var cIdx = pair.indexOf(':');
+                    headers[pair.slice(0, cIdx)] = pair.slice(cIdx + 1);
+                  }
+                });
+              }
+              else
+                headers = {};
+              
+              xhr.getResponseHeader = function(name) {
+                return headers[name];
+              };
+              
 //              if (code === 304) {
 //  //              debugger;
 //                defer.reject(xhr, "unmodified", "unmodified");
 //              }
               
               if (code > 399 && code < 600) {
-                var text = xhr.responseText,
-                    error;
-                
-                if (text && text.length) {
-                  try {
-                    error = JSON.parse(xhr.responseText);
-                  } catch (err) {
-                    log('error', 'failed to parse error responseText:', xhr.responseText);
-                  } 
-                }
-                
+                error = resp;
                 if (error)
                   error.code = _.isUndefined(error.code) ? code : error.code;
                 else
@@ -316,29 +308,33 @@ define('utils', [
               }
               
               if (error) {
-//                debugger;
+                xhr.responseJson = error;
                 defer.reject(xhr, error, opts);
               }
-              else {
-                defer.resolve(xhr.data, xhr.status, xhr);
-              }
+              else
+                defer.resolve(resp, code, xhr);
             };
             
             worker.onerror = function(err) {
-//              debugger;
-              defer.reject({}, "error", err);
+              defer.reject({}, err, opts);
             };
             
-            worker.postMessage(_.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']));
+            var msgOpts = _.pick(opts, ['type', 'url', 'data', 'dataType', 'headers']);
+            worker.postMessage({
+              command: 'xhr',
+              config: msgOpts
+            }); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
         }
         else {
           log('xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if ((data && data.error) || jqXHR.status > 399) {
+            var error;
+            if (jqXHR.status > 399) {
+              debugger;
               defer.reject(
                 jqXHR, 
-                data && data.error || {code: jqXHR.status}, 
+                (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
                 opts
               );
             }
@@ -347,24 +343,26 @@ define('utils', [
           }, 
           function(jqXHR, textStatus, err) {
 //            debugger;
-            var text = jqXHR.responseText,
-                error;
-            
-            if (text && text.length) {
-              try {
-                error = JSON.parse(text).error;
-              } catch (err) {
-              }
-            }
-            
             defer.reject(
               jqXHR, 
-              error || {code: jqXHR.status, details: err}, 
+              (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
               opts
             );
           });
         }
       }).promise();
+    },
+    
+    getJSON: function(strOrJson) {
+      if (typeof strOrJson == 'string') {
+        try {
+          strOrJson = JSON.parse(strOrJson);
+        } catch (err) {
+          return;
+        }
+      }
+      
+      return strOrJson;
     },
     
     isPropVisible: function(res, prop, userRole) {
@@ -471,7 +469,7 @@ define('utils', [
         type = hash;
 
       if (type === 'profile')
-        return G.currentUser.guest ? null : U.getTypeUri(G.currentUser._uri);
+        return G.currentUser.guest ? G.commonTypes.Urbien : U.getTypeUri(G.currentUser._uri);
             
       return U.getTypeUri(type);
     },
@@ -555,18 +553,6 @@ define('utils', [
       return true;
     },
     
-    isCurrentUserGuest: function() {
-      return G.currentUser.guest;
-    },
-
-    getCurrentUserUri: function() {
-      return G.currentUser._uri;
-    },
-
-    getCurrentUrlInfo: function() {
-      return G.currentHashInfo;
-    },
-    
     mimicResource: function(json) {
       return {
         get: function(prop) {
@@ -581,10 +567,12 @@ define('utils', [
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
         return false;
-      var hashInfo = U.getCurrentUrlInfo();
-      if (prop.avoidDisplayingInEdit  &&  hashInfo.route == "edit" || (res.get(prop.shortName) && prop.immutable))
+      var hashInfo = U.getCurrentUrlInfo(),
+          isEdit = !!res.get('_uri');
+      
+      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
         return false;
-      if (prop.avoidDisplayingOnCreate  &&  hashInfo.route == "make")
+      if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
 
       userRole = userRole || U.getUserRole();
@@ -593,19 +581,17 @@ define('utils', [
       
       var allowedToRole = !_.any(['allowRoles', 'allowRolesToEdit'], function(p) {        
         var roles = prop[p];
-        if (roles  &&  roles.indexOf('self') == -1)
+        if (roles && !U.isUserInRole(userRole, roles, res))
           return true;
       });
       
       if (!allowedToRole)
         return false;
       
-      var isMkResource = !res.getUri();
-      if (!isMkResource && prop.primary)
+      if (isEdit && prop.primary)
         return false;
 
-      var ar = prop.allowRolesToEdit;
-      return ar ? U.isUserInRole(userRole, ar, res) : true;
+      return true;
     },   
     
     isResourceProp: function(prop) {
@@ -643,7 +629,7 @@ define('utils', [
     },
     
     getCloneOf: function(model) {
-      var cloneOf = concat.apply([], slice.call(arguments, 1)),
+      var cloneOf = concat.apply(ArrayProto, slice.call(arguments, 1)),
           results = {},
           meta = model.properties;
       
@@ -674,7 +660,7 @@ define('utils', [
       }
       
       var size = _.size(results);
-      return size === 1 ? results[U.getFirstProperty(results)] : size === 0 ? [] : results;
+      return size === 1 ? results[_.getFirstProperty(results)] : size === 0 ? [] : results;
     },
     
     isCloneOf: function(prop, iPropName, vocModel) {
@@ -692,11 +678,15 @@ define('utils', [
         return uri;
       }
 
-      for (var pattern in U.uriPatternMap) {
-        var fn = U.uriPatternMap[pattern];
-        var match = uri.match(fn.regExp);
+      var patterns = U.uriPatternMap;
+      for (var i in patterns) {
+        var pattern = patterns[i],
+            regex = pattern.regex,
+            onMatch = pattern.onMatch,
+            match = uri.match(regex);
+        
         if (match && match.length) {
-          return fn(uri, match, vocModel);
+          return onMatch(uri, match, vocModel);
         }
       }
       
@@ -766,7 +756,7 @@ define('utils', [
 ////        
 ////        var primaryKeys = U.getPrimaryKeys(model);
 //        if (!primaryKeys  ||  primaryKeys.length == 0)
-//          longUri += "id=" + U.encode(uri.slice(sIdx + 1));
+//          longUri += "id=" + _.encode(uri.slice(sIdx + 1));
 //        else {
 //          var vals = uri.slice(sIdx + 1).split('/');
 //          if (vals.length != primaryKeys.length)
@@ -790,19 +780,6 @@ define('utils', [
 //          return G.defaultVocPath + uri;
 //      }
 //    },
-
-    phoneRegex: /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/,
-    validatePhone: function(phone) {
-      return U.phoneRegex.test(phone);
-    },
-    
-    validateZip: function(zip) {
-      return /^\d{5}|\d{5}-\d{4}$/.test(zip);
-    },
-    
-    validateEmail: function(email) { 
-      return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test( email );
-    },
     
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
@@ -962,31 +939,36 @@ define('utils', [
     },
 
     _socialSignupHome: G.serverName + '/social/socialsignup', ///m/' + G.currentApp.appPath,
-    buildSocialNetOAuthUrl: function(net, action, returnUri) {
-      returnUri = returnUri || window.location.href;
+    buildSocialNetOAuthUrl: function(options) {
+      options = options || {};
+      var net = options.net, 
+          action = options.action, 
+          returnUri = options.returnUri,
+          returnUriHash = options.returnUriHash,
+          params = {
+            actionType: action,
+//            returnUri: returnUri,
+//            returnUriHash: returnUriHash,
+            socialNet: net.socialNet,
+            appPath: G.currentApp.appPath
+          },
+          state;
+
+      if (returnUriHash)
+        params.returnUriHash = returnUriHash;
+      else if (returnUri) {
+        returnUri = !returnUriHash && (returnUri || window.location.href);
+        params.returnUri = returnUri;
+      }
+      
+      state = U.getQueryString(params, {sort: true}); // sorted alphabetically
       if (action === 'Disconnect') {
-        return U._socialSignupHome + '?' + U.getQueryString({
-          actionType: action,
-          returnUri: returnUri,
-          socialNet: net.socialNet
-        }, {sort: true})
+        return U._socialSignupHome + '?' + state;
       };
       
-      var state = U.getQueryString({
-        socialNet: net.socialNet, 
-        returnUri: returnUri,
-        actionType: action,
-        appPath: G.currentApp.appPath
-      }, {sort: true}); // sorted alphabetically
-    
       var params;
       if (net.oAuthVersion == 1) {
-        params = {
-          appPath: G.currentApp.appPath,
-          episode: 1, 
-          socialNet: net.socialNet,
-          actionType: action
-        };
+        params.episode = 1;
       }
       else {
         params = {
@@ -1179,66 +1161,9 @@ define('utils', [
       return staticProps;
     },
     
-//    wrap: function(object, method, wrapper) {
-//      var fn = object[method];
-//      return object[method] = function() {
-//        return wrapper.apply(this, [ fn.bind(this) ].concat(slice.call(arguments)));
-//      };
-//    },
-    
-    /**
-     * Array that stores only unique elements
-     */
-//    UArray: function() {
-//    //  this.handlers = {};
-//    //  this.on = function(method, handler) {
-//    //    this.handlers[method] = this.handlers[method] || [];
-//    //    this.handlers[method].push(handler);
-//    //  };
-//    //  this.removeHandler = function(method, handler) {
-//    //    return this.handlers[method] && this.handlers[method].remove(handler);
-//    //  };
-//    //  this.handler = function(method) { 
-//    //    if (this.handlers[method] && this.handlers[method].length) {
-//    //      _.each(this.handlers[method], function(m) {m()});
-//    //    }
-//    //  };
-//    },
-//    
-//    union: function(o1) {
-//      var type1 = U.getObjectType(o1);
-//      var args = slice.call(arguments, 1);
-//      for (var i = 0; i < args.length; i++) {
-//        var o2 = args[i];
-//        var type2 = U.getObjectType(o2);
-//          
-//        var c = type1.indexOf('Array') == -1 && !(o1 instanceof U.UArray) ? [c] : o1.slice();    
-//        if (type2.indexOf('Array') == -1 && !(o2 instanceof U.UArray))
-//          return c.push(o2);
-//        
-//        var self = this;
-//        _.each(o2, function(i) {c.push(i);});
-//      }
-//      return c;
-//    },   
-
-    endsWith: function(string, pattern) {
-      var d = string.length - pattern.length;
-      return d >= 0 && string.indexOf(pattern, d) === d;
-    },
-    
-    //U.toQueryString: function(params) {
-    //  var qStr = '';
-    //  _.forEach(params, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
-    //    qStr += key + '=' + U.encode(val) + '&';
-    //  });
-    //  
-    //  return qStr.slice(0, qStr.length - 1);
-    //};
-    
     replaceParam: function(url, name, value, sort) {
       if (!url)
-        return name + '=' + U.encode(value);
+        return name + '=' + _.encode(value);
       
       if (_.isObject(name)) {
         var newUrl = url,
@@ -1268,7 +1193,7 @@ define('utils', [
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
-    
+   
     /**
      * @return if getQueryParams(url), return map of query params, 
      *         if getQueryParams(url, model), return map of query params that are model properties
@@ -1279,7 +1204,7 @@ define('utils', [
       var args = arguments, model, collection, params, url;
       model = collection = params = url = args.length && args[0];
       if (!url || typeof url === 'string') {
-        params = U.getParamMap(url || window.location.href);
+        params = _.getParamMap(url || window.location.href);
         return args.length > 1 ? U.getQueryParams.apply(U, [params].concat(slice.call(args, 1))) : params;
       }
 
@@ -1308,8 +1233,14 @@ define('utils', [
       var meta = model.properties;
       var whereParams = U.whereParams;
       for (var p in params) {
-        if (meta[p] || whereParams[p])
+        var pStart = p;
+        if (/\./.test(p))
+          pStart = p.slice(0, p.indexOf('.')); // might be a composite prop like tagUses.(http://www.hudsonfog.com/voc/model/aha/OnlineResource)taggable.ahasCount=>0
+        
+        if (meta[pStart] || whereParams[pStart]) {
+//        if (meta[p] || whereParams[p])
           filtered[p] = params[p];
+        }
       }
   
       return filtered;
@@ -1345,24 +1276,7 @@ define('utils', [
       if (chopIdx == -1)
         return {};
         
-      return hash ? U.getParamMap(hash.slice(chopIdx + 1)) : {};
-    },
-    
-    getParamMap: function(str, delimiter) {
-      var map = {};
-      if (!str)
-        return map;
-      var qIdx = str.indexOf('?');
-      if (qIdx != -1)
-        str = str.slice(qIdx + 1);
-        
-      _.each(str.split(delimiter || "&"), function(nv) {
-        nv = nv.split("=");
-        if (nv.length == 2)
-          map[U.decode(nv[0])] = U.decode(nv[1]);
-      });
-      
-      return map;
+      return hash ? _.getParamMap(hash.slice(chopIdx + 1)) : {};
     },
     
 //    getPropertiesWith: function(list, annotation) {
@@ -1437,8 +1351,8 @@ define('utils', [
     },
     
     areQueriesEqual: function(q1, q2) {
-      var p1 = U.getParamMap(q1);
-      var p2 = U.getParamMap(q2);
+      var p1 = _.getParamMap(q1);
+      var p2 = _.getParamMap(q2);
       return _.isEqual(p1, p2);
     },
     
@@ -1562,7 +1476,7 @@ define('utils', [
       var qs = '';
       keys.sort();
       for (i = 0; i < keys.length; i++) {
-        keys[i] = keys[i] + '=' + U.encode(paramMap[keys[i]]);
+        keys[i] = keys[i] + '=' + _.encode(paramMap[keys[i]]);
       }
       
       return keys.join(options.delimiter || '&');
@@ -1821,17 +1735,6 @@ define('utils', [
       return null;
     },
     
-    deepExtend: function(obj) {
-      _.each(slice.call(arguments, 1), function(source) {
-        for (var prop in source) {
-          if (obj[prop])
-            U.deepExtend(obj[prop], source[prop]);
-          else
-            obj[prop] = source[prop] || obj[prop];
-        }
-      });
-    },
-    
 //    _index: function(obj,i) {
 //      return obj[i]
 //    },
@@ -1847,32 +1750,6 @@ define('utils', [
 //      return path.split(separator || '.').reduce(index, obj);
 //    },
     
-    leaf: function(obj, path, separator) {
-      if (typeof obj == 'undefined' || !obj)
-        return undefined;
-
-      separator = separator || '.'; 
-      var lastSep = path.lastIndexOf(separator),
-          parent,
-          child;
-      
-      if (lastSep == -1)
-        return obj;
-      else {
-        try {
-          parent = _leaf(obj, path.slice(0, lastSep), separator);
-          child = parent[path.slice(lastSep + separator.length)];
-        } catch (err) {
-          return undefined;
-        }        
-      }
-      
-      if (typeof child == 'function')
-        return child.bind(parent);
-      else
-        return child;
-    },
-
     getPropDisplayName: function(prop) {
       return prop.displayName || prop.label || prop.shortName.uncamelize(true);
     },
@@ -2233,7 +2110,7 @@ define('utils', [
 //     * build view/list/etc. hash for model, defaults to homePage if model is null
 //     */
 //    buildHash: function(model) {
-//      return model instanceof Backbone.Model ? 'view/' + U.encode(model.getUri()) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
+//      return model instanceof Backbone.Model ? 'view/' + _.encode(model.getUri()) : model instanceof Backbone.Collection ? model.model.shortName : G.homePage;
 //    },
 //    
 //    apiParamMap: {'-asc': '$asc', '$order': '$orderBy', '-limit': '$limit', 'recNmb': '$offset'},
@@ -2241,7 +2118,7 @@ define('utils', [
 //    getMobileUrl: function(url) {
 //      var orgParams = U.getQueryParams(url);
 //      if (url.startsWith('v.html'))
-//        return 'view/' + U.encode(U.getLongUri1(orgParams.uri));
+//        return 'view/' + _.encode(U.getLongUri1(orgParams.uri));
 //      
 //      // sample: l.html?-asc=-1&-limit=1000&%24order=regular&-layer=regular&-file=/l.html&-map=y&type=http://www.hudsonfog.com/voc/commerce/urbien/GasStation&-%24action=searchLocal&.regular=&.regular=%3e2000
 //      var type = orgParams.type;
@@ -2297,23 +2174,6 @@ define('utils', [
 //      
 //      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
 //    },
-    
-    pushUniq: function(arr, obj) {
-      var items = concat.apply([], slice.call(arguments, 1));
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        if (!_.contains(arr, item))
-          arr.push(item);
-      }
-    },
-    
-    encode: function(str) {
-      return encodeURIComponent(str);
-    },
-    
-    decode: function(str) {
-      return decodeURIComponent(str).replace(/\+/g, ' ');
-    },
     
     primitiveTypes: {
 //      uri: 'system/primitiveTypes',
@@ -2402,14 +2262,6 @@ define('utils', [
         return !!val;
     },
     
-    isArray: function(obj) {
-      return U.getObjectType(obj) === '[object Array]';
-    },
-
-    isObject: function(obj) {
-      return U.getObjectType(obj) === '[object Object]';
-    },
-    
     /**
      * like _.filter, but func takes in both key and value 
      * @return obj with keys and values such that for each [key, val] pair, func(key, val) is truthy;
@@ -2417,19 +2269,21 @@ define('utils', [
     filterObj: function(obj, func) {
       var filtered = {};
       for (var key in obj) {
-        var val = obj[key];
-        if (func(key, val))
-          filtered[key] = val;
+        if (_.has(obj, key)) {
+          var val = obj[key];
+          if (func(key, val))
+            filtered[key] = val;
+        }
       }
       
       return filtered;
     },
     
-    copyFrom: function(from, to, props) {
-      _.each(props || from, function(p) {
-        to[p] = from[p];
-      });
-    },
+//    copyFrom: function(from, to, props) {
+//      _.each(props || from, function(p) {
+//        to[p] = from[p];
+//      });
+//    },
     
     /**
      * @return obj with keys and values remapped by func. 
@@ -2447,18 +2301,6 @@ define('utils', [
       return mapped;
     },
     
-    getFirstProperty: function(obj) {
-      for (var name in obj) {
-        return name;
-      }
-    },
-
-    getFirstValue: function(obj) {
-      for (var name in obj) {
-        return obj[name];
-      }
-    },
-
     // https://gist.github.com/boo1ean/3878870
     plural: [
        [/(quiz)$/i,               "$1zes"  ],
@@ -2583,7 +2425,7 @@ define('utils', [
       
       var range = prop.range || '';
       if (typeof val !== 'object') {
-        if (range.indexOf('/') != -1 && /^[a-z]+\//.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
+        if (range.indexOf('/') != -1 && /^[a-z]+\/.*\?/.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
           return U.getLongUri1(val);
         
         return val;
@@ -2811,10 +2653,15 @@ define('utils', [
           return null;
       }
       
-      return G.sqlUrl + '/' + model.type.slice(7) + '?' + $.param(keyVals);
+      return U.makeUri(model.type, keyVals);
     },
     makeTempUri: function(type, id) {
-      return G.sqlUrl + '/' + type.slice(7) + '?__tempId__=' + (typeof id === 'undefined' ? G.currentServerTime : id);
+      return U.makeUri(type, {
+        __tempId__: typeof id === 'undefined' ? G.currentServerTime : id
+      })
+    },
+    makeUri: function(type, params) {
+      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
     },
     sq: function(a) {
       return a * a;
@@ -2835,9 +2682,20 @@ define('utils', [
 //      return Math.sqrt(x*x + y*y);
     },
     
-    slice: slice,
     concat: concat,
-    asArray: asArray,
+    copyArray: function(arr /* skip */) {
+      var copy = [],
+          skip = concat.apply(ArrayProto, slice.call(arguments, 1));
+      
+      for (var i in arr) {
+        var val = arr[i];
+        if (skip.indexOf(val) == -1)
+          copy.push(val);
+      }
+      
+      return copy;
+    },
+
 //    remove: function(array, item) {
 //      var what, a = arguments, L = a.length, ax;
 //      while (L && this.length) {
@@ -2924,7 +2782,7 @@ define('utils', [
 //        });
 //        
 //        if (_.size(whereParam)) {
-//          whereParam = U.getFirstProperty(whereParam);
+//          whereParam = _.getFirstProperty(whereParam);
 //          var subClause = val.split('=');
 //          if (subClause.length == 2 && subClause[0] === whereParam) {
 //            debugger;
@@ -3097,10 +2955,11 @@ define('utils', [
         
       if (U.isResourceProp(prop) && bound === '_me') {
         if (G.currentUser.guest) {
-          Events.trigger('req-login'); // exit search?
-          return function() {
-            return false;
-          };
+//          Events.trigger('req-login'); // exit search?
+//          return function() {
+//            return false;
+//          };
+          throw G.Errors.Login;
         }
         else
           bound = G.currentUser._uri;
@@ -3165,7 +3024,7 @@ define('utils', [
         template = templateName;
       
       templateFn = function(json) {
-        if (_.any(U._reservedTemplatedKeywords, U.partial(_.has, json)))
+        if (_.any(U._reservedTemplatedKeywords, _.partial(_.has, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
         
         json = json || {};
@@ -3508,7 +3367,7 @@ define('utils', [
     },
     getPath: function(uri) {
       var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
-      var params = U.getParamMap(uri);
+      var params = _.getParamMap(uri);
       for (var param in params) {
         path += '/' + encodeURIComponent(params[param]);
       }
@@ -3562,7 +3421,7 @@ define('utils', [
       return U.filterObj(data, function(key, val) { return val instanceof Blob });
     },
     getExternalFileUrl: function(uri) {
-      var params = U.getParamMap(uri);
+      var params = _.getParamMap(uri);
       if (params.url)
         return G.serverName + '/' + params.url;
       else
@@ -3591,24 +3450,6 @@ define('utils', [
     },
     getRouteAction: function(route) {
       return route ? (route.startsWith('chat') ? 'chat' : route) : 'list';
-    },
-    deepExtend: function(obj, source) {
-      for (var p in source) {
-        if (_.has(source, p) && !_.has(obj, p)) {
-          obj[p] = source[p];
-          continue;
-        }
-          
-        var val = source[p], 
-            org = obj[p];
-        
-        if (_.isObject(val) && _.isObject(org))
-          U.deepExtend(org, val);
-        else
-          obj[p] = val;          
-      }
-      
-      return obj;
     },
 
     toModelLatLon: function(coords, model) {
@@ -3654,10 +3495,6 @@ define('utils', [
       }
       
       return promise;
-    },
-    
-    randomString: function() {
-      return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
     },
     
     /**
@@ -3721,36 +3558,45 @@ define('utils', [
     })(),
     
     isMetaParameter: function(param) {
-      return /^[$-]+/.test(param);
+      return /^[$-_]+/.test(param);
+    },
+
+    isNativeModelParameter: function(param) {
+      return !U.isMetaParameter(param) && !/\./.test(param);
     },
 
     isModelParameter: function(param) {
       return !U.isMetaParameter(param);
     },
 
-    getUrlInfo: function(hash) {
-      return new UrlInfo(hash);
-    },
-
-    wipe: function(obj) {
-      for (var p in obj) {
-        if (obj.hasOwnProperty(p))
-          delete obj[p];
-      }
+    isCompositeProp: function(prop) {
+      return /\./.test(prop);
     },
     
-    partial: function(fn) {
-      var args = slice.call(arguments, 1);
-      return function() {
-        return fn.apply(null, args.concat(slice.call(arguments)));
-      };
+    getCompositeProps: function(props) {
+      var filtered = {};
+      for (var p in props) {
+        if (U.isCompositeProp(p)) 
+          filtered[p] = props[p];
+      }
+      
+      return filtered;
+    },
+    
+    getImageAttribute: function(res, prop) {
+      return (res.cid || (res.get && res.getUri()) || res._uri || res) + '.' + prop;
     },
 
-    partialWith: function(fn, context) {
-      var args = slice.call(arguments, 2);
-      return function() {
-        return fn.apply(context, args.concat(slice.call(arguments)));
+    parseImageAttribute: function(value) {
+      var idAndProp = value.split('.');
+      return {
+        id: idAndProp[0],
+        prop: idAndProp[1]
       };
+    },
+    
+    getUrlInfo: function(hash) {
+      return new UrlInfo(hash);
     },
 
     getPropFn: function(obj, prop, clone) {
@@ -3778,23 +3624,6 @@ define('utils', [
       }).concat('_uri');
       
       return cols;
-    },
-
-    isPromise: function(obj) {
-      return obj && typeof obj.then == 'function';
-    },
-
-    
-    /** 
-     * From http://eloquentjavascript.net/chapter6.html
-     */
-    op: {
-      "+": function(a, b){return a + b;},
-      "==": function(a, b){return a == b;},
-      "===": function(a, b){return a === b;},
-      "!": function(a){return !a;},
-      "!==": function(a, b){return a !== b;}
-      /* and so on */  
     },
 
     isMasonryModel: function(vocModel) {
@@ -3834,14 +3663,95 @@ define('utils', [
       return false;
     },
     
-    negate: function(fn, context) {
-      return function() {
-        return !fn.apply(context || this, arguments);
+    getBacklinkCount: function(res, name) {
+      return res.get(name + 'Count') || res.get(name).count;
+    },
+    
+    createDataUrl: function(type, content) {
+      return "data:{0};base64,{1}".format(type, window.btoa(content));
+    },
+    
+    imageToDataURL: function(img) {
+      // Create an empty canvas element
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Copy the image contents to the canvas
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      // Get the data-URL formatted image
+      // Firefox supports PNG and JPEG. You could check img.src to
+      // guess the original format, but be aware the using "image/jpg"
+      // will re-encode the image.
+      var dataURL = canvas.toDataURL("image/png");
+      return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    },
+    
+    resolvedPromise: function(/* what to resolve defer with */) {
+      if (!arguments.length)
+        return G.getResolvedPromise();
+      else {
+        var dfd = $.Deferred();
+        return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
       }
     },
     
-    getBacklinkCount: function(res, name) {
-      return res.get(name + 'Count') || res.get(name).count;
+    rejectedPromise: function(/* what to reject defer with */) {
+      if (!arguments.length)
+        return G.getRejectedPromise();
+      else {
+        var dfd = $.Deferred();
+        return dfd.reject.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+      }
+    },
+    
+    getClonedProps: function(vocModel, iFace) {
+      var meta = vocModel.properties,
+          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g');
+          cloned = [];
+          
+      for (var name in meta) {
+        var prop = meta[name],
+            cloneOf = prop && prop.cloneOf,
+            match;
+        
+        if (!cloneOf)
+          continue;
+        
+        while (match = extractProp.exec(cloneOf)) {
+          cloned.push(match[1]);
+        }
+      }
+      
+      return _.uniq(cloned);
+    },
+    
+    parsePropsList: function(propsStr, vocModel) {
+      var props = propsStr.splitAndTrim(','),
+          actualProps = [],
+          meta = vocModel.properties;
+      
+      for (var i in props) {
+        var prop = props[i];
+        if (!/^\$/.test(prop)) {
+          actualProps.push(prop);
+          continue;
+        }
+        
+        switch (prop) {
+        case '$viewCols':
+        case '$gridCols':
+          actualProps.push.apply(actualProps, U.getColsMeta(prop.slice(1, 5)));
+          break;
+        case '$images':
+          actualProps.push.apply(actualProps, U.getClonedProps(vocModel, 'ImageResource'));
+          break;
+        }
+      }
+      
+      return actualProps;
     }
   };
 
@@ -3932,7 +3842,9 @@ define('utils', [
     this.action = U.getRouteAction(route);
     this.route = route;
     this.sub = subInfo;
-    this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    if (uri)
+      this.uri = uri.indexOf('/') == -1 ? uri : U.getLongUri1(uri);
+    
     this.type = type;
     this.query = query;
     this.params = params;
@@ -3944,65 +3856,83 @@ define('utils', [
     prop.shortName = p;
   }
   
-  var patterns = U.uriPatternMap = {};
-  // Tree/32000
-  patterns[/^[A-Z]+([^\?]*)$/] = function(uri, matches, vocModel) {
-    if (!vocModel)
-      throw new Error("Not enough information to create long uri");
-    
-    var parts = uri.split('/');
-    var type = vocModel.type;
-    var primaryKeys = U.getPrimaryKeys(vocModel);
-    if (primaryKeys.length !== parts.length - 1)
-      throw new Error("Incorrect number of primary keys in short uri: " + uri);
-    
-    var params = {};
-    for (var i = 0; i < primaryKeys.length; i++) {
-      params[primaryKeys[i]] = parts[i+1];
+  var patterns = U.uriPatternMap = [{
+    // id=32001
+    regex: /^[^\/\\\?]+\=/,
+    onMatch: function(uri, matches, vocModel) {
+      return U.makeUri(vocModel.type, matches.input);
     }
-    
-    return G.sqlUrl + "/" + type.slice(7) + '?' + $.param(params);
-  };
-  // Tree?id=32000
-  patterns[/^[A-Z]+\?.*$/] = function(uri, matches, vocModel) {
-    if (!vocModel)
-      throw new Error("Not enough information to create long uri");
-    
-    return G.sqlUrl + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
-  };
-  // wf/.... attachment url
-  patterns[/^wf\//] =  function(uri, matches, vocModel) {
-    return G.serverNameHttp + '/' + uri;
-  };
-  // sql/...?...
-  patterns[/^sql\/.*/] = function(uri, matches, vocModel) {
-    return G.serverNameHttp + '/' + uri;
-  };
-  // http://.../voc/... with query string or without
-  patterns[/^http:\/\/([^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
-    var sqlIdx = matches[1].indexOf(G.sqlUri);
-    if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
-      if (matches[2]) // has query string
-        return G.sqlUrl + '/' + uri.slice(7);
-      else
+  }, 
+  {
+    // Tree/32000
+    regex: /^[A-Z]+([^\?]*)$/,
+    onMatch: function(uri, matches, vocModel) {
+      if (!vocModel)
+        throw new Error("Not enough information to create long uri");
+      
+      var parts = uri.split('/');
+      var type = vocModel.type;
+      var primaryKeys = U.getPrimaryKeys(vocModel);
+      if (primaryKeys.length !== parts.length - 1)
+        throw new Error("Incorrect number of primary keys in short uri: " + uri);
+      
+      var params = {};
+      for (var i = 0; i < primaryKeys.length; i++) {
+        params[primaryKeys[i]] = parts[i+1];
+      }
+      
+      return U.makeUri(type, params);
+    }
+  },
+  {
+    // Tree?id=32000
+    regex: /^[A-Z]+\?.*$/,
+    onMatch: function(uri, matches, vocModel) {
+      if (!vocModel)
+        throw new Error("Not enough information to create long uri");
+      
+      return U.makeUri(type, uri.slice(uri.indexOf("?") + 1));
+    }
+  }, 
+  {
+    // wf/.... attachment url
+    regex: /^wf\//,
+    onMatch:  function(uri, matches, vocModel) {
+      return G.serverNameHttp + '/' + uri;
+    }
+  },
+  {
+    // sql/...?...
+    regex: /^sql\/.*/,
+    onMatch: function(uri, matches, vocModel) {
+      return G.serverNameHttp + '/' + uri;
+    }
+  },
+  {
+    // http://.../voc/... with query string or without
+    regex: /^http:\/\/([^\?]+)\??(.*)/,
+    onMatch: function(uri, matches, vocModel) {
+      var sqlIdx = matches[1].indexOf(G.sqlUri);
+      if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
+        if (matches[2]) // has query string
+          return G.sqlUrl + '/' + uri.slice(7);
+        else
+          return uri;
+      }
+      else { // has sql
         return uri;
+      }
     }
-    else { // has sql
-      return uri;
+  },
+  {  // commerce/urbien/Tree?...
+    regex: /^([a-z]+[^\?]+)\??(.*)/,
+    onMatch: function(uri, matches, vocModel) {
+      if (matches[2])
+        return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
+      else
+        return G.defaultVocPath + uri;
     }
-  };
-  // commerce/urbien/Tree?...
-  patterns[/^([a-z]+[^\?]+)\??(.*)/] = function(uri, matches, vocModel) {
-    if (matches[2])
-      return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
-    else
-      return G.defaultVocPath + uri;
-  };
-  
-  for (var pattern in patterns) {
-    var fn = patterns[pattern];
-    fn.regExp = new RegExp(pattern.slice(1, pattern.length - 1));
-  }
+  }];
   
   U.invalid = {};
   (function() {

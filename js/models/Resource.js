@@ -1,11 +1,12 @@
 //'use strict';
 define('models/Resource', [
   'globals',
+  'underscore',
   'utils',
   'error',
   'events',
   'cache'
-], function(G, U, Errors, Events, C) {
+], function(G, _, U, Errors, Events, C) {
   var commonTypes = G.commonTypes,
       APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
@@ -23,7 +24,7 @@ define('models/Resource', [
   };
 
   function log() {
-    var args = [].slice.call(arguments);
+    var args = _.toArray(arguments);
     args.unshift("Resource");
     G.log.apply(G, args);
   };
@@ -42,6 +43,8 @@ define('models/Resource', [
 //        this.urlRoot += "?" + options._query;
       
       options = options || {};
+      var self = this;
+      
       this.setModel(null, {silent: true});
       this.subscribeToUpdates();
       this.resourceId = G.nextId();
@@ -77,13 +80,21 @@ define('models/Resource', [
       }
       
       this.on('saved', function() {
-        Events.trigger.apply(Events, ['saved', this].concat(U.slice.call(arguments)));
+        Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
       });
       
-      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+      this._resetUnsavedChanges();
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
-      this.on('load', this.announceNewResource);
+      this.on('load', this.announceNewResource);      
+      this.on('inlineResources', function(resources) {        
+        Events.trigger('inlineResources', self, resources);
+      });
+      
+      this.on('inlineBacklinks', function(backlinks) {        
+        Events.trigger('inlineBacklinks', self, backLinks);
+      });
+
 //      this.checkIfLoaded();
     },
     
@@ -305,7 +316,7 @@ define('models/Resource', [
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
       if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
-        return retUri + "&_uri=" + U.encode(uri);
+        return retUri + "&_uri=" + _.encode(uri);
       var action = this.get('action');
       if (action != 'make') 
         return retUri;
@@ -396,32 +407,21 @@ define('models/Resource', [
       
       return resp;
     },
+    
     preParse: function (resp) {
       var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
-      if (!resp || resp.error)
+      if (!resp)
         return null;
-
-      if (!resp.data) {
-//        this.loaded = true;
-        return resp;
-      }
         
-      var uri = resp._uri || resp.uri;
-      if (!uri) {      
-        resp = resp.data[0];
-        uri = resp._uri || resp.uri;
-      }
-
-      resp._shortUri = U.getShortUri(uri, this.vocModel);
       var primaryKeys = U.getPrimaryKeys(this.vocModel);
-      resp._uri = U.getLongUri1(resp._uri, {type: this.type, primaryKeys: primaryKeys});
+      resp._uri = U.getLongUri1(resp._uri || resp.uri, this.vocModel || { type: this.type, primaryKeys: primaryKeys });
+      resp._shortUri = U.getShortUri(resp._uri, this.vocModel);
       if (lf)
         resp._lastFetchedOn = lf;
       
       if (!this.loaded)
         this.loadInlined(resp);
       
-//      this.loaded = true;
       return resp;
     },
     
@@ -467,21 +467,19 @@ define('models/Resource', [
           
           if (list.length) {
 //            Events.trigger('newBackLink', this, prop, list);
-            backlinks[p] = {
-              property: prop,
+            backLinks[p] = {
+              prop: prop,
               list: list
             };
           }
         }
       }
       
-      if (_.size(resources)) {
-        Events.trigger('inlineResources', this, resources);
-      }
+      if (_.size(resources))
+        this.trigger('inlineResources', resources);
       
-      if (_.size(backLinks)) {
-        Events.trigger('inlineBacklinks', this, backLinks);
-      }
+      if (_.size(backLinks))
+        this.trigger('inlineBacklinks', backLinks);
     },
     
     setInlineList: function(propName, list) {
@@ -489,18 +487,33 @@ define('models/Resource', [
       this.inlineLists[propName] = list;
       this.trigger('inlineList', propName);
     },
-    
+
+    getInlineList: function(propName) {
+      return this.inlineLists ? this.inlineLists[propName] : undefined;
+    },
+
     getInlineLists: function() {
       return _.values(this.inlineLists || {});
     },
+
+    _resetUnsavedChanges: function() {
+      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+    },
     
     clear: function() {
-      this.unsavedChanges = {};
+      this._resetUnsavedChanges();
       Backbone.Model.prototype.clear.apply(this, arguments);
     },
     
     set: function(key, val, options) {
-      var uri = this.getUri();
+      var self = this,
+          uri = this.getUri(),
+          props,
+          vocModel,
+          meta,
+          displayNameChanged,
+          imageType;
+      
       if (!this.subscribedToUpdates && uri)
         this.subscribeToUpdates();
       
@@ -508,7 +521,6 @@ define('models/Resource', [
         return true;
       
       // Handle both `"key", value` and `{key: value}` -style arguments.
-      var props;
       if (_.isObject(key)) {
         props = key;
         options = val;
@@ -519,10 +531,13 @@ define('models/Resource', [
       if (!_.size(props))
         return true;
       
-      var vocModel = this.getModel();
-      var meta = vocModel.properties;
-      var self = this;
+      vocModel = this.getModel();
+      meta = vocModel.properties;
       options = options || {};
+      _.defaults(options, {
+        perPropertyEvents: false
+      });
+      
       if (!options.silent && !options.unset) {
         props = U.filterObj(props, function(name, val) {
           return willSave(self, meta, name, val);
@@ -532,11 +547,14 @@ define('models/Resource', [
           return true;
       }
       
-      var displayNameChanged = false;
 //      var uriChanged;
       
+      displayNameChanged = false;
+      imageType = G.commonTypes.Image;
       for (var shortName in props) {
-        var val = props[shortName];
+        var val = props[shortName],
+            isResourceProp;
+        
         if (!val)
           continue;
         
@@ -550,6 +568,14 @@ define('models/Resource', [
         if (!prop.backLink)
           props[shortName] = U.getFlatValue(prop, val);
         
+        isResourceProp = U.isResourceProp(prop);
+        if (isResourceProp) {
+          if (imageType.endsWith(prop.range)) {
+            delete self.attributes[shortName + '.blob'];
+            delete self.attributes[shortName + '.uri'];
+          }
+        }
+        
         if (!options.sync) {
           if (/\./.test(shortName))
             continue;
@@ -562,7 +588,7 @@ define('models/Resource', [
           if (props[sndName])
             continue;
           
-          if (U.isResourceProp(prop)) {
+          if (isResourceProp) {
             var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
@@ -598,10 +624,8 @@ define('models/Resource', [
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
 //        this._resetEditableProps();
-        if (options.userEdit) {
+        if (options.userEdit)
           _.extend(this.unsavedChanges, props);
-//          options.silent = options.silent !== false;
-        }
         
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
@@ -661,9 +685,9 @@ define('models/Resource', [
       if (facet) {
         facet = facet.slice(facet.lastIndexOf('/') + 1);
         if (facet.endsWith('emailAddress'))
-          return U.validateEmail(value) || 'Please enter a valid email';
+          return _.validateEmail(value) || 'Please enter a valid email';
         else if (facet.toLowerCase().endsWith('phone'))
-          return U.validatePhone(value) || 'Please enter a valid phone number';
+          return _.validatePhone(value) || 'Please enter a valid phone number';
         else { 
           var val = U.getTypedValue(this, name, value);
           if (val == null || val !== val) { // test for NaN
@@ -683,7 +707,7 @@ define('models/Resource', [
       var cloneOf = prop.cloneOf;
       if (cloneOf) {
         if (/^Address1?\.postalCode1?$/.test(cloneOf))
-          return U.validateZip(value) || 'Please enter a valid Postal Code';
+          return _.validateZip(value) || 'Please enter a valid Postal Code';
       }
       
       return true;
@@ -830,7 +854,12 @@ define('models/Resource', [
           continue;
         
         if (blProp.where) {
-          var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          try {
+            var testFunction = U.buildValueTester(blProp.where, blVocModel);
+          } catch (err) {
+            log('error', err); // for example, the where clause might assume a logged in user
+          }
+          
           if (!testFunction || !testFunction(res))
             continue;
         }
@@ -838,7 +867,12 @@ define('models/Resource', [
         if (blProp.whereOr) {
           debugger;
           var where = {$or: blProp.whereOr};
-          var testFunction = U.buildValueTester($.param(where), blVocModel);
+          try {
+            var testFunction = U.buildValueTester($.param(where), blVocModel);
+          } catch (err) {
+            log('error', err); // for example, the where clause might assume a logged in user
+          }
+          
           if (!testFunction || !testFunction(res))
             continue;
         }
@@ -940,7 +974,7 @@ define('models/Resource', [
       };
       
       var result = Backbone.Model.prototype.save.call(this, data, options);
-      this.unsavedChanges = {};
+      this._resetUnsavedChanges();
       return result;
     },
     
@@ -980,17 +1014,21 @@ define('models/Resource', [
       });
       
       options.success = function(resource, response, opts) {
-        if (response && response.error)
-          return;
-
-        if (!options.fromDB)
-          this.unsavedChanges = {}; // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+        if (!opts.fromDB)
+          this._resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
         if (isAppInstall)
           Events.trigger('appInstall', this);
         else if (isTemplate)
           Events.trigger('templateUpdate:' + this.get('templateName'), this);
         
+        if (!opts.fromDB) { // was a direct sync, didn't go through _save first 
+          if (isNew)
+            Events.trigger('savedMake', this, opts);
+          else
+            Events.trigger('savedEdit', this, opts);
+        }
+
         success && success.apply(this, arguments);
         // trigger this first because "success" may want to redirect to mkresource for some app-related model
         
@@ -1002,7 +1040,7 @@ define('models/Resource', [
         }
         
         this.triggerPlugs(options);
-        if (!options.fromDB)
+        if (!opts.fromDB)
           this.notifyContainers();
         
         this.trigger('syncedWithServer');
@@ -1011,24 +1049,15 @@ define('models/Resource', [
       
       options.error = function(originalModel, xhr, opts) {
         var code = xhr.code || xhr.status,
-            respText = xhr.responseText,
-            errorObj;
+            errorObj = xhr.responseJson;
         
-        if (respText) {
-          try {
-            errorObj = JSON.parse(respText).error;
-          } catch (err) {
-          }
-        }
-        
-        errorObj = errorObj || {};
         if (code === 409) {
           var conflict = errorObj.conflict;
           if (!isNew) {
             this.lastFetchOrigin = 'server';
             this.set(this.parse(conflict, {overwriteUserChanges: true}));
             Events.trigger('messageBar', 'error', {
-              message: errorObj.details || 'Uh oh. It appears that someone (maybe you) has made edits that take precedence over yours. Please re-edit and re-submit.',
+              message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
               persist: true
             });
           }
@@ -1036,7 +1065,7 @@ define('models/Resource', [
 //            Events.trigger('navigate', new this.vocModel(conflict));
             Events.trigger('cacheResource', new this.vocModel(conflict));
             Events.trigger('messageBar', 'error', {
-              message: errorObj.details || "Uh oh. It appears you're trying to make something that already exists. Is <a href='{0}'>this</a> what you're trying to make?".format(U.makePageUrl('view', conflict._uri)),
+              message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
               persist: true
             });
           }
@@ -1070,7 +1099,7 @@ define('models/Resource', [
       }
    
       // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
-      if (!options.fromDB) { 
+      if (!options.fromDB && !options.silent) { 
 //        log('events', U.getDisplayName(this), 'changed');
         this.trigger('change', this, options);
       }
@@ -1132,16 +1161,16 @@ define('models/Resource', [
       var isMake = !this.getUri(),
           model = this.vocModel,
           params = urlInfo ? urlInfo.getParams() : {},
-          editProps = params['$editCols'] && params['$editCols'].replace(/\s/g, '').split(','),
+          editProps = params['$editCols'] && params['$editCols'].splitAndTrim(','),
           mkResourceCols = isMake && model['mkResourceCols'];
           
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
         if (isEdit)
-          editProps = propsForEdit && propsForEdit.replace(/\s/g, '').split(',');
+          editProps = propsForEdit && propsForEdit.splitAndTrim(',');
         else {
           if (mkResourceCols)
-            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+            editProps = mkResourceCols.splitAndTrim(',');
           else if (model.type.endsWith(G.commonTypes.WebProperty))
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
@@ -1180,7 +1209,7 @@ define('models/Resource', [
           backlinks = this.vocModel._backlinks = U.getPropertiesWith(meta, "backLink"),
           reqParams = urlInfo.getParams(),
 //          currentAtts = U.filterObj(isMake ? res.attributes : res.changed, U.isModelParameter),
-          editProps = reqParams['$editCols'] && reqParams['$editCols'].replace(/\s/g, '').split(','),
+          editProps = reqParams['$editCols'] && reqParams['$editCols'].splitAndTrim(','),
           mkResourceCols = isMake && this.vocModel['mkResourceCols'],
           userRole = U.getUserRole(),
           collected = [],
@@ -1198,12 +1227,12 @@ define('models/Resource', [
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
         if (propsForEdit)
-          propsForEdit = propsForEdit.replace(/\s/g, '').split(',');
+          propsForEdit = propsForEdit.splitAndTrim(',');
         if (isEdit)
           editProps = propsForEdit;
         else {
           if (mkResourceCols)
-            editProps = mkResourceCols.replace(/\s/g, '').split(',');
+            editProps = mkResourceCols.splitAndTrim(',');
           else if (model.type.endsWith(G.commonTypes.WebProperty))
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
@@ -1228,7 +1257,7 @@ define('models/Resource', [
       if (propGroups) {
         for (var i = 0; i < propGroups.length; i++) {
           var grProp = propGroups[i],
-              props = grProp.propertyGroupList.split(","), // TODO: send it as an array from the server
+              props = grProp.propertyGroupList.splitAndTrim(","), // TODO: send it as an array from the server
               grouped = result.props.grouped,
               group = {
                 shortName: grProp.shortName,

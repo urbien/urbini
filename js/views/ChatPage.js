@@ -86,7 +86,8 @@ define('views/ChatPage', [
       if (pageTitle)
         headerOptions.pageTitle = pageTitle;
 
-      this.addChild('header', new Header(headerOptions));
+      this.header = new Header(headerOptions);
+      this.addChild(this.header);
 
 /*
   
@@ -97,7 +98,8 @@ define('views/ChatPage', [
           self = this;
           
       headerPromise.done(function() {
-        self.addChild('header', new Header(headerOptions));
+        self.header = new Header(headerOptions);
+        self.addChild(self.header);
       });
       
       if (G.currentUser.guest)
@@ -112,7 +114,7 @@ define('views/ChatPage', [
           if (!mainGroup  ||  !mainGroup.length)
             return headerDfd.resolve();
             
-          var mainGroupArr = mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",");
+          var mainGroupArr = mainGroup[0]['propertyGroupList'].splitAndTrim(',');
           mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index < b.index});
           var mainBacklinks = [];
           for (var i=0; i<mainGroupArr.length; i++) {
@@ -141,7 +143,8 @@ define('views/ChatPage', [
       }
       
       if (G.currentUser.guest) 
-        this.addChild('header', new Header(headerOptions));
+        this.header = new Header(headerOptions);
+        this.addChild(this.header);
       else {
         var self = this;
         var dfd = $.Deferred(function(dfd) {
@@ -152,11 +155,12 @@ define('views/ChatPage', [
             var meta = Urbien1.properties;
             var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
             if (!mainGroup  ||  !mainGroup.length) {
-              self.addChild('header', new Header(headerOptions));
+              self.header = new Header(headerOptions);
+              self.addChild(self.header);
               dfd.resolve();
             }
             else {
-              var mainGroupArr = mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",");
+              var mainGroupArr = mainGroup[0]['propertyGroupList'].splitAndTrim(',');
               mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index < b.index});
               var mainBacklinks = [];
               for (var i=0; i<mainGroupArr.length; i++) {
@@ -166,7 +170,8 @@ define('views/ChatPage', [
                   mainBacklinks.push(p);
               }  
               if (!mainBacklinks.length) { 
-                self.addChild('header', new Header(headerOptions));
+                self.header = new Header(headerOptions);
+                self.addChild(self.header);
                 dfd.resolve();
               }
               else {
@@ -175,7 +180,8 @@ define('views/ChatPage', [
                 self.user.fetch({sync: true, forceFetch: false, 
                   success: function() {
                     ///////////
-                    self.addChild('header', new Header(headerOptions));
+                    self.header = new Header(headerOptions);
+                    self.addChild(self.header);
                     userDfd.resolve();
                   },
                   fail: function() {
@@ -217,7 +223,7 @@ define('views/ChatPage', [
       };
 
       if (options.config)
-        U.deepExtend(this.config, options.config);
+        _.deepExtend(this.config, options.config);
 
       var vConfig = this.config.video,
           aConfig = this.config.audio;
@@ -272,12 +278,16 @@ define('views/ChatPage', [
 //      }.bind(this));
 
       var self = this;
-      this.on('active', function(active) {
-        var method = active ? 'show' : 'hide';
-        self.$localMedia && self.$localMedia[method]();
-        self.$remoteMedia && self.$remoteMedia[method]();
+      this.on('active', function() {
+        self.$localMedia && self.$localMedia.show();
+        self.$remoteMedia && self.$remoteMedia.show();
       });
       
+      this.on('inactive', function() {
+        self.$localMedia && self.$localMedia.hide();
+        self.$remoteMedia && self.$remoteMedia.hide();
+      });
+
       Events.on('localVideoMonitor:on', function() {
         if (self.isActive()) {
           self.playRingtone();
@@ -466,7 +476,7 @@ define('views/ChatPage', [
         });
         
         Events.once('pageChange', function() {
-          Events.trigger('messageBar.info.clear', headerId);
+          Events.trigger('messageBar.info.clear.' + headerId);
         });
       }
 
@@ -599,15 +609,16 @@ define('views/ChatPage', [
       U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
         var $bl = self.$("div#inChatBacklinks");
         $bl.drags();
-        self.addChild('backlinks', new ControlPanel({
+        self.backlinks = new ControlPanel({
           isMainGroup: true,
           dontStyle: true,
           model: self.user ? self.user: self.resource,
           parentView: self
 //          ,
 //          el: $bl[0]
-        }));
+        });
         
+        self.addChild(self.backlinks);
         self.assign('div#inChatBacklinks', self.backlinks);
         $bl.find('[data-role="button"]').button();
 //        self.backlinks.render();
@@ -1298,7 +1309,7 @@ define('views/ChatPage', [
           });
         }
         else if (list) {
-          var type = U.getTypeUri(U.decode(list.hash));
+          var type = U.getTypeUri(_.decode(list.hash));
           Voc.getModels(type).done(function() {
             new ResourceList(null, {
               model: U.getModel(type),
@@ -1481,8 +1492,9 @@ define('views/ChatPage', [
         this.localStream && this.localStream.stop();
       }
       
-      if (!this.isActive())
-        this.onActive(this.startChat.bind(this));
+      if (!this.isActive()) {
+        this.once('active', this.startChat.bind(this));
+      }
     },
   
     takeSnapshot: function() {
@@ -1637,7 +1649,7 @@ define('views/ChatPage', [
     
     makeCall: function() {
       var self = this,
-          nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+          nurseInfo = this.userIdToInfo[_.getFirstProperty(this.userIdToInfo)];
       
       if (!nurseInfo)
         return;
@@ -1654,7 +1666,7 @@ define('views/ChatPage', [
     },
     
     endCall: function() {
-      var nurseInfo = this.userIdToInfo[U.getFirstProperty(this.userIdToInfo)];
+      var nurseInfo = this.userIdToInfo[_.getFirstProperty(this.userIdToInfo)];
       if (!nurseInfo || !this.call)
         return;
   

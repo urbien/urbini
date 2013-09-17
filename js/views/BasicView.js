@@ -7,12 +7,22 @@ define('views/BasicView', [
   'events'
 ], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
-      AP = Array.prototype;
-  
+      AP = Array.prototype,
+      $wnd = $(window);
+
+  function disableHover($el) {
+    $el.bind('mouseover', function() {
+      return false;
+    });
+  }
+
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy');
+      this.TAG = this.TAG || this.constructor.displayName;
+      this.log('newView', ++this.constructor._instanceCounter);
+      
       var superCtor = this.constructor;
       while (superCtor.__super__) {
         var superDuperCtor = superCtor.__super__.constructor;
@@ -37,7 +47,6 @@ define('views/BasicView', [
         }
       }
       
-      this.TAG = this.TAG || this.constructor.displayName;
       options = options || {};
       this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
@@ -46,6 +55,7 @@ define('views/BasicView', [
           this.rendered = true;
       }.bind(this));
       
+      this._taskQueue = [];      
       this._templates = [];
       this._templateMap = {};
       _.extend(this, _.pick(options, basicOptions));
@@ -76,85 +86,61 @@ define('views/BasicView', [
         if (!force && !this.rendered)
           return this;
         
-        if (!force && !this.isPanel && !this.isActive()) {
-          // to avoid rendering views 10 times in the background. Render when it's about to be visible
-           this.__refreshArgs = arguments; 
-           return false;
-         }
-        
+//        var delay = !force && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
         G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
-        refresh && refresh.apply(this, arguments);
+        this._queueTask(refresh, this, arguments);
+        return this;
       };
       
       var render = this.render;
+      function doRender() {
+        render.apply(this, arguments);
+        if (this.autoFinish !== false)
+          this.finish();
+
+        if (G.browser.mobile)
+          disableHover(this.$el);
+      }
+
       this.render = function(rOptions) {
-        if ((!rOptions || !rOptions.force) && !this.isPanel && !this.isActive()) {
-         // to avoid rendering views 10 times in the background. Render when it's about to be visible
-          this.__renderArgs = arguments; 
-          return false;
-        }
-        else {
-//          if (!this.TAG)
-//            debugger;
-          
-          G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
-          render.apply(this, arguments);
-          if (this.autoFinish !== false)
-            this.finish();
-          return this;
-        }
+//        var delay = (!rOptions || !rOptions.force) && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
+        G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
+        this._queueTask(doRender, this, arguments); //, !delay);
+        return this;
       }.bind(this);
 
-      this._activeDfd = $.Deferred();
-      this._inactiveDfd = $.Deferred();
-      this.on('active', function(active) {
-        this.active = active; // keep this
-        _.each(this.children, function(child) {
-          child.trigger('active', active);
-        }); // keep this
-        
-        if (active)
-          this._updateHashInfo();
-        
-        if (active && (this.__renderArgs || this.__refreshArgs)) {
-          var method, args;
-          if (this.rendered) {
-            method = refresh;
-            args = this.__refreshArgs;
-            this.__refreshArgs = null;
-          }
-          else {
-            method = render;
-            args = this.__renderArgs;
-            this.__renderArgs = null;
-          }
-          
-          method.apply(this, args);
-          this.finish();
-        }
-        
-        if (active) {
-          this._activeDfd.resolve();
-          this._inactiveDfd = $.Deferred();
-        }
-        else {
-          this._inactiveDfd.resolve();
-          this._activeDfd = $.Deferred();
-        }
-      }.bind(this));
-////////// comment end
-      
       var self = this;
+      this.on('active', function() {
+        self.active = true;
+        self.triggerChildren('active');
+        self._updateHashInfo();
+        self._processQueue();
+      });
+      
+      this.on('inactive', function() {
+        self.active = false;
+        if (self.isPageView())
+          self._unsubscribeFromImageEvents();
+        
+        self.triggerChildren('inactive');
+      });
+
       _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
-          var event = listener.slice(2);
+          var event = listener.slice(2),
+              _event = '_' + event;
+          
           window.addEventListener(event, function() {
-            self.onActive(function() {
-              self['_' + event](event);
-            });
+            if (self.isActive())
+              self[_event](event);
+            else {
+              self.once('active', function() {
+                self[_event](event);
+              });
+            }
           }, false);
           
-          self['_' + event] = _.debounce(function(e) {
+          self[_event] = _.debounce(function(e) {
             G.log(self.TAG, 'events', e);
             self.$el.trigger(e);
           }, 100);          
@@ -173,27 +159,40 @@ define('views/BasicView', [
       return this;
     },
     
+    events: {
+      'imageOnload': '_loadImage'
+    },
+    
     _updateHashInfo: function() {
       this._hashInfo = U.getCurrentUrlInfo();
       this.hash = U.getHash();
       this.hashParams = this._hashInfo && this._hashInfo.params || {};
     },
+
+    getBaseTemplateData: function() {
+      var data = {
+        viewId: this.cid
+      };
+      
+      if (this.resource)
+        data._uri = this.resource.get('_uri');
+      
+      return data;
+    },
     
     refresh: function() {
       // override this
-//      this.render();
-//      this.restyle();
     },
     
-//    forceRerender: function() {
-//      this.render(this._renderArguments);
-//    },
+    isChildless: function() {
+      return !_.size(this.children);
+    },
     
-    refreshOrRender: function() {
+    update: function() {
       if (this.rendered)
         this.refresh.apply(this, arguments);
       else
-        this.render.apply(this, arguments);
+        this.render.apply(this, arguments);      
     },
     
     destroy: function() {
@@ -201,14 +200,19 @@ define('views/BasicView', [
         return;
       
       this._destroyed = true;
+      this.trigger('destroyed');
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
       if (this.$el)
         this.remove();
     },
     
+    _getChildrenLoadingDeferreds: function() {
+      return _.pluck(this.getDescendants(), '_loadingDfd');
+    },
+    
     _getLoadingDeferreds: function() {
-      return [this._loadingDfd].concat(_.pluck(this.getDescendants(), '_loadingDfd'));
+      return [this._loadingDfd].concat(this._getChildrenLoadingDeferreds());
     },
     
     isDoneLoading: function() {
@@ -216,15 +220,68 @@ define('views/BasicView', [
         return c.state() !== 'pending';
       });
     },
-    
+
     onload: function(callback) {
-      var promise = $.whenAll.apply($, this._getLoadingDeferreds());
-      callback && promise.then(callback);
-      return promise;
+      return $.whenAll.apply($, this._getLoadingDeferreds()).then(callback);
     },
+
+//    onload: function(callback) {
+//      return this._loadingDfd.promise().then(callback);
+//    },
+//
+//    onChildrenLoaded: function(callback) {
+//      var promise = $.whenAll.apply($, this._getChildrenLoadingDeferreds());
+//      callback && promise.then(callback);
+//      return promise;
+//    },
     
     finish: function() {
       this._loadingDfd.resolve();
+    },
+    
+    _queueTask: function(fn, scope, args) {
+      var self = this,
+          lazyDfd = $.Deferred();
+      
+      this._taskQueue.push(lazyDfd);
+      lazyDfd.start = function() {
+        this._started = true;
+        self.log('info', 'running {0} task'.format(self.TAG));
+        var promise = fn.apply(scope, args || []);
+        if (_.isPromise(promise))
+          promise.then(lazyDfd.resolve, lazyDfd.reject);
+        else
+          lazyDfd.resolve();
+      };
+      
+      lazyDfd.promise().always(function() {
+        self._dequeueTask(lazyDfd);
+        self._processQueue();
+      });
+      
+      this._processQueue();
+    },
+
+    _dequeueTask: function(task) {
+      Array.remove(this._taskQueue, task);
+    },
+
+    _processQueue: function() {
+      if (!this.isActive())
+        return;
+      
+      var next = this._taskQueue[0];
+      if (next) {
+        if (!next._started) {
+//          G.q({
+//            name: this.TAG + ':task:' + this.cid,
+//            task: next.start.bind(next)
+          next.start();
+//          });
+        }
+        else
+          this.log('info', 'postponing {0} {1} task'.format(this.TAG, this.cid));
+      }
     },
     
     getTemplate: function(templateName, type) {
@@ -245,8 +302,13 @@ define('views/BasicView', [
           return template;
       }
         
-      U.pushUniq(this._templates, templateName);
+      _.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
+      this._monitorTemplate(templateName);
+      return template;
+    },  
+    
+    _monitorTemplate: function(templateName) {
       var event = 'templateUpdate:' + templateName;
       this.stopListening(Events, event);
       this.listenTo(Events, event, function(template) {
@@ -261,39 +323,54 @@ define('views/BasicView', [
         this[this.rendered ? 'render' : 'refresh']();
         this.restyle();
       }.bind(this));
-
-      return template;
-    },  
+    },
     
     atBottom: function() {
       var $w = $(window);
       return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
     },
     
-    onInactive: function(callback) {
-      this._inactiveDfd.done(callback);
-    },
-
-    onActive: function(callback) {
-      this._activeDfd.done(callback);
-    },
+//    onInactive: function(callback) {
+//      this._inactiveDfd.done(callback);
+//    },
+//
+//    onActive: function(callback) {
+//      this._activeDfd.done(callback);
+//    },
     
-    addChild: function(name, view) {
-      this.children = this.children || {};
-      this[name] = this.children[name] = view;
+    addChild: function(view) {
+      var self = this;
+      if (!this.children)
+        this.children = {};
+      
+      this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-      
-      Events.on('viewDestroyed:' + view.cid, function(view) {
+      view.once('destroyed', function() {
         if (self.children)
-          delete self.children[name];
+          delete self.children[view.cid];
+        
+        for (var prop in self) {
+          if (self[prop] === view)
+            self[prop] = null;
+        }
       });
-
+      
       return view;
     },
     
     getChildViews: function() {
       return this.children;
+    },
+
+    empty: function() {
+//      U.wipe(this.children);
+      this.$el.empty();
+    },
+
+    html: function(html) {
+//      U.wipe(this.children);
+      this.$el.html(html);
     },
     
     getDescendants: function() {
@@ -312,6 +389,14 @@ define('views/BasicView', [
       _.each(this.children, function(child) {
         child.$el && child.$el.triggerHandler(e.type, e); // triggerHandler will prevent the event from bubbling back up and creating an infinite loop
       });
+    },
+    
+    triggerChildren: function(event) {
+      var args = _.tail(arguments);
+      args.unshift(event);
+      _.each(this.children, function(child) {
+        child.trigger.apply(child, args);
+      }); // keep this
     },
     
     showLoadingIndicator: function() {
@@ -505,13 +590,45 @@ define('views/BasicView', [
     
     log: function() {
       if (G.DEBUG) {
-        var args = U.slice.call(arguments);
+        var args = _.toArray(arguments);
         args.unshift(this.TAG);
         G.log.apply(G, args);
       }
+    },
+
+//    _fetchImage1: function(img) {
+//      img.src = img.getAttribute(lazyAttr);
+//      cleanImage(img);
+//    },
+
+    findResourceByCid: function(cid) {
+      if (this.resource && this.resource.cid == cid)
+        return this.resource;
+      
+      for (var childId in this.children) {
+        var res = this.children[childId].findResourceByCid(cid);
+        if (res)
+          return res;
+      }
+  
+      return undefined;
+    },
+    
+    findResourceByUri: function(uri) {
+      if (this.resource && this.resource.getUri() == uri)
+        return this.resource;
+      
+      for (var childId in this.children) {
+        var res = this.children[childId].findResourceByUri(uri);
+        if (res)
+          return res;
+      }
+  
+      return undefined;
     }
   }, {
-    displayName: 'BasicView'
+    displayName: 'BasicView',
+    _instanceCounter: 0
   });
 
   return BasicView; 

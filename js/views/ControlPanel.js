@@ -12,7 +12,7 @@ define('views/ControlPanel', [
   return BasicView.extend({
     tagName: "tr",
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -22,7 +22,7 @@ define('views/ControlPanel', [
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
       this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', type);
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
-      this.resource.on('change', this.refresh, this);
+      this.listenTo(this.resource, 'change', this.refresh);
       this.isMainGroup = options.isMainGroup;
       this.dontStyle = this.isMainGroup && options.dontStyle
 //      this.resource.on('inlineList', this.setInlineList, this);
@@ -121,7 +121,7 @@ define('views/ControlPanel', [
         }
         
         var meta = pModel.properties,
-            title = U.getParamMap(window.location.hash).$title,
+            title = _.getParamMap(window.location.hash).$title,
             propA = meta[a],
             propB = meta[b],
             aUri = a == prop.backLink ? self.resource.get('_uri') : null,
@@ -179,13 +179,18 @@ define('views/ControlPanel', [
       }
       
       this.render();
-      if (!this.$el.hasClass('ui-listview'))
-        this.$el.trigger('create');
-      else {
-        this.$el.trigger('create');
-        this.$el.listview('refresh');
-      }
+//      this._queueTask(this._refreshListview, this);
     },
+    
+//    _refreshListview: function() {      
+//      if (!this.$el.hasClass('ui-listview'))
+//        this.$el.trigger('create');
+//      else {
+//        this.$el.trigger('create');
+//        this.$el.listview('refresh');
+//      }
+//    },
+    
     render: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
@@ -215,15 +220,15 @@ define('views/ControlPanel', [
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
-      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].replace(/\s/g, '').split(",") : null;
+      var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].splitAndTrim(',') : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getBacklinks(meta);
       var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
       if (displayInline && _.size(displayInline)) {
-        res.off('inlineList', this.refreshOrRender, this);
-        res.on('inlineList', this.refreshOrRender, this);
+        this.stopListening(res, 'inlineList', this.update);
+        this.listenTo(res, 'inlineList', this.update);
         if (_.size(res.inlineLists)) {
           // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...
         }
@@ -233,7 +238,7 @@ define('views/ControlPanel', [
           var ranges = [];
           var inlineLists = {};
           _.each(displayInline, function(prop, name) {
-            U.pushUniq(ranges, U.getTypeUri(prop.range));
+            _.pushUniq(ranges, U.getTypeUri(prop.range));
           });
           
           Voc.getModels(ranges).done(function() {
@@ -302,11 +307,12 @@ define('views/ControlPanel', [
           U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
           list.each(function(iRes) {
             var params = {
-                comment: iRes.comment, 
-               _problematic: iRes.get('_error')
-             }
-            params.name = U.getDisplayName(iRes);
-
+              viewId: this.cid,
+              comment: iRes.comment, 
+              _problematic: iRes.get('_error'),
+              name: U.getDisplayName(iRes)
+            };
+            
             var grid = U.getCols(iRes, 'grid', true);
             if (U.isA(iRes.vocModel, 'Intersection')) {  
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
@@ -348,6 +354,7 @@ define('views/ControlPanel', [
                 if (imgProp) {
                   var img = iRes.get(imgProp);
                   if (img) {
+                    params.imageProperty = imgProp;
                     params.img = img;
                     var oW = U.getCloneOf(iRes.vocModel, 'ImageResource.originalWidth');
                     var oH;
@@ -373,13 +380,11 @@ define('views/ControlPanel', [
 
             var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
             params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
-//            if (U.isAssignableFrom(iRes.vocModel, "Comment"))
-//              U.addToFrag(frag, this.commentItemTemplate(iRes.toJSON()));
-//            else
+            params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
-            iRes.off('change', this.refreshOrRender, this);
-            iRes.on('change', this.refreshOrRender, this);
+            this.stopListening(iRes, 'change', this.update);
+            this.listenTo(iRes, 'change', this.update);
           }.bind(this));
         }.bind(this));
       }
@@ -573,10 +578,10 @@ define('views/ControlPanel', [
 //        if (!this.innerHTML.startsWith('<i'))
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
-//      
-//      this.$el.trigger('create');
-//      if (this.rendered)
-//        this.$el.listview('refresh');
+      
+      this.$el.trigger('create');
+      if (this.rendered && this.$el.hasClass('ui-listview'))
+        this.$el.listview('refresh');
 
       return this;
     }

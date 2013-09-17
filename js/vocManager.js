@@ -93,7 +93,7 @@ define('vocManager', [
     },
     
     fetchLinkedAndReferredModels: function(listOrRes) {
-      G.whenNotRendering(U.partial(fetchLinkedAndReferredModels, listOrRes));
+      G.whenNotRendering(_.partial(fetchLinkedAndReferredModels, listOrRes));
     },
 
     detectReferredModels: function(list) {      
@@ -172,17 +172,18 @@ define('vocManager', [
     if (!appInstall.get('allow'))
       return;
    
-    var user = G.currentUser;
-    var installed = user.installedApps = user.installedApps || {};
-    var app = C.getResource(appInstall.get('application'));
-    var jApp = app ? app.toJSON() : {};
-    jApp.install = appInstall.getUri();
-    jApp.allowed = true;
-    var appPath = app ? app.get('appPath') : U.getAppPathFromTitle(appInstall.get('application.displayName'));
-    installed[appPath] = jApp;
-    
-    if (!U.isTempResource(appInstall)) {
-      PlugManager.fetchPlugs({appInstall: appInstall.getUri()});
+    var uri = appInstall.get('_uri'),
+        user = G.currentUser,
+        installed = user.installedApps = user.installedApps || {},
+        jApp = {
+          application: appInstall.get('application'),
+          install: uri,
+          allow: true
+        };
+        
+    installed[G.currentApp.appPath] = jApp;
+    if (uri && !U.isTempUri(uri)) {
+      PlugManager.fetchPlugs({appInstall: uri});
     }
   });
   

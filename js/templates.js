@@ -12,6 +12,25 @@ define('templates', [
 //    variable: 'G'
   };
   
+  var lazyImgSrcAttr = G.lazyImgSrcAttr,
+      blankImgDataUrl = G.blankImgDataUrl;
+  
+  window.onimageload = function() {
+    $(this).trigger('imageOnload');
+    return false;
+  };
+  
+  window.onimageerror = function() {
+    $(this).trigger('imageOnerror');
+    return false;
+  };
+  
+  function prepTemplate(text) {
+//    return text.trim();
+    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+  };
+  
   var Templates = {
     // Hash of preloaded templates for the app
     TAG: 'Templates',
@@ -70,7 +89,7 @@ define('templates', [
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {
-          'default': elt.innerHTML.trim()
+          'default': prepTemplate(elt.innerHTML)
         };
       }.bind(this));
     },

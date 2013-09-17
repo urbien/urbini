@@ -59,7 +59,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     });
     
     if (!G.online) {
-      return dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
+      dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
       return;
     }
 

@@ -103,7 +103,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
    // function. I put it in there simply because it makes me
    // feel a little more comfortable with the use of the
    // WITH keyword.
-    var args = U.slice.call(arguments, 1);
+    var args = _.tail(arguments);
     args[args.length] = "with (this) {" +
       "return " + sourceCode + ";" +
     "};";
@@ -211,7 +211,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     else
       _.extend(params, {models: JSON.stringify(models)});
     
-    U.ajax({type: 'POST', url: G.modelsUrl, data: params}).done(function(data, status, xhr) {
+    U.ajax({type: 'POST', url: G.modelsUrl, data: params}, 'fetchPlugs').done(function(data, status, xhr) {
       G.checkVersion(data);
       if (data && data.plugs)
         setupPlugs(data.plugs);
@@ -338,10 +338,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
             return oldPlug._uri == uri;
           });
           
-          _.each(matches, function(match) {              
-            current.remove(match);
-          });
-          
+          current = U.copyArray(current, matches);
           current.push(tPlug);
         });
       }

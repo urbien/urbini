@@ -169,7 +169,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
         
         U.ajax({
           url: url
-        });
+        }, 'appJSONPRequest');
       }).promise();
     }
   });

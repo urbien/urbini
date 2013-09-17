@@ -10,7 +10,7 @@ define('views/CommentListView', [
   return ResourceListView.extend({
     type: 'comment',
     renderItem: function(res, last) {
-      var liView = this.addChild('comment' + G.nextId(), new CommentListItemView({
+      var liView = this.addChild(new CommentListItemView({
         parentView: this,
         resource: res
       }));
@@ -22,7 +22,7 @@ define('views/CommentListView', [
     postRender: function() {
       if (this.rendered) {
         this.$el.trigger('create');
-//        if (this.$el.hasClass('ui-listview'))
+        if (this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
       }
       else

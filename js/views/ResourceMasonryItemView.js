@@ -17,8 +17,12 @@ define('views/ResourceMasonryItemView', [
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       var type = this.vocModel.type;
-      this.makeTemplate('masonry-list-item', 'template', type);
-      this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
+      this.isModification = U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
+
+      if (this.isModification)
+        this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
+      else
+        this.makeTemplate('masonry-list-item', 'template', type);
 
       if ($(window).height() > $(window).width())
         this.IMG_MAX_WIDTH = 272;
@@ -47,15 +51,13 @@ define('views/ResourceMasonryItemView', [
           self.router.navigate(window.location.hash, options);
         }, 
         error: function(model, xhr, options) {
-          var json;
-          try {
-            json = JSON.parse(xhr.responseText).error;
-          } catch (err) {
-            G.log(self.TAG, 'error', 'couldn\'t create like item, no error info from server');
+          var error = U.getJSON(xhr.responseText);
+          if (!error) {
+            self.log('error', 'couldn\'t create like item, no error info from server');
             return;
           }
           
-          Errors.errDialog({msg: json.details});
+          Errors.errDialog({msg: error.details});
           G.log(self.TAG, 'error', 'couldn\'t create like');
         }
       });      
@@ -78,8 +80,7 @@ define('views/ResourceMasonryItemView', [
     },
     render: function(options) {
       var vocModel = this.vocModel;
-      var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-      if (isModification) 
+      if (this.isModification) 
         return this.renderModificationTile();
       var m = this.resource;
       var isReference = m.isA('Reference'); 
@@ -124,9 +125,11 @@ define('views/ResourceMasonryItemView', [
 //      return this.renderTile();
     },  
     renderTile: function(event) {
-      var m = this.resource;
-      var vocModel = this.vocModel;
-      var meta = vocModel.properties;
+      var m = this.resource,
+          atts = m.attributes,
+          vocModel = this.vocModel,
+          meta = vocModel.properties;
+      
       if (!meta)
         return this;
       
@@ -141,17 +144,21 @@ define('views/ResourceMasonryItemView', [
         if (!imgP)
           imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
       }
-      var json = m.toJSON();
-      
+
       var rUri = m.getUri();
-      if (!rUri)
+      if (!rUri) {
+        // <debug>
         debugger;
+        // </debug>
+      }
+      
+      var tmpl_data = this.getBaseTemplateData();
         
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      var img = json[imgP];
-      var tmpl_data = _.extend(json, {resourceMediumImage: img});
+      tmpl_data.resourceMediumImage = img = atts[img];
+      tmpl_data.imageProperty = img;
 
       var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
@@ -174,7 +181,7 @@ define('views/ResourceMasonryItemView', [
             gridCols += '<span class="label">' + row + '</span>';
           var s = grid[row].value;
           if (grid[row].resourceLink) 
-            s = '<a href="' + resourceUri + '">' + json[pName] + '</a>';
+            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
           else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1)
             s = '<a href="' + s + '">' + s + '</a>';
   //        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
@@ -189,8 +196,8 @@ define('views/ResourceMasonryItemView', [
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
-        var oWidth  = json.originalWidth;
-        var oHeight = json.originalHeight;
+        var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
+        var oHeight = m.get('ImageResource.originalHeight');
         if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
           var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
           var iW = Math.floor(oWidth * ratio);
@@ -222,13 +229,13 @@ define('views/ResourceMasonryItemView', [
           }
         }
       }
-      var dn = json.davDisplayName;
+      var dn = atts.davDisplayName;
       var dnProps = U.getDisplayNameProps(meta);
       if (!dn  &&  dnProps) {
         var first = true;
         dn = '';
         for (var i=0; i<dnProps.length; i++) {
-          var val = json[dnProps[i]];
+          var val = atts[dnProps[i]];
           if (val) {
             if (first)
               first = false;
@@ -243,14 +250,14 @@ define('views/ResourceMasonryItemView', [
         gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
       if (m.isA('Submission')) { 
-        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy');
-        if (submittedBy.length) {
-          tmpl_data.creator = json[submittedBy[0]];
-          tmpl_data.creatorDisplayName = json[submittedBy[0] + '.displayName'];
-          tmpl_data.creatorThumb = json[submittedBy[0] + '.thumb'];
+        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy')[0];
+        if (submittedBy) {
+          tmpl_data.creator = atts[submittedBy];
+          tmpl_data.creatorDisplayName = atts[submittedBy + '.displayName'];
+          tmpl_data.creatorThumb = atts[submittedBy + '.thumb'];
         }
       }
       
@@ -259,7 +266,7 @@ define('views/ResourceMasonryItemView', [
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          comments = json[pMeta.shortName] || {count: 0};
+          comments = atts[pMeta.shortName] || {count: 0};
           tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: comments.count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
@@ -269,24 +276,24 @@ define('views/ResourceMasonryItemView', [
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          votes = json[pMeta.shortName] || {count: 0};
+          votes = atts[pMeta.shortName] || {count: 0};
           tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }
       
       if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
-        var params = U.getParamMap(window.location.hash);
-        if ((params  &&  params.$myApps)  ||  (json.lastPublished  &&  json.lastModifiedWebClass  && json.lastPublished >= json.lastModifiedWebClass) || (!json.lastPublished  &&  json.dashboard)) {
-          var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + json.appPath;
+        var params = _.getParamMap(window.location.hash);
+        if ((params  &&  params.$myApps)  ||  (atts.lastPublished  &&  atts.lastModifiedWebClass  && atts.lastPublished >= atts.lastModifiedWebClass) || (!atts.lastPublished  &&  atts.dashboard)) {
+          var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + atts.appPath;
           tmpl_data.tryApp = uri;
           tmpl_data.rUri = uri;
         }
         
-        var followers = json.appConnections || {count: 0};
+        var followers = atts.appConnections || {count: 0};
         var followersCount = followers.count;
         if (followersCount) {
           tmpl_data.followersCount = followersCount;
-          tmpl_data.followersUri = U.getPageUrl('list', meta.appConnections.range, {friend2: json._uri});
+          tmpl_data.followersUri = U.getPageUrl('list', meta.appConnections.range, {friend2: atts._uri});
         }
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
@@ -297,7 +304,7 @@ define('views/ResourceMasonryItemView', [
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -326,8 +333,10 @@ define('views/ResourceMasonryItemView', [
     },
     
     renderReferenceTile: function(event) {
-      var m = this.resource;
-      var meta = this.vocModel.properties;
+      var m = this.resource,
+          atts = m.attributes,
+          meta = this.vocModel.properties;
+      
       if (!meta)
         return this;
       
@@ -335,38 +344,37 @@ define('views/ResourceMasonryItemView', [
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
 //      if (img == null)
-      var json = m.toJSON();
+//      var json = m.toJSON();
+      var tmpl_data = this.getBaseTemplateData();
       
       var forResource = U.getCloneOf(vocModel, 'Reference.forResource')[0];
       var resourceDisplayName = U.getCloneOf(vocModel, 'Reference.resourceDisplayName')[0];
-      var forResourceUri = json[forResource];
+      var forResourceUri = atts[forResource];
       if (!forResourceUri)
         return this;
       var rUri = U.getLongUri1(forResourceUri);
       
-      var img = U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
-      if (!img)
-        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      img = json[img];
-      var tmpl_data = _.extend(json, {resourceMediumImage: img});
-
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
-      var resourceLink;
-      var i = 0;
-
+      var img = U.getCloneOf(vocModel, 'Reference.resourceImage')[0] || 
+                U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+      
+      img = img && atts[img];
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
-      var dn = json[resourceDisplayName];
+      
+      var dn = atts[resourceDisplayName];
       tmpl_data['davDisplayName'] = dn;
-        
+
+      var resourceUri = G.pageRoot + '#view/' + _.encode(rUri);
+      var resourceLink;
+//      var i = 0;
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var forResourceModel = U.getModel(U.getTypeUri(forResourceUri));
       var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
@@ -374,7 +382,7 @@ define('views/ResourceMasonryItemView', [
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -383,13 +391,13 @@ define('views/ResourceMasonryItemView', [
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -402,35 +410,40 @@ define('views/ResourceMasonryItemView', [
       return this;
     },
     renderIntersectionTile: function(delegateTo, cloneOf) {
-      var m = this.resource;
-      var vocModel = this.vocModel;
-      var meta = vocModel.properties;
+      var m = this.resource,
+          atts = m.attributes,
+          vocModel = this.vocModel,
+          meta = vocModel.properties;
+      
       if (!meta)
         return this;
 
-      var img;
-      var json = m.toJSON();
+      var tmpl_data = this.getBaseTemplateData(),
+          img,
+          dn;
+      
       if (cloneOf == 'Intersection.a') {
         var aF = U.getCloneOf(vocModel, 'Intersection.aFeatured');
         var aT = U.getCloneOf(vocModel, 'Intersection.aThumb');
-        img = aF ? json[aF[0]] : json[aT[0]];
+        img = aF ? atts[aF[0]] : atts[aT[0]];
       }
       else {
         var bF = U.getCloneOf(vocModel, 'Intersection.bFeatured');
         var bT = U.getCloneOf(vocModel, 'Intersection.bThumb');
-        img = bF ? json[bF[0]] : json[bT[0]];
+        img = bF ? atts[bF[0]] : atts[bT[0]];
       }
-      var dn = json[delegateTo];
+
+      dn = atts[delegateTo];
       if (!dn) 
         return this;  
       
       var rUri = dn;
-      dn = json[delegateTo + '.displayName'] || dn;
+      dn = atts[delegateTo + '.displayName'] || dn;
 //      var img = U.getCloneOf(meta, 'ImageResource.mediumImage')[0]; 
 //      if (img == null)
 //        img = U.getCloneOf(meta, 'ImageResource.bigMediumImage')[0];
 //      if (img == null)
-      var tmpl_data = _.extend(json, {resourceMediumImage: img});
+      tmpl_data.resourceMediumImage = img;
 
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
@@ -438,15 +451,16 @@ define('views/ResourceMasonryItemView', [
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
+      
       tmpl_data['rUri'] = rUri;  
       tmpl_data['davDisplayName'] = dn;
 
-      var resourceUri = G.pageRoot + '#view/' + U.encode(rUri);
+      var resourceUri = G.pageRoot + '#view/' + _.encode(rUri);
         
       var gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       tmpl_data['gridCols'] = gridCols;
       
-//      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc].value), snmHint);
+//      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       var type = U.getTypeUri(rUri);
       
       var forResourceModel = type ? U.getModel(type) : null;
@@ -460,7 +474,7 @@ define('views/ResourceMasonryItemView', [
         var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
         if (comments.length > 0) {
           var pMeta = meta[comments[0]];          
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
         }
       }
       if (U.isA(c, 'Votable')) {
@@ -469,13 +483,13 @@ define('views/ResourceMasonryItemView', [
           votes = U.getCloneOf(vocModel, 'Votable.voteUse');
         if (votes.length > 0) {
           var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: json[pMeta.shortName].count }; //U.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
       var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
       if (nabs.length > 0) {
         var pMeta = meta[nabs[0]];
-        var uri = U.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
@@ -488,25 +502,26 @@ define('views/ResourceMasonryItemView', [
       return this;
     },
     renderModificationTile: function(event) {
-      var meta = this.vocModel.properties;
+      var meta = this.vocModel.properties,
+          res = this.resource,
+          atts = res.attributes;
+      
       if (!meta)
         return this;
       
-      var json = this.resource.toJSON();
-      var imgSrc = json.v_imgSrc;
-      if (!imgSrc)
-        imgSrc = 'forResource';
-      if (typeof json[imgSrc] == 'undefined')
+//      var json = this.resource.toJSON();
+      var tmpl_data = this.getBaseTemplateData();
+      var imgSrc = atts.v_imgSrc || 'forResource'; // what is this?
+      if (typeof atts[imgSrc] == 'undefined')
         return this;
       
-      var rUri = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json[imgSrc]));
-      var tmpl_data = _.extend(json, {rUri: rUri});
-  
-      var modBy = G.pageRoot + '#view/' + U.encode(U.getLongUri1(json.modifiedBy));
-      tmpl_data.modifiedBy = modBy;
+      var rUri = tmpl_data.rUri = U.makePageUrl('view', U.getLongUri1(atts[imgSrc]));
+      var modBy = U.makePageUrl('view', U.getLongUri1(atts.modifiedBy));
+
+      _.extend(tmpl_data, _.pick(atts, 'modifiedBy', 'resourceDisplayName', 'resourceMediumImage', 'dateModified', 'v_modifiedByPhoto'))
       var isHorizontal = ($(window).height() < $(window).width());
   //    alert(isHorizontal);
-      var img = json.resourceMediumImage;
+      var img = atts.resourceMediumImage;
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
@@ -514,22 +529,25 @@ define('views/ResourceMasonryItemView', [
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
       }
       
-      var commentsFor = tmpl_data.v_showCommentsFor;
-      if (typeof commentsFor != 'undefined'  &&  json[commentsFor]) 
-        tmpl_data['v_showCommentsFor'] = U.getLongUri1(json[commentsFor]); // + '&m_p=comments&b_p=forum');
+      var commentsFor = atts.v_showCommentsFor;
+      if (typeof commentsFor != 'undefined'  &&  atts[commentsFor])
+        tmpl_data['v_showCommentsFor'] = res.get(commentsFor); // returns long uri
+//        tmpl_data['v_showCommentsFor'] = U.getLongUri1(atts[commentsFor]); // + '&m_p=comments&b_p=forum');
+      
   
-      var votesFor = tmpl_data.v_showVotesFor;
-      if (typeof votesFor != 'undefined'  &&  json[votesFor]) 
-        tmpl_data['v_showVotesFor'] = U.getLongUri1(json[votesFor]); //+ '&m_p=votes&b_p=votable');
+      var votesFor = atts.v_showVotesFor;
+      if (typeof votesFor != 'undefined'  &&  atts[votesFor]) 
+        tmpl_data['v_showVotesFor'] = res.get(votesFor); //+ '&m_p=votes&b_p=votable');
+//        tmpl_data['v_showVotesFor'] = U.getLongUri1(atts[votesFor]); //+ '&m_p=votes&b_p=votable');
 
-      var renabFor = tmpl_data.v_showRenabFor;
-      if (typeof renabFor != 'undefined'  &&  json[renabFor]) 
-        tmpl_data.v_showRenabFor = U.encode(U.getLongUri1(json[renabFor]) + '&m_p=nabs&b_p=forResource');
+      var renabFor = atts.v_showRenabFor;
+      if (typeof renabFor != 'undefined'  &&  atts[renabFor]) 
+        tmpl_data.v_showRenabFor = _.encode(res.get(renabFor) + '&m_p=nabs&b_p=forResource');
       
       // set size of images included in the items to be able
       // to start masonry code before images downloading
-      var oWidth  = json.originalWidth;
-      var oHeight = json.originalHeight;
+      var oWidth  = atts.originalWidth;
+      var oHeight = atts.originalHeight;
       if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
         var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
         tmpl_data.imgWidth = Math.floor(oWidth * ratio);
@@ -539,8 +557,12 @@ define('views/ResourceMasonryItemView', [
       try {
         this.$el.html(this.modTemplate(tmpl_data));
       } catch (err) {
-        G.log(this.TAG, 'failed to build masonry item for Modification resource ' + json.resourceDisplayName + ': ' + err);
+        // <debug>
+        debugger;
+        G.log(this.TAG, 'failed to build masonry item for Modification resource ' + atts.resourceDisplayName + ': ' + err);
+        // </debug>
       }
+      
       return this;
     }
   }, {

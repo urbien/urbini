@@ -38,16 +38,14 @@ define('views/CommentListItemView', [
           self.router.navigate(window.location.hash, options);
         }, 
         error: function(model, xhr, options) {
-          var json;
-          try {
-            json = JSON.parse(xhr.responseText).error;
-          } catch (err) {
-            G.log(self.TAG, 'error', 'couldn\'t create like item, no error info from server');
+          var error = U.getJSON(xhr.responseText);
+          if (!error) {
+            self.log('error', 'couldn\'t create like item, no error info from server');
             return;
           }
           
-          Errors.errDialog({msg: json.details});
-          G.log(self.TAG, 'error', 'couldn\'t create like');
+          Errors.errDialog({msg: error.details});
+          self.log('error', 'couldn\'t create like');
         }
       });      
     },

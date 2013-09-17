@@ -30,7 +30,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //  };
 
   function ResourceCache() {
-    var resources = {},
+    var resourcesByUri = {},
+//        resourcesByCid = {},
         lists = {};
     
 //    var resources = [],
@@ -44,15 +45,28 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     function cacheResource(resource) {
       var uri = resource.getUri();
       if (uri)
-        resources[uri] = resource;
+        resourcesByUri[uri] = resource;
+      
+//      resourcesByCid[resource.cid] = resource;
     };
     
-    function uncacheResource(uri) {
-      if (uri.getUri)
-        uri = uri.getUri();
+    function uncacheResource(/* resource, cid or uri */) {
+      var uri, 
+//          cid,
+          res = arguments[0];
       
-      if (uri)
-        delete resources[uri];
+      if (typeof res == 'object') {
+        uri = res.getUri();
+//        cid = res.cid;
+        if (uri)
+          delete resourcesByUri[uri];
+//        if (cid)
+//          delete resourcesByCid[cid]
+      }
+      else {
+        res = resourcesByUri[res];// || resourcesByCid[res];
+        return res && uncacheResource(res);
+      }
     };
     
     function cacheList(list) {
@@ -118,6 +132,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
      * @param atts: attributes that must be present on the resource we're searching for
      */
     function search(type, atts) {
+      
       var tester = function(res) {
         for (var name in atts) {
           var value = atts[name];
@@ -128,8 +143,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         return true;
       };
       
-      for (var uri in resources) {
-        var res = resources[uri];
+      for (var uri in resourcesByUri) {
+        var res = resourcesByUri[uri];
         if (tester(res))
           return res;
       }
@@ -137,7 +152,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       for (var colType in lists) {
         var cols = lists[colType];
         for (var query in cols) {
-          var col = cols[query], resources = col.models;
+          var col = cols[query], 
+              resources = col.models;
+          
           for (var i = 0; i < resources.length; i++) {
             var res = resources[i];
             if (tester(res))
@@ -152,7 +169,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     function getResource(uri) {
       switch (typeof uri) {
       case 'string':
-        var res = resources[uri];
+        var res = resourcesByUri[uri];
         if (res)
           return res;
         
@@ -160,7 +177,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         return search && search.resource;
       case 'function':
         var filter = uri;
-        var fromResCache = _.filter(resources, filter);
+        var fromResCache = _.filter(resourcesByUri, filter);
         var fromColCache = searchCollections(lists, filter);
         return fromResCache.concat(fromColCache || []);
       }
@@ -258,7 +275,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         });
       
         while (overCapacity()) {
-          var entry = cache.peek(),
+          var entry = Array.peek(cache),
               view = entry.getView();
           
           if (view.destroy) { // some views, like homePage, are indestructible :)
@@ -319,7 +336,9 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       getResources: getResources,
       getLists: getLists,
       remove: function(entry) {
-        cache.remove(entry);
+        var idx = cache.indexOf(entry);
+        if (idx != -1)
+          Array.removeFromTo(cache, idx, idx + 1);
       }
     };
   };
@@ -442,33 +461,14 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    }
   };
 
-//  Events.on('newResourceList', function(list) {
-//    cacheResourceList(list);
-//    var listType = list.vocModel.type;
-////    if (listType === G.commonTypes.Jst)
-////      C.templatesList = list;
-//    
-//    for (var uri in Resources) {
-//      var res = Resources[uri];
-//      if (res.vocModel.type == listType && !list.get(uri) && list.belongsInCollection(res)) {
-//        list.add(res);
-//      }
-//    }
-//  });
-//  
-//  Events.on('newResource', cacheResource);
-  Events.on('cacheList', function (list, permanent) {
-    resourceCache.cacheList(list, true);
-  });
-  
-  Events.on('cacheResource', function (resource, permanent) {
-    resourceCache.cacheResource(resource, true);
-  });
-
+  Events.on('cacheList', resourceCache.cacheList);
+  Events.on('cacheResource', resourceCache.cacheResource);
+  Events.on('uncacheList', resourceCache.uncacheList);
+  Events.on('uncacheResource', resourceCache.uncacheResource);
   Events.on('newModel', cacheModel);
   
   Events.on('savedMake', function(resource) {
-    resourceCache.cacheResource(resource, true);
+    resourceCache.cacheResource(resource);
     var tempUri = resource.getUri();
     resource.on('syncedWithServer', function() {
       resourceCache.uncacheResource(tempUri);

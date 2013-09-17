@@ -90,10 +90,10 @@ define('error', [
       timeout: 'Slow internet connection, please try again'
     },
     getBackboneErrorHandler: function(errorHandler) {
-      return U.partial(defaultBackboneErrorHandler, errorHandler);
+      return _.partial(defaultBackboneErrorHandler, errorHandler);
     },
     getXHRErrorHandler: function(errorHandler) {
-      return U.partial(defaultXHRErrorHandler, errorHandler);
+      return _.partial(defaultXHRErrorHandler, errorHandler);
     },
     errDialog: function(options) {
       U.alert(options); // maybe give some indication that it's an error?
@@ -110,9 +110,6 @@ define('error', [
   for (var m in Errors.msgs) {
     Errors[m] = errDialogFunction(Errors.msgs[m]);
   }
-
-  if (G.DEBUG)
-    G.Errors = Errors;  
 
   return Errors;
 });

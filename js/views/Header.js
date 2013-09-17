@@ -56,20 +56,19 @@ define('views/Header', [
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = vocModel && vocModel.type;
-      
+      this.calcSpecialButtons();
 //      _.extend(this, options);
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       this.info = this.hashParams['-info'];
       
       var buttons = this.buttons;
-      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); })) {
-        buttons.publish = true;
-      }
+//      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
+//        buttons.publish = true;
+//      
+//      if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
+//        buttons.publish = true;
       
-      if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass)) {
-        buttons.publish = true;
-      }
       var btnOptions = {
         model: this.model, 
         parentView: this,
@@ -94,7 +93,7 @@ define('views/Header', [
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
-          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(btn + 'BtnView', new model(btnOptions));
+          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(new model(btnOptions));
         }
         
         this.readyDfd.resolve();
@@ -201,7 +200,7 @@ define('views/Header', [
       Events.stopEvent(e);
       var self = this;
       Voc.getModels("aspects/tags/Tag").done(function() {
-//        var options = U.getParamMap(self.locationHref);
+//        var options = _.getParamMap(self.locationHref);
 //        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, _.extend({application: self.vocModel.type, $title: "Categories"}, options));
         var params = {};
         var meta = self.vocModel.properties;
@@ -243,7 +242,7 @@ define('views/Header', [
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
         this.finish();
-      }.bind(this)); 
+      }.bind(this));
     },
 
     refreshTitle: function() {
@@ -317,7 +316,7 @@ define('views/Header', [
       }
       else if (pBtn) {
         this.$('div#publishBtn').hide();
-        var options = SPECIAL_BUTTONS.slice().remove('publish');
+        var options = _.filter(SPECIAL_BUTTONS, _.partial(_['!='], 'publish'));
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
@@ -381,7 +380,7 @@ define('views/Header', [
 
       this.calcSpecialButtons();
       if (this.rendered)
-        this.$el.html("");
+        this.html("");
       
       if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
         this.categories = true;
@@ -416,7 +415,7 @@ define('views/Header', [
       if (!this.publish  &&  this.doTry  &&  this.forkMe)
         templateSettings.className = 'ui-grid-b';
       
-      this.$el.html(this.template(templateSettings));
+      this.html(this.template(templateSettings));
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
@@ -485,7 +484,7 @@ define('views/Header', [
       
 //      this.refreshCallInProgressHeader();
       this.restyleNavbar();
-      this.finish();
+      this.finish();      
       return this;
     }
   },

@@ -83,3 +83,9 @@
 <actions "Actions">
 <wouldYouLikeToChatInPrivate "Would you like to chat in private?">
 <login "Login">
+<allow "Allow">
+<deny "Deny">
+<changedYourMindClickToInstall "If you change your mind about installing {{ $appName }}, click <a href='{{ $installUrl }}'>here</a>">
+<thisAppMustBeInstalledBeforeUse "This app must be installed before it is used in any way.">
+<allowApp "Allow app {{ $appName }}?">
+<doYouGrantAppAccessToProfileAndFriends "Do you grant this app access to your profile and friends?">

@@ -17,11 +17,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   
   _.extend(Redirecter.prototype, {    
     _forType: {}, // for redirecting after edit/mkresource
+    _ffwdMakeForType: {},
     _chooserForType: {}, // for redirecting to chooser/
     _chooserForInterface: {}, // for redirecting to chooser/
     _forAction: {},
     log: function() {
-      var args = U.slice.call(arguments);
+      var args = _.toArray(arguments);
       args.unshift("Redirecter", "redirect");
       G.log.apply(G, args);
     }
@@ -34,14 +35,49 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (params && params.$returnUri)
       Events.trigger('navigate', params.$returnUri, {replace: true});
     else {
-      Events.trigger('back');
+      Events.trigger('back', function ifNoHistory() {
+        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+      });
+      
       Events.trigger('messageBar', 'info', {
         message: 'Edits applied'
       });
     }
   };
+
+  Redirecter.prototype.redirectAfterCancelEdit = function(res, options) {
+    if (res.vocModel.type == G.commonTypes.AppInstall) {
+      if (G.currentApp.forceInstall) {
+        Events.trigger('messageBar', 'error', {
+          message: G.localize('thisAppMustBeInstalledBeforeUse')
+        });
+        
+        return;
+      }
+      
+      Events.trigger('navigate', 'home/?' + $.param({
+        '-gluedInfo': G.localize('changedYourMindClickToInstall', {
+            appName: G.currentApp.title,
+            installUrl: U.makePageUrl('make', G.commonTypes.AppInstall, {
+              allow: true,
+              application: G.currentApp._uri,
+              user: G.currentUser._uri
+            })
+          })
+        })
+      );
+    }
+    else
+      Events.trigger('back',  function ifNoHistory() {
+        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+      });
+  };
+
+  Redirecter.prototype.redirectAfterCancelMake = function(res, options) {
+    this.redirectAfterCancelEdit(res, options);
+  };
   
-  Redirecter.prototype.redirectAfterMake = function(res) {
+  Redirecter.prototype.redirectAfterMake = function(res, options) {
     var self = this,
         args = arguments,
         options = {
@@ -54,7 +90,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         redirecter;
 
     if (params.$returnUri) { 
-      Events.trigger('navigate', U.getUrlInfo().setUri(params.$returnUri), _.extend(options, {
+      Events.trigger('navigate', params.$returnUri, _.extend(options, {
         forceFetch: true
       }));
       
@@ -197,7 +233,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Redirecter.prototype._default = function(res, options) {
-    Events.trigger('back');
+    Events.trigger('back', function ifNoHistory() {
+      Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+    });
+    
     Events.trigger('messageBar', 'info', {
       message: '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res))
     });
@@ -634,7 +673,32 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     return totalEditable ? Array.prototype.concat.apply([], _.pluck(grouped, 'props')).concat(ungrouped) : null;
   };
   
-  Redirecter.prototype.fastForwardMkResource = function(res) {
+  
+  // FAST FORWARD 'MAKE' FOR TYPES
+//  Redirecter.prototype._ffwdMakeForType[G.commonTypes.AppInstall] = function(res) {
+//    if (res.get('appPlugs'))
+//      return false;
+//
+//    res.save({
+//      allow: true
+//    });
+//  };
+  
+  Redirecter.prototype.fastForwardMake = function(res) {
+    // do it per type
+//    var self = this,
+//        vocModel = res.vocModel,
+//        fastForwarded = _.any(_.keys(this._ffwdMakeForType), function(type) {
+//          if (U.isAssignableFrom(vocModel, type))
+//            return self._ffwdMakeForType[type](res) !== false;
+//        });
+//
+//    if (fastForwarded)
+//      return true;
+    
+    if (res.vocModel.type == G.commonTypes.AppInstall)
+      return false;
+        
     var editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
         merged = getEditableProps(editableProps);
     
@@ -711,12 +775,22 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   
   Events.on('savedEdit', function(res, options) {
     if (!options || options.redirect !== false)
-      redirecter.redirectAfterEdit(res);
+      redirecter.redirectAfterEdit(res, options);
   });
   
   Events.on('savedMake', function(res, options) {
     if (!options || options.redirect !== false)
-      redirecter.redirectAfterMake(res);
+      redirecter.redirectAfterMake(res, options);
+  });
+
+  Events.on('cancelEdit', function(res, options) {
+    if (!options || options.redirect !== false)
+      redirecter.redirectAfterCancelEdit(res, options);
+  });
+
+  Events.on('cancelMake', function(res, options) {
+    if (!options || options.redirect !== false)
+      redirecter.redirectAfterCancelMake(res, options);
   });
 
   Events.on('loadChooser', function(res, prop, e, options) {

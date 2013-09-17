@@ -195,7 +195,7 @@ define('views/MapView', [
             height = Math.round(height / imgOffset);
           }
           
-          medImg = {value: U.decode(medImg)};
+          medImg = {value: _.decode(medImg)};
           width && (medImg.width = width);
           height && (medImg.height = height);
           data.image = this.makeTemplate("imagePT", "imagePT")(medImg);
@@ -304,7 +304,7 @@ define('views/MapView', [
       var depth = 1;
       for (var i = 0; i < arr.length; i++) {
         var sub = arr[i];
-        if (U.isArray(sub))
+        if (_.isArray(sub))
           depth = Math.max(depth, U.getDepth(sub) + 1);
         else
           return depth;

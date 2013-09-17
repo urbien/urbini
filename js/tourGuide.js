@@ -9,10 +9,16 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 //      backboneLoadUrl = Backbone.history.loadUrl,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
+      currentView,
       tourManager;
 
+  Events.on('pageChange', function(from, to) {
+    currentView = to;
+    tourManager.getTour();
+  });
+  
   function log() {
-    var args = [].slice.call(arguments);
+    var args = _.toArray(arguments);
     args.unshift("tourGuide", "tour");
     G.log.apply(G, args);
   };
@@ -35,7 +41,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // going back a step, that's fine, not everyone's a genius
       }
       else {
-        var params = U.getParamMap(step.get('urlQuery')) || {};
+        var params = _.getParamMap(step.get('urlQuery')) || {};
         params[TOUR_PARAM] = getTourId(tour);
         params[TOUR_STEP_PARAM] = step.get('number');
         var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
@@ -75,9 +81,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   };
   
   function hashInfoCompliesWithTourStep(hashInfo, step) {
-    var isModelParam = U.negate(U.isMetaParameter),
+    var isModelParam = _.negate(U.isMetaParameter),
         hashInfoModelParams = U.filterObj(hashInfo.params, isModelParam),
-        stepParams = U.getParamMap(step.get('urlQuery')),
+        stepParams = _.getParamMap(step.get('urlQuery')),
         stepModelParams = U.filterObj(stepParams, isModelParam),
         stepType = step.get('typeUri'),
         stepRoute = step.get('route'),
@@ -115,14 +121,18 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         _initialized;
 
     function init() {
-      _initPromise = Voc.getModels(['commerce/urbien/Tour', 'commerce/urbien/TourStep', 'commerce/urbien/MyTour']).then(function(t, s, m) {
+      _initPromise = window._tourPromise = Voc.getModels(['commerce/urbien/Tour', 'commerce/urbien/TourStep', 'commerce/urbien/MyTour']).then(function(t, s, m) {
         TOUR_MODEL = t;
         STEP_MODEL = s;
         MY_TOUR_MODEL = m;
-        return getMyTours().always(function(myTours) {
+        var dfd = $.Deferred();
+        getMyTours().always(function showMustGoOn(myTours) {
           _myTours = myTours;
           _initialized = true;
+          dfd.resolve();
         });
+        
+        return dfd.promise();
       });
     };
     
@@ -162,34 +172,38 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       _tour = _steps = _step = null;
     };
     
+    function getTour() {
+      if (!_initialized) {
+        var args = arguments;
+        return _initPromise.then(getTour);
+      }
+    
+      Events.once('pageChange', function() {
+        _.each(currentSearches, function(op) {
+          if (!op.done())
+            op.cancel();
+        });
+        
+        currentSearches = [];
+      });
+      
+      var searchOp = SearchOperation({
+        tour: _tour, 
+        steps: _steps, 
+        step: _step
+      });
+      
+      currentSearches.push(searchOp);
+      searchOp.run();
+    }
+    
     init();
     return {
-      getTour: function() {
-        if (!_initialized) {
-          var args = arguments;
-          return _initPromise.then(function() {
-            return tourManager.getTour.apply(tourManager, arguments);
-          })
-        }
-      
-        Events.once('pageChange', function() {
-          _.each(currentSearches, function(op) {
-            if (!op.done())
-              op.cancel();
-          });
-          
-          currentSearches = [];
-        });
-        
-        var searchOp = SearchOperation({
-          tour: _tour, 
-          steps: _steps, 
-          step: _step
-        });
-        
-        currentSearches.push(searchOp);
-        searchOp.run();
+      init: function(view) {
+        currentView = view;
+        getTour();
       },
+      getTour: getTour,
       getCurrentTour: function() {
         return _tour;
       },
@@ -210,24 +224,32 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       return REJECTED_PROMISE;
     
     var params = {
-      user: G.currentUser._uri
+      user: G.currentUser._uri,
+      $select: 'tour,status'
     };
     
     if (tours)
       params.$in = 'tour,' + _.map(tours, function(t) { return t.getUri(); }).join(',');
     
     return $.Deferred(function(defer) {
-      var myTours = new ResourceList(null, {
-        model: MY_TOUR_MODEL,
-        params: params
-      });
+      var myTours = C.getResourceList(MY_TOUR_MODEL, $.param(params));
+      
+      if (!myTours) {
+        myTours = new ResourceList(null, {
+          model: MY_TOUR_MODEL,
+          params: params
+        });
+        
+        Events.trigger('cacheList', myTours);
+      }
       
       myTours.fetch({
         success: function() {
           if (!myTours.isFetching())
             defer.resolve(myTours)
         },
-        error: defer.reject
+        error: defer.reject,
+        ajaxQueue: 'tours'
       });
     }).promise();
   };
@@ -297,10 +319,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         id: tourId
       }, TOUR_MODEL);
     
-      return $.whenAll(
-        fetchTour(tourUri, TOUR_MODEL), 
-        fetchSteps(tourUri, STEP_MODEL)
-      ).then(validateAndRunTour, function() {
+      return fetchTour(tourUri).then(validateAndRunTour, function() {
         debugger;
         delete _params[TOUR_PARAM];
         delete _params[TOUR_STEP_PARAM];
@@ -352,19 +371,25 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           modelType: null
         })
       }
-      if (G.currentUser.guest) {
-        ands.push({
-          mustBeLoggedIn: false
-        })
-      }
-        
-      var tours = new ResourceList(null, {
+      
+      var params = {
+          $and: U.$and.apply(null, ands),
+          $select: 'app,route,modelType'
+        },
+        tours = C.getResourceList(TOUR_MODEL, $.param(params)),
+        tour;
+      
+      if (!tours) {
+        tours = new ResourceList(null, {
           model: TOUR_MODEL,
-          params: {
-            $and: U.$and.apply(null, ands)
-          }
-        }),
-        tour; 
+          params: params 
+        });
+        
+        Events.trigger('cacheList', tours);
+        currentView.once('destroyed', function() {
+          Events.trigger('uncacheList', tours);
+        });
+      }
       
       return $.Deferred(function(defer){        
         tours.fetch({
@@ -372,9 +397,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
             if (!tours.isFetching())
               chooseTour(tours.models).then(defer.resolve, defer.reject);
           },
-          error: function() {
-            defer.reject();
-          }
+          error: defer.reject,
+          ajaxQueue: 'tours'
         });
       }).promise();
     };
@@ -423,7 +447,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (!tours.length)
         return REJECTED_PROMISE;
       
-      tours = tours.sort(function(a, b) {
+      tours.sort(function(a, b) {
         var result;
         _.find(_tourProps, function(p) {
           var aVal = a.get(p),
@@ -450,17 +474,30 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       if (!tours.length)
         return REJECTED_PROMISE;
       
-      var theChosenOne = tours[0];
-      return fetchSteps(theChosenOne.getUri(), STEP_MODEL).then(function(steps) {
+      var theChosenOne = tours[0],
+          steps = theChosenOne.getInlineList('steps'),
+          getSteps = steps ? U.resolvedPromise(steps) : fetchSteps(theChosenOne.getUri());
+      
+      return getSteps.then(function(steps) {
         return validateAndRunTour(theChosenOne, steps);
       }, function() {
         debugger;
-      }).then(function() {
-        // we're good
-      }, function() {
+      }).then(undefined, function() {
         // tour fizzled out
-        return _chooseTour(tours.slice(1));
+        tours.shift();
+        return _chooseTour(tours);
       });
+
+//      return fetchSteps(theChosenOne.getUri()).then(function(steps) {
+//        return validateAndRunTour(theChosenOne, steps);
+//      }, function() {
+//        debugger;
+//      }).then(function() {
+//        // we're good
+//      }, function() {
+//        // tour fizzled out
+//        return _chooseTour(tours.slice(1));
+//      });
     };
     
     function validateAndRunTour(tour, steps) {
@@ -516,8 +553,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         success: function() {
           defer.resolve(tourRes);
         },
-        error: defer.reject
-      })
+        error: defer.reject,
+        ajaxQueue: 'tours'
+      });      
     }).promise();
   };
 
@@ -528,29 +566,31 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           },
           steps = C.getResourceList(STEP_MODEL, $.param(stepParams));
       
-      if (!steps)
+      if (!steps) {
         steps = new ResourceList(null, {model: STEP_MODEL, params: stepParams});
+        Events.trigger('cacheList', steps);
+        currentView.once('destroyed', function() {
+          Events.trigger('uncacheList', steps);
+        });
+      }
       
       if (steps.length)
         return defer.resolve(steps);
       else {
         steps.fetch({
+          params: {
+            $select: '$all'
+          },
           success: function() {
             defer.resolve(steps);
           },
-          error: defer.reject
+          error: defer.reject,
+          ajaxQueue: 'tours'
         });
         
         return;
       }
     }).promise();
-//    .then(function(steps) {
-//      steps.comparator = function(a, b) {
-//        return a.get(SEQ_PROP) - b.get(SEQ_PROP);
-//      };
-//      
-//      return steps.sort();
-//    });
   };
   
   function getStepByNumber(steps, num) {

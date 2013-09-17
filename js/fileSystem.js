@@ -35,7 +35,7 @@ define('fileSystem', ['globals'], function(G) {
     defer.reject(e);
   };
   
-  function dataURLToBlob(dataURL) {
+  function dataURLToBlob(dataURL, contentType) {
     var BASE64_MARKER = ';base64,';
     if (dataURL.indexOf(BASE64_MARKER) == -1) {
       var parts = dataURL.split(',');
@@ -46,7 +46,7 @@ define('fileSystem', ['globals'], function(G) {
     }
 
     var parts = dataURL.split(BASE64_MARKER);
-    var contentType = parts[0].split(':')[1];
+    contentType = contentType || parts[0].split(':')[1];
     var raw = window.atob(parts[1]);
     var rawLength = raw.length;
 
@@ -59,11 +59,11 @@ define('fileSystem', ['globals'], function(G) {
     return new Blob([uInt8Array], {type: contentType});
   };
 
-  function readAsBlob(file) {
+  function readAsBlob(file, contentType) {
     this.readAsDataURL(file);
     var onload = this.onload;
     this.onload = function(event) {
-      event.target.result = dataURLToBlob(event.target.result);
+      event.target.result = dataURLToBlob(event.target.result, contentType);
       onload(event);
     };
   };
@@ -81,7 +81,8 @@ define('fileSystem', ['globals'], function(G) {
       options = options || {};
       var format = options.format || 'DataURL',
           file = options.file,
-          filePath = options.filePath;
+          filePath = options.filePath,
+          contentType = options.contentType;
   
       var reader = new window.FileReader();
       var method = 'readAs' + format;
@@ -99,7 +100,7 @@ define('fileSystem', ['globals'], function(G) {
         reader[method](file);
         reader.onload = function(e) {
           var res = e.target.result;
-          defer.resolve(blobby ? dataURLToBlob(res) : res);
+          defer.resolve(blobby ? dataURLToBlob(res, contentType) : res);
         };
       }, getErrorFunc('fileEntry error', defer));
     }).promise();
@@ -256,12 +257,15 @@ define('fileSystem', ['globals'], function(G) {
   var formats = ['DataURL', 'Blob', 'Text', 'ArrayBuffer', 'BinaryString'];
   $.each(formats, function(idx, format) {
     // provide convenient handles, FileSystem.readFileAsDataURL, FileSystem.readFileAsText, etc.
-    FileSystem['readAs' + format] = function(filePath, context) {
+    FileSystem['readAs' + format] = function(filePath, contentType) {
       var info = {
         format: format
       };
       
       info[filePath instanceof File ? 'file' : 'filePath'] = filePath;
+      if (contentType)
+        info.contentType = contentType;
+      
       return readFile(info);
     }
   });

@@ -9782,7 +9782,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   root.require = require;
   root.define = define;
   var main = $('[data-main]');
-  if (main) {
+  if (main.length) {
     main = main.data('main') + '.js';
     var idx = main.lastIndexOf('/');
     if (idx>=0) {

@@ -28,16 +28,14 @@ define('views/ListPage', [
         parentView: this
       };
       
-      var hash = window.location.hash;
-      var json = this.json = rl.toJSON();      
-      json.viewId = this.cid;
+      var hash = window.location.hash;      
       var vocModel = this.vocModel;
       var type = vocModel.type;
       this.makeTemplate(this.template, 'template', type);
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
-      var isMasonry = json.isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isPhotogrid = _.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
       /*
@@ -56,7 +54,8 @@ define('views/ListPage', [
         this.mapReady = this.mapReadyDfd.promise();
         U.require('views/MapView', function(MV) {
           MapView = MV;
-          this.addChild('mapView', new MapView(commonParams));
+          this.mapView = new MapView(commonParams);
+          this.addChild(this.mapView);
           this.mapReadyDfd.resolve();
         }.bind(this));
       }      
@@ -71,7 +70,7 @@ define('views/ListPage', [
                           U.isUserInRole(U.getUserRole(), 'siteOwner');
           if (!showAddButton) {
             var p = U.getContainerProperty(vocModel);
-            if (p && U.getParamMap[p])
+            if (p && _.getParamMap[p])
               showAddButton = true;
           }
         }
@@ -129,10 +128,12 @@ define('views/ListPage', [
         login: G.currentUser.guest
       };
 
-      this.addChild('header', new Header(_.extend({
+      this.header = new Header(_.extend({
         buttons: this.headerButtons,
         viewId: this.cid
-      }, commonParams)));
+      }, commonParams));
+      
+      this.addChild(this.header);
       
       
       var models = rl.models;
@@ -141,7 +142,7 @@ define('views/ListPage', [
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var params = hash ? U.getParamMap(hash) : null;
+      var params = hash ? _.getParamMap(hash) : null;
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
@@ -160,7 +161,8 @@ define('views/ListPage', [
       
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.addChild('listView', new listViewCl(_.extend({mode: self.mode}, commonParams, self.options)));
+        self.listView = new listViewCl(_.extend({mode: self.mode}, commonParams, self.options));
+        self.addChild(self.listView);
         readyDfd.resolve();
       });
       
@@ -278,11 +280,6 @@ define('views/ListPage', [
       props[p[0]] = uri;
       newRes.save(props, {
         success: function(resource, response, options) {
-          if (response.error) {
-            onSaveError(resource, response, options);
-            return;
-          }
-          
           res.lastFetchOrigin = null;
           self.redirect(res, {trigger: true, replace: true, forceFetch: true});
         }
@@ -298,8 +295,11 @@ define('views/ListPage', [
     },
 
     renderHelper: function() {
-      var json = this.json;
-      this.$el.html(this.template(json));
+      this.$el.html(this.template({
+        viewId: this.cid,
+        isMasonry: this.isMasonry
+      }));
+      
       var views = {
         '#headerDiv': this.header
       };

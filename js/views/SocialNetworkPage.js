@@ -28,11 +28,13 @@ define('views/SocialNetworkPage', [
         login: G.currentUser.guest
       };
       
-      this.addChild('header', new Header({
+      this.header = new Header({
         viewId: this.cid,
         parentView: this,
         model: this.model
-      }));
+      });
+      
+      this.addChild(this.header);
 
       this.makeTemplate('socialNetButtonTemplate', 'buttonTemplate');
       this.makeTemplate('socialNetworkPageTemplate', 'template');
@@ -79,13 +81,18 @@ define('views/SocialNetworkPage', [
       Events.stopEvent(e);
       var btn = e.currentTarget,
           net = btn.dataset.net,
-          url = this._netUrls[net];
+          access = this.socialAccesses.where({
+            socialNet: net
+          }, true);
       
-      if (url) {
-        window.location.href = url;
+      if (access) {
+        Events.trigger('navigate', U.makeMobileUrl('edit', access.getUri()));      
       }
       else {
-        // not ready
+        window.location.href = U.buildSocialNetOAuthUrl({
+          net: net,
+          action: 'Connect'
+        });
       }
     },
     
@@ -121,15 +128,14 @@ define('views/SocialNetworkPage', [
         if (accesses) {
           var action,
               access = accesses.where({
-                socialNet: net.socialNet
+                socialNet: net.socialNet,
+                connected: true
               }, true),
-              connected = access && access.connected;
+              connected = access && access.get('connected');
            
-          action = connected ? 'Disconnect' : 'Connect';
-          btnInfo.exists = !access;
+          btnInfo.exists = !!access;
           btnInfo.connected = connected;
-          btnInfo.href = self._netUrls[net.socialNet] = U.buildSocialNetOAuthUrl(net, action); // sorted alphabetically
-          btnInfo.linkText = action;
+          btnInfo.linkText = connected ? 'Disconnect' : 'Connect';
         }
         
         btns.push(btnInfo);

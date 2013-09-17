@@ -146,7 +146,9 @@ define('resourceSynchronizer', [
     itemRef._dirty = 1;
     itemRef._problematic = 0;
     return put(REF_STORE.name, itemRef).then(function() {
-      return Synchronizer.addItems(type, [item]).then(syncWithServer, function() {
+      return Synchronizer.addItems(type, [item]).then(function() {
+        syncWithServer();
+      }, function() {
         debugger;
       });
     }, function() {
@@ -236,7 +238,10 @@ define('resourceSynchronizer', [
       return;
 
     if (!G.online) {
-      Events.once('online', syncWithServer);
+      Events.once('online', function() {
+        syncWithServer();
+      });
+      
       return;
     }
       
@@ -247,15 +252,14 @@ define('resourceSynchronizer', [
     
     if (version <= 1)
       return;
-    
 
-    var retry = U.partial(setTimeout, syncWithServer, 2000);
+    var retry = _.partial(setTimeout, syncWithServer, 2000);
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
       if (!results.length)
         return;
       
       for (var i = 0; i < results.length; i++) {
-        U.pushUniq(types, U.getTypeUri(results[i]._uri));
+        _.pushUniq(types, U.getTypeUri(results[i]._uri));
       }
       
       Voc.getModels(types, {sync: false}).done(function() {
@@ -463,15 +467,9 @@ define('resourceSynchronizer', [
 //          else if (code == 304)
 //            return;
         
-        var problem = xhr.responseText;
-        if (problem) {
-          try {
-            problem = JSON.parse(problem);
-            ref._error = problem.error;
-          } catch (err) {
-            problem = null;
-          }
-        }
+        var problem = U.getJSON(xhr.responseText);
+        if (problem)
+          ref._error = problem;
         
         ref._error = ref._error || {code: -1, details: (ref._tempUri ? 'There was a problem creating this resource' : 'There was a problem with your edit')};
         var isMkResource = !ref._tempUri;
@@ -510,7 +508,7 @@ define('resourceSynchronizer', [
     if (!canceled || !canceled.length || !res.get(canceled[0]))
       return;
     
-    res.on('delete', U.partial(deleteItem, res));
+    res.on('delete', _.partial(deleteItem, res));
     res['delete']();
   };    
   

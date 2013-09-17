@@ -48,7 +48,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     this.appendRequest = function(models, options) {
       delete options.wait;
       _.each(models, function(model) {
-        U.pushUniq(collected, model);
+        _.pushUniq(collected, model);
       });
       
       return promise.then(function() {
@@ -156,14 +156,14 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     };    
 
     _.each(types, function(type) {
-      var requireType = U.partial(require, type);
+      var requireType = _.partial(require, type);
       if (force) {
         requireType();
         return;
       }
       
-      var getMetadata = U.partial(getModelMetadataFromStorage, type, source),
-          getData = U.partial(getModelFromStorage, type, source),
+      var getMetadata = _.partial(getModelMetadataFromStorage, type, source),
+          getData = _.partial(getModelFromStorage, type, source),
           info = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || {},
 //          modelDfd = $.Deferred(),
 //          modelPromise = modelDfd.promise();
@@ -232,7 +232,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
             type: 'POST'
           }, _.pick(options, 'sync'));
       
-      U.ajax(ajaxSettings).done(function(data, status, xhr) {
+      U.ajax(ajaxSettings, 'fetchModels').done(function(data, status, xhr) {
         if (xhr.status === 304)
           return defer.resolve();
         
@@ -355,7 +355,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       var newModel = mz[i];
       newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;            
       loadedTypes.push(newModel.type);
-      U.pushUniq(newModels, newModel);
+      _.pushUniq(newModels, newModel);
     }
     
     var notStale = _.filter(_.values(mightBeStale.models), function(model) {
@@ -369,7 +369,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
             return m.type == model.type;
           });
       
-      MODEL_CACHE.remove(collisions);
+      collisions = U.copyArray(MODEL_CACHE, collisions);
       MODEL_CACHE.push(model);
     }
     
@@ -629,7 +629,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 //      });
 //      
 //      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
-//      U.pushUniq(G.storedModelTypes, type);
+//      _.pushUniq(G.storedModelTypes, type);
 //    }, 100);
   };
 

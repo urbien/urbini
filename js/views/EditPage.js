@@ -31,7 +31,9 @@ define('views/EditPage', [
   //    json.viewId = this.cid;
       var settings = {viewId: this.cid}
       if (U.isAssignableFrom(res, "AppInstall")) {
-        settings.submit = 'Allow';
+        settings.submit = this.loc('allow');
+        settings.cancel = this.loc('deny');
+        this.editOptions.saveOnBack = false;
 //        settings.noCancel = true;
       }
       
@@ -45,23 +47,27 @@ define('views/EditPage', [
         login: G.currentUser.guest
       };
     
-      this.addChild('header', new Header({
+      this.header = new Header({
         model: res, 
-//        pageTitle: this.pageTitle || res.get('davDisplayName'), 
+  //      pageTitle: this.pageTitle || res.get('davDisplayName'), 
         buttons: this.buttons,
         viewId: this.cid,
         parentView: this,
         isEdit: true
-      }));
+      });
       
-      var reqParams = U.getParamMap(window.location.href);
+      this.addChild(this.header);
+      
+      var reqParams = _.getParamMap(window.location.href);
       var editCols =  reqParams['$editCols'];
       this.isVideo = res.isA('VideoResource');
       if (!editCols && !this.isVideo) {
-        this.addChild('imageView', new ResourceImageView({model: res, parentView: this}));
+        this.imageView = new ResourceImageView({model: res, parentView: this});
+        this.addChild(this.imageView);
       }
       
-      this.addChild('editView', new EditView(_.extend({model: res, parentView: this}, this.editOptions)));
+      this.editView = new EditView(_.extend({model: res, parentView: this}, this.editOptions));
+      this.addChild(this.editView);
       if (this.editParams)
         this.editView.set(this.editParams);
     },
@@ -130,7 +136,7 @@ define('views/EditPage', [
       ranges.push(this.vocModel.type);
       var inlineLists = {};
       Voc.getModels(ranges).done(function() {
-        var params = U.getParamMap(window.location.href);
+        var params = _.getParamMap(window.location.href);
         var type = self.vocModel.type;
         var listModel = U.getModel(type);
         var inlineList = C.getResourceList(self.vocModel, U.getQueryString(params, true));
@@ -142,7 +148,8 @@ define('views/EditPage', [
 //              if (inlineList.size() && !res._settingInlineList) && !currentlyInlined[name]) {
 //                res.setInlineList(name, inlineList);
 //              }
-            self.addChild('commentsView', new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]}));
+            self.commentsView = new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]});
+            self.addChild(self.commentsView);
             self.assign('#comments', self.commentsView);
               
 //              _.each(['updated', 'added', 'reset'], function(event) {

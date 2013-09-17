@@ -18,6 +18,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       FileSystem,
       fileSystemPromise,
       filePropertyName,
+      fileTypePropertyName,
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise();
@@ -72,12 +73,14 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function _saveFile(item, _item, prop, val) {
+    var contentType = val.type;
     return FileSystem.writeFile({
       blob: val,
       filePath: getFileSystemPath(item, prop, val)
     }).done(function(fileEntry) {
       var placeholder = _item[prepPropName(prop)] = item[prop] = {};
       placeholder[filePropertyName] = fileEntry.fullPath;
+      placeholder[fileTypePropertyName] = contentType;
       
       var resource = C.getResource(item._uri);
       if (resource)
@@ -86,23 +89,44 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     });
   }
-  
+
+  function _convertImage(item, _item, prop, val) {
+    return $.Deferred(function(defer) {
+      var img = new Image;
+      img.src = val;
+      img.onload = function() {
+        var dataUrl = U.imageToDataURL(img);
+        prop = prop + '.dataUrl';
+        _item[prepPropName(prop)] = dataUrl;
+        defer.resolve();
+        
+        var resource = C.getResource(item._uri);
+        if (resource)
+          resource.set(prop, dataUrl, {silent: true});
+      };
+      
+      img.onerror = defer.reject.bind(defer);
+    }).promise();
+  }
+
   function _prep(item) {
     var defer = $.Deferred(),
         promise = defer.promise(),
-        saveFilePromises = [],
+        promises = [],
         _item = {};
     
     for (var prop in item) {
       var val = item[prop];
       
       if (useFileSystem && val instanceof Blob)
-        saveFilePromises.push(_saveFile(item, _item, prop, val));
+        promises.push(_saveFile(item, _item, prop, val));
+//      else if (/model/portal/Image\?/.test(val) && !item[prop + '.dataUrl'])
+//        promises.push(_convertImage(item, _item, prop, val));
       else
         _item[prepPropName(prop)] = val;
     }
 
-    $.when.apply($, saveFilePromises).then(function() {
+    $.when.apply($, promises).then(function() {
       defer.resolve(_item);
     }, function() {
       debugger;
@@ -123,14 +147,14 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   function _parse(_items) {
-    var dfds,
+    var promises,
         returnObj,
         items;
         
     if (!_items)
-      return defer.resolve(_items).promise();
+      return U.resolvedPromise(_items);
     
-    dfds = [];
+    promises = [];
     returnObj = U.getObjectType(_items) === '[object Object]';
     if (returnObj)
       _items = [_items];
@@ -138,16 +162,16 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     items = _.map(_items, function(_item) {
       var item = {};
       _.each(_item, function(val, prop) {
-        var parsedPropName = parsePropName(prop);
-        var val = _item[prop];  
-        if (val  &&  val[filePropertyName]) {
-          var dfd = $.Deferred();
-          FileSystem.readAsBlob(val[filePropertyName]).done(function(blob) {
-            item[parsedPropName] = blob;
-            dfd.resolve();
-          }).fail(dfd.reject);
+        var parsedPropName = parsePropName(prop),
+            val = _item[prop],
+            method = U.isCompositeProp(parsedPropName) ? 'readAsDataURL' : 'readAsBlob';
+            
+        if (val  &&  filePropertyName  &&  val[filePropertyName]) {
+          var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {
+            item[parsedPropName] = data;
+          });
           
-          dfds.push(dfd);
+          promises.push(promise);
         }
         else
           item[parsedPropName] = val;
@@ -156,7 +180,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return item;
     });
     
-    return $.whenAll.apply($, dfds).then(function() {        
+    return $.whenAll.apply($, promises).then(function() {        
       return returnObj ? items[0] : items;
     });
   };
@@ -198,7 +222,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.name = name;
     _.extend(this, options);
     filePropertyName = this.filePropertyName;
-    useFileSystem = !!this.filePropertyName;
+    fileTypePropertyName = this.fileTypePropertyName;
+    useFileSystem = !!filePropertyName;
     this.stores = {};
     this._clearStoreMonitors();
     this.setDefaultStoreOptions(options.defaultStoreOptions || {});
@@ -227,7 +252,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 //    var originalTaskFn = taskFn;
 //    taskFn = function(defer) {
 //      var promise = originalTaskFn.apply(this, arguments);
-//      if (promise !== defer.promise() && U.isPromise(promise))
+//      if (promise !== defer.promise() && _.isPromise(promise))
 //        promise.then(defer.resolve, defer.reject);
 //    };
     
@@ -415,7 +440,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     
     if (!this.isOpen())
-      return this.onOpen(U.partialWith(this.wipe, this, filter, doDeleteStores));
+      return this.onOpen(_.partial(this.wipe.bind(this), filter, doDeleteStores));
     
     if (this._wasEmpty)
       return RESOLVED_PROMISE;
@@ -462,7 +487,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
         alreadyQueued = this.taskQueue.getQueued(name);
     
-    return alreadyQueued || this._queueTask(name, U.partialWith(restart, this, version), true);
+    return alreadyQueued || this._queueTask(name, _.partial(restart.bind(this), version), true);
   };
 
   function get(storeName, primaryKey) {
@@ -490,7 +515,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   IDB.prototype.get = function(storeName, uri) {
-    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), U.partialWith(get, this, storeName, uri));    
+    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), _.partial(get.bind(this), storeName, uri));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
@@ -637,7 +662,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @returns a JQuery Promise object
    */
   IDB.prototype.search = function(storeName, options) {
-    return this._queueTask('search for items in object store {0}'.format(storeName), U.partialWith(search, this, storeName, options));
+    return this._queueTask('search for items in object store {0}'.format(storeName), _.partial(search.bind(this), storeName, options));
   };
 
   function put(storeName, items) {
@@ -668,7 +693,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (items.length)
       this._wasEmpty = false;
     
-    return this._queueTask('saving items to object store {0}'.format(storeName), U.partialWith(put, this, storeName, items));
+    return this._queueTask('saving items to object store {0}'.format(storeName), _.partial(put.bind(this), storeName, items));
   };
 
   function del(storeName, primaryKeys) {
@@ -685,7 +710,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   IDB.prototype['delete'] = function(storeName, primaryKeys) {
     primaryKeys = _.isArray(primaryKeys) ? primaryKeys : [primaryKeys];
-    return this._queueTask('deleting items from object store {0}'.format(storeName), U.partialWith(del, this, storeName, primaryKeys));
+    return this._queueTask('deleting items from object store {0}'.format(storeName), _.partial(del.bind(this), storeName, primaryKeys));
   };  
 
   function wrap($idbObj, idbOp, args) {

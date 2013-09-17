@@ -23,7 +23,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     var query;
     for (var i = 0; i < orClause.length; i++) {
       var part = orClause[i],
-          pair = _.map(part.split('='), U.decode);
+          pair = _.map(part.split('='), _.decode);
       
       if (pair.length != 2)
         return null;
@@ -160,7 +160,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
       return false;
 
     var neededIndices = _.filter(_.union(_.keys(filter), _.pluck(orderBy, 'shortName')), function(p) {return /^[a-zA-Z]+/.test(p)});
-    if (!_.all(neededIndices, U.partial(_.contains, indexNames)))
+    if (!_.all(neededIndices, _.partial(_.contains, indexNames)))
       return false;
 
     if (orClause) {
@@ -294,7 +294,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
 //      });
 //      
 //      if (_.size(whereParam)) {
-//        whereParam = U.getFirstProperty(whereParam);
+//        whereParam = _.getFirstProperty(whereParam);
 //        var subClause = val.split('=');
 //        if (subClause.length == 2 && subClause[0] === whereParam) {
 //          debugger;

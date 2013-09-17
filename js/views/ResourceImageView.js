@@ -232,7 +232,7 @@ define('views/ResourceImageView', [
       if (image.indexOf('Image/') == 0)
         image = decodeURIComponent(image.slice(6));
   //          var iTemplate = this.makeTemplate('imagePT');
-  //          li += '<div><a href="#view/' + U.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
+  //          li += '<div><a href="#view/' + _.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
   
       var maxW = $(window).width(); // - 3;
 //      var maxH = $(window).height() - 50;
@@ -275,8 +275,20 @@ define('views/ResourceImageView', [
       */
   //    if (w > maxW - 30)  // padding: 15px
   //      w = maxW - 30;
-      var iTemplate = w ? "<img src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
-                        : "<img src='" + image +"' />";
+      
+      var imgAtts = U.HTML.lazifyImage({
+        src: image,
+        'data-for': U.getImageAttribute(res, imageProp)
+      });
+      
+      if (w) imgAtts.width = w;
+      if (h) imgAtts.height = h;
+      
+      var imgTag = U.HTML.tag('img', null, imgAtts);
+      var iTemplate = U.HTML.toHTML(imgTag);
+      
+//      var iTemplate = w ? "<img data-frz-src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
+//                        : "<img data-frz-src='" + image +"' />";
       var li;
 /*
       if (G.canWebcam  &&  U.isAssignableFrom(this.vocModel, U.getLongUri1('commerce/urbien/Urbien'))  &&  this.resource.get('_uri') ==  G.currentUser._uri) {

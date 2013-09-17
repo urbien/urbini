@@ -301,12 +301,12 @@
       <td width="100%">
         <div class="{{= 'chat_msg ' + (obj.sender ? (obj.self ? 'msg_sent' : 'msg_recvd') : 'msg_recvd') }}">
          <!--  {{ if (obj.sender) { }}
-            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div>
+            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div>
           {{ }                 }}
           {{ if (obj.info && obj.senderIcon) { }}
          -->
           {{ if (obj.senderIcon) { }}
-            <div class="chat_user"><div><img class="med user_pic" src="{{= obj.senderIcon }}" /></div></div> 
+            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div> 
           {{ }                 }}
           
           <div class="chat_copy">
@@ -340,7 +340,8 @@
     <!--button data-icon="{{= icon }}" data-inline="true" data-net="{{= net }}">{{= net }}</button-->
     <a href="#" data-role="button" data-net="{{= net }}">
       <i class="{{= 'ui-icon-' + icon}}" style="font-size: 20px; float:left;"></i>
-      <i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i>
+      <!--i class="{{= obj.connected ? 'ui-icon-remove-sign' : 'ui-icon-ok-circle'}}" style="font-size: 20px; float:right"></i-->
+      <i class="ui-icon-circle" style="font-size: 20px; float:right; color: {{= obj.connected === undefined ? '#FF0000' : obj.connected ? '#00FF00' : '#FFFF00' }}"></i>
     </a>
   </div>
 </script>
@@ -381,7 +382,9 @@
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
     {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{= obj.img ? '<img style="display:block" src="{0}" />'.format(img)                 : '' }}
+    {{ if (obj.img) { }}
+      <img src="{{= img }}" style="display:block" />    
+    {{ }              }}
     {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
     
     <div style="display:block">
@@ -601,7 +604,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}"></img>
+  <img src="{{= value }}" data-for="{{= U.getImageAttribute(this.resource, prop.shortName) }}"></img>
 </script>
 
 
@@ -615,7 +618,7 @@
 <script type="text/template" id="listItemTemplate">
   <!-- one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
     <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
@@ -629,7 +632,7 @@
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
-    class="ui-li-thumb" /></i> 
+    class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
     {{= viewCols }}
   </div>
   </div>
@@ -660,18 +663,17 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
+  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
-    {{ if (isJst) { }}
+    {{ if (obj.isJst) { }}
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
-    {{ if (!isJst  &&  obj._hasSubmittedBy) { }}
+    {{ if (!obj.isJst  &&  obj._hasSubmittedBy) { }}
       style="min-height:59px;"
     {{ } }}
     <!--
-    {{ if (!isJst  &&  !obj._hasSubmittedBy) { }}
+    {{ if (!obj.isJst  &&  !obj._hasSubmittedBy) { }}
       style="min-height:39px;"
     {{ } }}
     -->
@@ -692,7 +694,7 @@
      {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
    </div>
   {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
+  {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
@@ -709,64 +711,13 @@
   </div>
 </script>
 
-<script type="text/template" id="listItemTemplateNoImage1">
-  <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;">
-  {{ var action = action ? action : 'view'; }}
-  {{ var detached = this.resource.detached; }}
-  {{ var isJst = this.vocModel.type === G.commonTypes.Jst; }}
-  {{ if (!obj.v_submitToTournament) { }}  
-    {{ if (isJst) { }}
-      <div class="ui-btn-text" style="padding: .7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : _uri, detached && {templateName: templateName, modelDavClassUri: modelDavClassUri, forResource: G.currentApp._uri, $title: $title}) }}">
-    {{ } }}
-    {{ if (!isJst) { }}
-      <div class="ui-btn-text" style="min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
-    {{ } }}
-  {{ } }}
-  {{ if (obj.v_submitToTournament) { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 10px 0px;min-height:39px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
-  {{ } }}
-  
-  {{= viewCols }}
-  </div>
-  {{ if (this.resource.isA('Buyable')  &&  price  &&  price.value) { }}
-   <div class="buyButton" id="{{= G.nextId() }}" data-role="button" style="margin-top:15px;" data-icon="shopping-cart" data-iconpos="right" data-mini="true">
-     {{= price.currency + price.value }}
-     {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
-   </div>
-  {{ } }}  
-  {{ if (U.isA(this.vocModel, 'Distance')  &&  obj.distance) { }}
-    <span class="ui-li-count">{{= distance + ' mi' }}</span>
-  {{ } }}
-  <!--
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
-  {{ } }}
-  -->  
-  
-  {{ if (obj.comment) { }}
-    <p style="padding-left: 15px;">{{= comment }}</p>
-  {{ } }}
-  </div>
-</script>
-
-  <!-- one item on the left-side slide-out menu panel -->
-<!--script type="text/template" id="menuItemTemplate">
-  <li {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}>
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
-    <a {{= obj.image ? 'style="margin-left:35px;"' : '' }} id="{{= typeof id === 'undefined' ? G.nextId() : id}}" link="{{= obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl }}">
-      {{= title }}
-    </a>
-  </li>
-</script -->
-
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
   <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px; margin-bottom:-10px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image ? image : 'icons/blank.png'}}" class="thumb" 
+    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -808,7 +759,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img style="float: right;" src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" class="ui-li-thumb" /> 
+    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" style="float: right;" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -829,7 +780,7 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-icon="false">
+<li data-icon="false" data-viewid="{{= viewId }}">
   <i class="icon-home"></i>
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
@@ -842,7 +793,7 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
       
-      />
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}" />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -1242,14 +1193,15 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
-         ></img>
+        
+         data-for="{{= U.getImageAttribute(this.resource, 'resourceMediumImage') }}" />
       </a>
     </div>
   </div>
@@ -1257,12 +1209,12 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : 'icons/blank.png' }}"></img>
+          <img src="{{= obj.v_modifiedByPhoto || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
         <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
-        <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= resourceDisplayName }}</a></div>
+        <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">{{= obj.resourceDisplayName || this.resource.get('forResource.displayName') || '' }}</a></div>
         <br/><br/>&#160;
         <span class="commentListDate">{{= G.U.getFormattedDate(dateModified) }}</span>
       </td>
@@ -1316,11 +1268,11 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
   <!--
     {{ if (typeof creatorThumb != 'undefined') { }}
        <div style="padding: 5px; float:left;">
-        <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
+        <a href="{{= obj.creator || 'about:blank' }}">
            <img src="{{= creatorThumb }}" height="60" />
         </a>
       </div>
@@ -1335,9 +1287,9 @@
    -->
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img  src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"
+        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
          {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
-        ></img>
+         data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -1408,7 +1360,10 @@
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
       <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
-          {{= item.image ? '<img src="{0}" />'.format(item.image) : '' }}
+          {{ if (item.image) { }}
+            <img src="{{= item.image }}" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
+          {{ }              }}
+
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
           {{= typeof item.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
@@ -1421,25 +1376,6 @@
     {{ } }}
     </ul>
 </script>
-
-<!-- script type="text/template" id="photogridTemplate">
-    <ul data-role="listview" data-inset="true">
-    {{ #items }}
-      <li style="{{= 'float: ' + (float || 'left') }}">
-        <a href="{{= target }}">
-          {{= image ? '<img src="{0}" />'.format(image) : '' }}
-          {{= title ? '<h2>{0}</h2>'.format(title) : '' }}
-          {{= caption ? '<p>{0}</p>'.format(caption) : '' }}
-          {{= typeof superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
-        </a> 
-      </li>
-      {{ if (arrow) { }}
-         <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
-      {{ }                 }}
-    {{ /items }}
-    </ul>
-</script -->
-
 
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
@@ -1487,8 +1423,8 @@
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">Check All</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">Uncheck All</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
@@ -1497,8 +1433,8 @@
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || 'Cancel' }}</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || 'Submit' }}</button></div>
+        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
@@ -1521,7 +1457,7 @@
   {{ var id = G.nextId() }}
   
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
-  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img style="float:right;max-height:40px;" src="' + _thumb + '" />' : '' }}--></label>
+  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
 </script>
 
 <script type="text/template" id="interfacePropTemplate">
@@ -1614,7 +1550,7 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="max-height: 50px; position:relative;"/>
+      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img src="{{= img }}" name="{{= shortName }}" data-for="{{= U.getImageAttribute(value, shortName) }}" style="max-height: 50px; position:relative;"/>
     {{ }              }}
     {{ if (!obj.img) { }}    
        >

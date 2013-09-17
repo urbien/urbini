@@ -5,6 +5,12 @@ define('collections/ResourceList', [
   'error', 
   'events'
 ], function(G, U, Errors, Events) {
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("ResourceList");
+    G.log.apply(G, args);
+  };
+  
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
@@ -32,7 +38,7 @@ define('collections/ResourceList', [
           vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -67,7 +73,14 @@ define('collections/ResourceList', [
         }
       }
       
-      this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+      try {
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this._unbreak();
+      } catch (err) {
+        this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
+        this._break();
+      }
+      
       if (options.cache !== false)
         this.announceNewList();
       
@@ -105,7 +118,7 @@ define('collections/ResourceList', [
       this.monitorQueryChanges();
       this.enablePaging();
       this.on('endOfList', this.disablePaging);
-      G.log(this.TAG, "info", "init " + this.shortName + " resourceList");      
+      log("info", "init " + this.shortName + " resourceList");      
     },
 
     filterAndAddResources: function(resources) {
@@ -152,7 +165,7 @@ define('collections/ResourceList', [
     },
     
     clone: function() {
-      return new ResourceList(U.slice.call(this.models), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
       options = options || {};
@@ -243,15 +256,21 @@ define('collections/ResourceList', [
       this.perPage = perPage;
       this.pager();
     },
-    getUrl: function() {
+    getUrl: function(params) {
+      params = params ? _.clone(params) : {};
+      _.defaults(params, {
+        $minify: 'y',
+        $mobile: 'y'
+      }, this.params);
+      
+      if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
+        params.$chooser = 'y';
+      
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.getCollectionUrl)
-        return adapter.getCollectionUrl.call(this, _.clone(this.params));
+        return adapter.getCollectionUrl.call(this, params);
       
-      var url = this.baseUrl + (this.params ? "?$minify=y&$mobile=y&" + $.param(this.params) : '');
-      if (this.params  &&  window.location.hash  && window.location.hash.startsWith('#chooser/'))
-        url += '&$chooser=y';
-      return url;
+      return this.baseUrl + '?' + $.param(params);
     },
     parseQuery: function(query) {
       var params, filtered = {};
@@ -297,30 +316,18 @@ define('collections/ResourceList', [
       if (this.lastFetchOrigin !== 'db')
         this._lastFetchedOn = G.currentServerTime();
       
+      var vocModel = this.vocModel;
+      _.each(response, function(res) {
+        res._uri = U.getLongUri1(res._uri, vocModel);
+      });
+      
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parseCollection)
         return adapter.parseCollection.call(this, response);
       
-      if (!response || response.error)
+      if (!response)
         return [];
 
-      var metadata = response.metadata;
-      if (response.data) {
-        this.setOffset(response.metadata.offset);
-        if (this.offset)
-          G.log(this.TAG, "info", "received page, offset = " + this.offset);
-        
-        this.page = Math.floor(this.offset / this.perPage);
-        response = response.data;
-      }
-      
-      var editMojo = metadata && metadata.edit;
-      if (editMojo) {
-        _.each(response, function(m) {
-          m.edit = editMojo;
-        });
-      }
-      
       return response;
     },
     
@@ -359,27 +366,60 @@ define('collections/ResourceList', [
       if (needsToBeStored)
         Events.trigger('updatedResources', this.models);
     },
+
+    isBroken: function() {
+      return this._broken;
+    },
     
+    _break: function() {
+      this._broken = true;
+    },
+
+    _unbreak: function() {
+      this._broken = false;
+    },
+
     onReset: function(model, options) {
       if (options.params) {
         _.extend(this.params, options.params);
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        try {
+          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+          this._unbreak();
+        } catch (err) {
+          this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
+          this._break();
+        }
+        
         this._lastFetchedOn = null;
       }
     },
     
     fetch: function(options) {
-      if (!this._outOfData)
-        G.log(this.TAG, "info", "fetching next page");
+      if (this.offset && !this._outOfData)
+        log("info", "fetching next page");
+
+      options = options || {};
+      _.defaults(options, {
+        update: true, 
+        remove: false, 
+        parse: true
+      });
       
-      options = _.extend({update: true, remove: false, parse: true}, options);
       var self = this,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
-          adapter = this.vocModel.adapter;
+          adapter = this.vocModel.adapter,
+          extraParams = options.params || {};
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
         return;      
+      }
+
+      if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
+        if (!this.offset || !this.models.length)
+          extraParams.$select = '$viewCols,$gridCols,$images';
+//        else
+//          extraParams.$omit = '$viewCols,$gridCols,$images';
       }
 
       this.params = this.params || {};
@@ -387,7 +427,7 @@ define('collections/ResourceList', [
         this.params.$offset = this.offset;
       
       this.rUri = options.rUri;
-      var urlParams = this.rUri ? U.getParamMap(this.rUri) : {};
+      var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
       var limit;
       if (urlParams) {
         limit = urlParams.$limit;
@@ -402,12 +442,16 @@ define('collections/ResourceList', [
       this.params.$limit = limit;
       
       try {
-        options.url = this.getUrl();
+        options.url = this.getUrl(extraParams);
       } catch (err) {
         error(this, {status: 204, details: err.message}, options);
         return;
       }
 
+//      if (this.currentlyFetching && this.currentlyFetching.url == options.url) {
+//        
+//      }
+        
       options.error = function(xhr, resp, options) {
         self._lastFetchedOn = G.currentServerTime();
         if (error)
@@ -415,32 +459,80 @@ define('collections/ResourceList', [
       }
       
       var success = options.success || function(resp, status, xhr) {
+        var pagination = xhr.getResponseHeader("X-Pagination"),
+            mojo = xhr.getResponseHeader("X-Mojo");
+        
+        if (pagination) {
+          try {
+            pagination = JSON.parse(pagination);
+            this.setOffset(pagination.offset);
+            if (this.offset)
+              log("info", "received page, offset = " + this.offset);
+            
+            this.page = Math.floor(this.offset / this.perPage);
+          } catch (err) {
+          }
+        }
+        
+        if (mojo) {
+          try {
+            mojo = JSON.parse(mojo);
+            if (mojo.edit) {
+              _.each(resp, function(m) {
+                m.edit = editMojo;
+              });
+            }
+          } catch (err) {
+          }
+        }
+        
         self.update(resp, options);        
       };
       
       options.success = function(resp, status, xhr) {
         if (self.lastFetchOrigin === 'db') {
-          if (resp.data)
-            debugger;
           self.update(resp, options);
           success(resp, status, xhr);
           return;
         }
-        else
+        else {
+          var select = extraParams && extraParams.$select;
+          if (select) {
+            var first = self.models[0];
+            if (first) {
+              var props = U.parsePropsList(select, self.vocModel),
+                  atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
+                  nonSelectedProps = _.difference(_.keys(atts), props),
+                  hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
+              
+              if (!hasNonSelectedProps) {
+                var newOptions = {
+                  forceFetch: true,
+                  params: _.clone(extraParams)
+                };
+                
+                newOptions.params.$omit = select;
+                delete newOptions.params.$select;
+                G.whenNotRendering(_.partial(self.fetch, newOptions), self);
+              }
+            }
+          }
+          
           self._lastFetchedOn = now;
+        }
         
         var now = G.currentServerTime(),
             code = xhr.status;
         
         function err() {
           debugger;
-          G.log(self.TAG, 'error', code, options.url);
+          log('error', code, options.url);
           error(self, resp || {code: code}, options);            
         }
         
         switch (code) {
           case 200:
-            if (!resp.data)
+            if (!resp)
               debugger;
             
             break;
@@ -460,11 +552,6 @@ define('collections/ResourceList', [
           default:
             err();
             return;
-        }
-        
-        if (resp && resp.error) {
-          err();
-          return;
         }
         
         self.update(resp, options);
@@ -520,8 +607,6 @@ define('collections/ResourceList', [
         else
           saved && saved.set({'_lastFetchedOn': now}, {silent: true});
       }
-      
-      
       
       if (added.length + updated.length) {
         if (added.length)

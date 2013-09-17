@@ -81,7 +81,7 @@ define('views/RightMenuPanel', [
       var grabbed = G.currentUser.grabbed;
       var item = U.isTempUri(uri) ? grabbed.where({_oldUri: uri})[0] : grabbed.get(uri);
       item && item.cancel();
-      grabbed.remove(item);
+      grabbed.splice(grabbed.indexOf(item), 1);
       
       this.refresh();
     },
@@ -103,7 +103,7 @@ define('views/RightMenuPanel', [
       var grabType = G.commonTypes.Grab;
       Voc.getModels(grabType).done(function() {
         var grabModel = U.getModel(grabType);
-        var grab = new grabModel(grabParams ? U.getParamMap(grabParams) : {});
+        var grab = new grabModel(grabParams ? _.getParamMap(grabParams) : {});
         grab.save(null, {
           success: function() {
             var grabbed = G.currentUser.grabbed;
@@ -655,7 +655,10 @@ define('views/RightMenuPanel', [
             self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true, removeFromView: true});
           },
           error: function(resource, xhr, options) {
-            var code = xhr ? xhr.code || xhr.status : 0;
+            debugger;
+            var code = xhr ? xhr.code || xhr.status : 0,
+                error = U.getJSON(xhr.responseText);
+            
             switch (code) {
             case 401:
               Events.trigger('req-login');
@@ -677,7 +680,8 @@ define('views/RightMenuPanel', [
 //              Errors.errDialog({msg: msg || 'The resource you\re attempting to create already exists', delay: 100});
               break;
             default:
-              Errors.errDialog({msg: msg || xhr.error && xhr.error.details, delay: 100});
+              debugger;
+              Errors.errDialog({msg: msg || error && error.details, delay: 100});
 //              debugger;
               break;
             }
