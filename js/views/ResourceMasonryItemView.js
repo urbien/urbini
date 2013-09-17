@@ -130,16 +130,17 @@ define('views/ResourceMasonryItemView', [
       if (!meta)
         return this;
       
-      var img;
-//      if ($(window).width() > $(window).height()) {
-//        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-//        if (!img)
-//          img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-//      }
-//      else {
-        img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-        if (!img)
-          img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+      var imgP;
+      if ($(window).width() > $(window).height()) {
+        imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+        if (!imgP)
+          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+      }
+      else {
+        imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+        if (!imgP)
+          imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+      }
       var json = m.toJSON();
       
       var rUri = m.getUri();
@@ -149,7 +150,7 @@ define('views/ResourceMasonryItemView', [
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      img = json[img];
+      var img = json[imgP];
       var tmpl_data = _.extend(json, {resourceMediumImage: img});
 
       var resourceUri = U.makePageUrl('view', rUri);
@@ -182,7 +183,7 @@ define('views/ResourceMasonryItemView', [
           gridCols += s;
         }
       }
-      
+      var divHeight;      
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
@@ -192,10 +193,34 @@ define('views/ResourceMasonryItemView', [
         var oHeight = json.originalHeight;
         if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
           var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
-          tmpl_data['imgWidth'] = Math.floor(oWidth * ratio);
-          tmpl_data['imgHeight'] = Math.floor(oHeight * ratio);
+          var iW = Math.floor(oWidth * ratio);
+          var iH = Math.floor(oHeight * ratio);
+          tmpl_data['imgWidth'] = iW;
+          tmpl_data['imgHeight'] = iH;
+          var maxDim = meta[imgP].maxImageDimension;
+          
+          if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
+            var mdW, mdH;
+            if (oWidth >= oHeight) {
+              mdW = maxDim; 
+              var r = maxDim /oWidth;
+              mdH = Math.floor(oHeight * r); 
+            }
+            else {
+              mdH = maxDim; 
+              var r = maxDim /oHeight;
+              mdW = Math.floor(oWidth * r); 
+            }
+            var dW = Math.floor((mdW - iW) / 2);
+            var dH = Math.floor((mdH - iH) / 2);    
+            tmpl_data['top'] = dH;
+            tmpl_data['right'] = iW + dW;
+            tmpl_data['bottom'] = iH + dH;
+            tmpl_data['left'] = dW;
+            tmpl_data['margin-top'] = 0;
+            tmpl_data['margin-left'] = 0 - dW;
+          }
         }
-
       }
       var dn = json.davDisplayName;
       var dnProps = U.getDisplayNameProps(meta);
@@ -281,9 +306,22 @@ define('views/ResourceMasonryItemView', [
       } catch (err) {
         G.log(this.TAG, 'failed to build template for masonry item ' + dn + ': ' + err);
       }
-      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-      this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
-        
+//      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
+      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : ''));
+//      if (!tmpl_data['top'])
+//        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
+      if (tmpl_data['top']) {
+        this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
+        this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
+        /*
+        tmpl_data['top'] = dH;
+        tmpl_data['right'] = iW + dW;
+        tmpl_data['bottom'] = iH + dH;
+        tmpl_data['left'] = dW;
+        tmpl_data['margin-top'] = 0;
+        tmpl_data['margin-left'] = 0 - dW;
+        */ 
+      }
       return this;
     },
     

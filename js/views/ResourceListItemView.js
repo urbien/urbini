@@ -279,7 +279,7 @@ define('views/ResourceListItemView', [
               appModel = U.getModel(app);
               if (appModel) {
                 var tagProp = U.getCloneOf(appModel, 'Taggable.tags');
-                if (tagProp) {
+                if (tagProp  &&  tt != '* Not Specified *') {
                   params[tagProp] = '*' + tt + '*';
         
                   self.router.navigate(U.makeMobileUrl('list', app, params), {trigger: true, forceFetch: true});
@@ -340,7 +340,6 @@ define('views/ResourceListItemView', [
       
       if (!json._uri)
         G.log(RLIV.TAG, 'error', 'uri undefined 2', JSON.stringify(json));
-
       json.shortUri = U.getShortUri(json._uri, this.vocModel);
       var urbienType = G.commonTypes.Urbien;
       if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
@@ -427,13 +426,23 @@ define('views/ResourceListItemView', [
         
         this.$el.addClass("image_fitted");
         
-        var dim = U.fitToFrame(80, 80, json[oW] / json[oH])
-        json.width = dim.w;
-        json.height = dim.h;
-        json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
-        json.right = dim.w - dim.x;
-        json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
-        json.left = dim.x;
+        var maxDim = meta[this.imageProperty].maxImageDimension;
+        var clip = U.clipToFrame(80, 80, json[oW], json[oH], maxDim);
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
+        }
+        else {
+          var dim = U.fitToFrame(80, 80, json[oW] / json[oH])
+          json.width = dim.w;
+          json.height = dim.h;
+          json.top = oW > oH ? dim.y : dim.y + (json[oH] - json[oW]) / 2;
+          json.right = dim.w - dim.x;
+          json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (json[oH] - json[oW]) / 2;
+          json.left = dim.x;
+        }
       }
       var params = this.hashParams;
       if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
