@@ -252,7 +252,7 @@ define('views/ResourceView', [
             if (!willShow(res, prop, userRole))
               continue;
   
-            if (prop['app']  &&  (!currentAppProps || !currentAppProps[p]))
+            if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
               continue;
             displayedProps[p] = true;
             var val = U.makeProp({resource: res, prop: prop, value: json[p]});
@@ -298,7 +298,7 @@ define('views/ResourceView', [
 //          delete json[p];
           continue;
         }
-        if (prop['app']  &&  (!currentAppProps || !currentAppProps[p]))
+        if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
           continue;
         if (prop.autoincrement)
           continue;
