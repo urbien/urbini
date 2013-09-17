@@ -157,8 +157,8 @@ define('views/ResourceMasonryItemView', [
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      tmpl_data.resourceMediumImage = img = atts[img];
-      tmpl_data.imageProperty = img;
+      tmpl_data.resourceMediumImage = imgP = atts[imgP];
+      tmpl_data.imageProperty = imgP;
 
       var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
