@@ -199,8 +199,8 @@ function overlay() {
   		"                <span style=\"font-size:30px\">Get it??</span>\r\n" + 
   		"            </td>\r\n" + 
   		"        </tr>\r\n" + 
-      "        <tr height=\"5%\" style=\"text-align:center\"></tr>" + 
-  		"        <tr height=\"85%\" style=\"text-align:center\">\r\n" + 
+      "        <tr height=\"5%\"></tr>" + 
+  		"        <tr height=\"85%\" align=\"center\">\r\n" + 
   		"            <td colspan=\"2\" width=\"50%\">\r\n" + 
   		"                <a href=\"javascript:void(0);\" id=\"ahaButton\"><img alt=\"Aha!\" src=\"http://urbien.com/images/aha/aha_big.png\" /></a>\r\n" + 
   		"                <br/><span id=\"ahaTip\" style=\"font-size:18px;\">(I'm ready to explain this to others)</span>\r\n" + 
@@ -308,7 +308,7 @@ function showImageChooser() {
     return img.height && img.height >= 80;
   }
   
-  function nab() {      
+  function chooseImage() {      
       function y(a) {
           if (Math.max(a.h, a.w) > 199) {
               if (a.h < a.w) return "margin-top: " + parseInt(100 - 100 * (a.h / a.w)) + "px;";
@@ -317,11 +317,11 @@ function showImageChooser() {
       }
       
       var p = [];
-      if (document.tpmLjs) {
-        return;
-      }
-      
-      document.tpmLjs = 1;
+//      if (document.tpmLjs) {
+//        return;
+//      }
+//      
+//      document.tpmLjs = 1;
       var i = /^https?:\/\/.*?\.?facebook\.com\//,
           f = /^https?:\/\/.*?\.?google\.com\/reader\//;
               
@@ -552,7 +552,7 @@ function showImageChooser() {
       }
   };
   
-  nab();
+  chooseImage();
 }
 
 })();

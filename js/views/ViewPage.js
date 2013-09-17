@@ -295,7 +295,6 @@ define('views/ViewPage', [
         else
           this.isBuyGroup = false;
 
-      }
       }     
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;

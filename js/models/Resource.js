@@ -1175,6 +1175,8 @@ define('models/Resource', [
             editProps = ['label', 'propertyType'];
           else if (model.type.endsWith('system/designer/Connection'))
             editProps = ['fromApp', 'connectionType', 'effect'];
+          else if (U.isAssignableFrom(vocModel, 'Comment'))
+            editProps = propsForEdit;
         }  
       }
       

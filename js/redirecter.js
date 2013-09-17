@@ -672,8 +672,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     
     return totalEditable ? Array.prototype.concat.apply([], _.pluck(grouped, 'props')).concat(ungrouped) : null;
   };
-  
-  
+    
   // FAST FORWARD 'MAKE' FOR TYPES
 //  Redirecter.prototype._ffwdMakeForType[G.commonTypes.AppInstall] = function(res) {
 //    if (res.get('appPlugs'))

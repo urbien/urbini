@@ -376,12 +376,12 @@ define('views/RightMenuPanel', [
                             browser.firefox ? 'Firefox' : 
                               browser.safari ? 'Safari' : '',
         
-            pageTemplate = 'bookmarklet{0}{1}Page'.format(os, browserName);
+            pageTemplate = 'bookmarklet{0}{1}PageTemplate'.format(os, browserName);
                     
         if (!U.getTemplate(pageTemplate)) {
-          pageTemplate = 'bookmarklet{0}Page'.format(os);
+          pageTemplate = 'bookmarklet{0}PageTemplate'.format(os);
           if (!U.getTemplate(pageTemplate)) {
-            pageTemplate = 'bookmarklet{0}Page'.format(browserName);
+            pageTemplate = 'bookmarklet{0}PageTemplate'.format(browserName);
             if (!U.getTemplate(pageTemplate)) {
               pageTemplate = null;
               this.log("error", "no template found for Aha bookmarklet page for OS: {0} and browser {1}".format(os, browserName));
@@ -627,9 +627,19 @@ define('views/RightMenuPanel', [
       var user = G.currentUser;
       var edit = m.get('edit');
       if (!user.guest  &&  (!edit  ||  user.totalMojo > edit)) {
-        this.addActionsHeader(frag);
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'}));
+        var paintAdd;
+        var paintEdit;
+        if (!U.isAssignableFrom(this.vocModel, 'Contact')) 
+          paintAdd = true;
+        if (!U.isAssignableFrom(this.vocModel, 'Contact')  ||  m.getUri() == user._uri)
+          paintEdit = true;
+        if (paintAdd || paintEdit) {
+          this.addActionsHeader(frag);
+          if (paintAdd)
+            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'}));
+          if (paintEdit)
+            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'}));
+        }
 //        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('delete'), mobileUrl: '', id: 'delete'}));
         return true;
       }

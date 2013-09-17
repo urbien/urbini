@@ -79,13 +79,14 @@
     <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview" data-inset="true" style="padding: 10px;">
     </ul>
   </div>
-  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-  </div>
+  </div-->
+  <br/>
 </script>  
 
-<script type="text/template" id="bookmarkletIphonePage">
+<script type="text/template" id="bookmarkletIphonePageTemplate">
 <style>
   .bookmarkletPage-tableview-grouped {
     background: #f2f2f2;
@@ -161,7 +162,7 @@
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletAndroidPage">
+<script type="text/template" id="bookmarkletAndroidPageTemplate">
 <div style="margin: 0px 10px 0px 10px;">
   <div>
     <h1><strong>Using the Aha! Bookmarklet on Android</strong></h1>
@@ -172,7 +173,7 @@
 </div>
 </script>
 
-<script type="text/template" id="bookmarkletDesktopPage">
+<script type="text/template" id="bookmarkletDesktopPageTemplate">
   <div style="text-align:center">
     <h1>Drag the button below to your browser's bookmarks bar</h1>
     <ul class="nav">
@@ -181,16 +182,13 @@
   </div>
 </script>
 
-<script type="text/template" id="bookmarkletIOSChromePage">
-</script>
-
-<script type="text/template" id="bookmarkletChromeOSPage">
-</script>
-
-<script type="text/template" id="bookmarkletAndroidFirefoxPage">
-</script>
-
-<script type="text/template" id="bookmarkletFxOSPage">
+<script type="text/template" id="bookmarkletDesktopStaticPageTemplate">
+  <div style="text-align:center">
+    <h1>Drag the button below to your browser's bookmarks bar</h1>
+    <ul class="nav">
+      <li><a onclick="javascript:alert('Drag me to your bookmarks bar!'); return false;" href="javascript:void(function loadAha(d, params) {var e = d.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','//urbien.com/js/aha.js?r='+Math.random()*99999999 + '&' + (params || ''));d.body.appendChild(e)}(document, 'aha=y'))" style="font-size:30px">Aha!</a></li>
+    </ul>
+  </div>
 </script>
 
 <script type="text/template" id="chatPageTemplate">
@@ -626,10 +624,10 @@
     <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
-    {{ if (typeof obj.width != 'undefined') { }}  
+    {{ if (obj.left) { }}  
       style="
-        height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
+        <!-- height:{{= height }}px; -->
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
     class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
@@ -1268,28 +1266,16 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab" data-viewid="{{= viewId }}">
-  <!--
-    {{ if (typeof creatorThumb != 'undefined') { }}
-       <div style="padding: 5px; float:left;">
-        <a href="{{= obj.creator || 'about:blank' }}">
-           <img src="{{= creatorThumb }}" height="60" />
-        </a>
-      </div>
-       <div style="padding: 5px; float:left;">
-        <a href="{{= typeof creator == 'undefined' ? 'about:blank' : creator }}">
-          {{= creatorDisplayName }}
-        </a>
-        {{= typeof dateSubmitted == 'undefined' ? '' : '<p style="color:#aaa">' + G.U.getFormattedDate(dateSubmitted) + '</p>'}}
-      </div>
-      
-    {{ } }}
-   -->
+  <div class="anab">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}"
-         {{= typeof imgWidth != 'undefined' ? 'style="width:' + imgWidth + 'px; height:' + imgHeight + 'px;"' : '' }}
-         data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
+        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+         {{ if (obj.imgWidth) { }}
+           {{ if (!obj.top) { }}
+             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+           {{ } }}
+        {{ } }}
+        ></img>
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -1447,9 +1433,9 @@
 </div>
 
 
-  <div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-  </div>
+  </div-->
 </script>
 
 <script type="text/template" id="mvListItem">
@@ -1550,8 +1536,20 @@
 <script type="text/template" id="resourcePET">
   <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }} 
     {{ if (obj.img) { }}    
-      style="padding-left: 0px; padding-bottom:0px; min-height: 40px;"><img src="{{= img }}" name="{{= shortName }}" data-for="{{= U.getImageAttribute(value, shortName) }}" style="max-height: 50px; position:relative;"/>
+      style="padding-left: 60px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="
+      
+    {{ if (typeof obj.width != 'undefined') { }}  
+        height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+    {{ } }}
+    {{ if (typeof obj.width == 'undefined') { }}  
+        max-height: 50px;
+    {{ } }}
+      
+      "/>
     {{ }              }}
+    
     {{ if (!obj.img) { }}    
        >
     {{ } }}   
