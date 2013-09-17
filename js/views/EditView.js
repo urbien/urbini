@@ -86,7 +86,8 @@ define('views/EditView', [
           return;
         
         if (!this._submitted)
-          this.$form.submit();
+          this.submit(null, {fromPageChange: true});
+//          this.$form.submit();
 //        if (this.isActive())
 //          this.redirect();
 //        var unsaved = this.resource.getUnsavedChanges();
@@ -722,8 +723,8 @@ define('views/EditView', [
       return true;
     },
     
-    submit: function(e) {
-      Events.stopEvent(e);
+    submit: function(e, options) {
+      e && Events.stopEvent(e);
       if (this._submitted) {
         if (!this.isActive())
           return;
@@ -811,7 +812,9 @@ define('views/EditView', [
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
       if (!_.size(atts)) {
-        debugger;
+        if (options && options.fromPageChange)
+          return;
+
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back');
@@ -1250,11 +1253,12 @@ define('views/EditView', [
               prop = groupInfo.prop,
               props = groupInfo.props;
 
-          var pInfo = U.makeEditProp(res, prop, undefined, formId);
-          U.addToFrag(frag, this.propGroupsDividerTemplate({
-            value: U.getPropDisplayName(prop)
-          }));
-          
+          if (props.length > 1) {
+            var pInfo = U.makeEditProp(res, prop, undefined, formId);
+            U.addToFrag(frag, this.propGroupsDividerTemplate({
+              value: U.getPropDisplayName(prop)
+            }));
+          }
           for (var j = 0; j < props.length; j++) {
             var p = props[j]; 
             this.addProp(_.extend(state, {
