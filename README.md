@@ -67,6 +67,7 @@ Next step. While painting UI from the local database and making app assets avail
 10. Instant reaction to user actions. We aim to start transitions right after user actions. This work is in progress. We also process touch events ourselves to avoid unnecessary painting on scroll swipes.
 
 More optimizations are planned:
+
 1. Bundling WebAPI requests.
 
 2. Use of rAF, time accounting and matrix3d transforms.
