@@ -21,7 +21,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       fileTypePropertyName,
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
-      REJECTED_PROMISE = G.getRejectedPromise();
+      REJECTED_PROMISE = G.getRejectedPromise(),
+      fileMap = {};
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};
@@ -73,13 +74,37 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function _saveFile(item, _item, prop, val) {
-    var contentType = val.type;
-    return FileSystem.writeFile({
-      blob: val,
-      filePath: getFileSystemPath(item, prop, val)
-    }).done(function(fileEntry) {
+    var isUserCreation = !U.isCompositeProp(prop),
+        contentType = val.type,
+        uri,
+        getFilePath;
+    
+    if (!isUserCreation) {
+      uri = item[prop.split('.')[0]];
+      if (uri) {
+        var cached = fileMap[uri];
+        if (cached) {
+          if (_.isPromise(cached))
+            getFilePath = cached;
+          else
+            getFilePath = U.resolvedPromise(cached);
+        }
+      }
+    }
+    
+    if (!getFilePath) {
+      // to avoid collisions while attempting to write the same file, we keep a promise in fileMap until we get the actual file handle
+      getFilePath = fileMap[uri] = FileSystem.writeFile({
+        blob: val,
+        filePath: getFileSystemPath(item, prop, val)
+      }).then(function(fileEntry) {
+        return fileMap[uri] = fileEntry.fullPath;
+      });
+    }
+    
+    return getFilePath.done(function(filePath) {
       var placeholder = _item[prepPropName(prop)] = item[prop] = {};
-      placeholder[filePropertyName] = fileEntry.fullPath;
+      placeholder[filePropertyName] = filePath;
       placeholder[fileTypePropertyName] = contentType;
       
       var resource = C.getResource(item._uri);
