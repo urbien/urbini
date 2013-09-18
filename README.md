@@ -54,7 +54,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 4. App Homepage. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
 
-5. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and a the rest is requested later. We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
+5. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and the rest is requested later. We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
 
 6. Web worker pool. A pool of threads is kept to have all xhr requests get sent and processed off of the main JavaScript thread.
 
