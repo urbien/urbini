@@ -58,7 +58,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 6. Web worker pool. A pool of threads is kept to have all xhr requests get sent and processed off of the main JavaScript thread.
 
-7. Image sizes. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
+7. Responsive images. The problem is that mobile devices have a whole slew of sizes and resolutions. The other problem is user's network can be fast and unlimited or slow and metered. Thus [we can not serve the same high DPI image](http://css-tricks.com/on-responsive-images/) to iPad with retina screen and to FirefoxOS ZTE Open. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
 
 8. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, [reflow avoidance](http://gent.ilcore.com/2011/03/how-not-to-trigger-layout-in-webkit.html), and many other tricks are employed. 
 
