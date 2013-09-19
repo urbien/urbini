@@ -60,7 +60,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 7. Image sizes. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
 
-8. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, and many other tricks are employed. 
+8. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, [reflow avoidance](http://gent.ilcore.com/2011/03/how-not-to-trigger-layout-in-webkit.html), and many other tricks are employed. 
 
 9. Prefetching. Data for the next page user is likely to want is prefetched and sometimes even pre-rendered. This applies to the menu items, next page for the infinite scrolling, etc.
 
@@ -70,9 +70,9 @@ More optimizations are planned:
 
 1. Bundling WebAPI requests.
 
-2. Use of rAF, time accounting and matrix3d transforms.
+2. Use of rAF, time accounting and matrix3d transforms. rAF is a key to the most sophisticated performance solutions, so it is pays to grok it.  The raf callback is called when browser has done its work and can let our JS code do its work. raf callback is called with the frequency of a refresh rate of your monitor (usually 60hz) , so if we manage to fit into the time slot allotted to us by raf, then DOM manipulation, transitions, etc will look smooth to the user. So debouncing is a simple technique where you only make a record of what needs to be done in various event handlers that process user actions, such as touchstart, mouseover, click, etc. and DO NOT manipulate DOM there, [only manipulate it in the raf callback](http://www.html5rocks.com/en/tutorials/speed/animations/). In that sense raf is like a conveyor belt, you have limited time to do your small operation and you can not delay, as you will stop the whole belt.
 
-3. Simple Physics.
+3. Simple Physics. Momentum scrolling, bounces, one pane pushing the another out, and other animation techniques allow user to orient themselves better on a small surface and allows App UI to give user's subconscious the cues on what to expect, since physics on the [screen match what user sees in the real world](http://www.ui-transitions.com/#categories). 
 
 Documentation
 ============
