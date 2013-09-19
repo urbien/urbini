@@ -56,7 +56,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 4. App Homepage. This is a continuation of a previous theme. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
 
-5. Web worker pool. A pool of threads is kept to have all xhr requests get sent and processed off of the main JavaScript thread.
+5. Web worker pool. It is critical to not keep main JS thread busy with long tasks. As one measure, a pool of JS threads allows to do [some processing off-main-thread](http://net.tutsplus.com/tutorials/javascript-ajax/getting-started-with-web-workers/). For example, Urbini executes all xhr requests on web workers. The other technique is to chunk up all the work and queue it up. This work is still in progress, for more info see a paragraph on rAF technique below.
 
 6. Responsive images. The problem is that mobile devices have a whole slew of sizes and resolutions. The other problem is user's network can be fast and unlimited or slow and metered. Thus [we can not serve the same high DPI image](http://css-tricks.com/on-responsive-images/) to iPad with retina screen and to FirefoxOS ZTE Open. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
 
