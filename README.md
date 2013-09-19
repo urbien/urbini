@@ -50,7 +50,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 1. Lazy load images. This is a standard technique for image heavy sites even of the desktop. We augmented it with the offline image support. We are saving all images into IndexedDB (Firefox) WebSQL (Safari) or a File System (Chrome), so that we do not need to request them from the server again and so that user could see images offline.
 
-2. DOM on a strict diet. Long lists can only perform well with the sliding window in DOM. We use a slew of techniques developed and graciously shared by the LinkedIn team. Sencha and Famo.us also use similar techniques, but do not provide much details. 
+2. DOM on a strict diet. Long lists can only perform well with the sliding window in DOM. We use a slew of techniques developed and [graciously shared by the LinkedIn team](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5). Sencha and Famo.us also use similar techniques, but do not provide much details. 
 
 4. App Homepage. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
 
