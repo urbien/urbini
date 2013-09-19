@@ -46,13 +46,13 @@ We have been solving all these problems and some more (e.g. UI for MVC models cr
 
 Mobile HTML5 performance gap
 =========================
-Next step. While painting UI from the local database and making app assets available offline is the core of Urbini, this is not enough to make mobile HTML5 buttery smooth. To close the gap with the native apps we had to employ the bag of tricks developed by [LinkedIn](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5), [Sencha] (www.sencha.com/blog/the-making-of-fastbook-an-html5-love-story) and [Famo.us] (http://www.slideshare.net/befamous/html5-devconf-oct-2012-tech-talk).
+Next step. While painting UI from the local database and making app assets available offline is the core of Urbini, this is not enough to make mobile HTML5 buttery smooth. To close the gap with the native apps we had to employ the bag of tricks developed by [LinkedIn](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5), [Sencha] (http://www.sencha.com/blog/the-making-of-fastbook-an-html5-love-story) and [Famo.us] (http://www.slideshare.net/befamous/html5-devconf-oct-2012-tech-talk).
 
 1. Lazy load images. This is a standard technique for image heavy sites even of the desktop. We augmented it with the offline image support. We are saving all images into IndexedDB (Firefox) WebSQL (Safari) or a File System (Chrome), so that we do not need to request them from the server again and so that user could see images offline.
 
 2. DOM on a strict diet. Long lists can only perform well with the sliding window in DOM. We use a slew of techniques developed and [graciously shared by the LinkedIn team](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5). Sencha and Famo.us also use similar techniques, but do not provide much details. 
 
-3. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and the rest is requested later. We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
+3. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and the rest is requested later. This is the technique that gave a significant speedup to Sencha's Fastbook, see [Bonus Points paragraph in this article](http://www.sencha.com/blog/the-making-of-fastbook-an-html5-love-story). We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
 
 4. App Homepage. This is a continuation of a previous theme. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
 
