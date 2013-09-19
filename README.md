@@ -62,7 +62,7 @@ Next step. While painting UI from the local database and making app assets avail
 
 7. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, [reflow avoidance](http://gent.ilcore.com/2011/03/how-not-to-trigger-layout-in-webkit.html), and many other tricks are employed. 
 
-8. Prefetching. Data for the next page user is likely to want is prefetched and sometimes even pre-rendered. This applies to the menu items, next page for the infinite scrolling, etc.
+8. Prefetching. Data for the next page user is likely to want is prefetched and sometimes even pre-rendered. This applies to the menu items, next page for the infinite scrolling, etc. The key is to queue these tasks with the lower priority so that they execute when [user is idle](https://wiki.mozilla.org/WebAPI/IdleAPI) and [browser is idle](https://github.com/StrictlySkyler/timeywimey) and drop these tasks from the queue if user moved to a different screen.
 
 9. Instant reaction to user actions. We aim to start transitions right after user actions. This work is in progress. We also process touch events ourselves to avoid unnecessary painting on scroll swipes.
 
