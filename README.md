@@ -2,7 +2,9 @@ Urbini
 ======
 Urbini is a mobile web framework that helps web apps and native apps work together in one network. 
 
-Urbini is inspired by IFTTT:
+First we will describe this network, and then how Urbini lifts web apps to the level of native apps so that they can be equal peers in that network.
+
+Urbini network, or appnet is inspired by IFTTT:
 
 1. Like IFTTT it aspires to connect apps and devices (internet of things)
 
