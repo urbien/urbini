@@ -52,19 +52,19 @@ Next step. While painting UI from the local database and making app assets avail
 
 2. DOM on a strict diet. Long lists can only perform well with the sliding window in DOM. We use a slew of techniques developed and [graciously shared by the LinkedIn team](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5). Sencha and Famo.us also use similar techniques, but do not provide much details. 
 
-4. App Homepage. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
+3. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and the rest is requested later. We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
 
-5. Show results fast. We do double data fetching, i.e. WebAPI requests for lists of resources from Urbien cloud database are split in two, a small subset of properties is requested initially and the rest is requested later. We also paint a part of the page right away and then paint the rest of it, like user's friend list, a call-in-progress header, etc., later.
+4. App Homepage. This is a continuation of a previous theme. App's Homepage has to load fast, letting the rest of the framework and app assets load later. Homepage is stripped of all Urbini dependencies, and uses dataurl images so that it loads faster and can work offline.
 
-6. Web worker pool. A pool of threads is kept to have all xhr requests get sent and processed off of the main JavaScript thread.
+5. Web worker pool. A pool of threads is kept to have all xhr requests get sent and processed off of the main JavaScript thread.
 
-7. Responsive images. The problem is that mobile devices have a whole slew of sizes and resolutions. The other problem is user's network can be fast and unlimited or slow and metered. Thus [we can not serve the same high DPI image](http://css-tricks.com/on-responsive-images/) to iPad with retina screen and to FirefoxOS ZTE Open. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
+6. Responsive images. The problem is that mobile devices have a whole slew of sizes and resolutions. The other problem is user's network can be fast and unlimited or slow and metered. Thus [we can not serve the same high DPI image](http://css-tricks.com/on-responsive-images/) to iPad with retina screen and to FirefoxOS ZTE Open. Images are pregenerated at a multitude of sizes on Urbien server and are served according to the device's screen size and resolution. Expensive image scaling on the device is avoided, when appropriate. 
 
-8. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, [reflow avoidance](http://gent.ilcore.com/2011/03/how-not-to-trigger-layout-in-webkit.html), and many other tricks are employed. 
+7. DOM optimizations. Read/write ops batching, documentFragment, innerHtml batching, queuing, [reflow avoidance](http://gent.ilcore.com/2011/03/how-not-to-trigger-layout-in-webkit.html), and many other tricks are employed. 
 
-9. Prefetching. Data for the next page user is likely to want is prefetched and sometimes even pre-rendered. This applies to the menu items, next page for the infinite scrolling, etc.
+8. Prefetching. Data for the next page user is likely to want is prefetched and sometimes even pre-rendered. This applies to the menu items, next page for the infinite scrolling, etc.
 
-10. Instant reaction to user actions. We aim to start transitions right after user actions. This work is in progress. We also process touch events ourselves to avoid unnecessary painting on scroll swipes.
+9. Instant reaction to user actions. We aim to start transitions right after user actions. This work is in progress. We also process touch events ourselves to avoid unnecessary painting on scroll swipes.
 
 More optimizations are planned:
 
