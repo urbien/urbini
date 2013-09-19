@@ -46,7 +46,7 @@ We have been solving all these problems and some more (e.g. UI for MVC models cr
 
 Mobile HTML5 performance gap
 =========================
-Next step. While painting UI from the local database and making app assets available offline is the core of Urbini, this is not enough to make mobile HTML5 buttery smooth. To close the gap with the native apps we had to employ the bag of tricks developed by [LinkedIn](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5), [Sencha] (http://www.sencha.com/blog/the-making-of-fastbook-an-html5-love-story) and [Famo.us] (http://www.slideshare.net/befamous/html5-devconf-oct-2012-tech-talk).
+Painting UI from the local database and making app assets available offline is the core of Urbini, but this is not enough to make mobile HTML5 buttery smooth. To close the gap with the native apps we had to employ the bag of tricks developed by [LinkedIn](http://engineering.linkedin.com/linkedin-ipad-5-techniques-smooth-infinite-scrolling-html5), [Sencha] (http://www.sencha.com/blog/the-making-of-fastbook-an-html5-love-story) and [Famo.us] (http://www.slideshare.net/befamous/html5-devconf-oct-2012-tech-talk).
 
 1. Lazy load images. This is a standard technique for image heavy sites even of the desktop. We augmented it with the offline image support. We are saving all images into IndexedDB (Firefox) WebSQL (Safari) or a File System (Chrome), so that we do not need to request them from the server again and so that user could see images offline.
 
