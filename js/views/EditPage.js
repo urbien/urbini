@@ -24,7 +24,7 @@ define('views/EditPage', [
       this.makeTemplate('resourceEdit', 'template', this.vocModel.type);
       this.editOptions = _.extend({action: 'edit'}, _.pick(options, editParams));
       _.extend(this, this.editOptions);
-      Events.on("mapReady", this.showMapButton);
+      this.listenTo(Events, "mapReady", this.showMapButton);
 
       var res = this.resource;
   //    var json = res.toJSON();

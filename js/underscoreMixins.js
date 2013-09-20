@@ -2,6 +2,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
   var ArrayProto = Array.prototype,
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
+      indexOf = ArrayProto.indexOf,
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -69,7 +70,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
       
       for (var i in items) {
         var item = items[i],
-            idx = array.indexOf(item);
+            idx = indexOf.call(array, item);
         
         if (idx != -1)
           array.splice(idx, 1);
@@ -298,6 +299,24 @@ define('underscoreMixins', ['_underscore'], function(_) {
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
             .replace(/&amp;/g, '&');
+    },
+    
+    /**
+     * extends to[methodName] to first call from[methodName] and only then itself
+     */
+    extendMethod: function(to, from, methodName) {
+      if (!_.isUndefined(from[methodName])) {
+        var original = to[methodName];
+        if (!original)
+          to[methodName] = from[methodName];
+        else {
+          to[methodName] = function() {
+            var originalReturn = original.apply(this, arguments);
+            from[methodName].apply(this, arguments);
+            return originalReturn;
+          };
+        }
+      }
     }
   });
   

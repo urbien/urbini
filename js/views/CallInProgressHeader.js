@@ -12,7 +12,7 @@ define('views/CallInProgressHeader', [
       options = options || {};
     
       var self = this;
-      Events.on('endRTCCall', function() {
+      this.listenTo(Events, 'endRTCCall', function() {
         self.destroy();
       });
       

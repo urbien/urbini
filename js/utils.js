@@ -20,6 +20,12 @@ define('utils', [
       HAS_PUSH_STATE = G.support.pushState,
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
+  setInterval(function() { // TODO: make this less stupid
+    for (var templateName in compiledTemplates) {
+      _.wipe(compiledTemplates[templateName]);
+    }
+  }, 120000);
+  
   function log() {
     var args = slice.call(arguments);
     args.unshift('Utils');
@@ -112,30 +118,52 @@ define('utils', [
       
       return text;
     },
+
+    lazifyImage: function(img) {
+      U.HTML.lazifyImages([img]);
+      return img;
+    },
     
-    lazifyImage: function(atts) {
-      var currentSrc = atts.src;
-      if (atts instanceof HTMLElement)
-        atts.setAttribute(G.lazyImgSrcAttr, currentSrc);
-      else
-        atts[G.lazyImgSrcAttr] = currentSrc;
+    lazifyImages: function(images) {
+      var infos = [],
+          lazyImgAttr = G.lazyImgSrcAttr,
+          blankImg = G.blankImgDataUrl;
       
-      if (atts instanceof HTMLElement) {
-        atts.onload = function() {
-          window.onimageload.call(this);
-        };
+      for (var i = 0, num = images.length; i < num; i++) {
+        var img = images[i];
+        infos.push({
+          src: img.src,
+          width: img.width,
+          height: img.height
+        });
+      }
+      
+      for (var i = 0, num = images.length; i < num; i++) {
+        var img = images[i],
+            info = infos[i];
         
-        atts.onerror = function() {
-          window.onimageerror.call(this);
-        };
-      }
-      else {
-        atts.onload = 'window.onimageload.call(this)';
-        atts.onerror = 'window.onimageerror.call(this)';
+        if (img instanceof HTMLElement) {
+          if (info.src.startsWith('data:'))
+            img.setAttribute(lazyImgAttr, info.src);
+          if (typeof info.width == 'number')
+            img.style.width = info.width;
+          if (typeof info.height == 'number')
+            img.style.height = info.height;
+          
+          img.onload = window.onimageload;
+          img.onerror = window.onimageerror;
+        }
+        else {
+//          if (info.src.startsWith('data:'))
+          img[lazyImgAttr] = info.src;
+          img.onload = 'window.onimageload.call(this)';
+          img.onerror = 'window.onimageerror.call(this)';
+        }
+        
+        img.src = blankImg;
       }
       
-      atts.src = G.blankImgDataUrl;
-      return atts;
+      return images;
     }
   };
   
@@ -1065,19 +1093,43 @@ define('utils', [
       return null;
     },
     
-    splitRequestFirstHalf: '$gridCols,$images',  // change these together
+    getPropsRanged: function(vocModel, range) {
+      var meta = vocModel.properties,
+          props = [];
+      
+      for (var p in meta) {
+        var prop = meta[p];
+        if (prop.range && range.endsWith(prop.range))
+          props.push(prop);
+      }
+      
+      return prop;
+    },
+    
+    splitRequestFirstHalf: '$gridCols,$images,$displayNameElm',  // change these together
     setSplitRequest: function(vocModel) {        // change these together
       var meta = vocModel.properties,
           gridCols = U.getColsMeta(vocModel, 'grid'),
-          props = _.filter(_.difference(_.keys(meta), gridCols, _.keys(U.systemProps)), function(p) {
-            var prop = meta[p];
-            if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
-              return false;
-            
-            return true;
-          });
+          imageProps = U.getPropsRanged(vocModel, G.commonTypes.Image), //U.getClonedProps(vocModel, 'ImageResource'),
+          displayNameProps = U.getDisplayNameProps(meta),
+          firstHalf,
+          secondHalf;
+              
+      firstHalf = _.union(gridCols, imageProps, _.keys(U.systemProps), displayNameProps);
+      if (!firstHalf.length) {
+        vocModel.splitRequest = false;
+        return;
+      }
+
+      secondHalf = _.filter(_.difference(_.keys(meta), firstHalf), function(p) {
+        var prop = meta[p];
+        if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
+          return false;
+        
+        return true;
+      });
       
-      vocModel.splitRequest = props.length > 3;
+      vocModel.splitRequest = secondHalf.length > 3;
     },
     
     getColsMeta: function(vocModel, colsType) {
@@ -3070,10 +3122,6 @@ define('utils', [
       };
       
       subCache[typeKey] = templateFn;
-      setTimeout(function() { // TODO: make this less stupid
-        delete subCache[typeKey];
-      }, 2000);
-      
       return templateFn;
     },
     
@@ -3630,8 +3678,12 @@ define('utils', [
     HTML: HTML,
 
     isRectPartiallyInViewport: function(rect, fuzz) {
+      var documentElement = doc.documentElement;
       fuzz = fuzz || 0; 
-      return rect.bottom + fuzz >= 0 && rect.left + fuzz;
+      return rect.bottom + fuzz >= 0 
+          && rect.top - fuzz <= (window.innerHeight || documentElement.clientHeight) 
+          && rect.right + fuzz >= 0 
+          && rect.left - fuzz <= (window.innerWidth || documentElement.clientWidth);
     },
 
     isRectInViewport: function(rect, fuzz) {

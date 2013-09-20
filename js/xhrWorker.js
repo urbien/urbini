@@ -139,7 +139,7 @@ var commands = {
         resp.data = JSON.parse(text);
         resp.responseText = null;
       } catch (err) {
-        resp.data = {code: 400, type: 'other', details: "Couldn't parse response text"};
+        resp.data = {code: 400, type: 'other', details: "Couldn't parse response text: " + text};
       }
     }
     

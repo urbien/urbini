@@ -21,7 +21,7 @@ define('views/ListPage', [
       this.viewId = options.viewId;
       
       var rl = this.collection;
-      var self = this;
+      var readyDfd = $.Deferred();
       
       var commonParams = {
         model: rl,
@@ -156,15 +156,12 @@ define('views/ListPage', [
       else
         listViewType = 'ResourceListView';
       
-      var self = this,
-          readyDfd = $.Deferred();
-      
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.listView = new listViewCl(_.extend({mode: self.mode}, commonParams, self.options));
-        self.addChild(self.listView);
+        this.listView = new listViewCl(_.extend({mode: this.mode}, commonParams, self.options));
+        this.addChild(this.listView);
         readyDfd.resolve();
-      });
+      }.bind(this));
       
       this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       this.on('endOfList', function() {
@@ -183,6 +180,7 @@ define('views/ListPage', [
       if (this.listView)
         this.listView.setMode(mode);
     },
+    
     events: {
       'click'            : 'click',
       'click #nextPage'  : 'getNextPage',
@@ -287,11 +285,13 @@ define('views/ListPage', [
     },
 
     render: function() {
-      var args = arguments;
+      var args = arguments,
+          self = this;
+      
       this.ready.done(function() {
-        this.renderHelper.apply(this, args);
-        this.finish();
-      }.bind(this));
+        self.renderHelper.apply(self, args);
+        self = args = null;
+      });
     },
 
     renderHelper: function() {
@@ -327,6 +327,8 @@ define('views/ListPage', [
       }
       if (!this.isMasonry)
         this.$('#sidebarDiv').css('overflow-x', 'visible');
+      
+      this.finish();
       return this;
     }
   }, {

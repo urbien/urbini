@@ -20,6 +20,11 @@ define('events', [
       }
     }
   }, Backbone.Events);
-    
+
+  // <debug>
+  if (Lablz.DEBUG)
+    Lablz.Events = Events;
+  // </debug>
+  
   return Events;
 });

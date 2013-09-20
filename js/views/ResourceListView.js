@@ -137,6 +137,7 @@ define('views/ResourceListView', [
       if (isAdd || !modified && !orientationChange) {
         i = curNum;
         if (curNum == num) {
+          this.postRender({});
           return this;
         }
         
@@ -308,28 +309,27 @@ define('views/ResourceListView', [
     render: function(e) {
       if (!this.rendered) {
         this.numDisplayed = 0;
-        var self = this;
         var col = this.filteredCollection = this.collection.clone();
         this.listenTo(this.filteredCollection, 'endOfList', function() {
-          self.pageView.trigger('endOfList');
-        });
+          this.pageView.trigger('endOfList');
+        }.bind(this));
         
         this.listenTo(this.filteredCollection, 'reset', function() {
-          self.pageView.trigger('newList');
-        });
+          this.pageView.trigger('newList');
+        }.bind(this));
         
         _.each(['updated', 'added', 'reset'], function(event) {
-          self.stopListening(col, event);
-          self.listenTo(col, event, function(resources) {
+          this.stopListening(col, event);
+          this.listenTo(col, event, function(resources) {
             resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
             var options = {
               resources: resources
             };
             
             options[event] = true;
-            self.refresh(options);
-          });
-        });
+            this.refresh(options);
+          }.bind(this));
+        }.bind(this));
         
         this.setupSearchAndFilter();
 //        var wasRendered = this.rendered;
@@ -348,48 +348,46 @@ define('views/ResourceListView', [
     },
   
     setupSearchAndFilter: function() {
-      var self = this,
+      this.$filteredUl = this.parentView.$('ul[data-filter="true"]');
+      this.$filteredUl.on('listviewbeforefilter', _.debounce(this.onFilter.bind(this), 150));
+    },
+    
+    onFilter: function(e, data) {
+      var filtered = this.filteredCollection,
           collection = this.collection,
-          filtered = this.filteredCollection;
-
-      function onFilter(e, data) {
-        var $ul = $(this),
-            $input = $(data.input),
-            value = $input.val();
-        
-        if (!value) {
-          filtered.reset(collection.models, {params: collection.params});
-          return;
-        }
-        
-        var resourceMatches = _.filter(collection.models, function(res) {
-          var dn = U.getDisplayName(res);
-          return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
-        });
-
-        filtered.reset(resourceMatches, {
-          params: _.extend({
-            '$like': 'davDisplayName,' + value
-          }, collection.params)
-        });
-        
-        var numResults = filtered.size();
-        if (numResults < self.displayPerPage) {
-          var numOriginally = collection.size();
-          var indicatorId = self.showLoadingIndicator(3000); // 3 second timeout
-          filtered.fetch({
-            forceFetch: true,
-            success: function() {
-              self.hideLoadingIndicator(indicatorId);
-            },
-            error: function() {
-              self.hideLoadingIndicator(indicatorId);
-            }
-          });
-        }            
-      };
+          $input = $(data.input),
+          value = $input.val(),
+          resourceMatches,
+          numResults;
       
-      this.parentView.$('ul[data-filter="true"]').on('listviewbeforefilter', _.debounce(onFilter, 150));
+      if (!value) {
+        filtered.reset(collection.models, {params: collection.params});
+        return;
+      }
+      
+      resourceMatches = _.filter(collection.models, function(res) {
+        var dn = U.getDisplayName(res);
+        return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+      });
+
+      filtered.reset(resourceMatches, {
+        params: _.extend({
+          '$like': 'davDisplayName,' + value
+        }, collection.params)
+      });
+      
+      numResults = filtered.size();
+      if (numResults < this.displayPerPage) {
+        var numOriginally = collection.size(),
+            indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
+            hideIndicator = _.partial(this.hideLoadingIndicator.bind(this), indicatorId);
+        
+        filtered.fetch({
+          forceFetch: true,
+          success: hideIndicator,
+          error: hideIndicator
+        });
+      }            
     },
     
     hasMasonry: function() {

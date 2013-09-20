@@ -22,7 +22,8 @@ define('views/MenuPanel', [
       this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', type);
 //      this.makeTemplate('filterTemplate', 'filterTemplate', type);
       this.viewId = options.viewId;
-      this.isPanel = true;
+      this.isPanel = true;      
+      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     tabs: {},
     events: {

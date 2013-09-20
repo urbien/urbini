@@ -16,8 +16,8 @@ define('views/MapView', [
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'resize');
       this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on("mapIt", this.toggleMap);
-//      Events.on("pageChange", this.resetMap);
+      this.listenTo(Events, "mapIt", this.toggleMap);
+//      this.listenTo(Events, "pageChange", this.resetMap);
       
       var self = this;
           dfds = [],

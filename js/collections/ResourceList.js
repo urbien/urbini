@@ -17,7 +17,10 @@ define('collections/ResourceList', [
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
-      
+
+      if (!this.cid)
+        this.cid = _.uniqueId('rl');
+
       options = options || {};
       _.extend(this, {
         page: 0,
@@ -97,17 +100,17 @@ define('collections/ResourceList', [
 //      });
 
       if (!this['final']) {
-        Events.on('newResource:' + this.type, function(resource, options) {
+        this.listenTo(Events, 'newResource:' + this.type, function(resource, options) {
           // we are adding this resource to this collection at the moment
           self.filterAndAddResources([resource], options);
         });
         
-        Events.on('newResources:' + this.type, function(resources, options) {
+        this.listenTo(Events, 'newResources:' + this.type, function(resources, options) {
           // we are adding this resource to this collection at the moment
           self.filterAndAddResources(resources, options);
         });
         
-        Events.on('newResourceList:' + this.type, function(list) {
+        this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
           if (list === self)
             return;
   
@@ -198,8 +201,8 @@ define('collections/ResourceList', [
           }.bind(this));
         }
         
-        resource.off('change', self.onResourceChange);
-        resource.on('change', self.onResourceChange);
+        self.listenTo(resource, 'change', self.onResourceChange);
+        self.listenTo(resource, 'change', self.onResourceChange);
       });
       
 //      this.adding = true;
@@ -501,7 +504,7 @@ define('collections/ResourceList', [
         }
         else {
           var select = extraParams && extraParams.$select;
-          if (select) {
+          if (select && select !== '$all') {
             var first = self.models[0];
             if (first) {
               var props = U.parsePropsList(select, self.vocModel),
@@ -513,11 +516,12 @@ define('collections/ResourceList', [
                 var newOptions = {
                   forceFetch: true,
                   forceMerge: true,
-                  params: _.clone(extraParams)
+                  params: _.extend(_.omit(extraParams, '$select'), {
+                    $omit: select,
+                    $blCounts: 'y' // might as well make the most of this request
+                  })
                 };
                 
-                newOptions.params.$omit = select;
-                delete newOptions.params.$select;
                 G.whenNotRendering(_.partial(self.fetch, newOptions), self);
               }
             }
@@ -632,6 +636,16 @@ define('collections/ResourceList', [
     
     isFetching: function() {
       return this._fetchPromise && this._fetchPromise.state() == 'pending';
+    },
+    
+    selfDestruct: function() {
+      this.stopListening();
+      var models = this.models;
+      for (var i = 0, num = models.length; i < num; i++) {
+        models[i].collection = null;
+      }
+      
+      models.length = 0;
     }
   }, {
     displayName: 'ResourceList'

@@ -171,7 +171,7 @@ define('views/ViewPage', [
         });
       }
       
-      Events.on("mapReady", this.showMapButton);
+      this.listenTo(Events, "mapReady", this.showMapButton);
     },
 //    doInlineBacklinks: function(bls) {
 //      var ranges = _.pluck(bls, "range");
@@ -257,7 +257,7 @@ define('views/ViewPage', [
       this.photogridPromise.done(function() {        
         var pHeader = self.$('#photogridHeader');
         var h3 = pHeader.find('h3');
-        h3[0].innerHTML = self.friends.title;
+        $(h3[0]).html(self.friends.title);
         pHeader.removeClass('hidden');
         self.assign({
           'div#photogrid': self.photogrid

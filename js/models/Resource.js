@@ -70,7 +70,7 @@ define('models/Resource', [
       }
       
       if (commonTypes.App == this.type) {
-        Events.on('saved', function(res) {
+        this.listenTo(Events, 'saved', function(res) {
           var types = U.getTypes(res.vocModel);
           if (_.intersection(types, APP_TYPES).length) {
 //            debugger; // maybe check if the changes concern this app, or another
@@ -96,6 +96,11 @@ define('models/Resource', [
       });
 
 //      this.checkIfLoaded();
+    },
+    
+    selfDestruct: function() {
+      this.stopListening();
+      this.collection && this.collection.remove(this);
     },
     
     _load: function(options) {
@@ -275,7 +280,7 @@ define('models/Resource', [
       if (!resUri)
         return;
       
-      Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
+      this.listenTo(Events, 'updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
     
@@ -757,7 +762,7 @@ define('models/Resource', [
         
         var code = xhr.status;
         function err() {
-          debugger;
+//          debugger;
           log('error', code, options.url);
           error(self, resp || {code: xhr.status}, options);            
         };
@@ -1187,7 +1192,7 @@ define('models/Resource', [
     },
 
 //    _resetEditableProps: function() {
-//      U.wipe(this._editableProps);
+//      _.wipe(this._editableProps);
 //      delete this._editablePropsUrlInfo;
 //    },
     

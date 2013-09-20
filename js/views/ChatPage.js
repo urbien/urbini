@@ -288,18 +288,18 @@ define('views/ChatPage', [
         self.$remoteMedia && self.$remoteMedia.hide();
       });
 
-      Events.on('localVideoMonitor:on', function() {
+      this.listenTo(Events, 'localVideoMonitor:on', function() {
         if (self.isActive()) {
           self.playRingtone();
         }
       });
 
-      Events.on('localVideoMonitor:off', function() {
+      this.listenTo(Events, 'localVideoMonitor:off', function() {
         self.stopRingtone();
       });
 
-      if (self.config.data !== false) {
-        Events.on('messageForCall:resource', function(resInfo) {
+      if (this.config.data !== false) {
+        this.listenTo(Events, 'messageForCall:resource', function(resInfo) {
           var msg = {
             message: {
               resource: resInfo
@@ -310,7 +310,7 @@ define('views/ChatPage', [
           self.addMessage(msg);
         });
 
-        Events.on('messageForCall:list', function(listInfo) {
+        this.listenTo(Events, 'messageForCall:list', function(listInfo) {
           var msg = {
             message: {
               list: listInfo
@@ -325,13 +325,13 @@ define('views/ChatPage', [
       if (!this.textOnly) {
         this.on('video:on', this.videoFadeIn, this);
         this.on('video:on', this.enableTakeSnapshot, this);
-        Events.on('newRTCCall', function() {
+        this.listenTo(Events, 'newRTCCall', function() {
           if (this.isActive())
             this.videoFadeIn();
         }, this);
       }
       
-      Events.on('hangUp', this.endChat, this);
+      this.listenTo(Events, 'hangUp', this.endChat);
       this.autoFinish = false;
     },
     
@@ -431,7 +431,7 @@ define('views/ChatPage', [
         audio: this.hasAudio
       }));
       
-//      Events.on('visible', _.debounce(function(visible) {
+//      this.listenTo(Events, 'visible', _.debounce(function(visible) {
 //        debugger;
 //        if (this.chat) {
 //          var webRTCEvent = visible ? 'wake' : 'sleep';

@@ -77,7 +77,7 @@ define('views/EditView', [
       
       this.ready = $.when(codemirrorDfd.promise());
       if (this.saveOnEdit) {
-        Events.on('pageChange', function(from, to) {
+        this.listenToOnce(Events, 'pageChange', function(from, to) {
           // don't autosave new resources, they have to hit submit on those...or is that weird?
           if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
             return;
@@ -387,7 +387,7 @@ define('views/EditView', [
         if (!dn)
           dn = prop.charAt(0).toUpperCase() + prop.slice(1);
         var name = chosenRes.get('davDisplayName');
-        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        $(link).html('<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName'));
         this.setResourceInputValue(link, uri);
         if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
           if (G.currentApp) {
@@ -432,18 +432,18 @@ define('views/EditView', [
       }
 
 //      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-//      Events.on('chose:' + prop, this.onChoose(e, prop), this);
-      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.off('choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.on('chose:' + prop, this.onChoose(e, prop), this);
-      Events.on('choseMulti:' + prop, this.onChooseMulti(e, prop), this);
+//      this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
+      this.stopListening(Events, 'chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      this.stopListening(Events, 'choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
+      this.listenTo(Events, 'choseMulti:' + prop, this.onChooseMulti(e, prop));
       Events.trigger('loadChooser', this.resource, this.vocModel.properties[prop], e);
       
 //      var self = this;
 //      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
 //      var pr = vocModel.properties[prop];
 //      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-//      Events.on('chooser:' + prop, this.onChoose(e, prop), this);
+//      this.listenTo(Events, 'chooser:' + prop, this.onChoose(e, prop));
 //      var params = {};
 //      if (pr.where) {
 //        params = U.getQueryParams(pr.where);
@@ -876,7 +876,7 @@ define('views/EditView', [
             msg: 'You are not unauthorized to make these changes'
           });
 //          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//          Events.on(401, msg || 'You are not unauthorized to make these changes');
+//          this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
           break;
         case 404:
           debugger;
@@ -1469,7 +1469,7 @@ define('views/EditView', [
       
       if (!this.rendered) {
         if (this.action === 'make' && this.isCameraRequired()) {
-          Events.on('pageChange', function() {
+          this.listenTo(Events, 'pageChange', function() {
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $m.silentScroll(0);
               setTimeout(function() {

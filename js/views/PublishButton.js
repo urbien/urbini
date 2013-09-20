@@ -100,7 +100,7 @@ define('views/PublishButton', [
       var self = this;
       
       this.showLoadingIndicator();
-      Events.on('goodToPublish', function() {
+      this.listenTo(Events, 'goodToPublish', function() {
         Events.trigger('publishingApp', res);        
         res.save(props, {
           sync: true,
@@ -121,7 +121,7 @@ define('views/PublishButton', [
       });
       
       var appUrl = U.makePageUrl('view', res);
-      Events.on('cannotPublish', function(badBoys) {
+      this.listenTo(Events, 'cannotPublish', function(badBoys) {
         self.hideLoadingIndicator();
         var errs = [];
         _.each(badBoys, function(badBoy) {

@@ -17,7 +17,7 @@ define('views/PhotogridView', [
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'finalize', 'goToIntersection', 'resize'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'renderSwipeview', 'finalize', 'goToIntersection', 'resize'); // fixes loss of context for 'this' within methods
       options = options || {};
       this.constructor.__super__.initialize.apply(this, arguments);
       this.source = options.source;
@@ -397,20 +397,16 @@ define('views/PhotogridView', [
       this.$el.css('height', (this.height || 250) + 'px');
       if (!this.el.clientWidth) {
         var args = arguments, self = this;
-        setTimeout(function() {
-          self.renderSwipeview.apply(self, args);
-        }, 100);
-        
+        setTimeout(_.partial(self.renderSwipeview, args), 100);
         return;
       }      
       // END HACK
       
       var el,
-        i,
-        page,
-        doc = document;
+          i,
+          page,
+          doc = document;
   
-      var self = this;
       var prevSlide = 0; 
       if (this.carousel) {
         prevSlide = this.carousel.page;
@@ -431,28 +427,7 @@ define('views/PhotogridView', [
         carousel.masterPages[i].appendChild(el);
       }
       
-      carousel.onFlip(function (flipEvent) {
-//        if (!flipEvent.unique)
-//          return;
-        
-        var el,
-        upcoming,
-        i;
-
-        for (i=0; i<3; i++) {
-          upcoming = carousel.masterPages[i].dataset.upcomingPageIndex;
-          
-          if (upcoming != carousel.masterPages[i].dataset.pageIndex) {
-            el = carousel.masterPages[i].querySelector('span');
-            el.innerHTML = slides[upcoming];
-            $(el).find('ul[data-role="listview"]').each(function() {
-              $(this).listview();
-            });
-          }
-        }
-      });  
-  
-      
+      carousel.onFlip(this.onFlip);  
       if (prevSlide) {
         var numSlidesBefore = Math.ceil(prevNumImages / prevItemsPerSlide);
         prevSlide = prevSlide % numSlidesBefore;
@@ -463,6 +438,22 @@ define('views/PhotogridView', [
       
       this.$el.trigger('create');
       return this;
+    },
+
+    onFlip: function(flipEvent) {
+      var el,
+          upcoming,
+          i;
+
+      for (i=0; i<3; i++) {
+        upcoming = carousel.masterPages[i].dataset.upcomingPageIndex;
+        if (upcoming != carousel.masterPages[i].dataset.pageIndex) {
+          el = carousel.masterPages[i].querySelector('span');
+          $(el).html(slides[upcoming]).find('ul[data-role="listview"]').each(function() {
+            $(this).listview();
+          });
+        }
+      }
     },
     
     getTestTriggerUrl: function() {

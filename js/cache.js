@@ -10,7 +10,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       viewCache = ViewCache(),
       // codemirror editors
       codemirrors = {},
-      MAX_VIEWS_TO_CACHE = 6,
+      MAX_VIEWS_TO_CACHE = 2,
       AP = Array.prototype;
 
 //  function CacheEntry(obj, permanent) {
@@ -261,7 +261,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       entry = ViewCacheEntry(view, url, this);
       cache.push(entry);
       
-      clean();
+      // let the turn of the event loop that caused cache update to finish first
+      setTimeout(clean, 0);
     };
     
     function overCapacity() {
@@ -328,6 +329,23 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       cache = _.filter(cache, function(entry) {
         return entry.getView() !== destroyedView;
       });
+      
+      var resOrList = destroyedView.model,
+          destroy = true;
+      
+      if ((resOrList instanceof Backbone.Model) && resOrList.collection) {
+        // don't destroy resources that are in live collections
+        return;
+      }
+
+      Events.once('saveModelFromUntimelyDeath.' + resOrList.cid, function() {
+        destroy = false;
+      });
+      
+      Events.trigger('preparingModelForDestruction', resOrList);
+      Events.trigger('preparingModelForDestruction.' + resOrList.cid, resOrList);
+      if (destroy)
+        resOrList.selfDestruct();
     });
     
     return {

@@ -274,7 +274,7 @@ define('router', [
       
       this.fragmentToOptions[fragment] = adjustedOptions;
       _.extend(this, {
-        previousView: this.currentView, 
+//        previousView: this.currentView, 
         previousHash: U.getHash() 
       });
       
@@ -306,11 +306,11 @@ define('router', [
     route: function() {
       var currentView = this.currentView;
       this.previousHash = U.getHash(); 
-      try {
+//      try {
         return Backbone.Router.prototype.route.apply(this, arguments);
-      } finally {
-        this.previousView = currentView;
-      }
+//      } finally {
+//        this.previousView = currentView;
+//      }
     },
 
     /**
@@ -1011,14 +1011,14 @@ define('router', [
       if (!model)
         return this;
 
-      if (U.isAssignableFrom(model, 'Contact')) {
-        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
-        var altModel = U.getModel(altType);
-        if (altModel) {
-          typeUri = altType;
-          model = altModel;
-        }
-      }
+//      if (U.isAssignableFrom(model, 'Contact')) {
+//        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
+//        var altModel = U.getModel(altType);
+//        if (altModel) {
+//          typeUri = altType;
+//          model = altModel;
+//        }
+//      }
       
       res = C.getResource(uri);
       if (res && !res.loaded)
@@ -1478,15 +1478,9 @@ define('router', [
         var redirect = pageOptions.postChangePageRedirect;
         if (redirect) {
           pageOptions.postChangePageRedirect = null;
-          view.onload(function() {
-            if (view.isActive())
-              this.navigate(redirect, {trigger: true, replace: true});
-          }.bind(this));
+          if (view.isActive())
+            this.navigate(redirect, {trigger: true, replace: true});
         }
-//        else if (this.currentView === this.previousView) {
-//          G.log(this.TAG, 'info', 'duplicate history, navigating back');
-//          window.history.back();
-//        }
       }
     },
     
@@ -1520,9 +1514,7 @@ define('router', [
 //        view.trigger('active', true);
         activated = true;
         view.render();
-        view.onload(function() {          
-          view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-        });
+        view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
       }
 
       if (this.firstPage)
@@ -1539,13 +1531,10 @@ define('router', [
       
       this.checkBackClick();
       // perform transition
-      view.onload(function() {
-        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
-        this.nextTransition = null;
-        Events.trigger('pageChange', prev, view);
-      }.bind(this));
-      
+      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+      this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+      this.nextTransition = null;
+      Events.trigger('pageChange', prev, view);      
       return view;
     },
     

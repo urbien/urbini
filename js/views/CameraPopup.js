@@ -65,7 +65,7 @@ define('views/CameraPopup', [
       else
         this.readyDfd.resolve();
 
-      Events.on('pageChange', function() {
+      this.listenTo(Events, 'pageChange', function() {
         if (!this.pageView.isActive())
           this.destroy();
       }, this);

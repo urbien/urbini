@@ -3,6 +3,7 @@ define('app', [
  'globals',
  'underscore',
  'backbone',
+ 'backboneMixins',
  'templates', 
  'utils', 
  'events',
@@ -13,7 +14,7 @@ define('app', [
  'resourceManager',
  'router',
  'collections/ResourceList'
- ], function(G, _, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
+ ], function(G, _, Backbone, __backboneMixins__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -80,7 +81,7 @@ define('app', [
       }
       else {
         Errors.offline();
-        Events.on('online', _.partial(loadCurrentModel, dfd));
+        Events.once('online', _.partial(loadCurrentModel, dfd));
       }
     }); 
     
@@ -236,7 +237,7 @@ define('app', [
           Events.trigger('firefoxAppInstalled', check.result);
       };
       
-      Events.on('firefoxAppInstalled', dfd.resolve.bind(dfd));
+      Events.once('firefoxAppInstalled', dfd.resolve.bind(dfd));
     }
   };
   
@@ -313,7 +314,7 @@ define('app', [
       if (oldDfd)
         Events.off('pageChange', oldDfd.resolve);
       
-      Events.on('pageChange', dfd.resolve);
+      Events.once('pageChange', dfd.resolve);
       if (oldPromise && oldPromise.state() === 'pending')
         promise.then(oldDfd.resolve);
 
@@ -576,7 +577,7 @@ define('app', [
     
 //    Events.on('viewDestroyed', function(view) {
 //      setTimeout(function() {
-//        U.wipe(view);
+//        _.wipe(view);
 //      }, 0);
 //    });
   };

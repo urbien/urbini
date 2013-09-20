@@ -8,6 +8,9 @@ define('views/BasicView', [
 ], function(G, _Backbone, U, Templates, Events) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype,
+      viewportEvents = ['resize', 'orientationchange'],
+      viewProps = ['pageView', 'parentView', 'model', 'resource', 'collection'],
+      backboneOn = Backbone.View.prototype.on,
       $wnd = $(window);
 
   function disableHover($el) {
@@ -15,11 +18,13 @@ define('views/BasicView', [
       return false;
     });
   }
-
+  
+  // END http://open.bekk.no/mixins-in-backbone //
+  
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
-//      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_passThroughToEl');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_render',  '_refresh');
+      
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -71,65 +76,58 @@ define('views/BasicView', [
           this.resource = res;
           this.collection = res.collection;
           this.vocModel = res.constructor;
-          res.on('modelChanged', function() {
-            this.vocModel = res.vocModel;
-          }.bind(this));
+          this.listenTo(res, 'modelChanged', this._onModelChanged);
         }
         
         this.modelType = this.vocModel.type;
       }
       
       this.router = window.router || Backbone.history; //G.Router || Backbone.history;
-      var refresh = this.refresh;
-      this.refresh = function(rOptions) {
-        var force = rOptions && rOptions.force;
-        if (!force && !this.rendered)
-          return this;
+      
+      this._doRefresh = this.refresh;
+      this.refresh = this._refresh;
+
+      this._doRender = this.render;
+      this.render = this._render;
+
+//      this.on('active', this._onActive);
+//      this.on('inactive', this._onInactive);
+      
+      for (var i = 0; i < viewportEvents.length; i++) {
+        var event = viewportEvents[i],
+            listener = 'on' + event;
         
-//        var delay = !force && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
-        G.log(this.TAG, 'refresh', 'page title:', this.getPageTitle());
-        this._queueTask(refresh, this, arguments);
-        return this;
-      };
-      
-      var render = this.render;
-      function doRender() {
-        render.apply(this, arguments);
-        if (this.autoFinish !== false)
-          this.finish();
-
-        if (G.browser.mobile)
-          disableHover(this.$el);
-      }
-
-      this.render = function(rOptions) {
-//        var delay = (!rOptions || !rOptions.force) && !this.isPanel && !this.isActive(); // to avoid rendering views 10 times in the background. Render when it's about to be visible
-        G.log(this.TAG, 'render', 'page title:', this.getPageTitle());
-        this._queueTask(doRender, this, arguments); //, !delay);
-        return this;
-      }.bind(this);
-
-      var self = this;
-      this.on('active', this._onActive);
-      this.on('inactive', this._onInactive);
-      _.each(['onorientationchange', 'onresize'], function(listener) {
         if (listener in window) {
-          var event = listener.slice(2);
-          window.addEventListener(event, self._onViewportDimensionsChanged, false);
-          self['_' + event] = _.debounce(self._passThroughToEl, 100);          
+          window.addEventListener(event, this._onViewportDimensionsChanged, false);          
         }
-      });
-
-//      this.initialized = true;
-      var localize = G.localize,
-          ctx = G.localizationContext;
+      }
       
-      this.loc = function() {
-        return localize.apply(ctx, arguments);
-      };
-
+//      this.on('destroyed', this._onDestroyed);
+      this.loc = G.localize;
+      if (this.model)
+        this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
+      
       G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
+    },
+    
+    windowEvents: {
+      'resize': '_onViewportDimensionsChanged',
+      'orientationchange': '_onViewportDimensionsChanged'
+    },
+    
+    myEvents: {
+      'active': '_onActive',
+      'inactive': '_onInactive',
+      'destroyed': '_onDestroyed'
+    },
+    
+    globalEvents: {},
+    
+    modelEvents: {},
+    
+    _preventModelDeletion: function() {
+      Events.trigger('saveModelFromUntimelyDeath.' + this.model.cid);
     },
     
     _updateHashInfo: function() {
@@ -153,6 +151,30 @@ define('views/BasicView', [
       // override this
     },
     
+    _refresh: function(rOptions) {
+      var force = rOptions && rOptions.force;
+      if (!force && !this.rendered)
+        return this;
+      
+      this.log('refresh', 'page title:', this.getPageTitle());
+      this._queueTask(this._doRefresh, this, arguments);
+      return this;
+    },
+    
+    _render: function(rOptions) {
+      this.log('render', 'page title:', this.getPageTitle());
+      this._queueTask(function() {
+        this._doRender.apply(this, arguments);
+        if (this.autoFinish !== false)
+          this.finish();
+
+        if (G.browser.mobile)
+          disableHover(this.$el);
+      }, this, arguments); //, !delay);
+      
+      return this;
+    },
+    
     isChildless: function() {
       return !_.size(this.children);
     },
@@ -170,10 +192,33 @@ define('views/BasicView', [
       
       this._destroyed = true;
       this.trigger('destroyed');
+    },
+    
+    _onDestroyed: function() {
+      this.trigger('inactive');
+      for (var cid in this.children) {
+        this.children[cid].destroy();
+      }
+      
+      for (var i = 0; i < viewportEvents.length; i++) {
+        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
+      }
+      
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
-      if (this.$el)
-        this.remove();
+      
+      this.stopListening();
+      this.$el.remove();
+      
+//      for (var i in viewProps) {
+//        this[viewProps[i]] = null;
+//      }
+//      
+//      _.wipe(this);
+    },
+    
+    _onModelChanged: function() {
+      this.vocModel = this.model.vocModel;
     },
     
     _getChildrenLoadingDeferreds: function() {
@@ -333,12 +378,12 @@ define('views/BasicView', [
     },
 
     empty: function() {
-//      U.wipe(this.children);
+//      _.wipe(this.children);
       this.$el.empty();
     },
 
     html: function(html) {
-//      U.wipe(this.children);
+//      _.wipe(this.children);
       this.$el.html(html);
     },
     
@@ -397,18 +442,12 @@ define('views/BasicView', [
       return this.pageView && this.pageView.getPageTitle();
     },
     
-    _passThroughToEl: function(e) {
-      this.log('events', e.type);
-      this.$el.trigger(e);
-    },
-    
     _onViewportDimensionsChanged: function(event) {
-      var _event = '_' + event.type;
+      var $el = this.$el,
+          type = event.type;
+      
       if (this.isActive())
-        this[_event](event);
-      else {
-        this.once('active', _.partial(this[_event], this, event.type));
-      }
+        $el.trigger(type);
     },
     
     _onActive: function() {
@@ -426,9 +465,6 @@ define('views/BasicView', [
         return;
       
       this.active = false;
-      if (this.isPageView())
-        this._unsubscribeFromImageEvents();
-      
       this.triggerChildren('inactive');      
     },
 
@@ -628,6 +664,16 @@ define('views/BasicView', [
       }
   
       return undefined;
+    },
+    
+    on: function() {
+      var args = arguments;
+      if (args.length == 2) {
+        args = _.toArray(args);
+        args.push(this);
+      }
+        
+      return backboneOn.apply(this, args);
     }
   }, {
     displayName: 'BasicView',

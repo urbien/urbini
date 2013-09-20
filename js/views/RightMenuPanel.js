@@ -22,11 +22,7 @@ define('views/RightMenuPanel', [
       this.makeTemplate('menuHeaderTemplate', 'headerTemplate', type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
-      Events.on('pageChange', this.destroy, this);
-    },
-    destroy: function() {
-      this.$el.empty();
-      this.stopListening();
+      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     events: {
       'click [data-grab]'        : 'grab',
@@ -88,21 +84,12 @@ define('views/RightMenuPanel', [
     
     grab: function(e) {
       Events.stopEvent(e);
-      var target = e.target;
-//      var li = target;
-//      var foundLi = false;
-//      while (li && li.tagName && !(foundLi = li.tagName.toLowerCase() == 'li'))
-//        li = li.parentNode;
-//      
-//      if (!foundLi)
-//        return;
-//      
-      var self = this;
-//      li.parentNode.removeChild(li);
-      var grabParams = target.dataset.grab;
-      var grabType = G.commonTypes.Grab;
-      Voc.getModels(grabType).done(function() {
-        var grabModel = U.getModel(grabType);
+      var self = this,
+          target = e.target,
+          grabParams = target.dataset.grab,
+          grabType = G.commonTypes.Grab;
+      
+      Voc.getModels(grabType).done(function(grabModel) {
         var grab = new grabModel(grabParams ? _.getParamMap(grabParams) : {});
         grab.save(null, {
           success: function() {
@@ -673,7 +660,7 @@ define('views/RightMenuPanel', [
             case 401:
               Events.trigger('req-login');
 //              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//              Events.on(401, msg || 'You are not unauthorized to make these changes');
+//              this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
               break;
             case 404:
               debugger;

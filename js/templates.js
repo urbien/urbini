@@ -17,18 +17,18 @@ define('templates', [
   
   window.onimageload = function onimageload() {
     var self = this;
-    window.raf(function() {      
+//    window.raf(function() {      
       $(self).trigger('imageOnload');
-    });
+//    });
     
     return false;
   };
   
   window.onimageerror = function onimageerror() {
     var self = this;
-    window.raf(function() {      
+//    window.raf(function() {      
       $(self).trigger('imageOnerror');
-    });
+//    });
     
     return false;
   };
@@ -184,8 +184,6 @@ define('templates', [
     }
   };
   
-  Events.on('newResource', Templates.prepNewTemplate);
   Events.on('newTemplate', Templates.prepNewTemplate);
-
   return Templates;
 });

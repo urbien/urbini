@@ -133,7 +133,7 @@ define('views/ResourceMasonryItemView', [
       if (!meta)
         return this;
       
-      var imgP;
+      var img, imgP;
       if ($(window).width() > $(window).height()) {
         imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
         if (!imgP)
@@ -157,9 +157,9 @@ define('views/ResourceMasonryItemView', [
 //      var img = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //      if (!img)
 //        img = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      var img;
+
       tmpl_data.resourceMediumImage = img = atts[imgP];
-      tmpl_data.imageProperty = img;
+      tmpl_data.imageProperty = imgP;
 
       var resourceUri = U.makePageUrl('view', rUri);
       var gridCols = '';
@@ -195,7 +195,7 @@ define('views/ResourceMasonryItemView', [
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
-        tmpl_data['resourceMediumImage'] = img;
+        tmpl_data['resourceMediumImage'] = imgP;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
         var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
         var oHeight = m.get('ImageResource.originalHeight');

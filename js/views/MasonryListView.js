@@ -26,7 +26,7 @@ define('views/MasonryListView', [
       _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);
       this.autoFinish = false; // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
-//      Events.on('pageChange', function(prev, current) {
+//      this.listenTo(Events, 'pageChange', function(prev, current) {
 //        if (self.pageView == current && self.rendered) {
 ////          self.$el.imagesLoaded(function() {
 //            self.masonry('reload');

@@ -267,6 +267,10 @@ define('views/ControlPanel', [
                     });
                   }
                 });
+                
+                self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
+                  Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
+                });
               }
             });
           });

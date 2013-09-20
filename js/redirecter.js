@@ -183,7 +183,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   
   var info = {}; // resuse it
   function getRedirectInfo(res) {
-    U.wipe(info);
+    _.wipe(info);
     
     var model = res.vocModel,
         hashInfo = G.currentHashInfo,
