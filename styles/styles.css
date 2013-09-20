@@ -1,3 +1,16 @@
+body {
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  position: absolute; 
+}
+
+/*
+div[data-role="page"] {
+  
+}
+*/
+
 #input[required]::before {
   content: " *";
   font-weight: bold;

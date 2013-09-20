@@ -127,23 +127,41 @@ define('utils', [
     lazifyImages: function(images) {
       var infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
-          blankImg = G.blankImgDataUrl;
+          blankImg = G.blankImgDataUrl,
+          img,
+          src,
+          realSrc,
+          isHTMLElement = images[0] instanceof HTMLElement,
+          get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) } : _.index;
+      
       
       for (var i = 0, num = images.length; i < num; i++) {
-        var img = images[i];
-        infos.push({
-          src: img.src,
-          width: img.width,
-          height: img.height
-        });
+        img = images[i];
+        realSrc = get(img, lazyImgAttr);
+        src = get(img, 'src');
+        
+        if (realSrc && src == blankImg) {
+          infos.push(null); // already lazy
+          debugger;
+        }
+        else {
+          infos.push({
+            src: realSrc || src,
+            width: get(img, 'width'),
+            height: get(img, 'height')
+          });  
+        }
       }
       
       for (var i = 0, num = images.length; i < num; i++) {
         var img = images[i],
             info = infos[i];
         
-        if (img instanceof HTMLElement) {
-          if (info.src.startsWith('data:'))
+        if (!info)
+          continue;
+          
+        if (isHTMLElement) {
+          if (!info.src.startsWith('data:') || info.src != blankImg)
             img.setAttribute(lazyImgAttr, info.src);
           if (typeof info.width == 'number')
             img.style.width = info.width;
@@ -154,7 +172,6 @@ define('utils', [
           img.onerror = window.onimageerror;
         }
         else {
-//          if (info.src.startsWith('data:'))
           img[lazyImgAttr] = info.src;
           img.onload = 'window.onimageload.call(this)';
           img.onerror = 'window.onimageerror.call(this)';
@@ -166,6 +183,94 @@ define('utils', [
       return images;
     }
   };
+  
+  var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
+  var CSS = {
+    getNewIdentityMatrix: function(n) {
+      n = n || 4;
+      var rows = new Array(n);
+      for (var i = 0; i < n; i++) {
+        rows[i] = new Array(n);
+        for (var j = 0; j < n; j++) {
+          rows[i][j] = +(i==j);
+        }
+      }
+      
+      return rows;
+    },
+
+//    parseTransforms: function(transformsStr) {
+//      if (!transformsStr || transformsStr === 'none')
+//        return null;
+//      
+//      var match;
+//      while ((match = transformsStr.match(/((translate|rotate|skew|perspective|scale|matrix|matrix3d)[XYZ]?)\((\d+)(px|em|deg|rad|\%|in)\)/i))) {
+//        transformsStr = transformsStr.slice(transformsStr.indexOf(match[0]) + match[0].length);
+////          matrices.push(opToMatrix(op, amount, units));
+//        matrices.push(opToMatrix(match[1] /* operation like translate, rotate */ , parseFloat(match[3]) /* amount to transform */, match[4] /* px, em, %, etc. */));
+//      }
+//    },
+    /**
+     * @return { X: x-offset, Y: y-offset }
+     */
+    parseTranslation: function(transformStr) {
+      if (transformStr == 'none')
+        return [0, 0];
+      
+      var split = transformStr.split(', '),
+          xIdx = split.length == 6 ? 4 : 12,
+          yIdx = xIdx + 1; 
+
+      return {
+        X: parseInt(split[xIdx], 10), 
+        Y: parseInt(split[yIdx], 10)
+      };
+    },
+
+    parseTransform: function(transformStr) {
+      // matrix(a, b, c, d, tx, ty) is a shorthand for matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1).
+      var matrixMatch = transformStr.match(/^matrix\((.*)\)/),
+          matrix3dMatch = !matrixMatch && transformStr.match(/^matrix3d\((.*)\)/),
+          match = matrixMatch || matrix3dMatch,
+          nums = match && match[1].split(','),
+          matrix = [];
+      
+      if (!match)
+        return CSS.getNewIdentityMatrix(4);
+      
+      if (matrixMatch)
+        nums = [nums[0], nums[1], "0", "0", nums[2], nums[3], "0", "0", "0", "0", "1", "0", nums[4], nums[5], "0", "1"];
+      
+      for (var i = 0; i < 4; i++) {
+        var row = matrix[i] = [];
+        for (var j = 0; j < 4; j++) {
+          row[j] = parseFloat(nums[i * 4 + j].trim());
+        }
+      }
+      
+      return matrix;
+    },
+    
+    getStylePropertyValue: function(computedStyle, prop) {
+      var value;
+      for (var i = 0; i < vendorPrefixes.length; i++) {
+        value = computedStyle.getPropertyValue(vendorPrefixes[i] + prop);
+        if (value && value !== 'none')
+          break;
+      }
+      
+      return value || 'none';
+    },
+      
+    setStylePropertyValues: function(style, propMap) {
+      for (var prop in propMap) {
+        var value = propMap[prop];
+        for (var i = 0; i < vendorPrefixes.length; i++) {
+          style[vendorPrefixes[i] + prop] = value;
+        }
+      }
+    }
+  }
   
   function simplifyPosition(position) {
     var coords = position.coords;
@@ -1100,10 +1205,10 @@ define('utils', [
       for (var p in meta) {
         var prop = meta[p];
         if (prop.range && range.endsWith(prop.range))
-          props.push(prop);
+          props.push(p);
       }
       
-      return prop;
+      return props;
     },
     
     splitRequestFirstHalf: '$gridCols,$images,$displayNameElm',  // change these together
@@ -3676,6 +3781,7 @@ define('utils', [
     },
     
     HTML: HTML,
+    CSS: CSS,
 
     isRectPartiallyInViewport: function(rect, fuzz) {
       var documentElement = doc.documentElement;
@@ -3808,6 +3914,19 @@ define('utils', [
       }
       
       return actualProps;
+    },
+    
+    cloneTouch: function(touch) {
+      return {
+        X: touch.clientX,
+        Y: touch.clientY,
+        pageX: touch.pageX,
+        pageY: touch.pageY,
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        screenX: touch.screenX,
+        screenY: touch.screenY
+      }
     }
   };
 

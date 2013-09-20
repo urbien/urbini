@@ -11,7 +11,7 @@ define('views/ResourceListView', [
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
   var $wnd = $(window);
   var RLV = BasicView.extend({
-    displayPerPage: 10, // for client-side paging
+    displayPerPage: 100, // for client-side paging
     page: 0,
 //    changedViews: [],
 //    skipScrollEvent: false,
@@ -288,6 +288,8 @@ define('views/ResourceListView', [
       }).promise();
       
       this._pagingPromise.done(function() {
+        self.trigger('invalidateSize');
+        self.pageView.trigger('invalidateSize');
         self.once('refreshed', _.partial(self.checkIfNeedMore, displayedBefore));
       }).always(function() {
         self._paging = false;

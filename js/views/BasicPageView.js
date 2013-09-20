@@ -6,10 +6,11 @@ define('views/BasicPageView', [
   'events',
   'views/BasicView',
   'views/mixins/Scrollable',
+  'views/mixins/Scrollable1',
   'views/mixins/LazyImageLoader',
   'jqueryMobile',
   'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, Scrollable, LazyImageLoader, $m) {
+], function(G, _, U, Events, BasicView, Scrollable, Scrollable1, LazyImageLoader, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
       doc = document,
@@ -21,7 +22,7 @@ define('views/BasicPageView', [
   };
   
   var PageView = BasicView.extend({
-    mixins: [Scrollable, LazyImageLoader],
+    mixins: [Scrollable, Scrollable1, LazyImageLoader],
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);

@@ -63,11 +63,10 @@ define('views/Header', [
       this.info = this.hashParams['-info'];
       
       var buttons = this.buttons;
-//      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
-//        buttons.publish = true;
-//      
-//      if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
-//        buttons.publish = true;
+      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
+        buttons.publish = true;
+      else if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
+        buttons.publish = true;
       
       var btnOptions = {
         model: this.model, 

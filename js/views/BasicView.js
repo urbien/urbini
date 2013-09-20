@@ -229,11 +229,11 @@ define('views/BasicView', [
       return [this._loadingDfd].concat(this._getChildrenLoadingDeferreds());
     },
     
-    isDoneLoading: function() {
-      return _.all(this._getLoadingDeferreds(), function(c) {
-        return c.state() !== 'pending';
-      });
-    },
+//    isDoneLoading: function() {
+//      return _.all(this._getLoadingDeferreds(), function(c) {
+//        return c.state() !== 'pending';
+//      });
+//    },
 
     onload: function(callback) {
       return $.whenAll.apply($, this._getLoadingDeferreds()).then(callback);
