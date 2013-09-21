@@ -212,7 +212,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         this._fetchImages(toFetch);
       
       if (delayed.length)
-        setTimeout(_.partial(this._loadImages, delayed), 100);
+        setTimeout(this._loadImages.bind(this, delayed), 100);
     },
 
     _updateImages: function(imagesData) {
@@ -307,7 +307,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         else if (hasData) {
           res.fetch({
             dbOnly: true,
-            success: _.partial(this._queueImageFetch, img),
+            success: this._queueImageFetch.bind(this, img),
             error: function() {
               debugger;
             }

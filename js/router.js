@@ -81,7 +81,7 @@ define('router', [
       window.router = this;
       this.firstPage = true;
       this.updateHashInfo();
-      this.homePage = new HomePage({el: $('#homePage')});
+//      this.homePage = new HomePage({el: $('#homePage')});
       var self = this;
       Events.on('home', function() {
         self.goHome();
@@ -328,6 +328,9 @@ define('router', [
       
       var prev = this.currentView,
           reverse;
+      
+      if (!this.homePage)
+        this.homePage = new HomePage({el: $('#homePage')});
       
       this.checkBackClick();
       if (this.backClicked) {

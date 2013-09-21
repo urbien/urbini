@@ -105,19 +105,22 @@ define('underscoreMixins', ['_underscore'], function(_) {
   }
 
   _.mixin({
-    partial: function(fn) {
-      var args = slice.call(arguments, 1);
-      return function() {
-        return fn.apply(null, args.concat(_.toArray(arguments)));
-      };
-    },
-    
-    partialWith: function(fn, context) {
-      var args = slice.call(arguments, 2);
-      return function() {
-        return fn.apply(context, args.concat(_.toArray(arguments)));
-      };
-    },
+//    partial: function(fn) {
+////      var args = slice.call(arguments, 1);
+////      return function() {
+////        return fn.apply(null, args.concat(_.toArray(arguments)));
+////      };
+//      var args = slice.call(arguments, 1);
+//      args.unshift(null);
+//      return fn.bind.apply(fn, args);
+//    },
+//    
+//    partialWith: function(fn, context) {
+////      var args = slice.call(arguments, 2);
+////      return function() {
+////        return fn.apply(context, args.concat(_.toArray(arguments)));
+////      };
+//    },
     
     negate: function(fn, context) {
       return function() {
@@ -210,6 +213,10 @@ define('underscoreMixins', ['_underscore'], function(_) {
 //      });
 //    },
    
+    getObjectType: function(o) {
+      return Object.prototype.toString.call(o);
+    },
+
     deepExtend: function(obj, source) {
 //      _.each(slice.call(arguments, 1), function(source) {
       for (var i = 1, num = arguments.length; i < num; i++) {
@@ -219,7 +226,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
               org = obj[p];
           
           if (_.has(source, p) && !_.has(obj, p)) {
-            obj[p] = val && typeof val == 'object' ? _.deepExtend({}, val) : val;
+            obj[p] = val && _.getObjectType(val) == '[object Object]' ? _.deepExtend({}, val) : val;
             continue;
           }
             

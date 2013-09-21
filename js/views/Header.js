@@ -315,7 +315,7 @@ define('views/Header', [
       }
       else if (pBtn) {
         this.$('#publishBtn').hide();
-        var options = _.filter(SPECIAL_BUTTONS, _.partial(_['!='], 'publish'));
+        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {

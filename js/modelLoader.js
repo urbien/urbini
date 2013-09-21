@@ -156,14 +156,14 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     };    
 
     _.each(types, function(type) {
-      var requireType = _.partial(require, type);
+      var requireType = require.bind(null, type);
       if (force) {
         requireType();
         return;
       }
       
-      var getMetadata = _.partial(getModelMetadataFromStorage, type, source),
-          getData = _.partial(getModelFromStorage, type, source),
+      var getMetadata = getModelMetadataFromStorage.bind(null, type, source),
+          getData = getModelFromStorage.bind(null, type, source),
           info = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || {},
 //          modelDfd = $.Deferred(),
 //          modelPromise = modelDfd.promise();

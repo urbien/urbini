@@ -206,7 +206,7 @@ define('views/BasicPageView', [
     
     onTourStep: function(step) {
       if (this.isActive())
-        this.onpageshow(_.partial(this.runTourStep.bind(this), step));
+        this.onpageshow(this.runTourStep.bind(this, step));
     },
     
     runTourStep: function(step) {      
@@ -313,7 +313,7 @@ define('views/BasicPageView', [
 //          type = this.modelType;
 //      
 //      _.each(MESSAGE_BAR_TYPES, function(type) {
-//        Events.on('header.' + type, _.partial(self.createMessageBar.bind(self), type));
+//        Events.on('header.' + type, self.createMessageBar.bind(self, type));
 //      });
 //    },
     

@@ -81,7 +81,7 @@ define('app', [
       }
       else {
         Errors.offline();
-        Events.once('online', _.partial(loadCurrentModel, dfd));
+        Events.once('online', loadCurrentModel.bind(null, dfd));
       }
     }); 
     
@@ -323,7 +323,7 @@ define('app', [
     reset();
     Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
-      return promise.then(_.partial(run, fn, context));
+      return promise.then(run.bind(null, fn, context));
     };
   };
   

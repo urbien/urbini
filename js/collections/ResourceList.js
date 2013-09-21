@@ -522,7 +522,7 @@ define('collections/ResourceList', [
                   })
                 };
                 
-                G.whenNotRendering(_.partial(self.fetch, newOptions), self);
+                G.whenNotRendering(self.fetch.bind(self, newOptions));
               }
             }
           }

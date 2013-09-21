@@ -397,7 +397,7 @@ define('views/PhotogridView', [
       this.$el.css('height', (this.height || 250) + 'px');
       if (!this.el.clientWidth) {
         var args = arguments, self = this;
-        setTimeout(_.partial(self.renderSwipeview, args), 100);
+        setTimeout(self.renderSwipeview.bind(self, args), 100);
         return;
       }      
       // END HACK

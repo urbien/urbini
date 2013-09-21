@@ -3214,7 +3214,7 @@ define('utils', [
         template = templateName;
       
       templateFn = function(json) {
-        if (_.any(U._reservedTemplatedKeywords, _.partial(_.has, json)))
+        if (_.any(U._reservedTemplatedKeywords, _.has.bind(_, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
         
         json = json || {};

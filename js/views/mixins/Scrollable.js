@@ -34,7 +34,7 @@ define('views/mixins/Scrollable', [
       
       // Mobile safari doesn't let you copy touch objects, so copy it manually
       this._firstTouch = U.cloneTouch(touches[0]);
-      this.touchStartTimer = setTimeout(_.partial(this.highlight.bind(this), e.target, e), 100);
+      this.touchStartTimer = setTimeout(this.highlight.bind(this, e.target, e), 100);
     },
 
     unhighlightOnTouchMove: function(e) {
@@ -64,7 +64,7 @@ define('views/mixins/Scrollable', [
       
       // removing active class needs to be on timer because adding is also on a timer
       // if this is not done, sometimes the active class removal is called before...
-      setTimeout(_.partial(this.unhighlight.bind(this), e.target, e), 100);
+      setTimeout(this.unhighlight.bind(this, e.target, e), 100);
     },
     
     highlight: function(target, e) {

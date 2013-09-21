@@ -106,7 +106,7 @@ define('resourceManager', [
         return REJECTED_PROMISE;
       
       if (!IDB.isOpen())
-        return IDB.onOpen().then(_.partial(this.upgrade.bind(this), mk, del));
+        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));
       
       mk = mk || [];
       del = del || [];

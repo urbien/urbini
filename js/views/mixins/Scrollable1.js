@@ -22,6 +22,11 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
     e.preventDefault();
   }, false);
 
+  function isScrollableContainer(el) {
+    var style = window.getComputedStyle(el);
+    return style.overflow == 'hidden' && style.position == 'absolute';
+  }
+  
   function oppositeDir(dir) {
     return dir == 'X' ? 'Y' : 'X';
   }
@@ -68,7 +73,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
     startTouch: null,
     endTouch: null,
     SCROLL_EVENT_PERIOD: 200,
-    MAX_COAST_TIME: 2400,
+    MAX_COAST_TIME: 1500,
     MIN_START_VELOCITY_: 0.25,
     MAX_OUT_OF_BOUNDS: 50,
     BOUNCE_OUT_TIME: 400,
@@ -96,7 +101,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
         }
       };
       
-      this.onload(_.partial(this._initScroller, scrollerOptions));
+      this.onload(this._initScroller.bind(this, scrollerOptions));
     },
     
     _initScroller: function(options) {
@@ -104,8 +109,11 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
       var el = this.el;
       var s = this._scrollerProps;
       var frame = s.frame = el.parentNode || document.body;
-      this._calculateSizes().done(_.partial(this._scrollTo, 0, 0));
-      
+      this._calculateSizes().done(this._finishScrollerInit.bind(this));
+    },
+    
+    _finishScrollerInit: function() {
+      var el = this.el;
       for (var i = 0; i < INPUT_EVENTS.length; i++) {
         el.addEventListener(INPUT_EVENTS[i], this, false);
       }
@@ -113,6 +121,8 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
       el.addEventListener('webkitTransitionEnd', this, false);
       el.addEventListener('transitionend', this, false);
       el.addEventListener('click', this, true);
+      
+      this._scrollTo(0, 0);      
     },
     
     events: {
@@ -153,15 +163,23 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
           containerHeight = frame.offsetHeight,
           scrollX = this._getScrollAxis() == 'X',
           hadPosition = !!s.position,
-          gutter = s.MAX_OUT_OF_BOUNDS;
-          dfd = $.Deferred();
+          gutter = s.MAX_OUT_OF_BOUNDS,
+          dfd = $.Deferred(),
+          promise = dfd.promise();
       
+      dfd._id = _.uniqueId('dfd');
       if (!scrollHeight || !containerHeight) {
-        setTimeout(function() {
-          this._calculateSizes().done(dfd.resolve).fail(dfd.reject);
-        }.bind(this), 100);
+        if (isScrollableContainer(frame)) {
+          setTimeout(function() {
+            this._calculateSizes().done(dfd.resolve).fail(dfd.reject);
+          }.bind(this), 100);
+        }
+        else {
+          dfd.reject();
+          console.error('Scrollable view is not in a scrollable container: ' + this.TAG);
+        }
         
-        return dfd.promise();
+        return promise;
       }
 
       s.position = {
@@ -210,7 +228,8 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
       if (hadPosition)
         this._updateScrollPosition();
 
-      return G.getResolvedPromise();
+      dfd.resolve();
+      return promise;
       
 //      s.min.X = window.innerWidth - s.contentWidth;
 //      s.max.X = 0;
@@ -354,6 +373,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
       if (!e.targetTouches.length)
         return;
 
+//      console.log('touchstart at: ' + e.targetTouches[0].clientY);
       var s = this._scrollerProps;
       if (s.startTouch && !s.touchendReceived) {
         // user dragged out of the event receiving area.
@@ -364,7 +384,6 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
     },
 
     onTouchMove: function(e) {
-//      console.log('touchmove at: ' + e.targetTouches[0].clientY);
       var s = this._scrollerProps, 
           last, 
           scrollX,
@@ -374,6 +393,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
       if (!s.startTouch)
         return;
       
+//      console.log('touchmove at: ' + e.targetTouches[0].clientY);
       last = this._lastTouchMoveTime || Date.now();
       this._lastTouchMoveTime = Date.now();
       if (!e.targetTouches.length) // || !this._isDragging())
@@ -400,6 +420,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
     },
 
     _onTouchEnd: function(e, isOutOfBounds) {
+//      console.log('touchend at: ' + e.changedTouches[0].clientY);
       var s = this._scrollerProps;
       if (!s.startTouch) {
         if (isOutOfBounds)
@@ -408,7 +429,7 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
         return;
       }
 
-      this._updateTouchHistory(e, e.changedTouches[0]);
+//      this._updateTouchHistory(e, e.changedTouches[0]); // don't update on touchend, firefox fires touchmove first with the same coordinates 
       if (!isOutOfBounds && (s.distanceTraveled < SCROLL_DISTANCE_THRESH)) {// || s.timeTraveled < SCROLL_TIME_THRESH)) {
         // this was a click, not a swipe
 //        console.log('this was a click');
@@ -436,13 +457,14 @@ define('views/mixins/Scrollable1', ['globals', 'underscore', 'utils', 'events'],
     },
     
     onTouchEnd: function(e) {
+      var s = this._scrollerProps,
+          isOutOfBounds;
+      
       try {
         if (!e.changedTouches.length)
           return;
         
-        var isOutOfBounds = this._isOutOfBounds(),
-            s = this._scrollerProps;
-        
+        isOutOfBounds = this._isOutOfBounds();
         this._onTouchEnd(e, isOutOfBounds);
       } finally {
         this._clearTouchHistory();

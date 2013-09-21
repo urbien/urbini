@@ -11,7 +11,7 @@ define('views/ResourceListView', [
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
   var $wnd = $(window);
   var RLV = BasicView.extend({
-    displayPerPage: 100, // for client-side paging
+    displayPerPage: 10, // for client-side paging
     page: 0,
 //    changedViews: [],
 //    skipScrollEvent: false,
@@ -290,7 +290,7 @@ define('views/ResourceListView', [
       this._pagingPromise.done(function() {
         self.trigger('invalidateSize');
         self.pageView.trigger('invalidateSize');
-        self.once('refreshed', _.partial(self.checkIfNeedMore, displayedBefore));
+        self.once('refreshed', self.checkIfNeedMore.bind(self, displayedBefore));
       }).always(function() {
         self._paging = false;
 //        self.hideLoadingIndicator();
@@ -382,7 +382,7 @@ define('views/ResourceListView', [
       if (numResults < this.displayPerPage) {
         var numOriginally = collection.size(),
             indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
-            hideIndicator = _.partial(this.hideLoadingIndicator.bind(this), indicatorId);
+            hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
         
         filtered.fetch({
           forceFetch: true,
@@ -410,24 +410,35 @@ define('views/ResourceListView', [
 ////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
 //      }
 
-      if (this.scrolledToNextPage())
+      if (this.scrolledToNextPage(e))
         this.getNextPage();      
     },
     
-    scrolledToNextPage: function() {
-      if (this.prevScrollPos > $wnd.scrollTop()) {
-        this.prevScrollPos = $wnd.scrollTop();
-        return;
+    scrolledToNextPage: function(e) {
+//      var scrollTop = U.getScrollPosition(this.$el, e).scrollTop;
+      var scrollTop = $wnd.scrollTop();
+      try {
+        if (this.prevScrollPos > scrollTop) return;
+      } finally {
+        this.prevScrollPos = scrollTop;
       }
-      
-      this.prevScrollPos = $wnd.scrollTop();
+
+//      if (this.prevScrollPos > $wnd.scrollTop()) {
+//        this.prevScrollPos = $wnd.scrollTop();
+//        return;
+//      }
+//      
+//      this.prevScrollPos = $wnd.scrollTop();
       
       // get next page
       // 1) masonry: 2.5 screen height to bottom
       // 2) list view: 1 screen height to bottom
-      var factor = this.hasMasonry() ? 3.5 : 2;   
-      if ($m.activePage.height() > $wnd.scrollTop() + $wnd.height() * factor)
+      var factor = this.hasMasonry() ? 3.5 : 2;         
+      if ($m.activePage.height() > scrollTop + $wnd.height() * factor)
         return;
+      
+//      if (this.pageView.el.offsetHeight > scrollTop + window.innerHeight * factor)
+//        return;
       
       return true;
     },

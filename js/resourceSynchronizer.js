@@ -255,7 +255,7 @@ define('resourceSynchronizer', [
     if (version <= 1)
       return;
 
-    var retry = _.partial(setTimeout, syncWithServer, 2000);
+    var retry = setTimeout.bind(window, syncWithServer, 2000);
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
       if (!results.length)
         return;
@@ -510,7 +510,7 @@ define('resourceSynchronizer', [
     if (!canceled || !canceled.length || !res.get(canceled[0]))
       return;
     
-    res.on('delete', _.partial(deleteItem, res));
+    res.on('delete', deleteItem.bind(null, res));
     res['delete']();
   };    
   
