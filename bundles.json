@@ -2,7 +2,7 @@
   pre: {
     js: ['jqm-config', 'lib/underscore', 'underscoreMixins', 'lib/backbone', 'backboneMixins', 'taskQueue', 'lib/IndexedDBShim', 'lib/jquery-indexeddb', 'lib/queryIndexedDB', 'lib/jquery.masonry', 'lib/jquery.imagesloaded', 'templates', 'cache', 'utils', 'error', 'events', 'models/Resource', 
     		 'collections/ResourceList', 'lib/jquery.anystretch', 'views/HomePage', 'vocManager', 'modelLoader', 'plugManager', 'resourceManager', 'indexedDB', 'idbQueryBuilder', 'synchronizer', 'resourceSynchronizer', 'collectionSynchronizer', 'router', 
-    		 'app', 'appAuth', 'apiAdapter', 'redirecter', 'views/BasicView', 'views/BasicPageView', 'views/mixins/Scrollable', 'views/mixins/Scrollable1', 'views/mixins/LazyImageLoader'],
+    		 'app', 'appAuth', 'apiAdapter', 'redirecter', 'views/BasicView', 'views/BasicPageView', 'views/mixins/Scrollable1', 'views/mixins/LazyImageLoader'],
     css: ['lib/jquery.mobile-1.3.2.min.css', 'lib/jquery.mobile.theme-1.3.2.min.css', {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, 'lib/jquery.mobile.structure-1.3.2.min.css', '../styles/styles.css', '../styles/common-template-m.css'],
     html: ['../templates.jsp'],
     lol: []

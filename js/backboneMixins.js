@@ -57,6 +57,13 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
     _([Backbone.Model, Backbone.Collection, Backbone.Router, Backbone.View]).each(function(klass) {
       klass.mixin = mixin;
       klass.extend = extend;
+      klass.prototype.usesMixin = function(mixin) {
+        return _.contains(this.mixins, mixin);
+      };
+      
+      klass.usesMixin = function(mixin) {
+        return _.contains(this.prototype.mixins, mixin);
+      };
     })
   };
   

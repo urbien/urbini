@@ -109,7 +109,7 @@ define('globals', function() {
     browser.safari = browser.webkit && !window.chrome;
     browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
     var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/);
-    if (mobile) {
+    if (mobile || browser.ios) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
     }
@@ -203,6 +203,8 @@ define('globals', function() {
       return G.inWebview;
     case 'firefox':
       return G.hasFFApps;
+//    case 'views/mixin/Scrollable1':
+//      return G.browser.mobile;
     default:
       return true;
     }
