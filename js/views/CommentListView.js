@@ -25,8 +25,8 @@ define('views/CommentListView', [
         if (this.$el.hasClass('ui-listview'))
           this.$el.listview('refresh');
       }
-      else
-        this.$el.prevObject.find('#comments').css('display', 'block');
+
+      this.$el.css('display', 'block');
     }
   },
   {
