@@ -79,6 +79,19 @@ define('views/MasonryListView', [
             itemSelector: ITEM_SELECTOR
           });
    
+          var l = _.filter(self.$el.find('.nab'), function(a) {
+                            return $(a).css('top') == '0px';
+                          });
+          if (l) {
+            var len = l.length;
+            var w = $(l[0]).css('width');
+            w = w.substring(0, w.length - 2);
+            len = l.length * w;
+            len += l.length * 20;
+            var d = ($(window).width() - len) / 2;
+            var style = self.$el.attr('style'); 
+            self.$el.attr('style', style + 'left: ' + d + 'px;');
+          }
           self.$el.on('pageshow', self.reloadMasonry.bind(self));
           self.finish();
         });
