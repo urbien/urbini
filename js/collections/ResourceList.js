@@ -501,7 +501,7 @@ define('collections/ResourceList', [
         }
         else {
           var select = extraParams && extraParams.$select;
-          if (select) {
+          if (select && select !== '$all') {
             var first = self.models[0];
             if (first) {
               var props = U.parsePropsList(select, self.vocModel),
