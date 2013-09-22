@@ -502,36 +502,11 @@ define('collections/ResourceList', [
           success(resp, status, xhr);
           return;
         }
-        else {
-          var select = extraParams && extraParams.$select;
-          if (select && select !== '$all') {
-            var first = self.models[0];
-            if (first) {
-              var props = U.parsePropsList(select, self.vocModel),
-                  atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
-                  nonSelectedProps = _.difference(_.keys(atts), props),
-                  hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
-              
-              if (!hasNonSelectedProps) {
-                var newOptions = {
-                  forceFetch: true,
-                  forceMerge: true,
-                  params: _.extend(_.omit(extraParams, '$select'), {
-                    $omit: select,
-                    $blCounts: 'y' // might as well make the most of this request
-                  })
-                };
-                
-                G.whenNotRendering(self.fetch.bind(self, newOptions));
-              }
-            }
-          }
-          
-          self._lastFetchedOn = now;
-        }
         
+        self._lastFetchedOn = now;
         var now = G.currentServerTime(),
-            code = xhr.status;
+            code = xhr.status,
+            select = extraParams && extraParams.$select;
         
         function err() {
           debugger;
@@ -565,6 +540,31 @@ define('collections/ResourceList', [
         
         self.update(resp, options);
         success(resp, status, xhr);
+        if (!select || select == '$all')
+          return;
+        
+        var first = self.models[0];
+        if (!first)
+          return;
+        
+        var props = U.parsePropsList(select, self.vocModel),
+            atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
+            nonSelectedProps = _.difference(_.keys(atts), props),
+            hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
+
+        if (hasNonSelectedProps)
+          return;
+        
+        var newOptions = {
+          forceFetch: true,
+          forceMerge: true,
+          params: _.extend(_.omit(extraParams, '$select'), {
+            $omit: select,
+            $blCounts: 'y' // might as well make the most of this request
+          })
+        };
+        
+        G.whenNotRendering(self.fetch.bind(self, newOptions));
       }; 
       
       return this.sync('read', this, options);

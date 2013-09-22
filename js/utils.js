@@ -214,8 +214,12 @@ define('utils', [
      * @return { X: x-offset, Y: y-offset }
      */
     parseTranslation: function(transformStr) {
-      if (transformStr == 'none')
-        return [0, 0];
+      if (transformStr == 'none') {
+        return {
+          X: 0,
+          Y: 0
+        };
+      }
       
       var split = transformStr.split(', '),
           xIdx = split.length == 6 ? 4 : 12,
