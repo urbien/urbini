@@ -19,7 +19,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
 //      this._initOptions = options;
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_passThroughToEl');
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged');
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -116,7 +116,6 @@ define('views/BasicView', [
         if (listener in window) {
           var event = listener.slice(2);
           window.addEventListener(event, self._onViewportDimensionsChanged, false);
-          self['_' + event] = _.debounce(self._passThroughToEl, 100);          
         }
       });
 
@@ -143,8 +142,10 @@ define('views/BasicView', [
         viewId: this.cid
       };
       
-      if (this.resource)
+      if (this.resource) {
         data._uri = this.resource.get('_uri');
+//        data.davDisplayName = this.resource.attributes.davDisplayName;
+      }
       
       return data;
     },
@@ -403,12 +404,11 @@ define('views/BasicView', [
     },
     
     _onViewportDimensionsChanged: function(event) {
-      var _event = '_' + event.type;
+      var $el = this.$el,
+          type = event.type;
+      
       if (this.isActive())
-        this[_event](event);
-      else {
-        this.once('active', _.partial(this[_event], this, event.type));
-      }
+        $el.trigger(type);
     },
     
     _onActive: function() {
