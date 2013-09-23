@@ -55,8 +55,10 @@ define('views/MasonryListView', [
     },
     
     reloadMasonry: function(e) {
-      if (this.rendered)
+      if (this.rendered) {
         this.masonry('reload');
+        this.centerMasonry(this);
+      }
     },
     
     postRender: function(info) {
@@ -79,23 +81,27 @@ define('views/MasonryListView', [
             itemSelector: ITEM_SELECTOR
           });
    
-          var l = _.filter(self.$el.find('.nab'), function(a) {
-                            return $(a).css('top') == '0px';
-                          });
-          if (l) {
-            var len = l.length;
-            var w = $(l[0]).css('width');
-            w = w.substring(0, w.length - 2);
-            len = l.length * w;
-            len += l.length * 20;
-            var d = ($(window).width() - len) / 2;
-            var style = self.$el.attr('style'); 
-            self.$el.attr('style', style + 'left: ' + d + 'px;');
-          }
+          self.centerMasonry(self);
           self.$el.on('pageshow', self.reloadMasonry.bind(self));
           self.finish();
         });
       }
+    },
+    centerMasonry: function(list) {
+      var l = _.filter(list.$el.find('.nab'), function(a) {
+        return $(a).css('top') == '0px';
+      });
+      if (l) {
+        var len = l.length;
+        var w = $(l[0]).css('width');
+        w = w.substring(0, w.length - 2);
+        len = l.length * w;
+        len += l.length * 20;
+        var d = ($(window).width() - len) / 2;
+        var style = list.$el.attr('style'); 
+        list.$el.attr('style', style + 'left: ' + d + 'px;');
+      }
+
     }
   }, {
     displayName: "MasonryListView"
