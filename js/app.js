@@ -14,7 +14,7 @@ define('app', [
  'resourceManager',
  'router',
  'collections/ResourceList'
- ], function(G, _, Backbone, __backboneMixins__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
@@ -383,7 +383,7 @@ define('app', [
         var fetchDfd = $.Deferred(),
             isList = U.isCollection(data);
         
-        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List', data));
+        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List'), data);
         data.fetch({
           success: function() {
             if (!data.isFetching())
