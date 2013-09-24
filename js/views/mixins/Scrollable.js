@@ -1,5 +1,6 @@
 define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], function(G, _, U, Events) {
 
+  window.s = []; 
   var FORCE_TOUCH = false,
       SCROLL_DISTANCE_THRESH = 25,
       SCROLL_TIME_THRESH = 1000,
@@ -7,7 +8,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
       touchEvents = ['touchstart', 'touchend', 'touchmove'],
       AXES = ['X', 'Y'],
       IS_TOUCH = FORCE_TOUCH || G.browser.mobile,
-//      INPUT_EVENTS = IS_TOUCH ? touchEvents : nonTouchEvents,
       TOUCH_EVENTS = IS_TOUCH ? {
         touchstart: 'touchstart',
         touchend: 'touchend',
@@ -23,7 +23,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
       beziers = {
         fling: 'cubic-bezier(0.103, 0.389, 0.307, 0.966)', // cubic-bezier(0.33, 0.66, 0.66, 1)
         bounceDeceleration: 'cubic-bezier(0, 0.5, 0.5, 1)',
-        bounce: 'cubic-bezier(0.7, 0, 0.9, 0.6)'
+        bounce: 'cubic-bezier(0.7, 0, 0.9, 0.6)',
+        easeIn: 'cubic-bezier(0.420, 0.000, 1.000, 1.000)'
       },
       
       // SCROLLER STATES
@@ -72,6 +73,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     
     return Math.sqrt(x * x + y * y);
   }
+  
+  function normalizePosition(pos) {
+    pos.X = parseInt(pos.X);
+    pos.Y = parseInt(pos.Y);
+    return pos;
+  }
 
   function toTouchEvent(mouseEvent) {
     var touches = [{
@@ -80,10 +87,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     }];
     
     return {
+      target: mouseEvent.target,
       targetTouches: touches,
       changedTouches: touches,
       timeStamp: mouseEvent.timeStamp,
-      preventDefault: mouseEvent.preventDefault.bind(mouseEvent)
+      preventDefault: mouseEvent.preventDefault.bind(mouseEvent),
+      stopPropagation: mouseEvent.stopPropagation.bind(mouseEvent)
     }
   }
   
@@ -127,19 +136,21 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     
     return limited;
   }
-  
-  // Sroller Finite State Machine. Each scroller state expects only certain events, and has functions to handle those events, and then return the new scroller state
+
+  // START Sroller Finite State Machine. Each scroller state expects only certain events, and has functions to handle those events, and then return the new scroller state
   var TRANSITION_MAP = {
     uninitialized: {
       // Events to expect in 'uninitialized' state
       init: function(e) {
         if (this._scrollerProps.metrics || this._calculateSizes() !== false) {
-          doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-          this._scrollTo(0, 0);
-          return READY;
+//          this.el.addEventListener('click', this.);
+//          doc.addEventListener('keydown', this, true);
+//          doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+          this._scrollTo(this._scrollerProps.position);
+          return this._transitionScrollerState(INACTIVE, 'wake');
         }
         else {
-          setTimeout(function() {
+          this._queueScrollTimeout(function() {
             this._transitionScrollerState(UNINITIALIZED, 'init');
           }.bind(this), 100);
           
@@ -150,8 +161,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     
     inactive: {
       wake: function() {
-        doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true); // just in case we left one hanging
-        doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+        this._listenToTouchEvents('touchstart', 'keydown', 'click');
         return READY;
       }
     },
@@ -159,22 +169,94 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     ready: {
       // Events to expect in READY state
       mousedown: function(e) {
-        return this._transitionScrollerState(READY, 'touchstart', toTouchEvent(e));
+        switch (e.button) {
+        case 0:
+          return this._transitionScrollerState(READY, 'touchstart', toTouchEvent(e));
+        default:
+          return READY;
+        }
       },
+      
+      keydown: function(e) {
+        var s = this._scrollerProps,
+            keyCode = s._keyHeld = U.getKeyEventCode(e),
+            axis = this._getScrollAxis(),
+            pos = s.position,
+            newPos = _.clone(pos),
+            bounds = s.scrollBounds[axis],
+            maxJumpTime = 300,
+            jump = keyCode >= 33 && keyCode <=36,
+            ease,
+            time,
+            distance;
+
+        this._resetScroller();        
+        switch (keyCode) {
+        case 33: // page up
+          distance = window.innerHeight;
+          break;
+        case 34: // page down
+          distance = -window.innerHeight;
+          break;
+        case 36: // home
+          distance = bounds.max - pos[axis];
+          break;
+        case 38: // up arrow
+          distance = bounds.max - pos[axis];
+          time = distance * 3;
+          ease = beziers.easeIn;
+          break;
+        case 40: // down arrow
+          distance = bounds.min - pos[axis];
+          time = distance * 3; //calcAnimationTime(distance);
+          ease = beziers.easeIn;
+          break;
+        case 35: // end
+          distance = bounds.min - pos[axis];
+          break;
+        default:
+          return s.state;
+        }        
+        
+        newPos[axis] += distance;
+        newPos = this._limitToBounds(normalizePosition(newPos));
+        if (_.isEqual(newPos, pos))
+          return READY;
+              
+        time = time || this._calcAnimationTime(pos, newPos);
+        if (jump)
+          time = Math.min(time, maxJumpTime);
+        
+        this._scrollTo(newPos, time, ease);
+        this._scheduleScrollerStateTransition(COASTING, 'coastcomplete', {
+          time: time,
+          to: newPos
+        }, time);
+        
+//        this._stopListeningToTouchEvents('keyup');
+        this._listenToTouchEvents('keyup');
+//        doc.removeEventListener('keyup', this, true); // just in case we left one hanging
+//        doc.addEventListener('keyup', this, true);
+        return COASTING;
+      },
+      
       touchstart: function(e) {
         // grab, subscribe to touchmove
+        e.preventDefault();
         this._clearScrollTimeouts();
         this._clearTouchHistory();
-        doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
-        doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true); // just in case
-        doc.removeEventListener(TOUCH_EVENTS.touchend, this, true); // just in case
-        doc.addEventListener(TOUCH_EVENTS.touchmove, this, true);
-        doc.addEventListener(TOUCH_EVENTS.touchend, this, true);
+        this._stopListeningToTouchEvents('touchend');
+        this._listenToTouchEvents('touchend', 'touchmove');
+//        doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
+//        doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true); // just in case
+//        doc.removeEventListener(TOUCH_EVENTS.touchend, this, true); // just in case
+//        doc.addEventListener(TOUCH_EVENTS.touchmove, this, true);
+//        doc.addEventListener(TOUCH_EVENTS.touchend, this, true);
         this._updateTouchHistory(e, e.targetTouches[0]);
         return DRAGGING;
       },
       
-      sleep: function() {
+      sleep: function(e) {
         this._cleanupScroller();
         return INACTIVE;
       }
@@ -186,6 +268,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
       },
       touchmove: function(e) {
         // scroll to new position
+        e.preventDefault();
         var s = this._scrollerProps, 
             history = s.touchHistory,
             historyLength = history.length,
@@ -200,7 +283,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           return;
         }
         
-  //      console.log('touchmove at: ' + e.targetTouches[0].clientY);
+  //      this.log('touchmove at: ' + e.targetTouches[0].clientY);
         lastTimeStamp = s._lastTouchMoveTime || Date.now();
         s._lastTouchMoveTime = Date.now();
         if (!historyLength)
@@ -211,19 +294,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         gesture = s.lastGesture;
         position = s.position;
         
-        targetPosition = { 
+        targetPosition = normalizePosition({ 
           X: scrollX ? s.position.X + gesture.X : s.position.X, 
           Y: !scrollX ? s.position.Y + gesture.Y : s.position.Y 
-        };
+        });
   
-        this._scrollTo(targetPosition.X, targetPosition.Y); // immediate, duration 0
+        this._scrollTo(targetPosition); // immediate, duration 0
         return DRAGGING;
       },
 
       mouseup: function(e) {
         return this._transitionScrollerState(DRAGGING, 'touchend', toTouchEvent(e));
       },
-      
+
       touchend: function(e) {
         // if fling
         if (!e.changedTouches.length) {
@@ -231,18 +314,26 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           return;
         }
         
+        e.preventDefault();
         var isInBounds = this._isInBounds(),
             s = this._scrollerProps;
         
-        if (isInBounds && (s.distanceTraveled < SCROLL_DISTANCE_THRESH)) {// || s.timeTraveled < SCROLL_TIME_THRESH)) {
-          // this was a click, not a swipe/scroll
-//          console.log('this was a click');
-          this._resetScroller();
-          return READY;
-        }
-        else {
+        if (!isInBounds 
+            || s.distanceTraveled > SCROLL_DISTANCE_THRESH 
+            || (s.distanceTraveled > (SCROLL_DISTANCE_THRESH / 2) && s.timeTraveled > SCROLL_TIME_THRESH)) {          
           s.preventClick = true;
           e.preventDefault();
+          e.stopPropagation();
+          this.log('trying to prevent click event');
+        }
+        else {
+          // this was a click, not a swipe/scroll
+          this.log('this was a click, not a scroll, only traveled: ' + s.distanceTraveled + 'px');
+          var touch = _.last(s.touchHistory);
+//          $(document.elementFromPoint(touch.X, touch.Y)).click();
+          this._resetScroller();
+          $(e.target).click();
+          return s.state;
         }
 
         if (this._flingScrollerIfNeeded()) {
@@ -254,29 +345,69 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           if (this._snapScrollerIfNeeded())
             return SNAPPING;
           
-          this._updateScrollPosition(); // parse it from CSS transform
+//          this._updateScrollPosition(); // parse it from CSS transform
           this._resetScroller();
           return READY;
         }
       },
       
-      sleep: function() {
+      sleep: function(e) {
         return this._transitionScrollerState(READY, 'sleep', e);
       }
     },
     coasting: {
       // Events to expect in COASTING state
       mousedown: function(e) {
-        return this._transitionScrollerState(COASTING, 'touchstart', { targetTouches: [e] });
+        return this._transitionScrollerState(COASTING, 'touchstart', toTouchEvent(e));
+      },
+
+      keydown: function(e) {
+        var s = this._scrollerProps,
+            keyCode = U.getKeyEventCode(e);
+        
+        if (s._keyHeld)
+          return s.state;
+        
+        return this._transitionScrollerState(READY, 'keydown', e);
       },
       
+      keyup: function(e) {
+        var s = this._scrollerProps,
+            keyCode = U.getKeyEventCode(e);
+        
+        if (keyCode == s._keyHeld) {
+          this._resetScroller();
+          return READY;
+        }
+        else {
+          debugger;
+          return s.state;
+        }
+              
+//        switch (keyCode) {
+//        case 33: // page up
+//          this.log('keyEvent page up');
+//          break;
+//        case 34: // page down
+//          this.log('keyEvent page down');
+//          break;
+//        case 38: // up arrow
+//          this.log('keyEvent up arrow');
+//          break;
+//        case 40: // down arrow
+//          this.log('keyEvent down arrow');
+//          break;
+//        }
+      },
+
+
       touchstart: function(e) {
         // stop, calc new position, then call ready->touchstart handler and return whatever it returns
         this._clearScrollTimeouts();
         this._clearTouchHistory();
         this._updateScrollPosition(); // parse it from CSS transform
         var pos = this._getScrollPosition();
-        this._scrollTo(pos.X, pos.Y);
+        this._scrollTo(pos);
         return this._transitionScrollerState(READY, 'touchstart', e);
       },
       
@@ -289,14 +420,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         return READY;
       },
       
-      sleep: function() {
+      sleep: function(e) {
         return this._transitionScrollerState(READY, 'sleep', e);
       }
     },
     snapping: {
       // Events to expect in 'snapping' state
       mousedown: function(e) {
-        return this._transitionScrollerState(SNAPPING, 'touchstart', { targetTouches: [e] });
+        return this._transitionScrollerState(SNAPPING, 'touchstart', toTouchEvent(e));
       },
       
       touchstart: function(e) {
@@ -318,30 +449,35 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     }
   }
   
+  // END Sroller Finite State Machine. Each scroller state expects only certain events, and has functions to handle those events, and then return the new scroller state
+
+  
   var initScrollerProps = {
     state: UNINITIALIZED,
     axis: 'Y',
     touchHistory: [],
     SCROLL_EVENT_PERIOD: 200,
     MAX_COAST_TIME: 1500,
+    MAX_VELOCITY: 5,
 //    MIN_START_VELOCITY_: 0.25,
     MAX_OUT_OF_BOUNDS: 50,
     BOUNCE_OUT_TIME: 400,
     BOUNCE_BACK_TIME: 400,
-    acceleration: -0.005,
+    acceleration: 0.005,
     momentum: true,
     timeTraveled: 0,
     distanceTraveled: 0,
     timeouts: []
   };
   
-  var Scrollable = {
+  var Scrollable = Backbone.Mixin.extend({
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive');
       this.onload(this._initScroller.bind(this));
     },
     
     _initScroller: function(options) {
+      window.s.push(this);
       this._scrollerProps = _.deepExtend({}, initScrollerProps, options);
       var el = this.el;
       var s = this._scrollerProps;
@@ -350,31 +486,36 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     events: {
-      'click': '_onClickInScroller',
+//      'click': '_onClickInScroller',
       'resize': '_onSizeInvalidated',
       'orientationchange': '_onSizeInvalidated'
     },
 
-    windowEvents: {
-      'resize': '_onSizeInvalidated',
-      'orientationchange': '_onSizeInvalidated'
-    },
-    
-    globalEvents: {},
+//    globalEvents: {
+//      'pageChange': '_onScrollerPageChanged'
+//    },
     
     myEvents: {
       'invalidateSize': '_onSizeInvalidated',
-      '.scrollable active': '_onScrollerActive',
-      '.scrollable inactive': '_onScrollerInactive'
+      'active': '_onScrollerActive',
+      'inactive': '_onScrollerInactive'
     },
     
+//    _onScrollerPageChanged: function(from, to) {
+//      if (this == to)
+//        this._updateScrollPosition();
+//    },
+    
     _onScrollerActive: function() {
-      if (this._scrollerProps)
+      var s = this._scrollerProps;
+      if (s && s.state == INACTIVE)
         this._transitionScrollerState(this._scrollerProps.state, 'wake');
     },
 
     _onScrollerInactive: function() {
-      this._transitionScrollerState(this._scrollerProps.state, 'sleep');
+      var s = this._scrollerProps;
+      if (s && s.state !== UNINITIALIZED)
+        this._transitionScrollerState(this._scrollerProps.state, 'sleep');
     },
     
 //    _activateScroller: function() {
@@ -391,29 +532,36 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //    },
 //
 //    _onSizeInvalidated: _.debounce(function(e) {
-    _onSizeInvalidated: function(e) {
-      if (!this.rendered)
+    _onSizeInvalidated: _.debounce(function(e) {
+      if (!this.rendered || !this.isActive())
         return;
       
-      console.log('invalidated size');
-      this._calculateSizes();
-      if (!this._isInBounds())
-        this._snapScroller(true);
-//    }, 100),
-    },
+//      var timeout = e ? 0 : 100;
+      this.log('invalidated size');
+//      this._queueScrollTimeout(function() {        
+        this.log('old size: ' + JSON.stringify(this.getScrollInfo()));
+        this._calculateSizes();
+        this.log('new size: ' + JSON.stringify(this.getScrollInfo()));
+        if (!this._isInBounds())
+          this._snapScroller(true);
+//      }.bind(this), timeout);
+    }, 100),
     
     _calculateSizes: function() {
       var s = this._scrollerProps,
           frame = s.frame,
 //          scrollWidth = this.el.offsetWidth,
 //          scrollHeight = this.el.offsetHeight,
-          scrollWidth = this.el.scrollWidth,
-          scrollHeight = this.el.scrollHeight,
+          scrollWidth = this.el.offsetWidth,
+          scrollHeight = this.el.offsetHeight,
           containerWidth = frame.offsetWidth,
           containerHeight = frame.offsetHeight,
           scrollX = this._getScrollAxis() == 'X',
-          hadPosition = !!s.position,
+//          hadPosition = !!s.position,
           gutter = s.MAX_OUT_OF_BOUNDS;
+      
+      if (this.TAG == 'ListPage' && Math.abs(scrollHeight - window.innerHeight) < 50)
+        debugger;
       
       if (!scrollHeight || !containerHeight)
         return false;
@@ -423,25 +571,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //      }
       
       _.extend(s, {        
-        position: {
-            X: 0,
-            Y: 0
-        },
-        
         metrics: {
           snapGrid: {
             X: containerWidth,
             Y: containerHeight
           },
           container: {
-            X: containerWidth,
-            Y: containerHeight
+            width: containerWidth,
+            height: containerHeight
           },
           content: {
-            X: scrollWidth,
-            Y: scrollHeight,
-            rawX: scrollWidth,
-            rawY: scrollHeight
+            width: scrollWidth,
+            height: scrollHeight,
+            rawWidth: scrollWidth,
+            rawHeight: scrollHeight
           }
         },
         
@@ -468,26 +611,98 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         }
       });
 
-      if (hadPosition)
-        this._updateScrollPosition();
+      if (!s.position) {
+        s.position = {
+          X: 0,
+          Y: 0
+        }
+      }
+//      if (hadPosition)
+//        this._updateScrollPosition();
     },
 
     _transitionScrollerState: function(fromState, withEvent, event) {
-      console.log('state: ' + fromState + ', event: ' + withEvent);
-      try {
-        return (this._scrollerProps.state = TRANSITION_MAP[fromState][withEvent].call(this, event));
-      } finally {
-        if (fromState !== this._scrollerProps.state)
-          console.log('scroller state changed from ' + fromState.toUpperCase() + ' to ' + this._scrollerProps.state.toUpperCase());
-      }
+      this.log('state: ' + fromState + ', event: ' + withEvent);
+      var handlers = TRANSITION_MAP[fromState],
+          handler = handlers && handlers[withEvent];
+      
+      if (!handler)
+        return;
+      
+//      try {
+        return (this._scrollerProps.state = handler.call(this, event));
+//      } catch(err) {
+//        debugger;
+//      } finally {
+//        if (!this._scrollerProps.state)
+//          debugger;
+//        if (fromState !== this._scrollerProps.state)
+//          this.log('scroller state changed from ' + fromState.toUpperCase() + ' to ' + this._scrollerProps.state.toUpperCase());
+//      }
     },    
-    
+
+    _listenToTouchEvents: function() {
+      this._stopListeningToTouchEvents.apply(this, arguments);
+      var types = arguments,
+          s = this._scrollerProps,
+          listeners = s.touchListeners;
+      
+      if (typeof types == 'string')
+        types = [types];
+
+      if (!listeners) {
+        listeners = s.touchListeners = {
+          keydown: false,
+          keyup: false,
+          click: false,
+          touchstart: false,
+          touchmove: false,
+          touchend: false
+        };
+      }
+      
+      for (var i = 0; i < types.length; i++) {
+        var type = types[i];
+        type = TOUCH_EVENTS[type] || type;
+        if (!listeners[type]) {
+          listeners[type] = true;
+          var listener = type == 'click' ? this.el : doc;
+          listener.addEventListener(type, this, true);
+        }
+      }
+    },
+
+    _stopListeningToTouchEvents: function() {
+      var types = arguments,
+          listeners = this._scrollerProps.touchListeners;
+      
+      if (!listeners)
+        return;
+      
+      if (!types.length)
+        types = _.keys(listeners);
+      
+      if (typeof types == 'string')
+        types = [types];
+      
+      for (var i = 0; i < types.length; i++) {
+        var type = types[i];
+        type = TOUCH_EVENTS[type] || type;
+        if (listeners[type]) {
+          listeners[type] = false;
+          var listener = type == 'click' ? this.el : doc;
+          listener.removeEventListener(type, this, true);
+        }
+      }
+    },
+
     _queueScrollTimeout: function(fn, time) {
       this._scrollerProps.timeouts.push(setTimeout(fn, time));
     },
     
     _resetScroller: function(wake) {
-//      console.log('resetting scroll');
+//      this.log('resetting scroll');
+//      this._updateScrollPosition(); // parse it from CSS transform
       this._cleanupScroller();
       this._transitionScrollerState(INACTIVE, 'wake');
     },
@@ -496,16 +711,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
       this._clearTouchHistory();
-      s.dragging = s.decelerating = s.coasting = s.preventClick = s.touchendReceived = false;
-      s.startTimestamp = s.lastTimestamp = s.distanceTraveled = s.timeTraveled = 0;
-      
+      s.dragging = s.decelerating = s.coasting = s.touchendReceived = false;
+      s.startTimestamp = s.lastTimestamp = 0;
+
+      this._updateScrollPosition();
       U.CSS.setStylePropertyValues(this.el.style, {
         transition: null
       });      
       
-      doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true);
-      doc.removeEventListener(TOUCH_EVENTS.touchend, this, true);
-      doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
+//      doc.removeEventListener('keydown', this, true);
+//      doc.removeEventListener('keyup', this, true);
+//      doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true);
+//      doc.removeEventListener(TOUCH_EVENTS.touchend, this, true);
+//      doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
+      this._stopListeningToTouchEvents();
     },
     
     _clearTouchHistory: function() {
@@ -553,7 +772,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     _updateScrollPosition: function(x, y) {
-//      console.log('updating scroll position:', x, y);
       var pos = this._scrollerProps.position;
       if (arguments.length) {
         if (arguments.length == 1) { // passed in position object
@@ -568,6 +786,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         var style = document.defaultView.getComputedStyle(this.el, null);
         this._scrollerProps.position = U.CSS.parseTranslation(U.CSS.getStylePropertyValue(style, 'transform'));
       }
+      
+      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
     },
     
     _getScrollerState: function() {
@@ -575,6 +795,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     handleEvent: function(e) {
+      if (e.type == 'click')
+        return this._onClickInScroller(e);
+      
       var state = this._getScrollerState(),
           stateHandlers = TRANSITION_MAP[state],
           eventType = e.type;
@@ -584,10 +807,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     _onClickInScroller: function(e) {
+      this.log('in scroller onclick handler');
       var ok = !this._scrollerProps.preventClick;
       if (!ok) {
         e.preventDefault();
         e.stopPropagation();
+        this._scrollerProps.preventClick = false;
       }
       
       return ok;
@@ -601,24 +826,31 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     _triggerScrollEvent: function(type, scroll) {
-      this.$el.trigger(type, scroll || this._getScrollOffset());
+      this.$el.trigger(type.replace('scroll', 'scrollo'), this.getScrollInfo(scroll));
     },
     
-    _scrollTo: function(offsetX, offsetY, time, ease) {
-      console.log('scrolling to: ' + offsetX + ', ' + offsetY);
+    getScrollInfo: function(scroll) {
+      scroll = scroll || this._getScrollOffset();
+      return _.extend(_.deepExtend({}, _.pick(this._scrollerProps.metrics, 'container', 'content')), scroll);      
+    },
+    
+    _scrollTo: function(position, time, ease) {
+//      if (isNaN(position.Y) || position.X != 0)
+//        debugger;
+      
+      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
       time = time || 0;
       var s = this._scrollerProps,
-          content = s.metrics.content,
           bounce = s.bounce;
       
       if (!time)
-        this._updateScrollPosition(offsetX, offsetY);
-      else
-        this._queueScrollTimeout(this._updateScrollPosition.bind(this, offsetX, offsetY), time);
+        this._updateScrollPosition(position);
+//      else
+//        this._queueScrollTimeout(this._updateScrollPosition.bind(this, offsetX, offsetY), time);
       
       U.CSS.setStylePropertyValues(this.el.style, {
         transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease || beziers.fling),
-        transform: 'translate3d({0}px, {1}px, 0px)'.format(offsetX, offsetY)
+        transform: 'matrix(1, 0, 0, 1, {0}, {1})'.format(position.X, position.Y)
       });      
 
       this._triggerScrollEvent('scroll');
@@ -651,7 +883,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
       if (this._isInBounds())
         return;
       
-      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+//      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+      this._listenToTouchEvents('touchstart');
       this._snapScroller();
       return true;
     },
@@ -659,7 +892,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     _snapScroller: function(immediate) {
       this._clearScrollTimeouts();
       // snap the content div to its frame
-      console.log('snapping scroller');
+      this.log('snapping scroller');
       var s = this._scrollerProps,
           axis = this._getScrollAxis();
       
@@ -674,8 +907,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           time;
       
       snapTo[axis] = s.scrollBounds[axis][endpoint];
-      time = immediate ? 0 : this._calcAnimationTime(Math.abs(snapTo[axis] - s.position[axis]));    
-      this._scrollTo(snapTo.X, snapTo.Y, time, beziers.bounce, time);
+      time = immediate ? 0 : this._calcAnimationTime(s.position, snapTo);    
+      this._scrollTo(snapTo, time, beziers.bounce, time);
       this._scheduleScrollerStateTransition(SNAPPING, 'snapcomplete', {
         time: time,
         to: snapTo
@@ -687,6 +920,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
 
     _calcAnimationTime: function(distance) {
+      if (arguments.length == 2) {
+        var axis = this._getScrollAxis();
+        distance = Math.abs(arguments[0][axis] - arguments[1][axis]);
+      }
+      
       return Math.min(calcAnimationTime(distance), this._scrollerProps.MAX_COAST_TIME);
     },
 
@@ -704,7 +942,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           lastGesture = s.lastGesture,
           velocity = lastGesture[axis] / lastGesture.time;
       
-      return (s.velocity = velocity);
+      return (s.velocity = velocity > 0 ? Math.min(velocity, s.MAX_VELOCITY) : Math.max(velocity, -s.MAX_VELOCITY));
     },
 
     _flingScrollerIfNeeded: function() {
@@ -728,12 +966,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     
     _flingScroller: function() {
       this._clearScrollTimeouts();
-      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+//      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
+      this._listenToTouchEvents('touchstart');
       var s = this._scrollerProps,
           axis = this._getScrollAxis(),
           otherAxis = oppositeDir(axis),
           velocity = s.velocity,
-          acceleration = velocity < 0 ? 0.0005 : -0.0005,
+          acceleration = velocity < 0 ? s.acceleration : -s.acceleration,
           distance = - (velocity * velocity) / (2 * acceleration),
           newPos = {},
           destination,
@@ -743,10 +982,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 
       newPos[axis] = s.position[axis] + distance;
       newPos[otherAxis] = s.position[otherAxis];
-      destination = this._limitToBounds(newPos);
+      destination = this._limitToBounds(normalizePosition(newPos));
 //      pastDestination = this._limitToBounds(newPos, true);
       timeToDestination = timeToReset = this._calcAnimationTime(distance);    
-      this._scrollTo(destination.X, destination.Y, timeToDestination, beziers.fling);      
+      this._scrollTo(destination, timeToDestination, beziers.fling);      
       this._scheduleScrollerStateTransition(COASTING, 'coastcomplete', {
         to: destination,
         time: timeToDestination
@@ -767,7 +1006,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         }.bind(this), scrollTime += period);
       }      
     }
-  }
+  }, {
+    displayName: 'Scrollable'    
+  });
   
   return Scrollable;
 });

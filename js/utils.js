@@ -3920,6 +3920,11 @@ define('utils', [
       return actualProps;
     },
     
+    getKeyEventCode: function(e) {
+      return e.keyCode ? e.keyCode : 
+                  e.which ? e.which : e.charCode;
+    },
+    
     cloneTouch: function(touch) {
       return {
         X: touch.clientX,

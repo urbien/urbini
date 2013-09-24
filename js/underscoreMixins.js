@@ -299,8 +299,9 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
    
-    randomString: function() {
-      return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+    randomString: function(length) {
+      var random = (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+      return length ? random.slice(0, length) : random;
     },
    
     wipe: function(obj) {

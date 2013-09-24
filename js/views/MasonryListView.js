@@ -36,11 +36,14 @@ define('views/MasonryListView', [
     },
     
     masonry: function() {
-      return this.$el[MASONRY_FN].apply(this.$el, arguments);
+      this.$el[MASONRY_FN].apply(this.$el, arguments);
+      this.trigger('invalidateSize');
+      this.pageView.trigger('invalidateSize');
     },
     
     getListItems: function() {
-      return this.$(ITEM_SELECTOR);
+//      return this.$(ITEM_SELECTOR);
+      return this.$el.children();
     },
     
     renderItem: function(res, info) {

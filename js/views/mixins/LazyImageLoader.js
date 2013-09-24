@@ -79,7 +79,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     }
   }
     
-  return {
+  return Backbone.Mixin.extend({
     _lazyImages: [],
     _loadQueue: [],
     _fetchQueue: [],
@@ -89,8 +89,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     myEvents: {
-      '.lazyImages active': '_start',
-      '.lazyImages inactive': '_pause'
+      'active': '_start',
+      'inactive': '_pause'
     },
     
     initialize: function() {
@@ -101,7 +101,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       if (this._started)
         return;
       
-      this.$el.on('scroll', this._showImages);
+      this.$el.on('scrollo', this._showImages);
       this._started = true;
       this._lazyImages = getDummyImages(this.$el);
       this._showImages();
@@ -109,7 +109,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _pause: function() {
-      this.$el.off('scroll', this._showImages);
+      this.$el.off('scrollo', this._showImages);
       this._started = false;
       this._hideOffscreenImages();
     },
@@ -339,5 +339,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       
       this._queueImageUpdate(img, info);
     }
-  }
+  }, {
+    displayName: 'LazyImageLoader'
+  });
 });

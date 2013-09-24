@@ -2,44 +2,30 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
   function mixin() {
     var to = this.prototype;
     for (var i = 0, numMixins = arguments.length; i < numMixins; i++) {
-      var from = arguments[i];
-      
-      // we add those methods which exists on `from` but not on `to` to the latter
-//      for (var prop in from) {
-//        var val = from[prop],
-//            origVal = to[prop];
-//        
-//        switch (Object.prototype.toString.call(val)) {
-//          case '[object Function]':
-//            if (prop == 'initialize' || prop == 'render')
-//              _.extendMethod(to, from, prop);            
-//            else {
-//              if (!origVal)
-//                to[prop] = val;
-//            }
-//            
-//            break;
-//          case '[object Object]':          
-//          case '[object Array]':
-//          default:
-//            if (!origVal)
-//              to[prop] = _.clone(val);
-//            
-//            break;
-//        }
-//      }
+      var mixin = arguments[i],
+          from = mixin.prototype;
       
       _.extendMethod(to, from, 'initialize');
       _.extendMethod(to, from, 'render');
       _.defaults(to, from);
       
-      // … and we do the same for events
-      _.defaults(to.events, from.events);
-      _.defaults(to.windowEvents, from.windowEvents);
-      _.defaults(to.globalEvents, from.globalEvents);
-      _.defaults(to.myEvents, from.myEvents);
+      var namespace = (mixin.displayName || _.randomString(10).toLowerCase());
+      _.defaults(to.events, namespaceEvents(from.events, namespace, true));
+      _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace));
+      _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
+      _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
     }
   };
+
+  function namespaceEvents(events, namespaceStr, postpend) {
+    var namespaced = {};
+    for (var prop in events) {
+      var namespacedName = postpend ? prop + '..' + namespaceStr : '..' + namespaceStr + ' ' + prop;
+      namespaced[namespacedName] = events[prop];
+    }
+    
+    return namespaced;
+  }
   
   function patchBackboneExtend() {
     // https://github.com/onsi/cocktail
@@ -133,4 +119,7 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
   
   patchBackboneExtend();
   patchBackboneEvents();
+  Backbone.Mixin = {
+    extend: Backbone.View.extend
+  };
 });

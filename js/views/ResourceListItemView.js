@@ -9,7 +9,12 @@ define('views/ResourceListItemView', [
   'vocManager'
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
-    tagName:"li",
+    tagName: "li",
+//    tagName: "div",
+//    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
+//    attributes: {
+//      style: 'cursor: pointer; '
+//    },
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods

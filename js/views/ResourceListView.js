@@ -59,12 +59,13 @@ define('views/ResourceListView', [
       this.mode = mode;
     },
   
-    events: {
-      'scroll': 'onScroll'
-    },
+//    events: {
+//      'scrollo': 'onScroll'
+//    },
     
     getListItems: function() {
-      return this.$('li');
+      return this.$el.children();
+//      return this.$('li');
     },
 
     renderItem: function(res) {
@@ -220,6 +221,11 @@ define('views/ResourceListView', [
         
         this.trigger('refreshed');
       }
+      
+      this.pageView.$el.off('scrollo', this.onScroll);
+      this.pageView.$el.on('scrollo', this.onScroll);
+      this.trigger('invalidateSize');
+      this.pageView.trigger('invalidateSize');
     },
     
     postRenderItem: function(el, info) {
@@ -288,8 +294,6 @@ define('views/ResourceListView', [
       }).promise();
       
       this._pagingPromise.done(function() {
-        self.trigger('invalidateSize');
-        self.pageView.trigger('invalidateSize');
         self.once('refreshed', self.checkIfNeedMore.bind(self, displayedBefore));
       }).always(function() {
         self._paging = false;
@@ -397,7 +401,7 @@ define('views/ResourceListView', [
     },
     
     // endless page function
-    onScroll: function(e) {
+    onScroll: _.debounce(function(e, eventData) {
       if (!this.isActive())
         return;
       
@@ -410,38 +414,57 @@ define('views/ResourceListView', [
 ////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
 //      }
 
-      if (this.scrolledToNextPage(e))
+      if (this.scrolledToNextPage(eventData))
         this.getNextPage();      
-    },
-    
-    scrolledToNextPage: function(e) {
-//      var scrollTop = U.getScrollPosition(this.$el, e).scrollTop;
-      var scrollTop = $wnd.scrollTop();
-      try {
-        if (this.prevScrollPos > scrollTop) return;
-      } finally {
-        this.prevScrollPos = scrollTop;
-      }
+    }, 50),
 
-//      if (this.prevScrollPos > $wnd.scrollTop()) {
-//        this.prevScrollPos = $wnd.scrollTop();
-//        return;
-//      }
-//      
-//      this.prevScrollPos = $wnd.scrollTop();
+    scrolledToNextPage: function(scrollData) {
+      scrollData = scrollData || this.pageView.getScrollInfo();
+      if (!scrollData)
+        return;
       
+      var viewportHeight = window.innerHeight,
+          content = scrollData.content,
+          scrollTop = scrollData.scrollTop;
+          
       // get next page
       // 1) masonry: 2.5 screen height to bottom
       // 2) list view: 1 screen height to bottom
       var factor = this.hasMasonry() ? 3.5 : 2;         
-      if ($m.activePage.height() > scrollTop + $wnd.height() * factor)
+      if (content.height > scrollTop + viewportHeight * factor)
         return;
-      
-//      if (this.pageView.el.offsetHeight > scrollTop + window.innerHeight * factor)
-//        return;
       
       return true;
     },
+
+//    scrolledToNextPage: function(e) {
+////      var scrollTop = U.getScrollPosition(this.$el, e).scrollTop;
+//      var scrollTop = $wnd.scrollTop();
+//      try {
+//        if (this.prevScrollPos > scrollTop) return;
+//      } finally {
+//        this.prevScrollPos = scrollTop;
+//      }
+//
+////      if (this.prevScrollPos > $wnd.scrollTop()) {
+////        this.prevScrollPos = $wnd.scrollTop();
+////        return;
+////      }
+////      
+////      this.prevScrollPos = $wnd.scrollTop();
+//      
+//      // get next page
+//      // 1) masonry: 2.5 screen height to bottom
+//      // 2) list view: 1 screen height to bottom
+//      var factor = this.hasMasonry() ? 3.5 : 2;         
+//      if ($m.activePage.height() > scrollTop + $wnd.height() * factor)
+//        return;
+//      
+////      if (this.pageView.el.offsetHeight > scrollTop + window.innerHeight * factor)
+////        return;
+//      
+//      return true;
+//    },
     
     resumeScrollEventProcessing: function () {
 //      this.skipScrollEvent = false;
