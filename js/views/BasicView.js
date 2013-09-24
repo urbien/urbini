@@ -112,14 +112,14 @@ define('views/BasicView', [
     },
     
     windowEvents: {
-      'resize': '_onViewportDimensionsChanged',
-      'orientationchange': '_onViewportDimensionsChanged'
+      'resize.default': '_onViewportDimensionsChanged',
+      'orientationchange.default': '_onViewportDimensionsChanged'
     },
     
     myEvents: {
-      'active': '_onActive',
-      'inactive': '_onInactive',
-      'destroyed': '_onDestroyed'
+      '.default active': '_onActive',
+      '.default inactive': '_onInactive',
+      '.default destroyed': '_onDestroyed'
     },
     
     globalEvents: {},

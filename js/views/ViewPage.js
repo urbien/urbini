@@ -217,8 +217,8 @@ define('views/ViewPage', [
       'click #edit': 'edit',
 //      'click': 'click',
       'click #homeBtn': 'home',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
+      'swiperight.viewPage': 'swiperight',
+      'swipeleft.viewPage': 'swipeleft'
 //        ,
 //      'pagechange': 'pageChange'
     },

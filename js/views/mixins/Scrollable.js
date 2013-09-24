@@ -535,7 +535,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //    },
 //
 //    _onSizeInvalidated: _.debounce(function(e) {
-    _onSizeInvalidated: _.debounce(function(e) {
+    _onSizeInvalidated: function(e) {
       if (!this.rendered || !this.isActive())
         return;
       
@@ -548,7 +548,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         if (!this._isInBounds())
           this._snapScroller(true);
 //      }.bind(this), timeout);
-    }, 100),
+    },
     
     _calculateSizes: function() {
       var s = this._scrollerProps,
@@ -593,22 +593,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         
         scrollBounds: {
           X: {
-            min: scrollX ? containerWidth - scrollWidth : 0, 
+            min: Math.min(scrollX ? containerWidth - scrollWidth : 0, 0), 
             max: 0
           },
           Y: {
-            min: !scrollX ? containerHeight - scrollHeight : 0,
+            min: Math.min(!scrollX ? containerHeight - scrollHeight : 0, 0),
             max: 0
           }  
         },
         
         bounceBounds: {
           X: {
-            min: scrollX ? containerWidth - scrollWidth - gutter : 0, 
+            min: Math.min(scrollX ? containerWidth - scrollWidth - gutter : 0, 0), 
             max: 0
           },
           Y: {
-            min: !scrollX ? containerHeight - scrollHeight - gutter : 0,
+            min: Math.min(!scrollX ? containerHeight - scrollHeight - gutter : 0, 0),
             max: 0
           }  
         }

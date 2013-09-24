@@ -65,14 +65,14 @@ define('views/BasicPageView', [
     },
     
     events: {
-      'scrollstart': 'reverseBubbleEvent',
-      'scrollstop': 'reverseBubbleEvent',      
-      'scroll': 'scroll',
-      'pagehide': 'onpageevent',
-      'pageshow': 'onpageevent',
-      'pagebeforeshow': 'onpageevent',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
+      'scrollstart.page': 'reverseBubbleEvent',
+      'scrollstop.page': 'reverseBubbleEvent',      
+      'scroll.page': 'scroll',
+      'pagehide.page': 'onpageevent',
+      'pageshow.page': 'onpageevent',
+      'pagebeforeshow.page': 'onpageevent',
+      'swiperight.page': 'swiperight',
+      'swipeleft.page': 'swipeleft'
     },
 
     globalEvents: {
@@ -83,9 +83,9 @@ define('views/BasicPageView', [
     },
     
     myEvents: {
-      'active': '_onActive',
-      'inactive': '_onInactive',
-      'titleChanged': '_updateTitle'
+      '.page active': '_onActive',
+      '.page inactive': '_onInactive',
+      '.page titleChanged': '_updateTitle'
     },
     
     windowEvents: {
@@ -104,6 +104,7 @@ define('views/BasicPageView', [
     },
     
     _onActive: function() {
+//      this.trigger('active');
       BasicView.prototype._onActive.apply(this, arguments);
       var onload = function() {
         this._checkMessageBar();
@@ -120,6 +121,7 @@ define('views/BasicPageView', [
     },
     
     _onInactive: function() {
+//      this.trigger('inactive');
       BasicView.prototype._onInactive.apply(this, arguments);
       this._clearMessageBar();        
     },
@@ -130,6 +132,11 @@ define('views/BasicPageView', [
     
     onpageevent: function(e) {
       this._lastPageEvent = e.type;
+//      if (e.type == 'pageshow')
+//        this.trigger('active');
+//      else if (e.type == 'pagehide')
+//        this.trigger('inactive');
+      
       this.reverseBubbleEvent.apply(this, arguments);      
     },
 
