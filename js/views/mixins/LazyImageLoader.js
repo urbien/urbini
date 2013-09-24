@@ -85,19 +85,35 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     _fetchQueue: [],
     _updateQueue: [],
     events: {
-      'imageOnload': '_queueImageLoad'
+      'imageOnload': '_queueImageLoad',
+      'pageshow': '_start',
+      'pagehide': '_pause'
     },
     
-    myEvents: {
-      'active': '_start',
-      'inactive': '_pause'
-    },
+//    myEvents: {
+//      'active': '_start',
+//      'inactive': '_pause'
+//    },
+//
+//    globalEvents: {
+//      'pageChange': '_onLazyImageLoaderPageChange'
+//    },
     
     initialize: function() {
       _.bindAll(this, '_showImages', '_queueImageLoad', '_queueImageFetch', '_queueImageUpdate');
     },
     
-    _start: function() {
+//    _onLazyImageLoaderPageChange: function(from, to) {
+//      if (this == from)
+//        this._pause();
+//      else if (this == to)
+//        setTimeout(this._start.bind(this), 1000);  
+////        this._start();
+//    },
+    
+    _start: function() { 
+      // debounce is a HACK: there's a weird issues, possibly JQM related, where the page always loads scrolled to the top, then jumps down to the right scroll position. 
+      // As a result, images at the top are loaded instead of the ones at the current scroll position
       if (this._started)
         return;
       

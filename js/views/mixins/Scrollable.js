@@ -324,11 +324,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
           s.preventClick = true;
           e.preventDefault();
           e.stopPropagation();
-          this.log('trying to prevent click event');
+//          this.log('trying to prevent click event');
         }
         else {
           // this was a click, not a swipe/scroll
-          this.log('this was a click, not a scroll, only traveled: ' + s.distanceTraveled + 'px');
+//          this.log('this was a click, not a scroll, only traveled: ' + s.distanceTraveled + 'px');
           var touch = _.last(s.touchHistory);
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
@@ -488,7 +488,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     events: {
 //      'click': '_onClickInScroller',
       'resize': '_onSizeInvalidated',
-      'orientationchange': '_onSizeInvalidated'
+      'orientationchange': '_onSizeInvalidated',
+      'pageshow': '_onScrollerActive',      
+      'pagebeforehide': '_onScrollerInactive'
     },
 
 //    globalEvents: {
@@ -496,9 +498,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //    },
     
     myEvents: {
-      'invalidateSize': '_onSizeInvalidated',
-      'active': '_onScrollerActive',
-      'inactive': '_onScrollerInactive'
+      'invalidateSize': '_onSizeInvalidated'
+//        ,
+//      'active': '_onScrollerActive',
+//      'inactive': '_onScrollerInactive'
     },
     
 //    _onScrollerPageChanged: function(from, to) {
@@ -560,15 +563,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //          hadPosition = !!s.position,
           gutter = s.MAX_OUT_OF_BOUNDS;
       
-      if (this.TAG == 'ListPage' && Math.abs(scrollHeight - window.innerHeight) < 50)
-        debugger;
-      
       if (!scrollHeight || !containerHeight)
         return false;
 
 //      if (hadPosition) {
 //        debugger;
 //      }
+      
+      if (s.metrics && scrollHeight < s.metrics.content.height)
+        debugger;
       
       _.extend(s, {        
         metrics: {
@@ -622,7 +625,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
 
     _transitionScrollerState: function(fromState, withEvent, event) {
-      this.log('state: ' + fromState + ', event: ' + withEvent);
+//      this.log('state: ' + fromState + ', event: ' + withEvent);
       var handlers = TRANSITION_MAP[fromState],
           handler = handlers && handlers[withEvent];
       
@@ -787,7 +790,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
         this._scrollerProps.position = U.CSS.parseTranslation(U.CSS.getStylePropertyValue(style, 'transform'));
       }
       
-      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
+//      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
     },
     
     _getScrollerState: function() {
@@ -807,7 +810,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     },
     
     _onClickInScroller: function(e) {
-      this.log('in scroller onclick handler');
+//      this.log('in scroller onclick handler');
       var ok = !this._scrollerProps.preventClick;
       if (!ok) {
         e.preventDefault();
@@ -822,7 +825,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //      U.CSS.setStylePropertyValues(this.el.style, {
 //        transition: null
 //      });
-      this.log('event', 'transitionend event: ' + e.propertyName);
+//      this.log('event', 'transitionend event: ' + e.propertyName);
     },
     
     _triggerScrollEvent: function(type, scroll) {
@@ -838,7 +841,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
 //      if (isNaN(position.Y) || position.X != 0)
 //        debugger;
       
-      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
+//      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
       time = time || 0;
       var s = this._scrollerProps,
           bounce = s.bounce;
@@ -892,7 +895,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events'], 
     _snapScroller: function(immediate) {
       this._clearScrollTimeouts();
       // snap the content div to its frame
-      this.log('snapping scroller');
+//      this.log('snapping scroller');
       var s = this._scrollerProps,
           axis = this._getScrollAxis();
       
