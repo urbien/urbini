@@ -65,6 +65,9 @@ define('underscoreMixins', ['_underscore'], function(_) {
   };
   
   _.extend(Array, {
+//    split: function(array, idx) {
+//      return [array.slice(0, idx), array.slice(idx)];
+//    },
     remove: function(array /* items */) {
       var items = concat.apply(ArrayProto, slice.call(arguments, 1));
       

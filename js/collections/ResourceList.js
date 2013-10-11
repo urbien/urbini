@@ -14,6 +14,7 @@ define('collections/ResourceList', [
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
+    _fetchDeferreds: {},
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -24,7 +25,7 @@ define('collections/ResourceList', [
       options = options || {};
       _.extend(this, {
         page: 0,
-        perPage: 30,
+        perPage: 10,
         offset: 0,
         firstPage: 0,
         params: {},
@@ -229,8 +230,10 @@ define('collections/ResourceList', [
 //      this.add([resource]); // to make it act like multi-add, so it triggers an 'added' event
 //      this.trigger('replaced', resource, oldUri);
 //    },
+    
     getNextPage: function(options) {
-      this.setOffset(this.offset + this.perPage);
+      var numToFetch = options.params && options.params.$limit || this.perPage;
+      this.setOffset(this.offset + numToFetch);
       this.setOffset(Math.min(this.offset, this.models.length));
       this.pager(options);
     },
@@ -398,9 +401,6 @@ define('collections/ResourceList', [
     },
     
     fetch: function(options) {
-      if (this.offset && !this._outOfData)
-        log("info", "fetching next page");
-
       options = options || {};
       _.defaults(options, {
         update: true, 
@@ -441,7 +441,7 @@ define('collections/ResourceList', [
         limit = limit && parseInt(limit);
       }
       if (!limit)
-        limit = this.perPage;
+        limit = extraParams.$limit || this.perPage;
       
       if (limit > 50)
         options.timeout = 5000 + limit * 50;
@@ -566,21 +566,30 @@ define('collections/ResourceList', [
         
         G.whenNotRendering(self.fetch.bind(self, newOptions));
       }; 
-      
+
+      if (this.offset && !this._outOfData) {
+//        if (this.offset > 60)
+//          debugger;
+        log("info", "fetching next page, from " + this.offset + ", to: " + (this.offset + limit));
+      }
+
       return this.sync('read', this, options);
     },
     
     update: function(resources, options) {
+      if (!resources || !resources.length)
+        return;
+      
       if (this.lastFetchOrigin === 'db') {
-        var numBefore = this.models.length;
-        this.set(resources, options);
+//        var numBefore = this.models.length;
+        this.add(resources, _.defaults({
+          parse: false // make sure parse if false
+        }, options));
+        
         return;
       }
 
-      resources = this.parse(resources);      
-      if (!_.size(resources)) {
-        return false;
-      }
+      resources = this.parse(resources);
       
       // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
@@ -628,14 +637,26 @@ define('collections/ResourceList', [
         // not everyone who cares about resources being updated has access to the collection
         Events.trigger('updatedResources', _.union(updated, added));
       }
-      else if (this.params.$offset)
-        this.trigger('endOfList');
+//      else if (this.params.$offset)
+//        this.trigger('endOfList');
       
       return this;
     },
     
     isFetching: function() {
-      return this._fetchPromise && this._fetchPromise.state() == 'pending';
+      return !!_.size(this._fetchDeferreds);
+    },
+
+    getFetchDeferred: function(url) {
+      return this._fetchDeferreds[url];
+    },
+
+    setFetchDeferred: function(url, deferred) {
+      this._fetchDeferreds[url] = deferred;
+    },
+
+    clearFetchDeferred: function(url) {
+      delete this._fetchDeferreds[url];
     },
     
     selfDestruct: function() {

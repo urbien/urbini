@@ -4,8 +4,9 @@ define('views/BasicView', [
   'backbone',
   'utils',
   'templates',
-  'events'
-], function(G, _Backbone, U, Templates, Events) {
+  'events',
+  'lib/animationQueue'
+], function(G, _Backbone, U, Templates, Events, Q) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype,
       viewportEvents = ['resize', 'orientationchange'],
@@ -26,7 +27,7 @@ define('views/BasicView', [
       _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_render',  '_refresh');
       
       this.TAG = this.TAG || this.constructor.displayName;
-      this.log('newView', ++this.constructor._instanceCounter);
+//      this.log('newView', ++this.constructor._instanceCounter);
       
       var superCtor = this.constructor;
       while (superCtor.__super__) {
@@ -107,7 +108,7 @@ define('views/BasicView', [
       if (this.model)
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
       
-      G.log(this.TAG, 'new view', this.getPageTitle());
+//      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
     
@@ -156,13 +157,13 @@ define('views/BasicView', [
       if (!force && !this.rendered)
         return this;
       
-      this.log('refresh', 'page title:', this.getPageTitle());
+//      this.log('refresh', 'page title:', this.getPageTitle());
       this._queueTask(this._doRefresh, this, arguments);
       return this;
     },
     
     _render: function(rOptions) {
-      this.log('render', 'page title:', this.getPageTitle());
+//      this.log('render', 'page title:', this.getPageTitle());
       this._queueTask(function() {
         this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
@@ -209,6 +210,7 @@ define('views/BasicView', [
       
       this.stopListening();
       this.$el.remove();
+//      Q.start(this.$el.remove, this.$el);
       
 //      for (var i in viewProps) {
 //        this[viewProps[i]] = null;
@@ -260,7 +262,7 @@ define('views/BasicView', [
       this._taskQueue.push(lazyDfd);
       lazyDfd.start = function() {
         this._started = true;
-        self.log('info', 'running {0} task'.format(self.TAG));
+//        self.log('info', 'running {0} task'.format(self.TAG));
         var promise = fn.apply(scope, args || []);
         if (_.isPromise(promise))
           promise.then(lazyDfd.resolve, lazyDfd.reject);
@@ -580,6 +582,11 @@ define('views/BasicView', [
       return this.getOrientation() == 'landscape';
     },
 
+    getOffset: function(css) {
+//      var computedStyle = window.getComputedStyle()
+      return this.$el.offset();
+    },
+    
     getTitle: function() {
       if (this.resource)
         return U.getDisplayName(this.resource);
@@ -664,6 +671,29 @@ define('views/BasicView', [
       }
   
       return undefined;
+    },
+    
+    /**
+     * @return offsets on all sides of the visible part of the element, an area no greater than the browser viewport
+     */
+    getVisibleArea: function(forceRecalc) {
+      var width,
+          height,
+          top,
+          bottom;
+      
+      // assume for now that we don't nest scrollables in scrollables...and that only pageViews use the Scrollable mixin...for now
+      if (this.pageView.mixes('Scrollable')) {
+      	return this.pageView.getVisibleScrollerArea(forceRecalc);
+      }
+      else {
+        var offset = this.$el.offset();
+        width = Math.min(window.innerWidth, this.$el.width());
+        height = Math.min(window.innerHeight, this.$el.height());
+        offset.bottom = offset.top + height;
+        offset.right = offset.left + width;
+        return offset;
+      }
     },
     
     on: function() {

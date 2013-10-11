@@ -11,6 +11,7 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
       
       var namespace = (mixin.displayName || _.randomString(10).toLowerCase());
       _.defaults(to.events, namespaceEvents(from.events, namespace, true));
+      _.defaults(to.pageEvents, namespaceEvents(from.pageEvents, namespace, true));
       _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace));
       _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
       _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
@@ -43,12 +44,18 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
     _([Backbone.Model, Backbone.Collection, Backbone.Router, Backbone.View]).each(function(klass) {
       klass.mixin = mixin;
       klass.extend = extend;
-      klass.prototype.usesMixin = function(mixin) {
-        return _.contains(this.mixins, mixin);
+      klass.prototype.mixes = function(mixin) {
+        if (typeof mixin == 'string') {
+          return _.any(this.mixins, function(m) {
+            return m.displayName == mixin;
+          });
+        }
+        else
+          return _.contains(this.mixins, mixin);
       };
       
-      klass.usesMixin = function(mixin) {
-        return _.contains(this.prototype.mixins, mixin);
+      klass.mixes = function(mixin) {
+        return this.prototype.mixes(mixin);
       };
     })
   };
@@ -64,10 +71,14 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
           myEvents: this,
           globalEvents: Events,
           modelEvents: this.model
+//          ,
+//          pageEvents: this.pageView.$el
   //        ,
   //        windowEvents: window
         },
-        windowEvents = this.windowEvents;
+        windowEvents = this.windowEvents,
+        pageEvents = this.pageEvents,
+        $pageViewEl = this.pageView.$el;
 
       for (var eventsType in eventContexts) {
         var events = this[eventsType],
@@ -87,17 +98,28 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
         var subscribeFn = window.addEventListener || window.attachEvent; 
         for (var name in windowEvents) {
           var fnName = windowEvents[name],
-              fn = this[fnName] = this[fnName].bind(this);
+              fn = this[fnName];
   
           subscribeFn.call(window, name, fn, false);
         }
+      }
+      
+      if (pageEvents) {
+        for (var name in pageEvents) {
+          var fnName = pageEvents[name],
+              fn = this[fnName];
+  
+          $pageViewEl.on(name, fn);
+        }        
       }
     };
     
     ViewProto.undelegateEvents = function() {
       origUDE.apply(this, arguments);
       
-      var windowEvents = this.windowEvents;
+      var windowEvents = this.windowEvents,
+          pageEvents = this.pageEvents,
+          $pageViewEl = this.pageView.$el;
 //      for (var name in myEvents) {
 //        this.off(name, myEvents[name].bind(this));
 //      }
@@ -112,6 +134,15 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
         var unsubscribeFn = window.removeEventListener || window.deattachEvent; 
         for (var name in windowEvents) {
           unsubscribeFn.call(window, name, this[windowEvents[name]]);
+        }
+      }
+      
+      if (pageEvents) {
+        for (var name in pageEvents) {
+          var fnName = pageEvents[name],
+              fn = this[fnName];
+
+          $pageViewEl.off(name, fn);
         }
       }
     };

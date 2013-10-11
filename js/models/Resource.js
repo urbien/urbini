@@ -1338,9 +1338,21 @@ define('models/Resource', [
 //      this._editableProps = result;
       return result;
     },
+
+    getFetchDeferred: function() {
+      return this._fetchDeferred;
+    },
+    
+    setFetchDeferred: function(deferred) {
+      this._fetchDeferred = deferred;
+    },
+
+    clearFetchDeferred: function() {
+      this._fetchDeferred = null;
+    },
     
     isFetching: function() {
-      return !this._fetchPromise || this._fetchPromise.state() !== 'pending';
+      return !this._fetchDeferred || this._fetchDeferred.state() !== 'pending';
     }
 //    ,
 //    getMiniVersion: function() {

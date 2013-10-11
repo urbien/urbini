@@ -90,38 +90,18 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       'pagehide': '_pause'
     },
     
-//    myEvents: {
-//      'active': '_start',
-//      'inactive': '_pause'
-//    },
-//
-//    globalEvents: {
-//      'pageChange': '_onLazyImageLoaderPageChange'
-//    },
-    
     initialize: function() {
       _.bindAll(this, '_showImages', '_queueImageLoad', '_queueImageFetch', '_queueImageUpdate');
     },
     
-//    _onLazyImageLoaderPageChange: function(from, to) {
-//      if (this == from)
-//        this._pause();
-//      else if (this == to)
-//        setTimeout(this._start.bind(this), 1000);  
-////        this._start();
-//    },
-    
     _start: function() { 
-      // debounce is a HACK: there's a weird issues, possibly JQM related, where the page always loads scrolled to the top, then jumps down to the right scroll position. 
-      // As a result, images at the top are loaded instead of the ones at the current scroll position
       if (this._started)
         return;
       
-      this.$el.on('scrollo', this._showImages);
       this._started = true;
-      this._lazyImages = getDummyImages(this.$el);
+      this.$el.on('scrollo', this._showImages);
+//      this._lazyImages = getDummyImages(this.$el);
       this._showImages();
-//      this._processImageLoadQueue();
     },
 
     _pause: function() {
@@ -146,6 +126,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _showImages: _.debounce(function() {
+      this._lazyImages = getDummyImages(this.$el);      
       if (!this._lazyImages.length)
         return;
       
@@ -238,7 +219,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImage: function(img, info) {
-      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
+//      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
       cleanImage(img);
       if (info.onload)
         img.onload = info.onload;

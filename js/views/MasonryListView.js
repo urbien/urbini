@@ -45,6 +45,36 @@ define('views/MasonryListView', [
 //      return this.$(ITEM_SELECTOR);
       return this.$el.children();
     },
+
+    getOffsetForChildGroup: function(children, bottom) {
+      children = children || _.values(this.children);
+      var topBorder = Infinity,
+          bottomBorder = -Infinity;
+         
+      for (var i in children) {
+        var child = children[i],
+            offset = child.$el.offset();
+        
+        if (bottom) {
+          if (offset.top > topBorder)
+            topBorder = offset;
+          if (offset.bottom > bottomBorder)
+            bottomBorder = offset;
+        }
+        else {
+          if (offset.top < topBorder)
+            topBorder = offset;
+          if (offset.bottom < bottomBorder)
+            bottomBorder = offset;
+        }
+        
+      }
+      
+      return {
+        top: topBorder,
+        bottom: bottomBorder
+      }
+    },
     
     renderItem: function(res, info) {
       var liView = this.addChild(new ResourceMasonryItemView({

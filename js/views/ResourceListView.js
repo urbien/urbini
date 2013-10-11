@@ -7,20 +7,40 @@ define('views/ResourceListView', [
   'views/ResourceListItemView',
   'views/PhotogridView',
   'collections/ResourceList',
-  'jqueryMobile'
-], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, $m) {
-  var $wnd = $(window);
-  var RLV = BasicView.extend({
-    displayPerPage: 10, // for client-side paging
-    page: 0,
-//    changedViews: [],
-//    skipScrollEvent: false,
-    prevScrollPos: 0,
-    loadIndicatorTimerId: null, // show loading indicator with delay 0.5 sec!
-    initialize: function (options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', /*'onAppend',*/ 'setMode', 'checkIfNeedMore'); // fixes loss of context for 'this' within methods
+  'lib/animationQueue'
+], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, Q) {
+  var $wnd = $(window),
+      doc = document;
+
+  function label(item) {
+    item._label = item._label || _.uniqueId('label');
+  }
+  
+  return BasicView.extend({
+    _listItemViews: [],
+    _pages: [],
+    _adjustmentQueued: false,
+//    _slidingWindowInsideBuffer: 500, // px, should depend on size of visible area of the list, speed of device, RAM
+//    _slidingWindowOutsideBuffer: 1000, // px, should depend on size of visible area of the list, speed of device, RAM
+    _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
+    _minSlidingWindowDimension: 2500, // px, should depend on size of visible area of the list, speed of device, RAM
+    _pageOffset: 0,
+    _pagesInSlidingWindow: 4,
+    _pagesCurrentlyInSlidingWindow: 0,
+    _elementsPerPage: 10,
+    _displayedCollectionRange: {
+      from: 0,
+      to: 0
+    },
+    _horizontal: false,
+
+    initialize: function(options) {
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize'); //, 'onScrollerSizeChanged');
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
+      if (options.axis)
+        this._horizontal = options.axis == 'X';
+      
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       var type = this.modelType;
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
@@ -28,7 +48,7 @@ define('views/ResourceListView', [
       this.isPhotogrid = this.type == 'photogrid'; //this.parentView.isPhotogrid;
       if (this.isPhotogrid)
         this.displayPerPage = 5;
-
+  
       var vocModel = this.vocModel;
       this.mvProp = this.hashParams.$multiValue;
       this.isMultiValueChooser = !!this.mvProp;
@@ -40,35 +60,607 @@ define('views/ResourceListView', [
         for (var i = 0; i < s.length; i++)
           this.mvVals.push(s[i].trim());
       }
-
+  
       this.isEdit = this.hashParams['$editList'];
-      return this;
+      return this;    
+    },
+
+    pageEvents: {
+      'scrollo.resourceListView': 'onScroll'
     },
     
-    onadd: function(resources, options) {
-      if (options && options.refresh) {
-        debugger;
-        options.resources = resources;
-        this.refresh(options);
+    onScroll: _.throttle(function(e, info) {
+      if (this.isActive())
+        return this.adjustSlidingWindow();
+    }, 20),
+    
+    setHorizontal: function() {
+      this._horizontal = true;
+    },
+    
+    setVertical: function() {
+      this._horizontal = true;
+    },
+    
+    getAxis: function() {
+      return this._horizontal ? 'X' : 'Y';
+    },
+
+    render: function() {
+      if (this.rendered)
+        return this.refresh();
+      
+      // setup filtering
+      var col = this.filteredCollection = this.collection.clone();
+      this.listenTo(col, 'endOfList', function() {
+        this.pageView.trigger('endOfList');
+      }.bind(this));
+      
+      this.listenTo(col, 'reset', function() {
+        this.pageView.trigger('newList');
+      }.bind(this));
+      
+//      _.each(['updated', 'added', 'reset'], function(event) {
+//        this.stopListening(col, event);
+//        this.listenTo(col, event, function(resources) {
+//          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+//          var options = {
+//            resources: resources
+//          };
+//          
+//          options[event] = true;
+//          this.refresh(options);
+//        }.bind(this));
+//      }.bind(this));
+//      
+//      this._visibleArea = {
+//        top: 0,
+//        bottom: window.innerHeight,
+//        left: 0,
+//        right: window.innerWidth
+//      };
+      
+      this.imageProperty = U.getImageProperty(this.collection);
+      this.dummies = this.getDummies();
+      this.setupSearchAndFilter();
+      this.adjustSlidingWindow();
+    },
+  
+    /**
+     * re-render the elements in the sliding window
+     */
+    refresh: function() {
+      // TODO: remove all the elements in the sliding window and repaint them
+      debugger;
+      return this.removePages(this._pagesInSlidingWindow, true)
+                        .then(this.appendPages.bind(this, this._pagesInSlidingWindow))
+                        .then(this.adjustSlidingWindow);
+    },
+    
+    getDimensionDiff: function(from, to) {
+      return (to.tail - to.head) - (from.tail - from.head); 
+    },
+    
+    getHeadPosition: function($el) {
+      var pos = $el.position();
+      return this._horizontal ? pos.left : pos.top;
+    },
+
+//    getTailPosition: function($el) {
+//      var pos = $el.position();
+//      return this._horizontal ? pos.left : pos.top;
+//    },
+
+    getHeadAndTail: function(offset) {
+      return this._horizontal ? {
+        head: offset.left,
+        tail: offset.right
+      } : {
+        head: offset.top,
+        tail: offset.bottom
       }
     },
+
+    dimension: function($el, value) {
+      var method = this._horizontal ? 'width' : 'height';
+      if (arguments.length == 2 && $el.hasClass('dummy'))
+        this.log('setting dummy {0} to {1}'.format(method, value));
+      
+      return arguments.length == 1 ? $el[method]() : $el[method](value);
+    },
+    
+    /**
+     * @return a promise to adjust the sliding window
+     */
+    adjustSlidingWindow: function() {
+//      this.log('SLIDING WINDOW', 'checking...');
+      if (this._adjustmentQueued)
+        return this._slidingWindowPromise;
+      
+      var promise = this._slidingWindowPromise;
+      if (promise && promise.state() == 'pending') {
+        this._adjustmentQueued = true;
+        return promise;
+      }
+      
+      var result = this._adjustSlidingWindow();
+      if (result == false)
+        return G.getResolvedPromise();
+      else
+        this._slidingWindowPromise = result;
+      
+      label(result);
+      this._slidingWindowPromise.always(function() {
+        if (this._adjustmentQueued) {
+          this._adjustmentQueued = false;
+          setTimeout(this.adjustSlidingWindow, 0);
+        }
+      }.bind(this));
+      
+      return this._slidingWindowPromise;
+    },
+    
+    /**
+     * determine if viewport is too close to one of the sliding window boundaries, in which case slide the sliding window, and grow it if it's too cramped
+     */
+    _adjustSlidingWindow: function() { // debounce this
+//      var viewport = this.getHeadAndTail(this._visibleArea),
+      if (!this.isActive())
+        return G.getRejectedPromise();
+      
+      var viewport = this.getHeadAndTail(this.getVisibleArea(true)),
+          viewportHeight = viewport.tail - viewport.head,
+          slidingWindow = this.getSlidingWindow(), // should be relative to this view, i.e. head==0 means we're at the top/left of the page
+          n = 1,
+          diff; 
+  
+      if (slidingWindow.tail - slidingWindow.head < this._minSlidingWindowDimension) {
+        var growAtTheHead;
+        if (this._pagesCurrentlyInSlidingWindow < this._pagesInSlidingWindow) {
+          growAtTheHead = false;
+//          n = this._pagesInSlidingWindow - this._pagesCurrentlyInSlidingWindow;
+        }
+        else
+          growAtTheHead = viewport.head - slidingWindow.head > slidingWindow.tail - viewport.tail;
+          
+        return this._growSlidingWindow(n, growAtTheHead).done(this.adjustSlidingWindow);
+      }
+      else if ((diff = slidingWindow.tail - viewport.tail) < this._slidingWindowBuffer) {
+//        n = Math.ceil(diff / viewportHeight);
+        return this.pageDown(n).done(this.adjustSlidingWindow); 
+      }
+      else if (this._pageOffset && (diff = viewport.head - slidingWindow.head) < this._slidingWindowBuffer) {
+//        n = Math.ceil(diff / viewportHeight);
+        this.pageUp(n).done(this.adjustSlidingWindow);
+      }
+
+      return false;
+    },
+    
+    getDummies: function() {
+      var dummies = this.$el.children('.dummy');
+      return {
+        head: dummies.filter('.head'),
+        tail: dummies.filter('.tail')
+      }
+    },
+
+    _toCollectionRange: function(fromPage, toPage) {
+      var from = fromPage * this._elementsPerPage,
+          range = {
+            from: from, 
+            to: Math.max(from, toPage * this._elementsPerPage)
+          };
+      
+      if (isNaN(range.from) || isNaN(range.to))
+        debugger;
+      
+      return range;
+    },
+
+    appendPages: function(n, force) {
+      return this.addPages(n, false, force);
+    },
+
+    prependPages: function(n, force) {
+      return this.addPages(n, true, force);
+    },
+
+    /** 
+    * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
+    * @param force - will add as much as it can, including a half page
+    * @return a promise
+    */
+    addPages: function(n, atTheHead, force) {
+//      this.log('SLIDING WINDOW', 'adding pages' + (atTheHead ? ' at the head' : ''));
+      n = n || 1;
+      var col = this.filteredCollection,
+//          sizes = this._slidingWindowAddRemoveInfo,
+          colRange, $dummy, dummyDim, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
+
+      if (atTheHead) {
+        var from = Math.max(this._pageOffset - n, 0);
+        if (from == this._pageOffset) {
+          debugger;
+          return G.getRejectedPromise();
+        }
+        
+        colRange = this._toCollectionRange(from, this._pageOffset);
+      }
+      else {
+        var from = this._pageOffset + this._pagesCurrentlyInSlidingWindow;
+        colRange = this._toCollectionRange(from, from + n);
+      }
+
+      if (colRange.to > col.length) {
+        if (force) {
+          // settle for loading an incomplete page
+          colRange.to = col.length;
+        }
+        else {
+          var numToFetch = Math.max(colRange.to - col.length, this._elementsPerPage);
+          return this.getNextPage(numToFetch).then(this.addPages.bind(this, n, atTheHead), this.addPages.bind(this, n, atTheHead, true));
+        }
+      }
+      
+      if (colRange.from >= colRange.to)
+        return G.getRejectedPromise();
+            
+      dfd = $.Deferred();
+      promise = dfd.promise();
+      label(promise);
+      dfd.done(function() {
+        this._pagesCurrentlyInSlidingWindow += n;
+        if (atTheHead)
+          this._pageOffset = Math.max(this._pageOffset - n, 0);
+      }.bind(this));
+      
+      $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
+      dummyDim = this.dimension($dummy);
+      slidingWindowBefore = this.getSlidingWindow();
+//      dummyDim = sizes[atTheHead ? 'head' : 'tail'];
+//      slidingWindowBefore = sizes.slidingWindow;
+      frag = doc.createDocumentFragment();
+      info = {
+        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
+        frag: frag,
+        total: colRange.to - colRange.from,
+        appended: []
+      };
+      
+      this.preRender(info);
+      
+      this.log('scroller', 'rendering range: ', colRange);
+      for (var i = colRange.from, to = colRange.to; i < to; i++) {
+        var res = col.models[i],
+            liView = this.renderItem(res, atTheHead),
+            el = liView.el;
+        
+        info.appended.push(el);
+        this.postRenderItem(el, info);
+        this.listenTo(res, 'change', this.onResourceChanged);
+      }
+      
+      Q.start(function() {
+        var id = G.nextId(),
+            page = $('<div class="rlPage" id="{0}" />'.format(id));
+        
+        this._pages[atTheHead ? 'unshift' : 'push'](page);
+//        console.log("APPENDING PAGE: " + id);
+        page.append(frag);
+        page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
+        postRenderResult = this.postRender(info);
+      }, this);
+
+      // on next frame
+      Q.start(function() {
+        slidingWindowAfter = this.getSlidingWindow();
+        var newDim = dummyDim;
+        if (colRange.from == 0)
+          newDim = 0;
+        else if (dummyDim > 0)
+          newDim = Math.max(dummyDim - this.getDimensionDiff(slidingWindowBefore, slidingWindowAfter), 0);
+        
+        if (newDim != dummyDim)
+          this.dimension($dummy, newDim);
+        
+        if (_.isPromise(postRenderResult))
+          postRenderResult.always(dfd.resolve);
+        else
+          dfd.resolve();
+      }, this);
+
+      return promise;
+    },
+    
+    getNewSize: function() {
+      this.trigger('invalidateSize');
+      this.pageView.trigger('invalidateSize');
+    },
+
+//    calcAddRemoveSize: function(n, grow, growingHead) {
+//      var dummies = this.dummies,
+//          numChildren = this._listItemViews.length,
+//          numChildrenToAbort = n * this._elementsPerPage,
+//          childViews,
+//          removedViews,
+//          first,
+//          last,
+//          head,
+//          tail;
+//
+//      if (!grow) {
+//        var splitIdx = growingHead ? numChildren - numChildrenToAbort : numChildrenToAbort,
+//            left = this._listItemViews.slice(0, splitIdx),
+//            right = this._listItemViews.slice(splitIdx);
+//            
+//        removedViews = growingHead ? right : left;
+//        this._listItemViews = growingHead ? left : right;
+//      }
+//      
+//      if (removedViews && removedViews.length) {
+//        first = removedViews[0].$el;
+//        last = _.last(removedViews).$el;
+//        head = this.getHeadPosition(first);
+//        tail = this.getHeadPosition(last) + this.dimension(last);
+//      }
+//      else
+//        head = tail = 0;
+//          
+//      this._slidingWindowAddRemoveInfo = {
+//        head: this.dimension(dummies.head),
+//        tail: this.dimension(dummies.tail),
+//        removedPageSize: Math.abs(tail - head),
+//        removedViews: removedViews,
+//        slidingWindow: this.getSlidingWindow()
+//      };
+//    },
+    
+    /**
+     * Moves sliding window up, prepending "n" pages and removing "n" pages from the bottom
+     */
+    pageUp: function(n) {
+      n = n || 1;
+      // prepend a new page, remove the last page, call this.adjustSlidingWindow() again to see if we're good to go
+//      this.calcAddRemoveSize(n, false, true);
+      return this.prependPages(n).then(this.removePages.bind(this, n, false)).then(this.getNewSize);
+    },
+  
+    /**
+     * Moves sliding window down, appending "n" pages and removing "n" pages from the head
+     */
+    pageDown: function(n) {
+      n = n || 1;
+      // append a new page, remove the first page, call this.adjustSlidingWindow() again to see if we're good to go
+//      this.calcAddRemoveSize(n, false);
+      return this.appendPages(n).then(this.removePages.bind(this, n, true)).then(this.getNewSize);
+    },
+    
+    getListItems: function() {
+      return this.$el.children().not('div.dummy');
+    },
+
+    /**
+     * @return offsets on all sides of the sliding window
+     */
+    getSlidingWindow: function() {
+      var children = this.getListItems(),
+          first = children[0],
+          last = _.last(children);
+      
+      if (first) {
+        first = $(first);
+        last = $(last);
+        return {
+          head: this.getHeadPosition(first),
+          tail: this.getHeadPosition(last) + this.dimension(last)
+        };
+      }
+      else {
+        var head = this.getHeadPosition(this.$el);
+        return {
+          head: head,
+          tail: head
+        }
+      }
+    },
+
+    /**
+     * grows the sliding window by "n" pages, from the top/left if head==true, otherwise from the bottom/right
+     * @return a promise
+     */
+    _growSlidingWindow: function(n, head) {
+//      this.log('SLIDING WINDOW', 'growing sliding window');
+      n = n || 1;
+//      this.calcAddRemoveSize(n, true, head);
+      return $.Deferred(function(defer) {
+        var promise;
+        if (head)
+          promise = this.prependPages(n);
+        else
+          promise = this.appendPages(n);
+        
+        promise.done(function() {
+          this._pagesInSlidingWindow = Math.max(this._pagesCurrentlyInSlidingWindow, this._pagesInSlidingWindow);
+          this.getNewSize();
+          defer.resolve();
+        }.bind(this)).fail(defer.reject);
+      }.bind(this)).promise();
+    },
+  
+//    /**
+//     * Removes "pages" from the DOM and replaces the lost space by creating/padding a dummy div with the height/width of the removed section
+//     * The reason we keep dummy divs on both sides of the sliding window and not just at the top is to preserve the integrity of the scroll bar, which would otherwise revert back to 0 if you scrolled back up to the top of the page
+//     */
+//    removePages: function(n, fromTheHead) {
+////      this.log('SLIDING WINDOW', 'removing pages');
+//      var first,
+//          last,
+//          head,
+//          tail,
+//          removedViews,
+//          $dummy,
+//          dummyDim,
+//          removedPageDim,
+////          ,
+////      var sizes = this._slidingWindowAddRemoveInfo,
+////          $dummy = fromTheHead ? this.dummies.head : this.dummies.tail,
+////          removedViews = sizes.removedViews,
+//          dfd = $.Deferred();
+//
+//      dfd.done(function() {
+//        this._pagesCurrentlyInSlidingWindow -= n;
+//        if (fromTheHead)
+//          this._pageOffset += n;
+//      }.bind(this));
+//
+//      $dummy = this.dummies[fromTheHead ? 'head' : 'tail'];
+//      dummyDim = this.dimension($dummy);
+//      
+//      var cutIdx = fromTheHead ? n * this._elementsPerPage : this._listItemViews.length - n * this._elementsPerPage;
+//      removedViews = fromTheHead ? this._listItemViews.slice(0, cutIdx) : this._listItemViews.slice(cutIdx);
+//      this._listItemViews = fromTheHead ? this._listItemViews.slice(cutIdx) : this._listItemViews.slice(0, cutIdx);
+//      
+//      first = removedViews[0].$el;
+//      last = _.last(removedViews).$el;
+//      head = this.getHeadPosition(first);
+//      tail = this.getHeadPosition(last) + this.dimension(last);
+//      removedPageDim = Math.abs(tail - head);
+//
+////      Q.start(function() {        
+//        for (var i = 0, len = removedViews.length; i < len; i++) {
+//          var view = removedViews[i];
+//          this.stopListening(view.resource);
+//          view.destroy(); // destroy uses animationQueue
+//        }
+//        
+//        if (!$.contains(this.el, $dummy[0]))
+//          this.$el[fromTheHead ? 'prepend' : 'append']($dummy);
+//        
+//        if (fromTheHead)
+//          this._pageOffset += n;
+//          
+////        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
+//        this.dimension($dummy, Math.abs(tail - head));
+//        dfd.resolve();
+////      }, this);
+//      
+//      return dfd.promise();
+//    },
+
+    /**
+     * Removes "pages" from the DOM and replaces the lost space by creating/padding a dummy div with the height/width of the removed section
+     * The reason we keep dummy divs on both sides of the sliding window and not just at the top is to preserve the integrity of the scroll bar, which would otherwise revert back to 0 if you scrolled back up to the top of the page
+     */
+    removePages: function(n, fromTheHead) {
+//      this.log('SLIDING WINDOW', 'removing pages');
+      var first,
+          last,
+          head,
+          tail,
+          removedViews,
+          $dummy,
+          dummyDim,
+          removedPageDim,
+          pages,
+//          ,
+//      var sizes = this._slidingWindowAddRemoveInfo,
+//          $dummy = fromTheHead ? this.dummies.head : this.dummies.tail,
+//          removedViews = sizes.removedViews,
+          dfd = $.Deferred();
+
+      dfd.done(function() {
+        this._pagesCurrentlyInSlidingWindow -= n;
+        if (fromTheHead)
+          this._pageOffset += n;
+      }.bind(this));
+
+      $dummy = this.dummies[fromTheHead ? 'head' : 'tail'];
+      dummyDim = this.dimension($dummy);
+      var cutIdx = fromTheHead ? n : this._pages.length - n;
+      pages = fromTheHead ? this._pages.slice(0, cutIdx) : this._pages.slice(cutIdx);
+      this._pages = fromTheHead ? this._pages.slice(cutIdx) : this._pages.slice(0, cutIdx);
+      cutIdx = fromTheHead ? n * this._elementsPerPage : this._listItemViews.length - n * this._elementsPerPage;
+      removedViews = fromTheHead ? this._listItemViews.slice(0, cutIdx) : this._listItemViews.slice(cutIdx);
+      this._listItemViews = fromTheHead ? this._listItemViews.slice(cutIdx) : this._listItemViews.slice(0, cutIdx);
+      
+      removedPageDim = _.reduceRight(pages, function(memo, page) { return memo + page.height() }, 0);
+      Q.start(function() {        
+//        console.log("REMOVING PAGES: " + _.map(pages, function(page) {return page[0].id}).join(','));
+        _.each(pages, function(p) { p.remove() });
+        for (var i = 0, len = removedViews.length; i < len; i++) {
+          var view = removedViews[i];
+          this.stopListening(view.resource);
+          view.destroy(); // destroy uses animationQueue
+        }
+      
+//        if (!$.contains(this.el, $dummy[0]))
+//          this.$el[fromTheHead ? 'prepend' : 'append']($dummy);
+        
+//        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
+        this.dimension($dummy, dummyDim + removedPageDim);
+        dfd.resolve();
+      }, this);
+      
+      return dfd.promise();
+    },
+
+    onResourceChanged: function(res) { // attach/detach when sliding window moves
+      var itemView = this.getViewByResource(res);
+      if (itemView) {
+        itemView.refresh(); // or maybe remove and reappend?
+        this.adjustSlidingWindow();
+        // expect an extra reflow here
+      }
+    },
+    
+    getNextPage: function(numResourcesToFetch) {
+      if (this._isPaging)
+        return this._pagingPromise;
+      
+      var col = this.filteredCollection,
+          before = col.length,
+          defer = $.Deferred();
+      
+      col.getNextPage({
+        params: {
+          $limit: numResourcesToFetch
+        },
+        success: function() {
+          if (col.length > before)
+            defer.resolve();
+          else {
+            if (!col.isFetching()) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+              defer.reject();
+          }
+        },
+        error: function() {
+          if (!col.isFetching())
+            defer.reject();
+        }
+      });
+      
+      this._isPaging = true;
+      this._pagingPromise = defer.promise().done(function() {
+        this._isPaging = false;
+      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
+      
+      this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
+      return this._pagingPromise;
+    },
+   
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
-        throw 'this view doesn\'t have a mode ' + mode;
+        throw "this view doesn't have a mode " + mode;
       
       this.mode = mode;
     },
-  
-//    events: {
-//      'scrollo': 'onScroll'
-//    },
-    
-    getListItems: function() {
-      return this.$el.children();
-//      return this.$('li');
-    },
 
-    renderItem: function(res) {
+    /**
+     * @return view for rendered list item
+     */
+    renderItem: function(res, prepend) {
+      // TODO: do
       var viewName = 'listItem' + G.nextId(),
           commonParams = {
             resource: res,
@@ -102,118 +694,36 @@ define('views/ResourceListView', [
           liView = new ResourceListItemView(_.extend({swatch: swatch}, commonParams));
       }
       
-      this.addChild(liView);
+      this.addChild(liView, prepend);
       liView.render({force: true});
       return liView;
     },
     
-    refresh: function(options) {
-      options = options || {};
-      if (options.partOfUpdate)
-        return;
-      
-      var modified = options.resources;
-      var isAdd = options.added;
-//      var isUpdate = options.updated;
-//      var isReset = options.reset;
-      var orientationChange = options.orientation;
-      
-      G.log(this.TAG, 'refreshing ResourceListView');
-      modified = modified ? (_.isArray(modified) ? modified : [modified]) : null;
-      var modifiedUris = modified && _.map(modified, function(m) {
-        return m.getUri();
-      });
-      
-      var rl = this.filteredCollection;
-      var resources = rl.models;
-      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled')[0];
-      var hash = window.location.hash;      
-      var lis = this.getListItems(); //isModification || isMasonry ? this.$('.nab') : this.isPhotogrid ? this.$('tr') : this.$('li');
-      var curNum = lis.length;
-      var num = Math.min(resources.length, (this.page + 1) * this.displayPerPage);
-
-      var i = 0;
-      var nextPage = false;
-      var frag;
-      if (isAdd || !modified && !orientationChange) {
-        i = curNum;
-        if (curNum == num) {
-          this.postRender({});
-          return this;
+    addChild: function(view, prepend) {
+      BasicView.prototype.addChild.call(this, view);
+      this._listItemViews[prepend ? 'unshift' : 'push'](view);
+      view.once('destroyed', function() {
+        var idx = this._listItemViews.indexOf(view);
+        if (~idx) {
+          debugger; // should only happen if a view was destroyed other than due to sliding window management
+          this._listItemViews.splice(idx, 1);
         }
-        
-        if (curNum > 0)
-          nextPage = true;
-      }
-
-      if (!nextPage) {
-        lis = lis.detach();
-        frag = document.createDocumentFragment();
-      }
-      
-//      var defaultUnchecked = params.$checked !== 'y';
-        
-//      var renderDfd = this.isPhotogrid ? $.Deferred() : null;
-      var info = {
-            isFirstPage: !nextPage,
-            frag: frag,
-            total: num,
-            appended: []
-          },
-          updated = [];
-      
-      this.imageProperty = U.getImageProperty(this.collection);
-      this.preRender(info);
-
-      for (; i < num; i++) {
-        var res = resources[i],        
-            uri = res.getUri(),
-            liView,
-            el;
-        
-        if (canceled && res.get(canceled))
-          continue;
-        
-        
-        info.index = i;        
-        info.updated = _.contains(modifiedUris, uri);
-        if (i >= lis.length || info.updated)
-          liView = this.renderItem(res, info);          
-        if (liView) {
-          el = liView.el;
-          var detachedLi = lis[i],
-              viewId = detachedLi && detachedLi.dataset.viewId,
-              child = viewId && this.getChildViews()[viewId];
-          
-          if (child) {
-            debugger;
-            child.destroy();
-          }
-        }
-        else
-          el = lis[i];
-        
-        if (info.updated)
-          updated.push(el);
-        else
-          info.appended.push(el);
-        
-        this.postRenderItem(el, info);
-      };
-      
-      info.updated = updated;
-      if (!nextPage)
-        this.html(frag);
-      
-      this.postRender(info);
-      return this;
+      }.bind(this));
     },
 
     preRender: function(info) {
       // override me
     },
 
+    /**
+     * called after a batch of items are appended to the dom. Info contains the following info: {
+     *   isFirstPage: {Boolean},
+     *   appended: {Array} appended elements
+     * }
+     */
     postRender: function(info) {
+      // override me
+      // init/refresh listview
       if (this.rendered) {
         this.$el.trigger('create');
         if (!this.isMultiValueChooser && this.$el.hasClass('ui-listview'))
@@ -221,138 +731,13 @@ define('views/ResourceListView', [
         
         this.trigger('refreshed');
       }
-      
-      this.pageView.$el.off('scrollo', this.onScroll);
-      this.pageView.$el.on('scrollo', this.onScroll);
-      this.trigger('invalidateSize');
-      this.pageView.trigger('invalidateSize');
     },
     
     postRenderItem: function(el, info) {
-      if (!info.isFirstPage) {
-        this.$el.append(el);
-      }
-      else {
-        info.frag.appendChild(el);
-      }
+      // override me
+      info.frag.appendChild(el);
     },
     
-//    forceReloadMasonry: function() {
-//      if (this.rendered)
-//        this.$el.masonry('reload');
-//    },
-    
-    getNextPage: function() {
-      if (!this.rendered)
-        return;
-      
-//      console.debug(printStackTrace());
-      if (this._pagingPromise && this._pagingPromise.state() === 'pending')
-        return this._pagingPromise;
-      
-      var self = this,
-          rl = this.filteredCollection,
-          before = rl.models.length,
-          displayedBefore = this.getListItems().length,
-          requested = (this.page + 2) * this.displayPerPage; // page starts at 0, 'requested' is the number of items that will be displayed after the next page is loaded 
-            
-//      if (this._requested == requested)
-//        debugger;
-//      
-//      this._requested = requested;
-//      
-//      Events.stopListening(self, 'refreshed');
-//      Events.listenTo(self, 'refreshed', function() {          
-//        if (self.scrolledToNextPage())
-//          return self.getNextPage();
-//      });
-
-      this._pagingPromise = $.Deferred(function(defer) {
-        this._paging = true;
-        if (!self.rendered || !before || requested <= displayedBefore)
-          return defer.reject();
-        
-        self.page++;
-        if (before >= requested) {
-          self.refresh({
-            resources: rl.models.slice(requested), 
-            added: true
-          });
-          
-          return defer.resolve();
-        }
-  
-        rl.getNextPage({
-          success: function(resp, status, xhr) {
-            if (self.collection.models.length <= before)
-              defer.reject();
-            else
-              defer.resolve();
-          },
-          error: defer.reject
-        });
-      }).promise();
-      
-      this._pagingPromise.done(function() {
-        self.once('refreshed', self.checkIfNeedMore.bind(self, displayedBefore));
-      }).always(function() {
-        self._paging = false;
-//        self.hideLoadingIndicator();
-      });
-
-      return this._pagingPromise;
-    },
-    
-    checkIfNeedMore: function(displayedBefore) {
-      if (!this.scrolledToNextPage()) // we've got our buffer back
-        return;
-      else if (this.getListItems().length > displayedBefore) // we loaded some, but we need more
-        return this.getNextPage();
-      else
-        this.checkIfNeedMore(displayedBefore); // the items we loaded haven't been added to the DOM yet 
-    },
-        
-    render: function(e) {
-      if (!this.rendered) {
-        this.numDisplayed = 0;
-        var col = this.filteredCollection = this.collection.clone();
-        this.listenTo(this.filteredCollection, 'endOfList', function() {
-          this.pageView.trigger('endOfList');
-        }.bind(this));
-        
-        this.listenTo(this.filteredCollection, 'reset', function() {
-          this.pageView.trigger('newList');
-        }.bind(this));
-        
-        _.each(['updated', 'added', 'reset'], function(event) {
-          this.stopListening(col, event);
-          this.listenTo(col, event, function(resources) {
-            resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-            var options = {
-              resources: resources
-            };
-            
-            options[event] = true;
-            this.refresh(options);
-          }.bind(this));
-        }.bind(this));
-        
-        this.setupSearchAndFilter();
-//        var wasRendered = this.rendered;
-//        this.rendered = true;
-      }
-      
-//      this.rendered = true;
-      this.refresh({added: true, force: true});
-      
-//      var collection = this.collection;
-//      var filtered = this.filteredCollection;
-//      var colModel = collection.vocModel;
-//      if (!wasRendered)
-
-      return this;
-    },
-  
     setupSearchAndFilter: function() {
       this.$filteredUl = this.parentView.$('ul[data-filter="true"]');
       this.$filteredUl.on('listviewbeforefilter', _.debounce(this.onFilter.bind(this), 150));
@@ -398,81 +783,8 @@ define('views/ResourceListView', [
     
     hasMasonry: function() {
       return this.type == 'masonry';
-    },
-    
-    // endless page function
-    onScroll: _.debounce(function(e, eventData) {
-      if (!this.isActive())
-        return;
-      
-      
-//      var self = this;
-      // order is important, because view.getNextPage() may return immediately if we have some cached rows
-      // if scrollTop is near to zero then it is "initial" next page retriving not by a user
-//      if ($wnd.scrollTop() > 20) {  
-//        this.skipScrollEvent = true; 
-////        this.loadIndicatorTimerId = setTimeout(function() { self.showLoadingIndicator(); }, 500);      
-//      }
-
-      if (this.scrolledToNextPage(eventData))
-        this.getNextPage();      
-    }, 50),
-
-    scrolledToNextPage: function(scrollData) {
-      scrollData = scrollData || this.pageView.getScrollInfo();
-      if (!scrollData)
-        return;
-      
-      var viewportHeight = window.innerHeight,
-          content = scrollData.content,
-          scrollTop = scrollData.scrollTop;
-          
-      // get next page
-      // 1) masonry: 2.5 screen height to bottom
-      // 2) list view: 1 screen height to bottom
-      var factor = this.hasMasonry() ? 3.5 : 2;         
-      if (content.height > scrollTop + viewportHeight * factor)
-        return;
-      
-      return true;
-    },
-
-//    scrolledToNextPage: function(e) {
-////      var scrollTop = U.getScrollPosition(this.$el, e).scrollTop;
-//      var scrollTop = $wnd.scrollTop();
-//      try {
-//        if (this.prevScrollPos > scrollTop) return;
-//      } finally {
-//        this.prevScrollPos = scrollTop;
-//      }
-//
-////      if (this.prevScrollPos > $wnd.scrollTop()) {
-////        this.prevScrollPos = $wnd.scrollTop();
-////        return;
-////      }
-////      
-////      this.prevScrollPos = $wnd.scrollTop();
-//      
-//      // get next page
-//      // 1) masonry: 2.5 screen height to bottom
-//      // 2) list view: 1 screen height to bottom
-//      var factor = this.hasMasonry() ? 3.5 : 2;         
-//      if ($m.activePage.height() > scrollTop + $wnd.height() * factor)
-//        return;
-//      
-////      if (this.pageView.el.offsetHeight > scrollTop + window.innerHeight * factor)
-////        return;
-//      
-//      return true;
-//    },
-    
-    resumeScrollEventProcessing: function () {
-//      this.skipScrollEvent = false;
-      this.hideLoadingIndicator();
     }
   }, {
     displayName: 'ResourceListView'
   });
-  
-  return RLV;
 });

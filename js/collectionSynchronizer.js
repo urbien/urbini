@@ -78,9 +78,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     if (!this._preProcess())
       return;
     
-    var isStale = this._isStale();
     if (this._isUpdate()) {
-      if (this._isForceFetch() || isStale)
+      if (this._isForceFetch() || this._isStale())
         this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
       else if (this.data.length)
         this._success(null, 'success', addEmptyResponseHeaderFn({
@@ -95,7 +94,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         return;
       }
       
-      if (isStale && this.info.start < this.data.length) {
+      if (this._isStale() && this.info.start < this.data.length) {
         this._success(null, 'success', addEmptyResponseHeaderFn({status: 304})); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
         return; 
       }
@@ -156,6 +155,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         IDB = IndexedDBModule.getIDB(),
         type = U.getTypeUri(options.key),
         filter = options.filter,
+        limit = options.limit,
         data = options.data,
         props = data.vocModel.properties,
         temps = {},

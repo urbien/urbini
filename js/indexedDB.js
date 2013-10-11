@@ -635,7 +635,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         limit = options.limit,
         filter = options.filter,
         from = options.from,
-        direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
         promises = [],
         done = false,
         finish = function() {

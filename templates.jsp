@@ -16,7 +16,10 @@
     {{ if (this.collection.models.length > 5) { }}
      data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
    {{ } }}
-   ></ul>
+   >
+    <div class="dummy head"></div>
+    <div class="dummy tail"></div>
+    </ul>
     <div id="nabs_grid" class="masonry">
     </div>
     <!-- ul id="columns">

@@ -210,50 +210,68 @@ define('utils', [
 //        matrices.push(opToMatrix(match[1] /* operation like translate, rotate */ , parseFloat(match[3]) /* amount to transform */, match[4] /* px, em, %, etc. */));
 //      }
 //    },
-    /**
-     * @return { X: x-offset, Y: y-offset }
-     */
-    parseTranslation: function(transformStr) {
-      if (transformStr == 'none') {
-        return {
-          X: 0,
-          Y: 0
-        };
-      }
+    
+    parseTransform: function(transformStr) {
+      if (transformStr == 'none')
+        return this.getNewIdentityMatrix(4);
       
       var split = transformStr.split(', '),
           xIdx = split.length == 6 ? 4 : 12,
           yIdx = xIdx + 1; 
 
-      return {
-        X: parseInt(split[xIdx], 10), 
-        Y: parseInt(split[yIdx], 10)
-      };
+      split = _.map(split, parseFloat.bind(window));
+      if (split.length == 6) {
+        return [
+          [split[0], split[2], 0, 0],
+          [split[2], split[3], 0, 0],
+          [0,        0,        1, 0],
+          [split[4], split[5], 0, 1]
+        ];
+      }
+      else {
+        return [
+          split.slice(0, 4),
+          split.slice(4, 8),
+          split.slice(8, 12),
+          split.slice(12)
+        ];
+      }
     },
 
-    parseTransform: function(transformStr) {
-      // matrix(a, b, c, d, tx, ty) is a shorthand for matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1).
-      var matrixMatch = transformStr.match(/^matrix\((.*)\)/),
-          matrix3dMatch = !matrixMatch && transformStr.match(/^matrix3d\((.*)\)/),
-          match = matrixMatch || matrix3dMatch,
-          nums = match && match[1].split(','),
-          matrix = [];
-      
-      if (!match)
-        return CSS.getNewIdentityMatrix(4);
-      
-      if (matrixMatch)
-        nums = [nums[0], nums[1], "0", "0", nums[2], nums[3], "0", "0", "0", "0", "1", "0", nums[4], nums[5], "0", "1"];
-      
-      for (var i = 0; i < 4; i++) {
-        var row = matrix[i] = [];
-        for (var j = 0; j < 4; j++) {
-          row[j] = parseFloat(nums[i * 4 + j].trim());
-        }
+    /**
+     * @return { X: x-offset, Y: y-offset }
+     */
+    parseTranslation: function(transformStr) {
+      var matrix = this.parseTransform(transformStr);
+      return {
+        X: matrix[3][0],
+        Y: matrix[3][1]
       }
-      
-      return matrix;
     },
+
+//    parseTransform: function(transformStr) {
+//      // matrix(a, b, c, d, tx, ty) is a shorthand for matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1).
+//      var matrixMatch = transformStr.match(/^matrix\((.*)\)/),
+//          matrix3dMatch = !matrixMatch && transformStr.match(/^matrix3d\((.*)\)/),
+//          match = matrixMatch || matrix3dMatch,
+//          nums = match && match[1].split(','),
+//          matrix = [];
+//      
+//      if (!match)
+//        return CSS.getNewIdentityMatrix(4);
+//      
+//      if (matrixMatch)
+//        nums = [nums[0], nums[1], "0", "0", nums[2], nums[3], "0", "0", "0", "0", "1", "0", nums[4], nums[5], "0", "1"];
+//      
+//      for (var i = 0; i < 4; i++) {
+//        var row = matrix[i] = [];
+//        for (var j = 0; j < 4; j++) {
+//          row[j] = parseFloat(nums[i * 4 + j].trim());
+//        }
+//      }
+//      
+//      return matrix;
+//    },
     
     getStylePropertyValue: function(computedStyle, prop) {
       var value;
@@ -273,6 +291,14 @@ define('utils', [
           style[vendorPrefixes[i] + prop] = value;
         }
       }
+    },
+
+    getTranslation: function(el) {
+      return this.parseTranslation(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
+    },
+
+    getTransform: function(el) {
+      return this.parseTransform(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
     }
   }
   
@@ -1882,8 +1908,8 @@ define('utils', [
     getImageProperty: function(resOrCol) {
       var isCol = U.isCollection(resOrCol);
       var models = isCol ? resOrCol.models : [resOrCol];
-      if (!models.length)
-        return null;
+//      if (!models.length)
+//        return null;
       
       var vocModel = U.getModel(resOrCol);
       var meta = vocModel.properties;
@@ -1913,20 +1939,19 @@ define('utils', [
           hasImgs = true;
       }
         
-      if (!hasImgs)
-        return null;
-      
-      cloneOf = cloneOf && cloneOf[0];
-      hasImgs = false;
-      for (var i = 0; !hasImgs  &&  i < models.length; i++) {
-        var m = models[i];
-        if (isIntersection  &&  (m.get(aCloneOf) || m.get(bCloneOf))) 
-          return aCloneOf;
-        if (m.get(cloneOf))
-          return cloneOf;
+      if (hasImgs && models.length) {
+        cloneOf = cloneOf && cloneOf[0];
+        hasImgs = false;
+        for (var i = 0; !hasImgs  &&  i < models.length; i++) {
+          var m = models[i];
+          if (isIntersection  &&  (m.get(aCloneOf) || m.get(bCloneOf))) 
+            return aCloneOf;
+          if (m.get(cloneOf))
+            return cloneOf;
+        }
       }
       
-      return null;
+      return cloneOf || aCloneOf || bCloneOf;
     },
     
 //    _index: function(obj,i) {
@@ -3787,6 +3812,22 @@ define('utils', [
     HTML: HTML,
     CSS: CSS,
 
+    getVisibleBounds: function(el) {
+      var translation = U.CSS.getTranslation(this.el),
+          contentRect = this.el.getBoundingClientRect(),
+          contentLeft = Math.max(0, contentRect.left),
+          contentTop = Math.max(0, contentRect.top),
+          visibleWidth = Math.min(contentLeft + contentRect.width, window.innerWidth) - contentLeft,
+          visibleHeight = Math.min(contentTop + contentRect.height, window.innerHeight) - contentTop;
+      
+      return {
+        top: contentTop,
+        left: contentLeft,
+        right: contentLeft + visibleWidth,
+        bottom: contentTop + visibleHeight
+      }
+    },
+    
     isRectPartiallyInViewport: function(rect, fuzz) {
       var documentElement = doc.documentElement;
       fuzz = fuzz || 0; 
@@ -3936,6 +3977,17 @@ define('utils', [
         screenX: touch.screenX,
         screenY: touch.screenY
       }
+    },
+    
+    logFunctions: function(obj) {
+      _.each(obj, function(fn, prop) {
+        if (typeof fn == 'function') {
+          obj[prop] = function() {
+            console.log("FUNCTION LOG: " + prop + '()');
+            return fn.apply(this, arguments);
+          };
+        }
+      });
     }
   };
 
