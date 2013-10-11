@@ -313,6 +313,7 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
+      options = options || {};
       var json = this.getBaseTemplateData();
       if (this.resource.isA('Buyable'))
         json.price = this.resource.get('Buyable.price');
@@ -463,9 +464,14 @@ define('views/ResourceListItemView', [
         else
           json.liUri = U.makePageUrl(action, atts._uri);
       }  
-      
-      this.$el.html(this.template(json));
-      return this;
+    
+      var html = this.template(json);
+      if (options.renderToHtml)
+        return html;
+      else {
+        this.$el.html(html);
+        return this;
+      }
     },
     
     addCommonBlock: function(viewCols, json) {

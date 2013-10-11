@@ -1,4 +1,4 @@
-define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/animationQueue'], function(G, _, U, Events, Q) {
+define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom'], function(G, _, U, Events, Q) {
 
   window.s = []; 
   var FORCE_TOUCH = false,
@@ -760,7 +760,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 
       this._updateScrollPosition();
       
-      Q.start(CSS.setStylePropertyValues, CSS, [this.el.style, {
+      Q.write(CSS.setStylePropertyValues, CSS, [this.el.style, {
         transition: null
       }]);
       
@@ -828,7 +828,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
       }
       else {
-        Q.start(function() {          
+        Q.read(function() {          
           this._scrollerProps.position = CSS.getTranslation(this.el);
         }, this);
       }
@@ -854,6 +854,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     _onClickInScroller: function(e) {
 //      this.log('in scroller onclick handler');
       var ok = !this._scrollerProps.preventClick;
+//      if (ok) {
+//        this._resetScroller();
+//      }
+//      else {
       if (!ok) {
         e.preventDefault();
         e.stopPropagation();
@@ -894,7 +898,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      else
 //        this._queueScrollTimeout(this._updateScrollPosition.bind(this, offsetX, offsetY), time);
       
-      Q.start(function() {        
+      Q.write(function updateScrollPosition() {        
         CSS.setStylePropertyValues(this.el.style, {
           transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease || beziers.fling),
           transform: 'matrix(1, 0, 0, 1, {0}, {1})'.format(position.X, position.Y)

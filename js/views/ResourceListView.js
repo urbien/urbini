@@ -7,7 +7,7 @@ define('views/ResourceListView', [
   'views/ResourceListItemView',
   'views/PhotogridView',
   'collections/ResourceList',
-  'lib/animationQueue'
+  'lib/fastdom'
 ], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, Q) {
   var $wnd = $(window),
       doc = document;
@@ -17,13 +17,13 @@ define('views/ResourceListView', [
   }
   
   return BasicView.extend({
-    _listItemViews: [],
+//    _listItemViews: [],
     _pages: [],
     _adjustmentQueued: false,
 //    _slidingWindowInsideBuffer: 500, // px, should depend on size of visible area of the list, speed of device, RAM
 //    _slidingWindowOutsideBuffer: 1000, // px, should depend on size of visible area of the list, speed of device, RAM
     _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-    _minSlidingWindowDimension: 2500, // px, should depend on size of visible area of the list, speed of device, RAM
+    _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
     _pageOffset: 0,
     _pagesInSlidingWindow: 4,
     _pagesCurrentlyInSlidingWindow: 0,
@@ -231,7 +231,7 @@ define('views/ResourceListView', [
       }
       else if (this._pageOffset && (diff = viewport.head - slidingWindow.head) < this._slidingWindowBuffer) {
 //        n = Math.ceil(diff / viewportHeight);
-        this.pageUp(n).done(this.adjustSlidingWindow);
+        return this.pageUp(n).done(this.adjustSlidingWindow);
       }
 
       return false;
@@ -316,60 +316,66 @@ define('views/ResourceListView', [
       }.bind(this));
       
       $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
-      dummyDim = this.dimension($dummy);
-      slidingWindowBefore = this.getSlidingWindow();
-//      dummyDim = sizes[atTheHead ? 'head' : 'tail'];
-//      slidingWindowBefore = sizes.slidingWindow;
-      frag = doc.createDocumentFragment();
-      info = {
-        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
-        frag: frag,
-        total: colRange.to - colRange.from,
-        appended: []
-      };
-      
-      this.preRender(info);
-      
-      this.log('scroller', 'rendering range: ', colRange);
-      for (var i = colRange.from, to = colRange.to; i < to; i++) {
-        var res = col.models[i],
-            liView = this.renderItem(res, atTheHead),
-            el = liView.el;
+      Q.read(function() {
+        dummyDim = this.dimension($dummy);
+        slidingWindowBefore = this.getSlidingWindow();        
+        frag = doc.createDocumentFragment();
+        info = {
+          isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
+          frag: frag,
+          total: colRange.to - colRange.from,
+          appended: []
+        };
         
-        info.appended.push(el);
-        this.postRenderItem(el, info);
-        this.listenTo(res, 'change', this.onResourceChanged);
-      }
-      
-      Q.start(function() {
-        var id = G.nextId(),
-            page = $('<div class="rlPage" id="{0}" />'.format(id));
+        this.preRender(info);
+        for (var i = colRange.from, to = colRange.to; i < to; i++) {
+          var res = col.models[i],
+              liView = this.renderItem(res, atTheHead),
+              el = liView.el;
+          
+          info.appended.push(el);
+          this.postRenderItem(el, info);
+          this.listenTo(res, 'change', this.onResourceChanged);
+        }
         
-        this._pages[atTheHead ? 'unshift' : 'push'](page);
-//        console.log("APPENDING PAGE: " + id);
-        page.append(frag);
-        page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
-        postRenderResult = this.postRender(info);
+        Q.write(function() {
+          var id = G.nextId(),
+              page = $('<div class="listPage" id="{0}" />'.format(id));
+          
+          this._pages[atTheHead ? 'unshift' : 'push'](page);
+          page.append(frag);
+          page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
+          postRenderResult = this.postRender(info);
+          
+          // on next frame
+          Q.read(function() {
+            slidingWindowAfter = this.getSlidingWindow();
+            var newDim = dummyDim;
+            if (colRange.from == 0)
+              newDim = 0;
+            else if (dummyDim > 0)
+              newDim = Math.max(dummyDim - this.getDimensionDiff(slidingWindowBefore, slidingWindowAfter), 0);
+            
+            function cleanup() {
+              if (_.isPromise(postRenderResult))
+                postRenderResult.always(dfd.resolve);
+              else
+                dfd.resolve();
+            };
+            
+            if (newDim != dummyDim) {
+              Q.write(function() {
+                this.dimension($dummy, newDim);
+                cleanup();
+              }, this);
+            }
+            else
+              cleanup();
+            
+          }, this);
+        }, this);
       }, this);
-
-      // on next frame
-      Q.start(function() {
-        slidingWindowAfter = this.getSlidingWindow();
-        var newDim = dummyDim;
-        if (colRange.from == 0)
-          newDim = 0;
-        else if (dummyDim > 0)
-          newDim = Math.max(dummyDim - this.getDimensionDiff(slidingWindowBefore, slidingWindowAfter), 0);
-        
-        if (newDim != dummyDim)
-          this.dimension($dummy, newDim);
-        
-        if (_.isPromise(postRenderResult))
-          postRenderResult.always(dfd.resolve);
-        else
-          dfd.resolve();
-      }, this);
-
+      
       return promise;
     },
     
@@ -423,6 +429,13 @@ define('views/ResourceListView', [
       n = n || 1;
       // prepend a new page, remove the last page, call this.adjustSlidingWindow() again to see if we're good to go
 //      this.calcAddRemoveSize(n, false, true);
+//      var prependPromise = this.prependPages(n);
+//      return prependPromise.then(function() {
+//        return this.removePages(n, false);
+//      }.bind(this)).then(function() {
+//        this.getNewSize();
+//      }.bind(this));
+      
       return this.prependPages(n).then(this.removePages.bind(this, n, false)).then(this.getNewSize);
     },
   
@@ -558,11 +571,12 @@ define('views/ResourceListView', [
           last,
           head,
           tail,
-          removedViews,
+          removedViews = [],
+          removedPages,
+          splitIdx,
           $dummy,
           dummyDim,
           removedPageDim,
-          pages,
 //          ,
 //      var sizes = this._slidingWindowAddRemoveInfo,
 //          $dummy = fromTheHead ? this.dummies.head : this.dummies.tail,
@@ -571,32 +585,48 @@ define('views/ResourceListView', [
 
       dfd.done(function() {
         this._pagesCurrentlyInSlidingWindow -= n;
-        if (fromTheHead)
+        if (fromTheHead) {
+          this.log('PAGE OFFSET: ', this._pageOffset + n);
           this._pageOffset += n;
+        }
       }.bind(this));
 
       $dummy = this.dummies[fromTheHead ? 'head' : 'tail'];
       dummyDim = this.dimension($dummy);
-      var cutIdx = fromTheHead ? n : this._pages.length - n;
-      pages = fromTheHead ? this._pages.slice(0, cutIdx) : this._pages.slice(cutIdx);
-      this._pages = fromTheHead ? this._pages.slice(cutIdx) : this._pages.slice(0, cutIdx);
-      cutIdx = fromTheHead ? n * this._elementsPerPage : this._listItemViews.length - n * this._elementsPerPage;
-      removedViews = fromTheHead ? this._listItemViews.slice(0, cutIdx) : this._listItemViews.slice(cutIdx);
-      this._listItemViews = fromTheHead ? this._listItemViews.slice(cutIdx) : this._listItemViews.slice(0, cutIdx);
       
-      removedPageDim = _.reduceRight(pages, function(memo, page) { return memo + page.height() }, 0);
-      Q.start(function() {        
+      splitIdx = fromTheHead ? n : this._pages.length - n;
+      removedPages = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
+      this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);
+      for (var i = 0, len = removedPages.length; i < len; i++) {
+        var $page = removedPages[i],
+            children = $page.find('[data-viewid]');
+        
+        for (var j = 0, numChildren = children.length; j < numChildren; j++) {
+          var child = children[j],
+              cid = child.dataset.viewid,
+              childView;
+          
+          if (cid) {
+            childView = this.children[cid];
+            if (childView)
+              removedViews.push(childView);
+          }
+        }
+      }
+      
+      removedPageDim = _.reduceRight(removedPages, function(memo, page) { return memo + page.height() }, 0);
+      Q.write(function() {        
 //        console.log("REMOVING PAGES: " + _.map(pages, function(page) {return page[0].id}).join(','));
-        _.each(pages, function(p) { p.remove() });
+        for (var i = 0, len = removedPages.length; i < len; i++) {
+          removedPages[i].remove();
+        }
+        
         for (var i = 0, len = removedViews.length; i < len; i++) {
           var view = removedViews[i];
           this.stopListening(view.resource);
           view.destroy(); // destroy uses animationQueue
         }
       
-//        if (!$.contains(this.el, $dummy[0]))
-//          this.$el[fromTheHead ? 'prepend' : 'append']($dummy);
-        
 //        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
         this.dimension($dummy, dummyDim + removedPageDim);
         dfd.resolve();
@@ -699,17 +729,17 @@ define('views/ResourceListView', [
       return liView;
     },
     
-    addChild: function(view, prepend) {
-      BasicView.prototype.addChild.call(this, view);
-      this._listItemViews[prepend ? 'unshift' : 'push'](view);
-      view.once('destroyed', function() {
-        var idx = this._listItemViews.indexOf(view);
-        if (~idx) {
-          debugger; // should only happen if a view was destroyed other than due to sliding window management
-          this._listItemViews.splice(idx, 1);
-        }
-      }.bind(this));
-    },
+//    addChild: function(view, prepend) {
+//      BasicView.prototype.addChild.call(this, view);
+//      this._listItemViews[prepend ? 'unshift' : 'push'](view);
+//      view.once('destroyed', function() {
+//        var idx = this._listItemViews.indexOf(view);
+//        if (~idx) {
+//          debugger; // should only happen if a view was destroyed other than due to sliding window management
+//          this._listItemViews.splice(idx, 1);
+//        }
+//      }.bind(this));
+//    },
 
     preRender: function(info) {
       // override me

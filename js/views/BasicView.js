@@ -5,7 +5,7 @@ define('views/BasicView', [
   'utils',
   'templates',
   'events',
-  'lib/animationQueue'
+  'lib/fastdom'
 ], function(G, _Backbone, U, Templates, Events, Q) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype,
