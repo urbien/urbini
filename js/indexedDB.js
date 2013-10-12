@@ -1,4 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache'], function(G, _, U, idbq, TaskQueue, C) {
+define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, U, idbq, TaskQueue, C, Q) {
   
 
 // IndexedDB desired interface
@@ -531,11 +531,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {
-      log('returning result for ' + primaryKey);
-      if (result)
-        return result;
-      else
-        return $.Deferred().reject().promise();
+      return Q.nextFramePromise().done(function() {
+        log('returning result for ' + primaryKey);
+        if (result)
+          return result;
+        else
+          return $.Deferred().reject().promise();
+      });
     });
   };
   
@@ -666,7 +668,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     }).then(function() {
       log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));      
-      return $.when.apply($, promises);
+      return $.when.apply($, promises).then(Q.nextFramePromise);
     }).then(finish, finish);
   }
   

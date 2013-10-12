@@ -106,7 +106,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       return;
     }
     
-    Synchronizer.prototype._read.call(this);
+    return Synchronizer.prototype._read.call(this);
   };
   
   CollectionSynchronizer.prototype._onDBSuccess = function(results) {

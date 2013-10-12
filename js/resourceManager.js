@@ -240,8 +240,8 @@ define('resourceManager', [
           data = options.data,
           props = data.vocModel.properties,
           temps = {},
-          dfd = $.Deferred(),
-          promise = dfd.promise(),
+          intermediateDfd,
+          REF_STORE,
           query;
       
       // no searching by composite keys like user.name
@@ -269,20 +269,22 @@ define('resourceManager', [
         query = QueryBuilder.buildQuery(data, filter);
         if (query) {
           return IDB.queryByIndex(query).getAll(type).then(function(results) {
-            return results;
+            return Q.nextFramePromise().then(function() {  
+              return results;
+            });
           }, search);
         }
         else
           return search();
       }
       
-      var intermediateDfd = $.Deferred(),
-          REF_STORE = G.getRefStoreInfo();
+      intermediateDfd = $.Deferred();
+      REF_STORE = G.getRefStoreInfo();
 
       IDB.queryByIndex('_tempUri').oneof(_.values(temps)).getAll(REF_STORE.name).then(intermediateDfd.resolve, intermediateDfd.reject);
-      intermediateDfd.promise().done(function(results) {
+      return intermediateDfd.promise().then(function(results) {
         if (!results.length)
-          return dfd.reject();
+          return G.getRejectedPromise();
         
         var tempUriToRef = {};
         for (var i = 0; i < results.length; i++) {
@@ -300,10 +302,9 @@ define('resourceManager', [
           }
         }
         
-        RM.getItems(options).then(dfd.resolve, dfd.reject);
-      }).fail(dfd.reject);
-      
-      return promise;
+        debugger;
+        return RM.getItems(options).then(Q.nextFramePromise);
+      });
     },
     
     restartDB: IDB.restart

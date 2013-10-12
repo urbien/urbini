@@ -19,7 +19,7 @@ define('views/MapView', [
       this.listenTo(Events, "mapIt", this.toggleMap);
 //      this.listenTo(Events, "pageChange", this.resetMap);
       
-      var self = this;
+      var self = this,
           dfds = [],
           readyDfd = $.Deferred(),
           modulesDfd = U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css']);

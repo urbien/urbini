@@ -93,13 +93,16 @@ define('views/MasonryListView', [
     },
     
     postRender: function(info) {
-      var self = this;
+      var self = this,
+          appended = info.appended,
+          updated = info.updated;
+      
       if (this.rendered) {
-        if (info.appended.length || info.updated.length) {
+        if (_.size(appended) || _.size(updated)) {
           this.$el.imagesLoaded(function() {
-            if (info.appended.length)
-              self.masonry('appended', $(info.appended));
-            if (info.updated.length)
+            if (_.size(appended))
+              self.masonry('appended', $(appended));
+            if (_.size(updated))
               self.masonry('reload');
             
             self.trigger('refreshed');

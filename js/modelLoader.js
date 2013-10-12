@@ -1,4 +1,13 @@
-define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resource', 'collections/ResourceList', 'apiAdapter', 'indexedDB'], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule) {
+define('modelLoader', [
+  'globals', 
+  'underscore', 
+  'events', 
+  'utils', 
+  'models/Resource', 
+  'collections/ResourceList', 
+  'apiAdapter', 
+  'indexedDB' 
+], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
@@ -395,12 +404,21 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       return a.enumeration ? -1 : 1;
     });
     
-    _.each(models, function(model) {
-      if (!preventOverwrite || !U.getModel(model.type))
+    for (var i = 0, len = models.length; i < len; i++) {
+      var model = models[i];
+      if (!preventOverwrite || !U.getModel(model.type)) {
+        G.log('event', 'modelLoad', model.type);
         loadModel(model);
-    });
+      }
+    }
+    
+    return makeModelsPromise(_.pluck(models, 'type'));
   };
 
+//  function loadModel(m) {
+//    Q.nonDom(loadModel.bind(null, m));
+//  }
+  
   function loadModel(m) {
     m = Resource.extend({}, m);
     if (m.interfaces) {

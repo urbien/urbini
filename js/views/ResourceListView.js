@@ -216,7 +216,8 @@ define('views/ResourceListView', [
   
       if (slidingWindow.tail - slidingWindow.head < this._minSlidingWindowDimension) {
         var growAtTheHead;
-        if (this._pagesCurrentlyInSlidingWindow < this._pagesInSlidingWindow) {
+//        if (this._pagesCurrentlyInSlidingWindow < this._pagesInSlidingWindow) {
+        if (this._pageOffset < this._pagesInSlidingWindow / 2) {
           growAtTheHead = false;
 //          n = this._pagesInSlidingWindow - this._pagesCurrentlyInSlidingWindow;
         }
@@ -276,7 +277,7 @@ define('views/ResourceListView', [
       n = n || 1;
       var col = this.filteredCollection,
 //          sizes = this._slidingWindowAddRemoveInfo,
-          colRange, $dummy, dummyDim, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
+          colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
 
       if (atTheHead) {
         var from = Math.max(this._pageOffset - n, 0);
@@ -316,37 +317,38 @@ define('views/ResourceListView', [
       }.bind(this));
       
       $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
+      frag = doc.createDocumentFragment();
+      info = {
+        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
+        frag: frag,
+        total: colRange.to - colRange.from,
+        appended: []
+      };
+      page = $('<div class="listPage" id="{0}" />'.format(G.nextId()));
+      this._pages[atTheHead ? 'unshift' : 'push'](page);
+
+      this.preRender(info);
+      for (var i = colRange.from, to = colRange.to; i < to; i++) {
+        (function(i) {
+          Q.nonDom(function() {
+            var res = col.models[i],
+                liView = this.renderItem(res, atTheHead),
+                el = liView.el;
+            
+            info.appended.push(el);
+            this.postRenderItem(el, info);
+            this.listenTo(res, 'change', this.onResourceChanged);
+          }, this);
+        }.bind(this))(i);
+      }
+
       Q.read(function() {
-        dummyDim = this.dimension($dummy);
-        slidingWindowBefore = this.getSlidingWindow();        
-        frag = doc.createDocumentFragment();
-        info = {
-          isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
-          frag: frag,
-          total: colRange.to - colRange.from,
-          appended: []
-        };
-        
-        this.preRender(info);
-        for (var i = colRange.from, to = colRange.to; i < to; i++) {
-          var res = col.models[i],
-              liView = this.renderItem(res, atTheHead),
-              el = liView.el;
-          
-          info.appended.push(el);
-          this.postRenderItem(el, info);
-          this.listenTo(res, 'change', this.onResourceChanged);
-        }
-        
+        dummyDim = this.dimension($dummy) || 0;
+        slidingWindowBefore = this.getSlidingWindow();                
         Q.write(function() {
-          var id = G.nextId(),
-              page = $('<div class="listPage" id="{0}" />'.format(id));
-          
-          this._pages[atTheHead ? 'unshift' : 'push'](page);
           page.append(frag);
           page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = this.postRender(info);
-          
           // on next frame
           Q.read(function() {
             slidingWindowAfter = this.getSlidingWindow();
@@ -592,7 +594,7 @@ define('views/ResourceListView', [
       }.bind(this));
 
       $dummy = this.dummies[fromTheHead ? 'head' : 'tail'];
-      dummyDim = this.dimension($dummy);
+      dummyDim = this.dimension($dummy) || 0;
       
       splitIdx = fromTheHead ? n : this._pages.length - n;
       removedPages = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
@@ -650,9 +652,11 @@ define('views/ResourceListView', [
       
       var col = this.filteredCollection,
           before = col.length,
-          defer = $.Deferred();
+          defer = $.Deferred(),
+          nextPagePromise,
+          nextPageUrl;
       
-      col.getNextPage({
+      nextPagePromise = col.getNextPage({
         params: {
           $limit: numResourcesToFetch
         },
@@ -660,15 +664,18 @@ define('views/ResourceListView', [
           if (col.length > before)
             defer.resolve();
           else {
-            if (!col.isFetching()) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+            if (!col.isFetching(nextPageUrl)) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
               defer.reject();
           }
         },
         error: function() {
-          if (!col.isFetching())
+          if (!col.isFetching(nextPageUrl))
             defer.reject();
         }
       });
+      
+      if (nextPagePromise)
+        nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
       this._pagingPromise = defer.promise().done(function() {

@@ -21,6 +21,8 @@
     <div class="dummy tail"></div>
     </ul>
     <div id="nabs_grid" class="masonry">
+    <div class="dummy head"></div>
+    <div class="dummy tail"></div>
     </div>
     <!-- ul id="columns">
     </ul -->

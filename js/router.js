@@ -78,7 +78,7 @@ define('router', [
     },
     initialize: function () {
 //      G._routes = _.clone(this.routes);
-      window.router = this;
+//      window.router = this;
       this.firstPage = true;
       this.updateHashInfo();
 //      this.homePage = new HomePage({el: $('#homePage')});
@@ -999,8 +999,8 @@ define('router', [
           return;
         }
         else {
-          this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: false, replace: true});
-          hashInfo = this.updateHashInfo();
+          this.navigate(U.makeMobileUrl('view', uri, hashInfo.params), {trigger: true, replace: true});
+          return;          
         }
       }
       

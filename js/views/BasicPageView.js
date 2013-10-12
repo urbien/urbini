@@ -465,7 +465,7 @@ define('views/BasicPageView', [
       
       _.each(MESSAGE_BAR_TYPES, function(type) {
         var glued = self.hashParams['-glued' + type.capitalizeFirst()],
-            regularParam = '-' + type;
+            regularParam = '-' + type,
             data = glued || self.hashParams[regularParam],
             isError = type !== 'error';
         

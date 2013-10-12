@@ -235,7 +235,7 @@ define('collections/ResourceList', [
       var numToFetch = options.params && options.params.$limit || this.perPage;
       this.setOffset(this.offset + numToFetch);
       this.setOffset(Math.min(this.offset, this.models.length));
-      this.pager(options);
+      return this.pager(options);
     },
     getPreviousPage: function () {
       this.setOffset(this.offset - this.perPage);
@@ -255,7 +255,7 @@ define('collections/ResourceList', [
       if (length)
         options.from = this.models[length - 1].getUri();
       
-      this.fetch(options);
+      return this.fetch(options);
     },
     setPerPage: function(perPage) {
       this.page = this.firstPage;
@@ -416,7 +416,7 @@ define('collections/ResourceList', [
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
-        return;      
+        return G.getRejectedPromise();      
       }
 
       if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
@@ -452,7 +452,7 @@ define('collections/ResourceList', [
         options.url = this.getUrl(extraParams);
       } catch (err) {
         error(this, {status: 204, details: err.message}, options);
-        return;
+        return G.getRejectedPromise();      
       }
 
 //      if (this.currentlyFetching && this.currentlyFetching.url == options.url) {
@@ -643,8 +643,8 @@ define('collections/ResourceList', [
       return this;
     },
     
-    isFetching: function() {
-      return !!_.size(this._fetchDeferreds);
+    isFetching: function(url) {
+      return url ? _.has(this._fetchDeferreds, url) : !!_.size(this._fetchDeferreds);
     },
 
     getFetchDeferred: function(url) {

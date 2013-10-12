@@ -832,8 +832,6 @@ define('utils', [
           
           if (vals.length)
             break;
-          
-          m = meta;
         }
         
         if (vals.length)
@@ -3916,7 +3914,7 @@ define('utils', [
     
     getClonedProps: function(vocModel, iFace) {
       var meta = vocModel.properties,
-          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g');
+          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g'),
           cloned = [];
           
       for (var name in meta) {

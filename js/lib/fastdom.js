@@ -9,14 +9,15 @@
  * @author Wilson Page <wilsonpage@me.com>
  */
 
-;(function(fastdom){
-
+define('lib/fastdom', ['globals'], function(G) {
   'use strict';
-
   var raf = window.raf,
       caf = window.caf,
       FRAME_SIZE = 16,
-      getNow = window.performance ? performance.now.bind(performance) : Date.now.bind(Date);
+      FRAME_END = 12,
+      getNow = window.performance ? performance.now.bind(performance) : Date.now.bind(Date),
+      modeOrder = ['nonDom', 'read', 'write'],
+      numModes = modeOrder.length;
   
   /**
    * Creates a fresh
@@ -25,62 +26,55 @@
    * @constructor
    */
   function FastDom() {
+    this.timestamps = [];
     this.lastId = 0;
     this.jobs = {};
     this.mode = null;
     this.pending = false;
-    this.queue = {
-      read: [],
-      write: [],
-      nonDom: []
-    };
+    this.queue = {};
+    for (var i = 0; i < modeOrder.length; i++) {
+      this.queue[modeOrder[i]] = [];
+    }
   }
 
-  /**
-   * Adds a job to
-   * the read queue.
-   *
-   * @param  {Function} fn
-   * @api public
-   */
-  FastDom.prototype.read = function(fn, ctx) {
-    var job = this.add('read', fn, ctx);
-    this.queue.read.push(job.id);
-    this.request('read');
-    return job.id;
+  for (var i = 0; i < modeOrder.length; i++) {
+    (function(i) {
+      var mode = modeOrder[i];
+      FastDom.prototype[mode] = function(fn, ctx) {
+        var job = this.add(mode, fn, ctx);
+        this.queue.read.push(job.id);
+        this.request(mode);
+        return job.id;
+      }
+    })(i);
+  }
+  
+  FastDom.prototype.debug = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift('FASTDOM');
+    console.log.apply(console, args);
   };
 
-  /**
-   * Adds a job to
-   * the write queue.
-   *
-   * @param  {Function} fn
-   * @api public
-   */
-  FastDom.prototype.write = function(fn, ctx) {
-    var job = this.add('write', fn, ctx);
-    this.queue.write.push(job.id);
-    this.request('write');
-    return job.id;
+  FastDom.prototype.log = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift('FASTDOM');
+    console.log.apply(console, args);
   };
 
-  /**
-   * Adds a job to
-   * the read queue.
-   *
-   * @param  {Function} fn
-   * @api public
-   */
-  FastDom.prototype.nonDom = FastDom.prototype.start = function(fn, ctx) {
-    var job = this.add('nonDom', fn, ctx);
-    this.queue.nonDom.push(job.id);
-    this.request('nonDom');
-    return job.id;
+  FastDom.prototype.nextFramePromise = function() {
+    if (this.mode == null && !this.pending)
+      return G.getResolvedPromise();
+      
+    if (!this._nextFramePromise || this._nextFramePromise.state() != 'pending') {
+      this._nextFrameDeferred = $.Deferred();
+      this._nextFramePromise = this._nextFrameDeferred.promise();
+    }
+    
+    return this._nextFramePromise;
   };
-
+  
   /**
-   * Removes a job from
-   * the 'reads' queue.
+   * Removes a job from the queue
    *
    * @param  {Number} id
    * @api public
@@ -118,20 +112,10 @@
     // scheduled, don't schedule another one
     if (this.pending) return;
     
-    // If we are currently writing, we don't
+    // If we are currently in mode X, we don't
     // need to scedule a new frame as this
-    // job will be emptied from the write queue
-    if (mode === 'writing' && type === 'write') return;
-
-    // If we are reading we don't need to schedule
-    // a new frame as this read will be emptied
-    // in the currently active read queue
-    if (mode === 'reading' && type === 'read') return;
-
-    // If we are doing non-DOM calculations we don't need to schedule
-    // a new frame as this operation will be emptied
-    // in the currently active nonDom queue
-    if (mode === 'nonDom' && type === 'nonDom') return;
+    // job will be emptied from the queue
+    if (mode === type) return;
 
     // If we are doing nonDom work, we don't need to schedule
     // a new frame and this read job will be run
@@ -143,10 +127,10 @@
     // a new frame and this write job will be run
     // after the read queue has been emptied in the
     // currently active frame.
-    if (mode === 'reading' && type === 'write') return;
+    if (mode === 'read' && type === 'write') return;
 
     // Schedule frame (preserving context)
-    raf(function() { this.frame(); }.bind(this));
+    raf(this.frame.bind(this));
 
     // Set flag to indicate
     // a frame has been scheduled
@@ -164,6 +148,10 @@
     return ++this.lastId;
   };
 
+  FastDom.prototype.isOutOfTime = function() {
+    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
+  };
+  
   /**
    * Calls each job in
    * the list passed.
@@ -177,12 +165,33 @@
    * @api private
    */
   FastDom.prototype.flush = function(list) {
-    var id;
-    while (id = list.shift()) {
-      this.run(this.jobs[id]);
+    var id,
+        postpone,
+        lastJob;
+    
+    while (!(postpone = this.isOutOfTime()) && (id = list.shift())) {
+      lastJob = this.run(this.jobs[id]);
+      var numTimestamps = this.timestamps.length;
+      this.debug('JOB: ', lastJob, 'TOOK: ', this.timestamps[numTimestamps - 1] - this.timestamps[numTimestamps - 2]);
+    }
+    
+    if (postpone) {
+      this.log('POSTPONING: ', this.mode, 'FRAME TOOK: ', this._frameTime);
+      // postpone to next frame, keep the current mode
+      raf(this.frame.bind(this));
+      return false;
     }
   };
 
+  FastDom.prototype.time = function() {
+    var now = getNow();
+    this.timestamps.push(now);
+    if (this.timestamps.length > 50)
+      this.timestamps = this.timestamps.slice(0, 10);
+    
+    return now;
+  };
+  
   /**
    * Runs any read jobs followed
    * by any write jobs.
@@ -190,46 +199,24 @@
    * @api private
    */
   FastDom.prototype.frame = function() {
+    var postponed = false;
 
+    if (this._nextFrameDeferred)
+      this._nextFrameDeferred.resolve();
+    
     // Set the pending flag to
     // false so that any new requests
     // that come in will schedule a new frame
     this.pending = false;
-
-    var now = getNow(),
-        frameTime = 0;
+    this.frameStart = this.time();
     
-    // Set the mode to 'reading',
-    // then empty all read jobs
-    this.mode = 'nonDom';
-    this.flush(this.queue.nonDom);
-
-    frameTime = getNow() - now;    
-    if (frameTime >= FRAME_SIZE / 2) {
-      console.log('POSTPONING READ/WRITE');
-      this.mode = null;
-      this.request('read');
-      return;
+    var idx = this.mode ? modeOrder.indexOf(this.mode) : 0;
+    for (var i = idx; i < numModes; i++) {
+      this.mode = modeOrder[i];
+      if (this.flush(this.queue[this.mode]) == false) // postponed to next frame
+        return;
     }
     
-    // Set the mode to 'reading',
-    // then empty all read jobs
-    this.mode = 'reading';
-    this.flush(this.queue.read);
-
-    frameTime = getNow() - now;    
-    if (frameTime >= FRAME_SIZE / 2) {
-      console.log('POSTPONING WRITE');
-      this.mode = null;
-      this.request('write');
-      return;
-    }
-
-    // Set the mode to 'writing'
-    // then empty all write jobs
-    this.mode = 'writing';
-    this.flush(this.queue.write);
-
     this.mode = null;
   };
 
@@ -287,14 +274,14 @@
    *
    * @param {Error}
    */
-  FastDom.prototype.onError = function(){};
+  FastDom.prototype.onError = function() {};
 
   /**
    * Runs a given job.
    * @param  {Object} job
    * @api private
    */
-  FastDom.prototype.run = function(job){
+  FastDom.prototype.run = function(job) {
     var ctx = job.ctx || this;
 
     // Clear reference to the job
@@ -304,22 +291,10 @@
     try { job.fn.call(ctx); } catch(e) {
       this.onError(e);
     }
+    
+    this.time();
+    return job;
   };
 
-  // We only ever want there to be
-  // one instance of FastDom in an app
-  fastdom = fastdom || new FastDom();
-
-  /**
-   * Expose 'fastdom'
-   */
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = fastdom;
-  } else if (typeof define === "function" && define.amd) {
-    define('lib/fastdom', function(){ return fastdom; });
-  } else {
-    window['fastdom'] = fastdom;
-  }
-
-})(window.fastdom);
+  return new FastDom();
+})

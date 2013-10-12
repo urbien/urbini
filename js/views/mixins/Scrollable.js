@@ -1,6 +1,5 @@
 define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom'], function(G, _, U, Events, Q) {
 
-  window.s = []; 
   var FORCE_TOUCH = false,
       SCROLL_DISTANCE_THRESH = 25,
       SCROLL_TIME_THRESH = 1000,
@@ -479,7 +478,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _initScroller: function(options) {
-      window.s.push(this);
       this._scrollerProps = _.deepExtend({}, initScrollerProps, options);
       var el = this.el;
       var s = this._scrollerProps;

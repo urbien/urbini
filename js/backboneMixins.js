@@ -78,7 +78,8 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
         },
         windowEvents = this.windowEvents,
         pageEvents = this.pageEvents,
-        $pageViewEl = this.pageView.$el;
+        pageView = this.pageView,
+        $pageViewEl = pageView && pageView.$el;
 
       for (var eventsType in eventContexts) {
         var events = this[eventsType],
@@ -104,7 +105,7 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
         }
       }
       
-      if (pageEvents) {
+      if (pageEvents && $pageViewEl) {
         for (var name in pageEvents) {
           var fnName = pageEvents[name],
               fn = this[fnName];
@@ -119,7 +120,8 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
       
       var windowEvents = this.windowEvents,
           pageEvents = this.pageEvents,
-          $pageViewEl = this.pageView.$el;
+          pageView = this.pageView,
+          $pageViewEl = pageView && pageView.$el;
 //      for (var name in myEvents) {
 //        this.off(name, myEvents[name].bind(this));
 //      }
@@ -137,7 +139,7 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
         }
       }
       
-      if (pageEvents) {
+      if (pageEvents && $pageViewEl) {
         for (var name in pageEvents) {
           var fnName = pageEvents[name],
               fn = this[fnName];

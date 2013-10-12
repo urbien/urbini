@@ -163,8 +163,10 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       key: this._getKey()
     };
 
-    this.info.lastFetchedOn = this._getLastFetchedOn();
     this.info.isUpdate = this._isUpdate();
+    if (this.info.isUpdate)
+      this.info.lastFetchedOn = this._getLastFetchedOn();
+    
     this._error = this.options.error || function(model, err, options) {
       log('error', 'failed to {0} {1}'.format(self.method, self._getKey()));
     };
@@ -190,7 +192,8 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   
   Synchronizer.prototype._read = function(options) {
     var self = this,
-        keepGoing = this._preProcess();
+        keepGoing = this._preProcess(),
+        promise;
     
     if (!keepGoing)
       return keepGoing;
@@ -198,12 +201,15 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     if (this._isForceFetch())
       return this._fetchFromServer();
     
-    this._queryDB().then(function(results) {
+    promise = this._queryDB().then(function(results) {
       self.options.sync = false;
       self.data.lastFetchOrigin = 'db';
       log('db', "got resources from db: " + self.info.vocModel.type);
       self._onDBSuccess(results);
     }, this._onDBError.bind(this));
+    
+    promise._url = this.options.url;
+    return promise;
   };
   
   Synchronizer.prototype._onDBSuccess = function(results) {
