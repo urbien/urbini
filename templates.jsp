@@ -1566,7 +1566,7 @@
   
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= isVideo ? 'facetime-video' : isAudio ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
-    {{ if (!G.canWebcam) { }}
+    {{ if (!G.canWebcam || (isVideo && G.browser.firefox)) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}

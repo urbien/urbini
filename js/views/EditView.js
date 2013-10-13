@@ -175,16 +175,11 @@ define('views/EditView', [
 
     cameraCapture: function(e) {
       var self = this,
-          target = e.currentTarget;
-      
-//      if (!G.navigator.isChrome) {
-//        U.alert({
-//          msg: "Your browser doesn't support recording video"
-//        });
-//        
-//        return;
-//      }
-      
+          target = e.currentTarget,
+          propName = target.dataset.prop,
+          prop = self.vocModel.properties[propName],
+          isImage = prop.range.endsWith('model/portal/Image');
+            
       function makeCameraPopup() {
         Events.stopEvent(e);
         var link = $(target);
@@ -214,11 +209,7 @@ define('views/EditView', [
       };
       
       function loadFile() {
-        var propName = target.dataset.prop,
-            prop = self.vocModel.properties[propName],
-            file = target.files[0],
-            isImage = prop.range.endsWith('model/portal/Image');
-        
+        var file = target.files[0];
         if (isImage) {
           var reader = new FileReader();
           reader.onload = function(e) {
@@ -243,8 +234,18 @@ define('views/EditView', [
       };
       
       if (G.canWebcam) {
-        makeCameraPopup();
-        return;
+//        if (!isImage && !G.browser.chrome) {
+//          U.alert({
+//            msg: "Your browser doesn't support recording video"
+//          });
+//          
+//          return;
+//        }
+
+        if (isImage || G.browser.chrome) {
+          makeCameraPopup();
+          return;
+        }
       }
       
       // not using camera popup, using <input type="file" /> possibly with accept="image/*|audio/*|video/*;capture=camera;"
