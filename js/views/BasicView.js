@@ -23,8 +23,7 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_render',  '_refresh');
-      
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_render',  '_refresh');      
       this.TAG = this.TAG || this.constructor.displayName;
       this.log('newView', ++this.constructor._instanceCounter);
       
@@ -141,8 +140,10 @@ define('views/BasicView', [
         viewId: this.cid
       };
       
-      if (this.resource)
+      if (this.resource) {
         data._uri = this.resource.get('_uri');
+//        data.davDisplayName = this.resource.attributes.davDisplayName;
+      }
       
       return data;
     },

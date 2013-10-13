@@ -624,11 +624,10 @@
     <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
-    {{ if (obj.left) { }}  
+    {{ if (obj.right) { }}  
       style="
         left:-{{= left }}px; top:-{{= top }}px;
-        <!-- height:{{= height }}px; -->
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }} {{= obj.mW ? 'max-width:' + mW + 'px;' : '' }}"
     {{ } }}
     class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
     {{= viewCols }}

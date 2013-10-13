@@ -234,18 +234,62 @@ define('views/ResourceImageView', [
   //          var iTemplate = this.makeTemplate('imagePT');
   //          li += '<div><a href="#view/' + _.encode(this.resource.getUri()) + '">' + iTemplate({value: decodeURIComponent(image)}) + '</a>';
   
-      var maxW = $(window).width(); // - 3;
-//      var maxH = $(window).height() - 50;
+      var winW = $(window).width(); // - 3;
+      var winH = $(window).height();
 
       var metaW = meta[imageProp]['imageWidth'];
       var metaH = meta[imageProp]['imageHeight'];
       var metaDim = meta[imageProp]['maxImageDimension'];
 
-      if (maxW > metaDim) {
-        if (oWidth > oHeight)
-          maxW = metaDim;
+      var w, h, t, r, b, l, left, top, maxW;
+
+      if (metaDim) {
+        if (winW >= metaDim) {
+          if (oWidth >= oHeight)
+            maxW = metaDim;
+          else 
+            maxW = Math.floor((oWidth / oHeight)) * metaDim;
+        }
         else {
-          maxW = (oWidth / oHeight) * metaDim;
+          maxW = winW;
+          var clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+//          t = clip.clip_top;
+//          r = clip.clip_right;
+//          b = clip.clip_bottom;
+//          l = clip.clip_left;
+//          left = -l;
+//          if (t != 0)
+//            top = -t;
+////
+////          if (oWidth >= oHeight) {
+////            maxW = metaDim;
+////            var oW = winW; 
+////            var oH = (winW / metaDim) * oHeight;
+////            var d = Math.floor((metaDim - winW) / 2);
+////            l = d;
+////            r = d + winW;
+////            t = 0;
+////            var ratio = oWidth / oHeight; 
+////            var oH = oHeight > winH : oHeight;
+////            b = oH;
+////            left = -l;
+////            top = 0;
+////          }
+////          else {
+////            var oH = Math.floor((oWidth / oHeight) * metaDim);
+////            var oW = oWidth > oHeight ? oWidth : oH; 
+////            if (oW > winW) {
+////              var d = Math.floor((oW - winW) / 2);
+////              l = d;
+////              r = d + winW;
+////              t = 0;
+////              b = (winW / oW) * oHeight;
+////              left = -l;
+////              top = 0;
+////            }
+////            else
+////              maxW = winW;
+////          }
         }
       }
       var w;
@@ -281,8 +325,13 @@ define('views/ResourceImageView', [
         'data-for': U.getImageAttribute(res, imageProp)
       });
       
-      if (w) imgAtts.width = w;
-      if (h) imgAtts.height = h;
+      if (l) {
+        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');   
+      }
+      else {
+        if (w) imgAtts.width = w;
+        if (h) imgAtts.height = h;
+      }
       
       var imgTag = U.HTML.tag('img', null, imgAtts);
       var iTemplate = U.HTML.toHTML(imgTag);
@@ -312,6 +361,10 @@ define('views/ResourceImageView', [
       
       U.addToFrag(frag, li);
       this.$el[this.isAudio ? 'append' : 'html'](frag);
+      if (l) {
+        var h = t ? b - t : b;
+        this.$el.attr('style', 'height: ' + h + 'px;');
+      }
       return this;
     }
   },
