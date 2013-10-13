@@ -252,6 +252,18 @@ define('views/ResourceListItemView', [
           return;
   //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
+        else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
+          var a = U.getCloneOf(self.vocModel, 'Intersection.a');
+          var b = U.getCloneOf(self.vocModel, 'Intersection.b');
+
+          if (a  &&  b) {
+            if (self.hashParams[a]) 
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
+            else if (self.hashParams[b])
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
+            return;
+          } 
+        }
         return dfd.reject();        
       });
       }).then (
@@ -291,6 +303,14 @@ define('views/ResourceListItemView', [
                   return;
                 }
               }
+            }
+          }
+          else if (U.isA(m, 'Reference')) {
+            var forResource = U.getCloneOf(m, 'Reference.forResource');
+            var uri = forResource && self.resource.get(forResource);
+            if (uri) {
+              Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
+              return;
             }
           }
     
@@ -668,11 +688,10 @@ define('views/ResourceListItemView', [
       var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
       var oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
       var type = vocModel.type;
-      var img;
-      var dn;
-      var rUri;
-      var h = '', w = '';
+      var img, dn, rUri, h, w, ab;
+      
       if (cloneOf == 'Intersection.a') {
+        ab = atts[U.getCloneOf(vocModel, 'Intersection.a')];
         var imageP = U.getCloneOf(vocModel, 'Intersection.aThumb');
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
@@ -699,6 +718,7 @@ define('views/ResourceListItemView', [
         }
       }
       else {
+        ab = atts[U.getCloneOf(vocModel, 'Intersection.b')];
         var imageP = U.getCloneOf(vocModel, 'Intersection.bThumb');
         if (imageP  &&  imageP.length != 0)
           img = atts[imageP[0]]; 
@@ -727,16 +747,23 @@ define('views/ResourceListItemView', [
         
         this.$el.addClass("image_fitted");
         
+        var maxDim = meta[this.imageProperty].maxImageDimension;
+        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
+
         var dim = U.fitToFrame(80, 80, w / h)
         json.width = dim.w;
         json.height = dim.h;
-        json.top = oW > oH ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
+        json.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
         json.right = dim.w - dim.x;
-        json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+        json.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
 //        json.top = dim.y;
 //        json.right = dim.w - dim.x;
 //        json.bottom = dim.h - dim.y;
         json.left = dim.x;
+        if (w > h)
+          json.mH = 80;
+        else if (w <= h)
+          json.mW = 80;
       }
       if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
         dn = atts[U.getCloneOf(vocModel, 'Reference.resourceDisplayName')];
