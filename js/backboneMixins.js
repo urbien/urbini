@@ -1,15 +1,17 @@
 define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backbone, Events) {
+  var eventObjs = ['events', 'myEvents', 'globalEvents', 'pageEvents', 'windowEvents'];
+  
   function mixin() {
     var to = this.prototype;
     for (var i = 0, numMixins = arguments.length; i < numMixins; i++) {
       var mixin = arguments[i],
-          from = mixin.prototype;
+          from = mixin.prototype,
+          namespace = (mixin.displayName || _.randomString(10).toLowerCase());
       
       _.extendMethod(to, from, 'initialize');
       _.extendMethod(to, from, 'render');
-      _.defaults(to, from);
       
-      var namespace = (mixin.displayName || _.randomString(10).toLowerCase());
+      _.defaults(to, from);                
       _.defaults(to.events, namespaceEvents(from.events, namespace, true));
       _.defaults(to.pageEvents, namespaceEvents(from.pageEvents, namespace, true));
       _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace));
@@ -30,10 +32,17 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
   
   function patchBackboneExtend() {
     // https://github.com/onsi/cocktail
-    var originalExtend = Backbone.Model.extend;
+    var originalExtend = Backbone.View.extend;
     var extend = function(protoProps, classProps) {
       var klass = originalExtend.call(this, protoProps, classProps),
           mixins = klass.prototype.mixins;
+
+      for (var i = 0; i < eventObjs.length; i++) {
+        var events = eventObjs[i];
+        if (klass.prototype[events]) {
+          klass.prototype[events] = _.clone(klass.prototype[events]); // otherwise we may inadvertently end up mixing in events to superclasses
+        }
+      }
       
       if (mixins && klass.prototype.hasOwnProperty('mixins'))
         mixin.apply(klass, mixins);
@@ -41,7 +50,7 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
       return klass;
     };
 
-    _([Backbone.Model, Backbone.Collection, Backbone.Router, Backbone.View]).each(function(klass) {
+    _([/*Backbone.Model, Backbone.Collection, Backbone.Router,*/ Backbone.View]).each(function(klass) {
       klass.mixin = mixin;
       klass.extend = extend;
       klass.prototype.mixes = function(mixin) {

@@ -1755,8 +1755,42 @@ define('globals', function() {
         name: 'User is not logged in',
         message: 'Please log in'
       }
+    },
+    crossBrowser: {
+      css: {
+        // same as "transition", except for "lookup"
+        transform: (function() {
+          var _vendorCSSPrefix, _vendorStylePropertyPrefix, _vendorTransformLookup;
+          if (document.createElement('div').style.transform !== undefined) {
+            _vendorCSSPrefix = '';
+            _vendorStylePropertyPrefix = '';
+            _vendorTransformLookup = 'transform';
+          } else if (window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]') {
+            _vendorCSSPrefix = '-o-';
+            _vendorStylePropertyPrefix = 'O';
+            _vendorTransformLookup = 'OTransform';
+          } else if (document.documentElement.style.MozTransform !== undefined) {
+            _vendorCSSPrefix = '-moz-';
+            _vendorStylePropertyPrefix = 'Moz';
+            _vendorTransformLookup = 'MozTransform';
+          } else if (document.documentElement.style.webkitTransform !== undefined) {
+            _vendorCSSPrefix = '-webkit-';
+            _vendorStylePropertyPrefix = 'webkit';
+            _vendorTransformLookup = '-webkit-transform';
+          } else if (typeof navigator.cpuClass === 'string') {
+            _vendorCSSPrefix = '-ms-';
+            _vendorStylePropertyPrefix = 'ms';
+            _vendorTransformLookup = '-ms-transform';
+          }
+          
+          return {
+            cssPrefix: _vendorCSSPrefix,
+            stylePropertyPrefix: _vendorStylePropertyPrefix,
+            lookup: _vendorTransformLookup
+          }
+        })()
+      }
     }
-
   });
   
   determineMinificationMode();

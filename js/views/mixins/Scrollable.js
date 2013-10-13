@@ -161,7 +161,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     inactive: {
       wake: function() {
-        this._listenToTouchEvents('touchstart', 'keydown', 'click');
+//        this._listenToTouchEvents('touchstart', 'keydown', 'click');
+        this._toggleScrollEventHandlers(true);
         return READY;
       }
     },
@@ -178,8 +179,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       },
       
       keydown: function(e) {
-        var s = this._scrollerProps,
-            keyCode = s._keyHeld = U.getKeyEventCode(e),
+        var s = this._scrollerProps;
+        if (s._keyHeld)
+          return;
+        
+        var keyCode = s._keyHeld = U.getKeyEventCode(e),
             axis = this._getScrollAxis(),
             pos = s.position,
             newPos = _.clone(pos),
@@ -234,7 +238,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }, time);
         
 //        this._stopListeningToTouchEvents('keyup');
-        this._listenToTouchEvents('keyup');
+//        this._listenToTouchEvents('keyup');
 //        doc.removeEventListener('keyup', this, true); // just in case we left one hanging
 //        doc.addEventListener('keyup', this, true);
         return COASTING;
@@ -245,8 +249,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         e.preventDefault();
         this._clearScrollTimeouts();
         this._clearTouchHistory();
-        this._stopListeningToTouchEvents('touchend');
-        this._listenToTouchEvents('touchend', 'touchmove');
+//        this._stopListeningToTouchEvents('touchend');
+//        this._listenToTouchEvents('touchend', 'touchmove');
 //        doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
 //        doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true); // just in case
 //        doc.removeEventListener(TOUCH_EVENTS.touchend, this, true); // just in case
@@ -258,6 +262,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       sleep: function(e) {
         this._cleanupScroller();
+        this._toggleScrollEventHandlers(false);
         return INACTIVE;
       }
     },
@@ -280,7 +285,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         
         if (!historyLength || !e.targetTouches.length) { // || !this._isDragging())
           debugger; // should never happen
-          return;
+          return READY;
         }
         
   //      this.log('touchmove at: ' + e.targetTouches[0].clientY);
@@ -311,7 +316,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         // if fling
         if (!e.changedTouches.length) {
           debugger; // should never happen
-          return;
+          return READY;
         }
         
         e.preventDefault();
@@ -362,19 +367,17 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       },
 
       keydown: function(e) {
-        var s = this._scrollerProps,
-            keyCode = U.getKeyEventCode(e);
-        
-        if (s._keyHeld)
-          return s.state;
-        
         return this._transitionScrollerState(READY, 'keydown', e);
       },
       
       keyup: function(e) {
         var s = this._scrollerProps,
-            keyCode = U.getKeyEventCode(e);
+            keyCode;
+
+        if (!s._keyHeld)
+          return s.state;
         
+        keyCode = U.getKeyEventCode(e);
         if (keyCode == s._keyHeld) {
           this._resetScroller();
           return READY;
@@ -511,32 +514,44 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _onScrollerActive: function() {
       var s = this._scrollerProps;
-      if (s && s.state == INACTIVE)
+      if (s && s.state == INACTIVE) {
+        this.log("waking up scroller");
         this._transitionScrollerState(this._scrollerProps.state, 'wake');
+      }
     },
 
     _onScrollerInactive: function() {
       var s = this._scrollerProps;
-      if (s && s.state !== UNINITIALIZED)
+      if (s && s.state !== UNINITIALIZED) {
+        this.log("putting scroller to sleep");
         this._transitionScrollerState(this._scrollerProps.state, 'sleep');
+      }
+    },
+
+    _toggleScrollEventHandlers: function(enable) {
+      if (this._scrollingEnabled == enable)
+        return;
+      
+      var method = enable ? 'addEventListener' : 'removeEventListener';
+      this._scrollingEnabled = enable;
+      this.el[method]('click', this, true);
+      this.el[method]('DOMSubtreeModified', function() {
+        // TODO
+      }, true);
+      
+      doc[method]('touchstart', this, true);
+      doc[method]('touchmove', this, true);
+      doc[method]('touchend', this, true);
+      doc[method]('touchcancel', this, true);
+      doc[method]('mousedown', this, true);
+      doc[method]('mousemove', this, true);
+      doc[method]('mouseup', this, true);
+      doc[method]('keydown', this, true);
+      doc[method]('keyup', this, true);
     },
     
-//    _activateScroller: function() {
-//      if (this.scrollerProps.state != INACTIVE)
-//        return;
-//      
-//      this._transition
-//    },
-//
-//    _deactivateScroller: function() {      
-//      doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
-//      doc.removeEventListener(TOUCH_EVENTS.touchend, this, true);
-//      doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true);
-//    },
-//
-//    _onSizeInvalidated: _.debounce(function(e) {
     _onSizeInvalidated: function(e) {
-      if (!this.rendered || !this.isActive())
+      if (!this.rendered || !this._scrollerProps || !this.isActive())
         return;
       
       if (this._lastPageEvent !== 'pageshow') {
@@ -668,75 +683,64 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var handlers = TRANSITION_MAP[fromState],
           handler = handlers && handlers[withEvent];
       
-      if (!handler)
-        return;
-      
-//      try {
-        return (this._scrollerProps.state = handler.call(this, event));
-//      } catch(err) {
-//        debugger;
-//      } finally {
-//        if (!this._scrollerProps.state)
-//          debugger;
-//        if (fromState !== this._scrollerProps.state)
-//          this.log('scroller state changed from ' + fromState.toUpperCase() + ' to ' + this._scrollerProps.state.toUpperCase());
-//      }
+      if (handler)
+        return (this._scrollerProps.state = handler.call(this, event) || this._scrollerProps.state);
     },    
 
-    _listenToTouchEvents: function() {
-      this._stopListeningToTouchEvents.apply(this, arguments);
-      var types = arguments,
-          s = this._scrollerProps,
-          listeners = s.touchListeners;
-      
-      if (typeof types == 'string')
-        types = [types];
-
-      if (!listeners) {
-        listeners = s.touchListeners = {
-          keydown: false,
-          keyup: false,
-          click: false,
-          touchstart: false,
-          touchmove: false,
-          touchend: false
-        };
-      }
-      
-      for (var i = 0; i < types.length; i++) {
-        var type = types[i];
-        type = TOUCH_EVENTS[type] || type;
-        if (!listeners[type]) {
-          listeners[type] = true;
-          var listener = type == 'click' ? this.el : doc;
-          listener.addEventListener(type, this, true);
-        }
-      }
-    },
-
-    _stopListeningToTouchEvents: function() {
-      var types = arguments,
-          listeners = this._scrollerProps.touchListeners;
-      
-      if (!listeners)
-        return;
-      
-      if (!types.length)
-        types = _.keys(listeners);
-      
-      if (typeof types == 'string')
-        types = [types];
-      
-      for (var i = 0; i < types.length; i++) {
-        var type = types[i];
-        type = TOUCH_EVENTS[type] || type;
-        if (listeners[type]) {
-          listeners[type] = false;
-          var listener = type == 'click' ? this.el : doc;
-          listener.removeEventListener(type, this, true);
-        }
-      }
-    },
+//    _listenToTouchEvents: function() {
+//      this._stopListeningToTouchEvents.apply(this, arguments);
+//      var types = arguments,
+//          s = this._scrollerProps,
+//          listeners = s.touchListeners;
+//      
+//      if (typeof types == 'string')
+//        types = [types];
+//
+//      if (!listeners) {
+//        listeners = s.touchListeners = {
+//          keydown: false,
+//          keyup: false,
+//          click: false,
+//          touchstart: false,
+//          touchmove: false,
+//          touchend: false
+//        };
+//      }
+//      
+//      for (var i = 0; i < types.length; i++) {
+//        var type = types[i];
+//        type = TOUCH_EVENTS[type] || type;
+//        if (!listeners[type]) {
+//          listeners[type] = true;
+//          var listener = type == 'click' ? this.el : doc;
+//          listener.addEventListener(type, this, true);
+//        }
+//      }
+//    },
+//
+//    _stopListeningToTouchEvents: function() {
+//      var types = arguments,
+//          listeners = this._scrollerProps.touchListeners;
+//      
+//      if (!listeners)
+//        return;
+//      
+//      if (!types.length)
+//        types = _.keys(listeners);
+//      
+//      if (typeof types == 'string')
+//        types = [types];
+//      
+//      for (var i = 0; i < types.length; i++) {
+//        var type = types[i];
+//        type = TOUCH_EVENTS[type] || type;
+//        if (listeners[type]) {
+//          listeners[type] = false;
+//          var listener = type == 'click' ? this.el : doc;
+//          listener.removeEventListener(type, this, true);
+//        }
+//      }
+//    },
 
     _queueScrollTimeout: function(fn, time) {
       this._scrollerProps.timeouts.push(setTimeout(fn, time));
@@ -746,28 +750,30 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      this.log('resetting scroll');
 //      this._updateScrollPosition(); // parse it from CSS transform
       this._cleanupScroller();
-      this._transitionScrollerState(INACTIVE, 'wake');
+//      this._transitionScrollerState(INACTIVE, 'wake');
     },
     
     _cleanupScroller: function() {
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
       this._clearTouchHistory();
-      s.dragging = s.decelerating = s.coasting = s.touchendReceived = false;
-      s.startTimestamp = s.lastTimestamp = 0;
+      s._keyHeld = null;
 
-      this._updateScrollPosition();
-      
-      Q.write(CSS.setStylePropertyValues, CSS, [this.el.style, {
-        transition: null
-      }]);
+      Q.read(function() {
+        this._updateScrollPosition();
+        Q.write(function() {
+          CSS.setStylePropertyValues(this.el.style, {
+            transition: null
+          });
+        }, this);
+      }, this);
       
 //      doc.removeEventListener('keydown', this, true);
 //      doc.removeEventListener('keyup', this, true);
 //      doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true);
 //      doc.removeEventListener(TOUCH_EVENTS.touchend, this, true);
 //      doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
-      this._stopListeningToTouchEvents();
+//      this._stopListeningToTouchEvents();
     },
     
     _clearTouchHistory: function() {
@@ -826,9 +832,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
       }
       else {
-        Q.read(function() {          
-          this._scrollerProps.position = CSS.getTranslation(this.el);
-        }, this);
+        this._scrollerProps.position = CSS.getTranslation(this.el);
       }
 //      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
     },
@@ -934,7 +938,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
       
 //      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-      this._listenToTouchEvents('touchstart');
+//      this._listenToTouchEvents('touchstart');
       this._snapScroller();
       return true;
     },
@@ -1017,7 +1021,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     _flingScroller: function() {
       this._clearScrollTimeouts();
 //      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-      this._listenToTouchEvents('touchstart');
+//      this._listenToTouchEvents('touchstart');
       var s = this._scrollerProps,
           axis = this._getScrollAxis(),
           otherAxis = oppositeDir(axis),

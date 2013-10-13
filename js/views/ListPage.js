@@ -6,11 +6,13 @@ define('views/ListPage', [
   'error',
   'vocManager',
   'views/BasicPageView',
+  'views/mixins/Scrollable',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicPageView, Scrollable, ResourceListView, Header) {
   var MapView;
   return BasicPageView.extend({
+    mixins: [Scrollable], 
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
