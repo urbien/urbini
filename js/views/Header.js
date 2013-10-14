@@ -411,10 +411,10 @@ define('views/Header', [
 //          "data-position": "fixed"
 //        });
       }
-      // uncomment for jqm
-//      if (!this.publish  &&  this.doTry  &&  this.forkMe)
-//        templateSettings.className = 'ui-grid-b';
-      
+      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary == 'Jquery Mobile') {
+        if (!this.publish  &&  this.doTry  &&  this.forkMe)
+          templateSettings.className = 'ui-grid-b';
+      }      
       this.html(this.template(templateSettings));
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);

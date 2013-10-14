@@ -101,15 +101,14 @@ define('templates', [
           'default': prepTemplate(elt.innerHTML)
         };
       }.bind(this));
-//      if (G.currentApp.frameworkType  &&  G.currentApp.frameworkType == 'Building Blocks') {
-        
+      if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
         var elts = $('script[type="text/template"]', $(HTML_bb));
         _.each(elts, function(elt) {
           this.templates[elt.id] = {
             'default': prepTemplate(elt.innerHTML)
           };
         }.bind(this));
-//      }
+      }
     },
  
     _treatTemplate: function(text) {
