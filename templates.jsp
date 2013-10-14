@@ -11,14 +11,24 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" class="ui-content" role="main">
+  <!-- div id="sidebarDiv" class="ui-content" role="main">
+
     <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
     {{ if (this.collection.models.length > 5) { }}
      data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
    {{ } }}
-   ></ul>
+   ></ul-->
+
+  <div id="sidebarDiv" role="main">
+
+    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+    <ul id="sidebar"></ul>
+   </section>
+    
+    
     <div id="nabs_grid" class="masonry">
     </div>
+    
     <!-- ul id="columns">
     </ul -->
     <table class="table-stroke" width="100%" style="display:none" id="comments">
@@ -512,7 +522,7 @@
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
-     <span style="white-space: normal;opacity:0.5;">{{= value }}</span>
+     <div style="white-space: normal;font-size:16px;">{{= value }}</div>
   {{ } }}
   {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
@@ -521,7 +531,7 @@
   
 <script type="text/template" id="longStringPT">
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
-     <span style="white-space: normal; color: #777;">{{= value }}</span>
+     <span style="white-space: normal; font-size:16px; color: #777;">{{= value }}</span>
   {{ } }}
   {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
@@ -614,7 +624,7 @@
 
 
 <script type="text/template" id="listItemTemplate">
-  <!-- one row on a list page -->
+  <!-- JQM one row on a list page -->
   {{ var action = action ? action : 'view' }}
   <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
   {{ if (typeof v_submitToTournament == 'undefined') { }}
@@ -846,14 +856,12 @@
  {{ params[backlink] = _uri; }}
  {{ if (!value  &&  !chat) { }}  
    <a data-role="button" data-shadow="false" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
-     <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px;"></i>&#160;{{= name }}</span>
+     <span style="font-size: 16px;"><i class="{{= icon }}""></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
    <a data-role="button" data-shadow="false" data-propName="{{= shortName }}" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <span style="font-size: 18px;"><i class="{{= icon }}" style="right: -20px; top:35%"></i>&#160;{{= name }}</span>{{= obj.value ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' :  ''  }}
-
-
    </a>
  {{ } }}
 </script>
@@ -912,7 +920,8 @@
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
-  <a id="mapIt" target="#" data-icon="map-marker">Map It</a>
+  <!--a id="mapIt" target="#" data-icon="map-marker">Map It</a-->
+  <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -922,12 +931,16 @@
 
 <script type="text/template" id="backButtonTemplate">
   <!-- The UI back button (not the built-in browser one) -->
-  <a target="#" data-icon="chevron-left" class="back">Back</a>
+  <!--a target="#" data-icon="chevron-left" class="back">Back</a-->
+  <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
 </script>
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
-  <a href="{{= url || '#' }}" data-icon="comments-alt">Chat
+  <!--a href="{{= url || '#' }}" data-icon="comments-alt">Chat
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
+  </a-->
+  <a href="{{= url || '#' }}"><i class="ui-icon-comments-alt"></i>
     {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
   </a>
 </script>
@@ -939,26 +952,32 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
-  <!-- a target="#" data-icon="plus-sign" class="hint--bottom hint--always" data-hint="Add item">Create</a -->
+  <!--a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a-->
+  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
+  <!--a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
+  </a-->
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <!--a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  </a-->
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
-  <a target="#" data-icon="signin">{{= loc('signIn') }}</a>
+  <!--a target="#" data-icon="signin">{{= loc('signIn') }}</a-->
+  <a target="#"><i class="ui-icon-signin"></i></a>
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
@@ -1027,7 +1046,9 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
+  <!--a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a-->
   <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
+  
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
@@ -1037,7 +1058,8 @@
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a>
+  <!--a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a-->
+  <a target="#" id="doTry" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('gotoApp') }}</a>
 </script>
 
 <script type="text/template" id="installAppBtnTemplate">
@@ -1047,7 +1069,8 @@
 
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a>
+  <!--a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a-->
+  <a target="#" id="forkMe" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('forkMe') }}</a>
 </script>
 
 <script type="text/template" id="enterTournamentBtnTemplate">
@@ -1100,10 +1123,7 @@
       </ul>
     </div>
     {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="tags" id="categories" href="#"></a></div>' : '' }} 
-<!--    {{= this.categories ? '<div style="padding:5px 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags" style="margin-top:4px; font-size:20px;"></i></a></div>' : '' }} -->
-
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
-<!--    {{= U.isAssignableFrom(this.vocModel, G.commonTypes.App) && (typeof this.resource == 'undefined') ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="categories" data-mini="true" href="#">Categories</a></div>' : '' }} -->
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
@@ -1271,7 +1291,8 @@
         <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
          {{ if (obj.imgWidth) { }}
            {{ if (!obj.top) { }}
-             style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
+             <!-- style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;" -->
+             style="height:{{= imgHeight }}px;"
            {{ } }}
         {{ } }}
         ></img>
