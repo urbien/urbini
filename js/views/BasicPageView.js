@@ -102,7 +102,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_showImages', '_loadImage'); //, 'onpageshow', 'onpagehide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_showImages', '_loadImage', 'highlightOnTouchStart', 'unhighlightOnTouchMove', 'unhighlightOnTouchEnd'); //, 'onpageshow', 'onpagehide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -207,11 +207,10 @@ define('views/BasicPageView', [
       'pageshow': 'onpageevent',
       'pagebeforeshow': 'onpageevent',
       'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
-//        ,
-//      'touchstart': 'highlightOnTouchStart',
-//      'touchmove': 'unhighlightOnTouchMove',
-//      'touchend': 'unhighlightOnTouchEnd'
+      'swipeleft': 'swipeleft',
+      'touchstart': 'highlightOnTouchStart',
+      'touchmove': 'unhighlightOnTouchMove',
+      'touchend': 'unhighlightOnTouchEnd'
     },
 
     destroy: function() {
@@ -219,65 +218,55 @@ define('views/BasicPageView', [
       BasicView.prototype.destroy.call(this);
     },
     
-//    highlightOnTouchStart: function(e) {
-//      var self = this,
-//          touches = e.touches;
-//      
-//      if (_.isUndefined(touches))
-//        return;
-//      
-//      // Mobile safari doesn't let you copy touch objects, so copy it manually
-//      this._firstTouch = cloneTouch(touches[0]);
-//      this.touchStartTimer = setTimeout(function() {
-//        self.highlight(e.target, e);
-//      }, 100);
-//    },
-//
-//    unhighlightOnTouchMove: function(e) {
-//      if (_.isUndefined(this._firstTouch))
-//        return;
-//      
-//      var touches = e.touches;
-//      if (_.isUndefined(touches))
-//        return;
-//      
-//      // Mobile safari doesn't let you copy touch objects, so copy it manually
-//      var tMove = cloneTouch(touches[0]);
-//      
-//      // remove this class only if you're a certain distance away from the initial touch
-//      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
-//        this.clearTouchStartTimer();
-//        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
-//      }
-//    },
-//
-//    unhighlightOnTouchEnd: function(e) {
-//      // removing active class needs to be on timer because adding is also on a timer
-//      // if this is not done, sometimes the active class removal is called before...
-//      var self = this;
-//      setTimeout(function() {
-//        self.unhighlight(e.target, e);
-//      }, 100);
-//    },
-//    
-//    /**
-//     * Stub. Override this
-//     */
-//    highlight: function(target, e) {
-////      throw "highlight needs to be implemented by all subclasses";
-//    },
-//
-//    /**
-//     * Stub. Override this
-//     */
-//    unhighlight: function(target, e) {
-////      throw "unhighlight needs to be implemented by all subclasses";
-//    },
-//
-//    clearTouchStartTimer: function() {
-//      clearTimeout(this.touchStartTimer);
-//      this.touchStartTimer = null;
-//    },
+    highlightOnTouchStart: function(e) {
+      var touches = e.touches;
+      if (_.isUndefined(touches))
+        return;
+      
+      // Mobile safari doesn't let you copy touch objects, so copy it manually
+      this._firstTouch = cloneTouch(touches[0]);
+      this.touchStartTimer = setTimeout(_.partial(this.highlight.bind(this), e.target, e), 100);
+    },
+
+    unhighlightOnTouchMove: function(e) {
+      if (_.isUndefined(this._firstTouch))
+        return;
+      
+      var touches = e.touches;
+      if (_.isUndefined(touches))
+        return;
+      
+      // Mobile safari doesn't let you copy touch objects, so copy it manually
+      var tMove = cloneTouch(touches[0]);
+      
+      // remove this class only if you're a certain distance away from the initial touch
+      if (!isTouchWithinBounds(this._firstTouch, tMove)) {
+        this.clearTouchStartTimer();
+        this.unhighlight(e.target, e); // in case the first timer ran out and it got highlighted already?
+      }
+    },
+
+    unhighlightOnTouchEnd: function(e) {
+      // removing active class needs to be on timer because adding is also on a timer
+      // if this is not done, sometimes the active class removal is called before...
+      setTimeout(_.partial(this.unhighlight.bind(this), e.target, e), 100);
+    },
+    
+    /**
+     * Stub. Override this
+     */
+    highlight: function(target, e) {
+//      throw "highlight needs to be implemented by all subclasses";
+      $(target).trigger(e);
+    },
+
+    /**
+     * Stub. Override this
+     */
+    unhighlight: function(target, e) {
+//      throw "unhighlight needs to be implemented by all subclasses";
+      $(target).trigger(e);
+    },
     
     _restoreScroll: function() {
       this.scrollTo(this._scrollPosition);
@@ -583,7 +572,7 @@ define('views/BasicPageView', [
         var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
         this.$el.one('pagehide', countdownPromise.cancel);
         
-        hash = _.replaceParam(hash, '-autoClose', null);
+        hash = U.replaceParam(hash, '-autoClose', null);
       }
       else if (autoCloseOption) {
         Events.trigger('messageBar', 'info', {
@@ -594,7 +583,7 @@ define('views/BasicPageView', [
           persist: true
         });
         
-        hash = _.replaceParam(hash, '-autoCloseOptions', null);
+        hash = U.replaceParam(hash, '-autoCloseOptions', null);
       }
       
       if (hash != this.hash)
@@ -634,7 +623,7 @@ define('views/BasicPageView', [
         };
         
         if (!glued)
-          hash = _.replaceParam(hash, regularParam, null);
+          hash = U.replaceParam(hash, regularParam, null);
       });      
 
       for (event in events) {
