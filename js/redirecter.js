@@ -551,8 +551,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var reqParams = U.getCurrentUrlInfo().params;
     if (reqParams) {
       for (var p in res.attributes) {
-        var prop = vocModel.properties[p];
-        if (prop  &&  prop.containerMember  &&  reqParams[p]) {
+        var pr = vocModel.properties[p];
+        if (pr  &&  pr.containerMember  &&  reqParams[p]) {
           rParams['$forResource'] = reqParams[p];
           break;
         }
