@@ -920,8 +920,7 @@
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
-  <!--a id="mapIt" target="#" data-icon="map-marker">Map It</a-->
-  <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
+  <a id="mapIt" target="#" data-icon="map-marker">Map It</a>
 </script>
 
 <script type="text/template" id="mapTemplate">
@@ -931,16 +930,12 @@
 
 <script type="text/template" id="backButtonTemplate">
   <!-- The UI back button (not the built-in browser one) -->
-  <!--a target="#" data-icon="chevron-left" class="back">Back</a-->
-  <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
+  <a target="#" data-icon="chevron-left" class="back">Back</a>
 </script>
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
-  <!--a href="{{= url || '#' }}" data-icon="comments-alt">Chat
-    {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
-  </a-->
-  <a href="{{= url || '#' }}"><i class="ui-icon-comments-alt"></i>
+  <a href="{{= url || '#' }}" data-icon="comments-alt">Chat
     {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
   </a>
 </script>
@@ -952,32 +947,25 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <!--a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a-->
-  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
-  <!--a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
-    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
-  </a-->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
+  <a target="#" href="#{{= viewId }}" data-icon="reorder">Menu
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <!--a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
-  </a-->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
-  <!--a target="#" data-icon="signin">{{= loc('signIn') }}</a-->
-  <a target="#"><i class="ui-icon-signin"></i></a>
+  <a target="#" data-icon="signin">{{= loc('signIn') }}</a>
 </script>
 
 <script type="text/template" id="buyPopupTemplate">
