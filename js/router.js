@@ -1011,14 +1011,14 @@ define('router', [
       if (!model)
         return this;
 
-      if (U.isAssignableFrom(model, 'Contact')) {
-        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
-        var altModel = U.getModel(altType);
-        if (altModel) {
-          typeUri = altType;
-          model = altModel;
-        }
-      }
+//      if (U.isAssignableFrom(model, 'Contact')) {
+//        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
+//        var altModel = U.getModel(altType);
+//        if (altModel) {
+//          typeUri = altType;
+//          model = altModel;
+//        }
+//      }
       
       res = C.getResource(uri);
       if (res && !res.loaded)
@@ -1478,10 +1478,10 @@ define('router', [
         var redirect = pageOptions.postChangePageRedirect;
         if (redirect) {
           pageOptions.postChangePageRedirect = null;
-          view.onload(function() {
+//          view.onload(function() {
             if (view.isActive())
               this.navigate(redirect, {trigger: true, replace: true});
-          }.bind(this));
+//          }.bind(this));
         }
 //        else if (this.currentView === this.previousView) {
 //          G.log(this.TAG, 'info', 'duplicate history, navigating back');
@@ -1520,9 +1520,9 @@ define('router', [
 //        view.trigger('active', true);
         activated = true;
         view.render();
-        view.onload(function() {          
+//        view.onload(function() {          
           view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
-        });
+//        });
       }
 
       if (this.firstPage)
@@ -1539,12 +1539,64 @@ define('router', [
       
       this.checkBackClick();
       // perform transition
-      view.onload(function() {
+//      view.onload(function() {
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+
+//        if (G.currentApp.frameworkType  && G.currentApp.frameworkType != 'Jquery Mobile') {
+          var hdr = $('div.ui-page-active .hdr');
+          if (hdr) {
+            var bg = G.theme.menuHeaderBackground, 
+                c  = G.theme.color,
+                liBg = G.theme.liBg;
+            if (!c) {
+              var swatch = G.theme.header;
+              if (swatch > 'c') {
+                var bg = $('.ui-body-' + swatch).css('background')  ||  $('.ui-body-' + swatch).css('background-color');
+                if (bg  &&  bg.indexOf('rgb(') != -1) {
+                  G.theme.menuHeaderBackground = bg = U.colorLuminanceRGB(bg, -0.1);
+                  G.theme.color = c = $('.ui-body-' + swatch + ' .ui-link').css('color');
+                }
+                if (!liBg  &&  view.collection) {
+                  var bgI = $('.ui-body-' + swatch).css('background-image');
+                  if (bgI) {
+                    var i1 = bgI.indexOf('rgb(');
+                    if (i1) {
+                      var i2 = bgI.indexOf(')');
+                      G.theme.liBg = liBg = bgI.substring(i1, i2 + 1);
+                    }
+                  }
+                }
+              }    
+              else {
+                G.theme.menuHeaderBackground = '#ddd';
+                G.theme.color = '#333333';
+              }
+              c  = G.theme.color;
+              bg = G.theme.menuHeaderBackground;
+            }
+            if (c  &&  bg) {
+              $('div.ui-page-active #buttons #name').css('background', bg);
+              if (view.collection  &&  liBg)
+                $('div.ui-page-active #sidebar li').css('background', liBg);
+              $('div.ui-page-active #pageTitle').css('color', c);
+              c = $('[data-role="page"]').css('color');
+//              $('div.ui-page-active #sidebar span').css('color', c);
+              G.theme.descColor = c.charAt(0) == '#' ? U.colorLuminance(c, 0.7) : U.colorLuminanceRGB(c, 0.7);
+              $('.u-desc').css('color', G.theme.descColor );
+            }
+//          }
+//            var bg = $('.ui-body-' + swatch).css('background')  ||  $('.ui-body-' + swatch).css('background-color');
+//            if (bg  &&  bg.indexOf('rgb(') != -1)
+//              $('div.ui-page-active .hdr').css('background', U.colorLuminanceRGB(bg, -0.1));
+//            var c = $('.ui-body-' + swatch + ' .ui-link').css('color');
+//            if (c  &&  c.indexOf('rgb(') != -1)
+//              $('div.ui-page-active #pageTitle').css('color', c);
+//            }
+        }
         this.nextTransition = null;
         Events.trigger('pageChange', prev, view);
-      }.bind(this));
+//      }.bind(this));
       
       return view;
     },
