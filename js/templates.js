@@ -3,9 +3,10 @@ define('templates', [
   'globals',
 //  'fileCache!../templates.jsp',
   '../templates.jsp',
+  '../templates_bb.jsp',
   'underscore',
   'events'
-], function(G, HTML, _, Events) {
+], function(G, HTML, HTML_bb,_, Events) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -100,6 +101,15 @@ define('templates', [
           'default': prepTemplate(elt.innerHTML)
         };
       }.bind(this));
+//      if (G.currentApp.frameworkType  &&  G.currentApp.frameworkType == 'Building Blocks') {
+        
+        var elts = $('script[type="text/template"]', $(HTML_bb));
+        _.each(elts, function(elt) {
+          this.templates[elt.id] = {
+            'default': prepTemplate(elt.innerHTML)
+          };
+        }.bind(this));
+//      }
     },
  
     _treatTemplate: function(text) {

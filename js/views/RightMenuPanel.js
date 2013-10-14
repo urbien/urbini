@@ -262,9 +262,15 @@ define('views/RightMenuPanel', [
       ul.append(frag);
       var p = $('#' + this.viewId);
       p.append(this.$el);
+      
+      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
+        p.css('visibility', 'visible');
+      else {
+
 //      p.panel().panel("open");
-      p.panel("open");
-      ul.listview();
+        p.panel("open");
+        ul.listview();
+      }
     },
     
     render: function (eventName) {
@@ -402,10 +408,16 @@ define('views/RightMenuPanel', [
       ul.append(frag);
       var p = $('#' + this.viewId);
       p.append(this.$el);
-      p.panel("open");
+      
+      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
+        p.css('visibility', 'visible');
+      else {
+
+        p.panel("open");
 //      p.panel().panel("open");
-      ul.listview();
+        ul.listview();
 //      p.trigger("updatelayout")
+      }
       return this;
     },
 

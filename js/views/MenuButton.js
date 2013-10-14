@@ -25,7 +25,11 @@ define('views/MenuButton', [
       Events.stopEvent(e);
       G.log(this.TAG, "Recording step for tour: selector = 'id'; value = 'menuBtn'");
       U.require('views/MenuPanel', function(MenuPanel) {
-        var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
+        var p = $('#' + this.viewId);
+        // HACK
+        var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+
+        var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         menuPanel.render();        
       }.bind(this));
 
@@ -43,6 +47,8 @@ define('views/MenuButton', [
       this.$el.html(this.template({viewId: this.viewId}));
       this.finish();
       this.refresh();
+      if (options.width)
+        this.$el.css('style', 'width:' + options.width + '%');
       // when user profile gets updated, call this.refresh 
       return this;
     }

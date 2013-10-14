@@ -25,7 +25,11 @@ define('views/RightMenuButton', [
     menu: function(e) {
       Events.stopEvent(e);
       U.require('views/RightMenuPanel', function(RightMenuPanel) {
-        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, parentView: this.getPageView()});
+        var p = $('#' + this.viewId);
+        // HACK
+        var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+
+        var menuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         menuPanel.render();        
       }.bind(this));
 

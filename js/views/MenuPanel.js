@@ -14,6 +14,7 @@ define('views/MenuPanel', [
       _.bindAll(this, 'render','click', 'edit');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
+      this.tagName = options.tagName;
       var type = this.modelType;
       this.makeTemplate('menuP', 'template', type);
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
@@ -248,11 +249,15 @@ define('views/MenuPanel', [
       ul.append(frag);      
       var p = $('#' + this.viewId);
       p.append(this.$el);
-      p.panel("open");
+      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
+        p.css('visibility', 'visible');
+      else {
+        p.panel("open");
+        this.$('#menuItems').listview();
+      }
 //      p.panel().panel("open");
-      this.$('#menuItems').listview();
+//      this.$('#menuItems').listview();
       
-//      $('#menuItems').listview();
       return this;
     }
   }, 
