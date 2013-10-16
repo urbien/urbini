@@ -137,6 +137,11 @@ define('views/ResourceListView', [
       if (isAdd || !modified && !orientationChange) {
         i = curNum;
         if (curNum == num) {
+          this.postRender({
+            appended:[],
+            updated:[]
+          });
+          
           return this;
         }
         
@@ -174,7 +179,7 @@ define('views/ResourceListView', [
         
         
         info.index = i;        
-        info.updated = _.contains(modifiedUris, uri);
+        info.updated = _.contains(modifiedUris, uri) || orientationChange;
         if (i >= lis.length || info.updated)
           liView = this.renderItem(res, info);          
         if (liView) {
