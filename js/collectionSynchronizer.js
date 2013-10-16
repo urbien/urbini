@@ -28,10 +28,9 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     var filter = U.getQueryParams(this.data),
         meta = this.data.vocModel.properties;
     
-    if (_.any(_.keys(filter), function(param) {
+    if (_.any(_.keys(filter), function(param) { // no support for searching by compound params like a.b yet
       return /\./.test(param);
     })) {
-      debugger;
       return G.getRejectedPromise();
     }
 
@@ -94,7 +93,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         return;
       }
       
-      if (this._isStale() && this.info.start < this.data.length) {
+      if (this._isStale() && this.info.start < this.data.length) { 
+        // we've got some resources at the end of an incomplete page, meaning there's nothing to fetch from the server
         this._success(null, 'success', addEmptyResponseHeaderFn({status: 304})); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
         return; 
       }

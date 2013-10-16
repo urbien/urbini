@@ -324,6 +324,16 @@ define('views/ResourceListItemView', [
       );
     },
     
+    doRender: function(options, data) {
+      var html = this.template(data);
+      if (options && options.renderToHtml)
+        return (this._html = html);
+      else {
+        this.$el.html(html);
+        return this;
+      }
+    },
+    
     render: function(options) {
       var m = this.resource,
           atts = m.attributes,
@@ -401,8 +411,8 @@ define('views/ResourceListItemView', [
       if (!this.isCommonTemplate) {
         if (this.imageProperty)
           this.$el.addClass("image_fitted");
-        this.$el.html(this.template(json));
-        return this;
+        
+        return this.doRender(options, json);
       }
       var params = this.hashParams;
       var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
@@ -484,14 +494,8 @@ define('views/ResourceListItemView', [
         else
           json.liUri = U.makePageUrl(action, atts._uri);
       }  
-    
-      var html = this.template(json);
-      if (options.renderToHtml)
-        return html;
-      else {
-        this.$el.html(html);
-        return this;
-      }
+
+      return this.doRender(json);
     },
     
     addCommonBlock: function(viewCols, json) {
@@ -737,8 +741,9 @@ define('views/ResourceListItemView', [
       }
       if (img  &&  !this.isCommonTemplate) {
         this.$el.addClass("image_fitted");
-        this.$el.html(this.template(json));
-        return this;
+//        this.$el.html(this.template(json));
+//        return this;
+        return this.doRender(json);
       }
       
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
@@ -831,7 +836,8 @@ define('views/ResourceListItemView', [
 //      }
       
       try {
-        this.$el.html(this.template(json));
+//        this.$el.html(this.template(json));
+        return this.doRender(json);
       } catch (err) {
         console.log('couldn\'t render resourceListItemView: ' + err);
       }

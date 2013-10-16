@@ -26,6 +26,7 @@ define('lib/fastdom', ['globals'], function(G) {
    * @constructor
    */
   function FastDom() {
+    this.frameNum = 0;
     this.timestamps = [];
     this.lastId = 0;
     this.jobs = {};
@@ -35,14 +36,37 @@ define('lib/fastdom', ['globals'], function(G) {
     for (var i = 0; i < modeOrder.length; i++) {
       this.queue[modeOrder[i]] = [];
     }
+    
+    this.frame = this.frame.bind(this);
   }
 
   for (var i = 0; i < modeOrder.length; i++) {
     (function(i) {
       var mode = modeOrder[i];
-      FastDom.prototype[mode] = function(fn, ctx) {
-        var job = this.add(mode, fn, ctx);
-        this.queue.read.push(job.id);
+      
+      /**
+       * @param options - {
+       *   throttle: {Boolean} whether this function should be limited to running once per frame,
+       *   first: {Boolean} used in combination with 'throttle,' if true will run the first function call, otherwise the last
+       * }
+       */
+      FastDom.prototype[mode] = function(fn, ctx, args, options) {
+        var jobs = this.jobs;
+        if (options && options.throttle) {
+          var first = options.first;
+          for (var id in jobs) {
+            var jFn = jobs[id].fn;
+            if (fn === jFn) {
+              if (first)
+                return;
+              else
+                this.clear(id);
+            }
+          }
+        }
+          
+        var job = this.add(mode, fn, ctx, args, options);
+        this.queue[mode].push(job.id);
         this.request(mode);
         return job.id;
       }
@@ -50,14 +74,22 @@ define('lib/fastdom', ['globals'], function(G) {
   }
   
   FastDom.prototype.debug = function() {
+    if (!G.DEBUG)
+      return;
+    
     var args = Array.prototype.slice.call(arguments);
-    args.unshift('FASTDOM');
-    console.log.apply(console, args);
+    args.unshift('FASTDOM', 'FRAME', this.frameNum);
+    console.debug.apply(console, args);
   };
 
   FastDom.prototype.log = function() {
+    if (!G.DEBUG)
+      return;
+    
     var args = Array.prototype.slice.call(arguments);
-    args.unshift('FASTDOM');
+//    args.unshift('FASTDOM');
+    args.unshift('FASTDOM', 'FRAME', this.frameNum);
+//    G.log.apply(G, args);
     console.log.apply(console, args);
   };
 
@@ -88,13 +120,18 @@ define('lib/fastdom', ['globals'], function(G) {
 
     // Defer jobs are cleared differently
     if (job.type === 'defer') {
-      caf(job.timer);
+      if (job.timer)
+        caf(job.timer);
+      else if (job.timeout)
+        clearTimeout(job.timeout);
+      
       return;
     }
 
     var list = this.queue[job.type];
     var index = list.indexOf(id);
-    if (~index) list.splice(index, 1);
+    if (~index) 
+      list.splice(index, 1);
   };
 
   /**
@@ -130,13 +167,34 @@ define('lib/fastdom', ['globals'], function(G) {
     if (mode === 'read' && type === 'write') return;
 
     // Schedule frame (preserving context)
-    raf(this.frame.bind(this));
+    this.scheduleFrame();
 
-    // Set flag to indicate
-    // a frame has been scheduled
-    this.pending = true;
+//    // Set flag to indicate
+//    // a frame has been scheduled
+//    this.pending = true;
   };
 
+  FastDom.prototype.postponeFrame = function() {
+    this.pending = false;
+    this.scheduleFrame();
+  };
+
+  FastDom.prototype.scheduleFrame = function() {
+    if (this.pending) { // sanity check, to make sure we're not running the queue in two callbacks
+      debugger;
+      return;
+    }
+    
+    this.pending = true;
+    raf(this.frame);
+  };
+
+  FastDom.prototype.startFrame = function() {
+    this.frameNum++;
+    this.pending = false;
+    this.frameStart = this.time();
+  }
+  
   /**
    * Generates a unique
    * id for a job.
@@ -145,7 +203,7 @@ define('lib/fastdom', ['globals'], function(G) {
    * @api private
    */
   FastDom.prototype.uniqueId = function() {
-    return ++this.lastId;
+    return ++this.lastId + ''; // so we can use for-in loops, which will convert it to string anyway (and cause trouble if we expect an int elsewhere)
   };
 
   FastDom.prototype.isOutOfTime = function() {
@@ -170,15 +228,19 @@ define('lib/fastdom', ['globals'], function(G) {
         lastJob;
     
     while (!(postpone = this.isOutOfTime()) && (id = list.shift())) {
-      lastJob = this.run(this.jobs[id]);
+      lastJob = this.jobs[id];
+      if (!lastJob)
+        continue;
+      
+      this.run(lastJob);
       var numTimestamps = this.timestamps.length;
       this.debug('JOB: ', lastJob, 'TOOK: ', this.timestamps[numTimestamps - 1] - this.timestamps[numTimestamps - 2]);
     }
     
-    if (postpone) {
+    if (postpone && !this.pending) {
       this.log('POSTPONING: ', this.mode, 'FRAME TOOK: ', this._frameTime);
       // postpone to next frame, keep the current mode
-      raf(this.frame.bind(this));
+      this.postponeFrame();
       return false;
     }
   };
@@ -200,15 +262,13 @@ define('lib/fastdom', ['globals'], function(G) {
    */
   FastDom.prototype.frame = function() {
     var postponed = false;
-
     if (this._nextFrameDeferred)
       this._nextFrameDeferred.resolve();
     
     // Set the pending flag to
     // false so that any new requests
     // that come in will schedule a new frame
-    this.pending = false;
-    this.frameStart = this.time();
+    this.startFrame();
     
     var idx = this.mode ? modeOrder.indexOf(this.mode) : 0;
     for (var i = idx; i < numModes; i++) {
@@ -217,34 +277,43 @@ define('lib/fastdom', ['globals'], function(G) {
         return;
     }
     
+    this.log('------------------END OF FRAME----------------------');
     this.mode = null;
   };
 
-  /**
-   * Defers the given job
-   * by the number of frames
-   * specified.
-   *
-   * @param  {Number}   frames
-   * @param  {Function} fn
-   * @api public
-   */
-  FastDom.prototype.defer = function(frames, fn, ctx) {
+  FastDom.prototype.defer = function(frames, type, fn, ctx, args, options) {
     if (frames < 0) return;
-    var job = this.add('defer', fn, ctx);
     var self = this;
-
-    (function wrapped() {
-      if (!(frames--)) {
-         self.run(job);
-         return;
-      }
-
-      job.timer = raf(wrapped);
-    })();
-
+    var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
+    job.timeout = setTimeout(this.run.bind(this, job), 1000 / 60 * frames);
     return job.id;
-  };
+  }
+  
+//  /**
+//   * Defers the given job
+//   * by the number of frames
+//   * specified.
+//   *
+//   * @param  {Number}   frames
+//   * @param  {Function} fn
+//   * @api public
+//   */
+//  FastDom.prototype.defer = function(frames, type, fn, ctx) {
+//    if (frames < 0) return;
+//    var self = this;
+//    var job = this.add('defer', this[type].bind(this, fn, ctx)); // use regular queueing mechanism
+//    
+//    (function wrapped() {
+//      if (!(frames--)) {
+//         self.run(job);
+//         return;
+//      }
+//
+//      job.timer = raf(wrapped);
+//    })();
+//
+//    return job.id;
+//  };
 
   /**
    * Adds a new job to
@@ -256,13 +325,15 @@ define('lib/fastdom', ['globals'], function(G) {
    * @returns {Number} id
    * @api private
    */
-  FastDom.prototype.add = function(type, fn, ctx) {
+  FastDom.prototype.add = function(type, fn, ctx, args, options) {
     var id = this.uniqueId();
     return this.jobs[id] = {
       id: id,
+      type: type,
       fn: fn,
       ctx: ctx,
-      type: type
+      args: args,
+      options: options
     };
   };
 
@@ -282,13 +353,21 @@ define('lib/fastdom', ['globals'], function(G) {
    * @api private
    */
   FastDom.prototype.run = function(job) {
-    var ctx = job.ctx || this;
+//    var ctx = job.ctx || this;
 
     // Clear reference to the job
     delete this.jobs[job.id];
 
     // Call the job in
-    try { job.fn.call(ctx); } catch(e) {
+    try { 
+      if (job.args)
+        job.fn.apply(job.ctx, job.args);
+      else if (job.ctx)
+        job.fn.call(job.ctx);
+      else
+        job.fn();
+    } catch(e) {
+      debugger;
       this.onError(e);
     }
     
@@ -296,5 +375,5 @@ define('lib/fastdom', ['globals'], function(G) {
     return job;
   };
 
-  return new FastDom();
+  return window.fastdom = new FastDom();
 })

@@ -6,6 +6,7 @@ define('resourceManager', [
   'cache',
   'vocManager',
   'collections/ResourceList',
+  'lib/fastdom',
   '__domReady__'
 ].concat(Lablz.dbType == 'none' ? [] : [
   'taskQueue', 
@@ -13,7 +14,7 @@ define('resourceManager', [
   'idbQueryBuilder',
   'synchronizer',
   'resourceSynchronizer', 
-  'collectionSynchronizer']), function(G, U, Events, C, Voc, ResourceList, __domReady__, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
+  'collectionSynchronizer']), function(G, U, Events, C, Voc, ResourceList, Q, __domReady__, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
@@ -315,7 +316,7 @@ define('resourceManager', [
   Events.on('updatedResources', function(resources) {
     if (resources.length) {
       G.whenNotRendering(function() {
-        RM.addItems(resources);
+        Q.nonDom(RM.addItems.bind(RM, resources));
       });
     }
   });
@@ -423,7 +424,7 @@ define('resourceManager', [
    *  resource: resource
    * }
    */
-  Events.on('inlineResources', function(baseResource, resInfos) {
+  Events.on('inlineResources', Q.defer.bind(Q, 5, 'nonDom', function(baseResource, resInfos) {
 //    if (arguments.length == 1)
 //      res = baseResource;
     
@@ -445,9 +446,9 @@ define('resourceManager', [
       
       baseResource.set(update);
     });
-  });
+  }));
 
-  Events.on('inlineBacklinks', function(baseResource, backlinkInfos) {
+  Events.on('inlineBacklinks', Q.defer.bind(Q, 5, 'nonDom', function(baseResource, backlinkInfos) {
     var typeToBLInfos = getTypeToInfoMap(backlinkInfos);
     Voc.getModels(_.keys(typeToBLInfos)).done(function() {
       for (var type in typeToBLInfos) {
@@ -479,7 +480,7 @@ define('resourceManager', [
         });
       }
     });    
-  });
+  }));
 
   Events.on('createObjectStores', function(stores, cb) {
     RM.upgrade(stores).then(cb);

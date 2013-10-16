@@ -238,6 +238,11 @@ define('utils', [
       }
     },
 
+    getTranslationString: function(position) {
+//      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
+      return 'translate3d({0}px, {1}px, {2}px)'.format(position.X, position.Y, position.Z || 0);
+    },
+    
     /**
      * @return { X: x-offset, Y: y-offset }
      */
@@ -286,9 +291,16 @@ define('utils', [
       
     setStylePropertyValues: function(style, propMap) {
       for (var prop in propMap) {
-        var value = propMap[prop];
-        for (var i = 0; i < vendorPrefixes.length; i++) {
-          style[vendorPrefixes[i] + prop] = value;
+        var value = propMap[prop],
+            vendorSpecific = G.crossBrowser.css[prop];
+        
+        if (vendorSpecific) {
+          style[vendorSpecific.cssPrefix + prop] = value;
+        }
+        else {
+          for (var i = 0; i < vendorPrefixes.length; i++) {
+            style[vendorPrefixes[i] + prop] = value;
+          }
         }
       }
     },

@@ -284,7 +284,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
             targetPosition;
         
         if (!historyLength || !e.targetTouches.length) { // || !this._isDragging())
-          debugger; // should never happen
+//          debugger; // should never happen
           return READY;
         }
         
@@ -535,9 +535,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var method = enable ? 'addEventListener' : 'removeEventListener';
       this._scrollingEnabled = enable;
       this.el[method]('click', this, true);
-      this.el[method]('DOMSubtreeModified', function() {
-        // TODO
-      }, true);
+//      this.el[method]('DOMSubtreeModified', function() {
+//        // TODO
+//      }, true);
       
       doc[method]('touchstart', this, true);
       doc[method]('touchmove', this, true);
@@ -753,20 +753,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      this._transitionScrollerState(INACTIVE, 'wake');
     },
     
+    _clearScrollerTransitionStyle: function() {
+      CSS.setStylePropertyValues(this.el.style, {
+        transition: null
+      });
+    },
+    
     _cleanupScroller: function() {
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
       this._clearTouchHistory();
       s._keyHeld = null;
 
-      Q.read(function() {
-        this._updateScrollPosition();
-        Q.write(function() {
-          CSS.setStylePropertyValues(this.el.style, {
-            transition: null
-          });
-        }, this);
-      }, this);
+      Q.write(this._clearScrollerTransitionStyle, this, undefined, {
+        throttle: true,
+        last: true
+      });
       
 //      doc.removeEventListener('keydown', this, true);
 //      doc.removeEventListener('keyup', this, true);
@@ -832,7 +834,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
       }
       else {
-        this._scrollerProps.position = CSS.getTranslation(this.el);
+        Q.read(function getComputedScrollPosition() {          
+          this._scrollerProps.position = CSS.getTranslation(this.el);
+        }, this);
       }
 //      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
     },
@@ -887,9 +891,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _scrollTo: function(position, time, ease) {
-//      if (isNaN(position.Y) || position.X != 0)
-//        debugger;
-      
 //      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
       time = time || 0;
       var s = this._scrollerProps,
@@ -900,14 +901,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      else
 //        this._queueScrollTimeout(this._updateScrollPosition.bind(this, offsetX, offsetY), time);
       
-      Q.write(function updateScrollPosition() {        
-        CSS.setStylePropertyValues(this.el.style, {
-          transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease || beziers.fling),
-          transform: 'matrix(1, 0, 0, 1, {0}, {1})'.format(position.X, position.Y)
-        });
-        
-        this._triggerScrollEvent('scroll');
-      }, this);
+      Q.write(this._setScrollerCSS, this, [position, time, ease], {
+        throttle: true,
+        last: true
+      });
+    },
+    
+    _setScrollerCSS: function (position, time, ease) {
+      CSS.setStylePropertyValues(this.el.style, {
+        transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease || beziers.fling),
+        transform: CSS.getTranslationString(position)
+      });
+      
+      this._triggerScrollEvent('scroll');
     },
 
     _getScrollPosition: function() {

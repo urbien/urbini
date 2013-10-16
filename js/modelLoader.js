@@ -6,8 +6,9 @@ define('modelLoader', [
   'models/Resource', 
   'collections/ResourceList', 
   'apiAdapter', 
-  'indexedDB' 
-], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule) {
+  'indexedDB',
+  'lib/fastdom'
+], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule, Q) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
@@ -498,9 +499,9 @@ define('modelLoader', [
       
     _.extend(m.properties, U.systemProps);
     m.prototype.initialize = getInit.call(m);
-    setTimeout(function() {
+    Q.nonDom(function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
-    }, 1000);
+    });
     
     gotModel(m);
   };

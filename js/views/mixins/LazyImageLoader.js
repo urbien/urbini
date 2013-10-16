@@ -80,6 +80,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   }
     
   return Backbone.Mixin.extend({
+    _delayedImages: [],
+    _delayedImagesCounts: [],
     _lazyImages: [],
     _loadQueue: [],
     _fetchQueue: [],
@@ -170,6 +172,41 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       this._updateQueue.length = 0;
     }, 100),
 
+    _delayImage: function(img) {
+      var idx = this._delayedImages.indexOf(img);
+      if (~idx) {
+        var count = this._delayedImagesCounts[idx];
+        if (count > 3) {
+          this._delayedImages.splice(idx, 1);
+          this._delayedImagesCounts.splice(idx, 1);
+        }
+        else
+          this._delayedImagesCounts[idx]++;
+      }
+      else {
+        this._delayedImages.push(img)
+        this._delayedImagesCounts.push(0);
+        this._loadDelayedImages();
+      }
+    },
+    
+    _loadDelayedImages: _.debounce(function() {
+      var counts = this._delayedImagesCounts.slice(),
+          newCounts;
+      
+      this._loadImages(this._delayedImages);
+      newCounts = this._delayedImagesCounts;
+      for (var i = counts.length - 1; i >= 0; i--) {
+        if (counts[i] == newCounts[i]) {
+          this._delayedImages.splice(i, 1);
+          this._delayedImagesCounts.splice(i, 1); 
+        }
+      }
+      
+      if (this._delayedImages.length)
+        this._loadDelayedImages();
+    }, 100),
+    
     _loadImages: function(imgs) {
       imgs = imgs.slice();
       var imgInfos = _.map(imgs, getImageInfo),
@@ -201,15 +238,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         }
         else {
           // should be here in a bit
-          delayed.push(img);
+          this._delayImage(img);
         }
       }
       
       if (toFetch.length)
-        this._fetchImages(toFetch);
-      
-      if (delayed.length)
-        setTimeout(this._loadImages.bind(this, delayed), 100);
+        this._fetchImages(toFetch);      
     },
 
     _updateImages: function(imagesData) {

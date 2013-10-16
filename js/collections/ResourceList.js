@@ -3,8 +3,9 @@ define('collections/ResourceList', [
   'globals',
   'utils', 
   'error', 
-  'events'
-], function(G, U, Errors, Events) {
+  'events',
+  'lib/fastdom'
+], function(G, U, Errors, Events, Q) {
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("ResourceList");
@@ -38,8 +39,7 @@ define('collections/ResourceList', [
           this[o] = options[o];
       }
       
-      var self = this,
-          vocModel = this.vocModel = this.model,
+      var vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
       _.bindAll(this, 'fetch', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
@@ -103,20 +103,20 @@ define('collections/ResourceList', [
       if (!this['final']) {
         this.listenTo(Events, 'newResource:' + this.type, function(resource, options) {
           // we are adding this resource to this collection at the moment
-          self.filterAndAddResources([resource], options);
-        });
+          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, [resource], options), this);
+        }.bind(this));
         
         this.listenTo(Events, 'newResources:' + this.type, function(resources, options) {
           // we are adding this resource to this collection at the moment
-          self.filterAndAddResources(resources, options);
-        });
+          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, resources, options), this);
+        }.bind(this));
         
         this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
-          if (list === self)
+          if (list === this)
             return;
   
-          self.filterAndAddResources(list.models);        
-        });
+          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, list.models), this);
+        }.bind(this));
       }
       
       this.monitorQueryChanges();
@@ -208,7 +208,7 @@ define('collections/ResourceList', [
       
 //      this.adding = true;
       try {
-        return Backbone.Collection.prototype.add.call(this, resources, options);
+        return Backbone.Collection.prototype.add.call(this, resources, _.defaults({ silent: true }, options));
       } finally {
 //        this.adding = false;
         if (multiAdd && !this.resetting) {
@@ -484,9 +484,9 @@ define('collections/ResourceList', [
         if (mojo) {
           try {
             mojo = JSON.parse(mojo);
-            if (mojo.edit) {
+            if (mojo = mojo.edit) {
               _.each(resp, function(m) {
-                m.edit = editMojo;
+                m.edit = mojo;
               });
             }
           } catch (err) {
@@ -503,7 +503,6 @@ define('collections/ResourceList', [
           return;
         }
         
-        self._lastFetchedOn = now;
         var now = G.currentServerTime(),
             code = xhr.status,
             select = extraParams && extraParams.$select;
@@ -514,6 +513,7 @@ define('collections/ResourceList', [
           error(self, resp || {code: code}, options);            
         }
         
+        self._lastFetchedOn = now;
         switch (code) {
           case 200:
             if (!resp)
