@@ -14,7 +14,7 @@ define('lib/fastdom', ['globals'], function(G) {
   var raf = window.raf,
       caf = window.caf,
       FRAME_SIZE = 16,
-      FRAME_END = 12,
+      FRAME_END = 14,
       getNow = window.performance ? performance.now.bind(performance) : Date.now.bind(Date),
       modeOrder = ['nonDom', 'read', 'write'],
       numModes = modeOrder.length;

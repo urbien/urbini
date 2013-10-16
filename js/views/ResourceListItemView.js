@@ -327,11 +327,11 @@ define('views/ResourceListItemView', [
     doRender: function(options, data) {
       var html = this.template(data);
       if (options && options.renderToHtml)
-        return (this._html = html);
-      else {
+        this._html = html;
+      else 
         this.$el.html(html);
-        return this;
-      }
+      
+      return this;
     },
     
     render: function(options) {
@@ -396,16 +396,16 @@ define('views/ResourceListItemView', [
             isBContact = bModel  &&  U.isAssignableFrom(bModel, urbienType);
           }
           if (a  &&  qidx == -1) 
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
           var p = href.substring(qidx + 1).split('=')[0];
           if (a  &&  p == a)
-            return this.renderIntersectionItem(json, b, 'Intersection.b');
+            return this.renderIntersectionItem(options, json, b, 'Intersection.b');
           else if (b  &&  p == b)   
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
           if (isBContact)
-            return this.renderIntersectionItem(json, b, 'Intersection.b');
+            return this.renderIntersectionItem(options, json, b, 'Intersection.b');
           else          
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
         }
       }
       if (!this.isCommonTemplate) {
@@ -495,7 +495,7 @@ define('views/ResourceListItemView', [
           json.liUri = U.makePageUrl(action, atts._uri);
       }  
 
-      return this.doRender(json);
+      return this.doRender(options, json);
     },
     
     addCommonBlock: function(viewCols, json) {
@@ -681,7 +681,7 @@ define('views/ResourceListItemView', [
 //      
 //    }
 
-    renderIntersectionItem: function(json, delegateTo, cloneOf) {
+    renderIntersectionItem: function(options, json, delegateTo, cloneOf) {
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
@@ -743,7 +743,7 @@ define('views/ResourceListItemView', [
         this.$el.addClass("image_fitted");
 //        this.$el.html(this.template(json));
 //        return this;
-        return this.doRender(json);
+        return this.doRender(options, json);
       }
       
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
@@ -837,7 +837,7 @@ define('views/ResourceListItemView', [
       
       try {
 //        this.$el.html(this.template(json));
-        return this.doRender(json);
+        return this.doRender(options, json);
       } catch (err) {
         console.log('couldn\'t render resourceListItemView: ' + err);
       }

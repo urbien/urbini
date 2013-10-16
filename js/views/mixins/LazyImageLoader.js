@@ -1,4 +1,4 @@
-define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'events'], function(G, _, U, Events) {
+define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom'], function(G, _, U, Events, Q) {
   var $wnd = $(window),
       doc = document,
       docEl = doc.documentElement,
@@ -149,7 +149,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
 
     _doProcessImageLoadQueue: _.debounce(function() {
       this._loadImages(this._loadQueue);
-      this._loadQueue.length = 0;
     }, 100),
 
     _queueImageFetch: function(img) {
@@ -159,7 +158,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     
     _processImageFetchQueue: _.debounce(function() {
       this._fetchImages(this._fetchQueue);
-      this._fetchQueue.length = 0;
     }, 100),
 
     _queueImageUpdate: function(img, props) {
@@ -209,41 +207,47 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     
     _loadImages: function(imgs) {
       imgs = imgs.slice();
-      var imgInfos = _.map(imgs, getImageInfo),
-          toFetch = [],
-          delayed = [];
-      
-      for (var i = 0, num = imgs.length; i < num; i++) {
-        var img = imgs[i],
-            info = imgInfos[i];
+      Q.read(function() {
+        var imgInfos = _.map(imgs, getImageInfo),
+            toFetch = [],
+            delayed = [];
         
-        if (info.src != DUMMY_IMG)
-          continue;
-        
-        if (!this._started)
-          this._start();
-        
-        if (!info.realSrc)
-          continue;
-        
-        if (info.inDoc && info.inBounds) {
-          // To avoid onload loop calls
-          // removeAttribute on IE is not enough to prevent the event to fire
-          toFetch.push(img);
-        }
-        else if (info.inDoc) {
-          // wait till it's scrolled into the viewport
-          if (!_.contains(this._lazyImages, img))
-            this._lazyImages.push(img);
-        }
-        else {
-          // should be here in a bit
-          this._delayImage(img);
-        }
-      }
-      
-      if (toFetch.length)
-        this._fetchImages(toFetch);      
+        Q.nonDom(function() {
+          for (var i = 0, num = imgs.length; i < num; i++) {
+            var img = imgs[i],
+                info = imgInfos[i];
+            
+            if (info.src != DUMMY_IMG)
+              continue;
+            
+            if (!this._started)
+              this._start();
+            
+            if (!info.realSrc)
+              continue;
+            
+            if (info.inDoc && info.inBounds) {
+              // To avoid onload loop calls
+              // removeAttribute on IE is not enough to prevent the event to fire
+              toFetch.push(img);
+            }
+            else if (info.inDoc) {
+              // wait till it's scrolled into the viewport
+              if (!_.contains(this._lazyImages, img))
+                this._lazyImages.push(img);
+            }
+            else {
+              // should be here in a bit
+              this._delayImage(img);
+            }
+          }
+          
+          if (toFetch.length)
+            this._fetchImages(toFetch);
+          
+          this._loadQueue.length = 0;
+        }, this);
+      }, this);
     },
 
     _updateImages: function(imagesData) {
@@ -253,38 +257,44 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImage: function(img, info) {
-//      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
-      cleanImage(img);
-      if (info.onload)
-        img.onload = info.onload;
-      if (info.onerror)
-        img.onerror = info.onerror;
-      if (_.has(info, 'width'))
-        img.style.width = info.width;
-      if (_.has(info, 'height'))
-        img.style.height = info.height;
-      if (info.data) {
-        var src = img.src = URL.createObjectURL(info.data); // blob or file
-        URL.revokeObjectURL(src);
-        if (info.realSrc)
-          img.setAttribute(LAZY_ATTR, info.realSrc);
-      }
-      else if (info.realSrc)
-        img.src = info.realSrc;
-      
-      _.wipe(info); // just in case it gets leaked...yea, that sounds bad
+      Q.write(function() {        
+  //      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
+        cleanImage(img);
+        if (info.onload)
+          img.onload = info.onload;
+        if (info.onerror)
+          img.onerror = info.onerror;
+        if (_.has(info, 'width'))
+          img.style.width = info.width;
+        if (_.has(info, 'height'))
+          img.style.height = info.height;
+        if (info.data) {
+          var src = img.src = URL.createObjectURL(info.data); // blob or file
+          URL.revokeObjectURL(src);
+          if (info.realSrc)
+            img.setAttribute(LAZY_ATTR, info.realSrc);
+        }
+        else if (info.realSrc)
+          img.src = info.realSrc;
+        
+        _.wipe(info); // just in case it gets leaked...yea, that sounds bad
+      });
     },
     
     _fetchImages: function(imgs) {
       // do all DOM reads first, then writes
       imgs = imgs.slice();
-      var infos = _.map(imgs, getImageInfo);
-      for (var i = 0, num = imgs.length; i < num; i++) {
-        var img = imgs[i],
-            info = infos[i];
+      Q.read(function() {
+        var infos = _.map(imgs, getImageInfo);
+        for (var i = 0, num = imgs.length; i < num; i++) {
+          var img = imgs[i],
+              info = infos[i];
+          
+          this._fetchImage(imgs[i], infos[i]);
+        }
         
-        this._fetchImage(imgs[i], infos[i]);
-      }
+        this._fetchQueue.length = 0;
+      }, this);
     },
 
     _fetchImage: function(img, info) {

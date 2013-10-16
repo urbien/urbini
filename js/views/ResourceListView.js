@@ -26,7 +26,7 @@ define('views/ResourceListView', [
 //    _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
     _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
     _pageOffset: 0,
-    _pagesInSlidingWindow: 4,
+    _pagesInSlidingWindow: 6,
     _pagesCurrentlyInSlidingWindow: 0,
     _elementsPerPage: 10,
     _displayedCollectionRange: {
@@ -342,11 +342,12 @@ define('views/ResourceListView', [
         isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
         frag: frag,
         total: colRange.to - colRange.from,
-        appended: []
+        appended: [],
+        html: '<div class="listPage">'
       };
       
-      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
-      this._pages[atTheHead ? 'unshift' : 'push'](page);
+//      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
+//      this._pages[atTheHead ? 'unshift' : 'push'](page);
 
       this.preRender(info);
       for (var i = colRange.from, to = colRange.to; i < to; i++) {
@@ -354,24 +355,34 @@ define('views/ResourceListView', [
 //          Q.nonDom(function renderOneListItem() {
           Q.defer(i - colRange.from, 'nonDom', function renderOneListItem() {
             var res = col.models[i],
-                liView = this.renderItem(res, atTheHead),
-                el = liView.el;
+//                liView = this.renderItem(res, atTheHead),
+//                el = liView.el;
+                liView = this.renderItem(res, atTheHead);
             
-            info.appended.push(el);
-            this.postRenderItem(el, info);
+//            info.appended.push(el);
+//            info.appended.push(itemHtml);
+//            this.postRenderItem(el, info);
+            this.postRenderItem(liView._html, info);
             this.listenTo(res, 'change', this.onResourceChanged);
           }, this);
         }.bind(this))(i);
       }
 
+      var listView = this;
       Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
 //      Q.read(function getDummyDim() {
         dfd.notify();
         dummyDim = this.dimension($dummy) || 0;
-        slidingWindowBefore = this.getSlidingWindow();                
+        slidingWindowBefore = this.getSlidingWindow();
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE");
-          page.append(frag);
+//          page.append(frag);
+          page = $(info.html + '</div>');
+          page.find('[data-viewid]').each(function() {
+            listView.children[this.dataset.viewid].setElement(this);
+          });
+          
+          this._pages[atTheHead ? 'unshift' : 'push'](page);
           page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = this.postRender(info);
           // on next frame
@@ -784,7 +795,11 @@ define('views/ResourceListView', [
       }
       
       this.addChild(liView, prepend);
-      liView.render({force: true});
+      liView.render({
+        force: true,
+        renderToHtml: true
+      });
+      
       return liView;
     },
     
@@ -824,7 +839,8 @@ define('views/ResourceListView', [
     
     postRenderItem: function(el, info) {
       // override me
-      info.frag.appendChild(el);
+//      info.frag.appendChild(el);
+      info.html += el;
     },
     
     setupSearchAndFilter: function() {
