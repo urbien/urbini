@@ -1,0 +1,266 @@
+/* ----------------------------------
+ * Edit mode
+ * ---------------------------------- */
+
+form[role="dialog"][data-type="edit"] {
+  overflow: hidden;
+  position: absolute;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  white-space: nowrap;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* Header */
+form[role="dialog"][data-type="edit"] header {
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+  padding: 0;
+  height: 5rem;
+  color: #fff;
+  background: url(edit_mode/images/ui/alpha.png) repeat 0 0;
+  border: none;
+}
+
+form[role="dialog"][data-type="edit"] header:after {
+  content: "";
+  display: block;
+  height: 0.3rem;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: url(edit_mode/images/ui/shadow.png) repeat-x 0 0;
+  background-size: auto 100%;
+}
+
+form[role="dialog"][data-type="edit"] header h1 {
+  font-size: 2.5rem;
+  line-height: 4.9rem;
+  text-align: left;
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 1rem 0 3rem;
+  height: 100%;
+  font-weight: normal;
+}
+
+form[role="dialog"][data-type="edit"] header button {
+  border: none;
+  padding: 0;
+  overflow: hidden;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.1em;
+  color: #fff;
+  border-radius: 0;
+  text-decoration: none;
+}
+
+form[role="dialog"][data-type="edit"] header menu[type="toolbar"] {
+  height: 100%;
+  float: right;
+  margin: 0;
+  padding: 0;
+}
+
+form[role="dialog"][data-type="edit"] header menu[type="toolbar"] button {
+  height: 4.9rem;
+  min-width: 5rem;
+  width: auto;
+  margin-bottom: 0;
+  border-radius: 0;
+  line-height: 4.9rem;
+  float: left;
+  font-weight: normal;
+  background: none;
+  padding: 0 1rem;
+  -moz-box-sizing: border-box;
+  text-align: center;
+  text-shadow: none;
+  position: relative;
+  z-index: 5;
+}
+
+form[role="dialog"][data-type="edit"] header menu button {
+  color: #fff;
+  border: none;
+}
+
+form[role="dialog"][data-type="edit"] header menu[type="toolbar"] button:last-child {
+  background: url(edit_mode/images/ui/separator.png) no-repeat left center / auto 4.8rem;;
+  margin-left: -0.1rem;
+  z-index: 1;
+}
+
+/* Press state */
+form[role="dialog"][data-type="edit"] header button::-moz-focus-inner,
+form[role="dialog"][data-type="edit"] header button:active,
+form[role="dialog"][data-type="edit"] header button:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+form[role="dialog"][data-type="edit"] header button:active:after,
+form[role="dialog"][data-type="edit"] header menu[type="toolbar"] button:active  {
+  background: #008aaa !important;
+  color: #fff;
+}
+
+/* Disabled state */
+form[role="dialog"][data-type="edit"]  header menu[type="toolbar"] button[disabled]  {
+  opacity: 0.5;
+}
+
+form[role="dialog"][data-type="edit"] header > button {
+  position: relative;
+  width: 5rem;
+  height: 4.9rem;
+  background: none;
+  float: left;
+  overflow: visible;
+  margin-right: -4rem;
+}
+
+form[role="dialog"][data-type="edit"] header > button:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  width: 3.2rem;
+  height: 4.9rem;
+  background: url(edit_mode/images/ui/separator.png) no-repeat right center / 0.1rem 4.8rem;
+}
+
+form[role="dialog"][data-type="edit"] header > button span {
+  position: relative;
+  float: none;
+  display: block;
+  width: 3rem;
+  height: 4.9rem;
+  margin: 0;
+  background: transparent no-repeat center center / 3rem auto;
+  font-size: 0;
+  overflow: hidden;
+}
+
+form[role="dialog"][data-type="edit"] header .icon.icon-close {
+  background-image: url(edit_mode/images/icons/close.png);
+}
+
+form[role="dialog"][data-type="edit"] header > button span:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  width: 3.2rem;
+  height: 4.9rem;
+  background: url(edit_mode/images/ui/separator.png) no-repeat right center / 0.2rem 4.8rem;
+}
+
+/* Menu */
+form[role="dialog"][data-type="edit"] > menu {
+  pointer-events: auto;
+  white-space: nowrap;
+  margin: 0;
+  padding: 1.5rem;
+  border-top: solid 0.1rem rgba(255, 255, 255, 0.1);
+  background: url(edit_mode/images/ui/alpha.png) repeat left top;
+  display: block;
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+form[role="dialog"][data-type="edit"] menu button {
+  width: 100%;
+  height: 3.8rem;
+  margin: 0 0 1rem;
+  padding: 0 1.5rem;
+  -moz-box-sizing: border-box;
+  display: inline-block;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  background: #fafafa url(edit_mode/images/ui/default.png) repeat-x left bottom/ auto 100%;
+  border: 0.1rem solid #a6a6a6;
+  border-radius: 0.3rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 3.8rem;
+  color: #333;
+  text-align: center;
+  text-shadow: 0.1rem 0.1rem 0 rgba(255,255,255,0.3);
+  text-decoration: none;
+  outline: none;
+}
+
+/* Press (default & recommend) */
+form[role="dialog"][data-type="edit"] menu button:active,
+form[role="dialog"][data-type="edit"] menu button.recommend:active {
+  border-color: #008aaa;
+  background: #008aaa;
+  color: #333;
+}
+
+/* Recommend */
+form[role="dialog"][data-type="edit"] menu button.recommend{
+  background-image: url(edit_mode/images/ui/recommend.png);
+  background-color: #00caf2;
+  border-color: #008eab;
+}
+
+/* Danger */
+form[role="dialog"][data-type="edit"] menu button.danger{
+  background-image: url(edit_mode/images/ui/danger.png);
+  background-color: #b70404;
+  color: #fff;
+  text-shadow: none;
+  border-color: #820000;
+}
+
+/* Danger Press */
+form[role="dialog"][data-type="edit"] menu button.danger:active{
+  background-image: url(edit_mode/images/ui/danger-press.png);
+  background-color: #890707;
+}
+
+/* Disabled */
+form[role="dialog"][data-type="edit"] > menu > button[disabled] {
+  background: #5f5f5f;
+  color: #4d4d4d;
+  text-shadow: none;
+  border-color: #4d4d4d;
+  pointer-events: none;
+}
+
+form[role="dialog"][data-type="edit"] menu button:last-child {
+  margin-left: 1rem;
+}
+
+form[role="dialog"][data-type="edit"] menu button,
+form[role="dialog"][data-type="edit"] menu button:first-child {
+  margin: 0;
+}
+
+form[role="dialog"][data-type="edit"] menu button {
+  width: calc((100% - 1rem) / 2);
+}
+
+form[role="dialog"][data-type="edit"] menu button.full {
+  width: 100%;
+}
