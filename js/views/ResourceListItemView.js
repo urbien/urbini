@@ -19,43 +19,47 @@ define('views/ResourceListItemView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
+      
+      var elAttrs = {
+          "data-icon": "false"
+        },
+        preinitialized = options.preinitialized || RLIV.preinitialize(options);
+      
+      _.extend(this, preinitialized);
       this.checked = options.checked;
       this.resource.on('remove', this.remove, this);
 //      this.resource.on('change', this.render, this);
-      var key = this.vocModel.shortName + '-list-item';
-      this.isEdit = options  &&  options.edit;
-      if (!this.isEdit) {
+      if (!this.isEdit)
         this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
-      }
       
 //      this.makeTemplate('likesAndComments', 'likesAndComments', this.vocModel.type);
       if (this.template) 
         this.isCommonTemplate = false;
       else {
-        if (options.mv) {
+        if (this.mv) {
           this.makeTemplate('mvListItem', 'template');
-          this.$el.attr("data-role", "controlgroup");
-          this.mvProp = options.mvProp;
+//          this.mvProp = options.mvProp;
+          elAttrs["data-role"] = "controlgroup";
 //          this.mvVals = options.mvVals;
         }
         else if (this.isEdit)
           this.makeTemplate('editListItemTemplate', 'template');
         else if (options.imageProperty) {
-          this.imageProperty = options.imageProperty;
+//          this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
-          this.$el.attr("class", "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static");
           if (options.swatch)
-            this.$el.attr("class", "ui-li-up-" + options.swatch);
+            elAttrs["class"] = "ui-li-up-" + options.swatch;
+          else
+            elAttrs["class"] = "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
         }
-        else {
+        else
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
-        }
       }
-      if (options.swatch) {
-        this.$el.attr("data-theme", options.swatch);
-      }
+      
+      if (options.swatch)
+        elAttrs["data-theme"] = options.swatch;
+        
 //      if (this.resource.isA("Buyable"))
-        this.$el.attr("data-icon", "false");
 //      else
 //        this.$el.attr("data-icon", "chevron-right");
    
@@ -63,35 +67,7 @@ define('views/ResourceListItemView', [
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
 
-      this.gridCols = U.getColsMeta(this.vocModel, 'grid');
-      this.commonBlockProps = [];
-      if (this.gridCols) {
-        if (U.isA(this.vocModel, 'Submission')) {
-          var dateSubmittedCOf = U.getCloneOf(this.vocModel, 'Submission.dateSubmitted');
-          var dateSubmitted = (dateSubmittedCOf.length == 0) ? null : dateSubmittedCOf[0];
-          if (dateSubmitted) 
-            this.commonBlockProps.push(dateSubmitted);   
-          
-          var submittedByCOf = U.getCloneOf(this.vocModel, 'Submission.submittedBy');
-          var submittedBy = (submittedByCOf.length == 0) ? null : submittedByCOf[0];
-          if (submittedBy)
-            this.commonBlockProps.push(submittedBy);
-        }
-        if (this.commonBlockProps) {
-          var n = this.commonBlockProps.length; 
-          for (var i=0; i<n; i++) {
-            var p = this.commonBlockProps[i];
-            var idx = this.gridCols.indexOf(p);
-            if  (idx != -1) 
-              this.gridCols.splice(idx, 1);
-            else {
-              this.commonBlockProps.splice(i, 1);
-              n--;
-              i--
-            }
-          }
-        }
-      }
+      this.$el.attr(elAttrs);
       return this;
     },
     events: {
@@ -847,7 +823,49 @@ define('views/ResourceListItemView', [
 
   },
   {
-    displayName: 'ResourceListItemView'
+    displayName: 'ResourceListItemView',
+    preinitialize: function(options) {
+      var vocModel = options.vocModel,
+          commonBlockProps = [],
+          gridCols = U.getColsMeta(vocModel, 'grid'),
+          commonBlockProps = [],
+          preinit = _.extend({
+            key: vocModel.shortName + '-list-item', 
+            gridCols: gridCols,
+            commonBlockProps: commonBlockProps
+          }, options);
+      
+      if (gridCols) {
+        if (U.isA(vocModel, 'Submission')) {
+          var dateSubmittedCOf = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
+          var dateSubmitted = (dateSubmittedCOf.length == 0) ? null : dateSubmittedCOf[0];
+          if (dateSubmitted) 
+            commonBlockProps.push(dateSubmitted);   
+          
+          var submittedByCOf = U.getCloneOf(vocModel, 'Submission.submittedBy');
+          var submittedBy = (submittedByCOf.length == 0) ? null : submittedByCOf[0];
+          if (submittedBy)
+            commonBlockProps.push(submittedBy);
+        }
+        
+        if (commonBlockProps) {
+          var n = commonBlockProps.length; 
+          for (var i=0; i<n; i++) {
+            var p = commonBlockProps[i];
+            var idx = gridCols.indexOf(p);
+            if  (idx != -1) 
+              gridCols.splice(idx, 1);
+            else {
+              commonBlockProps.splice(i, 1);
+              n--;
+              i--
+            }
+          }
+        }
+      }
+      
+      return preinit;
+    }
   });  
   
   return RLIV;

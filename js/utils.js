@@ -1942,7 +1942,32 @@ define('utils', [
           hasImgs = true;
         else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
           hasImgs = true;
-
+        var isMasonry = U.isMasonry(vocModel);
+        if (isMasonry  &&  hasImgs) {
+          var ww = $(window).width() - 40;
+          var imgP;
+          if (ww < $(window).height()) {
+            if (ww <= 340) 
+              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium320');
+            else  if (ww <= 380) 
+              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium360');
+            else if (ww <= 420)  //  &&  ww <= 400) {
+              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium400');
+          }
+          else {
+            if (ww > 460  &&  ww <= 630)
+              imgP = U.getCloneOf(vocModel, 'ImageResource.masonry533_h');
+            else if (ww > 630  &&  ww <= 660)
+              imgP = U.getCloneOf(vocModel, 'ImageResource.masonry680_h');
+          }
+          if (!imgP) {
+            imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+            if (!imgP)
+              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+          }
+          if (imgP)
+            return imgP;
+        }
       }
       if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
         if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
@@ -2030,7 +2055,44 @@ define('utils', [
       else
         return modelOrJson[prop];
     },
-    
+
+    colorLuminance: function(hex, lum) {
+      // validate hex string
+      hex = String(hex).replace(/[^0-9a-f]/gi, '');
+      if (hex.length < 6) {
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      }
+      lum = lum || 0;
+
+      // convert to decimal and change luminosity
+      var rgb = "#", c, i;
+      for (i = 0; i < 3; i++) {
+        c = parseInt(hex.substr(i*2,2), 16);
+        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+        rgb += ("00"+c).substr(c.length);
+      }
+
+      return rgb;
+    },   
+    colorLuminanceRGB: function(rgb, lum) {
+      // validate hex string
+      var idx1 = rgb.indexOf('(');
+      var idx2 = rgb.indexOf(')');
+      var rgbA = rgb.substring(idx1 + 1, idx2).split(',');
+      if (!rgbA)
+        return null;
+      lum = lum || 0;
+
+      // convert to decimal and change luminosity
+      var rgba = "#", c, i;
+      for (i = 0; i < 3; i++) {
+        c = parseInt(rgbA[i].trim());
+        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+        rgba += ("00"+c).substr(c.length);
+      }
+
+      return rgba;
+    },   
     makeProp: function(info) {
       var res = info.resource;
       var vocModel = res.vocModel;
@@ -2058,8 +2120,31 @@ define('utils', [
 
           if (isDisplayName)
             val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-          else if (!isView  &&  prop.maxSize > 1000)
-            val = "<div style='opacity:0.7;padding-top:7px;'>" + val + "</div>";
+          else if (!isView  &&  prop.maxSize > 1000) {
+            var color = G.theme.descColor; 
+            /*
+            if (!color) {
+              color = $('[data-role="page"]').css('color');
+              if (color) {
+                if (color.indexOf('rgb') == -1)
+                  color = U.colorLuminance(color, 0.7);
+                else
+                  color = U.colorLuminanceRGB(color, 0.7);
+              }
+              else  
+                color = U.colorLuminance('#000', 0.7);
+              G.theme.descColor = color;
+            } 
+            */ 
+//            var dColor = G.theme.descriptionColor;
+            if (color) {
+              if (color.charAt(0) != '#')
+                color = '#' + color;
+              val = '<div class="u-desc" style="color: ' + color + ';">' + val + '</div>';
+            }
+            else
+              val = '<div class="u-desc">' + val + '</div>';
+          }
           else if (prop.facet  &&  prop.facet == 'href')
             val = "<a href='" + val + "'>" + U.getDisplayName(res, vocModel) + "</a>";
           else if (prop.facet  &&  prop.facet == 'tags') {

@@ -153,30 +153,61 @@ define('views/BasicView', [
       // override this
     },
     
+//    _refresh: function(rOptions) {
+//      var force = rOptions && rOptions.force;
+//      if (!force && !this.rendered)
+//        return this;
+//      
+////      this.log('refresh', 'page title:', this.getPageTitle());
+//      this._queueTask(this._doRefresh, this, arguments);
+//      return this;
+//    },
+    
     _refresh: function(rOptions) {
       var force = rOptions && rOptions.force;
       if (!force && !this.rendered)
         return this;
       
 //      this.log('refresh', 'page title:', this.getPageTitle());
-      this._queueTask(this._doRefresh, this, arguments);
-      return this;
-    },
-    
-    _render: function(rOptions) {
-//      this.log('render', 'page title:', this.getPageTitle());
-      this._queueTask(function() {
-        this._doRender.apply(this, arguments);
-        if (this.autoFinish !== false)
-          this.finish();
-
-        if (G.browser.mobile)
-          disableHover(this.$el);
-      }, this, arguments); //, !delay);
+//      this._queueTask(this._doRefresh, this, arguments);
+      if (this.isActive())
+        this._doRefresh.apply(this, arguments);
+      else
+        this._refreshArgs = arguments;
       
       return this;
     },
-    
+
+    //    _render: function(rOptions) {
+////      this.log('render', 'page title:', this.getPageTitle());
+//      this._queueTask(function() {
+//        this._doRender.apply(this, arguments);
+//        if (this.autoFinish !== false)
+//          this.finish();
+//
+//        if (G.browser.mobile)
+//          disableHover(this.$el);
+//      }, this, arguments); //, !delay);
+//      
+//      return this;
+//    },
+
+    _render: function(rOptions) {
+  //    this.log('render', 'page title:', this.getPageTitle());
+      if (this.isActive()) {
+        this._doRender.apply(this, arguments);
+        if (this.autoFinish !== false)
+          this.finish();
+        
+        if (G.browser.mobile)
+          disableHover(this.$el);
+      }
+      else
+        this._renderData = arguments;
+      
+      return this;
+    },
+
     isChildless: function() {
       return !_.size(this.children);
     },
@@ -453,14 +484,32 @@ define('views/BasicView', [
         $el.trigger(type);
     },
     
+//    _onActive: function() {
+//      if (this.active)
+//        return;
+//      
+//      this.active = true;
+//      this.triggerChildren('active');
+//      this._updateHashInfo();
+//      this._processQueue();
+//    },
+
     _onActive: function() {
       if (this.active)
         return;
       
+      var renderArgs = this._renderArgs,
+          refreshArgs = this._refreshArgs;
+      
       this.active = true;
+      this._renderArgs = this._refreshArgs = null;
       this.triggerChildren('active');
       this._updateHashInfo();
-      this._processQueue();
+//      this._processQueue();
+      if (renderArgs)
+        this._render.apply(this, renderArgs);
+      else if (refreshArgs)
+        this._refresh.apply(this, refreshArgs);
     },
 
     _onInactive: function() {

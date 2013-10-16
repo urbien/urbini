@@ -762,44 +762,68 @@ define('views/ResourceListView', [
     renderItem: function(res, prepend) {
       // TODO: do
       var viewName = 'listItem' + G.nextId(),
-          commonParams = {
-            resource: res,
-            parentView: this
+          params = {
+            parentView: this,
+            vocModel: res.vocModel
           },
-          liView;
+          liView,
+          preinitializedItem = this._preinitializedItem;
           
       if (this.isEdit) {
-        liView = new ResourceListItemView(_.extend({editCols: this.hashParams['$editCols'], edit: true}, commonParams));
+        if (!preinitializedItem) {
+          params.editCols = this.hashParams['$editCols']; 
+          params.edit = true;
+          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+        }
+        
+        liView = new ResourceListItemView({
+          preinitialized: preinitializedItem,
+          resource: res
+        });
       }
       else if (this.isMultiValueChooser) {
+        if (!preinitializedItem) {
+          params.mv = true;
+          params.tagName = 'div';
+          params.className = "ui-controlgroup-controls";
+          params.mvProp = this.mvProp;
+          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+        }
+        
 //        var params = hash ? _.getParamMap(hash) : {};
 //        var mvProp = params.$multiValue;
-        var isListed =  _.contains(this.mvVals, res.get('davDisplayName'));
   //      var isChecked = defaultUnchecked === isListed;
         liView = new ResourceListItemView({
-          mv: true, 
-          tagName: 'div', 
-          className: "ui-controlgroup-controls", 
-          mvProp: this.mvProp, 
-          checked: isListed,
-          resource: res,
-          parentView: this
+          checked: _.contains(this.mvVals, res.get('davDisplayName')),
+          preinitialized: preinitializedItem,
+          resource: res
         });
       }
       else {
-        var swatch = res.get('swatch') || (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-        if (this.imageProperty != null)
-          liView = new ResourceListItemView(_.extend({ imageProperty: this.imageProperty, parentView: this, swatch: swatch}, commonParams))
-        else
-          liView = new ResourceListItemView(_.extend({swatch: swatch}, commonParams));
+        if (!preinitializedItem) {
+          this._defaultSwatch = (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
+          if (this.imageProperty != null)
+            params.imageProperty = this.imageProperty;
+          
+          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+        }
+        
+        liView = new ResourceListItemView({
+          swatch: res.get('swatch') || this._defaultSwatch,
+          preinitialized: preinitializedItem,
+          resource: res
+        });
       }
       
       this.addChild(liView, prepend);
-      liView.render({
-        force: true,
-        renderToHtml: true
-      });
+      if (!this._itemRenderOptions) {
+        this._itemRenderOptions = {
+          force: true,
+          renderToHtml: true
+        };
+      }
       
+      liView.render(this._itemRenderOptions);
       return liView;
     },
     

@@ -24,8 +24,32 @@ define('views/ResourceMasonryItemView', [
       else
         this.makeTemplate('masonry-list-item', 'template', type);
 
-      if ($(window).height() > $(window).width())
+      if ($(window).height() > $(window).width()) {
         this.IMG_MAX_WIDTH = 272;
+        vocModel = this.vocModel;
+        var imgP, isBM;
+        
+        var ww = $(window).width();
+        if (/*ww >= 320  && */ ww < 340) 
+          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium320');
+        else  if (/*ww >= 360  &&*/  ww < 380) 
+          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium360');
+        else if (ww <= 420) {
+          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium400');
+//          if (ww != 400)
+//            isBM = true;
+        }
+        
+        if (!imgP) {
+          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+          if (imgP)
+            isBM = true;
+          else
+            imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+        }
+        else if (!isBM)
+          this.IMG_MAX_WIDTH = vocModel.properties[imgP].imageWidth;
+      }
       else
         this.IMG_MAX_WIDTH = 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
 //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important');
@@ -133,18 +157,8 @@ define('views/ResourceMasonryItemView', [
       if (!meta)
         return this;
       
-      var img, imgP;
-      if ($(window).width() > $(window).height()) {
-        imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-        if (!imgP)
-          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-      }
-      else {
-        imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-        if (!imgP)
-          imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-      }
-
+      var imgP = U.getImageProperty(m);
+      this.IMG_MAX_WIDTH = meta[imgP].imageWidth  ||  meta[imgP].maxImageDimension;
       var rUri = m.getUri();
       if (!rUri) {
         // <debug>
@@ -232,7 +246,9 @@ define('views/ResourceMasonryItemView', [
       }
       var dn = atts.davDisplayName;
       var dnProps = U.getDisplayNameProps(meta);
-      if (!dn  &&  dnProps) {
+      if (dn)
+        tmpl_data['davDisplayName'] = dn;
+      else if (dnProps) {
         var first = true;
         dn = '';
         for (var i=0; i<dnProps.length; i++) {
@@ -315,10 +331,11 @@ define('views/ResourceMasonryItemView', [
         G.log(this.TAG, 'failed to build template for masonry item ' + dn + ': ' + err);
       }
 //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : ''));
+      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
 //      if (!tmpl_data['top'])
 //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
-      if (tmpl_data['top']) {
+      
+      if (tmpl_data['top']  &&  isBM) {
         this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
         this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
         /*
@@ -330,6 +347,7 @@ define('views/ResourceMasonryItemView', [
         tmpl_data['margin-left'] = 0 - dW;
         */ 
       }
+      
       return this;
     },
     

@@ -124,7 +124,7 @@ define('views/Header', [
       if (!title) {
         if (hash) {
           title = this.hashParams.$title;
-//          title = params.$title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&nbsp;/g, " ");
+          title = title  &&  title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/, ":").replace(/&#160;/, ":").replace(/&nbsp;/g, " ").replace(/&#160;/g, " ");
         }
 
         if (!title && res) {
@@ -315,7 +315,7 @@ define('views/Header', [
       }
       else if (pBtn) {
         this.$('#publishBtn').hide();
-        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));
+        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish')); _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
         _.each(options, function(option) {
           var method = 'hide';
           if (this[option]) {
@@ -411,9 +411,10 @@ define('views/Header', [
 //          "data-position": "fixed"
 //        });
       }
-      if (!this.publish  &&  this.doTry  &&  this.forkMe)
-        templateSettings.className = 'ui-grid-b';
-      
+      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary == 'Jquery Mobile') {
+        if (!this.publish  &&  this.doTry  &&  this.forkMe)
+          templateSettings.className = 'ui-grid-b';
+      }      
       this.html(this.template(templateSettings));
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
@@ -423,6 +424,10 @@ define('views/Header', [
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var numBtns = _.size(btns);
+      
+      var cols = btns['publish'] ? numBtns - 1 : numBtns;
+      var btnWidth = Math.round(100 * (100/cols))/100;
+
       var isMapItToggleable = !!this.collection;
       var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'video', 'chat', 'login'];
       if (numBtns < 6)
@@ -442,8 +447,8 @@ define('views/Header', [
           
           btnOptions.toggleable = isMapItToggleable;
         }
-         
-        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);        
+        btn.$el.css('width', btnWidth + '%');
+        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);
       }.bind(this));      
       
       var $ul = this.$('#headerUl');
@@ -457,6 +462,7 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
+      /*
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
         this.$el.find('#name').removeClass('resTitle');
         if (this.resource  &&  !this.isEdit) {
@@ -466,12 +472,22 @@ define('views/Header', [
             pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
           }
         }
-        /* this.$el.find('#pageTitle').css('margin-bottom', '0px'); */
+        // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
+      }
+      */
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+        this.$el.find('#name.resTitle').css('padding-bottom', '0px');
       }
       if (this.noButtons) 
         this.$el.find('h4').css('margin-top', '10px');
       else
         this.$el.find('h4').css('margin-top', '4px');
+
+      for (var btn in btns) {
+        var badge = btns[btn].$el.find('.menuBadge');
+        if (badge  &&  badge.length)
+          badge.css('left', Math.floor(btnWidth/2) + '%');
+      }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header');

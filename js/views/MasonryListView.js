@@ -16,6 +16,7 @@ define('views/MasonryListView', [
     type: 'masonry',
     events: {
       'orientationchange': 'reloadMasonry',
+      'refresh': 'refresh',
       'resize': 'reloadMasonry'
 //        ,
 //      'pageshow': 'reloadMasonry'
@@ -88,10 +89,27 @@ define('views/MasonryListView', [
     },
     
     reloadMasonry: function(e) {
-      if (this.rendered) {
-        this.masonry('reload');
-        this.centerMasonry(this);
+      if (!this.rendered) 
+        return;
+      var ww = $(window).width();
+      var brickW = ($(window).height() > ww  &&  ww < 420) ? 272 : 205;
+      var w = $(this.$el.find('.nab')).attr('width');
+      if (!w) {
+        w = $(this.$el.find('.nab')).css('width');
+        if (w)
+          w = w.substring(0, w.length - 2);
       }
+
+      var imgP = U.getImageProperty(this.collection);
+      if (imgP) {
+        var prop = this.vocModel.properties[imgP];
+        brickW = prop.imageWidth || prop.maxImageDimension;
+      }
+      if (w < brickW  ||  w > brickW + 20) 
+        this.refresh({orientation: true});
+      else 
+        this.masonry('reload');
+      this.centerMasonry(this);
     },
     
     postRender: function(info) {
@@ -132,12 +150,15 @@ define('views/MasonryListView', [
         var w = $(l[0]).css('width');
         w = w.substring(0, w.length - 2);
         len = l.length * w;
-        len += l.length * 20;
-        var d = ($(window).width() - len) / 2;
+//        len += l.length * 18;
+        var d = (($(window).width() - len) / 2) - 10;
         var style = list.$el.attr('style'); 
-        list.$el.attr('style', style + 'left: ' + d + 'px;');
+        var left = list.$el.css('left');
+        if (left)
+          list.$el.css('left', d + 'px');
+        else
+          list.$el.attr('style', style + 'left: ' + d + 'px;');
       }
-
     }
   }, {
     displayName: "MasonryListView"

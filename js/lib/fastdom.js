@@ -13,6 +13,7 @@ define('lib/fastdom', ['globals'], function(G) {
   'use strict';
   var raf = window.raf,
       caf = window.caf,
+      FPS = 45,
       FRAME_SIZE = 16,
       FRAME_END = 14,
       getNow = window.performance ? performance.now.bind(performance) : Date.now.bind(Date),
@@ -83,14 +84,14 @@ define('lib/fastdom', ['globals'], function(G) {
   };
 
   FastDom.prototype.log = function() {
-    if (!G.DEBUG)
-      return;
+//    if (!G.DEBUG)
+//      return;
     
     var args = Array.prototype.slice.call(arguments);
 //    args.unshift('FASTDOM');
     args.unshift('FASTDOM', 'FRAME', this.frameNum);
-//    G.log.apply(G, args);
-    console.log.apply(console, args);
+    G.log.apply(G, args);
+//    console.log.apply(console, args);
   };
 
   FastDom.prototype.nextFramePromise = function() {
@@ -234,7 +235,7 @@ define('lib/fastdom', ['globals'], function(G) {
       
       this.run(lastJob);
       var numTimestamps = this.timestamps.length;
-      this.debug('JOB: ', lastJob, 'TOOK: ', this.timestamps[numTimestamps - 1] - this.timestamps[numTimestamps - 2]);
+//      this.debug('JOB: ', lastJob, 'TOOK: ', this.timestamps[numTimestamps - 1] - this.timestamps[numTimestamps - 2]);
     }
     
     if (postpone && !this.pending) {
@@ -277,7 +278,7 @@ define('lib/fastdom', ['globals'], function(G) {
         return;
     }
     
-    this.log('------------------END OF FRAME----------------------');
+//    this.log('------------------END OF FRAME----------------------');
     this.mode = null;
   };
 
@@ -359,17 +360,17 @@ define('lib/fastdom', ['globals'], function(G) {
     delete this.jobs[job.id];
 
     // Call the job in
-    try { 
+//    try { 
       if (job.args)
         job.fn.apply(job.ctx, job.args);
       else if (job.ctx)
         job.fn.call(job.ctx);
       else
         job.fn();
-    } catch(e) {
-      debugger;
-      this.onError(e);
-    }
+//    } catch(e) {
+//      debugger;
+//      this.onError(e);
+//    }
     
     this.time();
     return job;

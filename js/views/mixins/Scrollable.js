@@ -683,8 +683,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var handlers = TRANSITION_MAP[fromState],
           handler = handlers && handlers[withEvent];
       
-      if (handler)
-        return (this._scrollerProps.state = handler.call(this, event) || this._scrollerProps.state);
+      if (handler) {
+        try {
+          return (this._scrollerProps.state = handler.call(this, event) || this._scrollerProps.state);
+        } finally {
+          console.log("SCROLL STATE FROM: {0} TO: {1}".format(fromState, this._scrollerProps.state));
+        }
+      }
     },    
 
 //    _listenToTouchEvents: function() {
@@ -834,7 +839,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
       }
       else {
-        Q.read(function getComputedScrollPosition() {          
+        Q.read(function getComputedScrollPosition() {
           this._scrollerProps.position = CSS.getTranslation(this.el);
         }, this);
       }
@@ -846,6 +851,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     handleEvent: function(e) {
+      console.log('scroll event: ', e.type);
       if (e.type == 'click')
         return this._onClickInScroller(e);
       
