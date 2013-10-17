@@ -282,6 +282,10 @@ define('views/ResourceListView', [
     prependPages: function(n, force) {
       return this.addPages(n, true, force);
     },
+    
+    getPageTag: function() {
+      return 'ul';
+    },
 
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
@@ -292,6 +296,7 @@ define('views/ResourceListView', [
 //      this.log('SLIDING WINDOW', 'adding pages' + (atTheHead ? ' at the head' : ''));
       n = n || 1;
       var col = this.filteredCollection,
+          pageTag = this.getPageTag(),
 //          sizes = this._slidingWindowAddRemoveInfo,
           colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
 
@@ -343,7 +348,7 @@ define('views/ResourceListView', [
         frag: frag,
         total: colRange.to - colRange.from,
         appended: [],
-        html: '<ul class="listPage">'
+        html: '<{0} class="listPage">'.format(pageTag)
       };
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
@@ -377,7 +382,7 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE");
 //          page.append(frag);
-          info.page = page = $(info.html + '</ul>');
+          info.page = page = $(info.html + '</{0}>'.format(pageTag));
           page.find('[data-viewid]').each(function() {
             var child = listView.children[this.dataset.viewid];
             child.setElement(this);

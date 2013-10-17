@@ -684,11 +684,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           handler = handlers && handlers[withEvent];
       
       if (handler) {
-        try {
+//        try {
           return (this._scrollerProps.state = handler.call(this, event) || this._scrollerProps.state);
-        } finally {
-          console.log("SCROLL STATE FROM: {0} TO: {1}".format(fromState, this._scrollerProps.state));
-        }
+//        } finally {
+//          console.log("SCROLL STATE FROM: {0} TO: {1}".format(fromState, this._scrollerProps.state));
+//        }
       }
     },    
 

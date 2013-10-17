@@ -77,6 +77,10 @@ define('views/MasonryListView', [
       }
     },
     
+    getPageTag: function() {
+      return 'div';
+    },
+    
     renderItem: function(res, info) {
       var liView = this.addChild(new ResourceMasonryItemView({
         className: 'nab nabBoard',
