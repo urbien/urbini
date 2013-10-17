@@ -1917,7 +1917,7 @@ define('utils', [
     
     getImageProperty: function(resOrCol) {
       var isCol = U.isCollection(resOrCol);
-      var models = isCol ? resOrCol.models : [resOrCol];
+      var models = isCol ? resOrCol.models : U.isModel(resOrCol) ? [resOrCol] : null;
 //      if (!models.length)
 //        return null;
       
@@ -1974,7 +1974,7 @@ define('utils', [
           hasImgs = true;
       }
         
-      if (hasImgs && models.length) {
+      if (hasImgs && models && models.length) {
         cloneOf = cloneOf && cloneOf[0];
         hasImgs = false;
         for (var i = 0; !hasImgs  &&  i < models.length; i++) {
