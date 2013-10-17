@@ -280,10 +280,10 @@ define('vocManager', [
     });
   });
 
-  Events.on('newResource', Q.defer.bind(Q, 30, 'nonDom', function(res) {
+  Events.on('newResource', function(res) {
     if (!res.collection)
-      Voc.fetchLinkedAndReferredModels([res]);
-  }));
+      Q.defer(30, 'nonDom', Voc.fetchLinkedAndReferredModels.bind(Voc, ([res])));
+  });
 
 //  Events.on('newPlugs', Q.defer.bind(Q, 30, 'nonDom', function() {
 //    Q.defer(30, 'nonDom', Voc.savePlugsToStorage, Voc);

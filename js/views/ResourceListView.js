@@ -343,7 +343,7 @@ define('views/ResourceListView', [
         frag: frag,
         total: colRange.to - colRange.from,
         appended: [],
-        html: '<div class="listPage">'
+        html: '<ul class="listPage">'
       };
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
@@ -377,7 +377,7 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE");
 //          page.append(frag);
-          page = $(info.html + '</div>');
+          page = $(info.html + '</ul>');
           page.find('[data-viewid]').each(function() {
             listView.children[this.dataset.viewid].setElement(this);
           });

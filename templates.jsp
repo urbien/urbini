@@ -22,10 +22,10 @@
   <div id="sidebarDiv" role="main">
 
     <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-    <ul id="sidebar">
+    <div id="sidebar">
     <div class="dummy head"></div>
     <div class="dummy tail"></div>
-    </ul>
+    </div>
    </section>
     <div id="nabs_grid" class="masonry">
     <div class="dummy head"></div>

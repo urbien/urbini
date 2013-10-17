@@ -303,7 +303,7 @@ define('views/ResourceListItemView', [
     doRender: function(options, data) {
       var html = this.template(data);
       if (options && options.renderToHtml)
-        this._html = html;
+        this._html = "<{0}>{1}</{0}>".format(this.tagName, html);
       else 
         this.$el.html(html);
       
@@ -321,7 +321,7 @@ define('views/ResourceListItemView', [
       
       options = options || {};
       var json = this.getBaseTemplateData();
-      if (this.resource.isA('Buyable'))
+      if (this.isBuyable)
         json.price = this.resource.get('Buyable.price');
       
       if (this.mvProp) {  
@@ -832,7 +832,8 @@ define('views/ResourceListItemView', [
           preinit = _.extend({
             key: vocModel.shortName + '-list-item', 
             gridCols: gridCols,
-            commonBlockProps: commonBlockProps
+            commonBlockProps: commonBlockProps,
+            isBuyable: U.isA(vocModel, 'Buyable')
           }, options);
       
       if (gridCols) {

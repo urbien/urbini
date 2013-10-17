@@ -549,13 +549,20 @@ define('views/BasicView', [
     },
     
     isGeo: function() {
+      var isGeo,
+          role = U.getUserRole(),
+          locProp = U.getCloneOf(this.vocModel, 'Locatable.latitude')[0] || U.getCloneOf(this.vocModel, 'Shape.shape')[0],
+          allowRoles = locProp && this.vocModel.properties[locProp];
+      
       if (this.collection) {
-        return this.collection.isOneOf(["Locatable", "Shape"]);
+        return this.collection.isOneOf(["Locatable", "Shape"]) &&
+               (!allowRoles || U.isUserInRole(role, allowRoles));
       }
       else {
         var res = this.resource;
-        return !!((res.isA("Locatable") && res.get('latitude') && res.get('longitude')) || 
-                  (res.isA("Shape") && res.get('shapeJson')))
+        return ((res.isA("Locatable") && res.get('latitude') && res.get('longitude')) || 
+               (res.isA("Shape") && res.get('shapeJson'))) && 
+               (!allowRoles || U.isUserInRole(role, allowRoles, res));
       }
     },
     
