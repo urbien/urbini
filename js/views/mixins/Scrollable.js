@@ -851,7 +851,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     handleEvent: function(e) {
-      console.log('scroll event: ', e.type);
+//      console.log('scroll event: ', e.type);
       if (e.type == 'click')
         return this._onClickInScroller(e);
       

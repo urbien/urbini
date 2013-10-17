@@ -20,6 +20,9 @@ define('views/ResourceListItemView', [
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
       
+      otpions = options || {};
+      options.vocModel = this.vocModel;
+      
       var elAttrs = {
           "data-icon": "false"
         },
@@ -44,7 +47,7 @@ define('views/ResourceListItemView', [
         }
         else if (this.isEdit)
           this.makeTemplate('editListItemTemplate', 'template');
-        else if (options.imageProperty) {
+        else if (this.imageProperty) {
 //          this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
           if (options.swatch)
@@ -87,65 +90,27 @@ define('views/ResourceListItemView', [
         }
       });
     },
-//    recipeShoppingListHack: function(e) {
-//      Events.stopEvent(e);
-//      var self = this;
-//      var args = arguments;
-//      var rslModel = U.getModel('RecipeShoppingList');
-//      if (!rslModel) {
-////        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
-//        Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
-//          self.recipeShoppingListHack.apply(self, args);
-//        });
-//        
-//        return;
-//      }
-//        
-//      var a = $(e.target).parent('a');
-//      var href = a.attr('href') || a.attr('link');
-//      var params = U.getQueryParams(href);
-//      var recipeShoppingList = new rlsModel();
-//      var props = {};
-//      var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
-//      var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
-//      recipeShoppingList.save(props, {
-//        success: function(model, response, options) {
-//          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceFetch: true});
-//        }, 
-//        error: function(model, xhr, options) {
-//          var json;
-//          try {
-//            json = JSON.parse(xhr.responseText).error;
-//          } catch (err) {
-//            G.log(self.TAG, 'error', 'couldn\'t create shopping list items, no error info from server');
-//            return;
-//          }
-//          
-//          Errors.errDialog({msg: json.details});
-//          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
-//        }
-//      });
-//    },
+
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
       var params = U.getQueryParams(),
           parentView = this.parentView,
           type = params['$type'],
-          isWebCl = U.isAssignableFrom(this.vocModel, "WebClass"),
-          isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
+          isWebCl = this.doesModelSubclass(G.commonTypes.WebClass),
+          isImplementor = type && type.endsWith('system/designer/InterfaceImplementor'),
+          cloned = this.clonedProperties;
 
-      
       if (this.mvProp) 
         return;
-      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
+      if (this.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
         var atype = this.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
         Events.trigger('navigate', U.makeMobileUrl(action, this.resource.get('forum'), {'-info': this.resource.get('davDisplayName')}));//, {trigger: true, forceFetch: true});
         return;
       }
-      if (U.isAssignableFrom(this.vocModel, 'model/study/QuizQuestion')) {
+      if (this.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(this.resource.get('davDisplayName'), pModel.displayName);
@@ -174,7 +139,7 @@ define('views/ResourceListItemView', [
       return $.Deferred(function(dfd) {
       Voc.getModels(t).done(function() {
         var type = t;
-        var isIntersection = type ? U.isAssignableFrom(U.getModel(type), 'Intersection') : false;
+        var isIntersection = type ? U.isA(U.getModel(type), 'Intersection') : false;
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             debugger;
@@ -198,7 +163,7 @@ define('views/ResourceListItemView', [
           }
           self.forResource = params['$forResource'];
           rParams.$title = self.resource.get('davDisplayName');
-          if (U.isAssignableFrom(self.vocModel, "WebClass")) {
+          if (this.doesModelSubclass(G.commonTypes.WebClass)) {
             if (type.endsWith('system/designer/InterfaceImplementor')) {
   //            Voc.getModels(type).done(function() {
                 var m = new (U.getModel('InterfaceImplementor'))();
@@ -229,8 +194,8 @@ define('views/ResourceListItemView', [
   //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
         else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
-          var a = U.getCloneOf(self.vocModel, 'Intersection.a');
-          var b = U.getCloneOf(self.vocModel, 'Intersection.b');
+          var a = cloned['Intersection.a'];
+          var b = cloned['Intersection.b'];;
 
           if (a  &&  b) {
             if (self.hashParams[a]) 
@@ -314,22 +279,25 @@ define('views/ResourceListItemView', [
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties || m.properties;
+          meta = vocModel.properties || m.properties,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties;
       
       if (!meta)
         return this;
       
       options = options || {};
       var json = this.getBaseTemplateData();
-      if (this.isBuyable)
+      if (this.doesModelImplement('Buyable'))
         json.price = this.resource.get('Buyable.price');
       
       if (this.mvProp) {  
         json['chkId'] = G.nextId() + '.' + this.mvProp;
         if (this.checked)
           json['_checked'] = 'checked';
-        if (U.isA(this.vocModel, 'ImageResource')) {
-          var thumb = U.getCloneOf(this.vocModel, 'ImageResource.smallImage');
+        if (this.doesModelImplement('ImageResource')) {
+          var thumb = cloned['ImageResource.smallImage'];
           if (thumb  &&  thumb.length) {
             var img = atts[thumb[0]];
             if (img)
@@ -351,11 +319,11 @@ define('views/ResourceListItemView', [
 
 //      json.shortUri = U.getShortUri(json._uri, this.vocModel);
       var urbienType = G.commonTypes.Urbien;
-      if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
+      if (!this.mvProp && this.doesModelImplement('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
-        var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
-        var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
+        var a = cloned['Intersection.a'];
+        var b = cloned['Intersection.b'];
 //        if (a && b && vocModel.type == G.commonTypes.Handler)
 //          return this.renderIntersectionItem(json, a, b);
           
@@ -426,17 +394,14 @@ define('views/ResourceListItemView', [
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
       
-      var oW = U.getCloneOf(this.vocModel, 'ImageResource.originalWidth');
-      var oH;
-      if (oW)
-        oH = U.getCloneOf(this.vocModel, 'ImageResource.originalHeight');
-      
+      var oW = cloned['ImageResource.originalWidth'];
+      var oH = cloned['ImageResource.originalHeight'];
+      var maxDim = this.maxImageDimension;
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&
           typeof  atts[oH] != 'undefined')) {
         
         this.$el.addClass("image_fitted");
         
-        var maxDim = meta[this.imageProperty].maxImageDimension;
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
         if (clip) {
           json.top = clip.clip_top;
@@ -455,7 +420,7 @@ define('views/ResourceListItemView', [
         }
       }
       var params = this.hashParams;
-      if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+      if (this.doesModelSubclass('media/publishing/Video')  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
       this.addCommonBlock(viewCols, json);
@@ -476,17 +441,20 @@ define('views/ResourceListItemView', [
     
     addCommonBlock: function(viewCols, json) {
       var vocModel = this.vocModel,
-          atts = this.resource.attributes;
+          atts = this.resource.attributes,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties;
       
       if (!this.commonBlockProps.length) { 
         json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
         return viewCols;
       }
-      var isSubmission = this.resource.isA('Submission');
+      var isSubmission = this.doesModelImplement('Submission');
       if (!viewCols.length  ||  isSubmission) {
         var vCols = '';
         if (isSubmission) {
-          var d = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
+          var d = cloned['Submission.dateSubmitted'];
           var dateSubmitted = d  &&  d.length ? atts[d[0]] : null;
           if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1)
             vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
@@ -494,7 +462,7 @@ define('views/ResourceListItemView', [
         if (viewCols.length)
           vCols += viewCols;
         else {
-          var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
+          var isClass = this.doesModelSubclass(G.commonTypes.WebClass);
           vCols += '<div class="commonLI">' + json.davDisplayName;
           if (isClass) {
             var comment = json['comment'];
@@ -503,7 +471,7 @@ define('views/ResourceListItemView', [
           }
         }
         if (isSubmission) {
-          var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
+          var d = cloned['Submission.submittedBy'];
           if (d  &&  !this.hashParams[d]) {
             var submittedBy = d  &&  d.length ? json[d[0]] : null;
             if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
@@ -533,27 +501,61 @@ define('views/ResourceListItemView', [
       var meta = vocModel.properties;
       meta = meta || m.properties;
 
-      if (this.resource.isA('CollaborationPoint')) { 
-        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
-        if (comments.length > 0) {
-          var pMeta = meta[comments[0]];
-          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
-      if (this.resource.isA('Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.likes');
-        if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
-        if (votes.length > 0) {
-          var pMeta = meta[votes[0]];
-          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
-        }
-      }  
+      this.setCollaborationPointData(json, atts);
+//      var comments = cloned['CollaborationPoint.comments'];
+//      if (comments.length) { 
+//        var pMeta = meta[comments[0]];
+//        var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+//        json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//      }
+
+      this.setVotableData(tmpl_data, atts);
+//      if (this.doesModelImplement('isVotable')) {
+//        var votes = cloned['Votable.likes'];
+//        if (!votes)
+//          votes = cloned['Votable.voteUse'];
+//        if (votes) {
+//          var pMeta = meta[votes];
+//          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+//          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//        }
+//      }
+      
       json.viewCols = viewCols;
 //      json.likesAndComments = this.$el.html(this.likesAndComments(json));
     },
+    
+    setCollaborationPointData: function(tmpl_data, atts) {
+      var cloned = this.clonedProperties,
+          cpProps = cloned.CollaborationPoint;
+      
+      if (cpProps) {
+        var comments = cpProps.comments;
+        if (comments) { 
+          var pMeta = meta[comments];
+          var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
+          tmpl_data.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+        }
+      }
+    },
+    
+    setVotableData: function(tmpl_data, atts) {
+      var clonedProps = this.clonedProperties,
+          vProps = clonedProps.Votable;
+      
+      if (vProps) {
+        var votes = vProps['likes'];
+        if (!votes)
+          votes = vProps['voteUse'];
+        
+        if (votes) {
+          var pMeta = meta[votes];
+          var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
+          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+        }
+      }  
+    },
+    
     getViewCols: function(json) {
       var res = this.resource,
           atts = res.attributes,
@@ -564,8 +566,9 @@ define('views/ResourceListItemView', [
       var grid = this.gridCols ? U.makeCols(res, this.gridCols) : U.getCols(res, 'grid', true);
       if (!grid) 
         return viewCols;
+      
       var firstProp = true;
-      var containerProp = U.getContainerProperty(vocModel);
+      var containerProp = this.containerProp;
 
       for (var row in grid) {
         var pName = grid[row].propertyName;
@@ -661,49 +664,53 @@ define('views/ResourceListItemView', [
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties;
+          meta = vocModel.properties,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties;
+      
       if (!meta)
         return this;
       
-      var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
-      var oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
+      var oW = cloned['ImageResource.originalWidth'];
+      var oH = cloned['ImageResource.originalHeight'];
       var type = vocModel.type;
       var img, dn, rUri, h, w, ab;
       
       if (cloneOf == 'Intersection.a') {
-        ab = atts[U.getCloneOf(vocModel, 'Intersection.a')];
-        var imageP = U.getCloneOf(vocModel, 'Intersection.aThumb');
+        ab = atts[cloneOf];
+        var imageP = cloned['Intersection.aThumb'];
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
           img = atts[imageP[0]];
           hasAImageProps = true;
         }
         if (!img) {
-          imageP = U.getCloneOf(vocModel, 'Intersection.aFeatured');
+          imageP = cloned['Intersection.aFeatured'];
           if (imageP  &&  imageP.length != 0) { 
             img = atts[imageP[0]];
             hasAImageProps = true;
           }
         }
-        if (!img  &&  !hasAImageProps  &&  U.isA(vocModel, 'Intersection')) {
-          imageP = U.getCloneOf(vocModel, 'ImageResource.smallImage');
+        if (!img  &&  !hasAImageProps  &&  this.doesModelImplement('Intersection')) {
+          imageP = cloned['ImageResource.smallImage'];
           if (imageP  &&  imageP.length != 0) {
             img = atts[imageP[0]];
           }
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
         if (img) {
-          w = atts[U.getCloneOf(vocModel, 'Intersection.aOriginalWidth')];
-          h = atts[U.getCloneOf(vocModel, 'Intersection.aOriginalHeight')];
+          w = atts[cloned['Intersection.aOriginalWidth']];
+          h = atts[cloned['Intersection.aOriginalHeight']];
         }
       }
       else {
-        ab = atts[U.getCloneOf(vocModel, 'Intersection.b')];
-        var imageP = U.getCloneOf(vocModel, 'Intersection.bThumb');
+        ab = atts[cloned['Intersection.b']];
+        var imageP = cloned['Intersection.bThumb'];
         if (imageP  &&  imageP.length != 0)
           img = atts[imageP[0]]; 
         if (!img) {
-          imageP = U.getCloneOf(vocModel, 'Intersection.bFeatured');
+          imageP = cloned['Intersection.bFeatured'];
         
           if (imageP) 
             img = atts[imageP[0]];
@@ -711,8 +718,8 @@ define('views/ResourceListItemView', [
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
         if (img) {
-          w = atts[U.getCloneOf(vocModel, 'Intersection.bOriginalWidth')];
-          h = atts[U.getCloneOf(vocModel, 'Intersection.bOriginalHeight')];
+          w = atts[cloned['Intersection.bOriginalWidth']];
+          h = atts[cloned['Intersection.bOriginalHeight']];
         }
       }
       if (img  &&  !this.isCommonTemplate) {
@@ -728,7 +735,7 @@ define('views/ResourceListItemView', [
         
         this.$el.addClass("image_fitted");
         
-        var maxDim = meta[this.imageProperty].maxImageDimension;
+        var maxDim = this.maxImageDimension;
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
 
         var dim = U.fitToFrame(80, 80, w / h)
@@ -746,8 +753,8 @@ define('views/ResourceListItemView', [
         else if (w <= h)
           json.mW = 80;
       }
-      if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
-        dn = atts[U.getCloneOf(vocModel, 'Reference.resourceDisplayName')];
+      if (cloneOf == 'Intersection.a'  &&  this.doesModelImplement('Reference')) 
+        dn = atts[cloned['Reference.resourceDisplayName']];
       else
         dn = atts[delegateTo + '.displayName'];
       
@@ -811,56 +818,69 @@ define('views/ResourceListItemView', [
 //        json.v_showRenabFor = uri;
 //      }
       
-      try {
+//      try {
 //        this.$el.html(this.template(json));
         return this.doRender(options, json);
-      } catch (err) {
-        console.log('couldn\'t render resourceListItemView: ' + err);
-      }
-      
-      return this;
+//      } catch (err) {
+//        console.log('couldn\'t render resourceListItemView: ' + err);
+//      }
+//      
+//      return this;
     }
 
   },
   {
     displayName: 'ResourceListItemView',
+    preinitData: {
+      interfaceProperties: {
+        ImageResource: ['smallImage', 'originalWidth', 'originalHeight'],
+        Intersection: ['a', 'b', 'aThumb', 'aFeatured', 'aOriginalHeight', 'aOriginalWidth', 'bThumb', 'bFeatured', 'bOriginalHeight', 'bOriginalWidth'],
+        Reference: ['resourceDisplayName'],
+        Submission: ['dateSubmitted', 'submittedBy'],
+        CollaborationPoint: ['comments'],
+        Votable: ['likes', 'voteUse'],
+        Buyable: null
+      },
+      superclasses: _.map(["media/publishing/Video", G.commonTypes.WebClass, 'model/workflow/Alert', 'model/study/QuizQuestion'], U.getLongUri1)
+    },
     preinitialize: function(options) {
-      var vocModel = options.vocModel,
-          commonBlockProps = [],
+      var preinitData = this.preinitData,
+          vocModel = options.vocModel,
+          meta = vocModel.properties,
+          preinit = BasicView.preinitialize.apply(this, arguments),
+          cloned = preinit.clonedProperties,
+          imageProperty = U.getImageProperty(vocModel),
           gridCols = U.getColsMeta(vocModel, 'grid'),
-          commonBlockProps = [],
-          preinit = _.extend({
-            key: vocModel.shortName + '-list-item', 
-            gridCols: gridCols,
-            commonBlockProps: commonBlockProps,
-            isBuyable: U.isA(vocModel, 'Buyable')
-          }, options);
+          commonBlockProps = [];
       
-      if (gridCols) {
-        if (U.isA(vocModel, 'Submission')) {
-          var dateSubmittedCOf = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
-          var dateSubmitted = (dateSubmittedCOf.length == 0) ? null : dateSubmittedCOf[0];
-          if (dateSubmitted) 
-            commonBlockProps.push(dateSubmitted);   
+      preinit.gridCols = gridCols;
+      preinit.commonBlockProps = commonBlockProps;
+      preinit.containerProp = U.getContainerProperty(vocModel);
+
+      if (imageProperty) {
+        preinit.imageProperty = imageProperty;
+        if (preinit.imageProperty)
+          preinit.maxImageDimension = meta[preinit.imageProperty].maxImageDimension;
+      }
           
-          var submittedByCOf = U.getCloneOf(vocModel, 'Submission.submittedBy');
-          var submittedBy = (submittedByCOf.length == 0) ? null : submittedByCOf[0];
-          if (submittedBy)
-            commonBlockProps.push(submittedBy);
-        }
+      if (gridCols) {
+        var dateSubmitted = cloned['Submission.dateSubmitted'];
+        if (dateSubmitted)
+          commonBlockProps.push(dateSubmitted);   
+          
+        var submittedBy = preinit['Submission.submittedBy'];
+        if (submittedBy)
+          commonBlockProps.push(submittedBy);
         
-        if (commonBlockProps) {
-          var n = commonBlockProps.length; 
-          for (var i=0; i<n; i++) {
-            var p = commonBlockProps[i];
-            var idx = gridCols.indexOf(p);
-            if  (idx != -1) 
-              gridCols.splice(idx, 1);
-            else {
-              commonBlockProps.splice(i, 1);
-              n--;
-              i--
-            }
+        for (var i = 0, len = commonBlockProps.length; i < len; i++) {
+          var p = commonBlockProps[i];
+          var idx = gridCols.indexOf(p);
+          if  (idx != -1) 
+            gridCols.splice(idx, 1);
+          else {
+            commonBlockProps.splice(i, 1);
+            n--;
+            i--
           }
         }
       }

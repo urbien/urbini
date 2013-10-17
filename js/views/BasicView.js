@@ -552,7 +552,7 @@ define('views/BasicView', [
       var isGeo,
           role = U.getUserRole(),
           locProp = U.getCloneOf(this.vocModel, 'Locatable.latitude')[0] || U.getCloneOf(this.vocModel, 'Shape.shape')[0],
-          allowRoles = locProp && this.vocModel.properties[locProp];
+          allowRoles = locProp && this.vocModel.properties[locProp].allowRoles;
       
       if (this.collection) {
         return this.collection.isOneOf(["Locatable", "Shape"]) &&
@@ -761,10 +761,71 @@ define('views/BasicView', [
       }
         
       return backboneOn.apply(this, args);
+    },
+    
+    doesModelSubclass: function(clName) {
+      var supers = this['extends'];
+      return !!(supers.length && (~supers.indexOf(clName) || (!/\^http:\/\//.test(clName) && ~supers.indexOf(U.getLongUri1(clName)))));
+    },
+
+    doesModelImplement: function(iface) {
+      return !!~this['implements'].indexOf(iface);
     }
   }, {
     displayName: 'BasicView',
-    _instanceCounter: 0
+    _instanceCounter: 0,
+    /*
+    // Example of preinitData used by preinitialize method
+    preinitData: {
+      interfaceProperties: {
+        ImageResource: ['ImageResource.originalImage']
+      },
+      superclasses: [G.commonTypes.App, 'Urbien'];
+    }
+     */
+    preinitialize: function(options) {
+      var vocModel = options.vocModel,
+          meta = vocModel.properties,
+          preinitData = this.preinitData,
+          interfaceProps = preinitData && preinitData.interfaceProperties,
+          superclasses = preinitData && preinitData.superclasses,
+          preinit = _.extend({
+            clonedProperties: {},
+            'extends': [],
+            'implements': []
+          }, options),
+          ifaces = preinit['implements'],
+          supers = preinit['extends'],
+          clonedProps = preinit.clonedProperties;
+          
+      for (var iface in interfaceProps) {
+        if (U.isA(vocModel, iface)) {
+          ifaces.push(iface);
+          var props = interfaceProps[iface],
+              cloned = clonedProps[iface] = {};
+          
+          if (props) {
+            for (var i = 0, len = props.length; i < len; i++) {
+              var prop = props[i];
+              cloned[prop] = U.getCloneOf(vocModel, iface + '.' + prop)[0];
+            }
+          }
+        }
+      }
+      
+      for (var i = 0, len = superclasses.length; i < len; i++) {
+        var sCl = superclasses[i];
+        if (U.isAssignableFrom(vocModel, sCl)) {
+          var sIdx = sCl.indexOf('/');
+          if (~sIdx)
+            sCl = sCl.slice(sIdx + 1);
+        
+          supers.push(sCl);
+        }
+      }
+      
+      return preinit;
+    }    
   });
 
   return BasicView; 

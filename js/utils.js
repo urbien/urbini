@@ -1921,7 +1921,7 @@ define('utils', [
 //      if (!models.length)
 //        return null;
       
-      var vocModel = U.getModel(resOrCol);
+      var vocModel = U.isModel(resOrCol) || U.isCollection(resOrCol) ? U.getModel(resOrCol) : resOrCol;
       var meta = vocModel.properties;
       var cloneOf;
       var aCloneOf;

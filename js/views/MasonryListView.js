@@ -42,10 +42,10 @@ define('views/MasonryListView', [
       this.pageView.trigger('invalidateSize');
     },
     
-    getListItems: function() {
+//    getListItems: function() {
 //      return this.$(ITEM_SELECTOR);
-      return this.$el.children();
-    },
+//      return this.$el.children();
+//    },
 
     getOffsetForChildGroup: function(children, bottom) {
       children = children || _.values(this.children);
@@ -84,7 +84,12 @@ define('views/MasonryListView', [
         resource: res
       }));
       
-      liView.render({force: true});
+      liView.render({
+        force: true,
+        renderToHtml: true
+      });
+      
+      
       return liView;
     },
     
@@ -112,16 +117,46 @@ define('views/MasonryListView', [
       this.centerMasonry(this);
     },
     
+//    postRender: function(info) {
+//      var self = this,
+//          appended = info.appended,
+//          updated = info.updated;
+//      
+//      if (this.rendered) {
+//        if (_.size(appended) || _.size(updated)) {
+//          this.$el.imagesLoaded(function() {
+//            if (_.size(appended))
+//              self.masonry('appended', $(appended));
+//            if (_.size(updated))
+//              self.masonry('reload');
+//            
+//            self.trigger('refreshed');
+//          });
+//        }
+//      }
+//      else {
+//        this.$el.imagesLoaded(function() {
+//          self.masonry({
+//            itemSelector: ITEM_SELECTOR
+//          });
+//   
+//          self.centerMasonry(self);
+//          self.$el.on('pageshow', self.reloadMasonry.bind(self));
+//          self.finish();
+//        });
+//      }
+//    },
     postRender: function(info) {
       var self = this,
-          appended = info.appended,
+//          appended = info.appended,
+          appended = info.page,
           updated = info.updated;
       
       if (this.rendered) {
-        if (_.size(appended) || _.size(updated)) {
+        if (appended || _.size(updated)) {
           this.$el.imagesLoaded(function() {
-            if (_.size(appended))
-              self.masonry('appended', $(appended));
+            if (appended)
+              self.masonry('appended', appended);
             if (_.size(updated))
               self.masonry('reload');
             
@@ -141,12 +176,14 @@ define('views/MasonryListView', [
         });
       }
     },
+    
     centerMasonry: function(list) {
       var l = _.filter(list.$el.find('.nab'), function(a) {
-        return $(a).css('top') == '0px';
-      });
-      if (l) {
-        var len = l.length;
+          return $(a).css('top') == '0px';
+        }),
+        len = l.length;
+      
+      if (len) {
         var w = $(l[0]).css('width');
         w = w.substring(0, w.length - 2);
         len = l.length * w;

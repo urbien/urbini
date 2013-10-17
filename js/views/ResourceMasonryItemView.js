@@ -7,7 +7,7 @@ define('views/ResourceMasonryItemView', [
   'views/BasicView',
   'jqueryMasonry'
 ], function(G, _, U, Events, BasicView) {
-  return BasicView.extend({
+  var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
 //    tagName: 'li',
@@ -16,9 +16,15 @@ define('views/ResourceMasonryItemView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      var type = this.vocModel.type;
-      this.isModification = U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
-
+      otpions = options || {};
+      options.vocModel = this.vocModel;
+      
+      var type = this.vocModel.type,
+          cloned = this.clonedProperties,
+          preinitialized = options.preinitialized || RMIV.preinitialize(options);
+      
+      _.extend(this, preinitialized);
+      this.isModification = this.doesModelSubclass('system/changeHistory/Modification'); //U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (this.isModification)
         this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
       else
@@ -27,25 +33,25 @@ define('views/ResourceMasonryItemView', [
       if ($(window).height() > $(window).width()) {
         this.IMG_MAX_WIDTH = 272;
         vocModel = this.vocModel;
-        var imgP, isBM;
+        var imgP, isBM, clonedIR = cloned.ImageResource;
         
         var ww = $(window).width();
         if (/*ww >= 320  && */ ww < 340) 
-          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium320');
+          imgP = clonedIR['bigMedium320'];
         else  if (/*ww >= 360  &&*/  ww < 380) 
-          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium360');
+          imgP = clonedIR['bigMedium360'];
         else if (ww <= 420) {
-          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium400');
+          imgP = clonedIR['bigMedium400'];
 //          if (ww != 400)
 //            isBM = true;
         }
         
         if (!imgP) {
-          imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+          imgP = clonedIR['bigMediumImage'];
           if (imgP)
             isBM = true;
           else
-            imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+            imgP = clonedIR['mediumImage'];
         }
         else if (!isBM)
           this.IMG_MAX_WIDTH = vocModel.properties[imgP].imageWidth;
@@ -64,6 +70,7 @@ define('views/ResourceMasonryItemView', [
       var likeModel = U.getModel('Vote');
       if (!likeModel) 
         return;
+      
       Events.stopEvent(e);
       var r = new likeModel();
       self = this;
@@ -102,34 +109,52 @@ define('views/ResourceMasonryItemView', [
       }
       G.log(this.TAG, "Recording step for tour: selector = 'href'; value = '" + e.target.href);
     },
-    render: function(options) {
-      var vocModel = this.vocModel;
+    
+    doRender: function(options, data) {
+      var html = this.template(data);
+      if (options && options.renderToHtml) {
+        var tagName = this.tagName || 'div';
+        this._html = '<{0}>{1}</{0}>'.format(tagName, html);
+        return this;
+      }
+      else
+        this.$el.html(html);
+    },
+    
+    render: function(options) {      
       if (this.isModification) 
-        return this.renderModificationTile();
-      var m = this.resource;
-      var isReference = m.isA('Reference'); 
-      if (isReference)
-        return this.renderReferenceTile();
-      if (!m.isA('Intersection'))   
-        return this.renderTile();
+        return this.renderModificationTile(options);
       
-      var meta = vocModel.properties;
+      if (this.doesModelImplement('Reference'))
+        return this.renderReferenceTile(options);
+      
+      if (!this.doesModelImplement('Intersection'))   
+        return this.renderTile(options);
+      
+      var vocModel = this.vocModel,
+          viewCl = this.constructor,
+          meta = vocModel.properties,
+          m = this.resource,
+          cloned = viewCl.clonedProperties,
+          clonedXProps = cloned.Intersection;
+      
       if (!meta)
         return this;
       
       var href = window.location.href;
       var qidx = href.indexOf('?');
-      var a = U.getCloneOf(vocModel, 'Intersection.a')[0];
-      var b = U.getCloneOf(vocModel, 'Intersection.b')[0];
+      var a = clonedXProps['a'];
+      var b = clonedXProps['b'];
       if (!a  ||  !b)
-        return this.renderTile();
+        return this.renderTile(options);
+      
       if (qidx == -1) 
-        return this.renderIntersectionTile(a, 'Intersection.a');
+        return this.renderIntersectionTile(options, a, 'Intersection.a');
       var p = href.substring(qidx + 1).split('=')[0];
       if (p == a)
-        return this.renderIntersectionTile(b, 'Intersection.b');
+        return this.renderIntersectionTile(options, b, 'Intersection.b');
       else    
-        return this.renderIntersectionTile(a, 'Intersection.a');
+        return this.renderIntersectionTile(options, a, 'Intersection.a');
 //        var href = window.location.href;
 //        var qidx = href.indexOf('?');
 //        var a = U.getCloneOf(meta, 'Intersection.a')[0];
@@ -148,17 +173,18 @@ define('views/ResourceMasonryItemView', [
           
 //      return this.renderTile();
     },  
-    renderTile: function(event) {
+    renderTile: function(options, event) {
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties;
+          meta = vocModel.properties,
+          imgP = this.imageProperty,
+          cloned = this.clonedProperties;
       
       if (!meta)
         return this;
       
-      var imgP = U.getImageProperty(m);
-      this.IMG_MAX_WIDTH = meta[imgP].imageWidth  ||  meta[imgP].maxImageDimension;
+      this.IMG_MAX_WIDTH = meta[imgP].imageWidth  ||  this.maxImageDimension;
       var rUri = m.getUri();
       if (!rUri) {
         // <debug>
@@ -182,6 +208,9 @@ define('views/ResourceMasonryItemView', [
 
       var grid = U.getCols(m, 'grid');
       if (grid) {
+        var mediumImageProp = cloned['ImageResource.mediumImage'],
+            smallImageProp = cloned['ImageResource.smallImage'];
+        
         for (var row in grid) {
           if (i == 0)
             i++;
@@ -189,9 +218,10 @@ define('views/ResourceMasonryItemView', [
             gridCols += "<br/>";
 
           var pName = grid[row].propertyName;
-          var gP = meta[pName];          
-          if (U.isCloneOf(gP, "ImageResource.mediumImage", vocModel)  ||  U.isCloneOf(gP, "ImageResource.smallImage", vocModel))
+          if (pName == mediumImageProp  ||  pName == smallImageProp)
             continue;
+          
+          var gP = meta[pName];          
           if (!meta[pName].skipLabelInGrid)
             gridCols += '<span class="label">' + row + '</span>';
           var s = grid[row].value;
@@ -205,6 +235,7 @@ define('views/ResourceMasonryItemView', [
           gridCols += s;
         }
       }
+      
       var divHeight;      
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
@@ -219,7 +250,7 @@ define('views/ResourceMasonryItemView', [
           var iH = Math.floor(oHeight * ratio);
           tmpl_data['imgWidth'] = iW;
           tmpl_data['imgHeight'] = iH;
-          var maxDim = meta[imgP].maxImageDimension;
+          var maxDim = this.maxImageDimension;
           
           if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
             var mdW, mdH;
@@ -244,10 +275,12 @@ define('views/ResourceMasonryItemView', [
           }
         }
       }
+      
       var dn = atts.davDisplayName;
-      var dnProps = U.getDisplayNameProps(meta);
+      var dnProps = this.displayNameProps;
       if (dn)
         tmpl_data['davDisplayName'] = dn;
+      
       else if (dnProps) {
         var first = true;
         dn = '';
@@ -265,40 +298,41 @@ define('views/ResourceMasonryItemView', [
       }
       if (!gridCols.length) 
         gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
+      
       tmpl_data['gridCols'] = gridCols;
       
 //      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
-      if (m.isA('Submission')) { 
-        var submittedBy = U.getCloneOf(vocModel, 'Submission.submittedBy')[0];
-        if (submittedBy) {
-          tmpl_data.creator = atts[submittedBy];
-          tmpl_data.creatorDisplayName = atts[submittedBy + '.displayName'];
-          tmpl_data.creatorThumb = atts[submittedBy + '.thumb'];
-        }
+      var submittedByProp = cloned['Submission.submittedBy'];
+      if (submittedByProp) { 
+        tmpl_data.creator = atts[submittedBy];
+        tmpl_data.creatorDisplayName = atts[submittedBy + '.displayName'];
+        tmpl_data.creatorThumb = atts[submittedBy + '.thumb'];
       }
       
       tmpl_data['rUri'] = resourceUri;
-      if (m.isA('CollaborationPoint')) { 
-        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
-        if (comments.length > 0) {
-          var pMeta = meta[comments[0]];
-          comments = atts[pMeta.shortName] || {count: 0};
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: comments.count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
-      if (m.isA('Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.likes');
-        if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
-        if (votes.length > 0) {
-          var pMeta = meta[votes[0]];
-          votes = atts[pMeta.shortName] || {count: 0};
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
+      this.setCollaborationPointData(tmpl_data, atts, rUri);
+      this.setVotableData(tmpl_data, atts, rUri);
+//      var comments = cloned['CollaborationPoint.comments'];
+//      if (comments) { 
+//        var pMeta = meta[comments];
+//        comments = atts[pMeta.shortName] || {count: 0};
+//        tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: comments.count }; // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//      }
+//      
+//      if (this.doesModelImplement('Votable')) {
+//        var votes = cloned['Votable.likes'];
+//        if (!votes)
+//          votes = cloned['Votable.voteUse'];
+//        
+//        if (votes) {
+//          var pMeta = meta[votes];
+//          votes = atts[pMeta.shortName] || {count: 0};
+//          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: votes.count }; // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//        }
+//      }
       
-      if (U.isAssignableFrom(vocModel, G.commonTypes.App)) {
+      if (this.doesModelSubclass(G.commonTypes.App)) {
         var params = _.getParamMap(window.location.hash);
         if ((params  &&  params.$myApps)  ||  (atts.lastPublished  &&  atts.lastModifiedWebClass  && atts.lastPublished >= atts.lastModifiedWebClass) || (!atts.lastPublished  &&  atts.dashboard)) {
           var uri = G.serverName + '/' + G.pageRoot.substring(0, G.pageRoot.lastIndexOf('/') + 1) + atts.appPath;
@@ -315,46 +349,48 @@ define('views/ResourceMasonryItemView', [
 //        if (json['friends'].count) 
 //          tmpl_data.friends = json['friends'].count;   
       }
-      if (U.isAssignableFrom(vocModel, U.getLongUri1("commerce/urbien/Tournament"))) 
-        tmpl_data.v_submitForTournament = G.pageRoot + "#media%2fpublishing%2fVideo?-tournament=" + encodeURIComponent(rUri) + '&-tournamentName=' + encodeURIComponent(dn);
+      
+      if (this.doesModelSubclass("commerce/urbien/Tournament")) 
+        tmpl_data.v_submitForTournament = U.makePageUrl('list', 'media/publishing/Video', {'-tournament': rUri, '-tournamentName': dn});
 
-      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
-      if (nabs.length > 0) {
-        var pMeta = meta[nabs[0]];
-        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+      var nabs = cloned['ImageResource.nabs'];
+      if (nabs) {
+        var pMeta = meta[nabs];
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
       
-      try {
-        this.$el.html(this.template(tmpl_data));
-      } catch (err) {
-        G.log(this.TAG, 'failed to build template for masonry item ' + dn + ': ' + err);
-      }
-//      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
-//      if (!tmpl_data['top'])
-//        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
-      
-      if (tmpl_data['top']  &&  isBM) {
-        this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
-        this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
-        /*
-        tmpl_data['top'] = dH;
-        tmpl_data['right'] = iW + dW;
-        tmpl_data['bottom'] = iH + dH;
-        tmpl_data['left'] = dW;
-        tmpl_data['margin-top'] = 0;
-        tmpl_data['margin-left'] = 0 - dW;
-        */ 
+      this.doRender(options, tmpl_data);
+      if (!this.postRender) {
+        this.postRender = function() {        
+    //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
+          this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
+    //      if (!tmpl_data['top'])
+    //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
+          
+          if (tmpl_data['top']  &&  isBM) {
+            this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
+            this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
+            /*
+            tmpl_data['top'] = dH;
+            tmpl_data['right'] = iW + dW;
+            tmpl_data['bottom'] = iH + dH;
+            tmpl_data['left'] = dW;
+            tmpl_data['margin-top'] = 0;
+            tmpl_data['margin-left'] = 0 - dW;
+            */ 
+          }
+        }.bind(this);
       }
       
       return this;
     },
     
-    renderReferenceTile: function(event) {
+    renderReferenceTile: function(options, event) {
       var m = this.resource,
           atts = m.attributes,
-          meta = this.vocModel.properties;
+          meta = this.vocModel.properties,
+          cloned = this.clonedProperties;
       
       if (!meta)
         return this;
@@ -397,42 +433,42 @@ define('views/ResourceMasonryItemView', [
       var forResourceModel = U.getModel(U.getTypeUri(forResourceUri));
       var c =  forResourceModel ? forResourceModel : m.vocModel;
       tmpl_data['rUri'] = resourceUri;
-      if (U.isA(c, 'CollaborationPoint')) { 
-        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
-        if (comments.length > 0) {
-          var pMeta = meta[comments[0]];
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
-      if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.likes');
-        if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
-        if (votes.length > 0) {
-          var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
-        }
-      }  
-      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
-      if (nabs.length > 0) {
-        var pMeta = meta[nabs[0]];
-        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
-        tmpl_data.v_showRenabFor = uri;
-      }
+
+      this.setCollaborationPointData(tmpl_data, atts, rUri);
+//      var comments = cloned['CollaborationPoint.comments'];
+//      if (comments) { 
+//        var pMeta = meta[comments];
+//        tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//      }
       
-      try {
-        this.$el.html(this.template(tmpl_data));
-      } catch (err) {
-        G.log(this.TAG, "error", "failed to render ResourceMansonryItemView reference tile");
-      }
+      this.setVotableData(tmpl_data, atts, rUri);
+//      if (this.doesModelImplement('Votable')) {
+//        var votes = cloned['Votable.likes'];
+//        if (!votes)
+//          votes = cloned['Votable.voteUse'];
+//        if (votes) {
+//          var pMeta = meta[votes];
+//          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//        }
+//      }
       
-      return this;
+      this.setImageResourceNabsData(tmpl_data, atts, rUri);
+//      var nabs = cloned['ImageResource.nabs'];
+//      if (nabs) {
+//        var pMeta = meta[nabs];
+//        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
+//        tmpl_data.v_showRenabFor = uri;
+//      }
+      
+      return this.doRender(options, tmpl_data);
     },
-    renderIntersectionTile: function(delegateTo, cloneOf) {
+    
+    renderIntersectionTile: function(options, delegateTo, cloneOf) {
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties;
+          meta = vocModel.properties,
+          cloned = this.clonedProperties;
       
       if (!meta)
         return this;
@@ -442,13 +478,13 @@ define('views/ResourceMasonryItemView', [
           dn;
       
       if (cloneOf == 'Intersection.a') {
-        var aF = U.getCloneOf(vocModel, 'Intersection.aFeatured');
-        var aT = U.getCloneOf(vocModel, 'Intersection.aThumb');
+        var aF = clonedXProps['aFeatured'];
+        var aT = clonedXProps['aThumb'];
         img = aF ? atts[aF[0]] : atts[aT[0]];
       }
       else {
-        var bF = U.getCloneOf(vocModel, 'Intersection.bFeatured');
-        var bT = U.getCloneOf(vocModel, 'Intersection.bThumb');
+        var bF = clonedXProps['bFeatured'];
+        var bT = clonedXProps['bThumb'];
         img = bF ? atts[bF[0]] : atts[bT[0]];
       }
 
@@ -488,39 +524,62 @@ define('views/ResourceMasonryItemView', [
         var meta = c.properties;
         meta = meta || m.properties;
       }
+      
       tmpl_data['rUri'] = resourceUri;
-      if (m.isA('CollaborationPoint')) { 
-        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
-        if (comments.length > 0) {
-          var pMeta = meta[comments[0]];          
-          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
-      if (U.isA(c, 'Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.likes');
-        if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
-        if (votes.length > 0) {
-          var pMeta = meta[votes[0]];
-          tmpl_data.v_showVotesFor = { uri: U.getLongUri1(rUri), count: atts[pMeta.shortName].count }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+      this.setCollaborationPointData(tmpl_data, atts, rUri);
+      this.setVotableData(tmpl_data, atts, rUri);
+      this.setImageResourceNabsData(tmpl_data, atts, rUri);
+      return this.doRender(options, tmpl_data);      
+    },
+    
+    setVotableData: function(tmpl_data, atts, rUri) {
+      var meta = this.vocModel.properties, 
+          cloned = this.clonedProperties,
+          vProps = cloned.Votable;
+      
+      if (vProps) {
+        var votes = vProps.likes;
+        if (!votes)
+          votes = vProps.voteUse;
+        
+        if (votes) {
+          var pMeta = meta[votes];
+          votes = atts[pMeta.shortName] || {count: 0};
+          tmpl_data.v_showVotesFor = { 
+            uri: U.getLongUri1(rUri), count: votes.count 
+          }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
-      var nabs = U.getCloneOf(vocModel, 'ImageResource.nabs');
-      if (nabs.length > 0) {
-        var pMeta = meta[nabs[0]];
-        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs[0] + '&b_p=' + pMeta.backLink);
+    },
+
+    setImageResourceNabsData: function(tmpl_data) {
+      var cloned = this.clonedProperties,
+          nabs = cloned['ImageResource.nabs'];
+      
+      if (nabs) {
+        var pMeta = meta[nabs];
+        var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
-      
-      try {
-        this.$el.html(this.template(tmpl_data));
-      } catch (err) {
-        G.log(this.TAG, "error", "failed to render ResourceMansonryItemView intersection tile");
-      }
-      
-      return this;
     },
-    renderModificationTile: function(event) {
+    
+    setCollaborationPointData: function(tmpl_data, atts, rUri) {
+      var cloned = this.clonedProperties,
+          cpProps = cloned.CollaborationPoint;
+      
+      if (cpProps) {
+        var comments = cpProps.comments,
+            meta = this.vocModel.properties;
+        
+        if (comments) {
+          var pMeta = meta[comments];
+          comments = atts[pMeta.shortName] || {count: 0};
+          tmpl_data.v_showCommentsFor = { uri: U.getLongUri1(rUri), count: comments.count }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+        }
+      }
+    },
+    
+    renderModificationTile: function(options, event) {
       var meta = this.vocModel.properties,
           res = this.resource,
           atts = res.attributes;
@@ -573,18 +632,41 @@ define('views/ResourceMasonryItemView', [
         tmpl_data.imgHeight = Math.floor(oHeight * ratio);
       }
       
-      try {
-        this.$el.html(this.modTemplate(tmpl_data));
-      } catch (err) {
-        // <debug>
-        debugger;
-        G.log(this.TAG, 'failed to build masonry item for Modification resource ' + atts.resourceDisplayName + ': ' + err);
-        // </debug>
-      }
-      
-      return this;
+      return this.doRender(options, tmpl_data);
     }
   }, {
-    displayName: 'ResourceMasonryItemView'
+    displayName: 'ResourceMasonryItemView',
+    preinitData: {
+      interfaceProperties: {
+        ImageResource: ['bigMedium320', 'bigMedium360', 'bigMedium400', 'bigMediumImage', 'mediumImage', 'nabs'],
+        Intersection: ['a', 'b', 'aThumb', 'aFeatured', 'aOriginalHeight', 'aOriginalWidth', 'bThumb', 'bFeatured', 'bOriginalHeight', 'bOriginalWidth'],
+        Reference: ['resourceDisplayName'],
+        Submission: ['dateSubmitted', 'submittedBy'],
+        CollaborationPoint: ['comments'],
+        Votable: ['likes', 'voteUse'],
+        Buyable: null
+      },
+      superclasses: _.map(["commerce/urbien/Tournament", 'system/changeHistory/Modification', G.commonTypes.App], U.getLongUri1)
+    },
+    
+    preinitialize: function(options) {
+      var preinitData = this.preinitData,
+          vocModel = options.vocModel,
+          meta = vocModel.properties,
+          preinit = BasicView.preinitialize.apply(this, arguments),
+          cloned = preinit.clonedProperties,
+          imageProperty = U.getImageProperty(vocModel);
+          
+      if (imageProperty) {
+        preinit.imageProperty = imageProperty;
+        if (preinit.imageProperty)
+          preinit.maxImageDimension = meta[imageProperty].maxImageDimension;
+      }
+      
+      preinit.displayNameProps = U.getDisplayNameProps(vocModel.properties);
+      return preinit;
+    }
   });
+  
+  return RMIV;
 });

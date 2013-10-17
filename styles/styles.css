@@ -7,10 +7,6 @@ body {
   overflow: hidden;
 }
 
-div[data-role="page"] {
-  overflow: hidden;
-}
-
 #input[required]::before {
   content: " *";
   font-weight: bold;

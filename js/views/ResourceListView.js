@@ -377,9 +377,12 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE");
 //          page.append(frag);
-          page = $(info.html + '</ul>');
+          info.page = page = $(info.html + '</ul>');
           page.find('[data-viewid]').each(function() {
-            listView.children[this.dataset.viewid].setElement(this);
+            var child = listView.children[this.dataset.viewid];
+            child.setElement(this);
+            if (child.postRender)
+              child.postRender();
           });
           
           this._pages[atTheHead ? 'unshift' : 'push'](page);
@@ -802,8 +805,8 @@ define('views/ResourceListView', [
       else {
         if (!preinitializedItem) {
           this._defaultSwatch = (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-          if (this.imageProperty != null)
-            params.imageProperty = this.imageProperty;
+//          if (this.imageProperty != null)
+//            params.imageProperty = this.imageProperty;
           
           preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
         }

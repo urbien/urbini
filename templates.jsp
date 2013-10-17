@@ -19,8 +19,7 @@
    {{ } }}
    ></ul-->
 
-  <div id="sidebarDiv" role="main">
-
+  <div id="sidebarDiv" role="main" data-scrollable="true">
     <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
     <div id="sidebar">
     <div class="dummy head"></div>
@@ -615,7 +614,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}" data-for="{{= U.getImageAttribute(this.resource, prop.shortName) }}"></img>
+  <img src="{{= value }}" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) }} : ''"></img>
 </script>
 
 

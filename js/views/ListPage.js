@@ -297,10 +297,12 @@ define('views/ListPage', [
     },
 
     renderHelper: function() {
+      this.$el.attr("data-scrollable", "true");
       this.$el.html(this.template({
         viewId: this.cid,
         isMasonry: this.isMasonry
       }));
+      
       
       var views = {
         '#headerDiv': this.header
