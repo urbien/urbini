@@ -1275,7 +1275,7 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab">
+  <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
