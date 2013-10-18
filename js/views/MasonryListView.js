@@ -82,9 +82,15 @@ define('views/MasonryListView', [
     },
     
     renderItem: function(res, info) {
-      var liView = this.addChild(new ResourceMasonryItemView({
-        className: 'nab nabBoard',
-        parentView: this,
+      if (!this._preinitializedItem) {
+        this._preinitializedItem = ResourceMasonryItemView.preinitialize({
+          vocModel: this.vocModel,
+          className: 'nab nabBoard',
+          parentView: this
+        });
+      }
+      
+      var liView = this.addChild(new this._preinitializedItem({
         resource: res
       }));
       

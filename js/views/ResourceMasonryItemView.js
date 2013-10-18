@@ -5,8 +5,9 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
+  'lib/fastdom',
   'jqueryMasonry'
-], function(G, _, U, Events, BasicView) {
+], function(G, _, U, Events, BasicView, Q) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -15,13 +16,13 @@ define('views/ResourceMasonryItemView', [
     TAG: "ResourceMasonryItemView",
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       options.vocModel = this.vocModel;
       
-      var type = this.vocModel.type,
-          preinitialized = options.preinitialized || RMIV.preinitialize(options);
-      _.extend(this, preinitialized);
+      var type = this.vocModel.type;
+//          preinitialized = options.preinitialized || RMIV.preinitialize(options);
+//      _.extend(this, preinitialized);
       var cloned = this.clonedProperties;
       
       this.isModification = this.doesModelSubclass('system/changeHistory/Modification'); //U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
@@ -657,16 +658,17 @@ define('views/ResourceMasonryItemView', [
           meta = vocModel.properties,
           preinit = BasicView.preinitialize.apply(this, arguments),
           cloned = preinit.clonedProperties,
-          imageProperty = U.getImageProperty(vocModel);
+          imageProperty = U.getImageProperty(vocModel),
+          more = {};
           
       if (imageProperty) {
-        preinit.imageProperty = imageProperty;
-        if (preinit.imageProperty)
-          preinit.maxImageDimension = meta[imageProperty].maxImageDimension;
+        more.imageProperty = imageProperty;
+        if (more.imageProperty)
+          more.maxImageDimension = meta[imageProperty].maxImageDimension;
       }
       
-      preinit.displayNameProps = U.getDisplayNameProps(vocModel.properties);
-      return preinit;
+      more.displayNameProps = U.getDisplayNameProps(vocModel.properties);
+      return preinit.extend(more);
     }
   });
   

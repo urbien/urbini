@@ -450,7 +450,7 @@ define('utils', [
         // start repeat url check - see if we're calling a url we already called before
         var _url = opts.url + (_.size(opts.data) ? '?' + $.param(opts.data) : '');
         if (_.contains(xhrHistory, _url))
-          console('ajax', 'calling this url again!', _url);
+          console.log('ajax', 'calling this url again!', _url);
         else
           xhrHistory.push(_url);
         
