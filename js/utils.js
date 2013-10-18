@@ -1942,7 +1942,7 @@ define('utils', [
           hasImgs = true;
         else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
           hasImgs = true;
-        var isMasonry = U.isMasonry(vocModel);
+        var isMasonry = U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
         if (isMasonry  &&  hasImgs) {
           var ww = $(window).width() - 40;
           var imgP;

@@ -29,6 +29,9 @@ define('views/ResourceListItemView', [
         preinitialized = options.preinitialized || RLIV.preinitialize(options);
       
       _.extend(this, preinitialized);
+      if (options.imageProperty)
+        this.imageProperty = options.imageProperty;
+      
       this.checked = options.checked;
       this.resource.on('remove', this.remove, this);
 //      this.resource.on('change', this.render, this);
@@ -55,8 +58,10 @@ define('views/ResourceListItemView', [
           else
             elAttrs["class"] = "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
         }
-        else
+        else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
+          elAttrs['class'] = 'u-noimg';
+        }
       }
       
       if (options.swatch)
@@ -194,8 +199,9 @@ define('views/ResourceListItemView', [
   //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
         else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
-          var a = cloned['Intersection.a'];
-          var b = cloned['Intersection.b'];;
+          var clonedI = cloned.Intersection;
+          var a = clonedI.a;
+          var b = clonedI.b;
 
           if (a  &&  b) {
             if (self.hashParams[a]) 
@@ -297,7 +303,7 @@ define('views/ResourceListItemView', [
         if (this.checked)
           json['_checked'] = 'checked';
         if (this.doesModelImplement('ImageResource')) {
-          var thumb = cloned['ImageResource.smallImage'];
+          var thumb = cloned['ImageResource'].smallImage;
           if (thumb  &&  thumb.length) {
             var img = atts[thumb[0]];
             if (img)
@@ -322,8 +328,9 @@ define('views/ResourceListItemView', [
       if (!this.mvProp && this.doesModelImplement('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
-        var a = cloned['Intersection.a'];
-        var b = cloned['Intersection.b'];
+        var clonedI = cloned.Intersection;
+        var a = clonedI.a;
+        var b = clonedI.b;
 //        if (a && b && vocModel.type == G.commonTypes.Handler)
 //          return this.renderIntersectionItem(json, a, b);
           
@@ -393,13 +400,28 @@ define('views/ResourceListItemView', [
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
-      
-      var oW = cloned['ImageResource.originalWidth'];
-      var oH = cloned['ImageResource.originalHeight'];
+      var clonedIR = cloned['ImageResource'];
+      var oW = clonedIR  &&  clonedIR.originalWidth;
+      var oH = clonedIR  &&  clonedIR.originalHeight;
       var maxDim = this.maxImageDimension;
-      if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&
-          typeof  atts[oH] != 'undefined')) {
-        
+      var w, h;
+      if (!oH  &&  !oW  &&  this.imageProperty) {
+        var img = atts[this.imageProperty];
+        if (img) {
+          var idx = img.lastIndexOf(".");
+          var dashIdx = img.indexOf('-', idx);
+          if (dashIdx) {
+            var u1 = img.indexOf('_', idx);
+            var u2 = img.indexOf('_', dashIdx);
+            if (u1  &&  u2) {
+              w = img.substring(u1 + 1, dashIdx);
+              h = img.substring(dashIdx + 1, u2);
+            }
+          }
+        }
+      }
+      
+      if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
         this.$el.addClass("image_fitted");
         
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
@@ -417,6 +439,15 @@ define('views/ResourceListItemView', [
           json.right = dim.w - dim.x;
           json.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (m.get(oH) - m.get(oW)) / 2;
           json.left = dim.x;
+        }
+      }
+      else if (w  &&  h) {
+        var clip = U.clipToFrame(80, 80, w, h, 80);
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
         }
       }
       var params = this.hashParams;
@@ -454,7 +485,7 @@ define('views/ResourceListItemView', [
       if (!viewCols.length  ||  isSubmission) {
         var vCols = '';
         if (isSubmission) {
-          var d = cloned['Submission.dateSubmitted'];
+          var d = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
           var dateSubmitted = d  &&  d.length ? atts[d[0]] : null;
           if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1)
             vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
@@ -471,7 +502,7 @@ define('views/ResourceListItemView', [
           }
         }
         if (isSubmission) {
-          var d = cloned['Submission.submittedBy'];
+          var d = cloned['Submission']  &&  cloned['Submission'].submittedBy;
           if (d  &&  !this.hashParams[d]) {
             var submittedBy = d  &&  d.length ? json[d[0]] : null;
             if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
@@ -672,45 +703,45 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
-      var oW = cloned['ImageResource.originalWidth'];
-      var oH = cloned['ImageResource.originalHeight'];
+      var oW = cloned['ImageResource'].originalWidth;
+      var oH = cloned['ImageResource'].originalHeight;
       var type = vocModel.type;
       var img, dn, rUri, h, w, ab;
       
       if (cloneOf == 'Intersection.a') {
         ab = atts[cloneOf];
-        var imageP = cloned['Intersection.aThumb'];
+        var imageP = cloned['Intersection'].aThumb;
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
           img = atts[imageP[0]];
           hasAImageProps = true;
         }
         if (!img) {
-          imageP = cloned['Intersection.aFeatured'];
+          imageP = cloned['Intersection'].aFeatured;
           if (imageP  &&  imageP.length != 0) { 
             img = atts[imageP[0]];
             hasAImageProps = true;
           }
         }
         if (!img  &&  !hasAImageProps  &&  this.doesModelImplement('Intersection')) {
-          imageP = cloned['ImageResource.smallImage'];
+          imageP = cloned['ImageResource'].smallImage;
           if (imageP  &&  imageP.length != 0) {
             img = atts[imageP[0]];
           }
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
         if (img) {
-          w = atts[cloned['Intersection.aOriginalWidth']];
-          h = atts[cloned['Intersection.aOriginalHeight']];
+          w = atts[cloned['Intersection'].aOriginalWidth];
+          h = atts[cloned['Intersection'].aOriginalHeight];
         }
       }
       else {
-        ab = atts[cloned['Intersection.b']];
-        var imageP = cloned['Intersection.bThumb'];
+        ab = atts[cloned['Intersection'].b];
+        var imageP = cloned['Intersection'].bThumb;
         if (imageP  &&  imageP.length != 0)
           img = atts[imageP[0]]; 
         if (!img) {
-          imageP = cloned['Intersection.bFeatured'];
+          imageP = cloned['Intersection'].bFeatured;
         
           if (imageP) 
             img = atts[imageP[0]];
@@ -718,8 +749,8 @@ define('views/ResourceListItemView', [
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
         if (img) {
-          w = atts[cloned['Intersection.bOriginalWidth']];
-          h = atts[cloned['Intersection.bOriginalHeight']];
+          w = atts[cloned['Intersection'].bOriginalWidth];
+          h = atts[cloned['Intersection'].bOriginalHeight];
         }
       }
       if (img  &&  !this.isCommonTemplate) {
@@ -754,7 +785,7 @@ define('views/ResourceListItemView', [
           json.mW = 80;
       }
       if (cloneOf == 'Intersection.a'  &&  this.doesModelImplement('Reference')) 
-        dn = atts[cloned['Reference.resourceDisplayName']];
+        dn = atts[cloned['Reference'].resourceDisplayName];
       else
         dn = atts[delegateTo + '.displayName'];
       
@@ -864,7 +895,7 @@ define('views/ResourceListItemView', [
       }
           
       if (gridCols) {
-        var dateSubmitted = cloned['Submission.dateSubmitted'];
+        var dateSubmitted = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
         if (dateSubmitted)
           commonBlockProps.push(dateSubmitted);   
           
@@ -879,7 +910,7 @@ define('views/ResourceListItemView', [
             gridCols.splice(idx, 1);
           else {
             commonBlockProps.splice(i, 1);
-            n--;
+            len--;
             i--
           }
         }

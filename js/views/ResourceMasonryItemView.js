@@ -16,14 +16,14 @@ define('views/ResourceMasonryItemView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
-      otpions = options || {};
+      options = options || {};
       options.vocModel = this.vocModel;
       
       var type = this.vocModel.type,
-          cloned = this.clonedProperties,
           preinitialized = options.preinitialized || RMIV.preinitialize(options);
-      
       _.extend(this, preinitialized);
+      var cloned = this.clonedProperties;
+      
       this.isModification = this.doesModelSubclass('system/changeHistory/Modification'); //U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (this.isModification)
         this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
@@ -37,21 +37,21 @@ define('views/ResourceMasonryItemView', [
         
         var ww = $(window).width();
         if (/*ww >= 320  && */ ww < 340) 
-          imgP = clonedIR['bigMedium320'];
+          imgP = clonedIR  &&  clonedIR['bigMedium320'];
         else  if (/*ww >= 360  &&*/  ww < 380) 
-          imgP = clonedIR['bigMedium360'];
+          imgP = clonedIR  &&  clonedIR['bigMedium360'];
         else if (ww <= 420) {
-          imgP = clonedIR['bigMedium400'];
+          imgP = clonedIR  &&  clonedIR['bigMedium400'];
 //          if (ww != 400)
 //            isBM = true;
         }
         
         if (!imgP) {
-          imgP = clonedIR['bigMediumImage'];
+          imgP = clonedIR  &&  clonedIR['bigMediumImage'];
           if (imgP)
             isBM = true;
           else
-            imgP = clonedIR['mediumImage'];
+            imgP = clonedIR  &&  clonedIR['mediumImage'];
         }
         else if (!isBM)
           this.IMG_MAX_WIDTH = vocModel.properties[imgP].imageWidth;
@@ -208,8 +208,8 @@ define('views/ResourceMasonryItemView', [
 
       var grid = U.getCols(m, 'grid');
       if (grid) {
-        var mediumImageProp = cloned['ImageResource.mediumImage'],
-            smallImageProp = cloned['ImageResource.smallImage'];
+        var mediumImageProp = cloned['ImageResource'].mediumImage,
+            smallImageProp = cloned['ImageResource'].smallImage;
         
         for (var row in grid) {
           if (i == 0)
@@ -240,7 +240,7 @@ define('views/ResourceMasonryItemView', [
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
           img = img.slice(6);
-        tmpl_data['resourceMediumImage'] = imgP;
+        tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
         var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
         var oHeight = m.get('ImageResource.originalHeight');
@@ -303,8 +303,8 @@ define('views/ResourceMasonryItemView', [
       
 //      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       
-      var submittedByProp = cloned['Submission.submittedBy'];
-      if (submittedByProp) { 
+      var submittedBy = cloned['Submission']  &&  cloned['Submission'].submittedBy;
+      if (submittedBy) { 
         tmpl_data.creator = atts[submittedBy];
         tmpl_data.creatorDisplayName = atts[submittedBy + '.displayName'];
         tmpl_data.creatorThumb = atts[submittedBy + '.thumb'];
@@ -353,7 +353,7 @@ define('views/ResourceMasonryItemView', [
       if (this.doesModelSubclass("commerce/urbien/Tournament")) 
         tmpl_data.v_submitForTournament = U.makePageUrl('list', 'media/publishing/Video', {'-tournament': rUri, '-tournamentName': dn});
 
-      var nabs = cloned['ImageResource.nabs'];
+      var nabs = cloned['ImageResource'].nabs;
       if (nabs) {
         var pMeta = meta[nabs];
         var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
@@ -554,7 +554,7 @@ define('views/ResourceMasonryItemView', [
 
     setImageResourceNabsData: function(tmpl_data) {
       var cloned = this.clonedProperties,
-          nabs = cloned['ImageResource.nabs'];
+          nabs = cloned['ImageResource'].nabs;
       
       if (nabs) {
         var pMeta = meta[nabs];
