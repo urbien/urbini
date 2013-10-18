@@ -1520,12 +1520,10 @@ define('router', [
         view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
       }
 
-      if (G.browser.mobile) {
-        if (Modules.ListPage && view instanceof Modules.ListPage)
-          $('body').css('overflow', 'hidden');
-        else
-          $('body').css('overflow', 'visible');
-      }
+      if (Modules.ListPage && view instanceof Modules.ListPage)
+        $('body').css('overflow', 'hidden');
+      else
+        $('body').css('overflow', 'visible');
           
       if (this.firstPage)
         transition = 'none';
