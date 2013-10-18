@@ -102,7 +102,7 @@ define('app', [
         accesses = currentApp.dataAccesses || [],
         providerType = "model/social/AppProviderAccount",
         consumerType = "model/social/AppConsumerAccount",
-        accessType = "model/social/AppConsumerAccount",
+        accessType = "model/social/AppDataShareAccess1",
         models = [];
     
     if (providers.length)

@@ -421,23 +421,22 @@ define('modelLoader', [
 //  }
   
   function loadModel(m) {
-    m = Resource.extend({}, m);
-    if (m.interfaces) {
-      m.interfaces = _.map(m.interfaces, function(i) {
-        if (i.indexOf('/') == -1)
-          return 'http://www.hudsonfog.com/voc/system/fog/' + i;
-        else
-          return U.getLongUri1(i);
-      });
-    }
-    
     if (m.adapter) {
+      var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
+          appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
+      
+      if (!U.getModel(appProviderType) || !U.getModel(appConsumerType)) {
+        // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized 
+        ModelLoader.getModels([appProviderType, appConsumerType]).done(loadModel.bind(null, m));
+        return;
+      }
+      
       var currentApp = G.currentApp,
           consumers = currentApp.dataConsumerAccounts,
           providers = currentApp.dataProviders,
-          consumer = consumers && consumers.where({
+          consumer = consumers && _.where({ // consumers could be an array of json objects, or a resourcelist
             provider: m.app
-          }, true),
+          }),
           // HACK!!!!! //
 //          provider = providers && providers.where({
 //            app: m.app
@@ -459,6 +458,16 @@ define('modelLoader', [
 //      if (consumer == null)
 //        throw new Error("This app is not configured to consume data from app '{0}'".format(provider.app));
       
+    }
+
+    m = Resource.extend({}, m);
+    if (m.interfaces) {
+      m.interfaces = _.map(m.interfaces, function(i) {
+        if (i.indexOf('/') == -1)
+          return 'http://www.hudsonfog.com/voc/system/fog/' + i;
+        else
+          return U.getLongUri1(i);
+      });
     }
     
     var type = m.type = U.getTypeUri(m.type),

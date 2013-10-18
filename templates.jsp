@@ -614,7 +614,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) }} : ''"></img>
+  <img src="{{= value }}" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) : '' }}"></img>
 </script>
 
 
