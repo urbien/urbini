@@ -1,4 +1,4 @@
-define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backbone, Events) {
+define('backboneMixins', ['underscore', 'backbone', 'events', 'utils'], function(_, Backbone, Events, U) {
   var eventObjs = ['events', 'myEvents', 'globalEvents', 'pageEvents', 'windowEvents'];
   
   function mixin() {
@@ -34,6 +34,11 @@ define('backboneMixins', ['underscore', 'backbone', 'events'], function(_, Backb
     // https://github.com/onsi/cocktail
     var originalExtend = Backbone.View.extend;
     var extend = function(protoProps, classProps) {
+//      for (var p in protoProps) {
+//        if (typeof protoProps[p] == 'function')
+//          protoProps[p] = U.toTimedFunction(protoProps, p, 2);
+//      }      
+
       var klass = originalExtend.call(this, protoProps, classProps),
           mixins = klass.prototype.mixins;
 

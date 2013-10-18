@@ -387,14 +387,17 @@ define('modelLoader', [
     var promise = loadModels(changedModels); 
 //      setTimeout(function() {
     G.whenNotRendering(function() {
-      storeModels(newModels);
+      Q.whenIdle('nonDom', storeModels.bind(null, newModels));
     });
 //      }, 100);
     
 //        Voc.setupPlugs(data.plugs);
     Events.trigger('newPlugs', data.plugs);
-    if (newModels.length)
-      Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
+    if (newModels.length) {
+      promise.done(function() {        
+        Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
+      });
+    }
     
     return promise;
   };
@@ -408,7 +411,7 @@ define('modelLoader', [
     for (var i = 0, len = models.length; i < len; i++) {
       var model = models[i];
       if (!preventOverwrite || !U.getModel(model.type)) {
-        G.log('event', 'modelLoad', model.type);
+        G.log('modelLoader', 'events', 'modelLoad', model.type);
         loadModel(model);
       }
     }
@@ -416,11 +419,11 @@ define('modelLoader', [
     return makeModelsPromise(_.pluck(models, 'type'));
   };
 
-//  function loadModel(m) {
-//    Q.nonDom(loadModel.bind(null, m));
-//  }
-  
   function loadModel(m) {
+    Q.whenIdle('nonDom', _loadModel.bind(null, m));
+  }
+  
+  function _loadModel(m) {
     if (m.adapter) {
       var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
           appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
@@ -474,7 +477,6 @@ define('modelLoader', [
         isCustomModel = U.isAnAppClass(type);
     
     Events.trigger('newModel', m);
-
     if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
       var meta = m.properties;
       for (var p in meta) {
@@ -508,7 +510,7 @@ define('modelLoader', [
       
     _.extend(m.properties, U.systemProps);
     m.prototype.initialize = getInit.call(m);
-    Q.nonDom(function triggerInitPlugs() {
+    Q.whenIdle('nonDom', function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
     });
     
@@ -570,13 +572,13 @@ define('modelLoader', [
 
 
   function getEnumsFromStorage() {
-    return G.localStorage.get(ENUMERATIONS_KEY);
+    Q.whenIdle('nonDom', function() {
+      G.localStorage.get(ENUMERATIONS_KEY);
+    });
   };
 
   function storeEnums(enums) {
-    setTimeout(function() {
-      G.localStorage.putAsync(ENUMERATIONS_KEY, JSON.stringify(enums));
-    }, 100);
+    G.localStorage.putAsync(ENUMERATIONS_KEY, JSON.stringify(enums));
   };
 
   function deleteModelFromStorage(uri) {
@@ -681,6 +683,5 @@ define('modelLoader', [
   };
   
   _.extend(ModelLoader, Backbone.Events);
-  
   return ModelLoader;
 });

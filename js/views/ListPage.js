@@ -6,13 +6,11 @@ define('views/ListPage', [
   'error',
   'vocManager',
   'views/BasicPageView',
-  'views/mixins/Scrollable',
   'views/ResourceListView', 
   'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicPageView, Scrollable, ResourceListView, Header) {
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
   var MapView;
   return BasicPageView.extend({
-    mixins: [Scrollable], 
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
@@ -298,11 +296,9 @@ define('views/ListPage', [
 
     renderHelper: function() {
       this.$el.attr("data-scrollable", "true");
-      this.$el.html(this.template({
-        viewId: this.cid,
-        isMasonry: this.isMasonry
-      }));
-      
+      var tmpl_data = this.getBaseTemplateData();
+      tmpl_data.isMasonry = this.isMasonry;
+      this.$el.html(this.template(tmpl_data));
       
       var views = {
         '#headerDiv': this.header

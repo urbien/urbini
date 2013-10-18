@@ -22,7 +22,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      fileMap = {};
+      fileMap = {};  
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};
@@ -590,7 +590,10 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
         args[0] = self.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
-          return parse.call(self, results || []);
+          return parse.call(self, results || []).then(function(results) {
+//            Events.trigger('garbage', results);
+            return results;
+          });
         });
       });
       
@@ -642,10 +645,11 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         done = false,
         finish = function() {
           return results;
-        };
+        },
+        overallPromise;
 
     filter = filter || alwaysTrue;    
-    return trans.progress(function(trans) {
+    overallPromise = trans.progress(function(trans) {
       log("db", 'Starting getItems Transaction, query with valueTester');
       var store = trans.objectStore(storeName);
       function processItem(item) {
@@ -667,9 +671,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     }).fail(function() {
       debugger;
     }).then(function() {
+//      Events.trigger('garbage', promises);
       log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));      
       return $.when.apply($, promises).then(Q.nextFramePromise);
     }).then(finish, finish);
+    
+    return overallPromise; 
   }
   
   /**

@@ -16,7 +16,6 @@ define('lib/fastdom', ['globals'], function(G) {
       FPS = 45,
       FRAME_SIZE = 16,
       FRAME_END = 14,
-      getNow = window.performance ? performance.now.bind(performance) : Date.now.bind(Date),
       modeOrder = ['nonDom', 'read', 'write'],
       numModes = modeOrder.length;
   
@@ -247,7 +246,7 @@ define('lib/fastdom', ['globals'], function(G) {
   };
 
   FastDom.prototype.time = function() {
-    var now = getNow();
+    var now = window.performance.now();
     this.timestamps.push(now);
     if (this.timestamps.length > 50)
       this.timestamps = this.timestamps.slice(0, 10);
@@ -338,6 +337,23 @@ define('lib/fastdom', ['globals'], function(G) {
     };
   };
 
+  FastDom.prototype.queueLength = function() {
+    var total = 0;
+    for (var type in this.queue) {
+      if (type !== 'defer')
+        total += this.queue[type].length;
+    }
+    
+    return total;
+  };
+  
+  FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
+    if (this.queueLength() == 0)
+      this[type](fn, ctx, args, options);
+    else
+      this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));
+  };
+  
   /**
    * Called when a callback errors.
    * Overwrite this if you don't

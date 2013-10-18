@@ -986,7 +986,8 @@
     this._configure(options || {});
     this._ensureElement();
     this.initialize.apply(this, arguments);
-    this.delegateEvents();
+    if (options.delegateEvents !== false)
+      this.delegateEvents();
   };
 
   // Cached regex to split keys for `delegate`.

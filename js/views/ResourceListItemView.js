@@ -18,17 +18,11 @@ define('views/ResourceListItemView', [
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
-      
-      otpions = options || {};
-      options.vocModel = this.vocModel;
-      
+      BasicView.prototype.initialize.apply(this, arguments);
       var elAttrs = {
-          "data-icon": "false"
-        },
-        preinitialized = options.preinitialized || RLIV.preinitialize(options);
-      
-      _.extend(this, preinitialized);
+        "data-icon": "false"
+      };
+
       if (options.imageProperty)
         this.imageProperty = options.imageProperty;
       
@@ -236,9 +230,10 @@ define('views/ResourceListItemView', [
     //              params['tagUses.tag.application'] = app;
             }
             else { //if (tag  ||  tags) {
-              app = self.hash;
-              app = decodeURIComponent(app.substring(0, idx));
+              app = self._hashInfo.type;
+//              app = decodeURIComponent(app.substring(0, idx));
             }
+            
             if (app) {
               appModel = U.getModel(app);
               if (appModel) {
@@ -366,9 +361,9 @@ define('views/ResourceListItemView', [
         return this.doRender(options, json);
       }
       var params = this.hashParams;
-      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
+      var isEdit = this.isEdit; //(params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
-      if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
+      if (this.doesModelSubclass(G.commonTypes.Jst)) {
         json.isJst = true;
         var text = atts.templateText;
         if (text) {
@@ -376,8 +371,10 @@ define('views/ResourceListItemView', [
           if (comments && comments.length)
             json.comment = comments[0].trim();
         }
+        
         if (params['modelName'])
           json.$title = U.makeHeaderTitle(params['modelName'], atts.templateName);
+        
         var detached = this.resource.detached;
         json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : atts._uri, detached && {templateName: atts.templateName, modelDavClassUri: atts.modelDavClassUri, forResource: G.currentApp._uri, $title: json.$title})
       }
@@ -872,26 +869,36 @@ define('views/ResourceListItemView', [
         Votable: ['likes', 'voteUse'],
         Buyable: null
       },
-      superclasses: _.map(["media/publishing/Video", G.commonTypes.WebClass, 'model/workflow/Alert', 'model/study/QuizQuestion'], U.getLongUri1)
+      superclasses: _.map([
+        "media/publishing/Video", 
+        G.commonTypes.WebClass, 
+        'model/workflow/Alert', 
+        'model/study/QuizQuestion', 
+        G.commonTypes.WebProperty, 
+        G.commonTypes.Jst
+      ], U.getLongUri1)
     },
     preinitialize: function(options) {
       var preinitData = this.preinitData,
           vocModel = options.vocModel,
           meta = vocModel.properties,
           preinit = BasicView.preinitialize.apply(this, arguments),
-          cloned = preinit.clonedProperties,
+          cloned = preinit.prototype.clonedProperties,
           imageProperty = U.getImageProperty(vocModel),
           gridCols = U.getColsMeta(vocModel, 'grid'),
-          commonBlockProps = [];
+          commonBlockProps = [],
+          params = G.currentHashInfo.hashParams,
+          additional = {        
+            gridCols: gridCols,
+            commonBlockProps: commonBlockProps,
+            containerProp: U.getContainerProperty(vocModel)
+          };
       
-      preinit.gridCols = gridCols;
-      preinit.commonBlockProps = commonBlockProps;
-      preinit.containerProp = U.getContainerProperty(vocModel);
 
       if (imageProperty) {
-        preinit.imageProperty = imageProperty;
-        if (preinit.imageProperty)
-          preinit.maxImageDimension = meta[preinit.imageProperty].maxImageDimension;
+        additional.imageProperty = imageProperty;
+        if (additional.imageProperty)
+          additional.maxImageDimension = meta[additional.imageProperty].maxImageDimension;
       }
           
       if (gridCols) {
@@ -916,7 +923,8 @@ define('views/ResourceListItemView', [
         }
       }
       
-      return preinit;
+      additional.isEdit = (params  &&  params['$edit'])  ||  preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty);
+      return preinit.extend(additional);
     }
   });  
   

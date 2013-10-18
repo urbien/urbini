@@ -77,6 +77,7 @@ define('views/ResourceListView', [
     
     _viewportSizeChanged: function() {
 //      this._bounds = this.el.getBoundingClientRect();
+      this.refresh();
     },
     
     onScroll: _.throttle(function(e, info) {
@@ -142,10 +143,20 @@ define('views/ResourceListView', [
      */
     refresh: function() {
       // TODO: remove all the elements in the sliding window and repaint them
-      debugger;
-      return this.removePages(this._pagesInSlidingWindow, true)
-                        .then(this.appendPages.bind(this, this._pagesInSlidingWindow))
-                        .then(this.adjustSlidingWindow);
+      if (this._refreshing)
+        return;
+      
+      var pages = this._pagesCurrentlyInSlidingWindow;
+      this._refreshing = true;
+      return this.removePages(this._pagesCurrentlyInSlidingWindow)
+                        .then(function() {
+                          this._pagesCurrentlyInSlidingWindow = 0;
+                          return this.appendPages(pages);
+                        }.bind(this))
+                        .done(function() {
+                          this._refreshing = false;
+                          this.adjustSlidingWindow();
+                        }.bind(this));
     },
     
     getDimensionDiff: function(from, to) {
@@ -356,21 +367,17 @@ define('views/ResourceListView', [
 
       this.preRender(info);
       for (var i = colRange.from, to = colRange.to; i < to; i++) {
-        (function(i) {
-//          Q.nonDom(function renderOneListItem() {
-          Q.defer(i - colRange.from, 'nonDom', function renderOneListItem() {
-            var res = col.models[i],
+        Q.defer(i - colRange.from, 'nonDom', function renderOneListItem(i) {
+          var res = col.models[i],
 //                liView = this.renderItem(res, atTheHead),
 //                el = liView.el;
-                liView = this.renderItem(res, atTheHead);
-            
+              liView = this.renderItem(res, atTheHead);
+          
 //            info.appended.push(el);
 //            info.appended.push(itemHtml);
 //            this.postRenderItem(el, info);
-            this.postRenderItem(liView._html, info);
-            this.listenTo(res, 'change', this.onResourceChanged);
-          }, this);
-        }.bind(this))(i);
+          this.postRenderItem(liView._html, info);
+        }, this, [i]);
       }
 
       var listView = this;
@@ -380,21 +387,27 @@ define('views/ResourceListView', [
         dummyDim = this.dimension($dummy) || 0;
         slidingWindowBefore = this.getSlidingWindow();
         Q.write(function insertPage() {
-//          console.log("PAGER", "ADDING PAGE");
+//          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          page.append(frag);
           info.page = page = $(info.html + '</{0}>'.format(pageTag));
-          page.find('[data-viewid]').each(function() {
-            var child = listView.children[this.dataset.viewid];
-            child.setElement(this);
-            if (child.postRender)
-              child.postRender();
-          });
+          Q.defer(1, 'read', function() { 
+//            console.log("PAGER", "SETTING ELEMENTS ON ITEMS, FRAME", window.fastdom.frameNum);
+            page.find('[data-viewid]').each(function() {
+              var childEl = arguments[1];
+              var child = listView.children[childEl.dataset.viewid];
+              this.listenTo(child.resource, 'change', this.onResourceChanged);
+              child.setElement(childEl);
+              if (child.postRender)
+                child.postRender();
+            }.bind(this));
+          }, this);
           
           this._pages[atTheHead ? 'unshift' : 'push'](page);
           page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = this.postRender(info);
+          
           // on next frame
-          Q.read(function calcNewDummyDim() {
+//          Q.read(function calcNewDummyDim() {
 //            slidingWindowAfter = this.getSlidingWindow();
             var newDim = dummyDim;
             if (colRange.from == 0)
@@ -402,24 +415,23 @@ define('views/ResourceListView', [
             else if (dummyDim > 0)
               newDim = Math.max(dummyDim - page.height(), 0);
             
-            function cleanup() {
+            var cleanup = function cleanup() {
               if (_.isPromise(postRenderResult))
                 postRenderResult.always(finish);
               else
                 finish();
-            };
+            }.bind(this);
             
             if (newDim != dummyDim) {
-              Q.write(function setNewDummyDim() {
-//                console.log("PAGER", "UPDATING {0} DUMMY SIZE".format(atTheHead ? "HEAD" : "TAIL"));
+//              Q.write(function setNewDummyDim() {
+//                console.log("PAGER", "UPDATING {0} DUMMY SIZE".format(atTheHead ? "HEAD" : "TAIL"), "FRAME", window.fastdom.frameNum);
                 this.dimension($dummy, newDim);
                 cleanup();
-              }, this);
+//              }, this);
             }
             else
-              cleanup();
-            
-          }, this);
+              cleanup();            
+//          }, this);
         }, this);
       }, this);
 
@@ -486,7 +498,7 @@ define('views/ResourceListView', [
       }.bind(this));
       
       return $.when(add, remove).then(function() {
-//        console.log("PAGING", up ? "UP" : "DOWN", "END");
+//        console.log("PAGING", up ? "UP" : "DOWN", "END, FRAME", window.fastdom.frameNum);
         this.getNewSize();
       }.bind(this));
     },
@@ -661,8 +673,8 @@ define('views/ResourceListView', [
         }, 0);
       }, this);
 
-      Q.write(function removePagesFromDOM() {        
-//        console.log("PAGER", "REMOVING PAGES");
+      Q.write(function removePagesFromDOM() {
+//        console.log("PAGER", "REMOVING PAGES, FRAME", window.fastdom.frameNum);
         for (var i = 0, len = removedPages.length; i < len; i++) {
           removedPages[i].remove();
         }
@@ -775,19 +787,21 @@ define('views/ResourceListView', [
             vocModel: res.vocModel
           },
           liView,
-          preinitializedItem = this._preinitializedItem;
+          preinitializedItem = this._preinitializedItem,
+          options = {
+            delegateEvents: false,
+            preinitialized: preinitializedItem,
+            resource: res
+          }
           
       if (this.isEdit) {
         if (!preinitializedItem) {
           params.editCols = this.hashParams['$editCols']; 
           params.edit = true;
-          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
         }
         
-        liView = new ResourceListItemView({
-          preinitialized: preinitializedItem,
-          resource: res
-        });
+        liView = new preinitializedItem(options);
       }
       else if (this.isMultiValueChooser) {
         if (!preinitializedItem) {
@@ -795,17 +809,14 @@ define('views/ResourceListView', [
           params.tagName = 'div';
           params.className = "ui-controlgroup-controls";
           params.mvProp = this.mvProp;
-          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
         }
         
 //        var params = hash ? _.getParamMap(hash) : {};
 //        var mvProp = params.$multiValue;
   //      var isChecked = defaultUnchecked === isListed;
-        liView = new ResourceListItemView({
-          checked: _.contains(this.mvVals, res.get('davDisplayName')),
-          preinitialized: preinitializedItem,
-          resource: res
-        });
+        options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
+        liView = new preinitializedItem(options);
       }
       else {
         if (!preinitializedItem) {
@@ -813,14 +824,11 @@ define('views/ResourceListView', [
 //          if (this.imageProperty != null)
 //            params.imageProperty = this.imageProperty;
           
-          preinitializedItem = this._preinitializedItem = ResourceListItemView.preinitialize(params);
+          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
         }
         
-        liView = new ResourceListItemView({
-          swatch: res.get('swatch') || this._defaultSwatch,
-          preinitialized: preinitializedItem,
-          resource: res
-        });
+        options.swatch = res.get('swatch') || this._defaultSwatch;
+        liView = new preinitializedItem(options);
       }
       
       this.addChild(liView, prepend);

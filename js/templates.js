@@ -5,8 +5,9 @@ define('templates', [
   '../templates.jsp',
   '../templates_bb.jsp',
   'underscore',
-  'events'
-], function(G, HTML, HTML_bb,_, Events) {
+  'events',
+  'lib/fastdom'
+], function(G, HTML, HTML_bb,_, Events, Q) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -17,11 +18,8 @@ define('templates', [
       blankImgDataUrl = G.blankImgDataUrl;
   
   window.onimageload = function onimageload() {
-    var self = this;
-//    window.raf(function() {      
-      $(self).trigger('imageOnload');
-//    });
-    
+    var $this = $(this);
+    Q.defer(Math.random() * 5, 'read', $this.trigger.bind($this, 'imageOnload'));
     return false;
   };
   

@@ -405,7 +405,7 @@ define('views/Header', [
         }
       }
 
-      var templateSettings = {};
+      var templateSettings = this.getBaseTemplateData();
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"

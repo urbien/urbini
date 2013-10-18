@@ -13,7 +13,8 @@ define('app', [
  'vocManager',
  'resourceManager',
  'router',
- 'collections/ResourceList'
+ 'collections/ResourceList',
+ 'garbage'
  ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
 //  var Chrome;
   Backbone.emulateHTTP = true;

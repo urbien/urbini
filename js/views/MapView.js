@@ -195,7 +195,8 @@ define('views/MapView', [
             height = Math.round(height / imgOffset);
           }
           
-          medImg = {value: _.decode(medImg)};
+          medImg = this.getBaseTemplateData();
+          medImg.value = _.decode(medImg);
           width && (medImg.width = width);
           height && (medImg.height = height);
           data.image = this.makeTemplate("imagePT", "imagePT")(medImg);

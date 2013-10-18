@@ -9,11 +9,21 @@ define('views/BasicView', [
 ], function(G, _Backbone, U, Templates, Events, Q) {
   var basicOptions = ['source', 'parentView', 'returnUri'],
       AP = Array.prototype,
-      viewportEvents = ['resize', 'orientationchange'],
       viewProps = ['pageView', 'parentView', 'model', 'resource', 'collection'],
       backboneOn = Backbone.View.prototype.on,
-      $wnd = $(window);
+      $wnd = $(window),
+      baseTemplateData = function() {};
 
+  baseTemplateData.prototype = {
+    G: G,
+    $: $,
+    U: U,
+    loc: function() {
+      G.localize.apply(this, arguments);
+    }
+  };
+  
+  baseTemplateData = new baseTemplateData();
   function disableHover($el) {
     $el.bind('mouseover', function() {
       return false;
@@ -24,7 +34,7 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
     initialize: function(options) {
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_onViewportDimensionsChanged', '_render',  '_refresh');      
+      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh');      
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
       
@@ -35,6 +45,9 @@ define('views/BasicView', [
           break;
         
         _.defaults(this.events, superDuperCtor.prototype.events);
+        _.defaults(this.pageEvents, superDuperCtor.prototype.pageEvents);
+        _.defaults(this.myEvents, superDuperCtor.prototype.myEvents);
+        _.defaults(this.windowEvents, superDuperCtor.prototype.windowEvents);
         superCtor = superDuperCtor;
       }
       
@@ -93,15 +106,6 @@ define('views/BasicView', [
 //      this.on('active', this._onActive);
 //      this.on('inactive', this._onInactive);
       
-      for (var i = 0; i < viewportEvents.length; i++) {
-        var event = viewportEvents[i],
-            listener = 'on' + event;
-        
-        if (listener in window) {
-          window.addEventListener(event, this._onViewportDimensionsChanged, false);          
-        }
-      }
-      
 //      this.on('destroyed', this._onDestroyed);
       this.loc = G.localize;
       if (this.model)
@@ -109,11 +113,6 @@ define('views/BasicView', [
       
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
-    },
-    
-    windowEvents: {
-      'resize.default': '_onViewportDimensionsChanged',
-      'orientationchange.default': '_onViewportDimensionsChanged'
     },
     
     myEvents: {
@@ -137,6 +136,16 @@ define('views/BasicView', [
     },
 
     getBaseTemplateData: function() {
+//      for (var p in baseTemplateData) {
+//        if (baseTemplateData.hasOwnProperty(p))
+//          delete baseTemplateData[p];
+//      }
+//      
+//      baseTemplateData.viewId = this.cid;
+//      if (this.resource)
+//        baseTemplateData._uri = this.resource.get('_uri');
+//
+//      return baseTemplateData;
       var data = {
         viewId: this.cid
       };
@@ -228,14 +237,18 @@ define('views/BasicView', [
     },
     
     _onDestroyed: function() {
+//      Events.trigger('garbage', this);
       this.trigger('inactive');
       for (var cid in this.children) {
         this.children[cid].destroy();
       }
       
-      for (var i = 0; i < viewportEvents.length; i++) {
-        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
-      }
+      if (this.parentView)
+        delete this.parentView.children[this.cid];
+      
+//      for (var i = 0; i < viewportEvents.length; i++) {
+//        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
+//      }
       
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
@@ -353,7 +366,14 @@ define('views/BasicView', [
       _.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       this._monitorTemplate(templateName);
-      return template;
+      var proxy = function(json) {
+        if (json == baseTemplateData)
+          return template(json);
+        else
+          return template(_.extend(this.getBaseTemplateData(), json));
+      }.bind(this);
+      
+      return proxy;
     },  
     
     _monitorTemplate: function(templateName) {
@@ -394,15 +414,15 @@ define('views/BasicView', [
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-      view.once('destroyed', function() {
-        if (self.children)
-          delete self.children[view.cid];
-        
-        for (var prop in self) {
-          if (self[prop] === view)
-            self[prop] = null;
-        }
-      });
+//      view.once('destroyed', function() {
+//        if (self.children)
+//          delete self.children[view.cid];
+//        
+//        for (var prop in self) {
+//          if (self[prop] === view)
+//            self[prop] = null;
+//        }
+//      });
       
       return view;
     },
@@ -476,14 +496,14 @@ define('views/BasicView', [
       return this.pageView && this.pageView.getPageTitle();
     },
     
-    _onViewportDimensionsChanged: function(event) {
-      var $el = this.$el,
-          type = event.type;
-      
-      if (this.isActive())
-        $el.trigger(type);
-    },
-    
+//    _onViewportDimensionsChanged: _.debounce(function(event) {
+//      var $el = this.$el,
+//          type = event.type;
+//      
+//      if (this.isActive())
+//        $el.triggerHandler(type);
+//    }, 50),
+//    
 //    _onActive: function() {
 //      if (this.active)
 //        return;
@@ -824,7 +844,7 @@ define('views/BasicView', [
         }
       }
       
-      return preinit;
+      return this.extend(preinit);
     }    
   });
 

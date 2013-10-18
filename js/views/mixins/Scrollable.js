@@ -337,7 +337,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           var touch = _.last(s.touchHistory);
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
-          $(e.target).click();
+//          $(e.target).click();
           return s.state;
         }
 
@@ -887,7 +887,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _triggerScrollEvent: function(type, scroll) {
-      this.log('SCROLL: ' + type, Date.now());
+//      this.log('SCROLL: ' + type, Date.now());
       this.$el.trigger(type.replace('scroll', 'scrollo'), this.getScrollInfo(scroll));
     },
     

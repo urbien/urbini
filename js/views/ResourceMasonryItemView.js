@@ -364,22 +364,24 @@ define('views/ResourceMasonryItemView', [
       if (!this.postRender) {
         this.postRender = function() {        
     //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-          this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
-    //      if (!tmpl_data['top'])
-    //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
-          
-          if (tmpl_data['top']  &&  isBM) {
-            this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
-            this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
-            /*
-            tmpl_data['top'] = dH;
-            tmpl_data['right'] = iW + dW;
-            tmpl_data['bottom'] = iH + dH;
-            tmpl_data['left'] = dW;
-            tmpl_data['margin-top'] = 0;
-            tmpl_data['margin-left'] = 0 - dW;
-            */ 
-          }
+          Q.write(function() {
+            this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
+      //      if (!tmpl_data['top'])
+      //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
+            
+            if (tmpl_data['top']  &&  isBM) {
+              this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
+              this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
+              /*
+              tmpl_data['top'] = dH;
+              tmpl_data['right'] = iW + dW;
+              tmpl_data['bottom'] = iH + dH;
+              tmpl_data['left'] = dW;
+              tmpl_data['margin-top'] = 0;
+              tmpl_data['margin-left'] = 0 - dW;
+              */ 
+            }
+          }, this);
         }.bind(this);
       }
       

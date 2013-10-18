@@ -6,11 +6,13 @@ define('views/BasicPageView', [
   'events',
   'views/BasicView',
   'views/mixins/LazyImageLoader',
+  'views/mixins/Scrollable',
   'jqueryMobile',
   'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, $m) {
+], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
+      viewportEvents = ['resize', 'orientationchange'],
       doc = document,
       $wnd = $(window);
 
@@ -20,11 +22,11 @@ define('views/BasicPageView', [
   };
   
   var PageView = BasicView.extend({
-    mixins: [LazyImageLoader],
+    mixins: [LazyImageLoader, Scrollable],
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll'); //, 'onpageshow', 'onpagehide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_onViewportDimensionsChanged'); //, 'onpageshow', 'onpagehide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -60,7 +62,21 @@ define('views/BasicPageView', [
 //        self.checkError();
         if (G.callInProgress)
           self.createCallInProgressHeader(G.callInProgress);        
-      };      
+      };
+      
+//      for (var i = 0; i < viewportEvents.length; i++) {
+//        var event = viewportEvents[i],
+//            listener = 'on' + event;
+//        
+//        if (listener in window) {
+//          window.addEventListener(event, this._onViewportDimensionsChanged, false);          
+//        }
+//      }
+    },
+    
+    windowEvents: {
+      'resize.default': '_onViewportDimensionsChanged',
+      'orientationchange.default': '_onViewportDimensionsChanged'
     },
     
     events: {
@@ -84,7 +100,8 @@ define('views/BasicPageView', [
     myEvents: {
       '.page active': '_onActive',
       '.page inactive': '_onInactive',
-      '.page titleChanged': '_updateTitle'
+      '.page titleChanged': '_updateTitle',
+      '.page destroyed': '_onDestroyed'
     },
     
     windowEvents: {
@@ -202,13 +219,23 @@ define('views/BasicPageView', [
       if (this.$el) {
         this.$el.triggerHandler('scroll');
         // <debug>
-        this.log('visibility', 'START visibility report for ' + this.TAG);
-        this.logVisibility();
-        this.log('visibility', 'END visibility report for ' + this.TAG);
+//        this.log('visibility', 'START visibility report for ' + this.TAG);
+//        this.logVisibility();
+//        this.log('visibility', 'END visibility report for ' + this.TAG);
         // </debug>
       }
     }, 100),
-    
+
+    _onViewportDimensionsChanged: _.debounce(function(e) {
+      if (this.$el)
+        this.$el.triggerHandler(e.type);
+      
+      var children = this.children;
+      for (var cid in children) {
+        children[cid].$el.triggerHandler(e.type, e);
+      }
+    }, 50),
+
     onTourStep: function(step) {
       if (this.isActive())
         this.onpageshow(this.runTourStep.bind(this, step));
@@ -396,6 +423,12 @@ define('views/BasicPageView', [
       for (var name in this.children) {
         if (/^messageBar/.test(name))
           this.children[name].destroy();
+      }
+    },
+    
+    _onDestroyed: function() {
+      for (var i = 0; i < viewportEvents.length; i++) {
+        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
       }
     },
 

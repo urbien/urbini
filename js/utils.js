@@ -449,9 +449,8 @@ define('utils', [
 
         // start repeat url check - see if we're calling a url we already called before
         var _url = opts.url + (_.size(opts.data) ? '?' + $.param(opts.data) : '');
-        if (_.contains(xhrHistory, _url)) {
-          log('ajax', 'calling this url again!', _url);
-        }
+        if (_.contains(xhrHistory, _url))
+          console('ajax', 'calling this url again!', _url);
         else
           xhrHistory.push(_url);
         
@@ -470,6 +469,7 @@ define('utils', [
                   headers = xhr.responseHeaders,
                   error;
               
+//              Events.trigger('garbage', resp);
               if (headers.length) {
                 var h = headers.splitAndTrim(/\n/);
                 headers = {};
@@ -827,27 +827,30 @@ define('utils', [
           meta = model.properties;
       
       for (var i = 0; i < cloneOf.length; i++) {
-        var vals = [];
         var iProp = cloneOf[i];
-        for (var j=0; j<2; j++) {
-          for (var p in meta) {
-            if (!_.has(meta[p], "cloneOf")) 
-              continue;
-            var clones = meta[p].cloneOf.split(",");
-            for (var i=0; i<clones.length; i++) {
-              if (clones[i].replace(' ', '') == iProp) { 
-                vals.push(p);
-                break;
+        var vals = model[iProp];
+        if (!vals) {
+          vals = [];
+          for (var j=0; j<2; j++) {
+            for (var p in meta) {
+              if (!_.has(meta[p], "cloneOf")) 
+                continue;
+              var clones = meta[p].cloneOf.split(",");
+              for (var i=0; i<clones.length; i++) {
+                if (clones[i].replace(' ', '') == iProp) { 
+                  vals.push(p);
+                  break;
+                }
               }
             }
+            
+            if (vals.length)
+              break;
           }
-          
-          if (vals.length)
-            break;
         }
         
         if (vals.length)
-          results[iProp] = vals;
+          results[iProp] = model[iProp] = vals;
       }
       
       var size = _.size(results);
@@ -870,15 +873,14 @@ define('utils', [
       }
 
       var patterns = U.uriPatternMap;
-      for (var i in patterns) {
+      for (var i = 0, len = patterns.length; i < len; i++) {
         var pattern = patterns[i],
             regex = pattern.regex,
             onMatch = pattern.onMatch,
             match = uri.match(regex);
         
-        if (match && match.length) {
+        if (match && match.length)
           return onMatch(uri, match, vocModel);
-        }
       }
       
       if (uri == '_me') {
@@ -3316,7 +3318,6 @@ define('utils', [
       }
     },
 
-    
     _reservedTemplateKeywords: ['U', 'G', '$', 'loc'],
     template: function(templateName, type, context) {
       var template,
@@ -3336,8 +3337,9 @@ define('utils', [
       }
       else
         template = templateName;
-      
-      templateFn = function(json) {
+
+//      return subCache[typeKey] = template;
+      return subCache[typeKey] = function(json) {
         if (_.any(U._reservedTemplatedKeywords, _.has.bind(_, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
         
@@ -3349,9 +3351,6 @@ define('utils', [
         
         return template.call(this, json);
       };
-      
-      subCache[typeKey] = templateFn;
-      return templateFn;
     },
     
     getOrderByProps: function(collection) {
@@ -4083,6 +4082,22 @@ define('utils', [
           };
         }
       });
+    },
+    
+    toTimedFunction: function(obj, name, thresh) {
+      var fn = obj[name];
+      return function() {
+        var now = window.performance.now(),
+            frame = window.fastdom.frameNum;
+        
+        try {
+          return fn.apply(this, arguments);
+        } finally {
+          var time = window.performance.now() - now;
+          if (!thresh || time > thresh)
+            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
+        }
+      };
     }
   };
 
