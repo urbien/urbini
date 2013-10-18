@@ -1804,7 +1804,7 @@ define('globals', function() {
   });
   
   determineMinificationMode();
-  G.DEBUG = false; //!G.minify;
+  G.DEBUG = !G.minify;
 
   setupLocalStorage();
   saveBootInfo();
