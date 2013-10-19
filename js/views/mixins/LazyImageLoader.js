@@ -54,11 +54,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   $wnd.on('resize', _.throttle(saveViewport, 20));
 
   function getDummyImages($el) {
-    return $el.find('img[src="{0}"]'.format(DUMMY_IMG));
+    return $el.find('img[src="{0}"]'.format(DUMMY_IMG)).toArray();
   }
 
   function getLoadedImages($el) {
-    return $el.find('img:not([{0}])'.format(LAZY_ATTR));
+    return $el.find('img:not([{0}])'.format(LAZY_ATTR)).toArray();
   }
 
   // Override image element .getAttribute globally so that we give the real src

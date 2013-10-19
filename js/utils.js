@@ -240,7 +240,7 @@ define('utils', [
 
     getTranslationString: function(position) {
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
-      return 'translate3d({0}px, {1}px, {2}px)'.format(position.X, position.Y, position.Z || 0);
+      return 'translate({0}px, {1}px) translateZ({2}px)'.format(position.X, position.Y, position.Z || 0);
     },
     
     /**

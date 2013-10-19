@@ -424,6 +424,9 @@ define('modelLoader', [
   }
   
   function _loadModel(m) {
+    if (!m.prototype)
+      m = Resource.extend({}, m);
+    
     if (m.adapter) {
       var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
           appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
@@ -463,7 +466,6 @@ define('modelLoader', [
       
     }
 
-    m = Resource.extend({}, m);
     if (m.interfaces) {
       m.interfaces = _.map(m.interfaces, function(i) {
         if (i.indexOf('/') == -1)

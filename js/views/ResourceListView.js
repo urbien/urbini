@@ -367,7 +367,8 @@ define('views/ResourceListView', [
 
       this.preRender(info);
       for (var i = colRange.from, to = colRange.to; i < to; i++) {
-        Q.defer(i - colRange.from, 'nonDom', function renderOneListItem(i) {
+        Q.nonDom(function renderOneListItem(i) {
+//        Q.defer(i - colRange.from, 'nonDom', function renderOneListItem(i) {
           var res = col.models[i],
 //                liView = this.renderItem(res, atTheHead),
 //                el = liView.el;
@@ -381,8 +382,8 @@ define('views/ResourceListView', [
       }
 
       var listView = this;
-      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
-//      Q.read(function getDummyDim() {
+//      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
+      Q.read(function getDummyDim() {
         dfd.notify();
         dummyDim = this.dimension($dummy) || 0;
         slidingWindowBefore = this.getSlidingWindow();

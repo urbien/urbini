@@ -537,7 +537,7 @@ define('views/ResourceListItemView', [
 //        json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
 //      }
 
-      this.setVotableData(tmpl_data, atts);
+      this.setVotableData(json, atts);
 //      if (this.doesModelImplement('isVotable')) {
 //        var votes = cloned['Votable.likes'];
 //        if (!votes)

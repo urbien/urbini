@@ -531,7 +531,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {
-      return Q.nextFramePromise().done(function() {
+      return Q.nextFramePromise().then(function() {
         log('returning result for ' + primaryKey);
         if (result)
           return result;
