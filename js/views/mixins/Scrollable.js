@@ -35,6 +35,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       SNAPPING = 'snapping',
       // END SCROLLER STATES
       doc = document,
+      $doc = $(doc),
+      $wnd = $(window),
       CSS = U.CSS;
 
 //  document.body.addEventListener('mousemove', function() {
@@ -548,6 +550,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       doc[method]('mouseup', this, true);
       doc[method]('keydown', this, true);
       doc[method]('keyup', this, true);
+      document[method]('mouseout', this, true);
     },
     
     _onSizeInvalidated: function(e) {
@@ -851,9 +854,33 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     handleEvent: function(e) {
-//      console.log('scroll event: ', e.type);
+      console.log('scroll event: ', e.type);
       if (e.type == 'click')
         return this._onClickInScroller(e);
+      else if (e.type == 'mouseout') {
+        // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
+        
+        e = e ? e : window.event;
+        var from = e.relatedTarget || e.toElement;
+        if (!from || from.nodeName == "HTML") {
+          var lastTouch = Array.last(this._scrollerProps.touchHistory);
+          if (!lastTouch)
+            return;
+
+          lastTouch = [lastTouch];
+          this.handleEvent({
+            type: 'mouseup',
+            target: e.target,
+            targetTouches: lastTouch,
+            changedTouches: lastTouch,
+            timeStamp: lastTouch.timeStamp,
+            preventDefault: G.emptyFn,
+            stopPropagation: G.emptyFn
+          })
+        }
+        
+        return;
+      }
       
       var state = this._getScrollerState(),
           stateHandlers = TRANSITION_MAP[state],

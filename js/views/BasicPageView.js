@@ -22,6 +22,7 @@ define('views/BasicPageView', [
   };
   
   var PageView = BasicView.extend({
+//    mixins: [Scrollable],
     mixins: [LazyImageLoader, Scrollable],
     initialize: function(options) {
       var self = this;
