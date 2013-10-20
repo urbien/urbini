@@ -752,39 +752,39 @@ define('views/ResourceListView', [
       }
     },
 
-    getNextPage: function(numResourcesToFetch) {
-      if (this._isPaging)
-        return this._pagingPromise;
-      
-//      if (Math.random() < 0.5) {
-//        return $.Deferred(function() {          
-//          setTimeout(getNextPage)
-//        });
+//    getNextPage: function(numResourcesToFetch) {
+//      if (this._isPaging)
+//        return this._pagingPromise;
+//      
+////      if (Math.random() < 0.5) {
+////        return $.Deferred(function() {          
+////          setTimeout(getNextPage)
+////        });
+////      }
+//      
+//      var models = [],
+//          mock = this.collection.models[4] || this.collection.models[0],
+//          uriBase = mock.getUri(),
+//          defer = $.Deferred(function(defer) {
+//            setTimeout(defer.resolve, 1000);
+//          });
+//          
+//      for (var i = 0; i < numResourcesToFetch; i++) {
+//        models.push(new mock.vocModel(_.defaults({
+//          _uri: uriBase + G.nextId()
+//        }, mock.toJSON())));
 //      }
-      
-      var models = [],
-          mock = this.collection.models[4] || this.collection.models[0],
-          uriBase = mock.getUri(),
-          defer = $.Deferred(function(defer) {
-            setTimeout(defer.resolve, 1000);
-          });
-          
-      for (var i = 0; i < numResourcesToFetch; i++) {
-        models.push(new mock.vocModel(_.defaults({
-          _uri: uriBase + G.nextId()
-        }, mock.toJSON())));
-      }
-      
-      this.filteredCollection.add(models);
-      this._isPaging = true;
-      this._pagingPromise = defer.promise().done(function() {
-        this._isPaging = false;
-      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
-      
-      return this._pagingPromise;
-    },
+//      
+//      this.filteredCollection.add(models);
+//      this._isPaging = true;
+//      this._pagingPromise = defer.promise().done(function() {
+//        this._isPaging = false;
+//      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
+//      
+//      return this._pagingPromise;
+//    },
     
-    getNextPage1: function(numResourcesToFetch) {
+    getNextPage: function(numResourcesToFetch) {
       if (this._isPaging)
         return this._pagingPromise;
       
