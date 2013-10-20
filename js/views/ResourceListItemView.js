@@ -131,10 +131,9 @@ define('views/ResourceListItemView', [
       // Setting values to TaWith does not work if this block is lower then next if()
       var p1 = params['$propA'];
       var p2 = params['$propB'];
-      var self = this;
       
       var t = type ? type : this.vocModel.type;
-      var self = this;
+//      var self = this;
       return $.Deferred(function(dfd) {
       Voc.getModels(t).done(function() {
         var type = t;
@@ -143,7 +142,7 @@ define('views/ResourceListItemView', [
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             debugger;
             Events.stopEvent(e);
-            Events.trigger('chose', self.hashParams.$prop, self.model);
+            Events.trigger('chose', this.hashParams.$prop, this.model);
             return;
           }
         }
@@ -152,38 +151,38 @@ define('views/ResourceListItemView', [
           Events.stopEvent(e);
           var rParams = {};
           var pRange = U.getModel(t).properties[p1].range;
-          if (U.isAssignableFrom(self.vocModel, pRange)) {
-            rParams[p1] = self.resource.get('_uri');
+          if (U.isAssignableFrom(this.vocModel, pRange)) {
+            rParams[p1] = this.resource.get('_uri');
             rParams[p2] = params['$forResource'];
           }
           else {
             rParams[p1] = params['$forResource'];
-            rParams[p2] = self.resource.get('_uri');
+            rParams[p2] = this.resource.get('_uri');
           }
-          self.forResource = params['$forResource'];
-          rParams.$title = self.resource.get('davDisplayName');
+          this.forResource = params['$forResource'];
+          rParams.$title = this.resource.get('davDisplayName');
           if (this.doesModelSubclass(G.commonTypes.WebClass)) {
             if (type.endsWith('system/designer/InterfaceImplementor')) {
   //            Voc.getModels(type).done(function() {
                 var m = new (U.getModel('InterfaceImplementor'))();
-                var uri = self.resource.get('_uri');
-                var props = {interfaceClass: uri, implementor: self.forResource};
+                var uri = this.resource.get('_uri');
+                var props = {interfaceClass: uri, implementor: this.forResource};
                 m.save(props, {
                   success: function() {
-                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
-                  }
+                    Events.trigger('navigate', U.makeMobileUrl('view', this.forResource)); //, {trigger: true, forceFetch: true});        
+                  }.bind(this)
                 });
   //            });
               return;
             }
-            rParams[p2 + '.davClassUri'] =  self.resource.get('davClassUri');
+            rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
           }
           else if (U.isAssignableFrom(pModel, 'model/study/QuizAnswer')) {
             var m = new pModel();
             m.save(rParams, {
               success: function() {
-                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
-              }
+                Events.trigger('navigate', U.makeMobileUrl('view', this.forResource)); //, {trigger: true, forceFetch: true});        
+              }.bind(this)
             });
             return;
           }
@@ -198,16 +197,16 @@ define('views/ResourceListItemView', [
           var b = clonedI.b;
 
           if (a  &&  b) {
-            if (self.hashParams[a]) 
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
-            else if (self.hashParams[b])
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
+            if (this.hashParams[a]) 
+              Events.trigger('navigate', U.makeMobileUrl('view', this.resource.get(b))); //, {trigger: true, forceFetch: true});
+            else if (this.hashParams[b])
+              Events.trigger('navigate', U.makeMobileUrl('view', this.resource.get(a))); //, {trigger: true, forceFetch: true});
             return;
           } 
         }
         return dfd.reject();        
       }.bind(this));
-      }).then (
+      }.bind(this)).then (
         function success () {
                     
         },
@@ -219,7 +218,7 @@ define('views/ResourceListItemView', [
             var appModel;
             var tag = params['tagUses.tag.tag'];
             var tag = params['tags'];
-            var tt = self.resource.get('tag') || U.getDisplayName(self.resource);
+            var tt = this.resource.get('tag') || U.getDisplayName(this.resource);
             if (app) {
               for (var p in params) {
                 if (m.properties[p])
@@ -230,7 +229,7 @@ define('views/ResourceListItemView', [
     //              params['tagUses.tag.application'] = app;
             }
             else { //if (tag  ||  tags) {
-              app = self._hashInfo.type;
+              app = this._hashInfo.type;
 //              app = decodeURIComponent(app.substring(0, idx));
             }
             
@@ -249,7 +248,7 @@ define('views/ResourceListItemView', [
           }
           else if (U.isA(m, 'Reference')) {
             var forResource = U.getCloneOf(m, 'Reference.forResource');
-            var uri = forResource && self.resource.get(forResource);
+            var uri = forResource && this.resource.get(forResource);
             if (uri) {
               Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
               return;
@@ -257,12 +256,12 @@ define('views/ResourceListItemView', [
           }
     
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
-          Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri())); //, {trigger: true, forceFetch: true});
+          Events.trigger('navigate', U.makeMobileUrl(action, this.resource.getUri())); //, {trigger: true, forceFetch: true});
     //          else {
     //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
     //          }
-        }
+        }.bind(this)
       );
     },
     
