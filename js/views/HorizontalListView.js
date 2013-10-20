@@ -38,11 +38,16 @@ define('views/HorizontalListView', [
 
     renderItem: function(res, info) {
       if (!this._preinitializedItem) {
+        var source = this.parentView.resource;
         this._preinitializedItem = HorizontalListItemView.preinitialize({
           vocModel: this.vocModel,
-          parentView: this
+          parentView: this,
+          source: source && source.getUri()
         });
       }
+
+//      if (this._preinitializedItem.prototype.doesModelImplement('Intersection')) {
+//      }
       
       var liView = new this._preinitializedItem({
         resource: res

@@ -37,7 +37,7 @@ define('views/ListPage', [
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
       var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      this.isPhotogrid = _.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
+      this.isPhotogrid = false; //_.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
       /*
       if (!this.isPhotogrid) {
         if (U.isA(this.vocModel, "Intersection")) {

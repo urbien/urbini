@@ -517,7 +517,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         // Ignore changes to nested FT Scrollers - even updating a transform style
         // can trigger a DOMSubtreeModified in IE, causing nested scrollers to always
         // favour the deepest scroller as parent scrollers 'resize'/end scrolling.
-        if (e && (e.srcElement === frame || e.srcElement.className.indexOf('scrollable') !== -1))
+        var srcElement = e && e.srcElement;
+        if (srcElement && (srcElement === frame || srcElement.className.indexOf('scrollable') !== -1))
           return;
 
         this._onSizeInvalidated(e);
