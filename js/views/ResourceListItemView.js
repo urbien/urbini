@@ -206,7 +206,7 @@ define('views/ResourceListItemView', [
           } 
         }
         return dfd.reject();        
-      });
+      }.bind(this));
       }).then (
         function success () {
                     

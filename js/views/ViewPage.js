@@ -143,11 +143,11 @@ define('views/ViewPage', [
         }
 
         this.onload(function() {          
-          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
-            Voc.getModels(friendType).done(function() {              
+          U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
+            Voc.getModels(friendType).done(function() {
               var friendProps = {};
               friendProps[friend1] = friendProps[friend2] = uri;
-              self.friends = new ResourceList(null, {
+              this.friends = new ResourceList(null, {
                 params: {
                   $or: U.getQueryString(friendProps, {delimiter: '||'})
                 },
@@ -155,20 +155,30 @@ define('views/ViewPage', [
                 title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
               });
               
-              self.friends.fetch({
+              this.friends.fetch({
                 success: function() {
-                  if (self.friends.size()) {
-                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
-                    self.addChild(self.photogrid);
-                    self.photogridDfd.resolve();
+                  if (this.friends.size()) {
+                    this.photogrid = new HorizontalListView({
+                      model: this.friends, 
+                      parentView: this, 
+                      source: uri, 
+                      swipeable: true, 
+                      _scrollableOptions: { 
+                        axis: 'X' 
+                      }
+                    });
+                    
+//                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
+                    this.addChild(this.photogrid);
+                    this.photogridDfd.resolve();
     //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
     //                header.insertBefore(self.photogrid.el);
                   }
-                }
+                }.bind(this)
               });
-            });        
-          });
-        });
+            }.bind(this));        
+          }.bind(this));
+        }.bind(this));
       }
       
       this.listenTo(Events, "mapReady", this.showMapButton);
@@ -260,7 +270,7 @@ define('views/ViewPage', [
         $(h3[0]).html(self.friends.title);
         pHeader.removeClass('hidden');
         self.assign({
-          'div#photogrid': self.photogrid
+          '#photogrid': self.photogrid
         });
       });
 

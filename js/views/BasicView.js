@@ -204,17 +204,19 @@ define('views/BasicView', [
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
       if (this.isActive()) {
-        this._doRender.apply(this, arguments);
+        var result = this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
           this.finish();
         
         if (G.browser.mobile)
           disableHover(this.$el);
+        
+        return result;
       }
-      else
+      else {
         this._renderData = arguments;
-      
-      return this;
+        return this;
+      }
     },
 
     isChildless: function() {
@@ -490,6 +492,11 @@ define('views/BasicView', [
         if (parent.isPageView())
           return parent;
       }
+    },
+    
+    getLastPageEvent: function() {
+      var pageView = this.getPageView();
+      return pageView && pageView._lastPageEvent;
     },
     
     getPageTitle: function() {

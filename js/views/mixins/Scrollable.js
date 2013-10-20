@@ -3,6 +3,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
   var FORCE_TOUCH = false,
       SCROLL_DISTANCE_THRESH = 25,
       SCROLL_TIME_THRESH = 1000,
+      lockedBy, // view
       nonTouchEvents = ['mousedown', 'mouseup', 'mousemove', 'keydown', 'keyup'],
       touchEvents = ['touchstart', 'touchend', 'touchmove'],
       AXES = ['X', 'Y'],
@@ -39,6 +40,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       $wnd = $(window),
       CSS = U.CSS;
 
+  function scrollDimension(el, dimension) {
+    return dimension == 'X' ? el.offsetWidth : el.offsetHeight;
+  };
+      
 //  document.body.addEventListener('mousemove', function() {
 //    debugger;
 //    e.preventDefault();
@@ -90,6 +95,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     return {
       target: mouseEvent.target,
+      currentTarget: mouseEvent.target,
       targetTouches: touches,
       changedTouches: touches,
       timeStamp: mouseEvent.timeStamp,
@@ -247,6 +253,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       },
       
       touchstart: function(e) {
+        if (lockedBy && lockedBy !== this)
+          return;
+        
+        if (!this.isInnermostScroller(e))
+          return;
+        
+        lockedBy = this;
+//        lockedBy = this.cid;
         // grab, subscribe to touchmove
         e.preventDefault();
         this._clearScrollTimeouts();
@@ -274,6 +288,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return this._transitionScrollerState(DRAGGING, 'touchmove', toTouchEvent(e));
       },
       touchmove: function(e) {
+        if (lockedBy && lockedBy !== this)
+          return;
+        
         // scroll to new position
         e.preventDefault();
         var s = this._scrollerProps, 
@@ -315,6 +332,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       },
 
       touchend: function(e) {
+        if (lockedBy && lockedBy !== this)
+          return;
+        
+        lockedBy = null;
         // if fling
         if (!e.changedTouches.length) {
           debugger; // should never happen
@@ -340,7 +361,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
 //          $(e.target).click();
-          return s.state;
+          return READY;
         }
 
         if (this._flingScrollerIfNeeded()) {
@@ -480,14 +501,29 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive');
       this.onload(this._initScroller.bind(this));
+      this.$el.addClass('scrollable');
+    },
+    
+    render: function() {
+      this.$el.addClass('scrollable');
     },
     
     _initScroller: function(options) {
-      this._scrollerProps = _.deepExtend({}, initScrollerProps, options);
+      this._scrollerProps = _.deepExtend({}, initScrollerProps, this._scrollableOptions, options);
       var el = this.el;
       var s = this._scrollerProps;
       var frame = s.frame = el.parentNode || doc.body;
-      this._transitionScrollerState(UNINITIALIZED, 'init'); // simulate 'init' event in UNINITIALIZED state
+      frame.addEventListener('DOMSubtreeModified', _.debounce(function (e) {
+        // Ignore changes to nested FT Scrollers - even updating a transform style
+        // can trigger a DOMSubtreeModified in IE, causing nested scrollers to always
+        // favour the deepest scroller as parent scrollers 'resize'/end scrolling.
+        if (e && (e.srcElement === frame || e.srcElement.className.indexOf('scrollable') !== -1))
+          return;
+
+        this._onSizeInvalidated(e);
+      }.bind(this), 100), true);
+
+      this._transitionScrollerState(UNINITIALIZED, 'init'); // simulate 'init' event in UNINITIALIZED state      
     },
     
     events: {
@@ -554,10 +590,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onSizeInvalidated: function(e) {
-      if (!this.rendered || !this._scrollerProps || !this.isActive())
+      if (!this.rendered || !this._scrollerProps || !this._scrollerProps.position || !this.isActive())
         return;
       
-      if (this._lastPageEvent !== 'pageshow') {
+      console.log("RECALCULATING SCROLLER SIZE", e && e.type);
+      if (this.getLastPageEvent() !== 'pageshow') {
         this.pageView.$el.one('pageshow', this._onSizeInvalidated);
         return;
       }
@@ -565,9 +602,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      var timeout = e ? 0 : 100;
       this.log('invalidated size');
 //      this._queueScrollTimeout(function() {        
-        this.log('old size: ' + JSON.stringify(this.getScrollInfo()));
+//        this.log('old size: ' + JSON.stringify(this.getScrollInfo()));
         this._calculateSizes();
-        this.log('new size: ' + JSON.stringify(this.getScrollInfo()));
+//        this.log('new size: ' + JSON.stringify(this.getScrollInfo()));
         if (!this._isInBounds())
           this._snapScroller(true);
 //      }.bind(this), timeout);
@@ -579,15 +616,18 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //          scrollWidth = this.el.offsetWidth,
 //          scrollHeight = this.el.offsetHeight,
 //          visibleBounds = U.getVisibleBounds(this.el),
-          scrollWidth = this.el.offsetWidth,
+          scrollWidth = this.el.scrollWidth,
           scrollHeight = this.el.offsetHeight,
           containerWidth = frame.offsetWidth,
           containerHeight = frame.offsetHeight,
-          scrollX = this._getScrollAxis() == 'X',
+          axis = this._getScrollAxis(),
+          scrollDim = axis == 'X' ? scrollWidth : scrollHeight,
+          containerDim = axis == 'X' ? containerWidth : containerHeight,
+          scrollX = axis == 'X',
 //          hadPosition = !!s.position,
           gutter = s.MAX_OUT_OF_BOUNDS;
       
-      if (!scrollHeight || !containerHeight)
+      if (!scrollDim || !containerDim)
         return false;
 
 //      if (hadPosition) {
@@ -841,20 +881,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           pos.Y = y;
         }
       }
-      else {
-        Q.read(function getComputedScrollPosition() {
-          this._scrollerProps.position = CSS.getTranslation(this.el);
-        }, this);
-      }
-//      this.log('new scroll position: ' + JSON.stringify(this._scrollerProps.position));
+      else
+        this._scrollerProps.position = CSS.getTranslation(this.el);
     },
     
     _getScrollerState: function() {
       return this._scrollerProps.state;
     },
     
+    isInnermostScroller: function(e) {
+      return this.el == $(e.target).closest('.scrollable')[0];
+    },
+    
     handleEvent: function(e) {
-      console.log('scroll event: ', e.type);
+//      console.log('scroll event: ', e.type);      
       if (e.type == 'click')
         return this._onClickInScroller(e);
       else if (e.type == 'mouseout') {
@@ -882,6 +922,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
       }
       
+      if (e.type.endsWith('move') && !this._scrollerProps.touchHistory.length)
+        return;
+            
       var state = this._getScrollerState(),
           stateHandlers = TRANSITION_MAP[state],
           eventType = e.type;

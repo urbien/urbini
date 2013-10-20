@@ -74,7 +74,15 @@
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div-->
+    
+    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
           <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
@@ -1347,6 +1355,18 @@
   </form>
 </script>
 
+<script type="text/template" id="horizontalListItem">
+  <a href="{{= target }}">
+    {{ if (obj.image) { }}
+      <img src="{{= image }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />    
+    {{ }              }}
+    
+    {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
+    {{= obj.caption ? '<p>{0}</p>'.format(obj.caption) : '' }}
+    {{= typeof obj.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
+  </a> 
+</script>
+
 <script type="text/template" id="photogridTemplate">
   <!-- an image grid with per-image overlays -->
 
@@ -1354,7 +1374,7 @@
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
-      <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
+      <li style="{{= (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{ if (item.image) { }}
             <img src="{{= item.image }}" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    

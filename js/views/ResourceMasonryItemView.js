@@ -657,7 +657,7 @@ define('views/ResourceMasonryItemView', [
           vocModel = options.vocModel,
           meta = vocModel.properties,
           preinit = BasicView.preinitialize.apply(this, arguments),
-          cloned = preinit.clonedProperties,
+//          cloned = preinit.prototype.clonedProperties,
           imageProperty = U.getImageProperty(vocModel),
           more = {};
           

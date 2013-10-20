@@ -233,8 +233,9 @@ define('collections/ResourceList', [
     
     getNextPage: function(options) {
       var numToFetch = options.params && options.params.$limit || this.perPage;
-      this.setOffset(this.offset + numToFetch);
-      this.setOffset(Math.min(this.offset, this.models.length));
+//      this.setOffset(this.offset + numToFetch);
+      this.setOffset(this.length);
+//      this.setOffset(Math.min(this.offset, this.models.length));
       return this.pager(options);
     },
     getPreviousPage: function () {

@@ -75,13 +75,24 @@ define('views/ResourceListView', [
       'scrollo.resourceListView': 'onScroll'
     },
     
+    _updateConstraints: function() {
+      var viewport = this.getHeadAndTail(this.getVisibleArea(true)),
+          viewportDim = viewport.tail - viewport.head;
+          
+      this._slidingWindowInsideBuffer = viewportDim;
+      this._slidingWindowOutsideBuffer = viewportDim * 2 / 3; // px, should depend on size of visible area of the list, speed of device, RAM
+//      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
+      this._minSlidingWindowDimension = viewportDim * 3; // px, should depend on size of visible area of the list, speed of device, RAM
+    },
+    
     _viewportSizeChanged: function() {
 //      this._bounds = this.el.getBoundingClientRect();
+      this._updateConstraints();
       this.refresh();
     },
     
     onScroll: _.throttle(function(e, info) {
-      if (this.isActive())
+      if (e.target == this.el && this.isActive())
         this.adjustSlidingWindow();
     }, 20),
     
@@ -131,9 +142,15 @@ define('views/ResourceListView', [
 //        right: window.innerWidth
 //      };
       
-      this._viewportSizeChanged();
+//      this._viewportSizeChanged();
+      this._updateConstraints();
       this.imageProperty = U.getImageProperty(this.collection);
       this.dummies = this.getDummies();
+      if (this._horizontal) {
+        this.dummies.head.css('display', 'inline-block');
+        this.dummies.tail.css('display', 'inline-block');
+      }
+      
       this.setupSearchAndFilter();
       this.adjustSlidingWindow();
     },
@@ -280,8 +297,8 @@ define('views/ResourceListView', [
             to: Math.max(from, toPage * this._elementsPerPage)
           };
       
-      if (isNaN(range.from) || isNaN(range.to))
-        debugger;
+//      if (isNaN(range.from) || isNaN(range.to))
+//        debugger;
       
       return range;
     },
@@ -298,6 +315,10 @@ define('views/ResourceListView', [
       return 'ul';
     },
 
+    getPageAttributes: function() {
+      return '';
+    },
+    
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
     * @param force - will add as much as it can, including a half page
@@ -308,7 +329,9 @@ define('views/ResourceListView', [
       n = n || 1;
       var col = this.filteredCollection,
           pageTag = this.getPageTag(),
+          pageAttributes = this.getPageAttributes(),
 //          sizes = this._slidingWindowAddRemoveInfo,
+          numRendered = 0,
           colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
 
       if (atTheHead) {
@@ -353,13 +376,13 @@ define('views/ResourceListView', [
       }.bind(this));
       
       $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
-      frag = doc.createDocumentFragment();
+//      frag = doc.createDocumentFragment();
       info = {
         isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
-        frag: frag,
+//        frag: frag,
         total: colRange.to - colRange.from,
         appended: [],
-        html: '<{0} class="listPage">'.format(pageTag)
+        html: '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes)
       };
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
@@ -377,20 +400,29 @@ define('views/ResourceListView', [
 //            info.appended.push(el);
 //            info.appended.push(itemHtml);
 //            this.postRenderItem(el, info);
-          this.postRenderItem(liView._html, info);
+          if (liView !== false) {
+            this.postRenderItem(liView._html, info);
+            numRendered++;
+          }
         }, this, [i]);
       }
 
       var listView = this;
 //      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
       Q.read(function getDummyDim() {
-        dfd.notify();
+        dfd.notify(!!numRendered);
+        if (!numRendered) {
+          debugger;
+          dfd.resolve();
+          return;
+        }
+        
         dummyDim = this.dimension($dummy) || 0;
         slidingWindowBefore = this.getSlidingWindow();
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          page.append(frag);
-          info.page = page = $(info.html + '</{0}>'.format(pageTag));
+          info.page = page = $((info.html + '</{0}>'.format(pageTag)));
           Q.defer(1, 'read', function() { 
 //            console.log("PAGER", "SETTING ELEMENTS ON ITEMS, FRAME", window.fastdom.frameNum);
             page.find('[data-viewid]').each(function() {
@@ -414,7 +446,7 @@ define('views/ResourceListView', [
             if (colRange.from == 0)
               newDim = 0;
             else if (dummyDim > 0)
-              newDim = Math.max(dummyDim - page.height(), 0);
+              newDim = Math.max(dummyDim - this.dimension(page), 0);
             
             var cleanup = function cleanup() {
               if (_.isPromise(postRenderResult))
@@ -494,8 +526,11 @@ define('views/ResourceListView', [
       var add = this[up ? 'prependPages' : 'appendPages'](n),
           remove;
       
-      add.progress(function() {
-        remove = this.removePages(n, !up);
+      add.progress(function(doRemove) {
+        if (doRemove)
+          remove = this.removePages(n, !up);
+        else
+          remove = G.getResolvedPromise();
       }.bind(this));
       
       return $.when(add, remove).then(function() {
@@ -670,8 +705,8 @@ define('views/ResourceListView', [
 
         dummyDim = this.dimension($dummy) || 0;        
         removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
-          return memo + page.height() 
-        }, 0);
+          return memo + this.dimension(page); 
+        }.bind(this), 0);
       }, this);
 
       Q.write(function removePagesFromDOM() {
@@ -706,31 +741,39 @@ define('views/ResourceListView', [
       }
     },
 
-//    getNextPage: function(numResourcesToFetch) {
-//      if (this._isPaging)
-//        return this._pagingPromise;
-//      
-////      if (Math.random() < 0.5) {
-////        return $.Deferred(function() {          
-////          setTimeout(getNextPage)
-////        });
-////      }
-//      
-//      var models = [],
-//          mock = this.collection.models[0],
-//          uriBase = mock.getUri();
-//          
-//      for (var i = 0; i < numResourcesToFetch; i++) {
-//        models.push(new mock.vocModel(_.defaults({
-//          _uri: uriBase + G.nextId()
-//        }, mock.toJSON())));
-//      }
-//      
-//      this.collection.add(models);
-//      return G.getResolvedPromise();
-//    },
-    
     getNextPage: function(numResourcesToFetch) {
+      if (this._isPaging)
+        return this._pagingPromise;
+      
+//      if (Math.random() < 0.5) {
+//        return $.Deferred(function() {          
+//          setTimeout(getNextPage)
+//        });
+//      }
+      
+      var models = [],
+          mock = this.collection.models[4] || this.collection.models[0],
+          uriBase = mock.getUri(),
+          defer = $.Deferred(function(defer) {
+            setTimeout(defer.resolve, 1000);
+          });
+          
+      for (var i = 0; i < numResourcesToFetch; i++) {
+        models.push(new mock.vocModel(_.defaults({
+          _uri: uriBase + G.nextId()
+        }, mock.toJSON())));
+      }
+      
+      this.filteredCollection.add(models);
+      this._isPaging = true;
+      this._pagingPromise = defer.promise().done(function() {
+        this._isPaging = false;
+      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
+      
+      return this._pagingPromise;
+    },
+    
+    getNextPage1: function(numResourcesToFetch) {
       if (this._isPaging)
         return this._pagingPromise;
       

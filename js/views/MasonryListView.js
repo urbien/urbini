@@ -14,6 +14,7 @@ define('views/MasonryListView', [
   
   return ResourceListView.extend({
     type: 'masonry',
+    _elementsPerPage: 4,
     events: {
       'orientationchange': 'reloadMasonry',
       'refresh': 'refresh',
@@ -47,36 +48,6 @@ define('views/MasonryListView', [
 //      return this.$el.children();
 //    },
 
-    getOffsetForChildGroup: function(children, bottom) {
-      children = children || _.values(this.children);
-      var topBorder = Infinity,
-          bottomBorder = -Infinity;
-         
-      for (var i in children) {
-        var child = children[i],
-            offset = child.$el.offset();
-        
-        if (bottom) {
-          if (offset.top > topBorder)
-            topBorder = offset;
-          if (offset.bottom > bottomBorder)
-            bottomBorder = offset;
-        }
-        else {
-          if (offset.top < topBorder)
-            topBorder = offset;
-          if (offset.bottom < bottomBorder)
-            bottomBorder = offset;
-        }
-        
-      }
-      
-      return {
-        top: topBorder,
-        bottom: bottomBorder
-      }
-    },
-    
     getPageTag: function() {
       return 'div';
     },
