@@ -75,14 +75,26 @@ define('views/ResourceListView', [
       'scrollo.resourceListView': 'onScroll'
     },
     
+    getViewport: function() {
+      return {
+        head: 0,
+        tail: this._horizontal ? window.innerWidth : window.innerHeight
+      }
+    },
+    
     _updateConstraints: function() {
-      var viewport = this.getHeadAndTail(this.getVisibleArea(true)),
+      var viewport = this._viewport = this.getViewport(),
           viewportDim = viewport.tail - viewport.head;
-          
-      this._slidingWindowInsideBuffer = viewportDim;
-      this._slidingWindowOutsideBuffer = viewportDim * 2 / 3; // px, should depend on size of visible area of the list, speed of device, RAM
+      
+      if (!viewportDim) {
+        setTimeout(this._updateConstraints.bind(this), 100);
+        return;
+      }
+        
+      this._slidingWindowInsideBuffer = viewportDim * 3;
+      this._slidingWindowOutsideBuffer = viewportDim * 1.5; // px, should depend on size of visible area of the list, speed of device, RAM
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-      this._minSlidingWindowDimension = viewportDim * 3; // px, should depend on size of visible area of the list, speed of device, RAM
+      this._minSlidingWindowDimension = viewportDim * 6; // px, should depend on size of visible area of the list, speed of device, RAM
     },
     
     _viewportSizeChanged: function() {
@@ -92,7 +104,7 @@ define('views/ResourceListView', [
     },
     
     onScroll: _.throttle(function(e, info) {
-      if (e.target == this.el && this.isActive())
+      if (this.isActive())
         this.adjustSlidingWindow();
     }, 20),
     
@@ -412,7 +424,6 @@ define('views/ResourceListView', [
       Q.read(function getDummyDim() {
         dfd.notify(!!numRendered);
         if (!numRendered) {
-          debugger;
           dfd.resolve();
           return;
         }

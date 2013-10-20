@@ -360,7 +360,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           var touch = _.last(s.touchHistory);
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
-//          $(e.target).click();
+          $(e.target).click();
           return READY;
         }
 
