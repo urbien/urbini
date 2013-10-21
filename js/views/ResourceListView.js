@@ -434,7 +434,7 @@ define('views/ResourceListView', [
 //          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          page.append(frag);
           info.page = page = $((info.html + '</{0}>'.format(pageTag)));
-          Q.defer(1, 'read', function() { 
+//          Q.defer(1, 'read', function() { 
 //            console.log("PAGER", "SETTING ELEMENTS ON ITEMS, FRAME", window.fastdom.frameNum);
             page.find('[data-viewid]').each(function() {
               var childEl = arguments[1];
@@ -444,7 +444,7 @@ define('views/ResourceListView', [
               if (child.postRender)
                 child.postRender();
             }.bind(this));
-          }, this);
+//          }, this);
           
           this._pages[atTheHead ? 'unshift' : 'push'](page);
           page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);

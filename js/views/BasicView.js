@@ -68,7 +68,7 @@ define('views/BasicView', [
       options = options || {};
       this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
-      this._loadingDfd.promise().done(function() {
+      this._loadPromise = this._loadingDfd.done(function() {
         if (!this.rendered)
           this.rendered = true;
       }.bind(this));
@@ -270,12 +270,12 @@ define('views/BasicView', [
       this.vocModel = this.model.vocModel;
     },
     
-    _getChildrenLoadingDeferreds: function() {
-      return _.pluck(this.getDescendants(), '_loadingDfd');
+    _getChildrenLoadingPromises: function() {
+      return _.pluck(this.getDescendants(), '_loadPromise');
     },
     
-    _getLoadingDeferreds: function() {
-      return [this._loadingDfd].concat(this._getChildrenLoadingDeferreds());
+    _getLoadingPromises: function() {
+      return [this._loadingDfd].concat(this._getChildrenLoadingPromises());
     },
     
 //    isDoneLoading: function() {
@@ -285,7 +285,8 @@ define('views/BasicView', [
 //    },
 
     onload: function(callback) {
-      return $.whenAll.apply($, this._getLoadingDeferreds()).then(callback);
+      return this._loadPromise.done(callback);
+//      return $.whenAll.apply($, this._getLoadingPromises()).then(callback);
     },
 
 //    onload: function(callback) {

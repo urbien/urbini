@@ -281,39 +281,38 @@ define('lib/fastdom', ['globals'], function(G) {
     this.mode = null;
   };
 
+//  FastDom.prototype.defer = function(frames, type, fn, ctx, args, options) {
+//    if (frames < 0) return;
+//    var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
+//    job.timeout = setTimeout(this.run.bind(this, job), 1000 / 60 * frames);
+//    return job.id;
+//  }
+  
+  /**
+   * Defers the given job
+   * by the number of frames
+   * specified.
+   *
+   * @param  {Number}   frames
+   * @param  {Function} fn
+   * @api public
+   */
   FastDom.prototype.defer = function(frames, type, fn, ctx, args, options) {
     if (frames < 0) return;
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
-    job.timeout = setTimeout(this.run.bind(this, job), 1000 / 60 * frames);
+    
+    (function wrapped() {
+      if (!(frames--)) {
+         self.run(job);
+         return;
+      }
+
+      job.timer = raf(wrapped);
+    })();
+
     return job.id;
-  }
-  
-//  /**
-//   * Defers the given job
-//   * by the number of frames
-//   * specified.
-//   *
-//   * @param  {Number}   frames
-//   * @param  {Function} fn
-//   * @api public
-//   */
-//  FastDom.prototype.defer = function(frames, type, fn, ctx) {
-//    if (frames < 0) return;
-//    var self = this;
-//    var job = this.add('defer', this[type].bind(this, fn, ctx)); // use regular queueing mechanism
-//    
-//    (function wrapped() {
-//      if (!(frames--)) {
-//         self.run(job);
-//         return;
-//      }
-//
-//      job.timer = raf(wrapped);
-//    })();
-//
-//    return job.id;
-//  };
+  };
 
   /**
    * Adds a new job to

@@ -355,12 +355,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //          this.log('trying to prevent click event');
         }
         else {
+          s.preventClick = false;
           // this was a click, not a swipe/scroll
 //          this.log('this was a click, not a scroll, only traveled: ' + s.distanceTraveled + 'px');
           var touch = _.last(s.touchHistory);
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
-          $(e.target).click();
+//          $(e.target).click();
           return READY;
         }
 
@@ -1077,9 +1078,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var s = this._scrollerProps,
           axis = this._getScrollAxis(),
           lastGesture = s.lastGesture,
-          velocity = lastGesture[axis] / lastGesture.time;
+          velocity = lastGesture[axis] / lastGesture.time,
+          sign = velocity < 0 ? -1 : 1;
       
-      return (s.velocity = velocity > 0 ? Math.min(velocity, s.MAX_VELOCITY) : Math.max(velocity, -s.MAX_VELOCITY));
+      s.velocity = Math.min(Math.abs(velocity), s.MAX_VELOCITY) * sign;
     },
 
     _flingScrollerIfNeeded: function() {
@@ -1110,7 +1112,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           otherAxis = oppositeDir(axis),
           velocity = s.velocity,
           acceleration = velocity < 0 ? s.acceleration : -s.acceleration,
-          distance = - (velocity * velocity) / (2 * acceleration),
+          distance = -(velocity * velocity) / (2 * acceleration),
           newPos = {},
           destination,
           pastDestination,
@@ -1120,6 +1122,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       newPos[axis] = s.position[axis] + distance;
       newPos[otherAxis] = s.position[otherAxis];
       destination = this._limitToBounds(normalizePosition(newPos));
+      distance = calcDistance(s.position, destination);
 //      pastDestination = this._limitToBounds(newPos, true);
       timeToDestination = timeToReset = this._calcAnimationTime(distance);    
       this._scrollTo(destination, timeToDestination, beziers.fling);      
