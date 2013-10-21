@@ -548,10 +548,12 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   var queryRunMethods = ['getAll', 'getAllKeys'];
   function wrapQuery(query) {
     for (var fn in query) {
-      if (_.contains(queryRunMethods, fn))
-        wrapQueryRunMethod.call(this, query, fn);
-      else
-        wrapQueryBuildingMethod.call(this, query, fn);
+      if (typeof query[fn] == 'function') {
+        if (_.contains(queryRunMethods, fn))
+          wrapQueryRunMethod.call(this, query, fn);
+        else
+          wrapQueryBuildingMethod.call(this, query, fn);
+      }
     }
     
     return query;

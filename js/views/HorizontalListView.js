@@ -36,6 +36,16 @@ define('views/HorizontalListView', [
     getPageAttributes: function() {
       return 'style="display:inline-block;"';
     },
+
+    _updateConstraints: function() {
+      ResourceListView.prototype._updateConstraints.call(this);
+      if (this._viewportDim) {
+        if (G.browser.mobile && this._viewportDim < 500)
+          this._elementsPerPage = 4;
+        else
+          this._elementsPerPage = 10;
+      }
+    },
     
     renderItem: function(res, info) {
       var uri = res.getUri();

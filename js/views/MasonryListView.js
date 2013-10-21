@@ -37,6 +37,16 @@ define('views/MasonryListView', [
 //      });
     },
     
+    _updateConstraints: function() {
+      ResourceListView.prototype._updateConstraints.call(this);
+      if (this._viewportDim) {
+        if (G.browser.mobile && this._viewportDim < 500)
+          this._elementsPerPage = 4;
+        else
+          this._elementsPerPage = 20;
+      }
+    },    
+
     masonry: function() {
       this.$el[MASONRY_FN].apply(this.$el, arguments);
       this.trigger('invalidateSize');

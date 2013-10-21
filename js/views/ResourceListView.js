@@ -84,7 +84,7 @@ define('views/ResourceListView', [
     
     _updateConstraints: function() {
       var viewport = this._viewport = this.getViewport(),
-          viewportDim = viewport.tail - viewport.head;
+          viewportDim = this._viewportDim = viewport.tail - viewport.head;
       
       if (!viewportDim) {
         setTimeout(this._updateConstraints, 100);
@@ -95,6 +95,10 @@ define('views/ResourceListView', [
       this._slidingWindowOutsideBuffer = viewportDim * 1.5; // px, should depend on size of visible area of the list, speed of device, RAM
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
       this._minSlidingWindowDimension = viewportDim * 6; // px, should depend on size of visible area of the list, speed of device, RAM
+      if (G.browser.mobile && viewportDim < 500)
+        this._elementsPerPage = 5;
+      else
+        this._elementsPerPage = 10;
     },
     
     _viewportSizeChanged: function() {
@@ -104,7 +108,7 @@ define('views/ResourceListView', [
     },
     
     onScroll: _.throttle(function(e, info) {
-      if (this.isActive())
+      if ((this.el == e.target || e.currentTarget.contains(this.el)) && this.isActive())
         this.adjustSlidingWindow();
     }, 20),
     
@@ -264,32 +268,46 @@ define('views/ResourceListView', [
       if (!this.isActive())
         return G.getRejectedPromise();
       
-      var viewport = this.getHeadAndTail(this.getVisibleArea(true)),
-          viewportHeight = viewport.tail - viewport.head,
+      var self = this,
+          viewport = this.getHeadAndTail(this.getVisibleArea(true)),
+          viewportDim = viewport.tail - viewport.head,
           slidingWindow = this.getSlidingWindow(), // should be relative to this view, i.e. head==0 means we're at the top/left of the page
+          slidingWindowDim = slidingWindow.tail - slidingWindow.head,
+          headDiff = viewport.head - slidingWindow.head,
+          tailDiff = slidingWindow.tail - viewport.tail,
           n = 1,
           diff; 
   
-      if (slidingWindow.tail - slidingWindow.head < this._minSlidingWindowDimension) {
+      if (!viewportDim) {
+        setTimeout(this.adjustSlidingWindow, 50);
+        return false;
+      }
+        
+      if (slidingWindowDim < this._minSlidingWindowDimension) {
         var growAtTheHead;
 //        if (this._pagesCurrentlyInSlidingWindow < this._pagesInSlidingWindow) {
-        if (this._pageOffset < this._pagesInSlidingWindow / 2) {
-          growAtTheHead = false;
-//          n = this._pagesInSlidingWindow - this._pagesCurrentlyInSlidingWindow;
-        }
-        else
-          growAtTheHead = viewport.head - slidingWindow.head > slidingWindow.tail - viewport.tail;
+        if (this._pageOffset > this._pagesInSlidingWindow / 2) {
+          var headDiff = viewport.head - slidingWindow.head,
+              tailDiff = slidingWindow.tail - viewport.tail;
           
+          growAtTheHead = headDiff > tailDiff;
+        }
+        
+        n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / viewportDim);
         return this._growSlidingWindow(n, growAtTheHead).done(this.adjustSlidingWindow);
       }
-      else if ((diff = slidingWindow.tail - viewport.tail) < this._slidingWindowOutsideBuffer) {
-//        diff = diff < 0 ? -diff + this._slidingWindowOutsideBuffer : diff;
-//        n = Math.ceil(diff / viewportHeight);
-        return this.page(n).done(this.adjustSlidingWindow); 
+      else if (tailDiff < this._slidingWindowInsideBuffer) {
+        n = Math.ceil((this._slidingWindowInsideBuffer - diff) / viewportDim);
+        if (tailDiff < this._slidingWindowOutsideBuffer)
+          return this.page(n).done(this.adjustSlidingWindow);
+        else if (this.filteredCollection.length - this._collectionRange.to < this._elementsPerPage * 2)
+          return this.getNextPage();
+        else
+          return G.getResolvedPromise();
       }
-      else if (this._pageOffset && (diff = viewport.head - slidingWindow.head) < this._slidingWindowOutsideBuffer) {
+      else if (this._pageOffset && headDiff < this._slidingWindowOutsideBuffer) {
 //        diff = diff < 0 ? -diff + this._slidingWindowOutsideBuffer : diff;
-//        n = Math.ceil(diff / viewportHeight);
+        n = Math.ceil((this._slidingWindowInsideBuffer - diff) / viewportDim);
         return this.page(n, true).done(this.adjustSlidingWindow);
       }
 //      else if (this._pageOffset && (diff = viewport.head - slidingWindow.head) < this._slidingWindowInsideBuffer) {
@@ -343,6 +361,7 @@ define('views/ResourceListView', [
     */
     addPages: function(n, atTheHead, force) {
 //      this.log('SLIDING WINDOW', 'adding pages' + (atTheHead ? ' at the head' : ''));
+//      console.log("ADDING", n, "PAGES");
       n = n || 1;
       var self = this,
           col = this.filteredCollection,
@@ -350,7 +369,9 @@ define('views/ResourceListView', [
           pageAttributes = this.getPageAttributes(),
 //          sizes = this._slidingWindowAddRemoveInfo,
           numRendered = 0,
-          colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
+          pageStartTag = '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes),
+          pageEndTag = '</{0}>'.format(pageTag),
+          colRange, $dummy, dummyDim, pages, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
 
       if (atTheHead) {
         var from = Math.max(this._pageOffset - n, 0);
@@ -380,6 +401,7 @@ define('views/ResourceListView', [
       if (colRange.from >= colRange.to)
         return G.getRejectedPromise();
             
+      this._collectionRange = colRange;
       dfd = $.Deferred();
       promise = dfd.promise();
       finish = Q.nonDom.bind(Q, dfd.resolve);
@@ -397,29 +419,42 @@ define('views/ResourceListView', [
 //        frag: frag,
         total: colRange.to - colRange.from,
         appended: [],
-        html: '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes)
+        html: ''
       };
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
 //      this._pages[atTheHead ? 'unshift' : 'push'](page);
 
       this.preRender(info);
-      for (var i = colRange.from, to = colRange.to; i < to; i++) {
-        Q.nonDom(function renderOneListItem(i) {
-//        Q.defer(i - colRange.from, 'nonDom', function renderOneListItem(i) {
-          var res = col.models[i],
-//                liView = this.renderItem(res, atTheHead),
-//                el = liView.el;
-              liView = this.renderItem(res, atTheHead);
+      function renderOneListItem(resNum, isFirst, isLast) {
+        var res = col.models[resNum],
+            liView = this.renderItem(res, atTheHead);
+
+        if (isFirst)
+          info.html += pageStartTag;
+
+        if (liView !== false) {
+          this.postRenderItem(liView._html, info);
+          numRendered++;
+        }
+        
+        if (isLast)
+          info.html += pageEndTag;
+      }
+      
+      var stop = false;
+      for (var i = 0, resNum = 0; i < n; i++) {
+        for (var j = 0, numEls = this._elementsPerPage; j < numEls; j++ && resNum++) {
+          if (resNum + 1 == colRange.to)
+            stop = true;
           
-//            info.appended.push(el);
-//            info.appended.push(itemHtml);
-//            this.postRenderItem(el, info);
-          if (liView !== false) {
-            this.postRenderItem(liView._html, info);
-            numRendered++;
-          }
-        }, this, [i]);
+          Q.nonDom(renderOneListItem, this, [resNum, j == 0, stop || j + 1 == numEls]);
+          if (stop)
+            break;
+        }
+        
+        if (stop)
+          break;
       }
 
 //      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
@@ -435,10 +470,10 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          page.append(frag);
-          info.page = page = $((info.html + '</{0}>'.format(pageTag)));
+          info.page = pages = $(info.html);
 //          Q.defer(1, 'read', function() { 
 //            console.log("PAGER", "SETTING ELEMENTS ON ITEMS, FRAME", window.fastdom.frameNum);
-            page.find('[data-viewid]').each(function() {
+            pages.find('[data-viewid]').each(function() {
               var childEl = arguments[1];
               var child = self.children[childEl.dataset.viewid];
               self.listenTo(child.resource, 'change', self.onResourceChanged);
@@ -448,8 +483,8 @@ define('views/ResourceListView', [
             });
 //          }, this);
           
-          self._pages[atTheHead ? 'unshift' : 'push'](page);
-          page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
+          self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, pages.map(function() { return $(this) } ));
+          pages[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = self.postRender(info);
           
           // on next frame
@@ -459,7 +494,7 @@ define('views/ResourceListView', [
             if (colRange.from == 0)
               newDim = 0;
             else if (dummyDim > 0)
-              newDim = Math.max(dummyDim - self.dimension(page), 0);
+              newDim = Math.max(dummyDim - self.dimension(pages), 0);
             
             var cleanup = function cleanup() {
               if (_.isPromise(postRenderResult))
@@ -798,7 +833,7 @@ define('views/ResourceListView', [
       
       nextPagePromise = col.getNextPage({
         params: {
-          $limit: numResourcesToFetch
+          $limit: numResourcesToFetch || this._elementsPerPage
         },
         success: function() {
           if (col.length > before)
