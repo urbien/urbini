@@ -18,17 +18,14 @@ define('templates', [
       blankImgDataUrl = G.blankImgDataUrl;
   
   window.onimageload = function onimageload() {
-    var $this = $(this);
-    Q.defer(Math.random() * 5, 'read', $this.trigger.bind($this, 'imageOnload'));
+//    var $this = $(this);
+//    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
+    $(this).trigger('imageOnload');
     return false;
   };
   
   window.onimageerror = function onimageerror() {
-    var self = this;
-//    window.raf(function() {      
-      $(self).trigger('imageOnerror');
-//    });
-    
+    $(this).trigger('imageOnerror');
     return false;
   };
   

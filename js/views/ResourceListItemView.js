@@ -93,7 +93,8 @@ define('views/ResourceListItemView', [
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
-      var params = U.getQueryParams(),
+      var self = this,
+          params = U.getQueryParams(),
           parentView = this.parentView,
           type = params['$type'],
           isWebCl = this.doesModelSubclass(G.commonTypes.WebClass),
@@ -142,7 +143,7 @@ define('views/ResourceListItemView', [
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             debugger;
             Events.stopEvent(e);
-            Events.trigger('chose', this.hashParams.$prop, this.model);
+            Events.trigger('chose', self.hashParams.$prop, self.model);
             return;
           }
         }
@@ -151,45 +152,45 @@ define('views/ResourceListItemView', [
           Events.stopEvent(e);
           var rParams = {};
           var pRange = U.getModel(t).properties[p1].range;
-          if (U.isAssignableFrom(this.vocModel, pRange)) {
-            rParams[p1] = this.resource.get('_uri');
+          if (U.isAssignableFrom(self.vocModel, pRange)) {
+            rParams[p1] = self.resource.get('_uri');
             rParams[p2] = params['$forResource'];
           }
           else {
             rParams[p1] = params['$forResource'];
-            rParams[p2] = this.resource.get('_uri');
+            rParams[p2] = self.resource.get('_uri');
           }
-          this.forResource = params['$forResource'];
-          rParams.$title = this.resource.get('davDisplayName');
-          if (this.doesModelSubclass(G.commonTypes.WebClass)) {
+          self.forResource = params['$forResource'];
+          rParams.$title = self.resource.get('davDisplayName');
+          if (self.doesModelSubclass(G.commonTypes.WebClass)) {
             if (type.endsWith('system/designer/InterfaceImplementor')) {
   //            Voc.getModels(type).done(function() {
                 var m = new (U.getModel('InterfaceImplementor'))();
-                var uri = this.resource.get('_uri');
-                var props = {interfaceClass: uri, implementor: this.forResource};
+                var uri = self.resource.get('_uri');
+                var props = {interfaceClass: uri, implementor: self.forResource};
                 m.save(props, {
                   success: function() {
-                    Events.trigger('navigate', U.makeMobileUrl('view', this.forResource)); //, {trigger: true, forceFetch: true});        
-                  }.bind(this)
+                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
+                  }
                 });
   //            });
               return;
             }
-            rParams[p2 + '.davClassUri'] =  this.resource.get('davClassUri');
+            rParams[p2 + '.davClassUri'] =  self.resource.get('davClassUri');
           }
           else if (U.isAssignableFrom(pModel, 'model/study/QuizAnswer')) {
             var m = new pModel();
             m.save(rParams, {
               success: function() {
-                Events.trigger('navigate', U.makeMobileUrl('view', this.forResource)); //, {trigger: true, forceFetch: true});        
-              }.bind(this)
+                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
+              }
             });
             return;
           }
           
           Events.trigger('navigate', U.makeMobileUrl('make', type, rParams)); //, {trigger: true, forceFetch: true});
           return;
-  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(self.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(self.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(self.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
         else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
           var clonedI = cloned.Intersection;
@@ -197,16 +198,16 @@ define('views/ResourceListItemView', [
           var b = clonedI.b;
 
           if (a  &&  b) {
-            if (this.hashParams[a]) 
-              Events.trigger('navigate', U.makeMobileUrl('view', this.resource.get(b))); //, {trigger: true, forceFetch: true});
-            else if (this.hashParams[b])
-              Events.trigger('navigate', U.makeMobileUrl('view', this.resource.get(a))); //, {trigger: true, forceFetch: true});
+            if (self.hashParams[a]) 
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
+            else if (self.hashParams[b])
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
             return;
           } 
         }
         return dfd.reject();        
-      }.bind(this));
-      }.bind(this)).then (
+      });
+      }).then (
         function success () {
                     
         },
@@ -218,18 +219,18 @@ define('views/ResourceListItemView', [
             var appModel;
             var tag = params['tagUses.tag.tag'];
             var tag = params['tags'];
-            var tt = this.resource.get('tag') || U.getDisplayName(this.resource);
+            var tt = self.resource.get('tag') || U.getDisplayName(self.resource);
             if (app) {
               for (var p in params) {
                 if (m.properties[p])
                   delete params[p];
               }
               params.$title = tt;
-    //          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+    //          params['tagUses.tag.tag'] = '*' + self.resource.get('tag') + '*';
     //              params['tagUses.tag.application'] = app;
             }
             else { //if (tag  ||  tags) {
-              app = this._hashInfo.type;
+              app = self._hashInfo.type;
 //              app = decodeURIComponent(app.substring(0, idx));
             }
             
@@ -248,7 +249,7 @@ define('views/ResourceListItemView', [
           }
           else if (U.isA(m, 'Reference')) {
             var forResource = U.getCloneOf(m, 'Reference.forResource');
-            var uri = forResource && this.resource.get(forResource);
+            var uri = forResource && self.resource.get(forResource);
             if (uri) {
               Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
               return;
@@ -256,12 +257,12 @@ define('views/ResourceListItemView', [
           }
     
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
-          Events.trigger('navigate', U.makeMobileUrl(action, this.resource.getUri())); //, {trigger: true, forceFetch: true});
+          Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri())); //, {trigger: true, forceFetch: true});
     //          else {
     //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
     //          }
-        }.bind(this)
+        }
       );
     },
     
@@ -282,7 +283,8 @@ define('views/ResourceListItemView', [
           meta = vocModel.properties || m.properties,
           interfaces = this['implements'],
           superclasses = this['extends'],
-          cloned = this.clonedProperties;
+          cloned = this.clonedProperties,
+          clonedIR = cloned.ImageResource || {};
       
       if (!meta)
         return this;
@@ -297,7 +299,7 @@ define('views/ResourceListItemView', [
         if (this.checked)
           json['_checked'] = 'checked';
         if (this.doesModelImplement('ImageResource')) {
-          var thumb = cloned['ImageResource'].smallImage;
+          var thumb = clonedImageProps.smallImage;
           if (thumb  &&  thumb.length) {
             var img = atts[thumb[0]];
             if (img)
@@ -396,9 +398,8 @@ define('views/ResourceListItemView', [
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
-      var clonedIR = cloned['ImageResource'];
-      var oW = clonedIR  &&  clonedIR.originalWidth;
-      var oH = clonedIR  &&  clonedIR.originalHeight;
+      var oW = clonedIR.originalWidth;
+      var oH = clonedIR.originalHeight;
       var maxDim = this.maxImageDimension;
       var w, h;
       if (!oH  &&  !oW  &&  this.imageProperty) {
@@ -694,50 +695,52 @@ define('views/ResourceListItemView', [
           meta = vocModel.properties,
           interfaces = this['implements'],
           superclasses = this['extends'],
-          cloned = this.clonedProperties;
+          cloned = this.clonedProperties,
+          clonedIR = cloned.ImageResource || {},
+          clonedX = cloned.Intersection || {};
       
       if (!meta)
         return this;
       
-      var oW = cloned['ImageResource'].originalWidth;
-      var oH = cloned['ImageResource'].originalHeight;
+      var oW = clonedIR.originalWidth;
+      var oH = clonedIR.originalHeight;
       var type = vocModel.type;
       var img, dn, rUri, h, w, ab;
       
       if (cloneOf == 'Intersection.a') {
         ab = atts[cloneOf];
-        var imageP = cloned['Intersection'].aThumb;
+        var imageP = clonedX.aThumb;
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
           img = atts[imageP[0]];
           hasAImageProps = true;
         }
         if (!img) {
-          imageP = cloned['Intersection'].aFeatured;
+          imageP = clonedX.aFeatured;
           if (imageP  &&  imageP.length != 0) { 
             img = atts[imageP[0]];
             hasAImageProps = true;
           }
         }
         if (!img  &&  !hasAImageProps  &&  this.doesModelImplement('Intersection')) {
-          imageP = cloned['ImageResource'].smallImage;
+          imageP = clonedIR.smallImage;
           if (imageP  &&  imageP.length != 0) {
             img = atts[imageP[0]];
           }
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
         if (img) {
-          w = atts[cloned['Intersection'].aOriginalWidth];
-          h = atts[cloned['Intersection'].aOriginalHeight];
+          w = atts[clonedX.aOriginalWidth];
+          h = atts[clonedX.aOriginalHeight];
         }
       }
       else {
-        ab = atts[cloned['Intersection'].b];
-        var imageP = cloned['Intersection'].bThumb;
+        ab = atts[clonedX.b];
+        var imageP = clonedX.bThumb;
         if (imageP  &&  imageP.length != 0)
           img = atts[imageP[0]]; 
         if (!img) {
-          imageP = cloned['Intersection'].bFeatured;
+          imageP = clonedX.bFeatured;
         
           if (imageP) 
             img = atts[imageP[0]];
@@ -745,8 +748,8 @@ define('views/ResourceListItemView', [
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
         if (img) {
-          w = atts[cloned['Intersection'].bOriginalWidth];
-          h = atts[cloned['Intersection'].bOriginalHeight];
+          w = atts[clonedX.bOriginalWidth];
+          h = atts[clonedX.bOriginalHeight];
         }
       }
       if (img  &&  !this.isCommonTemplate) {
@@ -884,7 +887,7 @@ define('views/ResourceListItemView', [
           preinit = BasicView.preinitialize.apply(this, arguments),
           cloned = preinit.prototype.clonedProperties,
           imageProperty = U.getImageProperty(vocModel),
-          gridCols = U.getColsMeta(vocModel, 'grid'),
+          gridCols = U.getColsMeta(vocModel, 'grid').slice(),
           commonBlockProps = [],
           params = G.currentHashInfo.hashParams,
           additional = {        

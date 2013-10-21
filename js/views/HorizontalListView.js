@@ -9,6 +9,7 @@ define('views/HorizontalListView', [
 ], function(G, U, Events, ResourceListView, HorizontalListItemView, Scrollable) {
   return ResourceListView.extend({
     mixins: [Scrollable],
+    _renderedUris: [],
     _scrollableOptions: {
       axis: 'X'
     },
@@ -35,8 +36,9 @@ define('views/HorizontalListView', [
     getPageAttributes: function() {
       return 'style="display:inline-block;"';
     },
-
+    
     renderItem: function(res, info) {
+      var uri = res.getUri();
       if (!this._preinitializedItem) {
         var source = this.parentView.resource;
         this._preinitializedItem = HorizontalListItemView.preinitialize({
@@ -46,8 +48,12 @@ define('views/HorizontalListView', [
         });
       }
 
-//      if (this._preinitializedItem.prototype.doesModelImplement('Intersection')) {
-//      }
+      if (this._preinitializedItem.prototype.doesModelImplement('Intersection') && 
+         (~this._renderedUris.indexOf(res.get('Intersection.a')) || ~this._renderedUris.indexOf(res.get('Intersection.b')))) {
+        // avoid painting both sides of a single Intersection (like both Friend resources me->you and you->me)
+        debugger;
+        return;
+      }
       
       var liView = new this._preinitializedItem({
         resource: res
@@ -61,6 +67,7 @@ define('views/HorizontalListView', [
       if (rendered === false)
         return false;
             
+      this._renderedUris.push(uri);
       this.addChild(liView);
       return liView;
     },

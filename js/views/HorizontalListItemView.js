@@ -175,7 +175,6 @@ define('views/HorizontalListItemView', [
     preinitialize: function(options) {
       var preinitData = this.preinitData,
           vocModel = options.vocModel,
-          meta = vocModel.properties,
           preinit = BasicView.preinitialize.apply(this, arguments),
           cloned = preinit.prototype.clonedProperties,
           intersection = cloned.Intersection,
@@ -188,7 +187,7 @@ define('views/HorizontalListItemView', [
 //          more.maxImageDimension = meta[imageProperty].maxImageDimension;
 //      }
       
-      more.displayNameProps = U.getDisplayNameProps(meta);
+      more.displayNameProps = U.getDisplayNameProps(vocModel);
       if (intersection) {
         more.intersectionProp = {
           a: intersection.a, 

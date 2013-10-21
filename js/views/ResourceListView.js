@@ -36,7 +36,7 @@ define('views/ResourceListView', [
     _horizontal: false,
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_viewportSizeChanged'); //, 'onScrollerSizeChanged');
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_viewportSizeChanged', '_updateConstraints', 'onFilter'); //, 'onScrollerSizeChanged');
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
       if (options.axis)
@@ -87,7 +87,7 @@ define('views/ResourceListView', [
           viewportDim = viewport.tail - viewport.head;
       
       if (!viewportDim) {
-        setTimeout(this._updateConstraints.bind(this), 100);
+        setTimeout(this._updateConstraints, 100);
         return;
       }
         
@@ -125,14 +125,16 @@ define('views/ResourceListView', [
         return this.refresh();
       
       // setup filtering
-      var col = this.filteredCollection = this.collection.clone();
+      var self = this,
+          col = this.filteredCollection = this.collection.clone();
+      
       this.listenTo(col, 'endOfList', function() {
-        this.pageView.trigger('endOfList');
-      }.bind(this));
+        self.pageView.trigger('endOfList');
+      });
       
       this.listenTo(col, 'reset', function() {
-        this.pageView.trigger('newList');
-      }.bind(this));
+        self.pageView.trigger('newList');
+      });
       
 //      _.each(['updated', 'added', 'reset'], function(event) {
 //        this.stopListening(col, event);
@@ -175,17 +177,19 @@ define('views/ResourceListView', [
       if (this._refreshing)
         return;
       
-      var pages = this._pagesCurrentlyInSlidingWindow;
+      var self = this,
+          pages = this._pagesCurrentlyInSlidingWindow;
+      
       this._refreshing = true;
       return this.removePages(this._pagesCurrentlyInSlidingWindow)
                         .then(function() {
-                          this._pagesCurrentlyInSlidingWindow = 0;
-                          return this.appendPages(pages);
-                        }.bind(this))
+                          self._pagesCurrentlyInSlidingWindow = 0;
+                          return self.appendPages(pages);
+                        })
                         .done(function() {
-                          this._refreshing = false;
-                          this.adjustSlidingWindow();
-                        }.bind(this));
+                          self._refreshing = false;
+                          self.adjustSlidingWindow();
+                        });
     },
     
     getDimensionDiff: function(from, to) {
@@ -224,6 +228,7 @@ define('views/ResourceListView', [
      * @return a promise to adjust the sliding window
      */
     adjustSlidingWindow: function() {
+      var self = this;
 //      this.log('SLIDING WINDOW', 'checking...');
       if (this._adjustmentQueued)
         return this._slidingWindowPromise;
@@ -242,11 +247,11 @@ define('views/ResourceListView', [
       
       label(result);
       this._slidingWindowPromise.always(function() {
-        if (this._adjustmentQueued) {
-          this._adjustmentQueued = false;
-          setTimeout(this.adjustSlidingWindow, 0);
+        if (self._adjustmentQueued) {
+          self._adjustmentQueued = false;
+          setTimeout(self.adjustSlidingWindow, 0);
         }
-      }.bind(this));
+      });
       
       return this._slidingWindowPromise;
     },
@@ -339,12 +344,13 @@ define('views/ResourceListView', [
     addPages: function(n, atTheHead, force) {
 //      this.log('SLIDING WINDOW', 'adding pages' + (atTheHead ? ' at the head' : ''));
       n = n || 1;
-      var col = this.filteredCollection,
+      var self = this,
+          col = this.filteredCollection,
           pageTag = this.getPageTag(),
           pageAttributes = this.getPageAttributes(),
 //          sizes = this._slidingWindowAddRemoveInfo,
           numRendered = 0,
-          colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult;
+          colRange, $dummy, dummyDim, page, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
 
       if (atTheHead) {
         var from = Math.max(this._pageOffset - n, 0);
@@ -376,16 +382,13 @@ define('views/ResourceListView', [
             
       dfd = $.Deferred();
       promise = dfd.promise();
-      function finish() {
-        Q.nonDom(dfd.resolve);
-      };
-      
+      finish = Q.nonDom.bind(Q, dfd.resolve);
       label(promise);
       dfd.done(function() {
-        this._pagesCurrentlyInSlidingWindow += n;
+        self._pagesCurrentlyInSlidingWindow += n;
         if (atTheHead)
-          this._pageOffset = Math.max(this._pageOffset - n, 0);
-      }.bind(this));
+          self._pageOffset = Math.max(self._pageOffset - n, 0);
+      });
       
       $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
 //      frag = doc.createDocumentFragment();
@@ -419,7 +422,6 @@ define('views/ResourceListView', [
         }, this, [i]);
       }
 
-      var listView = this;
 //      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
       Q.read(function getDummyDim() {
         dfd.notify(!!numRendered);
@@ -428,8 +430,8 @@ define('views/ResourceListView', [
           return;
         }
         
-        dummyDim = this.dimension($dummy) || 0;
-        slidingWindowBefore = this.getSlidingWindow();
+        dummyDim = self.dimension($dummy) || 0;
+        slidingWindowBefore = self.getSlidingWindow();
         Q.write(function insertPage() {
 //          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          page.append(frag);
@@ -438,17 +440,17 @@ define('views/ResourceListView', [
 //            console.log("PAGER", "SETTING ELEMENTS ON ITEMS, FRAME", window.fastdom.frameNum);
             page.find('[data-viewid]').each(function() {
               var childEl = arguments[1];
-              var child = listView.children[childEl.dataset.viewid];
-              this.listenTo(child.resource, 'change', this.onResourceChanged);
+              var child = self.children[childEl.dataset.viewid];
+              self.listenTo(child.resource, 'change', self.onResourceChanged);
               child.setElement(childEl);
               if (child.postRender)
                 child.postRender();
-            }.bind(this));
+            });
 //          }, this);
           
-          this._pages[atTheHead ? 'unshift' : 'push'](page);
+          self._pages[atTheHead ? 'unshift' : 'push'](page);
           page[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
-          postRenderResult = this.postRender(info);
+          postRenderResult = self.postRender(info);
           
           // on next frame
 //          Q.read(function calcNewDummyDim() {
@@ -457,27 +459,27 @@ define('views/ResourceListView', [
             if (colRange.from == 0)
               newDim = 0;
             else if (dummyDim > 0)
-              newDim = Math.max(dummyDim - this.dimension(page), 0);
+              newDim = Math.max(dummyDim - self.dimension(page), 0);
             
             var cleanup = function cleanup() {
               if (_.isPromise(postRenderResult))
                 postRenderResult.always(finish);
               else
                 finish();
-            }.bind(this);
+            };
             
             if (newDim != dummyDim) {
 //              Q.write(function setNewDummyDim() {
 //                console.log("PAGER", "UPDATING {0} DUMMY SIZE".format(atTheHead ? "HEAD" : "TAIL"), "FRAME", window.fastdom.frameNum);
-                this.dimension($dummy, newDim);
+                self.dimension($dummy, newDim);
                 cleanup();
 //              }, this);
             }
             else
               cleanup();            
 //          }, this);
-        }, this);
-      }, this);
+        });
+      });
 
       return promise;
     },
@@ -534,20 +536,18 @@ define('views/ResourceListView', [
 //      console.log("PAGING", up ? "UP" : "DOWN", "START");
       // append a new page, remove the first page, move visibility down a page
 //      this.calcAddRemoveSize(n, false);
-      var add = this[up ? 'prependPages' : 'appendPages'](n),
+      var self = this,
+          add = this[up ? 'prependPages' : 'appendPages'](n),
           remove;
       
       add.progress(function(doRemove) {
         if (doRemove)
-          remove = this.removePages(n, !up);
+          remove = self.removePages(n, !up);
         else
           remove = G.getResolvedPromise();
-      }.bind(this));
+      });
       
-      return $.when(add, remove).then(function() {
-//        console.log("PAGING", up ? "UP" : "DOWN", "END, FRAME", window.fastdom.frameNum);
-        this.getNewSize();
-      }.bind(this));
+      return $.when(add, remove).then(this.getNewSize);
     },
     
     getListItems: function() {
@@ -586,20 +586,21 @@ define('views/ResourceListView', [
     _growSlidingWindow: function(n, head) {
 //      this.log('SLIDING WINDOW', 'growing sliding window');
       n = n || 1;
+      var self = this;
 //      this.calcAddRemoveSize(n, true, head);
       return $.Deferred(function(defer) {
         var promise;
         if (head)
-          promise = this.prependPages(n);
+          promise = self.prependPages(n);
         else
-          promise = this.appendPages(n);
+          promise = self.appendPages(n);
         
         promise.done(function() {
-          this._pagesInSlidingWindow = Math.max(this._pagesCurrentlyInSlidingWindow, this._pagesInSlidingWindow);
-          this.getNewSize();
+          self._pagesInSlidingWindow = Math.max(self._pagesCurrentlyInSlidingWindow, self._pagesInSlidingWindow);
+          self.getNewSize();
           defer.resolve();
-        }.bind(this)).fail(defer.reject);
-      }.bind(this)).promise();
+        }).fail(defer.reject);
+      }).promise();
     },
   
 //    /**
@@ -668,12 +669,13 @@ define('views/ResourceListView', [
      */
     removePages: function(n, fromTheHead) {
 //      this.log('SLIDING WINDOW', 'removing pages');
-      var first,
+      var self = this,
+          removedViews = [],
+          removedPages,
+          first,
           last,
           head,
           tail,
-          removedViews = [],
-          removedPages,
           splitIdx,
           $dummy,
           dummyDim,
@@ -685,12 +687,12 @@ define('views/ResourceListView', [
           dfd = $.Deferred();
 
       dfd.done(function() {
-        this._pagesCurrentlyInSlidingWindow -= n;
+        self._pagesCurrentlyInSlidingWindow -= n;
         if (fromTheHead) {
-          this.log('PAGE OFFSET: ', this._pageOffset + n);
-          this._pageOffset += n;
+          self.log('PAGE OFFSET: ', this._pageOffset + n);
+          self._pageOffset += n;
         }
-      }.bind(this));
+      });
 
       splitIdx = fromTheHead ? n : this._pages.length - n;
       removedPages = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
@@ -707,18 +709,18 @@ define('views/ResourceListView', [
                 childView;
             
             if (cid) {
-              childView = this.children[cid];
+              childView = self.children[cid];
               if (childView)
                 removedViews.push(childView);
             }
           }
         }
 
-        dummyDim = this.dimension($dummy) || 0;        
+        dummyDim = self.dimension($dummy) || 0;        
         removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
-          return memo + this.dimension(page); 
-        }.bind(this), 0);
-      }, this);
+          return memo + self.dimension(page); 
+        }, 0);
+      });
 
       Q.write(function removePagesFromDOM() {
 //        console.log("PAGER", "REMOVING PAGES, FRAME", window.fastdom.frameNum);
@@ -728,17 +730,17 @@ define('views/ResourceListView', [
         
 //        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
 //        console.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
-        this.dimension($dummy, dummyDim + removedPageDim);
+        self.dimension($dummy, dummyDim + removedPageDim);
         Q.nonDom(dfd.resolve);
-      }, this);
+      });
 
       Q.defer(5, 'nonDom', function destroyChildren() {
         for (var i = 0, len = removedViews.length; i < len; i++) {
           var view = removedViews[i];
-          this.stopListening(view.resource);
+          self.stopListening(view.resource);
           Q.defer(i + 1, 'nonDom', view.destroy, view); // destroy uses animationQueue
         }
-      }, this);
+      });
       
       return dfd.promise();
     },
@@ -940,7 +942,7 @@ define('views/ResourceListView', [
     
     setupSearchAndFilter: function() {
       this.$filteredUl = this.parentView.$('ul[data-filter="true"]');
-      this.$filteredUl.on('listviewbeforefilter', _.debounce(this.onFilter.bind(this), 150));
+      this.$filteredUl.on('listviewbeforefilter', _.debounce(this.onFilter, 150));
     },
     
     onFilter: function(e, data) {

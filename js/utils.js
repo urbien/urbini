@@ -279,11 +279,18 @@ define('utils', [
 //    },
     
     getStylePropertyValue: function(computedStyle, prop) {
-      var value;
-      for (var i = 0; i < vendorPrefixes.length; i++) {
-        value = computedStyle.getPropertyValue(vendorPrefixes[i] + prop);
-        if (value && value !== 'none')
-          break;
+      var value,
+          vendorSpecific = G.crossBrowser.css[prop];
+      
+      if (vendorSpecific) {
+        value = computedStyle.getPropertyValue(vendorSpecific.cssPrefix + prop);
+      }
+      else {
+        for (var i = 0; i < vendorPrefixes.length; i++) {
+          value = computedStyle.getPropertyValue(vendorPrefixes[i] + prop);
+          if (value && value !== 'none')
+            break;
+        }
       }
       
       return value || 'none';
@@ -559,8 +566,16 @@ define('utils', [
     },
     
     isPropVisible: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop))
-        return false;
+      var visible;
+      if (_.has(prop, '_visible')) 
+        visible = prop._visible;
+      else {
+        // cache it
+        visible = prop._visible = !(prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop));
+      }
+      
+      if (!visible)
+        return;
       
       userRole = userRole || U.getUserRole();
       if (userRole == 'admin')
@@ -760,8 +775,8 @@ define('utils', [
     isPropEditable: function(res, prop, userRole) {
       if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
         return false;
-      var hashInfo = U.getCurrentUrlInfo(),
-          isEdit = !!res.get('_uri');
+      
+      var isEdit = !!res.get('_uri');
       
       if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
         return false;
@@ -820,6 +835,11 @@ define('utils', [
       
       return _.values(keys);
     },
+
+    getPropCloneOf: function(prop) {
+      var clones = prop.cloneOf;
+      return clones && _.map(prop.cloneOf.split(','), function(c) { return c.trim() });
+    },
     
     getCloneOf: function(model) {
       var cloneOf = concat.apply(ArrayProto, slice.call(arguments, 1)),
@@ -833,11 +853,13 @@ define('utils', [
           vals = [];
           for (var j=0; j<2; j++) {
             for (var p in meta) {
-              if (!_.has(meta[p], "cloneOf")) 
+              var prop = meta[p];
+              if (!_.has(prop, "cloneOf")) 
                 continue;
-              var clones = meta[p].cloneOf.split(",");
-              for (var i=0; i<clones.length; i++) {
-                if (clones[i].replace(' ', '') == iProp) { 
+               
+              var clones = U.getPropCloneOf(prop);
+              for (var k=0; k<clones.length; k++) {
+                if (clones[k] == iProp) { 
                   vals.push(p);
                   break;
                 }
@@ -850,7 +872,7 @@ define('utils', [
         }
         
         if (vals.length)
-          results[iProp] = model[iProp] = vals;
+          results[iProp] = model[iProp] = vals; // cache it on the model
       }
       
       var size = _.size(results);
@@ -861,9 +883,7 @@ define('utils', [
       if (typeof prop === 'string')
         prop = vocModel.properties[prop];
       
-      return prop.cloneOf && _.any(prop.cloneOf.split(','), function(name) {
-        return name == iPropName;
-      });
+      return _.any(U.getPropCloneOf(prop), _['=='].bind(_, iPropName));
     },
     
     getLongUri1: function(uri, vocModel) {
@@ -895,85 +915,6 @@ define('utils', [
 //      throw new Error("couldn't parse uri: " + uri);
     },
 
-//    getLongUri: function(uri, hint) {
-//      var type, pk, snm;
-//      if (hint) {
-//        type = hint.type;
-//        pk = hint.primaryKeys;
-//      }
-//      else
-//        snm = G.shortNameToModel;
-//      
-//      var serverName = G.serverName;
-//      var sqlUri = G.sqlUri;
-//      if (uri.indexOf('http') == 0) {
-//        // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
-//        if (uri.indexOf('?') == -1) // type uri
-//          return uri;
-//        
-//        if (uri.indexOf(serverName + "/" + sqlUri) == 0)
-//          return uri;
-//        
-//        type = typeof type == 'undefined' ? U.getTypeUri(uri, hint) : type;
-//        return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : serverName + "/" + sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
-//      }
-//      
-//      var sIdx = uri.indexOf('/');
-//      var qIdx = uri.indexOf('?');
-//      if (sIdx === -1) {
-//        // uri is of form Tree?id=32000 or just Tree
-//        type = !type || type.indexOf('/') == -1 ? U.getTypeUri(uri, hint) : type;
-//        if (!type)
-//          return null;
-//        
-//        return U.getLongUri1(type + (qIdx == -1 ? '' : uri.slice(qIdx)), {type: type});
-//      }
-//      
-//      if (uri.indexOf('sql') == 0) {
-//        // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
-//        return serverName + "/" + uri;
-//      }
-//      else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
-//        // uri is of form Tree/32000
-//        var typeName = U.getClassName(uri);
-//        type = U.getTypeUri(typeName, hint);
-//        if (!type || type == typeName)
-//          return null;
-//        
-//        var sIdx = uri.indexOf("/");
-//        var longUri = uri.slice(0, sIdx) + "?";
-//        var primaryKeys = hint.primaryKeys || (snm && snm[typeName] && U.getPrimaryKeys([typeName]));
-////        var model = snm[typeName];
-////        if (!model)
-////          return uri;
-////        
-////        var primaryKeys = U.getPrimaryKeys(model);
-//        if (!primaryKeys  ||  primaryKeys.length == 0)
-//          longUri += "id=" + _.encode(uri.slice(sIdx + 1));
-//        else {
-//          var vals = uri.slice(sIdx + 1).split('/');
-//          if (vals.length != primaryKeys.length)
-//            throw new Error('bad uri "' + uri + '" for type "' + type + '"');
-//          
-//          for (var i = 0; i < primaryKeys.length; i++) {
-//            longUri += primaryKeys[i] + "=" + vals[i]; // shortUri primary keys are already encoded
-//          }      
-//        }
-//        
-//        return U.getLongUri1(longUri, {type: type});
-//      }
-//      else {
-//        // uri is of form commerce/urbien/Tree or commerce/urbien/Tree?... or wf/Urbien/.....
-//        if (qIdx !== -1)
-//          return G.sqlUrl + '/www.hudsonfog.com/voc/' + uri;
-//        
-//        if (uri.startsWith('wf/'))
-//          return G.serverName + '/' + uri;
-//        else
-//          return G.defaultVocPath + uri;
-//      }
-//    },
-    
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
         var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
@@ -1258,7 +1199,7 @@ define('utils', [
       var meta = vocModel.properties,
           gridCols = U.getColsMeta(vocModel, 'grid'),
           imageProps = U.getPropsRanged(vocModel, G.commonTypes.Image), //U.getClonedProps(vocModel, 'ImageResource'),
-          displayNameProps = U.getDisplayNameProps(meta),
+          displayNameProps = U.getDisplayNameProps(vocModel),
           firstHalf,
           secondHalf;
               
@@ -1268,29 +1209,33 @@ define('utils', [
         return;
       }
 
-      secondHalf = _.filter(_.difference(_.keys(meta), firstHalf), function(p) {
-        var prop = meta[p];
-        if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
-          return false;
-        
-        return true;
-      });
+      if (U.isA(vocModel, 'ImageResource')) {
+        secondHalf = _.filter(_.difference(_.keys(meta), firstHalf), function(p) {
+          var prop = meta[p];
+          if (prop && prop.cloneOf && prop.cloneOf.match(/,?ImageResource\.[a-zA-Z]+,?/))
+            return false;
+          
+          return true;
+        });
+      }
       
-      vocModel.splitRequest = secondHalf.length > 3;
+      vocModel.splitRequest = secondHalf && secondHalf.length > 3;
     },
     
     getColsMeta: function(vocModel, colsType) {
       colsType = colsType || 'grid';
-      var cols = vocModel[colsType + 'Cols'];
+      var colsProp = colsType + 'Cols';
+      var cols = vocModel[colsProp];
+      if (_.isArray(cols))
+        return cols;
+      
       cols = cols && cols.split(',');
-      return _.uniq(_.map(cols, function(c) {return c.trim()}));
+      return vocModel[colsProp] = _.uniq(_.map(cols, function(c) {return c.trim()}));
     },
     
     getCols: function(res, colsType, isListView) {
-      colsType = colsType || 'grid';
       var vocModel = res.vocModel;
-      var cols = vocModel[colsType + 'Cols'];
-      cols = cols && cols.split(',');
+      var cols = this.getColsMeta(vocModel, colsType);
       return U.makeCols(res, cols, isListView);
     },
     
@@ -1338,8 +1283,8 @@ define('utils', [
     
     isMasonry: function(vocModel) {
       var meta = vocModel.properties;
-      var isMasonry = U.isA(vocModel, 'ImageResource')  &&  (U.getCloneOf(vocModel, 'ImageResource.mediumImage').length > 0 || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage').length > 0  ||  U.getCloneOf(vocModel, 'ImageResource.bigImage').length > 0);
-      if (!isMasonry  &&  U.isA(vocModel, 'Reference') &&  U.isA(vocModel, 'ImageResource'))
+      var isMasonry = U.isA(vocModel, 'ImageResource')  &&  _.size(U.getCloneOf(vocModel, 'ImageResource.mediumImage', 'ImageResource.bigMediumImage', 'ImageResource.bigImage'));
+      if (!isMasonry  &&  U.isAll(vocModel, 'Reference', 'ImageResource'))
         return true;
       if (!U.isA(vocModel, 'Intersection')) 
         return isMasonry;
@@ -1347,14 +1292,15 @@ define('utils', [
       var qidx = href.indexOf('?');
       var a = U.getCloneOf(vocModel, 'Intersection.a')[0];
       if (qidx == -1) {
-        isMasonry = (U.getCloneOf(vocModel, 'Intersection.aThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured')[0]) != null;
+        isMasonry = _.size(U.getCloneOf(vocModel, 'Intersection.aThumb', 'Intersection.aFeatured'));
       }
       else {
         var b = U.getCloneOf(vocModel, 'Intersection.b')[0];
         var p = href.substring(qidx + 1).split('=')[0];
         var delegateTo = (p == a) ? b : a;
-        isMasonry = (U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]) != null;
+        isMasonry = _.size(U.getCloneOf(vocModel, 'Intersection.bThumb', 'Intersection.bFeatured'));
       }
+      
       return isMasonry;
     },
     
@@ -1362,8 +1308,8 @@ define('utils', [
       var params = window.location.hash.split('?');
       if (params.length == 1)
         return null;
+      
       params = params[1].split('&');
-
       var meta = vocModel.properties;
       for (var i=0; i<params.length; i++) {
         var s = params[i].split('=')[0];
@@ -1373,6 +1319,7 @@ define('utils', [
         if (p  &&  (p.containerMember || p.notifyContainer))
           return p.shortName;
       }
+      
       return null;
     },
     
@@ -1588,12 +1535,14 @@ define('utils', [
       return _.isEqual(p1, p2);
     },
     
-    getDisplayNameProps: function(meta) {
+    getDisplayNameProps: function(vocModel) {
+      var meta = vocModel.properties;
       var keys = [];
       for (var p in meta) {
         if (_.has(meta[p], "displayNameElm")) 
           keys.push(p);
       }
+      
       return keys;
     },
     
@@ -1619,7 +1568,7 @@ define('utils', [
         meta = meta || vocModel && vocModel.properties;
       }
         
-      var dnProps = U.getDisplayNameProps(meta);
+      var dnProps = U.getDisplayNameProps(vocModel);
       var dn = '';
       if (!dnProps  ||  dnProps.length == 0) {
         var uri = U.getValue(resource, '_uri');
@@ -1917,13 +1866,7 @@ define('utils', [
       }
     },
     
-    getImageProperty: function(resOrCol) {
-      var isCol = U.isCollection(resOrCol);
-      var models = isCol ? resOrCol.models : U.isModel(resOrCol) ? [resOrCol] : null;
-//      if (!models.length)
-//        return null;
-      
-      var vocModel = U.isModel(resOrCol) || U.isCollection(resOrCol) ? U.getModel(resOrCol) : resOrCol;
+    getModelImageProperty: function(vocModel) {
       var meta = vocModel.properties;
       var cloneOf;
       var aCloneOf;
@@ -1932,82 +1875,72 @@ define('utils', [
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       var isIntersection = this.isA(vocModel, 'Intersection'); 
       if (isIntersection) {
-        aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured');
-        bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured');
-        if (aCloneOf.length != 0  &&  bCloneOf.length != 0) {
-          aCloneOf = aCloneOf[0], bCloneOf = bCloneOf[0];
-          hasImgs = true;
-        }
+        aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')[0] ||  U.getCloneOf(vocModel, 'Intersection.aFeatured')[0];
+        bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0];
+        if (aCloneOf)
+          return aCloneOf;
+        if (bCloneOf)
+          return bCloneOf;
       }
-      if (!hasImgs  &&  U.isA(vocModel, 'ImageResource')) {
-        if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')).length != 0)
-          hasImgs = true;
-        else  if ((cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')).length != 0)
-          hasImgs = true;
+      
+      if (U.isA(vocModel, 'ImageResource')) {
+        cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
         var isMasonry = U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
-        if (isMasonry  &&  hasImgs) {
+        if (isMasonry  &&  cloneOf) {
           var ww = $(window).width() - 40;
-          var imgP;
           if (ww < $(window).height()) {
             if (ww <= 340) 
-              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium320');
+              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
             else  if (ww <= 380) 
-              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium360');
+              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium360')[0];
             else if (ww <= 420)  //  &&  ww <= 400) {
-              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMedium400');
+              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium400')[0];
           }
           else {
             if (ww > 460  &&  ww <= 630)
-              imgP = U.getCloneOf(vocModel, 'ImageResource.masonry533_h');
+              cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry533_h')[0];
             else if (ww > 630  &&  ww <= 660)
-              imgP = U.getCloneOf(vocModel, 'ImageResource.masonry680_h');
+              cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry680_h')[0];
           }
-          if (!imgP) {
-            imgP = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-            if (!imgP)
-              imgP = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-          }
-          if (imgP)
-            return imgP;
+          
+          if (!cloneOf)
+            cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];          
         }
-      }
-      if (!hasImgs  &&  U.isA(vocModel, 'Reference')) {
-        if ((cloneOf = U.getCloneOf(vocModel, 'Reference.resourceImage')).length != 0)
-          hasImgs = true;
-      }
         
-      if (hasImgs && models && models.length) {
-        cloneOf = cloneOf && cloneOf[0];
-        hasImgs = false;
-        for (var i = 0; !hasImgs  &&  i < models.length; i++) {
-          var m = models[i];
-          if (isIntersection  &&  (m.get(aCloneOf) || m.get(bCloneOf))) 
-            return aCloneOf;
-          if (m.get(cloneOf))
-            return cloneOf;
-        }
+        if (cloneOf)
+          return cloneOf;
       }
       
-      return cloneOf || aCloneOf || bCloneOf;
+      if (U.isA(vocModel, 'Reference'))
+        return U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
     },
     
-//    _index: function(obj,i) {
-//      return obj[i]
-//    },
-//
-//    /**
-//     * given obj and path x.y.z, will return obj.x.y.z; 
-//     */
-//    leaf: function(obj, path, separator) {
-//      if (typeof obj == 'undefined' || !obj)
-//        return null;
+    getImageProperty: function(resOrCol) {
+      var isCol = U.isCollection(resOrCol),
+          isModel = U.isModel(resOrCol),
+          vocModel = isModel || isCol ? U.getModel(resOrCol) : resOrCol;
+          
+      return this.getModelImageProperty(vocModel);
+//          modelImageProp = this.getModelImageProperty(vocModel),
+//          models; 
+//          
+//      if (modelImageProp) {
+//        var models = isCol ? resOrCol.models : isModel ? [resOrCol] : null;
+//        if (models && models.length) {
+//          cloneOf = cloneOf && cloneOf[0];
+//          var isIntersection = U.isA(vocModel, 'Intersection');
+//          for (var i = 0; !hasImgs  &&  i < models.length; i++) {
+//            if (models[i].get(cloneOf))
+//              return cloneOf;
+//          }
+//        }
+//      }
 //      
-//      var index = U._index;
-//      return path.split(separator || '.').reduce(index, obj);
-//    },
+//      return modelImageProp;
+    },
     
     getPropDisplayName: function(prop) {
-      return prop.displayName || prop.label || prop.shortName.uncamelize(true);
+      return prop.displayName || (prop.displayName = prop.label || prop.shortName.uncamelize(true));
     },
     
     getValueDisplayName: function(res, propName) {
@@ -3880,20 +3813,19 @@ define('utils', [
     },
     
     getIndexNames: function(vocModel) {
-      var vc = vocModel.viewCols || '';
-      var gc = vocModel.gridCols || '';
+      var vc = U.getColsMeta(vocModel, 'view');
+      var gc = U.getColsMeta(vocModel, 'grid');
       var extras = U.getPositionProps(vocModel);
-      var cols = _.union(_.values(extras), _.map((vc + ',' + gc).split(','), function(c) {
-        return c.trim().replace('DAV:displayname', 'davDisplayName')
-      }));
+      var cols = _.union(_.values(extras), gc, vc, '_uri');
+      var dnIdx = cols.indexOf("DAV:displayname");
+      if (~dnIdx)
+        cols[dnIdx] = 'davDisplayName';
       
       var props = vocModel.properties;
-      cols = _.filter(cols, function(c) {
+      return _.filter(cols, function(c) {
         var p = props[c];
         return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
-      }).concat('_uri');
-      
-      return cols;
+      });
     },
 
     isMasonryModel: function(vocModel) {
@@ -4044,7 +3976,7 @@ define('utils', [
         switch (prop) {
         case '$viewCols':
         case '$gridCols':
-          actualProps.push.apply(actualProps, U.getColsMeta(prop.slice(1, 5)));
+          actualProps.push.apply(actualProps, U.getColsMeta(vocModel, prop.slice(1, 5)));
           break;
         case '$images':
           actualProps.push.apply(actualProps, U.getClonedProps(vocModel, 'ImageResource'));
@@ -4100,6 +4032,30 @@ define('utils', [
       };
     }
   };
+  
+  // No need to recalculate these every time
+  var cachedOnObj = {
+    isMasonry: '_isMasonry', 
+    isMasonryModel: '_isMasonryModel', 
+    getDisplayNameProps: '_displayNameProps', 
+    getPrimaryKeys: '_primaryKeys', 
+    getModelImageProperty: '_imageProperty',
+    isRsourceProp: '_isResourceProp',
+    getPropCloneOf: '_clonedProperties',
+    getPositionProps: '_positionProperties',
+    isInlined: '_isInlined',
+    getIndexNames: '_indexNames'
+  };
+  
+  _.each(cachedOnObj, function(propName, method) {    
+    var origFn = U[method];
+    U[method] = function(obj) {
+      if (_.has(obj, propName))
+        return obj[propName];
+      
+      return obj[propName] = origFn.apply(this, arguments);
+    };
+  });
 
   var urlInfoProps = ['route', 'uri', 'type', 'action', 'query', 'fragment', 'special'],
       urlInfoSpecial = ['params', 'sub'],

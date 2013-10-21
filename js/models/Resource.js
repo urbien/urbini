@@ -713,10 +713,8 @@ define('models/Resource', [
       }
         
       var cloneOf = prop.cloneOf;
-      if (cloneOf) {
-        if (/^Address1?\.postalCode1?$/.test(cloneOf))
-          return _.validateZip(value) || 'Please enter a valid Postal Code';
-      }
+      if (cloneOf && U.isCloneOf(prop, 'Address1.postalCode1'))
+        return _.validateZip(value) || 'Please enter a valid Postal Code';
       
       return true;
     },

@@ -667,7 +667,7 @@ define('views/ResourceMasonryItemView', [
           more.maxImageDimension = meta[imageProperty].maxImageDimension;
       }
       
-      more.displayNameProps = U.getDisplayNameProps(vocModel.properties);
+      more.displayNameProps = U.getDisplayNameProps(vocModel);
       return preinit.extend(more);
     }
   });

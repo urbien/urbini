@@ -1133,8 +1133,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       
       // queue up events
-      var numScrollEvents = Math.round(Math.max(timeToReset / s.SCROLL_EVENT_TIME_PERIOD, distance / s.SCROLL_EVENT_DISTANCE_PERIOD)),
-          period = Math.round(timeToReset / numScrollEvents),
+      var numScrollEvents = Math.max(timeToReset / s.SCROLL_EVENT_TIME_PERIOD, distance / s.SCROLL_EVENT_DISTANCE_PERIOD) | 0, // round to int
+          period = (timeToReset / numScrollEvents) | 0, // round to int
           distanceUnit = (destination[axis] - s.position[axis]) / numScrollEvents, 
           pingPos = _.clone(s.position),
           scrollTime = 0;
