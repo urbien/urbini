@@ -12,7 +12,7 @@ Urbini network, or appnet is inspired by IFTTT:
 
 3. Unlike IFTTT it is open, all client code is here on github. And unlike IFTTT, channels (maps to existing apps) can be created by anyone.
 
-4. Unlike IFTTT is it more programmable. IFTTT's trigger/action is just one of the ways to connect apps and devices, and in Urbini actions are written in JavaScript. In addition, all connections are unified via [backbone] data models. This allows to add scripts for any user actions.
+4. Unlike IFTTT it is more programmable. IFTTT's trigger/action is just one of the ways to connect apps and devices, and in Urbini actions are written in JavaScript. In addition, all connections are unified via [backbone] data models. This allows to add scripts for any user actions.
 
 
 The Appnet
