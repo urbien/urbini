@@ -957,7 +957,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .thumb-inner {
   width: auto;
   height: 100%;
-  margin-left: 5%;
+  margin: 0 2.5% 0 2.5%;
   -webkit-border-radius: 0.6em;
   -moz-border-radius: 0.6em;
   border-radius: 0.6em;

@@ -63,6 +63,7 @@ define('views/HorizontalListItemView', [
           isIntersection = this.doesModelImplement('Intersection'),
           cloned = this.clonedProperties,
           imgProp = this.imageProperty,
+//          intersectionSide = options.intersection,
           intersection = this.intersectionProp,
           superscript,
           target, 

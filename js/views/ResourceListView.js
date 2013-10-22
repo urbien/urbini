@@ -76,10 +76,11 @@ define('views/ResourceListView', [
     },
     
     getViewport: function() {
-      return {
-        head: 0,
-        tail: this._horizontal ? window.innerWidth : window.innerHeight
-      }
+//      return {
+//        head: 0,
+//        tail: this._horizontal ? window.innerWidth : window.innerHeight
+//      }
+      return this.getHeadAndTail(this.getVisibleArea(true));
     },
     
     _updateConstraints: function() {
@@ -269,7 +270,7 @@ define('views/ResourceListView', [
         return G.getRejectedPromise();
       
       var self = this,
-          viewport = this.getHeadAndTail(this.getVisibleArea(true)),
+          viewport = this.getViewport(),
           viewportDim = viewport.tail - viewport.head,
           slidingWindow = this.getSlidingWindow(), // should be relative to this view, i.e. head==0 means we're at the top/left of the page
           slidingWindowDim = slidingWindow.tail - slidingWindow.head,
@@ -293,8 +294,8 @@ define('views/ResourceListView', [
           growAtTheHead = headDiff > tailDiff;
         }
         
-        n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / viewportDim);
-        return this._growSlidingWindow(n, growAtTheHead).done(this.adjustSlidingWindow);
+//        n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / viewportDim);
+        return this._growSlidingWindow(n, growAtTheHead).done(this.adjustSlidingWindow); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
       }
       else if (tailDiff < this._slidingWindowInsideBuffer) {
         n = Math.ceil((this._slidingWindowInsideBuffer - diff) / viewportDim);
@@ -369,9 +370,11 @@ define('views/ResourceListView', [
           pageAttributes = this.getPageAttributes(),
 //          sizes = this._slidingWindowAddRemoveInfo,
           numRendered = 0,
+          numPagesRendered = 0,
           pageStartTag = '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes),
           pageEndTag = '</{0}>'.format(pageTag),
-          colRange, $dummy, dummyDim, pages, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
+          stop = false,
+          colRange, $dummy, dummyDim, pages, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, currentPageHtml, finish;
 
       if (atTheHead) {
         var from = Math.max(this._pageOffset - n, 0);
@@ -431,20 +434,24 @@ define('views/ResourceListView', [
             liView = this.renderItem(res, atTheHead);
 
         if (isFirst)
-          info.html += pageStartTag;
+          currentPageHtml = pageStartTag;
 
         if (liView !== false) {
           this.postRenderItem(liView._html, info);
           numRendered++;
         }
         
-        if (isLast)
-          info.html += pageEndTag;
+        if (isLast) {
+          if (currentPageHtml != pageStartTag) {
+            currentPageHtml += pageEndTag;
+            info.html += currentPageHtml;
+            numPagesRendered++;
+          }
+        }
       }
       
-      var stop = false;
       for (var i = 0, resNum = 0; i < n; i++) {
-        for (var j = 0, numEls = this._elementsPerPage; j < numEls; j++ && resNum++) {
+        for (var j = 0, numEls = this._elementsPerPage; j < numEls; ++j && ++resNum) {
           if (resNum + 1 == colRange.to)
             stop = true;
           
@@ -459,7 +466,7 @@ define('views/ResourceListView', [
 
 //      Q.defer(colRange.to - colRange.from + 1, 'read', function getDummyDim() {
       Q.read(function getDummyDim() {
-        dfd.notify(!!numRendered);
+        dfd.notify(numPagesRendered);
         if (!numRendered) {
           dfd.resolve();
           return;
@@ -575,8 +582,8 @@ define('views/ResourceListView', [
           add = this[up ? 'prependPages' : 'appendPages'](n),
           remove;
       
-      add.progress(function(doRemove) {
-        if (doRemove)
+      add.progress(function(n) {
+        if (n)
           remove = self.removePages(n, !up);
         else
           remove = G.getResolvedPromise();

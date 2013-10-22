@@ -9,7 +9,7 @@ define('views/HorizontalListView', [
 ], function(G, U, Events, ResourceListView, HorizontalListItemView, Scrollable) {
   return ResourceListView.extend({
     mixins: [Scrollable],
-    _renderedUris: [],
+    _renderedIntersectionUris: [],
     _scrollableOptions: {
       axis: 'X'
     },
@@ -27,6 +27,19 @@ define('views/HorizontalListView', [
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this, options);
+    },
+
+    preRender: function() {
+      if (!_.has(this, '_isIntersectingWithCollection')) { // only calc this once
+        var source = this.parentView.resource,
+            vocModel = this.vocModel,
+            first = this.collection.models[0];
+        
+        this.isIntersection = U.isA(vocModel, 'Intersection');
+        this._isIntersectingWithCollection = source && 
+                                             this.isIntersection && 
+                                             source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
+      }
     },
     
     getPageTag: function() {
@@ -48,21 +61,28 @@ define('views/HorizontalListView', [
     },
     
     renderItem: function(res, info) {
-      var uri = res.getUri();
+      var source = this.parentView.resource,
+          xUris = this._renderedIntersectionUris,
+          a,
+          b;
+
+      source = source && source.getUri();
       if (!this._preinitializedItem) {
-        var source = this.parentView.resource;
         this._preinitializedItem = HorizontalListItemView.preinitialize({
           vocModel: this.vocModel,
           parentView: this,
-          source: source && source.getUri()
+          source: source
         });
       }
 
-      if (this._preinitializedItem.prototype.doesModelImplement('Intersection') && 
-         (~this._renderedUris.indexOf(res.get('Intersection.a')) || ~this._renderedUris.indexOf(res.get('Intersection.b')))) {
-        // avoid painting both sides of a single Intersection (like both Friend resources me->you and you->me)
-        debugger;
-        return;
+      if (this._isIntersectingWithCollection) {
+        a = res.get('Intersection.a');
+        b = res.get('Intersection.b');
+        if ((source == a && ~xUris.indexOf(b)) ||
+            (source == b && ~xUris.indexOf(a))) {
+          // if we're in a resource view and are showing intersections with this resource, there may be cases like Friend where there are two intersections to represent the relationship. In that case, only paint one (to avoid having two of the same image) 
+          return false;
+        }
       }
       
       var liView = new this._preinitializedItem({
@@ -77,7 +97,13 @@ define('views/HorizontalListView', [
       if (rendered === false)
         return false;
             
-      this._renderedUris.push(uri);
+      if (this._isIntersectingWithCollection) {
+        if (source !== a)
+          xUris.push(a);
+        if (source !== b)
+          xUris.push(b);
+      }
+      
       this.addChild(liView);
       return liView;
     },

@@ -54,8 +54,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 //    var displayName = item[prop + '.displayName'];
 //    if (!displayName && blob && blob.type)
 //      displayName = blob.type.split('/')[1];
-      
-    return U.getPath(item._uri) + '/' + prop;
+
+    var type = blob.type;
+    return U.getPath(item._uri) + '/' + prop + (type ? '.' + type.slice(type.indexOf('/') + 1) : '');
   };        
 
   function _getFileSystem(items) {

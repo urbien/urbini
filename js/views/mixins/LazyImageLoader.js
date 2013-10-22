@@ -363,6 +363,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
             if (!blob)
               return;
                   
+//            blob.type = "image/" + realSrc.slice(realSrc.lastIndexOf('.') + 1);
+            
             // save to resource
             var atts = {};
             atts[prop + '.uri'] = imgUri;
